@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "fc5e41bdc4b00e6dbe31c1c65600ab5c0b0fb1a8",
+  "generated_for_revision": "63e399e08ecfed6a7025a1d34d59651075adb0b3",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1784,8 +1784,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
-          "size": 3788
+          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
+          "size": 4359
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -1989,8 +1989,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "a35e3e29901667399a0622d334f701c35af28a345fbc5f2b493ee5c513705d85",
-          "size": 57980
+          "sha256": "5086224acabfe4b8dbd7bbac607b5f832d78726f76504bd98ae3c28cc088ac39",
+          "size": 57975
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -6129,8 +6129,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
-          "size": 39318
+          "sha256": "f18bf55481f635cdced8cb2c9c96353f1feae92a87c19000990e21281438ebd7",
+          "size": 39816
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -6159,23 +6159,23 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "532a863e846723f6d2d146e5c0e5ad1d3724d747eeb2cdfd5c1c873e8add85a2",
-          "size": 17869
+          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
+          "size": 18325
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2e43cc45877c917a8a933d9503300a5b0e765cff24ffa3c22568baa5245f4ab0",
-          "size": 9888
+          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
+          "size": 10353
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
-          "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
-          "size": 5579
+          "sha256": "6bdd1538e054b881a27b66ab7b0b9bc7a9025e89242591bd02e87128c30340bf",
+          "size": 5939
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
-          "size": 39853
+          "sha256": "3f9f53ddcc9554c484377053a3bf076dbb4f89f7cca6f0c02d12dca09096657b",
+          "size": 40047
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -6633,8 +6633,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
-          "size": 3788
+          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
+          "size": 4359
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -6838,8 +6838,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "a35e3e29901667399a0622d334f701c35af28a345fbc5f2b493ee5c513705d85",
-          "size": 57980
+          "sha256": "5086224acabfe4b8dbd7bbac607b5f832d78726f76504bd98ae3c28cc088ac39",
+          "size": 57975
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -10978,8 +10978,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
-          "size": 39318
+          "sha256": "f18bf55481f635cdced8cb2c9c96353f1feae92a87c19000990e21281438ebd7",
+          "size": 39816
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -11008,23 +11008,23 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "532a863e846723f6d2d146e5c0e5ad1d3724d747eeb2cdfd5c1c873e8add85a2",
-          "size": 17869
+          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
+          "size": 18325
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2e43cc45877c917a8a933d9503300a5b0e765cff24ffa3c22568baa5245f4ab0",
-          "size": 9888
+          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
+          "size": 10353
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
-          "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
-          "size": 5579
+          "sha256": "6bdd1538e054b881a27b66ab7b0b9bc7a9025e89242591bd02e87128c30340bf",
+          "size": 5939
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
-          "size": 39853
+          "sha256": "3f9f53ddcc9554c484377053a3bf076dbb4f89f7cca6f0c02d12dca09096657b",
+          "size": 40047
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -17666,8 +17666,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
-          "size": 3788
+          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
+          "size": 4359
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -17871,8 +17871,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "a35e3e29901667399a0622d334f701c35af28a345fbc5f2b493ee5c513705d85",
-          "size": 57980
+          "sha256": "5086224acabfe4b8dbd7bbac607b5f832d78726f76504bd98ae3c28cc088ac39",
+          "size": 57975
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -22011,8 +22011,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
-          "size": 39318
+          "sha256": "f18bf55481f635cdced8cb2c9c96353f1feae92a87c19000990e21281438ebd7",
+          "size": 39816
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -22041,23 +22041,23 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "532a863e846723f6d2d146e5c0e5ad1d3724d747eeb2cdfd5c1c873e8add85a2",
-          "size": 17869
+          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
+          "size": 18325
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2e43cc45877c917a8a933d9503300a5b0e765cff24ffa3c22568baa5245f4ab0",
-          "size": 9888
+          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
+          "size": 10353
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
-          "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
-          "size": 5579
+          "sha256": "6bdd1538e054b881a27b66ab7b0b9bc7a9025e89242591bd02e87128c30340bf",
+          "size": 5939
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
-          "size": 39853
+          "sha256": "3f9f53ddcc9554c484377053a3bf076dbb4f89f7cca6f0c02d12dca09096657b",
+          "size": 40047
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -22518,8 +22518,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
-          "size": 3788
+          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
+          "size": 4359
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -22723,8 +22723,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "a35e3e29901667399a0622d334f701c35af28a345fbc5f2b493ee5c513705d85",
-          "size": 57980
+          "sha256": "5086224acabfe4b8dbd7bbac607b5f832d78726f76504bd98ae3c28cc088ac39",
+          "size": 57975
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -26863,8 +26863,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
-          "size": 39318
+          "sha256": "f18bf55481f635cdced8cb2c9c96353f1feae92a87c19000990e21281438ebd7",
+          "size": 39816
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -26893,23 +26893,23 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "532a863e846723f6d2d146e5c0e5ad1d3724d747eeb2cdfd5c1c873e8add85a2",
-          "size": 17869
+          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
+          "size": 18325
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2e43cc45877c917a8a933d9503300a5b0e765cff24ffa3c22568baa5245f4ab0",
-          "size": 9888
+          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
+          "size": 10353
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
-          "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
-          "size": 5579
+          "sha256": "6bdd1538e054b881a27b66ab7b0b9bc7a9025e89242591bd02e87128c30340bf",
+          "size": 5939
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
-          "size": 39853
+          "sha256": "3f9f53ddcc9554c484377053a3bf076dbb4f89f7cca6f0c02d12dca09096657b",
+          "size": 40047
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",
@@ -27370,8 +27370,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "a3ccd50d8a6aced8e2ede15d7fb95efdc390dbe9882b705ae8343eb5a3b89ac3",
-          "size": 3788
+          "sha256": "fdd60b5bf00b7f94fbae7cd726affc5a4ecce845850f31f123b767d12b09c394",
+          "size": 4359
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -27575,8 +27575,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "a35e3e29901667399a0622d334f701c35af28a345fbc5f2b493ee5c513705d85",
-          "size": 57980
+          "sha256": "5086224acabfe4b8dbd7bbac607b5f832d78726f76504bd98ae3c28cc088ac39",
+          "size": 57975
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -31715,8 +31715,8 @@
         },
         {
           "path": ".claude/skills/hoi4-map-states/SKILL.md",
-          "sha256": "5ebc9785f6aaa55b961ebff1558869711a462ace93e92381a64a5f6419ec283f",
-          "size": 39318
+          "sha256": "f18bf55481f635cdced8cb2c9c96353f1feae92a87c19000990e21281438ebd7",
+          "size": 39816
         },
         {
           "path": ".claude/skills/hoi4-map-states/references/map-geometry.md",
@@ -31745,23 +31745,23 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "532a863e846723f6d2d146e5c0e5ad1d3724d747eeb2cdfd5c1c873e8add85a2",
-          "size": 17869
+          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
+          "size": 18325
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2e43cc45877c917a8a933d9503300a5b0e765cff24ffa3c22568baa5245f4ab0",
-          "size": 9888
+          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
+          "size": 10353
         },
         {
           "path": ".claude/skills/hoi4-shared-git-commit/SKILL.md",
-          "sha256": "15ff85566fac01bae2bd126ff79e43ea92813eef057491bd5a9e039e4cef4c67",
-          "size": 5579
+          "sha256": "6bdd1538e054b881a27b66ab7b0b9bc7a9025e89242591bd02e87128c30340bf",
+          "size": 5939
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "0622781dd47a6e4c068bd93b28f386547fa0a6ffa49e1fd34ad39028b9be5622",
-          "size": 39853
+          "sha256": "3f9f53ddcc9554c484377053a3bf076dbb4f89f7cca6f0c02d12dca09096657b",
+          "size": 40047
         },
         {
           "path": ".claude/skills/hoi4-technology-doctrines/SKILL.md",

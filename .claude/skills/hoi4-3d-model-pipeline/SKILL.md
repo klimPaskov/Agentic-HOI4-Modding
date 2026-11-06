@@ -42,7 +42,7 @@ Each gate is defined once in the guide:
 - **Reference image**: one approved image per geometry task, visually reviewed
   by the parent before any paid call ([Exactly one reference image](references/production-guide.md#exactly-one-reference-image-per-meshy-geometry-task)).
 - **Checks**: gates fail closed and every role needs anatomical multi-phase
-  motion with exported-byte reimport proof ([Geometry, materials, rigging, and actions](references/production-guide.md#geometry-materials-rigging-and-actions)).
+  motion with exported-byte reimport proof. Sapient armed fighters (soldiers, riders, armed undead warriors, giants and other tool-using peoples) hold their weapon in hand, bound to a hand or forearm bone, and their attack clip swings it; a rigging fix moves the weapon into the hand, never removes it. Ents, mindless undead and animals attack with their own bodies. No two units of a mod share a library clip in any state (idle, move, attack, defend, retreat, death), riders and mounts included; the Meshy library is humanoid only, so mounts and other quadrupeds need their own authored gaits, distinct per mount ([Geometry, materials, rigging, and actions](references/production-guide.md#geometry-materials-rigging-and-actions)).
 - **Custom units**: defensibly sourced audio (including selection) and bespoke
   vanilla-green counters, or the package stays blocked ([counters](references/production-guide.md#custom-unit-counter-companion), [sound](references/production-guide.md#custom-unit-sound-design-companion)).
 

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add six workflow lessons to the skills that own them (L-012 to L-017 in `LESSONS.md`). An interface pass starts from an assembled-screen mockup, and every capture is read against a defect checklist before it is reported. Each icon socket gets its own art, and a duplicate check is never re-baselined. Sapient armed fighters keep their weapon in hand and no two units share a library clip. Sessions in a shared checkout revert only their own hunks. A hand-drawn reference map is followed for placement and shapes, and its omissions are filled by judgment and recorded.
 - Check 3D units for holes and deformation from the exported bytes. `check_unit_files.py` now welds the mesh and measures open edges and loops, triangles facing the wrong way, inside-out parts, and surfaces joining body parts that move apart (a hand fused to a thigh), then skins every frame of every `.anim` as the game does and measures stretched and squashed edges and ground contact. New `lib/pdx_deform.py` does the skinning without Blender. The limits are the worst values of the game's own units, measured by the new `calibrate_deformation.py` over 44 soldier, rider and animal meshes (173 clips), 75 land vehicles and 69 planes and ships, and stored in `config/deformation_calibration.json`. Rules: UNIT-HOLE, UNIT-WINDING, UNIT-INSIDE-OUT, UNIT-BRIDGE, UNIT-ANIM-STRETCH, UNIT-ANIM-GROUND. On the Chaos Redux units they find the fused arms of a creature (157 bridge edges against vanilla's 12), flipped triangles and stretched cloth that the earlier checks passed.
 
 ## 2026-11-06.1
