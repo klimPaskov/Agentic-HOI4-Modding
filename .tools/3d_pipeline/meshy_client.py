@@ -46,7 +46,7 @@ REQUIRED_KEY_MESSAGE = (
 )
 
 
-# Optional Text-to-Motion tools as 0.6.7 registers them, with the arguments the client sends.
+# Optional Text-to-Motion tools as 0.6.9 registers them, with the arguments the client sends.
 MOTION_TOOL_ARGUMENTS: Dict[str, set] = {
     "meshy_text_to_motion": {"prompt", "mode", "duration"},
     "meshy_list_animations": set(),

@@ -278,6 +278,19 @@ class UnitTypeActions(unittest.TestCase):
         self.assertEqual({row["action_style"] for row in spec["required_actions"]} - {None}, {
             "quadruped_idle", "quadruped_trot", "quadruped_charge", "quadruped_rear", "quadruped_gallop", "quadruped_collapse"})
 
+    def test_a_mount_generation_sends_no_humanoid_pose(self) -> None:
+        import run_pilot
+        from meshy_client import image_to_3d_arguments
+
+        spec = run_pilot.prepare_spec(
+            {"unit_type": "mount", "asset_id": "x.mount", "runtime_stem": "mount", "meshy_pose_mode": "a-pose"},
+            require_budget=False,
+        )
+        self.assertIsNone(spec["meshy_pose_mode"])
+        self.assertNotIn("pose_mode", image_to_3d_arguments(Path("horse.png"), spec["generation"], spec["meshy_pose_mode"]))
+        rider = run_pilot.apply_unit_type({"unit_type": "rider", "meshy_pose_mode": "a-pose"})
+        self.assertEqual(rider["meshy_pose_mode"], "a-pose")
+
     def test_mounts_plan_a_paid_remesh_and_humanoids_defer_raw_topology(self) -> None:
         import run_pilot
 
