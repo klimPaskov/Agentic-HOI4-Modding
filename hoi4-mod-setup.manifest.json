@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "beea72194fc8ddc9bc2a00f2e5ef4696f9c26548",
+  "generated_for_revision": "fd8eed04a004fb823348572314437e2ab860531d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -32848,7 +32848,7 @@
           "source_repository": "https://github.com/klimPaskov/hoi4-imagegen-mcp",
           "source_revision": null,
           "package_name": "hoi4-imagegen",
-          "package_version": "0.3.2",
+          "package_version": "0.3.4",
           "package_tree_sha256": null,
           "source_tree_sha256": null,
           "package_lock_sha256": null,
@@ -32969,57 +32969,57 @@
           ],
           "requires_primary_coding_environment": null,
           "release_binary": {
-            "version": "0.3.2",
+            "version": "0.3.4",
             "install_root": ".tools/image_generation/hoi4-imagegen",
             "targets": {
               "x86_64-pc-windows-msvc": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.2/hoi4-imagegen-v0.3.2-x86_64-pc-windows-msvc.zip",
-                "sha256": "c17958f15474601d50d5eed6a5edf5c177814d2be80571fc6d4d498e4b881eb9",
-                "size": 18495432,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.4/hoi4-imagegen-v0.3.4-x86_64-pc-windows-msvc.zip",
+                "sha256": "fb4e6a1c50b34a11dfb7312b0365ceb2b131027ebc71ee3cb8dfdd3f032a4338",
+                "size": 19267992,
                 "archive": "zip",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.2-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
-                  "cli": "hoi4-imagegen-v0.3.2-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
+                  "mcp": "hoi4-imagegen-v0.3.4-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
+                  "cli": "hoi4-imagegen-v0.3.4-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
                 }
               },
               "aarch64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.2/hoi4-imagegen-v0.3.2-aarch64-apple-darwin.tar.gz",
-                "sha256": "56c6e93c2578ddea3d3e1c82de933365bd435e334726ca73129759dedcbdce3c",
-                "size": 18545886,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.4/hoi4-imagegen-v0.3.4-aarch64-apple-darwin.tar.gz",
+                "sha256": "178bec77c013ce3ea2e37ccce4095c1a2e928dd7f28b404f2cbb563966ab53a8",
+                "size": 19288079,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.2-aarch64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.2-aarch64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.4-aarch64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.4-aarch64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.2/hoi4-imagegen-v0.3.2-x86_64-apple-darwin.tar.gz",
-                "sha256": "704968579b5a5351c9c87423d4fb3deb3a4de7b9f2904bf4fe5d09b3ba0cef1e",
-                "size": 20427208,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.4/hoi4-imagegen-v0.3.4-x86_64-apple-darwin.tar.gz",
+                "sha256": "06842f3c06ef1c4202b4c42a5f75ebb113f3fdf4bf3d28117e0c761b11d86a22",
+                "size": 21183055,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.2-x86_64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.2-x86_64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.4-x86_64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.4-x86_64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.2/hoi4-imagegen-v0.3.2-x86_64-unknown-linux-gnu.tar.gz",
-                "sha256": "a46d5fe35998d36b28569632577c297269f9f664b3b99d4708911a9ff8fb2813",
-                "size": 22687471,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.4/hoi4-imagegen-v0.3.4-x86_64-unknown-linux-gnu.tar.gz",
+                "sha256": "422d06d9e655be313e64406976f1c7e385fcf0002016508a6bf0e490d54d2384",
+                "size": 23499592,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.2-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.2-x86_64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.4-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.4-x86_64-unknown-linux-gnu/hoi4-imagegen"
                 }
               },
               "aarch64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.2/hoi4-imagegen-v0.3.2-aarch64-unknown-linux-gnu.tar.gz",
-                "sha256": "3a2ef8c690992f0fa6001c4252a674e586fec3ed6b4ad3de05cb724b421d660f",
-                "size": 21813665,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.4/hoi4-imagegen-v0.3.4-aarch64-unknown-linux-gnu.tar.gz",
+                "sha256": "7e4977a7642aa6de3980ada37d72c2a1c345b2c1b0c105a14c392c8c7da08486",
+                "size": 22613669,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.2-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.2-aarch64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.4-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.4-aarch64-unknown-linux-gnu/hoi4-imagegen"
                 }
               }
             }
@@ -33298,7 +33298,7 @@
             "hoi4.image_unit",
             "hoi4.image_interface"
           ],
-          "version": "0.3.2"
+          "version": "0.3.4"
         }
       },
       {
