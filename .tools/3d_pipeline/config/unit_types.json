@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "note": "What each kind of land unit needs: its profile, rig route, HOI4 animation roles, the Meshy library clips for each role, the entity states that play them, and the bones an entity attaches to. A job names one type with `unit_type`. Library clips are [action_id, key] pairs read from meshy_list_animations on 2026-11-05; the runner looks the ids up again (free) and refuses a clip whose key changed. `_inplace` clips have no root motion, so the unit does not slide.",
+  "note": "What each kind of land unit needs: its profile, rig route, HOI4 animation roles, the Meshy library clips for each role, the entity states that play them, and the bones an entity attaches to. A job names one type with `unit_type`. Library clips are [action_id, key] pairs read from meshy_list_animations on 2026-11-05; the runner looks the ids up again (free) and refuses a clip whose key changed. `_inplace` clips have no root motion, so the unit does not slide. `body` names the type's body preset in body_presets.json, which measure_body.py checks against the measured generation.",
   "engine_limits": {
     "max_bones_per_skinned_mesh": 50,
     "max_influences_per_vertex": 4,
@@ -19,6 +19,7 @@
   "types": {
     "infantry_melee": {
       "description": "Foot soldier with a sword, axe or mace",
+      "body": "humanoid",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
@@ -105,6 +106,7 @@
     },
     "spearman": {
       "description": "Foot soldier with a spear or pike",
+      "body": "humanoid",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
@@ -191,6 +193,7 @@
     },
     "archer": {
       "description": "Foot archer or bowman; the bow is part of the body or a separate attachment",
+      "body": "humanoid",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
@@ -277,6 +280,7 @@
     },
     "heavy_brute": {
       "description": "Large humanoid with a club, hammer or great axe: giants, trolls, ogres",
+      "body": "large_biped",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
@@ -363,6 +367,7 @@
     },
     "beast_biped": {
       "description": "Unarmed beast that walks upright and fights with its fists or claws: yeti, ghouls",
+      "body": "large_biped",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
@@ -453,6 +458,7 @@
     },
     "tree_creature": {
       "description": "Slow walking tree or wood spirit with branch arms: ents",
+      "body": "large_biped",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
@@ -543,6 +549,7 @@
     },
     "rider": {
       "description": "The rider of a mounted unit. Meshy rigs the standing body; Blender seats it: the legs take a riding pose and the upper body plays the clip, so the attack is a swing from the saddle",
+      "body": "humanoid",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "rider",
@@ -619,6 +626,7 @@
     },
     "mounted_archer": {
       "description": "The rider of a horse archer unit",
+      "body": "humanoid",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "rider",
@@ -686,6 +694,7 @@
     },
     "mount": {
       "description": "Four-legged riding animal: horse, warhorse, camel, dead horse. Blender rigs it (Meshy rigs bipeds only) with a Saddle_Node bone the rider attaches to",
+      "body": "quadruped",
       "profile": "nonhumanoid_creature",
       "rig": "blender_quadruped",
       "entity_template": "mount",
@@ -721,6 +730,7 @@
     },
     "quadruped_beast": {
       "description": "Four-legged creature without a rider: wolves, war beasts, elephants",
+      "body": "quadruped",
       "profile": "nonhumanoid_creature",
       "rig": "blender_quadruped",
       "entity_template": "infantry",

@@ -28,17 +28,29 @@ Blender work costs nothing. Your agent asks you once for a credit budget per uni
 
 Pick one type per unit. The type decides the rig, the animations and how the unit is wired. The full list is in `.tools/3d_pipeline/config/unit_types.json`.
 
-| Type | For | Rig | Animations |
-| --- | --- | --- | --- |
-| `infantry_melee` | swords, axes, maces | Meshy humanoid | sword slash, parry, wounded retreat, fall |
-| `spearman` | spears and pikes | Meshy humanoid | spear walk, thrust, two-handed parry |
-| `archer` | bows | Meshy humanoid | archery shot, aim and scan, step back with bow |
-| `heavy_brute` | giants, trolls, ogres | Meshy humanoid | slow heavy walk, hammer swing, ground stomp |
-| `beast_biped` | yeti, ghouls | Meshy humanoid | lumbering walk, two-fist strike, roar |
-| `tree_creature` | ents | Meshy humanoid | unsteady walk, ground slam |
-| `rider`, `mounted_archer` | the person on a mount | Meshy humanoid, seated by Blender | the upper body plays the clip, the legs stay astride |
-| `mount` | horses, camels, dead horses | Blender quadruped with a `Saddle_Node` | idle, trot, charge, rear, gallop, collapse |
-| `quadruped_beast` | wolves, war beasts, elephants | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
+| Type | For | Body | Rig | Animations |
+| --- | --- | --- | --- | --- |
+| `infantry_melee` | swords, axes, maces | humanoid | Meshy humanoid | sword slash, parry, wounded retreat, fall |
+| `spearman` | spears and pikes | humanoid | Meshy humanoid | spear walk, thrust, two-handed parry |
+| `archer` | bows | humanoid | Meshy humanoid | archery shot, aim and scan, step back with bow |
+| `heavy_brute` | giants, trolls, ogres | large biped | Meshy humanoid | slow heavy walk, hammer swing, ground stomp |
+| `beast_biped` | yeti, ghouls | large biped | Meshy humanoid | lumbering walk, two-fist strike, roar |
+| `tree_creature` | ents | large biped | Meshy humanoid | unsteady walk, ground slam |
+| `rider`, `mounted_archer` | the person on a mount | humanoid | Meshy humanoid, seated by Blender | the upper body plays the clip, the legs stay astride |
+| `mount` | horses, camels, dead horses | quadruped | Blender quadruped with a `Saddle_Node` | idle, trot, charge, rear, gallop, collapse |
+| `quadruped_beast` | wolves, war beasts, elephants | quadruped | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
+
+### Check the body before you rig it
+
+The body column names a body preset (`.tools/3d_pipeline/config/body_presets.json`). After Meshy makes the model, and before you pay for a rig or clips, measure it:
+
+```
+py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
+```
+
+It counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles: such a unit is rigged and animated live in Blender (see [Author animations live in Blender](#author-animations-live-in-blender)). It reads files only and costs nothing.
+
+Give the job its anatomy, answered from the reference image when you review it, so the check knows what a measurement cannot see: `"anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false}` in the job's registry entry. When you know better than the measurement, set `"body_preset"` and say why in `"body_preset_reason"`.
 
 Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. Walks use Meshy's in-place clips, so the unit does not slide.
 
