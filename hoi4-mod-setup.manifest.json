@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4fc9fe4d7661574657c85ee0431ee51c4cb24420",
+  "generated_for_revision": "ef354b15d19cc2f9e9478f3a9e96f90bd97b3ff9",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -13600,8 +13600,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "24028507f0672056b84003489e2227c1df280dac70947c445fd2c84ba7d6f5a5",
-          "size": 541167
+          "sha256": "221f0df0cef8e0c43165f5a2e320b56ed5a54d66cfe45113e6c68a38765441a8",
+          "size": 542775
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -13744,14 +13744,24 @@
           "size": 4502
         },
         {
+          "path": ".tools/3d_pipeline/calibrate_deformation.py",
+          "sha256": "bedaa96f995828fe6f29cb120d39db1067eca97747d7f86665fab42edc41bbee",
+          "size": 8223
+        },
+        {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "f41632937952a0fa2720879cecda35d5951e30e4f1b0570e5989f00d05238f8b",
-          "size": 21238
+          "sha256": "a262050eb03b1770e800eec2c1ce8ca56c598e91f1c3df3ac9a5d9a3fd75d65a",
+          "size": 27685
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
           "sha256": "9e4abbe7267a00b48fce0413f41ad6881ba51c51f4a861df4ffb09eaec429ee9",
           "size": 16622
+        },
+        {
+          "path": ".tools/3d_pipeline/config/deformation_calibration.json",
+          "sha256": "491950972d6027cf224851db59ebdccf87cf3a0b0296887d5ddf16403e641088",
+          "size": 5295
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_pricing.json",
@@ -13814,6 +13824,11 @@
           "size": 7875
         },
         {
+          "path": ".tools/3d_pipeline/lib/pdx_deform.py",
+          "sha256": "08ac655e9bc08432927d667415101f8c76c036fecfb3eefc91bded763f57c935",
+          "size": 19985
+        },
+        {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
           "sha256": "bd4da02d226e5e7638e45c0cfd650d74fcc3ecc0e2a1e52fb6002f2d694886ec",
           "size": 14405
@@ -13872,6 +13887,11 @@
           "path": ".tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py",
           "sha256": "2d8f96ddbe2b8378a9ba8e4a5a906cc74f367ac8839347e69016cbf273506314",
           "size": 3987
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/blender_winding_integration.py",
+          "sha256": "4562c3b507d99a27420c71766dc2dcadad86b46dbbbf53a83c6791bae1f0130d",
+          "size": 2662
         },
         {
           "path": ".tools/3d_pipeline/tests/fixtures/skeletal_material_streams.md",
@@ -14469,6 +14489,11 @@
           "size": 10718
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
+          "sha256": "5af55f0c4c1300e76407c445abf466685f88214ddca92759320ef805d5ffd6d0",
+          "size": 12838
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
           "sha256": "0076ecf1b1bc62194b1847bf8fd1b6f3c8b6190eff49ff3d04554e2f179a200c",
           "size": 6191
@@ -14632,6 +14657,11 @@
           "path": ".tools/3d_pipeline/tests/test_visual_preflight.py",
           "sha256": "21c6dcaed66f23661d82f4e945bb16671980e3cb58109e70f50de475962827e4",
           "size": 11916
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_winding_regression.py",
+          "sha256": "a483925a56791b22c95fdca3a0e93afa1245bafd0391dabe7ddac9dfbe4eb2d5",
+          "size": 1599
         },
         {
           "path": ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py",
