@@ -140,10 +140,10 @@ The checks pass anything within vanilla's limits, so a reviewer can still see de
 | A small hole (magenta, or a cyan rim on the diagnostics sheet) | `repair_unit.py ... --repairs holes --max-hole-edges 32`, then check the copy |
 | Surface that tears or smears where two body parts meet, red on the diagnostics sheet in every clip | `repair_unit.py ... --repairs bridges weights` |
 | A foot above or below the ground | `repair_unit.py ... --repairs ground` |
-| The weapon through the head or body | `fit_prop.py` again with another `--grip`, `--butt` or a shorter `--length`; a two-handed hold is made by hand |
+| The weapon through the head or body | `fit_prop.py` again on the same copy (it replaces the weapon it fitted before), first with a shorter `--length` such as 0.4, then another `--grip` between 0.1 and 0.3; a two-handed hold is made by hand |
 | A part that tears or crushes only in some clips (a death or an attack that twists the torso hard), or a clip that does not read as its role | No script fixes the motion itself: author those clips again in Blender ([Author animations live in Blender](#author-animations-live-in-blender)), or ask the user before paying for other clips |
 
-Fix the free ones first, render again and ask a new reviewer, then take what is left to Blender.
+Fix the free ones first, in this order: the mesh repairs, then the weapon, since `repair_unit.py` runs on whatever the copy holds. Render again and ask a new reviewer, then take what is left to Blender.
 
 The renders need Blender with io_pdx_mesh, which HOI4 Mod Setup installs. Set `BLENDER_EXE` to use a particular Blender.
 
