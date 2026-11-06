@@ -11,8 +11,8 @@ everything a preset cannot do, under the same checks and the same independent re
   job's unit type.
 - A role needs motion of its own: no library or preset clip reads as the role on this body, the unit
   must not share clips (UNIT-ANIM-SHARED), or a clip failed the independent review twice.
-- A project requires it. Chaos Redux authors new rigs and every new animation live (decisions 3D-3 and
-  3D-5). ZIN gives every unit unique clips.
+- A project requires it: some author every new rig and animation live, others give every unit
+  unique clips. Follow the project's own rules where they are stricter.
 
 Free live work comes before any paid clip or new generation.
 

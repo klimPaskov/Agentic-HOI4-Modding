@@ -16,7 +16,7 @@ and key what you name at the call site. None of them makes keys from a table, a 
 frames or another clip, so authoring stays live (decisions 3D-3 and 3D-5). Weight helpers correct
 existing weights only.
 
-Rules learned on the Chaos Redux and ZIN units:
+Rules learned while authoring units this way:
 
 - Pose, key and measure in the same call. Between calls the session evaluates the action again, so
   an unkeyed pose set in one call is gone in the next.
@@ -278,8 +278,8 @@ def move(bone: str, dx: float = 0.0, dy: float = 0.0, dz: float = 0.0) -> None:
 def lean(bones: Sequence[str], degrees: float, shares: Optional[Sequence[float]] = None, axis=(1.0, 0.0, 0.0)) -> None:
     """Pitch the body by `degrees`, spread over a spine chain (lowest bone first) by `shares`.
 
-    The ZIN yeti's head lift tore its chin fur when the whole pitch sat on the neck; spreading it
-    0.3, 0.35, 0.35 over Spine02, Spine01 and Spine read just as upright without the tear.
+    A yeti's head lift tore its chin fur when the whole pitch sat on the neck; spreading it 0.3, 0.35,
+    0.35 over Spine02, Spine01 and Spine read just as upright without the tear.
     """
 
     shares = list(shares or [1.0 / len(bones)] * len(bones))
@@ -514,8 +514,8 @@ def seam_vertices(mesh_name: str, first: str, second: str, hard: float = 0.1) ->
 def weight_seam(mesh_name: str, vertices: Sequence[int], pelvis: str, near_far: Sequence[str], shares=(0.40, 0.36, 0.24)) -> int:
     """Re-weight seam vertices across the pelvis and both limbs: pelvis, the limb the vertex followed, the other.
 
-    The portal raider's crotch tore to 20.8 % of its height while each side followed one thigh; pelvis
-    0.40, near thigh 0.36 and far thigh 0.24 brought its worst stretch from 25.5 % to about 14 %.
+    A soldier's crotch tore to 20.8 % of its height while each side followed one thigh; pelvis 0.40,
+    near thigh 0.36 and far thigh 0.24 brought its worst stretch from 25.5 % to about 14 %.
     Returns the number of vertices changed.
     """
 
