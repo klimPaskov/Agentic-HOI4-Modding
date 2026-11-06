@@ -23,6 +23,19 @@ highest frames, in flat colours that show what the checks measure: grey is fine,
 surface stretched or squashed by 1.3 to 1.5 times or more, cyan is an open edge, blue is below the
 ground, magenta is a hole or a back face. `--no-diagnostics` skips them. Both forms print a one-line
 stage verdict and write it to `<out>/verdict_render.json` or `<out>/verdict.json`.
+
+Review rounds (decision 3D-7). The bar stays at no defects, and rounds converge because every reviewer
+gets the same request:
+
+- `--note TEXT` (repeatable) or `--note-file FILE` adds fixed notes for the unit, the same every round,
+  for example that a ragged, torn hem is the unit's intended look. Keep the file in the job folder.
+- The reviewer goes through the quality bar item by item and ends the reply with a `CHECKLIST:` block,
+  one line per item. A reply without every item is recorded as a fail. `--no-checklist` drops it.
+- `--clips attack death` makes an intermediate round: only those clips and the rest pose are rendered
+  and judged. Use it after changing some clips. A unit is accepted only after a full round, without
+  `--clips`, by a new reviewer. The round is recorded in `<out>/review_scope.json` and in the verdict.
+
+The camera angles are fixed (`VIEWS`), so every round shows the same views.
 """
 
 from __future__ import annotations
@@ -183,39 +196,118 @@ def build_diagnostic_sheet(render_dir: Path, sheet_dir: Path, clip: dict) -> Pat
     return path
 
 
-def write_request(out: Path, unit: str, sheets: List[Path], tile_dir: Path) -> Path:
+CHECKLIST_ITEMS = 7  # the quality bar's items in config/visual_review_prompt.md
+SCOPE_FILE = "review_scope.json"
+
+
+def select_clips(anims: List[Path], stem: str, wanted: Optional[List[str]]) -> List[Path]:
+    """The `.anim` files named by role (`attack`) or by file stem (`<unit>_attack`); all when `wanted` is empty."""
+
+    if not wanted:
+        return anims
+    names = {name.lower() for name in wanted}
+    chosen = [anim for anim in anims if anim.stem.lower() in names or anim.stem[len(stem) + 1 :].lower() in names]
+    found = {anim.stem.lower() for anim in chosen} | {anim.stem[len(stem) + 1 :].lower() for anim in chosen}
+    missing = sorted(names - found)
+    if missing:
+        raise SystemExit(f"no clip of {stem} is named {', '.join(missing)}; its clips are {', '.join(anim.stem for anim in anims)}")
+    return chosen
+
+
+def scope_text(notes: List[str], checklist: bool, clips: Optional[List[str]]) -> str:
+    """The fixed part of the request that 3D-7 adds: notes, the checklist and the round's scope."""
+
+    parts = []
+    if notes:
+        lines = "\n".join(f"- {note.strip()}" for note in notes if note.strip())
+        parts.append(
+            "## Fixed notes for this unit (the same every round)\n\n"
+            f"{lines}\n\n"
+            "These notes describe the unit's intended design. Judge everything they do not name as usual, including any hole in the body."
+        )
+    if checklist:
+        items = "\n".join(f"{number}: ok | defects" for number in range(1, CHECKLIST_ITEMS + 1))
+        parts.append(
+            "## Checklist\n\n"
+            f"Go through the quality bar item by item, 1 to {CHECKLIST_ITEMS}, for every sheet you open. After the DEFECTS list, "
+            "end your reply with this block, one line per item: `ok` when you found nothing of that kind, `defects` when you listed some.\n\n"
+            f"```\nCHECKLIST:\n{items}\n```"
+        )
+    if clips:
+        parts.append(
+            "## This round\n\n"
+            f"This is an intermediate round. The sheets below are the rest pose and only these clips: {', '.join(clips)}. "
+            "Judge only them. The other clips are judged again in a later full round."
+        )
+    else:
+        parts.append("## This round\n\nThis is a full review. Open every sheet below.")
+    return "\n\n".join(parts)
+
+
+def write_request(
+    out: Path,
+    unit: str,
+    sheets: List[Path],
+    tile_dir: Path,
+    notes: Optional[List[str]] = None,
+    checklist: bool = True,
+    clips: Optional[List[str]] = None,
+) -> Path:
     prompt = PROMPT.read_text(encoding="utf-8")
     listing = "\n".join(f"- `{sheet.resolve()}`" for sheet in sheets if not sheet.stem.endswith("_diagnostics"))
     diagnostics = "\n".join(f"- `{sheet.resolve()}`" for sheet in sheets if sheet.stem.endswith("_diagnostics"))
     if diagnostics:
         listing += f"\n\nDiagnostic sheets (flat colours; {LEGEND}):\n\n{diagnostics}"
     request = (
-        f"{prompt.rstrip()}\n\n## This review\n\nUnit: `{unit}`\n\nSheets (open every one):\n\n{listing}\n\n"
+        f"{prompt.rstrip()}\n\n{scope_text(notes or [], checklist, clips)}\n\n## This review\n\nUnit: `{unit}`\n\nSheets (open every one):\n\n{listing}\n\n"
         f"Single tiles, if a sheet is too small to judge a region: `{tile_dir.resolve()}` (`<clip>_<frame>_<view>.png`). "
         "Open nothing else.\n"
     )
     path = out / "REVIEW_REQUEST.md"
     path.write_text(request, encoding="utf-8", newline="\n")
+    scope = {"round": "intermediate" if clips else "full", "clips": list(clips or []), "checklist": bool(checklist), "notes": list(notes or [])}
+    (out / SCOPE_FILE).write_text(json.dumps(scope, indent=1) + "\n", encoding="utf-8", newline="\n")
     return path
 
 
-def parse_verdict(reply: str) -> dict:
-    """Read one unit's block of a reviewer reply. Pass needs `VERDICT: pass` and `DEFECTS: none`."""
+def parse_verdict(reply: str, checklist: bool = False) -> dict:
+    """Read one unit's block of a reviewer reply. Pass needs `VERDICT: pass` and `DEFECTS: none`.
+
+    With `checklist`, the reply must also answer every quality-bar item in a `CHECKLIST:` block.
+    """
 
     verdict = re.search(r"^\s*VERDICT:\s*(pass|fail)\b", reply, re.I | re.M)
     defects = re.findall(r"^\s*-\s*\[[^\]]*\].*$", reply, re.M)
     none = re.search(r"^\s*DEFECTS:\s*none\b", reply, re.I | re.M)
     passed = bool(verdict and verdict.group(1).lower() == "pass" and none and not defects)
-    return {"verdict": "pass" if passed else "fail", "stated_verdict": verdict.group(1).lower() if verdict else None, "defects": len(defects)}
+    result = {"verdict": "pass" if passed else "fail", "stated_verdict": verdict.group(1).lower() if verdict else None, "defects": len(defects)}
+    if checklist:
+        block = reply[reply.upper().rfind("CHECKLIST:"):] if "CHECKLIST:" in reply.upper() else ""
+        answers = {int(number): answer.lower() for number, answer in re.findall(r"^\s*([1-9])\s*[:.]\s*(ok|defects?)\b", block, re.I | re.M)}
+        missing = [number for number in range(1, CHECKLIST_ITEMS + 1) if number not in answers]
+        result["checklist"] = {str(number): answers[number] for number in sorted(answers)}
+        if missing:
+            result["checklist_missing"] = missing
+            result["verdict"] = "fail"
+    return result
 
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def read_scope(out: Path) -> dict:
+    try:
+        return json.loads((out / SCOPE_FILE).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {"round": "full", "clips": [], "checklist": False, "notes": []}
+
+
 def record(out: Path, reply_path: Path) -> dict:
     reply = reply_path.read_text(encoding="utf-8")
-    result = parse_verdict(reply)
+    scope = read_scope(out)
+    result = parse_verdict(reply, bool(scope.get("checklist")))
+    result.update({"round": scope.get("round", "full"), "clips": scope.get("clips", [])})
     sheets = sorted((out / "sheets").glob("*.png"))
     if not sheets:
         raise SystemExit(f"no sheets in {out / 'sheets'}; render the unit first")
@@ -231,7 +323,18 @@ def record(out: Path, reply_path: Path) -> dict:
     return result
 
 
-def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path], frames: int, size: int, diagnostics: bool = True) -> List[Path]:
+def render(
+    folder: Path,
+    stem: Optional[str],
+    out: Path,
+    mod_root: Optional[Path],
+    frames: int,
+    size: int,
+    diagnostics: bool = True,
+    notes: Optional[List[str]] = None,
+    checklist: bool = True,
+    only: Optional[List[str]] = None,
+) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
     mesh_path = next((mesh for mesh in meshes if mesh.stem == stem), meshes[0] if meshes else None)
@@ -239,7 +342,7 @@ def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path
         raise SystemExit(f"no .mesh in {folder}")
     mesh = pdx_deform.load_mesh(mesh_path)
     clips = []
-    for anim in owned_anims(folder, mesh_path.stem, stems):
+    for anim in select_clips(owned_anims(folder, mesh_path.stem, stems), mesh_path.stem, only):
         try:
             entry = {"name": anim.stem, "path": str(anim.resolve()), "frames": pick_frames(mesh, anim, frames)}
             if diagnostics:
@@ -271,7 +374,7 @@ def render(folder: Path, stem: Optional[str], out: Path, mod_root: Optional[Path
     if "REVIEW_RENDERED" not in completed.stdout:
         raise SystemExit(f"Blender did not finish the renders; see {out / 'blender.log'}")
     sheets = build_sheets(tile_dir, out / "sheets")
-    write_request(out, mesh_path.stem, sheets, tile_dir)
+    write_request(out, mesh_path.stem, sheets, tile_dir, notes, checklist, only)
     return sheets
 
 
@@ -285,23 +388,41 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--size", type=int, default=384, help="tile size in pixels")
     parser.add_argument("--record", type=Path, help="record a reviewer's reply instead of rendering")
     parser.add_argument("--no-diagnostics", action="store_true", help="skip the flat-colour diagnostics sheets")
+    parser.add_argument("--note", action="append", default=[], help="a fixed note for the reviewer, the same every round, such as a torn hem that is the intended look (repeatable)")
+    parser.add_argument("--note-file", type=Path, help="a file of fixed notes, one per line (keep it in the job folder so every round uses it)")
+    parser.add_argument("--checklist", action=argparse.BooleanOptionalAction, default=True, help="ask for the quality bar item by item and fail a reply without it (default on)")
+    parser.add_argument("--clips", nargs="+", metavar="CLIP", help="an intermediate round: render and judge only these clips (roles or file stems) and the rest pose")
     args = parser.parse_args(argv)
     out = args.out
     unit = args.stem or next((mesh.stem for mesh in sorted(args.folder.glob("*.mesh"))), args.folder.name)
     if args.record:
         result = record(out, args.record)
         passed = result["verdict"] == "pass"
+        if passed and result["round"] == "intermediate":
+            steps = [
+                f"The changed clips pass. Before acceptance, run a full round with a new reviewer: {stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py "
+                f"{stage_verdict.quote(args.folder.as_posix())} --out <a new review folder> (no --clips, the same notes)"
+            ]
+        elif passed:
+            steps = []
+        elif result.get("checklist_missing"):
+            steps = [f"The reply does not answer checklist item(s) {', '.join(map(str, result['checklist_missing']))}: ask a new reviewer with the same request."]
+        else:
+            steps = ["Fix every listed defect at its cause, export again, then render the changed clips (--clips) and ask a new reviewer."]
         stage_verdict.write(
             stage_verdict.verdict(
                 "review", passed, unit,
-                outputs={"verdict": str(out / "verdict.json"), "reply": str(out / "review_reply.md")},
+                outputs={"verdict": str(out / "verdict.json"), "reply": str(out / "review_reply.md"), "round": result["round"], "clips": result["clips"]},
                 findings=[{"rule": "REVIEW-DEFECT", "file": "review_reply.md", "message": f"{result['defects']} defect(s) listed by the reviewer"}] if not passed else [],
-                next_steps=[] if passed else ["Fix every listed defect at its cause, export again, then render and ask a new reviewer."],
+                next_steps=steps,
             ),
             None,
         )
         return 0 if passed else 1
-    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size, not args.no_diagnostics)
+    notes = list(args.note)
+    if args.note_file:
+        notes += [line.strip().lstrip("-").strip() for line in args.note_file.read_text(encoding="utf-8").splitlines() if line.strip()]
+    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size, not args.no_diagnostics, notes, args.checklist, args.clips)
     request = out / "REVIEW_REQUEST.md"
     stage_verdict.write(
         stage_verdict.verdict(
