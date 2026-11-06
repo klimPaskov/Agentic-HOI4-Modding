@@ -109,6 +109,24 @@ The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix
 
 The renders need Blender with io_pdx_mesh, which HOI4 Mod Setup installs. Set `BLENDER_EXE` to use a particular Blender.
 
+## Repair an exported unit for free
+
+`repair_unit.py` fixes the mesh faults the checks name, in Blender, without Meshy:
+
+```
+py -3.13 -B .tools/3d_pipeline/repair_unit.py gfx/models/units/<unit> --out <job folder>/repair --repairs winding bridges
+```
+
+| Repair | Fixes |
+|---|---|
+| `winding` | Triangles facing the wrong way and inside-out parts (UNIT-WINDING, UNIT-INSIDE-OUT) |
+| `bridges` | Surfaces fusing body parts that move apart, such as an arm pressed into the hips. The joining faces are cut and both sides are closed (UNIT-BRIDGE, and the stretch it causes). A bridge inside one continuous skin, such as an ear root between head and shoulder, is not cut: the report lists it under `weight_seams`, and it needs blended weights instead |
+| `holes` | Small open loops, up to `--max-hole-edges` edges (UNIT-HOLE) |
+| `weights` | Hard weight edges inside one skin: the existing weights are blended over a few rings around each weight seam, then each vertex keeps at most four influences |
+| `ground` | Feet off or under the ground in a clip: the root bone's existing translation keys are shifted so the lowest point meets the ground in every frame. A death clip is only lifted where it sinks (UNIT-ANIM-GROUND). Needs no Blender |
+
+Repairs never make new bones, a new weight set or new keyframes: a clip that does not read as its role, or a prop that passes through the body, needs its motion authored again in Blender. It writes the repaired copy to `<job folder>/repair/files` and leaves `gfx/` alone. The skeleton, materials and the weights of every vertex it does not cut stay as they were, so the unit's `.anim` files still play. `repair_report.json` lists what changed and the check results before and after. Review the copy with `review_unit.py`, and copy it into `gfx/` only after a fresh reviewer passes it.
+
 ## When something fails
 
 Ask where a unit stands at any time. This reads files only and costs nothing:
