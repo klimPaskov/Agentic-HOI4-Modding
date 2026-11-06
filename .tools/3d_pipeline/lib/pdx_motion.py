@@ -292,6 +292,38 @@ def body_poses(mesh: SkinnedMesh, anim: Animation) -> np.ndarray:
     return (posed - centre) / max(mesh.height, 1e-6)
 
 
+@dataclass
+class FastestTurn:
+    degrees: float  # the largest turn of one joint between two frames, scaled to 30 frames a second
+    joint: str = ""
+    frame: int = -1  # the frame the turn ends on
+
+
+def fastest_turn(mesh: SkinnedMesh, anim: Animation) -> FastestTurn:
+    """The largest rotation any joint that skins vertices makes from one frame to the next.
+
+    Keys on opposite sides of the quaternion sphere make Blender turn the long way between them, and
+    the baked samples then swing a limb or a held polearm most of a circle in a frame or two. Joints
+    that skin nothing (attach nodes) are skipped: vanilla flips a hand node half a turn in one frame.
+    The angle is scaled to 30 frames a second, so clips at other rates compare.
+    """
+
+    skinning = {mesh.bones[index] for index in np.unique(mesh.joints[mesh.weights > 0]) if 0 <= index < len(mesh.bones)}
+    best = FastestTurn(0.0)
+    scale = (anim.fps / 30.0) if getattr(anim, "fps", 0) else 1.0
+    for joint, channel in anim.channels.items():
+        q = channel["q"]
+        if joint not in skinning or len(q) < 2:
+            continue
+        q = q / np.maximum(np.linalg.norm(q, axis=1, keepdims=True), 1e-12)
+        dots = np.abs(np.sum(q[1:] * q[:-1], axis=1)).clip(0.0, 1.0)
+        turns = np.degrees(2.0 * np.arccos(dots)) * scale
+        frame = int(turns.argmax())
+        if turns[frame] > best.degrees:
+            best = FastestTurn(float(turns[frame]), joint, frame + 1)
+    return best
+
+
 def motion_amount(mesh: SkinnedMesh, anim: Animation) -> float:
     """Average over skinned joints of their largest distance from their mean position, as a share of height."""
 

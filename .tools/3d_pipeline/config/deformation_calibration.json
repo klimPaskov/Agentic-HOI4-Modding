@@ -101,6 +101,11 @@
     "value": 0.019719,
     "mesh": "cavalry_horse.mesh",
     "clip": "gfx/models/units/cavalry_horse_idle_forward.anim"
+   },
+   "turn_per_frame": {
+    "value": 37.188306,
+    "mesh": "FIN_infantry_alt_0_desert.mesh",
+    "clip": "gfx/models/units/bicycle_infantry_retreat_2.anim"
    }
   },
   "vehicle": {
@@ -173,6 +178,11 @@
     "value": 0.0,
     "mesh": "armored_engineering_vehicles/generic_medium_armored_towing_vehicle.mesh",
     "clip": "gfx/models/units/armored_engineering_vehicles/generic_medium_armored_towing_vehicle_attack.anim"
+   },
+   "turn_per_frame": {
+    "value": 112.914954,
+    "mesh": "vehicles/FIN_motorized_snow.mesh",
+    "clip": "gfx/models/units/vehicles/FIN_motorized_snow_moving.anim"
    }
   },
   "air_naval": {
@@ -245,6 +255,11 @@
     "value": 0.0,
     "mesh": "planes/ENG_plane_heavy.mesh",
     "clip": "gfx/models/units/planes/bomber_default_idle.anim"
+   },
+   "turn_per_frame": {
+    "value": 42.953148,
+    "mesh": "ships/generic_carrier.mesh",
+    "clip": "gfx/models/units/ships/generic_carrier_death2.anim"
    }
   }
  }
