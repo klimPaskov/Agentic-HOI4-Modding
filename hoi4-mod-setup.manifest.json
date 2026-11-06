@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "12ea877474f262f065c5406d1c0f9e6571e4a539",
+  "generated_for_revision": "c2baab298b2db412acd6f6b5a225c833ed8cbe0d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1789,8 +1789,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
-          "size": 6334
+          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
+          "size": 8548
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -1799,8 +1799,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c372c4b4af23c5b71ffab4e550977e56b794144560127d92aa7f40c728ede419",
-          "size": 75739
+          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "size": 76089
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -7243,8 +7243,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
-          "size": 6334
+          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
+          "size": 8548
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -7253,8 +7253,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c372c4b4af23c5b71ffab4e550977e56b794144560127d92aa7f40c728ede419",
-          "size": 75739
+          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "size": 76089
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -19106,8 +19106,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
-          "size": 6334
+          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
+          "size": 8548
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -19116,8 +19116,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c372c4b4af23c5b71ffab4e550977e56b794144560127d92aa7f40c728ede419",
-          "size": 75739
+          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "size": 76089
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -24598,8 +24598,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
-          "size": 6334
+          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
+          "size": 8548
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -24608,8 +24608,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c372c4b4af23c5b71ffab4e550977e56b794144560127d92aa7f40c728ede419",
-          "size": 75739
+          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "size": 76089
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -30090,8 +30090,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "9cc5c19847eb835fb3e9343aa82b0848c2b3703b5498d836eb7711d1dbb4f5e8",
-          "size": 6334
+          "sha256": "7336239540e5e129f6e2c2a5b9b7356eec374187eea9c33b8263c16c1b9b635b",
+          "size": 8548
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -30100,8 +30100,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c372c4b4af23c5b71ffab4e550977e56b794144560127d92aa7f40c728ede419",
-          "size": 75739
+          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "size": 76089
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
