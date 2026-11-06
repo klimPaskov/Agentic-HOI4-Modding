@@ -44,6 +44,10 @@ Every type gets the six land-unit roles: idle, move, attack, defend, retreat and
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs: a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
+## Pick units players will see
+
+A division shows the model of its highest-priority sub-unit (`priority` in the unit's `sub_units` entry). A unit that never leads a template, for example archers next to higher-priority infantry, is drawn only when a player builds a template led by it. Before you pay for a model, check that the unit leads at least one starting or AI division template. Spend credits first on units that lead starting divisions.
+
 ## What happens
 
 1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. You look at it and approve it.
@@ -75,7 +79,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | A mount's `Saddle_Node` exports without rotation | The game turns the rider with the node, so a turned node tips him over |
 | With `--mod-root`: the mesh, every animation, an entity with every state and a sub-unit sprite are registered | Unregistered files never show |
 
-Add `--repair-textures` to convert old uncompressed or unmipped textures in place.
+Add `--repair-textures` to convert old uncompressed or unmipped textures in place. When a mount and its rider share one folder, check each with `--stem`, for example `--stem <unit> --unit-type mount` and `--stem <unit>_rider --unit-type rider`.
 
 ## When something fails
 
@@ -93,6 +97,8 @@ It prints the last steps and the exact next command.
 | "Unreconciled submission" | A paid step may have reached Meshy without an answer. Look the task up in Meshy's task list and record it as the message says. Never start the step again by hand |
 | The model has holes or loose parts | Look at the previews. Fix it in Blender, or ask your agent for a new reference image and one more model |
 | "No library clip still matches its key" | Meshy renamed a library clip. Pick another clip for that role in `unit_types.json` |
+| "This animation is no longer available" | Meshy retired a clip it still lists. The pipeline moves to the role's next clip by itself and releases the refused call's credits, because Meshy charges nothing for it. If no clip is left, add one for that role in `unit_types.json` |
 | The quadruped rig says it cannot find four legs | The legs touch each other or the ground is uneven. Your agent can pass measured landmarks instead |
+| A hanging prop (a maul on the belt, a quiver) smears when the unit walks | Meshy weighted a loose part to the nearest limbs. Add `loose_part_edits` to the job: each rule's box, in fractions of the unit's height (x and y from the body's centre, z from the ground), selects the loose parts inside it, which are dropped (`"action": "drop"`) or given to one bone (`"action": "bind", "bone": "Hips"`). Put the reason in `loose_part_edits_reason`, which the report keeps. Rerun the job. It costs nothing |
 | A check fails after export | Read `runtime/files.json` in the job folder. It names the file and the rule |
 | A paid step fails | Run the same command again. Steps that succeeded are reused and never paid twice |

@@ -151,6 +151,25 @@ class CheckUnitFiles(unittest.TestCase):
                 rules = {item.rule for item in self.run_check(folder, "mount")}
                 self.assertEqual("UNIT-NODE-ORIENTATION" in rules, expected)
 
+    def test_a_mount_and_its_rider_share_a_folder(self) -> None:
+        identity = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, -5.0, 0.0]
+        horse, rider = ["Root", "Spine", "Saddle_Node"], ["Hips", "Spine01", "Head"]
+        types = check_unit_files.load_unit_types()
+        with tempfile.TemporaryDirectory() as name:
+            folder = Path(name)
+            write_mesh(folder / "knights.mesh", horse, tx={"Saddle_Node": identity})
+            write_mesh(folder / "knights_rider.mesh", rider)
+            for role in LAND_ROLES:
+                write_anim(folder / f"knights_{role}.anim", horse)
+                write_anim(folder / f"knights_rider_{role}.anim", rider)
+            for stem, unit_type in (("knights", "mount"), ("knights_rider", "rider")):
+                findings, facts = check_unit_files.check_files(folder, types[unit_type], None, stem)
+                self.assertEqual([item.rule for item in findings if item.severity == "error"], [], stem)
+                self.assertEqual(list(facts["meshes"]), [f"{stem}.mesh"])
+                self.assertEqual(len(facts["animations"]), len(LAND_ROLES))
+            unscoped = {item.rule for item in check_unit_files.check_files(folder, types["mount"], None)[0]}
+            self.assertIn("UNIT-NODE-MISSING", unscoped)
+
     def test_texture_warnings_and_repair(self) -> None:
         with tempfile.TemporaryDirectory() as name:
             folder = Path(name)
@@ -186,6 +205,20 @@ class UnitTypeCatalog(unittest.TestCase):
                     if unit_type["rig"] != "meshy_humanoid":
                         self.assertNotIn("meshy", role)
         self.assertIn("Saddle_Node", types["mount"]["required_nodes"])
+
+
+class UnitTypeValidation(unittest.TestCase):
+    def test_overrides_are_measured_and_stay_with_their_type(self) -> None:
+        import run_pilot
+
+        types = check_unit_files.load_unit_types()
+        for name, unit_type in types.items():
+            if unit_type.get("validation_overrides"):
+                with self.subTest(unit_type=name):
+                    self.assertIn("measured", unit_type.get("validation_calibration", ""))
+        tree = run_pilot.apply_unit_type({"unit_type": "tree_creature"})
+        self.assertEqual(tree["profile_validation_overrides"], {"max_boundary_edges": 1250})
+        self.assertNotIn("profile_validation_overrides", run_pilot.apply_unit_type({"unit_type": "archer"}))
 
 
 class UnitTypeActions(unittest.TestCase):
@@ -249,6 +282,51 @@ class JobStatus(unittest.TestCase):
                 self.assertIn("Reconcile", stuck["next"])
             finally:
                 run_pilot.resolve_job_root = original
+
+
+class RetiredClip(unittest.TestCase):
+    def test_a_refused_clip_falls_back_and_stays_skipped(self) -> None:
+        import run_pilot
+        from lib.mcp_stdio import MCPRouteError
+
+        submitted, reconciled = [], []
+
+        def provider_task(client, job, stage, *, request, **_kwargs):
+            submitted.append(request.action_id)
+            if request.action_id == 674:
+                raise MCPRouteError("Meshy refused the request: Error: Invalid request. This animation is no longer available.")
+            return f"task-{request.action_id}"
+
+        class Request:
+            def __init__(self, action_id: int) -> None:
+                self.action_id, self.fingerprint = action_id, f"fp-{action_id}"
+
+        patches = {
+            "provider_task": provider_task,
+            "paid_request": lambda spec, kind, tool, arguments, role: Request(arguments["action_id"]),
+            "unreconciled_submissions": lambda jobs, fingerprint: [{"file": fingerprint}],
+            "reconcile_submission": lambda file, note: reconciled.append(file),
+        }
+        originals = {name: getattr(run_pilot, name) for name in patches}
+        try:
+            for name, value in patches.items():
+                setattr(run_pilot, name, value)
+            with tempfile.TemporaryDirectory() as name:
+                job = Path(name)
+                spec = {"animation_estimate_credits": 3}
+                action = {"role": "retreat", "provider_action_id": 674, "library_key": "Stumble_Walk_inplace",
+                          "library_candidates": [[674, "Stumble_Walk_inplace"], [637, "Injured_Walk_inplace"]]}
+                task = run_pilot.animate_library_clip(None, job, spec, action, "animation_retreat", "rig", "rig-1")
+                self.assertEqual((task, action["provider_action_id"], action["library_key"]), ("task-637", 637, "Injured_Walk_inplace"))
+                self.assertEqual((submitted, reconciled), ([674, 637], ["fp-674"]))
+                resumed = dict(action, provider_action_id=674)
+                run_pilot.animate_library_clip(None, job, spec, resumed, "animation_retreat", "rig", "rig-1")
+                self.assertEqual(submitted[2:], [637])
+                with self.assertRaises(MCPRouteError):
+                    run_pilot.animate_library_clip(None, job, spec, dict(action, library_candidates=[[674, "x"]], provider_action_id=674), "other", "rig", "rig-1")
+        finally:
+            for name, value in originals.items():
+                setattr(run_pilot, name, value)
 
 
 if __name__ == "__main__":

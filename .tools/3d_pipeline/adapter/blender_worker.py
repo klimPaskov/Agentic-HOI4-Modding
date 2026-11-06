@@ -10384,7 +10384,7 @@ def run(req: Dict[str, Any]) -> Dict[str, Any]:
     if operation == "partition_skeletal_mesh_export_batches":
         from skeletal_export_partition import partition_skeletal_mesh_export_batches
         return partition_skeletal_mesh_export_batches(req, sys.modules[__name__])
-    if operation in {"inspect_mesh_landmarks", "author_measured_creature_rig", "attach_rigid_component", "author_measured_creature_action", "repair_explicit_mesh_winding", "ground_existing_action", "seat_rider_action"}:
+    if operation in {"inspect_mesh_landmarks", "author_measured_creature_rig", "attach_rigid_component", "author_measured_creature_action", "repair_explicit_mesh_winding", "ground_existing_action", "seat_rider_action", "edit_loose_parts"}:
         import manual_creature_rig
         return getattr(manual_creature_rig, operation)(req, globals())
     if operation == "isolate_humanoid_weapon":

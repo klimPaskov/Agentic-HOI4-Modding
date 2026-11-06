@@ -14,7 +14,7 @@ import subprocess
 import sys
 import uuid
 from pathlib import Path
-from typing import Any, Dict, Iterable, Literal, Optional
+from typing import Any, Dict, Iterable, List, Literal, Optional
 
 from mcp.server.fastmcp import FastMCP
 
@@ -1123,6 +1123,22 @@ def hoi4_blender_author_creature_action(
             "creature_rig_family": creature_rig_family,
             "action_style": action_style,
         },
+    )
+
+
+@mcp.tool()
+def hoi4_blender_edit_loose_parts(
+    job_id: str,
+    blend_rel: str,
+    checkpoint_rel: str,
+    rules: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Drop or rigidly bind the small loose parts (props) whose bounds lie inside each rule's height-fraction box."""
+
+    return _run(
+        job_id,
+        "edit_loose_parts",
+        {"blend_rel": blend_rel, "checkpoint_rel": checkpoint_rel, "rules": rules},
     )
 
 

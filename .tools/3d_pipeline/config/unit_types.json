@@ -336,12 +336,12 @@
         "retreat": {
           "meshy": [
             [
-              674,
-              "Stumble_Walk_inplace"
-            ],
-            [
               637,
               "Injured_Walk_inplace"
+            ],
+            [
+              645,
+              "Limping_Walk_inplace"
             ]
           ],
           "loop": true
@@ -366,6 +366,10 @@
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
+      "validation_overrides": {
+        "max_boundary_edges": 980
+      },
+      "validation_calibration": "max_boundary_edges measured 895 on the ZIN yeti (Meshy remesh reduced from 51,341 to 21,000 triangles in Blender 5.2.2): one connected part, no non-manifold edges, 214 small loops of at most 16 edges in the fur. Limit 980 is the measurement plus about 9 percent. Other humanoid types keep the profile's 700",
       "roles": {
         "idle": {
           "meshy": [
@@ -422,12 +426,12 @@
         "retreat": {
           "meshy": [
             [
-              674,
-              "Stumble_Walk_inplace"
-            ],
-            [
               637,
               "Injured_Walk_inplace"
+            ],
+            [
+              645,
+              "Limping_Walk_inplace"
             ]
           ],
           "loop": true
@@ -452,6 +456,10 @@
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",
       "entity_template": "infantry",
+      "validation_overrides": {
+        "max_boundary_edges": 1250
+      },
+      "validation_calibration": "max_boundary_edges measured 1144 on the ZIN ent (Meshy remesh reduced from 51,981 to 21,000 triangles in Blender 5.2.2): one connected part, no non-manifold edges, 253 small loops of at most 14 edges between bark plates and in the leaf crown. Limit 1250 is the measurement plus about 9 percent. Other humanoid types keep the profile's 700",
       "roles": {
         "idle": {
           "meshy": [
@@ -512,8 +520,8 @@
               "Elderly_Shaky_Walk_inplace"
             ],
             [
-              674,
-              "Stumble_Walk_inplace"
+              650,
+              "Mummy_Stagger_inplace"
             ]
           ],
           "loop": true

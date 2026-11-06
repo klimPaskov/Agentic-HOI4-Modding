@@ -94,6 +94,13 @@ def _role_of(anim: Path, stem: str) -> Optional[str]:
     return name[len(stem) + 1 :] if name.startswith(stem + "_") else None
 
 
+def _owner_of(anim: Path, stems: Sequence[str]) -> Optional[str]:
+    """The mesh stem an animation belongs to: the longest one its name starts with (`x_rider_idle` is `x_rider`'s, not `x`'s)."""
+
+    owners = [stem for stem in stems if anim.stem.startswith(stem + "_")]
+    return max(owners, key=len) if owners else None
+
+
 def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skeleton):
     """The mesh rules; fills `skeleton` with every bone name."""
 
@@ -134,12 +141,14 @@ def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skele
 
 
 
-def _check_animations(folder, stem, unit_type, skeleton, add, facts):
-    """The animation and role rules."""
+def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None):
+    """The animation and role rules. With `stems`, only the animations `stem` owns are read."""
 
     skeleton_set = set(skeleton)
     roles_found: Dict[str, Path] = {}
     for anim_path in sorted(folder.glob("*.anim")):
+        if stems and _owner_of(anim_path, stems) != stem:
+            continue
         try:
             anim = pdx_binary.summarize_anim(pdx_binary.read(anim_path))
         except (OSError, pdx_binary.PdxFormatError) as error:
@@ -209,7 +218,11 @@ def _check_textures(folder, add, facts):
                 pass
 
 
-def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]) -> tuple[List[Finding], dict]:
+def check_files(
+    folder: Path, unit_type: Optional[dict], profile: Optional[dict], stem: Optional[str] = None
+) -> tuple[List[Finding], dict]:
+    """Check a unit folder. `stem` checks one mesh and its animations in a folder shared with another unit (a mount and its rider)."""
+
     findings: List[Finding] = []
     facts: dict = {"meshes": {}, "animations": {}, "textures": {}}
 
@@ -217,13 +230,17 @@ def check_files(folder: Path, unit_type: Optional[dict], profile: Optional[dict]
         findings.append(Finding(rule, severity, path.as_posix(), message))
 
     meshes = sorted(folder.glob("*.mesh"))
+    stems = [mesh.stem for mesh in meshes]
+    only_stem = bool(stem)
+    if stem:
+        meshes = [mesh for mesh in meshes if mesh.stem == stem]
     if not meshes:
-        add("UNIT-MESH-NONE", "error", folder, "the folder has no .mesh file")
+        add("UNIT-MESH-NONE", "error", folder, f"the folder has no {stem or '*'}.mesh file")
     skeleton: List[str] = []
-    stem = meshes[0].stem if meshes else folder.name
+    stem = stem or (meshes[0].stem if meshes else folder.name)
     needs_animation = bool(unit_type and unit_type.get("roles"))
     _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skeleton)
-    _check_animations(folder, stem, unit_type, skeleton, add, facts)
+    _check_animations(folder, stem, unit_type, skeleton, add, facts, stems if only_stem else None)
     _check_textures(folder, add, facts)
     return findings, facts
 
@@ -351,6 +368,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("folder", type=Path, help="the folder that holds the unit's .mesh, .anim and .dds files")
     parser.add_argument("--unit-type", help="a type from config/unit_types.json; sets the roles, nodes and profile")
+    parser.add_argument("--stem", help="check only <stem>.mesh and its animations, in a folder shared with another unit")
     parser.add_argument("--profile", help="an asset profile for the triangle budget (default: the unit type's)")
     parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit")
     parser.add_argument("--json", action="store_true")
@@ -375,7 +393,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     folder = args.folder.resolve()
     if not folder.is_dir():
         raise SystemExit(f"Not a folder: {folder}")
-    findings, facts = check_files(folder, unit_type, profile)
+    findings, facts = check_files(folder, unit_type, profile, args.stem)
     if args.mod_root:
         findings.extend(check_registration(folder, args.mod_root, unit_type))
     errors = [item for item in findings if item.severity == "error"]
