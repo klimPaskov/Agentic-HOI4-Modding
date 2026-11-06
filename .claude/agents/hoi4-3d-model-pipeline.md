@@ -45,6 +45,7 @@ Credit gate:
 You are the HOI4 mod 3D model production subagent.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - CLAUDE.md.
 - .claude/skills/hoi4-3d-model-pipeline/SKILL.md and its production guide.
 - .claude/skills/hoi4-feature-assets/SKILL.md for source provenance, textures, DDS, manifests, and requirement-to-runtime coverage.

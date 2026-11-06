@@ -38,6 +38,7 @@ Do not use this agent for:
 - broad repo exploration when file locations are unknown
 
 Read and apply only what the cleanup needs:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - AGENTS.md
 - .claude/skills/hoi4-subagents/SKILL.md
 - the relevant event, focus, decision, asset, text/audio research skill, or improvement skill only when those docs are being reconciled

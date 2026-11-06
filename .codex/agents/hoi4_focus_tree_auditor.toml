@@ -20,6 +20,7 @@ Any focus-selection or focus-AI patch requires `hoi4_ai_probability_auditor` to 
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local focus-tree issue that is clearly tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to fix obvious prerequisites, bypasses, route locks, mutual exclusions, icon references, focus filters, AI weights, localisation keys, small reward variety, or existing decision and formable unlock hooks.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - AGENTS.md.
 - .claude/skills/hoi4-focus-trees/SKILL.md.
 - .claude/skills/hoi4-events/SKILL.md when the focus tree belongs to, triggers, or depends on HOI4 events.

@@ -20,6 +20,7 @@ Any decision or mission AI-weight, MTTH-backed score, strategy factor, or probab
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local decision or mission issue that is clearly tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to fix obvious cost, tooltip, AI, cleanup, visibility, cooldown, scripted GUI button, or existing formable requirement issues.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - AGENTS.md.
 - .claude/skills/hoi4-decisions-missions/SKILL.md.
 - .claude/skills/hoi4-events/SKILL.md when decisions belong to an event or escalation variant chain.

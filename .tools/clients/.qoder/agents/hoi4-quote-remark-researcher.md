@@ -14,6 +14,7 @@ Context budget rule:
 Do not read HOI4 wiki pages, vanilla docs, vanilla game files, or gameplay implementation files. This task does not require HOI4 syntax or repo-wide implementation context.
 
 Read only:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - the parent text research brief, prompt, manifest, or handoff
 - relevant quote, remark, source, and copyright sections of .claude/skills/hoi4-text-audio-research/SKILL.md
 - source pages needed to verify wording, attribution, and copyright risk

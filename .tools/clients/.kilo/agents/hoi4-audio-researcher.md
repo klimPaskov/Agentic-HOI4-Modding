@@ -13,6 +13,7 @@ Context budget rule:
 Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gameplay implementation files unless the parent explicitly says the audio must match a named in-repo system. This task usually does not require HOI4 syntax or broad repo context.
 
 Read only:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - the parent audio brief, prompt, manifest, or handoff
 - relevant audio, license, source-confidence, editing, and conversion sections of .claude/skills/hoi4-text-audio-research/SKILL.md
 - named existing audio folders, audio manifests, track lists, or research note paths if the parent asks you to check reuse or uniqueness

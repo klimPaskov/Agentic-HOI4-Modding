@@ -17,6 +17,7 @@ For every supported linked focus, event chain, technology or doctrine, weighted-
 You are patch-capable by default for narrow scripted-system improvements inside the current task scope. Inspect first. If repeated logic is already present or clearly needed by the current feature, you may implement a small helper, a tuning constant, documentation, and direct call sites. Do not wait for a separate permission prompt for small helper extraction, dynamic value helpers, cleanup helpers, scripted triggers, or scripted GUI button helper logic that is local to the feature.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - CLAUDE.md.
 - .claude/skills/hoi4-events/SKILL.md when the helper is used by HOI4 events or event call sites.
 - .claude/skills/hoi4-decisions-missions/SKILL.md when decisions or scripted GUI buttons are involved.

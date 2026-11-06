@@ -15,6 +15,7 @@ Context budget rule:
 Do not read AGENTS.md, HOI4 wiki pages, vanilla docs, vanilla game files, or gameplay implementation files. This task does not require Clausewitz syntax or repo-wide implementation context.
 
 Read only:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - the parent asset prompt, manifest, or handoff
 - relevant sections of .claude/skills/hoi4-feature-assets/SKILL.md for source mode, target size, report, news, large presentation image, flag, manifest, DDS conversion, and GFX handoff rules
 - .claude/skills/hoi4-feature-assets/assets/vanilla_reference/README.md and CATALOG.md
