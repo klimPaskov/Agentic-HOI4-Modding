@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "f74690cb17778943be82d9bfe37833bb827d95f3",
+  "generated_for_revision": "6279785e0431ded90a8cc9c0c5b1a0031c382b73",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14985,8 +14985,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/review_render.py",
-          "sha256": "bb5b08e6f3cd29ad031d9fbf38948375dfaabd6ae23c8f9c4d4745be35b9bde7",
-          "size": 6124
+          "sha256": "affc532167b1d2169f868080f515be59f03e33db73fc034b36f3259cf63e276d",
+          "size": 11529
         },
         {
           "path": ".tools/3d_pipeline/blender_client.py",
@@ -15010,8 +15010,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "d3938dff389a202dff640dcbad77f916b45936d097b1c26fd82f493cb5c5e015",
-          "size": 37041
+          "sha256": "6b48bcf1a99f6f941c6d2bbec76b9b97c356ef93696b96fc612a19d070be8b44",
+          "size": 38802
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15045,8 +15045,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/visual_review_prompt.md",
-          "sha256": "6495687a970ad9d6535a367f1b1703bb6e2c240fdac78a697525d6547a60b414",
-          "size": 3299
+          "sha256": "f603e286ec94468c6c7749d015fa5f61e57417b773075cbe1e86866918968bd3",
+          "size": 3686
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
@@ -15055,8 +15055,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/__init__.py",
-          "sha256": "b9f05673b4c2e79ec597a17d4964bc0dbe8d22ad55e6ccf67f677cd6b882146c",
-          "size": 57
+          "sha256": "dbacbfa9fc1cf87dbd6fa877fa4d14e8a82ed77af44520863d573934c9fed804",
+          "size": 622
         },
         {
           "path": ".tools/3d_pipeline/lib/credits.py",
@@ -15114,6 +15114,11 @@
           "size": 9769
         },
         {
+          "path": ".tools/3d_pipeline/lib/stage_verdict.py",
+          "sha256": "200abe8911361368534ae92fdeb3e3bfa52be74d7b5d756ce3aa9b09b0677ea4",
+          "size": 6384
+        },
+        {
           "path": ".tools/3d_pipeline/lib/texture_lineage.py",
           "sha256": "c10a5229ca2d0fddf8c8ad32224150c59eae7805fe53dc6c2a8c831a36a2da3e",
           "size": 11401
@@ -15145,13 +15150,13 @@
         },
         {
           "path": ".tools/3d_pipeline/repair_unit.py",
-          "sha256": "6bf6a09cd057464f4d6375b400a9056fcbda68bf50d5350ae18b0c59b078bbd4",
-          "size": 7368
+          "sha256": "c276b64226f8f763346f0d31ec8c6006c63e89c052dc34e5b1e556571d2afe6c",
+          "size": 8181
         },
         {
           "path": ".tools/3d_pipeline/review_unit.py",
-          "sha256": "620f8630db3689066cafe45dab278242e3ac05b959823062178a0b85fb1ab8ea",
-          "size": 11581
+          "sha256": "59c3591b6f43455cb31aeb72c37e5d953114a485df4c1bfea2fc8522d7662cf8",
+          "size": 15684
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
@@ -15935,8 +15940,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_review_unit.py",
-          "sha256": "de80578b4e4b6474d6a4c23739c2d82b0ad763df06b2e43736a77f28e26d3847",
-          "size": 6407
+          "sha256": "3aa66c8836b5443df3345d292a5fcb9fbbe412e524341f0586def2946b9d1976",
+          "size": 7702
         },
         {
           "path": ".tools/3d_pipeline/tests/test_rig_animation_regressions.py",
@@ -15952,6 +15957,11 @@
           "path": ".tools/3d_pipeline/tests/test_skeletal_export_streams.py",
           "sha256": "b3e5a421aa6ff01e684c4c8910a42fb13089bff7ee7cf38fafda0b99131d8caa",
           "size": 9012
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_stage_verdict.py",
+          "sha256": "cacbe1bf7752722c200402b318f3c4183067f03c89a928d174514232f4748299",
+          "size": 5590
         },
         {
           "path": ".tools/3d_pipeline/tests/test_texture_lineage.py",
