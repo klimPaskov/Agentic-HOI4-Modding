@@ -136,6 +136,21 @@ def fit(args: argparse.Namespace) -> dict:
     return report
 
 
+def meshsettings_block(prop_stem: str) -> str:
+    """The `.gfx` meshsettings that give the prop's shape its own textures."""
+
+    return "\n".join([
+        "\t\tmeshsettings = {",
+        f'\t\t\tname = "{prop_stem}"',
+        "\t\t\tindex = 0",
+        f'\t\t\ttexture_diffuse = "{prop_stem}_diffuse.dds"',
+        f'\t\t\ttexture_normal = "{prop_stem}_normal.dds"',
+        f'\t\t\ttexture_specular = "{prop_stem}_specular.dds"',
+        '\t\t\tshader = "PdxMeshAdvanced"',
+        "\t\t}",
+    ])
+
+
 def verdict_for(report: dict, args: argparse.Namespace) -> dict:
     best = report["best"]
     sampled = max(report["frames_checked"] * report["samples_per_frame"], 1)
@@ -151,10 +166,21 @@ def verdict_for(report: dict, args: argparse.Namespace) -> dict:
         "clips_with_clipping": best["per_clip"],
         "textures": report["textures"],
     }
+    block = meshsettings_block(report["prop_stem"])
+    (args.out / "registration_prop.md").write_text(
+        f"# The held prop's meshsettings\n\nPaste this inside the unit's `pdxmesh` block in its `.gfx` file, after the body's own `meshsettings`. "
+        f"The three textures sit next to the mesh in `{files}`.\n\n```\n{block}\n```\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    outputs["meshsettings"] = block
+    outputs["registration"] = (args.out / "registration_prop.md").as_posix()
     if ok:
+        unit_type = f" --unit-type {args.unit_type}" if args.unit_type else ""
+        stem = f" --stem {args.stem}" if args.stem else ""
         steps = [
-            f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_unit_files.py {stage_verdict.quote(files)} --verdict {stage_verdict.quote(args.out.as_posix() + '/check.json')}",
-            f"Add a meshsettings block for the {report['prop_stem']} shape (its three DDS files are next to the mesh), then render with review_unit.py and ask a fresh reviewer.",
+            f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_unit_files.py {stage_verdict.quote(files)}{stem}{unit_type} --verdict {stage_verdict.quote(args.out.as_posix() + '/check.json')}",
+            f"When you register the unit, paste the meshsettings block from {stage_verdict.quote(outputs['registration'])} into its pdxmesh block.",
         ]
         return stage_verdict.verdict("props", True, report["unit"], outputs=outputs, next_steps=steps)
     escalate = {
@@ -173,6 +199,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--textures", type=Path, help="folder with base_color.png, metallic.png, roughness.png and normal.png (default: next to the GLB)")
     parser.add_argument("--out", type=Path, required=True, help="work folder for the fitted copy and the report (outside gfx/)")
     parser.add_argument("--stem", help="the unit mesh's stem, in a folder shared with another unit")
+    parser.add_argument("--unit-type", help="the unit's type, passed on to the check the verdict names")
     parser.add_argument("--prop-stem", help="name of the prop's shape and DDS files (default: <unit>_prop)")
     parser.add_argument("--bone", default="RightHand", help="the hand bone that holds the prop")
     parser.add_argument("--length", type=float, default=0.55, help="the prop's length as a share of the unit's height")

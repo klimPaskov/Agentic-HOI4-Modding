@@ -32,8 +32,8 @@ def maps(folder: Path) -> Path:
     return folder
 
 
-def args_for(out: Path) -> argparse.Namespace:
-    return argparse.Namespace(out=out)
+def args_for(out: Path, unit_type=None, stem=None) -> argparse.Namespace:
+    return argparse.Namespace(out=out, unit_type=unit_type, stem=stem)
 
 
 class Verdict(unittest.TestCase):
@@ -42,16 +42,27 @@ class Verdict(unittest.TestCase):
                 "textures": {}, "unit": "u", "prop_stem": "u_prop"}
 
     def test_a_clean_grip_passes_and_names_the_check(self) -> None:
-        payload = fit_prop.verdict_for(self.report(inside=15, under=0), args_for(Path("job/props")))
+        with tempfile.TemporaryDirectory() as folder:
+            out = Path(folder) / "props"
+            out.mkdir()
+            payload = fit_prop.verdict_for(self.report(inside=15, under=0), args_for(out, unit_type="spearman"))
+            registration = (out / "registration_prop.md").read_text(encoding="utf-8")
         self.assertEqual(payload["verdict"], "pass")
-        self.assertIn("check_unit_files.py job/props/files", payload["next"][0])
+        self.assertIn("check_unit_files.py", payload["next"][0])
+        self.assertIn("--unit-type spearman", payload["next"][0])
+        self.assertIn('name = "u_prop"', payload["outputs"]["meshsettings"])
+        self.assertIn('texture_specular = "u_prop_specular.dds"', registration)
 
     def test_a_prop_in_the_ground_escalates(self) -> None:
-        payload = fit_prop.verdict_for(self.report(inside=0, under=1), args_for(Path("job/props")))
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "props").mkdir()
+            payload = fit_prop.verdict_for(self.report(inside=0, under=1), args_for(Path(folder) / "props"))
         self.assertEqual((payload["verdict"], payload["findings"][0]["rule"]), ("escalate", "PROP-CLIPS"))
 
     def test_a_prop_through_the_body_escalates(self) -> None:
-        payload = fit_prop.verdict_for(self.report(inside=30, under=0), args_for(Path("job/props")))
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "props").mkdir()
+            payload = fit_prop.verdict_for(self.report(inside=30, under=0), args_for(Path(folder) / "props"))
         self.assertEqual(payload["verdict"], "escalate")
         self.assertIn("live-authoring.md", payload["escalate"]["how"])
 

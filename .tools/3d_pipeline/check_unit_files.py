@@ -110,6 +110,8 @@ EMISSIVE_TOLERANCE = 8
 SHINY_METALLIC = 120
 SHINY_GLOSS = 140
 CALIBRATION = PIPELINE_ROOT / "config" / "deformation_calibration.json"
+# Open loops up to this size are closed by `repair_unit.py --repairs holes` with no visible seam.
+SMALL_HOLE_EDGES = 32
 
 
 @dataclass
@@ -652,7 +654,16 @@ def _write_verdict(args, folder: Path, findings: List[Finding], errors: List[Fin
     )
     if not errors:
         mod = f" --mod-root {stage_verdict.quote(args.mod_root.as_posix())}" if args.mod_root else ""
-        steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}{mod} --out {stage_verdict.quote(out + '/review')}"]
+        steps = []
+        # Open loops within vanilla's limits still show magenta where a reviewer looks: close the small ones first.
+        small = [size for surface in facts["surface"].values() for size in surface.get("open_loops", []) if size <= SMALL_HOLE_EDGES]
+        if small and not (folder.name == "files" and folder.parent.name == "repair"):
+            steps.append(
+                f"{stage_verdict.PY} {stage_verdict.PIPELINE}/repair_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}"
+                f" --out {stage_verdict.quote(out + '/repair')} --repairs holes --max-hole-edges {SMALL_HOLE_EDGES}"
+                f"  (optional: closes {len(small)} small open loop(s) a reviewer can see, then check the copy)"
+            )
+        steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}{mod} --out {stage_verdict.quote(out + '/review')}")
     stage_verdict.write(
         stage_verdict.verdict(
             "check", not errors, stem,
