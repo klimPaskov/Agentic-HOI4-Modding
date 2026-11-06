@@ -184,7 +184,7 @@ These agents are patch-capable by default inside the current task scope:
 
 They do not need a separate permission prompt to fix small, local issues that are clearly connected to the current feature, mechanic, country, focus tree, decision category, GUI surface, or localisation surface.
 
-They should inspect first, then patch only when the fix is narrow, reversible, and supported by the relevant skill. They may edit files they own for the current task surface and directly related dependency files. They must not search for unrelated cleanup outside the feature they were spawned for.
+They should inspect first, then patch only when the fix is narrow, reversible, and supported by the relevant skill. They may edit files they own for the current task surface and directly related dependency files. They must not search for unrelated cleanup outside the feature they were spawned for. In a checkout shared with other lanes they revert or commit only their own hunks (`git restore -p`, `git add -p`, or `hoi4-shared-git-commit`) and never restore a whole file another lane edits.
 
 Active small patches include:
 
