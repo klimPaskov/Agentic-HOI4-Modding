@@ -49,6 +49,9 @@ Surface and deformation rules (always; limits are the largest values measured on
 - UNIT-WINDING: more edges between triangles facing opposite ways than any vanilla unit. The game
   culls back faces, so the flipped side shows as a hole.
 - UNIT-INSIDE-OUT: a closed part whose triangles face inward.
+- UNIT-NORMALS: more vertices than any vanilla unit of the group (share of vertices, limits in
+  `NORMALS_AGAINST_SHARE`) have a stored normal pointing against every face that uses them. The shading
+  shows pale flat facets. Flip those normals, or recalculate them on a welded copy.
 - UNIT-BRIDGE: more rest-pose edges joining far-apart bones' regions (three or more parent steps,
   for example a hand and a thigh) than any vanilla unit. Skinning tears these joins.
 - UNIT-ANIM-STRETCH: in some frame, more edges stretched or squashed (by 1.5 times and by 0.5 % of the
@@ -62,6 +65,10 @@ Surface and deformation rules (always; limits are the largest values measured on
   pelvis faces, by more than 5 % of the leg's length. No vanilla soldier's knee ever does.
 - UNIT-ANIM-STILL: a clip moves its joints less than the stillest vanilla clip of the group. It
   reads as a frozen pose on the map.
+- UNIT-ANIM-SPIN: a joint that skins vertices turns farther between two frames than any vanilla joint
+  of the group does (at 30 frames a second). Keys on opposite sides of the quaternion sphere make
+  Blender interpolate the long way, and a limb or a held polearm sweeps most of a circle, through the
+  ground or the head, in a frame or two.
 - UNIT-ANIM-SAME: two roles of the unit play nearly the same motion (their distance is under 12 %
   of the larger clip's motion). Each role must read as itself. A seated rider is exempt for idle,
   move, retreat and training: the mount's gait carries it, so those roles reuse idle by design.
@@ -118,6 +125,14 @@ EMISSIVE_TOLERANCE = 8
 SHINY_METALLIC = 120
 SHINY_GLOSS = 140
 CALIBRATION = PIPELINE_ROOT / "config" / "deformation_calibration.json"
+# UNIT-NORMALS: the share of vertices whose stored normal points against every triangle that uses
+# them. Measured on 2026-11-07 over the vanilla units of gfx/models/units that calibrate_deformation.py
+# measures (44 organic, 75 vehicle, 69 air_naval meshes, normals read from each stream's `n`):
+# organic 1.24 % at most (33 of 2,670 vertices, vehicles/FIN_deer.mesh; the largest count is 34 on
+# ITA_infantry.mesh, 0.96 %), vehicle 8.97 % (354 of 3,947, tanks/FIN_medium_armor.mesh) and air_naval
+# 1.73 % (23 of 1,326, planes/ENG_plane_medium.mesh). Vanilla is not 0, so each limit is its group's
+# largest share, rounded up.
+NORMALS_AGAINST_SHARE = {"organic": 0.0124, "vehicle": 0.0897, "air_naval": 0.0174}
 # Open loops up to this size are closed by `repair_unit.py --repairs holes` with no visible seam.
 SMALL_HOLE_EDGES = 32
 
@@ -251,7 +266,7 @@ def load_calibration(group: str = "organic", path: Optional[Path] = None) -> Opt
     return {measure: float(entry["value"]) for measure, entry in measures.items()} if measures else None
 
 
-def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False):
+def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False, group="organic"):
     """The surface, bridge and per-frame deformation rules, against the vanilla limits. A seated rider skips the ground rule."""
 
     from lib import pdx_deform
@@ -277,6 +292,11 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
     if bridges.edges > limits["bridge_edges"]:
         pairs = ", ".join(f"{pair} {count}" for pair, count in list(bridges.pairs.items())[:4])
         add("UNIT-BRIDGE", "error", mesh_path, f"{bridges.edges} edges join body parts that move apart ({pairs}); cut the join before rigging or the clips tear it")
+    against, used = pdx_deform.normals_against_faces(mesh)
+    facts["surface"][mesh_path.name]["normals_against_faces"] = against
+    normals_limit = NORMALS_AGAINST_SHARE.get(group, NORMALS_AGAINST_SHARE["organic"])
+    if used and against / used > normals_limit:
+        add("UNIT-NORMALS", "error", mesh_path, f"{against} of {used} vertex normals ({against / used:.1%}) point against every face that uses them; the shading shows pale flat facets. Flip those normals, or recalculate them on a welded copy; vanilla {group} units reach {normals_limit:.2%}")
     loaded = {}
     for anim_path in sorted(folder.glob("*.anim")):
         if stems and _owner_of(anim_path, stems) != stem:
@@ -336,6 +356,10 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
             add("UNIT-ANIM-KNEE", "error", anim_path, f"frame {knee.worst_frame}: knee {knee.worst_leg} bends backward by {-knee.worst_bend:.0%} of the leg's length ({knee.backward_frames} frame(s) past {knee_limit:.0%}); vanilla soldiers' knees bend back at most {limits.get('knee_backward', 0.0):.1%}. Solve the leg again with the knee toward the toes")
         if "still_motion" in limits and motion < limits["still_motion"]:
             add("UNIT-ANIM-STILL", "error", anim_path, f"the joints move {motion:.2%} of the unit's height on average; the stillest vanilla clip moves {limits['still_motion']:.2%}. It reads as a frozen pose")
+        turn = pdx_motion.fastest_turn(mesh, anim)
+        facts["motion"][mesh_path.name]["clips"][anim_path.name]["fastest_turn"] = round(turn.degrees, 1)
+        if "turn_per_frame" in limits and turn.degrees > limits["turn_per_frame"]:
+            add("UNIT-ANIM-SPIN", "error", anim_path, f"frame {turn.frame}: {turn.joint} turns {turn.degrees:.0f} degrees in one frame; vanilla's fastest joint turns {limits['turn_per_frame']:.0f}. Keys on opposite sides of the quaternion sphere make Blender turn the long way: flip them (live_helpers.normalize_quaternion_keys) and export again, or spread the turn over more frames")
     _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
     paths = sorted(loaded)
     for index, first in enumerate(paths):
@@ -422,7 +446,7 @@ def check_files(
     if deformation and meshes:
         group = (unit_type or {}).get("calibration_group", "organic")
         seated = (unit_type or {}).get("entity_template") == "rider"
-        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated)
+        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated, group)
     _check_textures(folder, add, facts)
     return findings, facts
 
