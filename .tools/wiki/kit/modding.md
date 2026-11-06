@@ -1,0 +1,59 @@
+# Modding
+
+<!-- kit:begin id="review" build="1.19.4.1" checked="2026-11-01" revision="105601" sources="launcher-settings.json steam_appid.txt checksum_manifest.txt dlc/ integrated_dlc/ pdx_launcher/common/localisation/l_english.yml localisation/ common/ events/ history/ interface/ map/ tests/ script/ wiki/ changelog.txt hoi4.exe" -->
+**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `launcher-settings.json`, `steam_appid.txt`, `checksum_manifest.txt`, the `dlc/` and `integrated_dlc/` folders, the launcher localisation, the byte order mark of every vanilla script and localisation file, the other top-level game folders, and strings in `hoi4.exe`.
+Kit blocks added: encoding in practice, the user directory files, load-order and checksum facts, the top-level folders the page does not list, descriptor keys, and the other launch option names.
+Gaps left: no game file defines the `.mod` descriptor format, `dlc_load.json` or the launcher database, so those statements stay [unverified]. The stub markers are false positives: "incomplete" is about CWTools rules, "out of date" is the launcher marker for `supported_version`, and "TODO" sits inside a sample comment. The inventory's unknown keys `supported_version`, `remote_file_id`, `replace_path`, `user_dir` and `editor_postfix` are real names (strings in `hoi4.exe`, see the descriptor block); the page's `replace_path` and load-order text was not re-tested in the game.
+**1.19.4.1 re-check (2026-11-01).** 13 statements depended on files the update changed (`launcher-settings.json`, `hoi4.exe`, `dlc/` and the vanilla script and localisation folders, but not the removed `debug_types` console command) and all 13 were re-measured. What changed: the game version is now `1.19.4.1`, the localisation folder holds 2,093 `.yml` files, `common/**/*.txt` has 2,224 files, `interface/` has 616 `.gfx` and `.gui` files, `common/` holds 39 documentation files (was 38), and the DLC `path` row is corrected because both quoted and unquoted paths occur. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
+<!-- kit:end id="review" -->
+
+<!-- kit:begin id="modding-encoding" at="section:guidelines" -->
+Vanilla does not follow "UTF-8 without BOM for every text file". All 2,093 localisation `.yml` files start with the byte order mark, as the page says. For script, 235 of 2,224 `common/**/*.txt`, 87 of 128 `events/*.txt` and 942 of 2,058 `history/**/*.txt` also start with one, while none of the 616 `interface/*.gfx` and `*.gui` files do. A BOM in script is therefore tolerated; omit it in new script files. The full table is on [Mod structure](mod_structure.md#general-rules). [vanilla-confirmed 1.19.4.1] first three bytes of each file.
+<!-- kit:end id="modding-encoding" -->
+
+<!-- kit:begin id="modding-user-directory-files" at="section:user-directory" -->
+What the game files say about the user directory in 1.19.4.1.
+
+- `launcher-settings.json` sets `gameDataPath` to `%USER_DOCUMENTS%/Paradox Interactive/Hearts of Iron IV` and `ingameSettingsPath` to `pdx_settings.json`. The [Localisation](localisation.md) page says `pdx_settings.txt`, and `hoi4.exe` also contains that name as a string, [vanilla-confirmed 1.19.4.1] `launcher-settings.json`. For the language the file is `pdx_settings.txt`, and no `pdx_settings.json` existed in the folders checked. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, see the [Localisation](localisation.md) page. Where other settings are stored was not tested. [unverified]
+- Its `gameCachePaths` list names these user-directory entries: `buildings_nudger_markers.txt`, `cache/`, `continue_game.json`, `game rules/`, `map/`, `mod/`, `naval_dist.cache`, `naval_dist_checksum.cache`, `playlists/`, `pops_filestorage.index`, `pops_filestorage/` and `shadercache/`. [vanilla-confirmed 1.19.4.1] `launcher-settings.json`.
+- `hoi4.exe` contains the message "Custom user directory configured in the old style with the userdir.txt file in the game folder", followed by "Overridden by the gameDataPath field". A `userdir.txt` in the game folder is the old way to move the directory; `gameDataPath` wins. [unverified] (strings in `hoi4.exe`)
+- Other file names that appear as strings in `hoi4.exe`: `settings.txt`, `gameplaysettings.txt`, `pdx_settings.txt`, `autotestsettings.txt`, `dlc_load.json`, `mods_registry.json`, `logs/error.log`, `logs/system.log`, `logs/code_revisions.log`, and the folders `dumps/`, `exceptions/`, `save games` and `screenshots`. [unverified] (strings in `hoi4.exe`)
+<!-- kit:end id="modding-user-directory-files" -->
+
+<!-- kit:begin id="modding-load-facts" at="section:loading-files" -->
+Load-order and checksum facts that the game files confirm.
+
+- `dlc/` holds 12 DLC folders and `integrated_dlc/` four more (`dlc018`, `dlc020`, `dlc022`, `dlc023`). They hold `gfx/`, `interface/`, `music/`, `portraits/` and `sound/` content (`dlc014` holds wallpapers), a `dlcNNN.dlc` descriptor and `thumbnail.png`. None has `common/`, `events/` or `history/`; `dlc003` ships a zip that was not opened. This supports the page's statement that DLC code lives in the base game behind `has_dlc`. [vanilla-confirmed 1.19.4.1] `dlc/*/`, `integrated_dlc/*/`.
+- `checksum_manifest.txt` lists the checksummed folders, each with its sub-folders: `common` (`.txt`, `.lua`), `events` (`.txt`), `history` (`.txt`) and `map` (`.txt`, `.map`, `.bmp`, `.csv`). `localisation`, `interface`, `gfx`, `music`, `sound` and `portraits` are not listed, so a mod that only changes those leaves the checksum alone. [vanilla-confirmed 1.19.3] `checksum_manifest.txt`.
+- The manifest has no exclusion lines, and `map/terrain/` holds two `.bmp` files (`Tree_season.bmp`, `Tree_tint.bmp`) that match the `map` plus `.bmp` entry. The page's "other than `map/terrain/`" is therefore not what the manifest says; its 62 `.dds` files are the part that no entry matches. [vanilla-confirmed 1.19.4.1] `checksum_manifest.txt`, `map/terrain/`. The engine counts `Tree_tint.bmp`: a mod override with its last byte changed changed one of the 91 values in the `dump_checksum` output (slot 3). A byte-identical override also changed five values against no file, so the sum is not a pure content hash of the `.bmp` and its presence counts too. Which category each slot stands for is not known, and the checksum shown on the main menu was not read. The second file, `Tree_season.bmp`, was not overridden, so that it counts is [unverified]. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launches, `dump_checksum` files compared.
+<!-- kit:end id="modding-load-facts" -->
+
+<!-- kit:begin id="modding-top-level-folders" at="section:folder-structure" -->
+Other top-level folders in the 1.19.4.1 game folder that the list above omits. For the 81 folders inside `common/` see the index on [Mod structure](mod_structure.md#common-folder-index-for-11941).
+
+- `documentation/` holds the generated reference, each as `.md` and `.html`: effects, triggers, modifiers, dynamic variables, console commands, localisation objects and formatters, script concepts, collection inputs and operators, and math functions. A further 39 documentation files (`.md`) sit inside `common/` folders. [vanilla-confirmed 1.19.4.1] `documentation/`, `common/`.
+- `tests/` holds 34 `.txt` files of scripted test bundles. `tests/_documentation.info` says each file is one bundle of `tests = { ... }` and that results go to `logs/tests/` in the user directory. [docs] `tests/_documentation.info`.
+- `script/` holds five Lua files: `autoexec.lua`, `ai_diplomacy.lua`, `diplomacy.lua`, `tweaks.lua` and `utils.lua`. The header of `autoexec.lua` says it runs on app start, once per context created. [vanilla-confirmed 1.19.3] `script/`.
+- `country_metadata/00_country_metadata.txt` sets the playthrough-stats and career-profile background per tag, with a `default` entry. [vanilla-confirmed 1.19.3] `country_metadata/00_country_metadata.txt`.
+- `changelog.txt` is four lines long and only points to the forum; it no longer holds patch notes. [vanilla-confirmed 1.19.3] `changelog.txt`.
+<!-- kit:end id="modding-top-level-folders" -->
+
+<!-- kit:begin id="modding-launch-options" at="section:debug-mode" -->
+Other launch option names that appear as strings in `hoi4.exe`, next to `debug` and `crash_data_log`: `nofilewatcher`, `disableoutdatedmodwarning`, `suppress_error_log`, `force_text_save`, `dump_script_doc`, `quickstart`, `start_save`, `allowoldsave`, `forcenodlc`, `log_messaging` and `nohdr`. Only the names are known. What each one does is [unverified]; test one at a time. The name `dump_script_doc` suggests it regenerates the files in `documentation/`. [unverified]
+<!-- kit:end id="modding-launch-options" -->
+
+<!-- kit:begin id="modding-descriptor-keys" at="section:descriptor-contents" -->
+The descriptor keys, with what the 1.19.4.1 files show about each. The format itself is not defined in any game file.
+
+| Key | What the game files show | Tag |
+| --- | --- | --- |
+| `supported_version` | The launcher compares it with the game version, which is `1.19.4.1` (`rawVersion`). It shows "Outdated mods enabled" for a mismatch and "The mod does not have supported_version set." when the key is missing. `hoi4.exe` has "Invalid supported_version in %s", and a value of `abc` wrote "Invalid supported_version in  file: mod/igc_g.mod line: 3" to error.log while the mod still loaded. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, error.log and system.log read. A 1.19 mod writes `"1.19.*"` or `"1.19.4.1"`. | [vanilla-confirmed 1.19.4.1] `launcher-settings.json`, `pdx_launcher/common/localisation/l_english.yml` |
+| `remote_file_id` | The key name is a string in `hoi4.exe`. The page says it links the descriptor to a Workshop or Paradox Mods item. | [unverified] |
+| `replace_path` | The key name is a string in `hoi4.exe`. The game reads it from the user-specific `mod/<name>.mod` file alone: in that file it replaced the vanilla `events/` folder, and in the mod folder's `descriptor.mod` alone it had no effect, so it does not have to be in both files. Only the `events/` folder was tested. The rest of the behaviour is as described in the section below. | [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launches, console and error.log read |
+| `user_dir` | The key name is a string in `hoi4.exe`. The page says it moves the save folder. | [unverified] |
+| `dependencies` | The word is a string in `hoi4.exe`. The page says it forces this mod to load after the listed names. | [unverified] |
+| `archive` | Vanilla `dlc003.dlc` is the only one of 14 `.dlc` files that sets it, to its `.zip`. [vanilla-confirmed 1.19.4.1] `dlc/dlc003_rocket_launcher_unit_pack/dlc003.dlc`. `hoi4.exe` has "Could not find archive for mod: %s". Only zipped mods use it; mods since 1.9.0 do not. An `archive="mod/missing.zip"` in both descriptors did not write that message: the game wrote "Incorrect MOD descriptor" for the outer file and loaded no mod. | [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, one-mod launch, error.log and system.log read |
+| `path` | Vanilla DLC descriptors (`dlc/*/dlc*.dlc`) use the same syntax with a game-folder-relative path and forward slashes, with or without quotes (`path = "dlc/dlc001_german_historical_portraits"` and `path = dlc/dlc034_no_step_back/` both occur). `dlc003.dlc` has no `path`. For a mod, `path` belongs only in the user-specific file, as the page says. | [vanilla-confirmed 1.19.4.1] `dlc/*/dlc*.dlc` |
+
+The user-specific file name for a Workshop item follows the pattern `ugc_<id>.mod`: `hoi4.exe` has the format string `%s/ugc_%llu.mod`. `editor_postfix` in the page's `settings.txt` example is also a string in `hoi4.exe`. [unverified] (strings in `hoi4.exe`)
+<!-- kit:end id="modding-descriptor-keys" -->

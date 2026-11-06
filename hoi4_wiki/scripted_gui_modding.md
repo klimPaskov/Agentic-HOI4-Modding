@@ -1,54 +1,16 @@
 # Scripted GUI modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Scripted GUI modding", revision 105160, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105160" sources="common/scripted_guis/ common/decisions/categories/ common/scripted_diplomatic_actions/scripted_diplomatic_actions.txt interface/ documentation/console_commands_documentation.md hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against `common/scripted_guis/_documentation.md`, the 17 vanilla scripted GUIs in `common/scripted_guis/` with their `.gui` windows in `interface/`, the decision categories that attach them, `common/scripted_diplomatic_actions/`, the GUI-related console commands in `documentation/`, a count of element sizes over the 130 vanilla `interface/*.gui` files, and key strings in `hoi4.exe`.
-- Kit blocks added: what vanilla actually uses (17 scripted GUIs, all `decision_category`), the parent window keys the page omits (`parent_scripted_gui`, `map_mode`), the missing context `diplomacy_target_context`, the documented-but-unused keys, a table of every top-level key, the `ai_weights` entry shape in the documentation, the entry containers of dynamic lists, property value forms, button `size` forms, and GUI console commands.
-- Flagged keys checked: `Button_1_click`, `Button_2_click`, `_click`, `_click_enabled`, `_visible`, `ai_check`, `ai_check_scope`, `ai_enabled`, `ai_weights`, `change_scope`, `dirty`, `dynamic_lists`, `effects`, `entry_container`, `ignore_lower_weights` and `parent_window_token` are element-name placeholders, naming suffixes or documented keys; none is wrong.
-- Real differences found: the wiki's `ignore_lower_weights = { factor = ... }` block and its `weight` placement differ from the documentation, `ai_test_variance` is described differently (fraction on the wiki, hours in the documentation), and the documentation spells a parent key `parent_window_window` that is absent from `hoi4.exe`.
-- Gaps left: vanilla uses no `effects`, `visible`, `dynamic_lists`, `dirty`, `parent_*` or `ai_*` key, so those sections rest on the documentation and the wiki only. Nothing was run in the game.
-**1.19.4.1 re-check (2026-11-01).** 16 vanilla-confirmed statements depended on files the update changed (`common/scripted_guis/`, `common/decisions/categories/` and `interface/*.gui`), and all of them were re-measured. The update adds two scripted GUI files, so the vanilla count is 19 instead of 17, `triggers` is used by 4, and `dynamic_lists` (2) and `dirty` (1) now have vanilla uses, which corrects the earlier 'no vanilla use' statements; the `interface/*.gui` size counts also moved (82 button sizes of 2,054 buttons). The three console command bullets cite the changed console commands documentation: the six commands they name are all still listed, since only `debug_types` was removed. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Window assignment](#Window_assignment)
-- [Parent window](#Parent_window)
-- [Context](#Context)
-- [Dirty](#Dirty)
-- [Visible](#Visible)
-- [Effects](#Effects)
-- [Triggers](#Triggers)
-  - [Temporary variable usage](#Temporary_variable_usage)
-- [Dynamic Lists](#Dynamic_Lists)
-- [Properties](#Properties)
-- [AI](#AI)
-  - [AI enabled](#AI_enabled)
-  - [AI Test Attributes](#AI_Test_Attributes)
-  - [AI Check](#AI_Check)
-  - [AI Test Scopes](#AI_Test_Scopes)
-  - [AI Check Scope](#AI_Check_Scope)
-  - [AI Weights](#AI_Weights)
-  - [AI Parents](#AI_Parents)
-- [Template](#Template)
-- [Scripted Localization](#Scripted_Localization)
-- [Tips](#Tips)
-- [See also](#See_also)
-
----
-
 Scripted GUIs are used to assign scripted functionality to newly-created elements in the user interface, allowing it to modify the game's state or change depending on conditions.
 
 Scripted GUIs are defined as `/Hearts of Iron IV/common/scripted_guis/*.txt` files. The folder name must be in plural. The scripted GUI will assign functionality to user interface elements, which themselves are defined in `/Hearts of Iron IV/interface/*.gui` files.
 
-Most commonly, [flags](<data_structures.md>), [variables](<data_structures.md>), and [arrays](<data_structures.md>) are used in the implementation of GUI. For example, implementing a button that opens up a window is most commonly done by assigning a flag to be set on the button press and making the window visibility depend on the flag being set on the country.
+Most commonly, [flags](data_structures.md), [variables](data_structures.md), and [arrays](data_structures.md) are used in the implementation of GUI. For example, implementing a button that opens up a window is most commonly done by assigning a flag to be set on the button press and making the window visibility depend on the flag being set on the country.
 
 A scripted GUI is defined as a block within a `scripted_gui = { ... }` container, where the name of the block determines the internal ID of the scripted GUI.
 
-## Window assignment <a id="Window_assignment"></a>
+## Window assignment
 
-*See also: [Interface modding](<interface_modding.md>)*
+*See also: [Interface modding](interface_modding.md)*
 
 Scripted GUIs are assigned to `containerWindowType`s and apply to every interface element located within them. This is done with `window_name = example_container`.
 
@@ -74,12 +36,11 @@ The scripted GUI will affect every single element located inside of the containe
 
 Most commonly, the containers used by scripted GUI are defined inside of fully separate interface files to ensure no overlap.
 
-<!-- kit:begin id="sg-vanilla-use" at="section:Window_assignment" -->
-**Kit note** What vanilla scripted GUIs look like in 1.19.4.1, so that the rest of this page can be judged against it.
+What vanilla scripted GUIs look like in 1.19.4.1, so that the rest of this page can be judged against it.
 
-- `common/scripted_guis/` holds 19 scripted GUIs in 19 files, and all 19 use `context_type = decision_category`. Their keys are `context_type` (19), `window_name` (19), `properties` (12), `triggers` (4), `dynamic_lists` (2) and `dirty` (1). None uses `visible`, `effects`, `parent_*`, `map_mode` or any `ai_*` key. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`. The documentation describes all those keys, so they are supported. [docs] `common/scripted_guis/_documentation.md`. `dynamic_lists` and `dirty` first appear in vanilla in 1.19.4.1, in the added files `MTG_naval_treaty_scripted_gui.txt` and `RAJ_GOE_partition_scripted_gui.txt`. For the keys that are still unused, nothing in vanilla shows them working. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
-- Vanilla scripted GUIs are attached by a decision category: 19 `scripted_gui = <name>` lines in 13 files of `common/decisions/categories/`, for example `scripted_gui = AST_cabinet_trust_ui` in `AST_decision_categories.txt`. `INS_revolution_scripted_gui` is attached by two lines, and `swe_rearnament_system_ui` only by a commented-out line, so it is attached nowhere. [vanilla-confirmed 1.19.4.1] `common/decisions/categories/`.
-- The window is a top-level `containerWindowType` in its own file, named after the scripted GUI file: `AST_cabinet_trust_ui` has `window_name = "AST_cabinet_trust_ui_window"` and the container sits in `interface/AST_cabinet_trust_scripted_gui.gui` with `size = { width = 100% height = 150 }`. Vanilla writes percentages both as `100%%` (706 uses in `interface/*.gui`) and as `100%` (348 uses). [vanilla-confirmed 1.19.4.1] `common/scripted_guis/AST_cabinet_trust_scripted_gui.txt`, `interface/AST_cabinet_trust_scripted_gui.gui`.
+- `common/scripted_guis/` holds 19 scripted GUIs in 19 files, and all 19 use `context_type = decision_category`. Their keys are `context_type` (19), `window_name` (19), `properties` (12), `triggers` (4), `dynamic_lists` (2) and `dirty` (1). None uses `visible`, `effects`, `parent_*`, `map_mode` or any `ai_*` key. The documentation describes all those keys, so they are supported. `dynamic_lists` and `dirty` first appear in vanilla in 1.19.4.1, in the added files `MTG_naval_treaty_scripted_gui.txt` and `RAJ_GOE_partition_scripted_gui.txt`. For the keys that are still unused, nothing in vanilla shows them working.
+- Vanilla scripted GUIs are attached by a decision category: 19 `scripted_gui = <name>` lines in 13 files of `common/decisions/categories/`, for example `scripted_gui = AST_cabinet_trust_ui` in `AST_decision_categories.txt`. `INS_revolution_scripted_gui` is attached by two lines, and `swe_rearnament_system_ui` only by a commented-out line, so it is attached nowhere.
+- The window is a top-level `containerWindowType` in its own file, named after the scripted GUI file: `AST_cabinet_trust_ui` has `window_name = "AST_cabinet_trust_ui_window"` and the container sits in `interface/AST_cabinet_trust_scripted_gui.gui` with `size = { width = 100% height = 150 }`. Vanilla writes percentages both as `100%%` (706 uses in `interface/*.gui`) and as `100%` (348 uses).
 
 A complete vanilla scripted GUI is as short as this:
 
@@ -92,10 +53,9 @@ scripted_gui = {
 }
 ```
 
-The example is the whole file `GER_rk_scripted_gui.txt`, with the spacing changed. [vanilla-confirmed 1.19.3] `common/scripted_guis/GER_rk_scripted_gui.txt`.
-<!-- kit:end id="sg-vanilla-use" -->
+The example is the whole file `GER_rk_scripted_gui.txt`, with the spacing changed.
 
-## Parent window <a id="Parent_window"></a>
+## Parent window
 
 By default, a newly-created container window will show up on top of most other UI elements. Assigning a parent window is done in order to make the UI be attached to a particular container. This makes the container window only visible when the parent window is visible, assigns the drawing order to be directly on top of the parent's elements, and makes the container follow the animations done by the parent.
 
@@ -171,21 +131,19 @@ guiTypes = {
 
 `parent_window_name` is unable to accept container windows that are used by a gridboxType.
 
-<!-- kit:begin id="sg-parent-keys" at="section:Parent_window" -->
-**Kit note** Checks of the parent window section against `common/scripted_guis/_documentation.md`.
+Checks of the parent window section against `common/scripted_guis/_documentation.md`.
 
-- The `parent_window_token` list above is complete and exact: the documentation lists the same 30 tokens, from `top_bar` to `tech_industry_folder`. [docs] `common/scripted_guis/_documentation.md`.
-- Without a parent, the GUI is attached to the main window, unless the context type overrides that. [docs] `common/scripted_guis/_documentation.md`.
-- The documentation spells the container-name key `parent_window_window = "container_name"` and adds "may not work". The string `parent_window_window` does not occur in `hoi4.exe`, while `parent_window_name` does, so the wiki's `parent_window_name` is the key to write and the documentation spelling is probably a slip. [docs] `common/scripted_guis/_documentation.md`. The executable strings do not show which key the engine reads. [unverified] `hoi4.exe`
-- Two keys are missing from the wiki: `parent_scripted_gui = "<scripted gui name>"` attaches a scripted GUI to another scripted GUI (the documentation comment says "container_name" but describes the scripted GUI case), and `map_mode = <map mode>` makes the GUI show only in that map mode. [docs] `common/scripted_guis/_documentation.md`. The second key did not work in a test: a `scripted_gui` block with `map_mode` was rejected at load as "Unexpected token: map_mode", whatever name followed (a scripted map mode id, a hard-coded layer name or a made-up name). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read at load. See [Map mode modding](<map_mode_modding.md>).
-- No vanilla scripted GUI sets a parent key, so the `_instance` suffix rule for nested containers is a claim of the wiki that cannot be checked in the game files. [vanilla-confirmed 1.19.4.1] 0 of 19 scripted GUIs use `parent_window_token` or `parent_window_name`, and none uses `parent_window_window` or `parent_scripted_gui` either. The `_instance` rule is untested. [unverified]
-<!-- kit:end id="sg-parent-keys" -->
+- The `parent_window_token` list above is complete and exact: the documentation lists the same 30 tokens, from `top_bar` to `tech_industry_folder`.
+- Without a parent, the GUI is attached to the main window, unless the context type overrides that.
+- The documentation spells the container-name key `parent_window_window = "container_name"` and adds "may not work". The string `parent_window_window` does not occur in `hoi4.exe`, while `parent_window_name` does, so the wiki's `parent_window_name` is the key to write and the documentation spelling is probably a slip. The executable strings do not show which key the engine reads. (unverified) `hoi4.exe`
+- Two keys are missing from the wiki: `parent_scripted_gui = "<scripted gui name>"` attaches a scripted GUI to another scripted GUI (the documentation comment says "container_name" but describes the scripted GUI case), and `map_mode = <map mode>` makes the GUI show only in that map mode. The second key did not work in a test: a `scripted_gui` block with `map_mode` was rejected at load as "Unexpected token: map_mode", whatever name followed (a scripted map mode id, a hard-coded layer name or a made-up name). See [Map mode modding](map_mode_modding.md).
+- No vanilla scripted GUI sets a parent key, so the `_instance` suffix rule for nested containers is a claim of the wiki that cannot be checked in the game files. The `_instance` rule is untested. (unverified)
 
-## Context <a id="Context"></a>
+## Context
 
-The context determines the information about the game state that is available to the scripted GUI to read or modify. This is determined with `context_type = player_context` in the scripted GUI. If unset, no information will be given to the UI, making it impossible to have it have any effect or be dynamic, including in localisation. Assigning any context type will make it possible to use the scripted GUI to modify the game's state, in part using any [effects](<effects.md>) and [triggers](<triggers.md>), including [scopes](<scopes.md>).
+The context determines the information about the game state that is available to the scripted GUI to read or modify. This is determined with `context_type = player_context` in the scripted GUI. If unset, no information will be given to the UI, making it impossible to have it have any effect or be dynamic, including in localisation. Assigning any context type will make it possible to use the scripted GUI to modify the game's state, in part using any [effects](effects.md) and [triggers](triggers.md), including [scopes](scopes.md).
 
-In each of the options, [ROOT](<scopes.md>) always corresponds to the country that sees the scripted GUI (or "player country", which may be controlled by AI). However, the default scope depends on the context.
+In each of the options, [ROOT](scopes.md) always corresponds to the country that sees the scripted GUI (or "player country", which may be controlled by AI). However, the default scope depends on the context.
 
 Context types:
 
@@ -194,7 +152,7 @@ Context types:
 | player_context | The baseline context. The default scope is the player country, which is also always ROOT in every context. |
 | selected_country_context | The default scope is the currently-selected country. The scripted GUI will not appear if no country is selected. AI evaluates this for every other country, unless otherwise restricted. |
 | selected_state_context | The default scope is the currently-selected state. The scripted GUI will not appear if no state is selected. AI evaluates this for every state, unless otherwise restricted. |
-| decision_category | Allows the GUI to read a decision category as context in order to embed itself in its description. [Necessary to attach the scripted GUI to a decision category with the `scripted_gui` attribute in the category.](<decision_modding.md#Scripted_GUI>) The scripted GUI shouldn't have any parent window. Temporary data structure usage may not always work correctly with this context type. |
+| decision_category | Allows the GUI to read a decision category as context in order to embed itself in its description. [Necessary to attach the scripted GUI to a decision category with the `scripted_gui` attribute in the category.](decision_modding.md#scripted-gui) The scripted GUI shouldn't have any parent window. Temporary data structure usage may not always work correctly with this context type. |
 | diplomatic_action | Allows the GUI to read a scripted diplomatic action as context in order to be sent to the target upon its selection. Necessary to attach the scripted GUI to a scripted diplomatic action in a `/Hearts of Iron IV/common/scripted_diplomatic_actions/*.txt` file. |
 | national_focus_context | Gui will be attached to a national focus view for the targeted country, the country which owns the national focus view |
 | country_mapicon | The GUI will show up next to every country when viewing the world map. The default scope is the country that it appears on. |
@@ -202,36 +160,32 @@ Context types:
 
 If the default scope differs from ROOT, then PREV is useful to refer to it with further scoping.
 
-<!-- kit:begin id="sg-context-fix" at="section:Context" -->
-**Kit correction** The table above lacks one context type. The documentation lists nine: `player_context`, `selected_country_context`, `selected_state_context`, `diplomacy_target_context`, `decision_category`, `diplomatic_action`, `national_focus_context`, `country_mapicon` and `state_mapicon`. `diplomacy_target_context` attaches the GUI to the diplomacy window and targets the currently selected country. [docs] `common/scripted_guis/_documentation.md`.
+The table above lacks one context type. The documentation lists nine: `player_context`, `selected_country_context`, `selected_state_context`, `diplomacy_target_context`, `decision_category`, `diplomatic_action`, `national_focus_context`, `country_mapicon` and `state_mapicon`. `diplomacy_target_context` attaches the GUI to the diplomacy window and targets the currently selected country.
 
-**Kit note** More on the contexts. All bullets: [docs] `common/scripted_guis/_documentation.md` unless marked.
+More on the contexts.
 
 - `selected_country_context` targets the country the player right-clicks and `selected_state_context` the state the player left-clicks; the documentation text for the state case says "target country", which looks like a slip for the state.
-- `country_mapicon` and `state_mapicon` take a `mapicon_targets = { ... }` block that uses targeting code like targeted decisions. The documentation gives no more detail on that block, and no vanilla scripted GUI uses it. [vanilla-confirmed 1.19.4.1] 0 of 19.
-- The `diplomatic_action` context pairs with two keys of a scripted diplomatic action, `send_scripted_gui` (shown before the request is sent) and `receive_scripted_gui` (shown to the receiver instead of the yes/no popup). They are described in the comment block of `common/scripted_diplomatic_actions/scripted_diplomatic_actions.txt`; each has a `reset_send_effect` or `reset_receive_effect` to clear the state, and the `can_be_sent` and `can_be_accepted` triggers. [vanilla-confirmed 1.19.3] `common/scripted_diplomatic_actions/scripted_diplomatic_actions.txt`.
-- `decision_category` is the only context vanilla uses, in all 19 scripted GUIs. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
-<!-- kit:end id="sg-context-fix" -->
+- `country_mapicon` and `state_mapicon` take a `mapicon_targets = { ... }` block that uses targeting code like targeted decisions. The documentation gives no more detail on that block, and no vanilla scripted GUI uses it.
+- The `diplomatic_action` context pairs with two keys of a scripted diplomatic action, `send_scripted_gui` (shown before the request is sent) and `receive_scripted_gui` (shown to the receiver instead of the yes/no popup). They are described in the comment block of `common/scripted_diplomatic_actions/scripted_diplomatic_actions.txt`; each has a `reset_send_effect` or `reset_receive_effect` to clear the state, and the `can_be_sent` and `can_be_accepted` triggers.
+- `decision_category` is the only context vanilla uses, in all 19 scripted GUIs.
 
-## Dirty <a id="Dirty"></a>
+## Dirty
 
-Defines when the scripted GUI should be updated; by default guis are updated every tick. For large GUIs, this can make them quite performance heavy; as such it's recommended to use a dirty[variable](<data_structures.md#Variables>) to tell the game when to update a GUI instead of having them be updated constantly. If you do, the GUI will only update when the variable's value changes. Note that this only applies to updating the properties of the GUI, but not to the GUI itself's visibility. Dirty variables can be declared like such:
+Defines when the scripted GUI should be updated; by default guis are updated every tick. For large GUIs, this can make them quite performance heavy; as such it's recommended to use a dirty[variable](data_structures.md#variables) to tell the game when to update a GUI instead of having them be updated constantly. If you do, the GUI will only update when the variable's value changes. Note that this only applies to updating the properties of the GUI, but not to the GUI itself's visibility. Dirty variables can be declared like such:
 
 ```text
 dirty = example_variable
 ```
 
-<!-- kit:begin id="sg-dirty-notes" at="section:Dirty" -->
-**Kit note** The documentation adds that a GUI is updated every tick by default, and that with `dirty = <var_name>` an effect can force an update by changing that variable, for example `add_to_variable = { var_name = 1 }`. [docs] `common/scripted_guis/_documentation.md`. One vanilla scripted GUI uses `dirty`: `MTG_naval_treaties_ui` writes `dirty = global.MTG_naval_treaty_ui_version`, and `add_to_variable = { global.MTG_naval_treaty_ui_version = 1 }` appears in four places in the scripted effects. A file comment says the GUI refreshes off the counter instead of every tick. [vanilla-confirmed 1.19.4.1] 1 of 19, `common/scripted_guis/MTG_naval_treaty_scripted_gui.txt`, `common/scripted_effects/00_scripted_effects.txt`.
-<!-- kit:end id="sg-dirty-notes" -->
+The documentation adds that a GUI is updated every tick by default, and that with `dirty = <var_name>` an effect can force an update by changing that variable, for example `add_to_variable = { var_name = 1 }`. One vanilla scripted GUI uses `dirty`: `MTG_naval_treaties_ui` writes `dirty = global.MTG_naval_treaty_ui_version`, and `add_to_variable = { global.MTG_naval_treaty_ui_version = 1 }` appears in four places in the scripted effects. A file comment says the GUI refreshes off the counter instead of every tick.
 
-## Visible <a id="Visible"></a>
+## Visible
 
 Defines when the scripted GUI is visible for the current scope.
 
 Note that the scripted GUI has to be visible for the AI if it is to use it.
 
-## Effects <a id="Effects"></a>
+## Effects
 
 Defines what effects should be attached to button elements within the interface. **<element>** should be the name of the element.
 
@@ -246,7 +200,7 @@ Modifiers:
 
 For example: `my_button_alt_right_click = { }`
 
-## Triggers <a id="Triggers"></a>
+## Triggers
 
 Defines when interface elements are usable or visible. By default elements are clickable and visible. Note that this allows the manipulation of single elements without affecting the overall parent window.
 
@@ -258,16 +212,14 @@ Note that `<element>_click_enabled` overrides the specific triggers such as `<el
 
 Note that if an element is not visible, the AI will be unable to click on it as well.
 
-<!-- kit:begin id="sg-effects-triggers-notes" at="section:Triggers" -->
-**Kit note** The names flagged in the page inventory are placeholders, suffix patterns or documented keys, and none is an error.
+The names flagged in the page inventory are placeholders, suffix patterns or documented keys, and none is an error.
 
-- `Button_1_click` and `Button_2_click` in the dynamic list example are the element names `Button_1` and `Button_2` from the `.gui` file plus the `_click` suffix. `my_button_alt_right_click` and `my_temp_array_calculator_click_enabled` follow the same pattern. The modifiers `right`, `alt`, `control` and `shift` go in front of `click`. [docs] `common/scripted_guis/_documentation.md`.
-- `_click`, `_click_enabled` and `_visible` are suffixes that attach an effect or a trigger to an element: `<element>_click` goes in `effects`, and `<element>_click_enabled` and `<element>_visible` go in `triggers`. [docs] `common/scripted_guis/_documentation.md`.
-- Four vanilla scripted GUIs use `triggers`. `RAJ_tax_fraud_scripted_ui` has four `eic_current_taxes_<n>_visible` triggers that each test `check_variable`. `sov_paranoia_system_ui`, `MTG_naval_treaties_ui` and `RAJ_GOE_partition_scripted_ui` have one `_visible` trigger each, testing `has_country_flag`, `check_variable` and `has_global_flag`. Only the tax fraud GUI used `triggers` in 1.19.3. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
-- Vanilla uses no `effects` block, so the `<element>_click` form has no vanilla precedent. [vanilla-confirmed 1.19.4.1] 0 of 19.
-<!-- kit:end id="sg-effects-triggers-notes" -->
+- `Button_1_click` and `Button_2_click` in the dynamic list example are the element names `Button_1` and `Button_2` from the `.gui` file plus the `_click` suffix. `my_button_alt_right_click` and `my_temp_array_calculator_click_enabled` follow the same pattern. The modifiers `right`, `alt`, `control` and `shift` go in front of `click`.
+- `_click`, `_click_enabled` and `_visible` are suffixes that attach an effect or a trigger to an element: `<element>_click` goes in `effects`, and `<element>_click_enabled` and `<element>_visible` go in `triggers`.
+- Four vanilla scripted GUIs use `triggers`. `RAJ_tax_fraud_scripted_ui` has four `eic_current_taxes_<n>_visible` triggers that each test `check_variable`. `sov_paranoia_system_ui`, `MTG_naval_treaties_ui` and `RAJ_GOE_partition_scripted_ui` have one `_visible` trigger each, testing `has_country_flag`, `check_variable` and `has_global_flag`. Only the tax fraud GUI used `triggers` in 1.19.3.
+- Vanilla uses no `effects` block, so the `<element>_click` form has no vanilla precedent.
 
-### Temporary variable usage <a id="Temporary_variable_usage"></a>
+### Temporary variable usage
 
 In addition to determining when an element is clickable or visible, the `triggers` block of a Scripted GUI can also have temporary variables (as well as temporary arrays) set inside of an `<element>_<trigger>` block and those temporary data structures can be used in both the `properties` and `dynamic_lists` section of a Scripted GUI.
 
@@ -310,7 +262,7 @@ dynamic_lists = {
 }
 ```
 
-## Dynamic Lists <a id="Dynamic_Lists"></a>
+## Dynamic Lists
 
 This is a special feature that is to be used in tandem with grid boxes within interface modding. It will draw a gui for each value inside of the array chosen where the grid box with the same name is.
 
@@ -452,17 +404,15 @@ guiTypes = {
 }
 ```
 
-<!-- kit:begin id="sg-dynamic-list-notes" at="section:Dynamic_Lists" -->
-**Kit note** Checks of the dynamic list section against `common/scripted_guis/_documentation.md`.
+Checks of the dynamic list section against `common/scripted_guis/_documentation.md`.
 
-- A dynamic list entry has `array` (one GUI element per array element), `value` (name of the variable that holds the current element, default `v`), `index` (name of the variable that holds the current index, default `i`) and `change_scope` (when `yes`, the scope changes to the array element while the child is built). [docs] `common/scripted_guis/_documentation.md`.
-- The entry container is picked with `entry_container = "<container>"`, and the documentation says all the container keys accept scripted localisation. It also lists `country_scope_entry_container`, which the documentation writes twice; the second line was probably meant to be `state_scope_entry_container`, a token that exists in `hoi4.exe` and that vanilla writes in `RAJ_GOE_partition_scripted_gui.txt`. [docs] `common/scripted_guis/_documentation.md`. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/RAJ_GOE_partition_scripted_gui.txt`.
-- A dynamic list entry may hold its own `ai_weights` block, and the list uses the `effects` and `triggers` of the same scripted GUI. [docs] `common/scripted_guis/_documentation.md`.
-- Two vanilla scripted GUIs have a `dynamic_lists` block, `MTG_naval_treaties_ui` and `RAJ_GOE_partition_scripted_ui`, both added in 1.19.4.1. Each holds one list, named after a `gridBoxType` in the window's `.gui` file (the file comment says the binding is by name). The list sets `array` (a `global.` array in one, a country array in the other) and `change_scope = yes`, plus `country_scope_entry_container` or `state_scope_entry_container`. That key holds a quoted scripted localisation call, and the call returns the name of a container in the `.gui` file; an empty result drops the entry, as the file comments say. Neither list sets `value`, `index` or `ai_weights`. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/MTG_naval_treaty_scripted_gui.txt`, `common/scripted_guis/RAJ_GOE_partition_scripted_gui.txt`, `interface/MTG_naval_treaty_scripted_gui.gui`, `interface/RAJ_GOE_partition_scripted_gui.gui`.
-- Element sizes in vanilla `.gui` files, for the example windows above: `containerWindowType` blocks that set `size` write `{ width = .. height = .. }` (1,794 of 1,809, while 13 add `min` and 2 write only `width`), while `buttonType` blocks that set `size` all write `{ x = .. y = .. }`: 82 of 2,054 `buttonType` blocks set a size and all 82 use the x and y form. A `buttonType` normally takes its size from its sprite and writes no `size`. [vanilla-confirmed 1.19.4.1] `interface/*.gui` (132 files).
-<!-- kit:end id="sg-dynamic-list-notes" -->
+- A dynamic list entry has `array` (one GUI element per array element), `value` (name of the variable that holds the current element, default `v`), `index` (name of the variable that holds the current index, default `i`) and `change_scope` (when `yes`, the scope changes to the array element while the child is built).
+- The entry container is picked with `entry_container = "<container>"`, and the documentation says all the container keys accept scripted localisation. It also lists `country_scope_entry_container`, which the documentation writes twice; the second line was probably meant to be `state_scope_entry_container`, a token that exists in `hoi4.exe` and that vanilla writes in `RAJ_GOE_partition_scripted_gui.txt`.
+- A dynamic list entry may hold its own `ai_weights` block, and the list uses the `effects` and `triggers` of the same scripted GUI.
+- Two vanilla scripted GUIs have a `dynamic_lists` block, `MTG_naval_treaties_ui` and `RAJ_GOE_partition_scripted_ui`, both added in 1.19.4.1. Each holds one list, named after a `gridBoxType` in the window's `.gui` file (the file comment says the binding is by name). The list sets `array` (a `global.` array in one, a country array in the other) and `change_scope = yes`, plus `country_scope_entry_container` or `state_scope_entry_container`. That key holds a quoted scripted localisation call, and the call returns the name of a container in the `.gui` file; an empty result drops the entry, as the file comments say. Neither list sets `value`, `index` or `ai_weights`.
+- Element sizes in vanilla `.gui` files, for the example windows above: `containerWindowType` blocks that set `size` write `{ width = .. height = .. }` (1,794 of 1,809, while 13 add `min` and 2 write only `width`), while `buttonType` blocks that set `size` all write `{ x = .. y = .. }`: 82 of 2,054 `buttonType` blocks set a size and all 82 use the x and y form. A `buttonType` normally takes its size from its sprite and writes no `size`.
 
-## Properties <a id="Properties"></a>
+## Properties
 
 Properties allow for specified elements to be manipulated whilst in-game, allowing for their texture and position to be changed.
 
@@ -513,20 +463,18 @@ defined_text = {
 
 This is an example of using scripted localization to supply the property with the texture string.
 
-<!-- kit:begin id="sg-properties-notes" at="section:Properties" -->
-**Kit note** Vanilla `properties` blocks (12 of the 19 scripted GUIs) use only two attributes: `frame` (51 times) and `image` (32 times). [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
+Vanilla `properties` blocks (12 of the 19 scripted GUIs) use only two attributes: `frame` (51 times) and `image` (32 times).
 
-- `image` takes a string that holds a scripted localisation call, for example `image = "[GET_WAR_ESCALATION_LEVEL_1_COLOR]"`, and the call returns a GFX name. [vanilla-confirmed 1.19.3] `common/scripted_guis/war_escalation_scripted_gui.txt`. `MTG_naval_treaty_scripted_gui.txt` also writes `image = "[This.GetFlag]"`, a localisation object function instead of a scripted localisation entry. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/MTG_naval_treaty_scripted_gui.txt`.
-- `frame` takes a plain number (`frame = 3`), a variable name (`frame = SOV_poster_left_icon_frame`) or an array element (`frame = SOV_paranoia_generic_portraits_array^1`). [vanilla-confirmed 1.19.4.1] `common/scripted_guis/war_escalation_scripted_gui.txt`, `SOV_propaganda_campaigns_scripted_gui.txt`, `SOV_paranoia_system_scripted_gui.txt`.
-- `x` and `y` are documented as variables that move an element, and no vanilla scripted GUI uses them. [docs] `common/scripted_guis/_documentation.md`. [vanilla-confirmed 1.19.4.1] 0 of 19.
-- Frame numbers count from 1: vanilla sets frames 1 to 10 on ten icons. [vanilla-confirmed 1.19.3] `common/scripted_guis/war_escalation_scripted_gui.txt`.
-<!-- kit:end id="sg-properties-notes" -->
+- `image` takes a string that holds a scripted localisation call, for example `image = "[GET_WAR_ESCALATION_LEVEL_1_COLOR]"`, and the call returns a GFX name. `MTG_naval_treaty_scripted_gui.txt` also writes `image = "[This.GetFlag]"`, a localisation object function instead of a scripted localisation entry.
+- `frame` takes a plain number (`frame = 3`), a variable name (`frame = SOV_poster_left_icon_frame`) or an array element (`frame = SOV_paranoia_generic_portraits_array^1`).
+- `x` and `y` are documented as variables that move an element, and no vanilla scripted GUI uses them.
+- Frame numbers count from 1: vanilla sets frames 1 to 10 on ten icons.
 
-## AI <a id="AI"></a>
+## AI
 
 The true usefulness of scripted GUIs is that they can be used by the AI, meaning new features can be properly implemented with custom interfaces that the AI can navigate.
 
-### AI enabled <a id="AI_enabled"></a>
+### AI enabled
 
 The first step is to determine when the AI is enabled for the GUI.
 
@@ -540,11 +488,9 @@ This scope is checked during initialization, and any AI that fail are never chec
 
 This is the best optimization, as it means invalid AIs will never be checked again, but it is only checked once.
 
-<!-- kit:begin id="sg-ai-enabled-notes" at="section:AI_enabled" -->
-**Kit note** `ai_enabled` is checked once and a false result excludes the GUI for the whole game, so the documentation advises testing only things like `tag` or `original_tag` in it. [docs] `common/scripted_guis/_documentation.md`. `ai_check` is evaluated once for each AI and each GUI, and a false result makes the AI ignore the GUI in that tick. [docs] `common/scripted_guis/_documentation.md`.
-<!-- kit:end id="sg-ai-enabled-notes" -->
+`ai_enabled` is checked once and a false result excludes the GUI for the whole game, so the documentation advises testing only things like `tag` or `original_tag` in it. `ai_check` is evaluated once for each AI and each GUI, and a false result makes the AI ignore the GUI in that tick.
 
-### AI Test Attributes <a id="AI_Test_Attributes"></a>
+### AI Test Attributes
 
 These attributes determine when the AI checks the scripted GUI.
 
@@ -552,15 +498,13 @@ These attributes determine when the AI checks the scripted GUI.
 **ai_test_variance** determines the variance in time (In percent) for the check, which is the specified variance divided by 2 for plus and minus. By default set to 0.2
 As such, an interval of 100 with a variance of 0.2 will make the AI check every 90 to 110 hours (100±`[10% of 100, which is 10]`).
 
-<!-- kit:begin id="sg-ai-attribute-notes" at="section:AI_Test_Attributes" -->
-**Kit note** The two sources disagree on `ai_test_variance`. The documentation example sets `ai_test_interval = 24` and `ai_test_variance = 24` under the comment "ai test interval & variance in hours", while this page describes the variance as a fraction with default 0.2. [docs] `common/scripted_guis/_documentation.md`. No vanilla scripted GUI sets either attribute (0 of 19), so the unit cannot be settled from the game files. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`. Write both `ai_test_interval` and `ai_test_variance` explicitly and check the result in `scripted_ai.log`. Which unit the variance uses is untested. [unverified] The value changes how often the AI tests the button, by a lot. A button with `ai_test_variance = 24` was pressed by each of 97 AI countries about once per game hour (528 presses per country in 6 days, every gap 1 hour). Two buttons with `ai_test_variance = 0.2` were pressed 3 to 17 times per country, with gaps of about 22 to 24 hours or a multiple of that. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, a `log` line in each button effect, game.log read. The AI countries pressed the buttons without `human_ai` being needed for them. The unit is not settled by this: one of the two `0.2` buttons also set `ai_test_parent`, and that key's effect was not separated.
-<!-- kit:end id="sg-ai-attribute-notes" -->
+The two sources disagree on `ai_test_variance`. The documentation example sets `ai_test_interval = 24` and `ai_test_variance = 24` under the comment "ai test interval & variance in hours", while this page describes the variance as a fraction with default 0.2. No vanilla scripted GUI sets either attribute (0 of 19), so the unit cannot be settled from the game files. Write both `ai_test_interval` and `ai_test_variance` explicitly and check the result in `scripted_ai.log`. Which unit the variance uses is untested. (unverified) The value changes how often the AI tests the button, by a lot. A button with `ai_test_variance = 24` was pressed by each of 97 AI countries about once per game hour (528 presses per country in 6 days, every gap 1 hour). Two buttons with `ai_test_variance = 0.2` were pressed 3 to 17 times per country, with gaps of about 22 to 24 hours or a multiple of that. The AI countries pressed the buttons without `human_ai` being needed for them. The unit is not settled by this: one of the two `0.2` buttons also set `ai_test_parent`, and that key's effect was not separated.
 
-### AI Check <a id="AI_Check"></a>
+### AI Check
 
 This scope is checked on every tick of the interval specified by **ai_test_interval**. If it evaluates as false, the AI will ignore the GUI for the tick.
 
-### AI Test Scopes <a id="AI_Test_Scopes"></a>
+### AI Test Scopes
 
 The AI needs to be told who it should target when using scripted GUIs. You can imagine this as the AI clicking on the countries or states.
 
@@ -605,7 +549,7 @@ You can define **test_if_only_major** which will limit the other scopes to only 
 
 You can define **test_if_only_coastal** which will limit the other scopes to only coastal countries or states.
 
-### AI Check Scope <a id="AI_Check_Scope"></a>
+### AI Check Scope
 
 Now the AI knows what to target, it is possible to filter these with triggers.
 
@@ -615,7 +559,7 @@ ai_check_scope = {
 }
 ```
 
-### AI Weights <a id="AI_Weights"></a>
+### AI Weights
 
 The AI also needs to be told how to handle the actual clickable elements within the GUI. This happens with the **ai_weights** scope.
 
@@ -633,8 +577,7 @@ The **ignore_lower_weights** attribute is added to the **ai_will_do** scope to t
 
 This allows the AI to ignore other actions as it may need to *save* a resource to take the action. Without this, the AI would take another action that may take the same resource and so would never take the first action, even when the factor is higher, as it would never save enough resources to take it.
 
-<!-- kit:begin id="sg-ai-weights-notes" at="section:AI_Weights" -->
-**Kit correction** The documentation puts `weight` and `ignore_lower_weights` beside `ai_will_do`, not inside it, and `ignore_lower_weights` is a yes/no value:
+The documentation puts `weight` and `ignore_lower_weights` beside `ai_will_do`, not inside it, and `ignore_lower_weights` is a yes/no value:
 
 ```text
 ai_weights = {
@@ -653,20 +596,17 @@ ai_weights = {
 ai_max_weight_taken_per_test = 100
 ```
 
-`weight` is the weight of the option, `ignore_lower_weights = yes` makes the AI skip options of lower weight, and `ai_max_weight_taken_per_test` stops the AI from clicking more buttons once that weight is reached. The block form `ignore_lower_weights = { factor = <float> }` in the template below, and the sentences above that attach `weight` and `ignore_lower_weights` to `ai_will_do`, have no counterpart in the documentation. [docs] `common/scripted_guis/_documentation.md`. Whether the engine also accepts the wiki forms is untested. [unverified] In a test, `weight = 50` inside an `ai_weights` entry was reported at load as "unknown command 'weight' for MTTH" (in three of the four test files), yet the buttons of those files were still pressed by the AI. A test with `ignore_lower_weights` written as a block with `factor` gave no load error and its button was never pressed. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read over 6 game days. Why that button was never pressed was not isolated.
+`weight` is the weight of the option, `ignore_lower_weights = yes` makes the AI skip options of lower weight, and `ai_max_weight_taken_per_test` stops the AI from clicking more buttons once that weight is reached. The block form `ignore_lower_weights = { factor = <float> }` in the template below, and the sentences above that attach `weight` and `ignore_lower_weights` to `ai_will_do`, have no counterpart in the documentation. Whether the engine also accepts the wiki forms is untested. (unverified) In a test, `weight = 50` inside an `ai_weights` entry was reported at load as "unknown command 'weight' for MTTH" (in three of the four test files), yet the buttons of those files were still pressed by the AI. A test with `ignore_lower_weights` written as a block with `factor` gave no load error and its button was never pressed. Why that button was never pressed was not isolated.
 
-**Kit note** The `ai_will_do` inside an entry is a normal AI value block: the documentation example uses `base` with a `modifier` that carries `add`. No vanilla scripted GUI has an `ai_weights` block. [docs] `common/scripted_guis/_documentation.md`. [vanilla-confirmed 1.19.4.1] 0 of 19.
-<!-- kit:end id="sg-ai-weights-notes" -->
+The `ai_will_do` inside an entry is a normal AI value block: the documentation example uses `base` with a `modifier` that carries `add`. No vanilla scripted GUI has an `ai_weights` block.
 
-### AI Parents <a id="AI_Parents"></a>
+### AI Parents
 
 You can define an AI parent that means the AI for different scripted GUIs is processed together. This is useful if different GUIs may use resources that another would deplete, and so by processing the AI together, the actions can be properly limited.
 
-<!-- kit:begin id="sg-ai-parent-notes" at="section:AI_Parents" -->
-**Kit note** The key that sets an AI parent is `ai_test_parent` in the wiki template. The documentation does not list it and no vanilla scripted GUI uses it. [vanilla-confirmed 1.19.4.1] `common/scripted_guis/_documentation.md`, `common/scripted_guis/*.txt`. The string is present in `hoi4.exe`, and the key is untested. [unverified] The documented key for attaching one scripted GUI to another is `parent_scripted_gui`, which concerns the window, not the AI. [docs] `common/scripted_guis/_documentation.md`.
-<!-- kit:end id="sg-ai-parent-notes" -->
+The key that sets an AI parent is `ai_test_parent` in the wiki template. The documentation does not list it and no vanilla scripted GUI uses it. The string is present in `hoi4.exe`, and the key is untested. (unverified) The documented key for attaching one scripted GUI to another is `parent_scripted_gui`, which concerns the window, not the AI.
 
-## Template <a id="Template"></a>
+## Template
 
 ```text
 scripted_gui = {
@@ -749,8 +689,7 @@ scripted_gui = {
 }
 ```
 
-<!-- kit:begin id="sg-template-keys" at="section:Template" -->
-**Kit note** Every top-level key of a scripted GUI that the sources name. "Vanilla" counts the 19 vanilla scripted GUIs that use the key.
+Every top-level key of a scripted GUI that the sources name. "Vanilla" counts the 19 vanilla scripted GUIs that use the key.
 
 | Key | Source | Vanilla |
 | --- | --- | --- |
@@ -772,10 +711,9 @@ scripted_gui = {
 | `ai_weights`, `ai_max_weight_taken_per_test` | docs, wiki | 0 |
 | `ai_test_parent` | wiki, `hoi4.exe` | 0 |
 
-The "Source" column: [docs] `common/scripted_guis/_documentation.md`, [unverified] where `hoi4.exe` is named (an executable string, so the row is not settled). The "Vanilla" column: [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`.
-<!-- kit:end id="sg-template-keys" -->
+Rows whose source is `hoi4.exe` rest on an executable string, so they are unverified.
 
-## Scripted Localization <a id="Scripted_Localization"></a>
+## Scripted Localization
 
 There is a special localization command that allows a scripted GUI element to display its effect within a tooltip.
 
@@ -793,7 +731,7 @@ For example:
 
 `MY_TOOLTIP: "[!test_button_click_enabled]"`
 
-## Tips <a id="Tips"></a>
+## Tips
 
 You can use the console command **human_ai** to enable AI for the current human country. This writes the AI checks and the results of said checks to the *scripted_ai.log*.
 
@@ -801,31 +739,15 @@ Event targets **CANNOT** be used in scripted GUIs, it will break everything. Mak
 
 Scripted effects and triggers can be used in scripted GUIs, and can be useful to separate the GUI logic and the gameplay logic.
 
-<!-- kit:begin id="sg-tips-notes" at="section:Tips" -->
-**Kit note** Console commands for working on scripted GUIs. All bullets: [docs] `documentation/console_commands_documentation.md`.
+Console commands for working on scripted GUIs.
 
-- `human_ai` toggles AI for human countries. The page says it writes the AI checks to `scripted_ai.log`; that file name appears in `hoi4.exe` but not in the documentation. [docs] `documentation/console_commands_documentation.md` says only "Toggles AI for Human countries". The log write is untested. [unverified] The log is written: with `human_ai` on, `scripted_ai.log` appeared in the logs folder, held GER's evaluations only (GER being the human country), with a score near 10 and an `ignore_below` value one lower (for example `igc_f_g250_c_btn_click GER ignore_below:9.2824`). [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, scripted_ai.log read over 6 game days. Only 6 days of GER lines were read.
-- `reloadinterface` reloads the entire interface, which picks up edits to `interface/*.gui` without a restart. See [Console commands](<console_commands.md>).
+- `human_ai` toggles AI for human countries. The page says it writes the AI checks to `scripted_ai.log`; that file name appears in `hoi4.exe` but not in the documentation. The log write is untested. (unverified) The log is written: with `human_ai` on, `scripted_ai.log` appeared in the logs folder, held GER's evaluations only (GER being the human country), with a score near 10 and an `ignore_below` value one lower (for example `igc_f_g250_c_btn_click GER ignore_below:9.2824`). Only 6 days of GER lines were read.
+- `reloadinterface` reloads the entire interface, which picks up edits to `interface/*.gui` without a restart. See [Console commands](console_commands.md).
 - `dbg_enable_scripted_gui <scope>` enables scripted GUIs and is not available in the release build. `guibounds` (alias `gui`) toggles GUI bounds debugging and `debug_nogui` toggles the whole GUI.
 
-The statement that event targets cannot be used in scripted GUIs is not in the documentation, and vanilla scripted GUIs contain no script that would test it (0 of 19 use `event_target`). [vanilla-confirmed 1.19.4.1] `common/scripted_guis/*.txt`. Whether event targets work there is untested. [unverified]
-<!-- kit:end id="sg-tips-notes" -->
+The statement that event targets cannot be used in scripted GUIs is not in the documentation, and vanilla scripted GUIs contain no script that would test it (0 of 19 use `event_target`). Whether event targets work there is untested. (unverified)
 
-## See also <a id="See_also"></a>
+## See also
 
 - Scripted GUI Tutorial by a Paradox developer.
 - Script examples by a Paradox developer: Gitlab, Steam.
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)

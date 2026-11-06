@@ -1,38 +1,5 @@
 # Console commands
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Console commands", revision 105778, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="105778" sources="documentation/console_commands_documentation.md localisation/ignored_loc_keys.txt launcher-settings.json documentation/triggers_documentation.md documentation/effects_documentation.md" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `documentation/console_commands_documentation.md` (386 commands and 44 tweakable variables), `localisation/ignored_loc_keys.txt`, `launcher-settings.json`, and a string search of `hoi4.exe` for commands the documentation does not list.
-Kit blocks added: an intro and a glossary, three correction blocks (rows that differ from the documentation, commands that are gone or undocumented, and the "no longer exists" and "unknown what" notes), a table of the commands that matter most for modding (`loc_check` family, `debug_checkportraitssanity`, reload commands, `event`, `effect`, `eval_effect`, `trigger`, `error`, `list_*`), eight tables for the 180 documented commands the page never named, and the 33 tweakable variables it never named.
-Gaps left: the documentation gives one line per command, so what `loc_check` counts as a bad key is [unverified]. Commands were not run in the game before 2026-11-02. Since then only the statements tagged `[game-tested 1.19.4.1]` have been run.
-**1.19.4.1 re-check (2026-11-01).** The documentation index diff shows one change: `debug_types` is gone, so the file now lists 385 commands (70 of them not in release builds) and the same 44 tweakable variables, and `hoi4.exe` 1.19.4.1 no longer contains the string. The correction block at the end of the page now lists it as removed, and the build named in the [docs] blocks is 1.19.4.1. The two other statements that cite changed files were re-measured: the debug launch arguments in `launcher-settings.json` and the `FUNDS_FOR_SIZE_UP` default of 700. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [List of commands](#List_of_commands)
-  - [Internal IDs](#Internal_IDs)
-  - [Disambiguation](#Disambiguation)
-  - [Glossary](#Glossary)
-  - [Useful commands](#Useful_commands)
-  - [Modding-useful commands](#Modding-useful_commands)
-    - [Kit: Commands that matter most when modding](#kit-cc-modding-highlights)
-  - [Other in-game commands](#Other_in-game_commands)
-    - [Kit: Economy, research and the international market](#kit-cc-economy)
-    - [Kit: Politics, diplomacy, factions and balance of power](#kit-cc-politics)
-    - [Kit: Special projects, medals and achievements](#kit-cc-projects)
-    - [Kit: Intelligence, operations and raids](#kit-cc-intel)
-    - [Kit: Units, combat and fronts](#kit-cc-military)
-    - [Kit: AI and pathfinding debugging](#kit-cc-ai)
-    - [Kit: Map, weather and display](#kit-cc-map-view)
-    - [Kit: Game session, timing, checksums and developer tools](#kit-cc-session)
-    - [Kit: Tweakable variables not on the page](#kit-cc-tweakables)
-- [See also](#See_also)
-- [References](#References)
-
----
-
 This page lists the codes which may be input into the Console Window, a special debugging window which may be accessed on non-ironman games by hitting `^` , `°` or tilde (~) (key varies based on keyboard layout). Press the up or down arrow keys to traverse through previously executed commands. Many codes can be turned off by repeating the command, but sometimes reloading the save or exiting the game is necessary. Please note that many of these commands come in and out with each DLC making some of them not work. Mods may introduce commands and more commonly, tags into the game to enhance their gameplay.
 
 Also of note, commands may not work in ironman games by design.
@@ -41,31 +8,29 @@ Also of note, commands may not work in ironman games by design.
 Hint: You must launch the game in debug mode `-debug` in order to use the console.
 ```
 
-## List of commands <a id="List_of_commands"></a>
+## List of commands
 
 Press Shift+2, §, ~, \\, \`, ", º, ^ or ALT+2+1, or Shift+3 to access the console (key varies based on keyboard layout)
 
-<!-- kit:begin id="cc-intro" at="section:List_of_commands" -->
-**Kit note** What the installed documentation covers. `documentation/console_commands_documentation.md` lists 385 console commands and 44 tweakable variables. 70 of the commands and 30 of the variables carry the label "Not available in release build". [docs] 1.19.4.1 removed `debug_types`, which 1.19.3 listed as not available in release builds. [docs]
+What the installed documentation covers. `documentation/console_commands_documentation.md` lists 385 console commands and 44 tweakable variables. 70 of the commands and 30 of the variables carry the label "Not available in release build". which 1.19.3 listed as not available in release builds.
 
-- Rows below marked "Not in release build" are those labelled commands. Do not rely on them in the shipped game; 32 of them are rows already on this page (listed in the correction block at the end of the page). [docs]
-- A tweakable variable is a switch you type by name. A Boolean one toggles when typed alone, turns on with a non-zero number after it, and off with `0` (`Agency.AutoComplete 1`). All 44 variables in 1.19.4.1 are Boolean. [docs]
-- `help` prints all commands or one description, `helplog` writes the whole command list to `game.log`, and `trigger_docs` (aliases `effect_docs`, `scripting_docs`, `docs`) prints the trigger, effect and variable documentation. [docs]
-- Debug launch: the Paradox launcher entry "Open game in Debug Mode" starts `hoi4.exe` with `-gdpr-compliant -debug_mode` (`launcher-settings.json`). [vanilla-confirmed 1.19.4.1] The `is_debug` trigger documentation names the argument `-debug`. [docs] The two are not the same: with `-debug` the main menu version string ended "(D) (S)" and `is_debug` was TRUE, while with `-debug_mode` alone, or with no arguments, the string ended "(S)" and `is_debug` was FALSE. The console worked in all three. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, `hoi4.exe` started directly with each argument set. The Steam launch option route through the Paradox launcher was not tested.
-- `Focus.NoChecks`, `Decision.NoChecks`, `Operation.Instant` and the other dotted names in the variable list are tweakable variables, not commands, so they are typed alone to toggle. `Agency.Instant` is the exception: it is a command that switches on four other switches. [docs]
-<!-- kit:end id="cc-intro" -->
+- Rows below marked "Not in release build" are those labelled commands. Do not rely on them in the shipped game; 32 of them are rows already on this page (listed in the correction block at the end of the page).
+- A tweakable variable is a switch you type by name. A Boolean one toggles when typed alone, turns on with a non-zero number after it, and off with `0` (`Agency.AutoComplete 1`). All 44 variables in 1.19.4.1 are Boolean.
+- `help` prints all commands or one description, `helplog` writes the whole command list to `game.log`, and `trigger_docs` (aliases `effect_docs`, `scripting_docs`, `docs`) prints the trigger, effect and variable documentation.
+- Debug launch: the Paradox launcher entry "Open game in Debug Mode" starts `hoi4.exe` with `-gdpr-compliant -debug_mode` (`launcher-settings.json`). The `is_debug` trigger documentation names the argument `-debug`. The two are not the same: with `-debug` the main menu version string ended "(D) (S)" and `is_debug` was TRUE, while with `-debug_mode` alone, or with no arguments, the string ended "(S)" and `is_debug` was FALSE. The console worked in all three. The Steam launch option route through the Paradox launcher was not tested.
+- `Focus.NoChecks`, `Decision.NoChecks`, `Operation.Instant` and the other dotted names in the variable list are tweakable variables, not commands, so they are typed alone to toggle. `Agency.Instant` is the exception: it is a command that switches on four other switches.
 
-### Internal IDs <a id="Internal_IDs"></a>
+### Internal IDs
 
 *See also: Countries*
 
 Console commands use internal IDs, which may be obtained in a variety of different ways.
 
-An easy way to tell internal IDs is debug mode. `debug` as a console command will turn on debug mode which can provide information about certain database entries, such as focuses, national spirits (and other ideas such as laws or designers), or technologies when hovering over them, as well as obtaining information when hovering over a province of IDs of the state and the province, as well as the 3-letter country tag of the country it belongs to. [Note that while modding, the console command does not do everything that the launch option does and cannot serve as a substitute.](<modding.md>)
+An easy way to tell internal IDs is debug mode. `debug` as a console command will turn on debug mode which can provide information about certain database entries, such as focuses, national spirits (and other ideas such as laws or designers), or technologies when hovering over them, as well as obtaining information when hovering over a province of IDs of the state and the province, as well as the 3-letter country tag of the country it belongs to. [Note that while modding, the console command does not do everything that the launch option does and cannot serve as a substitute.](modding.md)
 
 If that is impossible, using localisation is an alternative. To do that, navigate to the folder where the game is contained, then to the `/Hearts of Iron IV/localisation/english/` folder. Each file in there contains localisation keys with values that actually appear in-game assigned to them. Using a non-default text editor can also allow using the 'Search in files' function (Such as in Notepad++, Sublime Text, or Visual Studio Code) in order to search through every single localisation file at the same time to find a specified value.
 
-### Disambiguation <a id="Disambiguation"></a>
+### Disambiguation
 
 In this article, there are 3 types of brackets used within commands:
 
@@ -73,12 +38,11 @@ In this article, there are 3 types of brackets used within commands:
 - Square brackets as in `fow [Province ID]` signify an *optional* argument. In this case, both `fow` and `fow 1234` will work, but may have different effects.
 - Square brackets in combination with angle brackets as in `event [<event ID>]` signify a *mandatory* argument. In this case, `event generic.1` will work, but `event` will not.
 
-### Glossary <a id="Glossary"></a>
+### Glossary
 
 MIOs is an acronym for Military Industrial Organizations
 
-<!-- kit:begin id="cc-glossary" at="section:Glossary" -->
-**Kit addition** Terms used on this page and in the console documentation. All rows: [docs] `documentation/console_commands_documentation.md` unless another file is named.
+Terms used on this page and in the console documentation.
 
 | Term | Meaning |
 | --- | --- |
@@ -94,9 +58,8 @@ MIOs is an acronym for Military Industrial Organizations
 | PP, CP | Political power (`pp`) and command power (`cp`). |
 | Loc | Localisation. `loc_check` and its variants look for missing localisation keys. |
 | Intel pool | A stored intel value one country has on another (`add_intel`, `clear_intel_pools`). |
-<!-- kit:end id="cc-glossary" -->
 
-### Useful commands <a id="Useful_commands"></a>
+### Useful commands
 
 | Command | Effect | Example/Comment |
 | --- | --- | --- |
@@ -198,31 +161,30 @@ MIOs is an acronym for Military Industrial Organizations
 			}
 ```
 
-<!-- kit:begin id="cc-fix-useful" at="section:Useful_commands" -->
-**Kit correction** Rows in the table above that differ from the 1.19.4.1 documentation. All rows: [docs] `documentation/console_commands_documentation.md`, except where a cell says [unverified].
+Rows in the table above that differ from the 1.19.4.1 documentation. except where a cell says (unverified).
 
 | Page row | What 1.19.4.1 documents |
 | --- | --- |
-| `acclimization` | The command is spelled `acclimatization`, alias `acc`, arguments `<climate_name>, <value 0-100>`. The spelling `acclimization` appears nowhere in the documentation. [docs] hoi4.exe has no such string either (executable string). The console rejects the page's spelling with "Unknown command" in red. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. See the notes below the table. |
+| `acclimization` | The command is spelled `acclimatization`, alias `acc`, arguments `<climate_name>, <value 0-100>`. The spelling `acclimization` appears nowhere in the documentation. The console rejects the page's spelling with "Unknown command" in red. See the notes below the table. |
 | `add_core <state_id>` | Takes a `<Province ID>`, not a state id. |
-| `remove_core [<State ID>] [<Country Tag>]` | Takes a single `<Province ID>`. The documentation lists the command and does not say it is broken. [docs] `remove_core 375` (a province id of state 64), `remove_core 64 GER` and `remove_core 64` each printed only the command in red, and state 64 was still a GER core after each, so none of the three removed the core. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
-| `puppet [<Puppeteer>] [<Target>]` | One argument, `<Target Country Tag>`. The two-tag form is not documented. [docs] The engine accepts it: `puppet GER CZE` made CZE a GER puppet. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `remove_core [<State ID>] [<Country Tag>]` | Takes a single `<Province ID>`. The documentation lists the command and does not say it is broken. so none of the three removed the core. |
+| `puppet [<Puppeteer>] [<Target>]` | One argument, `<Target Country Tag>`. The two-tag form is not documented. The engine accepts it: `puppet GER CZE` made CZE a GER puppet. |
 | `teleport(tp)` | Takes `<province_id>` and teleports the selected armies or ships there. |
-| `setowner [<country tag>]` | The argument list is `country tag, state id`. The page's claim that a state id no longer works is not in the documentation. [docs] A state id works: `setowner FRA 64` printed "France now owns State Brandenburg". `setowner 64` printed "Specify a tag and a state id or specify a tag select a state". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
-| `annex [<tag>] or "all"` | One `<Target Country Tag>` is documented. The `all` form is not. [docs] `annex all` runs: the game had 89 countries before it and 2 after. `annex HUN` removed HUN. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `setowner [<country tag>]` | The argument list is `country tag, state id`. The page's claim that a state id no longer works is not in the documentation. A state id works: `setowner FRA 64` printed "France now owns State Brandenburg". `setowner 64` printed "Specify a tag and a state id or specify a tag select a state". |
+| `annex [<tag>] or "all"` | One `<Target Country Tag>` is documented. The `all` form is not. `annex HUN` removed HUN. |
 | `debug_crash(crash)` | Labelled "Not available in release build". |
 | `tdebug` (first row, "Toggles Debug info") | `tdebug` is the alias of `provtooltipdebug`, which toggles the debug info in the province tooltip (the page lists that command again further down). The command that toggles generic Debug info is `debug_info`, and it is not in release builds. |
-| `pp(fuhrer_mana,political_power)` | Only `political_power` is a documented alias. `fuhrer_mana` is not in the documentation. [docs] It is not in hoi4.exe either (executable string). `fuhrer_mana 10` printed "Unknown command" in red, and `political_power 10` printed "Granted 10 political power to German Reich". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `pp(fuhrer_mana,political_power)` | Only `political_power` is a documented alias. `fuhrer_mana` is not in the documentation. It is not in hoi4.exe either (executable string). `fuhrer_mana 10` printed "Unknown command" in red, and `political_power 10` printed "Granted 10 political power to German Reich". |
 | `FI [amount}` | The command is `faction_initiative`, alias `fi`, arguments `amount, countrytag` (tag optional, default the player). |
 | `st`, `ws` | Aliases of `add_stability` and `add_war_support`. Both document the argument as "unity amount". |
 | `nuke [number]` | Alias of `nukes`, argument `<count>`. |
 | `fuel [<amount>]` | Also has the alias `army_juice`. `fuel_gain` changes the daily fuel gain instead. |
 | `add_ideas`, `remove_ideas` | Accept `all` or several idea ids separated by spaces. |
-| `add_mines` | Alias `mines`, argument `<Amount of naval mines>`, applied to the selected region(s). The page's "maximises" is not stated. [docs] The command adds the given amount, and the default amount is 1000. With the North Sea selected, `add_mines 10` replied "Added 10 naval mines to the selected region(s).", `add_mines 1000000` replied "Added 1000000 naval mines ..." and `add_mines` with no argument replied "Added 1000 naval mines ...". The region panel's "Our mine presence in the region" read 0% until the next hour tick and then 100%. The value after 10 mines alone was not read, because the three commands ran before the tick, so whether a small amount raises the presence only a part of the way is untested. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and the region panel, screenshots. |
+| `add_mines` | Alias `mines`, argument `<Amount of naval mines>`, applied to the selected region(s). The page's "maximises" is not stated. The command adds the given amount, and the default amount is 1000. With the North Sea selected, `add_mines 10` replied "Added 10 naval mines to the selected region(s).", `add_mines 1000000` replied "Added 1000000 naval mines ..." and `add_mines` with no argument replied "Added 1000 naval mines ...". The region panel's "Our mine presence in the region" read 0% until the next hour tick and then 100%. The value after 10 mines alone was not read, because the three commands ran before the tick, so whether a small amount raises the presence only a part of the way is untested. |
 | `add_autonomy` | Listed with no description and no arguments. |
-| `set_country_flag` | The documentation says it sets the flag on a given tag for a duration and defaults to the current country, value 1 and no expiry, but its argument list shows only the flag name. The page's note that another tag does not work is not in the documentation. [docs] Another tag does not work in the game. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. See the notes below the table. |
+| `set_country_flag` | The documentation says it sets the flag on a given tag for a duration and defaults to the current country, value 1 and no expiry, but its argument list shows only the flag name. The page's note that another tag does not work is not in the documentation. Another tag does not work in the game. See the notes below the table. |
 | `Focus.AutoComplete (fa)` | `fa` is documented as its own Boolean tweakable variable next to `Focus.AutoComplete`. |
-| `addfunds` ("adds 1000 funds") | The command is `AddFunds` with aliases `mio.AddFunds` and `IndustrialOrganisation.AddFunds`. The first argument is an optional MIO token, the second an optional amount. With no amount it adds `NDefines::NIndustrialOrganisation::FUNDS_FOR_SIZE_UP`, which is 700 in 1.19.4.1 (`common/defines/00_defines.lua`, [vanilla-confirmed 1.19.4.1]), not 1000. |
+| `addfunds` ("adds 1000 funds") | The command is `AddFunds` with aliases `mio.AddFunds` and `IndustrialOrganisation.AddFunds`. The first argument is an optional MIO token, the second an optional amount. With no amount it adds `NDefines::NIndustrialOrganisation::FUNDS_FOR_SIZE_UP`, which is 700 in 1.19.4.1 (`common/defines/00_defines.lua`), not 1000. |
 | `addTaskCapacity`, `addSize` | Real names `AddTaskCapacity` and `AddSize`, with the same `mio.` and `IndustrialOrganisation.` aliases. A negative task capacity is allowed but the result is capped at 0. |
 | `add_cic_bank` | Also has the aliases `stonks`, `cic` and `bank`. A negative value subtracts. |
 | `force_operative_detection` | Alias `snitch`. The documentation text is a copy of `print_intel_network`'s, so its description is unreliable. |
@@ -231,17 +193,16 @@ MIOs is an acronym for Military Industrial Organizations
 
 Notes on rows of the table above:
 
-- `acclimization`: the documented `acclimatization arctic 50` is accepted and answered "Unknown climate definition: arctic. Valid options are: cold_climate, hot_climate". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply.
-- `set_country_flag`: `set_country_flag b1_flag_b POL` printed "set to 1 for Poland", but the flag landed on the player's country (GER) and `list_flags POL` answered "No flags set". `set_country_flag b1_flag_c 5` printed "set to 5", which shows the number as the flag value. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. Whether a number also acts as a duration is untested. [unverified]
-<!-- kit:end id="cc-fix-useful" -->
+- `acclimization`: the documented `acclimatization arctic 50` is accepted and answered "Unknown climate definition: arctic. Valid options are: cold_climate, hot_climate".
+- `set_country_flag`: `set_country_flag b1_flag_b POL` printed "set to 1 for Poland", but the flag landed on the player's country (GER) and `list_flags POL` answered "No flags set". `set_country_flag b1_flag_c 5` printed "set to 5", which shows the number as the flag value. Whether a number also acts as a duration is untested. (unverified)
 
-### Modding-useful commands <a id="Modding-useful_commands"></a>
+### Modding-useful commands
 
 Several other commands previously mentioned, such as event, are useful in modding too.
 
 | Command | Effect | Example/Comment |
 | --- | --- | --- |
-| guibounds(gui) | Toggles the GUI bounds debug, allowing to test for different window sizes easier. | Also grants the name of the sprite and the interface element the player is hovering on, allowing to find the location of the image by [searching every `/Hearts of Iron IV/interface/*.gfx` file at the same time.](<modding.md#Universal_modding_concepts>) |
+| guibounds(gui) | Toggles the GUI bounds debug, allowing to test for different window sizes easier. | Also grants the name of the sprite and the interface element the player is hovering on, allowing to find the location of the image by [searching every `/Hearts of Iron IV/interface/*.gfx` file at the same time.](modding.md#universal-modding-concepts) |
 | set_var `[<variable>]` `[<value>]` | Changes the value of a variable to the specified value. |  |
 | get_var `[<variable>]` | Shows the value of a variable in the console |  |
 | list_vars | Lists the variables set in the selected scope and their values. |  |
@@ -253,11 +214,11 @@ Several other commands previously mentioned, such as event, are useful in moddin
 | show_focuses | Shows all the hidden focuses. |  |
 | trigger `[<scripted_trigger_name>]` | Checks if a scripted trigger is true or not. |  |
 | eval_trigger `[<trigger code block>]` | Checks if the trigger code following the command is true or not, within the currently selected scope. | Example: `eval_trigger OR = { has_completed_focus = GER_remilitarize_the_rhineland has_war_support > 0.5 }` |
-| effect (e) `[<scripted_effect_name>]` | Executes a [scripted effect](<effects.md>), within the currently selected scope. | Example: `e POL_remove_danzig_effect` on a state will execute that effect on the state. |
+| effect (e) `[<scripted_effect_name>]` | Executes a [scripted effect](effects.md), within the currently selected scope. | Example: `e POL_remove_danzig_effect` on a state will execute that effect on the state. |
 | eval_effect `[<effect code block>]` | Executes the effect code following the command, within the currently selected scope. | Example: `eval_effect load_focus_tree = german_focus` would switch the country currently selected to the German focus tree. |
 | ai `[country tag...]` | Toggles the AI on or off | Without parameters toggles the AI for all countries. With parameters, toggles exceptions for those countries from the general rule. Can be used to confirm if a crash is AI-related. |
 | aiview | Enable AI debug info |  |
-| human_ai | Makes the AI control the country currently led by the player while the player also remains in control. | AI will also create logs within `/Hearts of Iron IV/logs/scripted_ai.log` in the [user directory](<modding.md>). |
+| human_ai | Makes the AI control the country currently led by the player while the player also remains in control. | AI will also create logs within `/Hearts of Iron IV/logs/scripted_ai.log` in the [user directory](modding.md). |
 | set_cosmetic_tag `[<country tag>]` `[<cosmetic tag>]` | changes the name and flag of the country | set_cosmetic_tag USA SOV |
 | reload `[<type>]` | Reloads files of a given type. Also accepts individual files within the `/Hearts of Iron IV/interface/` folder. Equivalent to the effect done automatically when saving over a file with debug mode turned on via launch options. | - reload loc (reloads localisation files) - reload focus (reloads focuses) - reload landcombat.gui (reloads land combat interface) |
 | reloadoob `[<Target Country Tag>]` | Reloads orders of battle. |  |
@@ -271,32 +232,29 @@ Several other commands previously mentioned, such as event, are useful in moddin
 | goto_province `[province id]` | Moves the camera position to the specified province. |  |
 | goto_state `[state id]` | Moves the camera position to the specified state. |  |
 
-<!-- kit:begin id="cc-fix-modding" at="section:Modding-useful_commands" -->
-**Kit correction** Rows in the table above that differ from the 1.19.4.1 documentation. All rows: [docs] `documentation/console_commands_documentation.md`, except where a cell says [unverified].
+Rows in the table above that differ from the 1.19.4.1 documentation. except where a cell says (unverified).
 
 | Page row | What 1.19.4.1 documents |
 | --- | --- |
-| `reload [<type>]` | There is no `reload` entry in the documentation. [docs] The page's examples work all the same: ten targets each printed "<name> reloaded!", and bare `reload` printed "Please specify the file name:target". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. The targets run and the documented reload commands are in the notes below the table. |
+| `reload [<type>]` | There is no `reload` entry in the documentation. The page's examples work all the same: ten targets each printed "<name> reloaded!", and bare `reload` printed "Please specify the file name:target". The targets run and the documented reload commands are in the notes below the table. |
 | `effect (e) [<scripted_effect_name>]` | Arguments are `<tag> scripted_effect_name`. It runs a scripted effect on the selected scope. Inline effect code goes through `eval_effect`. |
 | `trigger [<scripted_trigger_name>]` | Alias `t`, arguments `<tag> scripted_trigger_name`. It runs a scripted trigger on the selected scope. Inline trigger code goes through `eval_trigger`. |
 | `event [<event id>] [Target country tag]` | The documented arguments are `event id, <Target Country Tag>`. |
-| `error` | Documented as "Show errors in log". Whether it opens a file is not stated. [docs] Run in the console, it printed nothing back and wrote only a header line, `======== show errors from console ========`, plus about 11 blank lines to `error.log`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console and error.log read. The user folder was not listed before and after, so a separate file is not ruled out. |
-| `set_var`, `get_var` | The documentation lists only `<var name>` for both. The page's `[<value>]` for `set_var` is not documented. [docs] `set_var` takes a value: after `set_var b1_v 5`, `get_var b1_v` printed "b1_v = Ermland-Masuren (5)", the value 5 shown with the name of the state that has id 5. `set_var b1_w` with no value printed "Incorrect number of arguments". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `error` | Documented as "Show errors in log". Whether it opens a file is not stated. Run in the console, it printed nothing back and wrote only a header line, `======== show errors from console ========`, plus about 11 blank lines to `error.log`. The user folder was not listed before and after, so a separate file is not ruled out. |
+| `set_var`, `get_var` | The documentation lists only `<var name>` for both. The page's `[<value>]` for `set_var` is not documented. `set_var b1_w` with no value printed "Incorrect number of arguments". |
 | `list_flags`, `list_vars` | Optional `<scope>` argument. They list the flags or variables of that scope, or of the selected country, state or unit leader. |
-| `trigger_docs` | Aliases `effect_docs`, `scripting_docs`, `docs`. Documented as printing the trigger, effect and variable docs; where it prints is not stated. [docs] Run in the console, it replied that the documentation was printed to the game log, and `game.log` then held a `== TRIGGER DOCUMENTATION ==` section of about 11,700 lines. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and game.log read. The console reply was read by OCR. |
+| `trigger_docs` | Aliases `effect_docs`, `scripting_docs`, `docs`. Documented as printing the trigger, effect and variable docs; where it prints is not stated. Run in the console, it replied that the documentation was printed to the game log, and `game.log` then held a `== TRIGGER DOCUMENTATION ==` section of about 11,700 lines. The console reply was read by OCR. |
 | `human_ai` | Documented as "Toggles AI for Human countries". |
 | `ai [country tag...]` | Documented only as "Toggles the AI on or off". `enable_ai` and `disable_ai` are separate commands. |
 
 Notes on rows of the table above:
 
-- `reload` targets that printed "<name> reloaded!": `loc`, `focus`, `defines`, `decision`, `landcombat.gui`, `ideas`, `ability`, `scriptedgui`, `scripted_effects` and `cfocus`. `reload ideas` also wrote 239 parse errors for vanilla idea files to error.log. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and error.log read.
-- `reload`: The documented reload commands are `reloadoob`, `reloadinterface`, `reloadtechnologies`, `reload_textures` (aliases `rt`, `reload_texture`), `reloadfx`, `reloadweather`, `cityreload`, `rebuildlayers`, `update_loc`, `updateequipments` and `updatesubunits`. [docs] hoi4.exe contains the string `reload %s` and the messages `' reloaded!`, `No such reload target that takes arguments: '`, `Please specify the file name/target` and `defines reloaded!` (executable strings).
-<!-- kit:end id="cc-fix-modding" -->
+- `reload` targets that printed "<name> reloaded!": `loc`, `focus`, `defines`, `decision`, `landcombat.gui`, `ideas`, `ability`, `scriptedgui`, `scripted_effects` and `cfocus`. `reload ideas` also wrote 239 parse errors for vanilla idea files to error.log.
+- `reload`: The documented reload commands are `reloadoob`, `reloadinterface`, `reloadtechnologies`, `reload_textures` (aliases `rt`, `reload_texture`), `reloadfx`, `reloadweather`, `cityreload`, `rebuildlayers`, `update_loc`, `updateequipments` and `updatesubunits`.
 
-<!-- kit:begin id="cc-modding-highlights" at="section:Modding-useful_commands" -->
-#### Kit: Commands that matter most when modding <a id="kit-cc-modding-highlights"></a>
+#### Commands that matter most when modding
 
-All rows: [docs] `documentation/console_commands_documentation.md`, except the cell marked [unverified]. Every command here exists in 1.19.4.1 under exactly this name, and none is labelled "Not available in release build" (the 39 names in the first column, checked against the documentation). [docs]
+Every command here exists in 1.19.4.1 under exactly this name, and none is labelled "Not available in release build".
 
 | Command | Aliases | Arguments (as documented) | Use |
 | --- | --- | --- | --- |
@@ -322,21 +280,20 @@ All rows: [docs] `documentation/console_commands_documentation.md`, except the c
 | `updateequipments`, `updatesubunits` | | | Update the equipment database and the sub-unit database. |
 | `update_loc` |  | `localization tag` | Updates the localisation file for one localisation tag. |
 | `reload_textures` | `rt`, `reload_texture` | `<optional file name filters...>` | Reloads all textures, or only files whose name contains the given text. |
-| `reloadfx` |  | `map/mapname/postfx or *.fx filename` | Reloads shaders. hoi4.exe also prints `all` in its usage message (executable string). `reloadfx all` is accepted and printed "all reloaded!". `reloadfx postfx` printed "Map reloaded". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `reloadfx` | | `map/mapname/postfx or *.fx filename` | Reloads shaders. hoi4.exe also prints `all` in its usage message (executable string). `reloadfx all` is accepted and printed "all reloaded!". `reloadfx postfx` printed "Map reloaded". |
 | `instantevents` |  |  | Ignores event MTTH values. |
 | `easy_decisions` | `ezd` |  | Toggle: decisions with `days_remove` last 1 day, and decisions lose their cost and cost trigger. |
 | `dump_equipment_loc` | | `desc`, country tags, equipment types, `path=<filepath>` (all optional) | Writes equipment localisation strings to a CSV, by default `logs/equipment_loc.csv`. `desc` dumps descriptions instead of names; type words such as `armor anti_tank` narrow the list. |
 | `log_advisor_trait_errors` |  |  | Logs every unit-leader advisor that lacks the matching unit-leader trait. |
 | `focus_count` |  | `<Target Country Tag>` | Counts the focuses a tag has. |
-| `history_logger` |  |  | Toggles the history logger (the `log` effect can write to it; see [Troubleshooting](<troubleshooting.md#Log_files>)). |
+| `history_logger` |  |  | Toggles the history logger (the `log` effect can write to it; see [Troubleshooting](troubleshooting.md#log-files)). |
 | `trigger_docs`, `helplog` | `effect_docs`, `scripting_docs`, `docs` (for `trigger_docs`) | | Print the trigger, effect and variable documentation; write the command list to `game.log`. |
 
-`localisation/ignored_loc_keys.txt` is the exclusion list for the `loc_check` commands: its first line says keys added to it are ignored by the `loc_check*` commands, and the installed file holds 11 placeholder keys (`test.1.a`, `test_state.1.d` and similar). [vanilla-confirmed 1.19.3] hoi4.exe contains that path and the result lines `No missing or bad loc keys found`, `missing loc keys found`, `bad loc keys found` and `, check error log` (executable strings). The details are in the error log: `loc_check_events` and `loc_check` printed only a count in the console ("122 missing loc keys found and 3 bad loc keys found in events, check error log" and "8060 missing loc keys found and 532 bad loc keys found, check error log"), and `error.log` then held the lists under "Missing loc keys found in events:" and "Missing loc keys found:", each key printed as `key: "TODO"`. A key that exists in a mod loc file was not listed. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console (OCR) and error.log read. The mod's own `localisation/ignored_loc_keys.txt` was not tested.
+`localisation/ignored_loc_keys.txt` is the exclusion list for the `loc_check` commands: its first line says keys added to it are ignored by the `loc_check*` commands, and the installed file holds 11 placeholder keys (`test.1.a`, `test_state.1.d` and similar). The details are in the error log: `loc_check_events` and `loc_check` printed only a count in the console ("122 missing loc keys found and 3 bad loc keys found in events, check error log" and "8060 missing loc keys found and 532 bad loc keys found, check error log"), and `error.log` then held the lists under "Missing loc keys found in events:" and "Missing loc keys found:", each key printed as `key: "TODO"`. A key that exists in a mod loc file was not listed. The mod's own `localisation/ignored_loc_keys.txt` was not tested.
 
-Duplicate localisation keys are not a console check. The game reports them at start-up in `text.log`; see [Log files](<troubleshooting.md#Log_files>). Two files of one mod that define the same key each got a line there with the key, the file and the value ("Duplicate localization found, key: ..."), and the key was not in `error.log`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, text.log read. The main menu message for a collision is UI and was not observed.
-<!-- kit:end id="cc-modding-highlights" -->
+Duplicate localisation keys are not a console check. The game reports them at start-up in `text.log`; see [Log files](troubleshooting.md#log-files). Two files of one mod that define the same key each got a line there with the key, the file and the value ("Duplicate localization found, key: ..."), and the key was not in `error.log`. The main menu message for a collision is UI and was not observed.
 
-### Other in-game commands <a id="Other_in-game_commands"></a>
+### Other in-game commands
 
 | Command | Effect | Example/Comment |
 | --- | --- | --- |
@@ -473,31 +430,28 @@ Duplicate localisation keys are not a console check. The game reports them at st
 | toggle_silhouette_portraits | Enables and disables silhouette portraits. | Only for developers. |
 | armageddon | Causes 100% damage to all state/shared/provincial buildings and facilities every state in every country. | Although the nuke detonation animation is played for all states, it does not give the Nuclear Fallout state modifier. |
 
-<!-- kit:begin id="cc-fix-other" at="section:Other_in-game_commands" -->
-**Kit correction** Rows in the tables above that the 1.19.4.1 documentation does not support. Sources: [docs] `documentation/console_commands_documentation.md`; where a cell says [unverified], the evidence is a string search in `hoi4.exe`.
+Rows in the tables above that the 1.19.4.1 documentation does not support. Where a cell says (unverified), the evidence is a string search in `hoi4.exe`.
 
 | Page row | Status in 1.19.4.1 |
 | --- | --- |
-| `winwars`, `debug_nuking` | Absent from the documentation. [docs] No such string is in hoi4.exe either (executable string). The console rejects them: both printed "Unknown command" in red, followed by the command. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. That agrees with the page's "no longer exists" notes (1.9.1 and 1.15.1). The documented replacement for nuking is `launch_nuke` (alias `ln`): it launches a nuke at given provinces without checking conditions. |
-| `nextsong`, `poll`, `reloadsupply (relsup)`, `add_interest`, `remove_interest`, `requestgamestate`, `debug_commands`, `debug_volume`, `debug_ai_budget`, `profilelog`, `filewatcher`, `browser_base_url` | Not in the documentation, under any name or alias. [docs] No matching command string is in hoi4.exe either. All of them, including the alias `relsup`, printed "Unknown command" in red, like the nonsense word `zzzz`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. Treat them as removed. See the note below the table. |
-| `normals` | Not documented. The only mention of the word is in the description of `collision` ("Toggles debug display of normals/bounding boxes/collision"). [docs] `normals` is still a command: it printed "Command available only for developers." [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
-| `rendertype`, `tweakergui`, `particle_editor` | Not documented. [docs] hoi4.exe contains the strings `rendertype`, `tweakergui` and `particle_editor save/restart/undo/redo/exit` (executable strings). All three are console commands in the game. `rendertype` printed "DirectX 11.1", `particle_editor` printed "Load a particle effect before running the editor", and `tweakergui` printed "You need to provide at least one tweakable variable!". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
+| `winwars`, `debug_nuking` | Absent from the documentation. No such string is in hoi4.exe either (executable string). The console rejects them: both printed "Unknown command" in red, followed by the command. That agrees with the page's "no longer exists" notes (1.9.1 and 1.15.1). The documented replacement for nuking is `launch_nuke` (alias `ln`): it launches a nuke at given provinces without checking conditions. |
+| `nextsong`, `poll`, `reloadsupply (relsup)`, `add_interest`, `remove_interest`, `requestgamestate`, `debug_commands`, `debug_volume`, `debug_ai_budget`, `profilelog`, `filewatcher`, `browser_base_url` | Not in the documentation, under any name or alias. No matching command string is in hoi4.exe either. All of them, including the alias `relsup`, printed "Unknown command" in red, like the nonsense word `zzzz`. Treat them as removed. See the note below the table. |
+| `normals` | Not documented. The only mention of the word is in the description of `collision` ("Toggles debug display of normals/bounding boxes/collision"). |
+| `rendertype`, `tweakergui`, `particle_editor` | Not documented. All three are console commands in the game. `rendertype` printed "DirectX 11.1", `particle_editor` printed "Load a particle effect before running the editor", and `tweakergui` printed "You need to provide at least one tweakable variable!". |
 | `ShowTechBonus` ("unknown what it does") | A Boolean tweakable variable, labelled "Not available in release build", with no description in the documentation. |
 | `night`, `massconquer`, `aircombat`, `debug_achievements_clear`, `gbreload`, `oos`, `toggle_silhouette_portraits` | The page calls these developer-only or not working. The documentation confirms it: all are labelled "Not available in release build". |
-| `remove_core` ("Command does not work") | Documented with a `<Province ID>` argument. Whether it works is not stated. [docs] It did not work in the test: `remove_core 375`, `remove_core 64 GER` and `remove_core 64` each printed only the command in red, and state 64 stayed a GER core after each. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. |
-| `debug_types` | Removed in 1.19.4.1. 1.19.3 documented it as not available in release builds; the 1.19.4.1 documentation no longer lists it and hoi4.exe 1.19.4.1 contains no `debug_types` string. [docs] |
+| `remove_core` ("Command does not work") | Documented with a `<Province ID>` argument. Whether it works is not stated. It did not work in the test: `remove_core 375`, `remove_core 64 GER` and `remove_core 64` each printed only the command in red, and state 64 stayed a GER core after each. |
+| `debug_types` | Removed in 1.19.4.1. 1.19.3 documented it as not available in release builds; the 1.19.4.1 documentation no longer lists it and hoi4.exe 1.19.4.1 contains no `debug_types` string. |
 
 Notes on rows of the table above:
 
 - `filewatcher` and `requestgamestate`: hoi4.exe has only a `nofilewatcher` launch argument and game-state command class names, not a `filewatcher` or `requestgamestate` console string.
 
-The page rows that the documentation labels "Not available in release build" are: `debug_crash`, `ShowTechBonus`, `massconquer`, `aircombat`, `ai_front_dump`, `debug_diploactions`, `debug_dumpdiploactions`, `debug_assert`, `debug_fronts`, `debug_off_front_snap`, `debug_lines`, `debug_entities`, `debug_info`, `debug_particle`, `debug_textures`, `debug_texture`, `debug_wireframe`, `debug_achievements_clear`, `debug_air_vs_land`, `gbreload`, `gbpaint`, `oos`, `hdr`, `hdr_debug`, `srgb`, `bloom`, `PostEffectVolumes.Default`, `night`, `createlean`, `hsv`, `browser`, `toggle_silhouette_portraits`. Do not expect them to work in the shipped game. [docs]
-<!-- kit:end id="cc-fix-other" -->
+The page rows that the documentation labels "Not available in release build" are: `debug_crash`, `ShowTechBonus`, `massconquer`, `aircombat`, `ai_front_dump`, `debug_diploactions`, `debug_dumpdiploactions`, `debug_assert`, `debug_fronts`, `debug_off_front_snap`, `debug_lines`, `debug_entities`, `debug_info`, `debug_particle`, `debug_textures`, `debug_texture`, `debug_wireframe`, `debug_achievements_clear`, `debug_air_vs_land`, `gbreload`, `gbpaint`, `oos`, `hdr`, `hdr_debug`, `srgb`, `bloom`, `PostEffectVolumes.Default`, `night`, `createlean`, `hsv`, `browser`, `toggle_silhouette_portraits`. Do not expect them to work in the shipped game.
 
-<!-- kit:begin id="cc-economy" at="section:Other_in-game_commands" -->
-#### Kit: Economy, research and the international market <a id="kit-cc-economy"></a>
+#### Economy, research and the international market
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -517,12 +471,10 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `InternationalMarket.RequestPurchase` |  | `<SellerTag>, <BuyerTag>, <PaidCivs>, <EquipmentName>, <EquipmentAmount>` | Requests an equipment purchase; the arguments are seller tag, buyer tag, PaidCivs, equipment name and amount. |
 | `InternationalMarket.ReserveToMarketStockpile` |  | `<EquipmentName>, <EquipmentAmount>` | Moves equipment from the main stockpile into the market stockpile. |
 | `InternationalMarket.SetPriceLevel` |  | `<EquipmentName>, <Level>` | Sets the price level of one equipment type in the market stockpile. |
-<!-- kit:end id="cc-economy" -->
 
-<!-- kit:begin id="cc-politics" at="section:Other_in-game_commands" -->
-#### Kit: Politics, diplomacy, factions and balance of power <a id="kit-cc-politics"></a>
+#### Politics, diplomacy, factions and balance of power
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -546,12 +498,10 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `capture_commander` |  | `<owner_tag>, <leader>` | Captures an enemy commander for the player country; the docs say a province id is needed if the commander is not deployed. |
 | `get_capital` |  | `<Country tag>` | Looks up the capital of a country. |
 | `war_relations` |  | `<tag>` | Prints war relation information for a tag. |
-<!-- kit:end id="cc-politics" -->
 
-<!-- kit:begin id="cc-projects" at="section:Other_in-game_commands" -->
-#### Kit: Special projects, medals and achievements <a id="kit-cc-projects"></a>
+#### Special projects, medals and achievements
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -564,12 +514,10 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `forget_medals_and_ribbons` |  |  | Makes the game forget the medals and ribbons you earned. Not in release build. |
 | `debug_achievements` |  |  | Turns on achievement popups so achievements can be debugged. Not in release build. |
 | `debug_custom_achievements` |  |  | For testing custom achievements: clears their completion state (cloud storage files) and reloads the mod achievement files. |
-<!-- kit:end id="cc-projects" -->
 
-<!-- kit:begin id="cc-intel" at="section:Other_in-game_commands" -->
-#### Kit: Intelligence, operations and raids <a id="kit-cc-intel"></a>
+#### Intelligence, operations and raids
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -588,12 +536,10 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `lock_air_eff` |  | `<CountryTag>, <Efficiency> (0.0-1.0) OPTIONAL` | Locks a country's air efficiency at a value from 0.0 to 1.0; leave the value out to reset it. |
 | `prepareraids` |  | `<[Optional] the degree to which the raid should be prepared (0.0-1.0)>` | Completes the preparation of all active raids at once, or to a given progress from 0.0 to 1.0. Not in release build. |
 | `endraids` |  | `<Success Level: 1-4 OR { failure, limitedsuccess, success, criticalsuccess}>` | Ends all active raids at once; the optional argument is the success level (1 to 4, or `failure`, `limitedsuccess`, `success`, `criticalsuccess`). Not in release build. |
-<!-- kit:end id="cc-intel" -->
 
-<!-- kit:begin id="cc-military" at="section:Other_in-game_commands" -->
-#### Kit: Units, combat and fronts <a id="kit-cc-military"></a>
+#### Units, combat and fronts
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -632,12 +578,10 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `debug_front_sections` | `dbg_fs` | `<Theatre index>, <Front index>, <Section index>` | Visual debug of theatres, fronts and front sections. |
 | `debug_orders_tree` | `dot` |  | Prints debug information about an order chain. Not in release build. |
 | `highlight_encirclements` |  |  | Toggles highlighting of detected encirclements. |
-<!-- kit:end id="cc-military" -->
 
-<!-- kit:begin id="cc-ai" at="section:Other_in-game_commands" -->
-#### Kit: AI and pathfinding debugging <a id="kit-cc-ai"></a>
+#### AI and pathfinding debugging
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -649,19 +593,17 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `toggle_offset_ai_daily_update` |  |  | Toggles whether a country's AI daily update is spread over the day. Not in release build. |
 | `pathfind_cache` |  | `on / off` | Enables or disables the pathfinding cache. Not in release build. |
 | `pathfind_stats` |  |  | Prints pathfinding cache statistics. Not in release build. |
-<!-- kit:end id="cc-ai" -->
 
-<!-- kit:begin id="cc-map-view" at="section:Other_in-game_commands" -->
-#### Kit: Map, weather and display <a id="kit-cc-map-view"></a>
+#### Map, weather and display
 
-All rows: [docs] `documentation/console_commands_documentation.md`. Only the `set_weather` cell quotes hoi4.exe, and a game run checked it. Commands not on the wiki page.
+Only the `set_weather` cell quotes hoi4.exe, and a game run checked it. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
 | `add_rain` |  | `<rain_amount>` | Adds rain to the selected province. |
 | `add_snow` |  | `<snow_amount>` | Adds snow to the selected province. |
 | `set_mud` |  |  | Makes the selected province muddy. |
-| `set_weather` |  | `<weather_type>` | Sets the weather of the selected province and its region. A hoi4.exe message lists the types `clear`, `rain`, `storm`, `snow`, `blizzard`, `sandstorm` (executable string). All six types are accepted, and an unknown type lists the valid ones. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and province tooltip. See the note below the table. |
+| `set_weather` | | `<weather_type>` | Sets the weather of the selected province and its region. A hoi4.exe message lists the types `clear`, `rain`, `storm`, `snow`, `blizzard`, `sandstorm` (executable string). All six types are accepted, and an unknown type lists the valid ones. See the note below the table. |
 | `enable_weather` |  |  | Turns weather simulation on. |
 | `disable_weather` |  |  | Turns weather simulation off. |
 | `goto_region` |  | `region id` | Centres the camera on a strategic region. |
@@ -680,13 +622,11 @@ All rows: [docs] `documentation/console_commands_documentation.md`. Only the `se
 | `map_icon_reload_type` |  | `<NUM> or <help>` | Picks one map icon type to reload; `help` lists the numbers. Not in release build. |
 | `rebuildlayers` |  |  | Reloads the map modes. |
 
-- `set_weather`: with a Brandenburg province selected, `set_weather clear`, `rain`, `storm`, `snow`, `blizzard` and `sandstorm` each replied "Weather was set to '<type>' in the selected province (and its corresponding region)". After `sandstorm` the province tooltip read "Weather: Sandstorm (0C)" and the Eastern Germany region showed the haze. `set_weather zzz` replied "You must specify weather type (one of <clear, rain, storm, snow, blizzard, sandstorm>)". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and province tooltip.
-<!-- kit:end id="cc-map-view" -->
+- `set_weather`: with a Brandenburg province selected, `set_weather clear`, `rain`, `storm`, `snow`, `blizzard` and `sandstorm` each replied "Weather was set to '<type>' in the selected province (and its corresponding region)". After `sandstorm` the province tooltip read "Weather: Sandstorm (0C)" and the Eastern Germany region showed the haze. `set_weather zzz` replied "You must specify weather type (one of <clear, rain, storm, snow, blizzard, sandstorm>)".
 
-<!-- kit:begin id="cc-session" at="section:Other_in-game_commands" -->
-#### Kit: Game session, timing, checksums and developer tools <a id="kit-cc-session"></a>
+#### Game session, timing, checksums and developer tools
 
-All rows: [docs] `documentation/console_commands_documentation.md`. No row in this block quotes hoi4.exe. Commands not on the wiki page.
+No row in this block quotes hoi4.exe. Commands not on the wiki page.
 
 | Command | Aliases | Arguments (as documented) | What it does |
 | --- | --- | --- | --- |
@@ -725,12 +665,10 @@ All rows: [docs] `documentation/console_commands_documentation.md`. No row in th
 | `Audio.PlayEffect` |  | `effect_name` | Plays a sound effect by name. |
 | `CrashReporter.DeleteCrashData` |  |  | Deletes local crash dumps older than a number of days. |
 | `CrashReporter.SimulateCrash` |  |  | Simulates a crash; the game exits. |
-<!-- kit:end id="cc-session" -->
 
-<!-- kit:begin id="cc-tweakables" at="section:Other_in-game_commands" -->
-#### Kit: Tweakable variables not on the page <a id="kit-cc-tweakables"></a>
+#### Tweakable variables not on the page
 
-All rows: [docs] `documentation/console_commands_documentation.md`. The documentation gives only the type (Boolean) for every variable and no description. Type the name alone to toggle it, add a non-zero number to force it on, or `0` to force it off.
+The documentation gives only the type (Boolean) for every variable and no description. Type the name alone to toggle it, add a non-zero number to force it on, or `0` to force it off.
 
 Available in the release build:
 
@@ -740,34 +678,12 @@ Labelled "Not available in release build":
 
 `Audio.Compressor`, `Audio.Debug`, `Audio.Debug.ExtendedRange`, `BattleSound.Debug`, `BattleSound.PlayBackground`, `BorderLOD.Threaded`, `Debug.DeleteUnitEachTick`, `Draw.Borders`, `Draw.Objects`, `Draw.Postfx`, `Draw.Refractions`, `Draw.Rivers`, `Draw.ShadowBlur`, `Draw.Shadows`, `Draw.Terrain`, `Draw.Transparent`, `Draw.Tree`, `Draw.Water`, `PostEffectVolumes.Draw`, `PostEffectVolumes.Enabled`, `ShowBorderTypes`, `Terrain.MipLevels`, `Tree.MipLevels`, `Update.Animations`, `Update.Particles`, `supply_debug.show_debug_lines_rail`, `supply_debug.show_debug_lines_supply`, `supply_debug.show_debug_lines_train`, `supply_debug.show_debug_rivers`
 
-The page already covers `Agency.AutoComplete`, `Agency.InstantSlotUnlock`, `Agency.KeepExcessOperatives`, `Decision.FastRemove`, `Decision.NoChecks`, `Focus.AutoComplete`, `Focus.IgnorePrerequisites`, `Focus.NoChecks`, `Operation.Instant`, `fa` and `ShowTechBonus`.  The documentation gives each of them only a type and a release-build flag, with no description. [docs] The variable names suggest draw toggles (`Draw.*`), audio and debug lines, but what they do is untested. [unverified] Typing `Draw.Water`, `Draw.Rivers`, `Draw.Terrain` or `Audio.Debug` printed "Command available only for developers.", so the console refused those four. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply.
-<!-- kit:end id="cc-tweakables" -->
+The page already covers `Agency.AutoComplete`, `Agency.InstantSlotUnlock`, `Agency.KeepExcessOperatives`, `Decision.FastRemove`, `Decision.NoChecks`, `Focus.AutoComplete`, `Focus.IgnorePrerequisites`, `Focus.NoChecks`, `Operation.Instant`, `fa` and `ShowTechBonus`. The documentation gives each of them only a type and a release-build flag, with no description. The variable names suggest draw toggles (`Draw.*`), audio and debug lines, but what they do is untested. (unverified) Typing `Draw.Water`, `Draw.Rivers`, `Draw.Terrain` or `Audio.Debug` printed "Command available only for developers.", so the console refused those four.
 
-## See also <a id="See_also"></a>
+## See also
 
-- [Modding](<modding.md>)
+- [Modding](modding.md)
 
-## References <a id="References"></a>
+## References
 
-1. ↑ A comment of podcat about the command been found https://www.reddit.com/r/hoi4/comments/6cb8vh/the_secrets_of_hoi4/dhtdr4x/
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
-
-**Hearts of Iron IV**
-
-- **Game**: Achievements • Features • Game rules • Ironman
-- **Guides**: Beginner's guide • Hotkeys • Map modes • Tutorial videos • User interface
-- **Development**: Developer diaries • Downloadable content • Patches
-- **Community**: Jargon • [Modding](<modding.md>)
+1. A comment of podcat about the command been found https://www.reddit.com/r/hoi4/comments/6cb8vh/the_secrets_of_hoi4/dhtdr4x/

@@ -1,28 +1,6 @@
 # Resources modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Resources modding", revision 73143, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="73143" sources="common/resources/ interface/general_stuff.gfx interface/countryproductionlineview.gui gfx/interface/resources_strip.dds common/defines/00_defines.lua localisation/english/production_l_english.yml localisation/english/core_l_english.yml history/states/ documentation/effects_documentation.md documentation/triggers_documentation.md documentation/modifiers_documentation.md" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: `common/resources/_documentation.md` and `00_resources.txt`, the strip sprites and the production GUI, the resource defines, the localisation files and the effects, triggers and modifiers that name a resource.
-Kit blocks added: the vanilla resource table, strip size, localisation keys, one correction for the production GUI (no `<resource>_value` text box), the resource defines, and a table of the script that names resources.
-Gaps left: the wiki claim that `cic` cannot exceed 1 is not stated in any game file. Adding or removing a resource was not tested in the game.
-**1.19.4.1 re-check (2026-11-01).** 7 kit statements depended on files the update changed (the defines file, state history, `interface/general_stuff.gfx`, the production and core localisation, interface files that use the resource strip, and scripts scanned for `add_resource` and resource modifiers) and all were re-measured. Changed: 511 state files (was 512, one `resources` block is commented out) have a `resources` block, and `GFX_resources_strip` is used by six other interface files, not three. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Resources](#Resources)
-  - [Icon frame](#Icon_frame)
-  - [CIC](#CIC)
-  - [Convoys](#Convoys)
-- [Localization](#Localization)
-- [Interface](#Interface)
-  - [Additional notes](#Additional_notes)
-    - [Kit: Where script names a resource](#kit-resource-script-surface)
-
----
-
-## Resources <a id="Resources"></a>
+## Resources
 
 The resources used by the game are found in `/Hearts of Iron IV/common/resources/00_resources.txt`.
 
@@ -38,8 +16,7 @@ resources = {
 }
 ```
 
-<!-- kit:begin id="vanilla-resources" at="section:Resources" -->
-**Kit note** Vanilla 1.19.3 defines seven resources in `common/resources/00_resources.txt`, in this order. All seven use `cic = 0.125` and `convoys = 0.1`. [vanilla-confirmed 1.19.3]
+Vanilla 1.19.3 defines seven resources in `common/resources/00_resources.txt`, in this order. All seven use `cic = 0.125` and `convoys = 0.1`.
 
 | `icon_frame` | Resource key |
 | --- | --- |
@@ -51,12 +28,11 @@ resources = {
 | 6 | `chromium` |
 | 7 | `coal` |
 
-The game's own note in `common/resources/_documentation.md`: when you add a resource or change the order, update the define `NAI.MIN_FACTORIES_TO_WANT_TO_IMPORT`. It is a list with one number per resource in file order (vanilla: `0` for the first six, `10` for `coal`). [docs] `common/resources/_documentation.md`. [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
+The game's own note in `common/resources/_documentation.md`: when you add a resource or change the order, update the define `NAI.MIN_FACTORIES_TO_WANT_TO_IMPORT`. It is a list with one number per resource in file order (vanilla: `0` for the first six, `10` for `coal`).
 
-Resource keys are plain lowercase identifiers that other script repeats: the state block `resources = { steel = 6 }` (511 of 1081 vanilla state files have a `resources` block), the equipment block `resources = { steel = 2 }`, and the `type` or `resource` argument of the effects and triggers in the table at the end of this page. [vanilla-confirmed 1.19.4.1] `history/states/`, `common/units/equipment/infantry.txt`.
-<!-- kit:end id="vanilla-resources" -->
+Resource keys are plain lowercase identifiers that other script repeats: the state block `resources = { steel = 6 }` (511 of 1081 vanilla state files have a `resources` block), the equipment block `resources = { steel = 2 }`, and the `type` or `resource` argument of the effects and triggers in the table at the end of this page.
 
-### Icon frame <a id="Icon_frame"></a>
+### Icon frame
 
 Icon frame controls which frame from the resource image strip is used for the resource icon. A 'frame' is the 27 by 27 pixel square the icon occupies in the image.
 
@@ -80,19 +56,17 @@ The icons are defined in `/Hearts of Iron IV/interface/general_stuff.gfx`. Their
 
 The number of frames strictly corresponds to the amount of resources.
 
-<!-- kit:begin id="strip-size" at="section:Icon_frame" -->
-**Kit note** `gfx/interface/resources_strip.dds` and `gfx/interface/missing_resources_strip.dds` are both 189 x 27 pixels, which is seven frames of 27 x 27. The sprites `GFX_resources_strip` and `GFX_missing_resources_strip` both set `noOfFrames = 7` in `interface/general_stuff.gfx`. [vanilla-confirmed 1.19.4.1] DDS headers of both files, `interface/general_stuff.gfx`.
-<!-- kit:end id="strip-size" -->
+`gfx/interface/resources_strip.dds` and `gfx/interface/missing_resources_strip.dds` are both 189 x 27 pixels, which is seven frames of 27 x 27. The sprites `GFX_resources_strip` and `GFX_missing_resources_strip` both set `noOfFrames = 7` in `interface/general_stuff.gfx`. DDS headers of both files, `interface/general_stuff.gfx`.
 
-### CIC <a id="CIC"></a>
+### CIC
 
 CIC defines the amount of resources needed to trade for 1 Civilian Factory. By default, this is 0.125, meaning 8 units of that resource are traded for 1 factory. Value can not be larger than 1.
 
-### Convoys <a id="Convoys"></a>
+### Convoys
 
 Convoys controls the maximum amount of this resource a single convoy carries. By default, this is 0.1, meaning a convoy can carry 10 of the resource.
 
-## Localization <a id="Localization"></a>
+## Localization
 
 Localisation is defined in `/Hearts of Iron IV/localisation/production_l_<language>.yml` with the following localization keys:
 
@@ -101,11 +75,9 @@ PRODUCTION_MATERIALS_<RESOURCE>:0 "Name of resource"
 <resource>_desc:0 "Description of resource"
 ```
 
-<!-- kit:begin id="loc-keys" at="section:Localization" -->
-**Kit note** Vanilla keeps the name keys in `localisation/english/production_l_english.yml` (`PRODUCTION_MATERIALS_OIL`, `PRODUCTION_MATERIALS_ALUMINIUM`, and so on, one per resource) and the descriptions in `localisation/english/core_l_english.yml` (`oil_desc`, `aluminium_desc`, `rubber_desc`, `tungsten_desc`, `steel_desc`, `chromium_desc`, `coal_desc`). Vanilla writes both without the `:0` version number. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="loc-keys" -->
+Vanilla keeps the name keys in `localisation/english/production_l_english.yml` (`PRODUCTION_MATERIALS_OIL`, `PRODUCTION_MATERIALS_ALUMINIUM`, and so on, one per resource) and the descriptions in `localisation/english/core_l_english.yml` (`oil_desc`, `aluminium_desc`, `rubber_desc`, `tungsten_desc`, `steel_desc`, `chromium_desc`, `coal_desc`). Vanilla writes both without the `:0` version number.
 
-## Interface <a id="Interface"></a>
+## Interface
 
 If implementing different resources, you will need to edit the interface so the game understands how to display the new resource. `/Hearts of Iron IV/interface/countryproductionlineview.gui` is the relevant file here.
 
@@ -132,24 +104,21 @@ instantTextboxType = {
 }
 ```
 
-<!-- kit:begin id="interface-correction" at="section:Interface" -->
-**Kit correction** In 1.19.3 the `resources` window in `interface/countryproductionlineview.gui` is a `containerWindowType` that holds two elements per resource, `<resource>_icon` and `<resource>_checkbox`. It has no `<resource>_value` text box. All bullets below: [vanilla-confirmed 1.19.3] `interface/countryproductionlineview.gui`.
+In 1.19.3 the `resources` window in `interface/countryproductionlineview.gui` is a `containerWindowType` that holds two elements per resource, `<resource>_icon` and `<resource>_checkbox`. It has no `<resource>_value` text box.
 
 - `<resource>_icon` is an `iconType` (not a `buttonType`) with `spriteType = "GFX_resources_strip"` and a hard-coded `frame`. Each one has a commented-out `#pdx_tooltip = "PRODUCTION_MATERIALS_<RESOURCE>"` line.
 - `<resource>_checkbox` is a `buttonType` with `quadTextureSprite = "GFX_generic_checkbox"`.
 - The seven pairs run left to right in this order: oil, rubber, steel, aluminium, tungsten, chromium, coal. The window is 462 wide; the coal icon sits at `x = 396` and its checkbox at `x = 424`.
 - Each `frame` repeats the `icon_frame` from the resource file. The two places must agree, and the positions are set by hand, so adding a resource means editing this window.
 
-`GFX_resources_strip` is also used by `interface/countrydiplomacyview.gui`, `interface/countryintelledger.gui`, `interface/countrylogisticsview.gui`, `interface/countrystateview.gui`, `interface/countrytradeview.gui` and `interface/mapicons.gui`. [vanilla-confirmed 1.19.4.1] `interface/countryproductionlineview.gui`, `interface/`
-<!-- kit:end id="interface-correction" -->
+`GFX_resources_strip` is also used by `interface/countrydiplomacyview.gui`, `interface/countryintelledger.gui`, `interface/countrylogisticsview.gui`, `interface/countrystateview.gui`, `interface/countrytradeview.gui` and `interface/mapicons.gui`.
 
-### Additional notes <a id="Additional_notes"></a>
+### Additional notes
 
-A fuel can also correspond to the fuel dynamic, however only one resource at a time can do that. This is decided by the FUEL_RESOURCE [define](<defines.md>).
+A fuel can also correspond to the fuel dynamic, however only one resource at a time can do that. This is decided by the FUEL_RESOURCE [define](defines.md).
 Infrastructure's bonus on resource gain is decided by the INFRASTRUCTURE_RESOURCE_BONUS define and applies to all resources the same.
 
-<!-- kit:begin id="resource-defines" at="section:Additional_notes" -->
-**Kit note** The resource-related defines in 1.19.4.1. All rows: [vanilla-confirmed 1.19.4.1] `common/defines/00_defines.lua`.
+The resource-related defines in 1.19.4.1.
 
 | Define | Group | Vanilla value | Meaning |
 | --- | --- | --- | --- |
@@ -163,12 +132,8 @@ Infrastructure's bonus on resource gain is decided by the INFRASTRUCTURE_RESOURC
 | `MIN_FACTORIES_TO_WANT_TO_IMPORT` | `NAI` | one entry per resource | civilian factories the AI needs before it imports that resource |
 
 The wiki sentence above about fuel is `FUEL_RESOURCE`. The energy resource has its own define, `ENERGY_RESOURCE`.
-<!-- kit:end id="resource-defines" -->
 
-<!-- kit:begin id="resource-script-surface" at="section:Additional_notes" -->
-#### Kit: Where script names a resource <a id="kit-resource-script-surface"></a>
-
-All rows: [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`, `documentation/modifiers_documentation.md`.
+#### Where script names a resource
 
 | Kind | Name | Scope | Arguments or meaning |
 | --- | --- | --- | --- |
@@ -186,19 +151,4 @@ All rows: [docs] `documentation/effects_documentation.md`, `documentation/trigge
 | Modifier | `local_resources`, `local_resources_factor`, `state_resources_factor`, `local_resource_gain_efficiency_per_infrastructure` | state | not tied to one resource |
 | Modifier | `production_lack_of_resource_penalty_factor`, `resource_trade_cost_bonus_per_factory`, `resources_to_overlord_factor` | country or autonomy | trade and production penalties |
 
-The modifier documentation lists exactly the seven vanilla resource keys as the modified types of every `<Resource>` family. `country_resource_oil` appears in two traits of `common/country_leader/00_traits.txt` and `temporary_state_resource_oil` in `common/dynamic_modifiers/0_dynamic_modifiers.txt`; 83 vanilla files under `common`, `events` and `history` use `add_resource`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="resource-script-surface" -->
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+The modifier documentation lists exactly the seven vanilla resource keys as the modified types of every `<Resource>` family. `country_resource_oil` appears in two traits of `common/country_leader/00_traits.txt` and `temporary_state_resource_oil` in `common/dynamic_modifiers/0_dynamic_modifiers.txt`; 83 vanilla files under `common`, `events` and `history` use `add_resource`.
