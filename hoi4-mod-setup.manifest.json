@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "2669ff9e83dd87170ca99642822f25c802e9506e",
+  "generated_for_revision": "336fd9d57451a4ec6cd22b4e498652f0de338a35",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15020,8 +15020,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "08328d4de765d9c1f55f63287f253ef5b0c2dc0ac9a80486c72306f18f6e51c5",
-          "size": 47416
+          "sha256": "ea8fb2ec241f7e16e09498627f9bf26a2fc5aba445bc3bdb3db7df43aa0977b7",
+          "size": 48987
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15125,8 +15125,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_motion.py",
-          "sha256": "a728c632c4556ae63e56a93c91fac278ad0828ed9d5eb92f207fc7ca002fe03a",
-          "size": 25263
+          "sha256": "6fc00e5c41647ede7ed9d3a285c7e75bd0b00a8de31e6fe9468bd0c12794e520",
+          "size": 29846
         },
         {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
@@ -15895,8 +15895,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_loose_parts.py",
-          "sha256": "95fc6780b071c107833cca989431fbed57ff014978fd65aa095e470132379519",
-          "size": 9868
+          "sha256": "213cb7e772cae12344de1a936d520bdeccb8995fa398bcd7fc9da46b27782b53",
+          "size": 11892
         },
         {
           "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
