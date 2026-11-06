@@ -66,6 +66,9 @@ def setup_scene(size: int = 360) -> None:
     """Workbench renders like the kit's review sheets: back faces culled, magenta background, a ground disc."""
 
     scene = bpy.context.scene
+    if not bpy.data.actions:
+        # Author at HOI4's rate from the start; a factory scene runs at 24 (export_clip retimes otherwise).
+        scene.render.fps, scene.render.fps_base = 30, 1.0
     scene.render.engine = "BLENDER_WORKBENCH"
     scene.display.shading.light = "STUDIO"
     scene.display.shading.color_type = "TEXTURE"
@@ -485,12 +488,17 @@ def plant(frame: int, upper: str, lower: str, foot: str, groups: Sequence[str], 
 
 
 def export_clip(action_name: str, path: str) -> int:
-    """Export one action as a `.anim` with exactly its own frames, and check the file. Returns the sample count.
+    """Export one action as a `.anim` at 30 fps with exactly its own frames, and check the file. Returns the sample count.
 
     Never export with `bpy.ops.io_pdx_mesh.export_anim`: it ignores its start and end frames unless the
     scene's custom-range setting is on, and exports the scene's frame range, so clips came out padded
     or cut short. This calls io_pdx_mesh's `export_animfile` with the action's range, restores the
     scene's range afterwards, and raises when the written sample count is not the action's frame count.
+
+    HOI4 units play at 30 frames a second, and io_pdx_mesh writes the scene's rate. A scene started
+    from factory settings runs at 24. When the scene is not at 30, the action's keys are scaled first so
+    the clip lasts as long in game as it played in the scene (24 to 30 is 1.25 times the frames), and
+    the scene is left at 30 so later previews match the game. The written rate is checked too.
     """
 
     import addon_utils
@@ -506,6 +514,15 @@ def export_clip(action_name: str, path: str) -> int:
     rig.animation_data.action = action
     start, end = (int(round(value)) for value in action.frame_range)
     scene = bpy.context.scene
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "adapter"))
+    from anim_frame_range import HOI4_FPS, retime_action, verify_fps, verify_frame_range
+
+    source_fps = scene.render.fps / scene.render.fps_base
+    if abs(source_fps - HOI4_FPS) > 1e-6:
+        old_end = end
+        start, end = retime_action(action, start, end, source_fps, HOI4_FPS)
+        print(f"export_clip: the scene ran at {source_fps:g} fps; {action_name} was retimed from frames {start}-{old_end} to {start}-{end} so it keeps its length at {HOI4_FPS} fps")
+    scene.render.fps, scene.render.fps_base = HOI4_FPS, 1.0
     saved = (scene.frame_start, scene.frame_end, scene.frame_current)
     bpy.context.view_layer.objects.active = rig  # the exporter takes the active object as the rig
     try:
@@ -514,9 +531,7 @@ def export_clip(action_name: str, path: str) -> int:
     finally:
         scene.frame_start, scene.frame_end = saved[0], saved[1]
         scene.frame_set(saved[2])
-    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "adapter"))
-    from anim_frame_range import verify_frame_range
-
+    verify_fps(path, HOI4_FPS)
     return verify_frame_range(path, start, end)
 
 

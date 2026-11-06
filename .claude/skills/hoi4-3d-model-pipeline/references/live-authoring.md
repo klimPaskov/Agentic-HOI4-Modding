@@ -123,7 +123,11 @@ Weight fixes correct existing weights; they never invent a weight set.
 1. Export each clip with `h.export_clip(action, path)`, never with the io_pdx_mesh export operator: the
    operator ignores its start and end frames unless the scene's custom-range setting is on and exports
    the scene's range, so clips came out padded or cut to 80 or 85 samples. `export_clip` uses the action's
-   own range and fails when the file's sample count differs. Then run `check_unit_files.py` with `--mod-root` (it also compares the clips with the mod's
+   own range and fails when the file's sample count differs. It also writes the clip at 30 frames a
+   second, the rate vanilla soldiers and horses play at. io_pdx_mesh writes the scene's rate, and a scene
+   from factory settings runs at 24. When the scene is not at 30, `export_clip` first scales the action's
+   keys so the clip keeps the length it played in the scene, then leaves the scene at 30.
+   `h.setup_scene()` sets 30 in a new scene before any action exists, so author at 30 from the start. Then run `check_unit_files.py` with `--mod-root` (it also compares the clips with the mod's
    other units). Every rule must pass, including UNIT-ANIM-KNEE, UNIT-SEAM, UNIT-ANIM-STILL,
    UNIT-ANIM-SAME and UNIT-ANIM-SHARED.
 2. Re-time the entity's timed events (muzzle flashes, sounds) in `gfx/entities/*.asset` to the new

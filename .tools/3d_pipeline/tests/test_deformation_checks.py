@@ -76,10 +76,10 @@ def write_mesh(path: Path, positions, triangles, bone_of_vertex=None) -> None:
     path.write_bytes(data)
 
 
-def write_anim(path: Path, frames: int, pose) -> None:
+def write_anim(path: Path, frames: int, pose, fps: float = 30.0) -> None:
     """`pose(frame)` returns {bone: (local translation, quaternion x y z w)} for the moving bones."""
 
-    data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [15.0]) + _prop("sa", "i", [frames]) + _prop("j", "i", [len(BONES)])
+    data = b"@@b@" + _obj("info", 1) + _prop("fps", "f", [fps]) + _prop("sa", "i", [frames]) + _prop("j", "i", [len(BONES)])
     rest_local = {}
     for name, parent, position in BONES:
         parent_position = BONES[parent][2] if parent >= 0 else (0, 0, 0)
