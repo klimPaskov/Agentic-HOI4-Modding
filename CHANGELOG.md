@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Move the `hoi4-imagegen` release route to v0.3.4. 0.3.3 lets the ChatGPT-login route run up to three requests at once across the machine and drop to one at a time after a sign-out, a rate limit or a usage-limit answer. 0.3.4 draws style references per request and per sub-family instead of one fixed set per family, keeps nation-specific art out of generic briefs, adds project style packs for a mod's own house style, measures agency upgrades, MIO traits, small icons, buildings, doctrines and per-family portrait backdrops from vanilla (DLC folders included), and treats the backend's "Unable to verify model access" answer as a transient error.
+
 ## 2026-11-05
 
 Package release `package-2026-11-05`. hoi4-imagegen stays on v0.3.2 in this release.
