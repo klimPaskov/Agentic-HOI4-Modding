@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "acd3d1dd6035c76d6e46732f06145f1d0f400dc2",
+  "generated_for_revision": "0b9b6ad71abe494b239c19cce8989566307fee4f",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14965,8 +14965,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/repair_mesh.py",
-          "sha256": "81323025c1043e16ed4ee5f76e8a934491ba3705403b406fde72f9f3a94e5d99",
-          "size": 16094
+          "sha256": "c874214bdcbceda6cf1133ba2294542eed468bb1f96d324f07f9c3a7b39a2f30",
+          "size": 17013
         },
         {
           "path": ".tools/3d_pipeline/blender/review_render.py",
@@ -14990,13 +14990,13 @@
         },
         {
           "path": ".tools/3d_pipeline/calibrate_deformation.py",
-          "sha256": "bedaa96f995828fe6f29cb120d39db1067eca97747d7f86665fab42edc41bbee",
-          "size": 8223
+          "sha256": "5f7a7c61a6b45192c24012df2ff7f3dff10173bcac885e5499a48bcdf596a8b7",
+          "size": 10217
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "64a3d53a009285af02ea160b197e53cbd2c56c4bf02e5cd655a03bb68ca3d752",
-          "size": 29069
+          "sha256": "d3938dff389a202dff640dcbad77f916b45936d097b1c26fd82f493cb5c5e015",
+          "size": 37041
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15005,8 +15005,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/deformation_calibration.json",
-          "sha256": "491950972d6027cf224851db59ebdccf87cf3a0b0296887d5ddf16403e641088",
-          "size": 5295
+          "sha256": "240118823c67593b72f2b1671168dac3e69cfc2771939c4a699320004a7bd4e4",
+          "size": 6528
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_pricing.json",
@@ -15084,6 +15084,11 @@
           "size": 3635
         },
         {
+          "path": ".tools/3d_pipeline/lib/pdx_motion.py",
+          "sha256": "e6c75129e127619135779b9a1f677657ab3d08ed046ab916e52064f1ad6f4d9b",
+          "size": 16141
+        },
+        {
           "path": ".tools/3d_pipeline/lib/profile_gates.py",
           "sha256": "bd4da02d226e5e7638e45c0cfd650d74fcc3ecc0e2a1e52fb6002f2d694886ec",
           "size": 14405
@@ -15125,8 +15130,8 @@
         },
         {
           "path": ".tools/3d_pipeline/repair_unit.py",
-          "sha256": "05f63346c86d0a3429086e6f0722e47721eb38a6e2a69f5d54cdc80f071cd239",
-          "size": 6872
+          "sha256": "6bf6a09cd057464f4d6375b400a9056fcbda68bf50d5350ae18b0c59b078bbd4",
+          "size": 7368
         },
         {
           "path": ".tools/3d_pipeline/review_unit.py",
@@ -15755,8 +15760,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
-          "sha256": "6b182aa52fd6fe6338b4194452b02bdda769821f244fbe9e5231890aff9d492e",
-          "size": 12887
+          "sha256": "487372763fec94b76889b30f59ea71e192cb0936bde145b5a8baf847a14ade4b",
+          "size": 12959
         },
         {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
@@ -15844,6 +15849,11 @@
           "size": 6925
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_motion_checks.py",
+          "sha256": "af327775dc86ef425fc3d5e75993e4f7d9d43e757b63d2b762573a09023ff155",
+          "size": 12434
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
           "sha256": "2dec1b381a312f6b3122651d7d02f4bd301640f4983f277bee003abe27061622",
           "size": 8674
@@ -15885,8 +15895,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_repair_unit.py",
-          "sha256": "ae1e761c2821ad357aef5e9cf61f69f7e7bc12d35ac04af0db7382ec688bd192",
-          "size": 6211
+          "sha256": "9755fa7c4756265a40b93d78a96236e9c17c762833a4f2ec3ff5640342f156a1",
+          "size": 7539
         },
         {
           "path": ".tools/3d_pipeline/tests/test_reusable_adapter_advances.py",
