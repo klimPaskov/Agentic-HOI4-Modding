@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "730701508d878c8476962fc3bc9662d4bb8bf72c",
+  "generated_for_revision": "fd966715fca12fc66cacd42a8c9f9b0b9685a39d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1799,7 +1799,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "sha256": "6299fe60a4ac3371ce360246fdd0a8cacf6d793a304d6ad20923eecdb7d0699c",
           "size": 76089
         },
         {
@@ -7253,7 +7253,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "sha256": "6299fe60a4ac3371ce360246fdd0a8cacf6d793a304d6ad20923eecdb7d0699c",
           "size": 76089
         },
         {
@@ -14830,7 +14830,7 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "9f80c08d314d0e370bf243efc87b37a5e8f987e0536e25f4ad10e0dfce68cbc4",
+          "sha256": "cbe685fe00ae79da8d7fc088fb9ef2b558f1d4419652abcc2fa6193925690d7b",
           "size": 16081
         },
         {
@@ -15005,7 +15005,7 @@
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "4942cd63ff9c4e97145b7195d82271673e9781a6d2b1a1b73b70cf9547b1c9b8",
+          "sha256": "e7c14c70682b8e1e218129b0579386787c4a30bafb59627ddc65413dc9690030",
           "size": 73616
         },
         {
@@ -15050,8 +15050,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/meshy_tool_schema.lock.json",
-          "sha256": "4cd7018aff0715ecbafbd4dbe2677ebab6a2d102782b7401ade23ca70412034b",
-          "size": 32285
+          "sha256": "e2962b644563ad722eb153d136a4e09aeed11d6879ebef04891022f78bccc9f6",
+          "size": 33285
         },
         {
           "path": ".tools/3d_pipeline/config/unit_types.json",
@@ -15160,17 +15160,17 @@
         },
         {
           "path": ".tools/3d_pipeline/meshy_client.py",
-          "sha256": "06fadbcef4156ac6c02c7f62e01d2b1fce0cd1223321657e275881caaf2e56d7",
+          "sha256": "c378143754747042f707d56f0f49fae3f1167fb1b40fdac143950b8c7fab79a6",
           "size": 30089
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package-lock.json",
-          "sha256": "672707686e4a59b644f5bb7e1af58c8987a26f6caadcbf0c5e7e196b7bfa7c18",
+          "sha256": "2c446d745d7c7dfb9f726d59e0d3d5ad239bda756fb9864e48615d6d15bd44fd",
           "size": 65624
         },
         {
           "path": ".tools/3d_pipeline/meshy_runtime/package.json",
-          "sha256": "a786752193cacd1c01c20db7c1a47d0a4d52fada7eed2ac7b47b7245687aec0b",
+          "sha256": "a0ee85127d357b8399ee7112f532b851f5df28f1b31e28d668e347b10bb33ca9",
           "size": 151
         },
         {
@@ -15195,8 +15195,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "d864c73d577c81c49547446139f467da809610925a2f0ed72e5b2119479d666a",
-          "size": 156211
+          "sha256": "30dc4c2b62301923c97a26dcc57644f7b2195d8938c3bb40e16f498ecca6d1ad",
+          "size": 156356
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16040,8 +16040,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_files.py",
-          "sha256": "f8f5de737282d0d4481e74705321d9dbc085c2a1d5b816521833743bda731a03",
-          "size": 19626
+          "sha256": "a361777b5bee12daec56f057814b101cd30e2dc8ba09a202b17a60f8c1d18c35",
+          "size": 20306
         },
         {
           "path": ".tools/3d_pipeline/tests/test_visual_preflight.py",
@@ -19141,7 +19141,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "sha256": "6299fe60a4ac3371ce360246fdd0a8cacf6d793a304d6ad20923eecdb7d0699c",
           "size": 76089
         },
         {
@@ -24633,7 +24633,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "sha256": "6299fe60a4ac3371ce360246fdd0a8cacf6d793a304d6ad20923eecdb7d0699c",
           "size": 76089
         },
         {
@@ -30125,7 +30125,7 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "274e3edd59e245320bef103e1ac9a6dc07d077cb8d9c40ed2568e6df82a9039c",
+          "sha256": "6299fe60a4ac3371ce360246fdd0a8cacf6d793a304d6ad20923eecdb7d0699c",
           "size": 76089
         },
         {

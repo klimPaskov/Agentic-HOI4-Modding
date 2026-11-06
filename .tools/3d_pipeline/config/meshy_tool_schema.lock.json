@@ -1,12 +1,12 @@
 {
   "schema_version": "1.0.0",
   "server_package": "@meshy-ai/meshy-mcp-server",
-  "server_version": "0.6.7",
-  "server_git_head": "0f4c10a3c37f74a2625a922aeaff03b2f878887f",
+  "server_version": "0.6.9",
+  "server_git_head": "f7fe59e0df5050d8ccf70d118ec084f39a725638",
   "compatibility_sdk_version": "1.29.0",
-  "verified_at": "2026-10-31T17:21:47Z",
+  "verified_at": "2026-11-06T10:32:53Z",
   "schema_source": "published_runtime_tools_list_without_authenticated_provider_calls",
-  "schema_revision": "meshy-0.6.7-published-tools-list",
+  "schema_revision": "meshy-0.6.9-published-tools-list",
   "required_tools": {
     "meshy_check_balance": {
       "required_arguments": [],
@@ -78,6 +78,7 @@
         "target_formats",
         "target_polycount",
         "texture_image_url",
+        "texture_model",
         "texture_prompt",
         "texture_resolution",
         "topology",
@@ -126,7 +127,7 @@
           },
           "enable_pbr": {
             "default": false,
-            "description": "Also make metallic/roughness/normal maps.",
+            "description": "Also make metallic/roughness/normal maps. Not with texture_model meshy-n1.",
             "type": "boolean"
           },
           "file_path": {
@@ -187,7 +188,7 @@
             "type": "string"
           },
           "remove_lighting": {
-            "description": "Remove highlights/shadows from the base color (meshy-6 only; API default true there).",
+            "description": "Remove highlights/shadows from the base color (Meshy 6 texture model only: ai_model meshy-6 without texture_model; API default true there). Not true with texture_model meshy-n1 / meshy-6-lite.",
             "type": "boolean"
           },
           "response_format": {
@@ -242,17 +243,26 @@
             "type": "integer"
           },
           "texture_image_url": {
-            "description": "Image URL to guide texturing.",
+            "description": "Image URL to guide texturing. With texture_model meshy-n1, the front view it textures from.",
             "format": "uri",
             "type": "string"
           },
+          "texture_model": {
+            "description": "Texture model, picked apart from the geometry: meshy-7 (PBR, 2K/4K/8K), meshy-n1 (2K base color from the input image, or texture_image_url as the front view; no texture_prompt, enable_pbr, 4k/8k, remove_lighting or quad remesh), meshy-6-lite (2K, lowest cost; no remove_lighting). Omit for the geometry's default: meshy-7 (meshy-7.1, latest, meshy-t2, meshy-t2.5), meshy-6 (meshy-6), meshy-6-lite (meshy-6-lite). Same price whichever; ignored with should_texture false.",
+            "enum": [
+              "meshy-7",
+              "meshy-n1",
+              "meshy-6-lite"
+            ],
+            "type": "string"
+          },
           "texture_prompt": {
-            "description": "Text to guide texturing (max 800 characters).",
+            "description": "Text to guide texturing (max 800 characters). Not with texture_model meshy-n1.",
             "maxLength": 800,
             "type": "string"
           },
           "texture_resolution": {
-            "description": "Base color texture: 2k (default), 4k or 8k (+5 credits; PBR maps stay 4K, no emission map). 4k/8k not on meshy-6-lite.",
+            "description": "Base color texture: 2k (default), 4k or 8k (+5 credits; PBR maps stay 4K, no emission map). 4k/8k need the meshy-7 or meshy-6 texture model: not meshy-6-lite or meshy-n1.",
             "enum": [
               "2k",
               "4k",
