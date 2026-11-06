@@ -237,9 +237,9 @@ class UnitTypeValidation(unittest.TestCase):
             if unit_type.get("validation_overrides"):
                 with self.subTest(unit_type=name):
                     self.assertIn("measured", unit_type.get("validation_calibration", ""))
-        tree = run_pilot.apply_unit_type({"unit_type": "tree_creature"})
-        self.assertEqual(tree["profile_validation_overrides"], {"max_boundary_edges": 1250})
-        self.assertNotIn("profile_validation_overrides", run_pilot.apply_unit_type({"unit_type": "archer"}))
+        # Open edges are not limited per type any more: check_holes.py judges the silhouette instead.
+        for name in ("tree_creature", "beast_biped", "archer"):
+            self.assertNotIn("profile_validation_overrides", run_pilot.apply_unit_type({"unit_type": name}))
 
 
 class UnitTypeActions(unittest.TestCase):

@@ -209,6 +209,9 @@ class Job(unittest.TestCase):
             saved = json.loads((job / "evidence" / "body_verdict.json").read_text(encoding="utf-8"))
         self.assertEqual((code, saved["unit"], saved["outputs"]["preset"]), (0, "warhorse", "quadruped"))
         self.assertIn("--status warhorse", saved["next"][0])
+        # The provider model is checked for visible holes before the paid rig.
+        self.assertIn("check_holes.py", saved["next"][0])
+        self.assertIn("generation_model.glb", saved["next"][0])
 
     def test_every_unit_type_names_a_preset_with_its_rig(self) -> None:
         presets = measure_body.load_presets()["presets"]

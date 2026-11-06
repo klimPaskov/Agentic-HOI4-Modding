@@ -671,7 +671,9 @@ def _write_verdict(args, folder: Path, findings: List[Finding], errors: List[Fin
                 f" --out {stage_verdict.quote(out + '/repair')} --repairs holes --max-hole-edges {SMALL_HOLE_EDGES}"
                 f"  (optional: closes {len(small)} small open loop(s) a reviewer can see, then check the copy)"
             )
-        steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(shown)}{' --stem ' + args.stem if args.stem else ''}{mod} --out {stage_verdict.quote(out + '/review')}")
+        stem_arg = f" --stem {args.stem}" if args.stem else ""
+        steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_holes.py {stage_verdict.quote(shown)}{stem_arg} --out {stage_verdict.quote(out + '/holes')}")
+        steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(shown)}{stem_arg}{mod} --out {stage_verdict.quote(out + '/review')}")
     stage_verdict.write(
         stage_verdict.verdict(
             "check", not errors, stem,
