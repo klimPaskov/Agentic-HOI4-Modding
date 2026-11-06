@@ -29,6 +29,8 @@ File rules (always):
   is larger than 2048.
 - UNIT-DDS-MIPS, UNIT-DDS-FORMAT (warnings): no mip chain, or uncompressed. Vanilla unit
   textures are DXT5 or DXT1 with mips (736 of 743 files).
+- UNIT-DDS-SHINY (warning): a specular map far shinier than vanilla units (95th-percentile metalness over 120
+  or glossiness over 140); it renders as white speckles on the map.
 - UNIT-DDS-EMISSIVE (warning): a normal map whose blue channel is not black. `PdxMeshAdvanced`
   reads normals as RRxG and uses blue as emissive light.
 
@@ -64,6 +66,8 @@ MAX_INFLUENCES = 4
 MAX_STREAM_VERTICES = 65535
 MAX_TEXTURE_SIDE = 2048
 EMISSIVE_TOLERANCE = 8
+SHINY_METALLIC = 120
+SHINY_GLOSS = 140
 
 
 @dataclass
@@ -185,6 +189,16 @@ def _check_textures(folder, add, facts):
             add("UNIT-DDS-MIPS", "warning", dds_path, f"{header['mips']} mip level(s) of {model_dds.full_mip_count(width, height)}; the zoomed-out map will shimmer")
         if not header["compressed"]:
             add("UNIT-DDS-FORMAT", "warning", dds_path, f"uncompressed {header['format']}; vanilla units use DXT5 or DXT1 (a quarter of the memory)")
+        if dds_path.stem.endswith(("_specular", "_spec")):
+            try:
+                import numpy as np
+
+                pixels = model_dds.decode_top_level(data)
+                metal, gloss = (float(np.percentile(pixels[..., channel], 95)) for channel in (2, 3))
+                if metal > SHINY_METALLIC or gloss > SHINY_GLOSS:
+                    add("UNIT-DDS-SHINY", "warning", dds_path, f"95th-percentile metalness {metal:.0f} and glossiness {gloss:.0f}; vanilla units stay under about {SHINY_METALLIC} and {SHINY_GLOSS}, and brighter maps alias into white speckles")
+            except (ValueError, model_dds.DdsError):
+                pass
         if dds_path.stem.endswith("_normal"):
             try:
                 pixels = model_dds.decode_top_level(data)

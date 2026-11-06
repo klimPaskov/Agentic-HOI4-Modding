@@ -3365,6 +3365,9 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
         # The raw generation is hundreds of loose pieces; the rig needs one closed surface.
         spec.setdefault("creature_remesh", True)
         spec.setdefault("creature_remesh_polycount", 30000)
+        # Vanilla cavalry_horse.mesh is 15.64 units to the head under pdxmesh scale 0.45 and entity
+        # scale 0.65, so 4.57 on the map, smaller than vanilla infantry (5.89). A mount matches it.
+        spec.setdefault("blender_target_height_m", round(4.57 / float(spec.get("runtime_entity_scale", 0.8)), 4))
     else:
         spec.setdefault("asset_kind", "humanoid")
     if not spec.get("required_actions"):
