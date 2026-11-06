@@ -62,6 +62,10 @@ Surface and deformation rules (always; limits are the largest values measured on
   pelvis faces, by more than 5 % of the leg's length. No vanilla soldier's knee ever does.
 - UNIT-ANIM-STILL: a clip moves its joints less than the stillest vanilla clip of the group. It
   reads as a frozen pose on the map.
+- UNIT-ANIM-SPIN: a joint that skins vertices turns farther between two frames than any vanilla joint
+  of the group does (at 30 frames a second). Keys on opposite sides of the quaternion sphere make
+  Blender interpolate the long way, and a limb or a held polearm sweeps most of a circle, through the
+  ground or the head, in a frame or two.
 - UNIT-ANIM-SAME: two roles of the unit play nearly the same motion (their distance is under 12 %
   of the larger clip's motion). Each role must read as itself. A seated rider is exempt for idle,
   move, retreat and training: the mount's gait carries it, so those roles reuse idle by design.
@@ -332,6 +336,10 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
             add("UNIT-ANIM-KNEE", "error", anim_path, f"frame {knee.worst_frame}: knee {knee.worst_leg} bends backward by {-knee.worst_bend:.0%} of the leg's length ({knee.backward_frames} frame(s) past {knee_limit:.0%}); vanilla soldiers' knees bend back at most {limits.get('knee_backward', 0.0):.1%}. Solve the leg again with the knee toward the toes")
         if "still_motion" in limits and motion < limits["still_motion"]:
             add("UNIT-ANIM-STILL", "error", anim_path, f"the joints move {motion:.2%} of the unit's height on average; the stillest vanilla clip moves {limits['still_motion']:.2%}. It reads as a frozen pose")
+        turn = pdx_motion.fastest_turn(mesh, anim)
+        facts["motion"][mesh_path.name]["clips"][anim_path.name]["fastest_turn"] = round(turn.degrees, 1)
+        if "turn_per_frame" in limits and turn.degrees > limits["turn_per_frame"]:
+            add("UNIT-ANIM-SPIN", "error", anim_path, f"frame {turn.frame}: {turn.joint} turns {turn.degrees:.0f} degrees in one frame; vanilla's fastest joint turns {limits['turn_per_frame']:.0f}. Keys on opposite sides of the quaternion sphere make Blender turn the long way: flip them (live_helpers.normalize_quaternion_keys) and export again, or spread the turn over more frames")
     _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
     paths = sorted(loaded)
     for index, first in enumerate(paths):

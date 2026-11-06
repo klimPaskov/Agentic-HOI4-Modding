@@ -52,6 +52,7 @@ MEASURES = (
     "hover",
     "seam_edges",
     "knee_backward",
+    "turn_per_frame",
 )
 # Measures whose limit is the smallest vanilla value, not the largest.
 LOWEST = ("still_motion",)
@@ -138,7 +139,9 @@ class Calibration:
 
         for clip in clips:
             try:
-                self.record(group, "still_motion", pdx_motion.motion_amount(mesh, pdx_deform.load_anim(clip)), rel, clip)
+                anim = pdx_deform.load_anim(clip)
+                self.record(group, "still_motion", pdx_motion.motion_amount(mesh, anim), rel, clip)
+                self.record(group, "turn_per_frame", pdx_motion.fastest_turn(mesh, anim).degrees, rel, clip)
             except (PdxFormatError, ValueError, IndexError):
                 continue
 
@@ -189,18 +192,43 @@ class Calibration:
         print(f"    {clip.name}: " + ", ".join(f"{k} {v:.4f}" for k, v in values.items()), flush=True)
 
 
+def update_only(args, root: Path, registered: Dict[Path, List[Path]], calibration: "Calibration") -> int:
+    """Measure the per-clip motion measures named by --only over every registered clip and update them in place."""
+
+    payload = json.loads(args.out.read_text(encoding="utf-8"))
+    for mesh_path in sorted(root.rglob("*.mesh")):
+        try:
+            mesh = pdx_deform.load_mesh(mesh_path)
+        except (PdxFormatError, ValueError, IndexError, OSError):
+            continue
+        clips = registered.get(mesh_path.resolve(), [])
+        if not mesh.skinned or len(mesh.triangles) < MIN_TRIANGLES or not clips:
+            continue
+        rel = mesh_path.relative_to(root).as_posix()
+        calibration.motion(mesh, rel, group_of(rel), clips)
+    for group, measures in calibration.groups.items():
+        for measure in args.only:
+            payload["groups"].setdefault(group, {})[measure] = measures[measure]
+    args.out.write_text(json.dumps(payload, indent=1) + "\n", encoding="utf-8", newline="\n")
+    print(json.dumps({group: {measure: payload["groups"][group][measure] for measure in args.only} for group in payload["groups"]}, indent=1))
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("game", type=Path, help="the game's install folder")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--clips-per-mesh", type=int, default=6)
     parser.add_argument("--seed", type=int, default=1936)
+    parser.add_argument("--only", nargs="+", choices=("still_motion", "turn_per_frame"), help="measure only these cheap per-clip measures and update them in the existing --out file")
     args = parser.parse_args()
 
     root = args.game / "gfx" / "models" / "units"
     registered = registered_clips(args.game)
     rng = random.Random(args.seed)
     calibration = Calibration(args.game)
+    if args.only:
+        return update_only(args, root, registered, calibration)
     for mesh_path in sorted(root.rglob("*.mesh")):
         try:
             mesh = pdx_deform.load_mesh(mesh_path)
