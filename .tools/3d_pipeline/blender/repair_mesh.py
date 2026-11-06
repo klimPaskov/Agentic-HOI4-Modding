@@ -17,6 +17,8 @@ Repairs, each optional and run in this order:
   skin (the two sides still connect through the rest of the mesh) is kept and reported as a
   weight seam: it needs blended weights, not a cut.
 - `holes`: close open loops of at most `max_hole_edges` edges.
+- `weights`: blend existing weights across each weight seam and each leg seam named in
+  `leg_seam_pairs` (bone pairs found by `lib/pdx_motion.seam_edges`), then keep four influences.
 
 Every cap vertex is an existing boundary vertex, so caps inherit their neighbours' weights and no
 new weight is invented. Imported corner normals are kept, and cap corners take the cap's face normal.
@@ -134,6 +136,24 @@ def bridge_edges(bm, weights):
             continue
         bone_a, bone_b = max(a, key=a.get), max(b, key=b.get)
         if bone_a == bone_b or HOPS.get((bone_a, bone_b), 0) < request["hops"]:
+            continue
+        if max(b.get(bone_a, 0.0), a.get(bone_b, 0.0)) >= 0.1:
+            continue
+        found.append(edge)
+    return found
+
+
+def leg_seam_edges(bm, weights, pairs):
+    """Edges between two legs' bones named in `pairs` whose vertices do not blend each other's bone."""
+
+    wanted = {frozenset(pair) for pair in pairs}
+    found = []
+    for edge in bm.edges:
+        a, b = (weights[v.index] for v in edge.verts)
+        if not a or not b:
+            continue
+        bone_a, bone_b = max(a, key=a.get), max(b, key=b.get)
+        if frozenset((bone_a, bone_b)) not in wanted:
             continue
         if max(b.get(bone_a, 0.0), a.get(bone_b, 0.0)) >= 0.1:
             continue
@@ -349,7 +369,9 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
         bm.verts.ensure_lookup_table()
         weights = weights_of(obj, bm)
         _fused, seams = split_fusions(bm, bridge_edges(bm, weights), weights)
-        entry["seam_vertices_blended"] = blend_seams(obj, bm, seams, request["seam_rings"], request["seam_passes"])
+        legs = leg_seam_edges(bm, weights, request.get("leg_seam_pairs") or [])
+        entry["leg_seam_edges"] = len(legs)
+        entry["seam_vertices_blended"] = blend_seams(obj, bm, seams + legs, request["seam_rings"], request["seam_passes"])
         entry["influences_limited"] = limit_influences(obj, bm, 4)
     open_edges = [e for e in bm.edges if e.is_boundary]
     entry["open_edges_after"] = len(open_edges)
