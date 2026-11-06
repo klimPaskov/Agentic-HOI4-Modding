@@ -1,42 +1,8 @@
 # Unit modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Unit modding", revision 71837, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="71837" sources="common/units/ common/unit_tags/00_categories.txt common/terrain/00_terrain.txt common/script_enums.txt interface/subuniticons.gfx localisation/english/deployment_l_english.yml localisation/english/unit_l_english.yml documentation/ hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against all 45 vanilla files in `common/units/` (158 sub-units), `common/unit_tags/00_categories.txt`, the terrain file, `script_enum_equipment_category`, the unit icon and group localisation, and a token search of `hoi4.exe`.
-Kit blocks added: `unit-keys` (what every sub-unit sets and the keys the template omits), `unit-terrain-keys`, `unit-internal-types` (33 real values), `unit-group-types` (7 groups), `unit-map-icon-types`, `unit-stat-values` (the page's "vanilla uses" numbers are wrong), `unit-boolean-note`, `unit-navy-air-note` (equipment stats are not sub-unit keys; `fire_range`, `shore_bombardment`, `evasion` and `port_capacity_usage` do not exist), `unit-icons-note`.
-Gaps left: the in-game meaning of `priority`, `ai_priority`, `map_icon_category` and `abbreviation` is inferred from usage, and the Models section was not re-checked against `gfx/entities/`.
-**1.19.4.1 re-check (2026-11-01).** 17 statements depended on files the update changed (`infantry.txt`, `cavalry.txt`, `amphibious_mech.txt`, the self-propelled and tank destroyer brigade files in `common/units/`, and `deployment_l_english.yml`), and all 17 were re-measured: the 158 sub-units, the 7 groups, the 33 type values and the terrain counts are unchanged. Counts that moved or were corrected: `breakthrough` 63 to 64, `soft_attack` 46 to 49, `hard_attack` 32 to 37, `defense` 36 to 46, all 18 `required_dlc` sub-units need Thunder at Our Gates (not 17), and the `max_organisation` list now includes the values it left out. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Unit Categories](#Unit_Categories)
-- [Units](#Units)
-  - [Kit: Sub-unit keys in 1.19.3](#kit-unit-keys)
-  - [How to add new Groups](#How_to_add_new_Groups)
-  - [Models](#Models)
-  - [Internal Types](#Internal_Types)
-  - [Group Types](#Group_Types)
-  - [Map Icon Types](#Map_Icon_Types)
-- [Stats](#Stats)
-- [Modifiers](#Modifiers)
-  - [Base](#Base)
-  - [Costs](#Costs)
-  - [Offensive](#Offensive)
-  - [Defensive](#Defensive)
-  - [Unique](#Unique)
-  - [Boolean](#Boolean)
-  - [Navy-specific](#Navy-specific)
-  - [Air-specific](#Air-specific)
-- [Localization](#Localization)
-- [Icons](#Icons)
-
----
-
 Units are the base object that equipment is applied to. Internally, units are actually sub-units of the hardcoded unit types, such as infantry, cavalry, fighter, etc.
 
-## Unit Categories <a id="Unit_Categories"></a>
+## Unit Categories
 
 Unit categories are found in `/Hearts of Iron IV/common/unit_tags/00_categories.txt`.
 
@@ -51,7 +17,7 @@ category_all_infantry = {
 }
 ```
 
-## Units <a id="Units"></a>
+## Units
 
 Units are found in `/Hearts of Iron IV/common/units/*.txt`.
 
@@ -115,14 +81,13 @@ sub_units = {
 
 You cannot add new internal or map icon types, but you can add new groups.
 
-<!-- kit:begin id="unit-keys" at="section:Units" -->
-### Kit: Sub-unit keys in 1.19.4.1 <a id="kit-unit-keys"></a>
+### Sub-unit keys in 1.19.4.1
 
-**Kit addition** Every one of the 158 vanilla sub-units sets `sprite`, `priority`, `active` and `type`. Those four are the safe minimum; vanilla never omits them. [vanilla-confirmed 1.19.4.1] `common/units/*.txt` (158 of 158)
+Every one of the 158 vanilla sub-units sets `sprite`, `priority`, `active` and `type`. Those four are the safe minimum; vanilla never omits them.
 
-`type` takes two forms. Land and naval sub-units use a block (`type = { infantry support }`, 133 sub-units); the 25 air sub-units use a single value (`type = fighter`). The first entry is the main type. `need` is a block of equipment ids with amounts (`need = { infantry_equipment = 100 }`) and is set by 156 sub-units; the two that omit it, `battle_cruiser` and `battleship`, use `need_equipment` and `need_equipment_modules` instead (the modules form takes an `any = { module = 1 }` list). [vanilla-confirmed 1.19.4.1] `common/units/battleship.txt`, `common/units/air.txt`
+`type` takes two forms. Land and naval sub-units use a block (`type = { infantry support }`, 133 sub-units); the 25 air sub-units use a single value (`type = fighter`). The first entry is the main type. `need` is a block of equipment ids with amounts (`need = { infantry_equipment = 100 }`) and is set by 156 sub-units; the two that omit it, `battle_cruiser` and `battleship`, use `need_equipment` and `need_equipment_modules` instead (the modules form takes an `any = { module = 1 }` list).
 
-Keys vanilla sub-units use, with the number of sub-units (of 158) that set each. Counts are [vanilla-confirmed 1.19.4.1] `common/units/*.txt`. Meanings are read from usage and from comments in the vanilla files. No documentation file describes the sub-unit format. [vanilla-confirmed 1.19.4.1] `documentation/*.md`, `common/units/`. The meanings are [unverified].
+Keys vanilla sub-units use, with the number of sub-units (of 158) that set each. Meanings are read from usage and from comments in the vanilla files. No documentation file describes the sub-unit format. The meanings are unverified.
 
 | Key | Count | Notes |
 | --- | --- | --- |
@@ -154,12 +119,10 @@ Keys vanilla sub-units use, with the number of sub-units (of 158) that set each.
 | `land_air_wing_size`, `carrier_air_wing_size`, `mega_carrier_air_wing_size`, `submarine_carrier_air_wing_size` | 25, 8, 19, 8 | Air wing sizes (for example 100 planes on land, 10 on a carrier). |
 | `critical_parts`, `critical_part_damage_chance_mult`, `hit_profile_mult` | 7, 7, 7 | Ship damage model keys. |
 | `own_equipment_fuel_consumption_mult` | 12 | Fuel use multiplier, `0.0` for non-fuel support. |
-<!-- kit:end id="unit-keys" -->
 
-<!-- kit:begin id="unit-terrain-keys" at="section:Units" -->
-**Kit addition** Terrain blocks. 73 of the 158 sub-units contain at least one terrain block. The keys vanilla uses are `forest` (67), `jungle` (66), `marsh` (63), `river` (63), `mountain` (60), `amphibious` (56), `hills` (48), `urban` (45), `fort` (21), `plains` (17), `desert` (14) and `snow` (2). Inside a terrain block vanilla uses only three keys: `attack` (420 times), `movement` (308) and `defence` (81, spelled with a `c`). [vanilla-confirmed 1.19.4.1] `common/units/*.txt`
+Terrain blocks. 73 of the 158 sub-units contain at least one terrain block. The keys vanilla uses are `forest` (67), `jungle` (66), `marsh` (63), `river` (63), `mountain` (60), `amphibious` (56), `hills` (48), `urban` (45), `fort` (21), `plains` (17), `desert` (14) and `snow` (2). Inside a terrain block vanilla uses only three keys: `attack` (420 times), `movement` (308) and `defence` (81, spelled with a `c`).
 
-`forest`, `jungle`, `marsh`, `hills`, `mountain`, `plains`, `urban` and `desert` are terrain ids from `common/terrain/00_terrain.txt`. `river`, `amphibious`, `fort` and `snow` are not terrain ids in that file. The wiki's Technology modding page says `amphibious` applies to naval invasions and `river` to river crossings; the meaning of `fort` is not documented, but `localisation/english/unit_l_english.yml` defines the labels `fort`, `river`, `amphibious` and `snow`. [vanilla-confirmed 1.19.4.1] The division designer reads the `fort` block and labels it. In the Engineer Company tooltip of the Infanterie-Division template, a "Fort" line lists Attack +10.0% and Defense +25.0% next to River, Amphibious, Forest, Hills, Jungle and Marsh, which matches `fort = { attack = 0.1 defence = 0.25 }` in vanilla `common/units/engineer.txt`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, division designer tooltip, screenshot. Only the tooltip was read. Whether the bonus applies in a battle against a fort was not tested. [unverified] The two sub-units that use `snow`, in `recon.txt`, carry the comment "This can end up stacking with terrain benefits". [vanilla-confirmed 1.19.4.1] `common/terrain/00_terrain.txt`, `common/units/recon.txt`
+`forest`, `jungle`, `marsh`, `hills`, `mountain`, `plains`, `urban` and `desert` are terrain ids from `common/terrain/00_terrain.txt`. `river`, `amphibious`, `fort` and `snow` are not terrain ids in that file. The wiki's Technology modding page says `amphibious` applies to naval invasions and `river` to river crossings; the meaning of `fort` is not documented, but `localisation/english/unit_l_english.yml` defines the labels `fort`, `river`, `amphibious` and `snow`. The division designer reads the `fort` block and labels it. In the Engineer Company tooltip of the Infanterie-Division template, a "Fort" line lists Attack +10.0% and Defense +25.0% next to River, Amphibious, Forest, Hills, Jungle and Marsh, which matches `fort = { attack = 0.1 defence = 0.25 }` in vanilla `common/units/engineer.txt`. Only the tooltip was read. Whether the bonus applies in a battle against a fort was not tested. (unverified) The two sub-units that use `snow`, in `recon.txt`, carry the comment "This can end up stacking with terrain benefits".
 
 ```text
 bicycle_battalion = {
@@ -170,10 +133,9 @@ bicycle_battalion = {
 }
 ```
 
-The snippet is from `common/units/infantry.txt`. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="unit-terrain-keys" -->
+The snippet is from `common/units/infantry.txt`.
 
-### How to add new Groups <a id="How_to_add_new_Groups"></a>
+### How to add new Groups
 
 Inside any unit file, type the name of the new group in the "group" argument. The game will internally create the group and asign it to the current unit. For example:
 
@@ -195,11 +157,11 @@ spriteType = { name = "GFX_group_<group name>_icon"	     textureFile = "gfx/inte
 
 Note that the textureFile path doesn't have to be strictly `/Hearts of Iron IV/gfx/interface/counters/divisions_large/`, it can be any path.
 
-### Models <a id="Models"></a>
+### Models
 
-*See also: [Entity modding](<entity_modding.md>)*
+*See also: [Entity modding](entity_modding.md)*
 
-The model is assigned with the `sprite = SPRITE` attribute, which assigns the entity with the base name of `SPRITE_entity` by default to units whose division template has a plurality of this sub-unit. Similar to [country names](<country_creation.md#Name>), it is possible to assign further conditions by changing the name of the model, in this case by prepending a prefix to the base name. The priority starts with the default name as the lowest, then allowing using unique models for [graphical cultures](<country_creation.md#Country_file>), countries, or cosmetic tags.
+The model is assigned with the `sprite = SPRITE` attribute, which assigns the entity with the base name of `SPRITE_entity` by default to units whose division template has a plurality of this sub-unit. Similar to [country names](country_creation.md#name), it is possible to assign further conditions by changing the name of the model, in this case by prepending a prefix to the base name. The priority starts with the default name as the lowest, then allowing using unique models for [graphical cultures](country_creation.md#country-file), countries, or cosmetic tags.
 
 An example `/Hearts of Iron IV/gfx/entities/*.asset` file is as such:
 
@@ -236,7 +198,7 @@ entity = {
 }
 ```
 
-### Internal Types <a id="Internal_Types"></a>
+### Internal Types
 
 - infantry
 - support
@@ -262,19 +224,16 @@ entity = {
 - flame
 - amphibious
 
-<!-- kit:begin id="unit-internal-types" at="section:Internal_Types" -->
-**Kit correction** The list is correct but incomplete. Vanilla sub-units use 33 type values: the 23 above plus `heavy_fighter`, `scout_plane`, `maritime_patrol_plane`, `ballistic_missile`, `nuclear_missile`, `sam_missile`, `emplacement_gun_ammo`, `railway_gun`, `rocket` and `support_ship`. All 33 are in `script_enum_equipment_category`, which has five more values that no sub-unit uses: `convoy`, `train`, `floating_harbor`, `land_cruiser`, `missile_launcher`. Sub-unit types and equipment types draw from the same enum. A block may list secondary types after the main one: `type = { infantry support }`, `type = { armor anti_tank }`, `type = { support armor anti_air }`. Air sub-units write a single value, not a block. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`, `common/script_enums.txt`. How the engine matches sub-unit types against equipment types is not documented [unverified]
-<!-- kit:end id="unit-internal-types" -->
+The list is correct but incomplete. Vanilla sub-units use 33 type values: the 23 above plus `heavy_fighter`, `scout_plane`, `maritime_patrol_plane`, `ballistic_missile`, `nuclear_missile`, `sam_missile`, `emplacement_gun_ammo`, `railway_gun`, `rocket` and `support_ship`. All 33 are in `script_enum_equipment_category`, which has five more values that no sub-unit uses: `convoy`, `train`, `floating_harbor`, `land_cruiser`, `missile_launcher`. Sub-unit types and equipment types draw from the same enum. A block may list secondary types after the main one: `type = { infantry support }`, `type = { armor anti_tank }`, `type = { support armor anti_air }`. Air sub-units write a single value, not a block. How the engine matches sub-unit types against equipment types is not documented (unverified)
 
-### Group Types <a id="Group_Types"></a>
+### Group Types
 
 - infantry
 - support
 - mobile
 - armor
 
-<!-- kit:begin id="unit-group-types" at="section:Group_Types" -->
-**Kit addition** `group` has 7 values in vanilla, three more than the list above. Counts are sub-units of 122 that set `group`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`
+`group` has 7 values in vanilla, three more than the list above. Counts are sub-units of 122 that set `group`.
 
 | Group | Count | What it holds | Loc key and icon |
 | --- | --- | --- | --- |
@@ -286,10 +245,9 @@ entity = {
 | `armor_combat_support` | 12 | self-propelled anti-air, artillery and tank destroyer brigades | `group_armor_combat_support_title`, `GFX_group_armor_combat_support_icon` |
 | `support` | 68 | support companies (engineers, recon, hospitals, logistics, headquarters companies) and the battery-level artillery, anti-air and anti-tank sub-units | `group_support_title`; no `GFX_group_support_icon` exists |
 
-The 36 sub-units without `group` are all air, naval and railway gun sub-units. Group titles are in `localisation/english/deployment_l_english.yml` and group icons in `interface/subuniticons.gfx`. The wiki's steps for a new group (a `group_<name>_title` key and a `GFX_group_<name>_icon` sprite) match what vanilla defines for six of the seven groups; `support` has a title but no icon sprite. The `allowed_battalion_groups` key lists group names (`{ infantry mobile combat_support }`). [vanilla-confirmed 1.19.4.1] The division designer files each battalion under the title of its group. As GER in 1936, an empty battalion column offered Infantry Battalions (Infantry, Mountaineers), Mobile Battalions (Armored Car, Cavalry, Motorized Infantry), Armored Battalions (Light, Medium and Heavy Tank), Combat Support Battalions (Anti-Air, Artillery) and Mobile Combat Support Battalions (Motorized Anti-Air, Motorized Artillery), each under its own title. A column that already held infantry offered only Infantry and Mountaineers, and the Support column offered only `support` units. Every unit listed matched its `group` in `common/units`. `armor_combat_support` had no entry because GER has no such unit researched in 1936, and hidden or unresearched units were not listed, so a mismatch could show only for researched units. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, division designer, screenshots.
-<!-- kit:end id="unit-group-types" -->
+The 36 sub-units without `group` are all air, naval and railway gun sub-units. Group titles are in `localisation/english/deployment_l_english.yml` and group icons in `interface/subuniticons.gfx`. The wiki's steps for a new group (a `group_<name>_title` key and a `GFX_group_<name>_icon` sprite) match what vanilla defines for six of the seven groups; `support` has a title but no icon sprite. The `allowed_battalion_groups` key lists group names (`{ infantry mobile combat_support }`). The division designer files each battalion under the title of its group. As GER in 1936, an empty battalion column offered Infantry Battalions (Infantry, Mountaineers), Mobile Battalions (Armored Car, Cavalry, Motorized Infantry), Armored Battalions (Light, Medium and Heavy Tank), Combat Support Battalions (Anti-Air, Artillery) and Mobile Combat Support Battalions (Motorized Anti-Air, Motorized Artillery), each under its own title. A column that already held infantry offered only Infantry and Mountaineers, and the Support column offered only `support` units. Every unit listed matched its `group` in `common/units`. `armor_combat_support` had no entry because GER has no such unit researched in 1936, and hidden or unresearched units were not listed, so a mismatch could show only for researched units.
 
-### Map Icon Types <a id="Map_Icon_Types"></a>
+### Map Icon Types
 
 - infantry
 - armored
@@ -298,11 +256,9 @@ The 36 sub-units without `group` are all air, naval and railway gun sub-units. G
 - transport
 - uboat
 
-<!-- kit:begin id="unit-map-icon-types" at="section:Map_Icon_Types" -->
-**Kit addition** The vanilla files document the options in a header comment (`common/units/infantry.txt` and others): land `infantry`, `armored`, `other`; sea `ship`, `transport`, `uboat`. Vanilla sub-units actually use four: `infantry` (75), `armored` (45), `ship` (9, including `submarine`) and `other` (4: `cavalry`, `camelry`, `railway_gun`, `super_heavy_railway_gun`). `transport` and `uboat` appear only in the comment, although `uboat` is also a token in `hoi4.exe`. The 25 air sub-units set no `map_icon_category`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`. The keyword does not pick the counter picture on its own. On the map as GER in 1936 with the default counter style, an Infanterie-Division showed a helmet, the motorized division a truck, the Panzer division a tank, the Gebirgs-Brigade a mountain and the Kavallerie-Brigade a horse. That is five pictures for three categories, because vanilla gives `infantry` to infantry, motorized and mountaineers, `armored` to the tanks and `other` to cavalry, and the motorized and mountaineer counters do not show the infantry helmet. In these cases the picture follows the division's leading sub-unit type. What `map_icon_category` controls was not identified. The NATO counter option and the zoomed-out map were not checked. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, GER 1936 map counters, screenshots.
-<!-- kit:end id="unit-map-icon-types" -->
+The vanilla files document the options in a header comment (`common/units/infantry.txt` and others): land `infantry`, `armored`, `other`; sea `ship`, `transport`, `uboat`. Vanilla sub-units actually use four: `infantry` (75), `armored` (45), `ship` (9, including `submarine`) and `other` (4: `cavalry`, `camelry`, `railway_gun`, `super_heavy_railway_gun`). `transport` and `uboat` appear only in the comment, although `uboat` is also a token in `hoi4.exe`. The 25 air sub-units set no `map_icon_category`. The keyword does not pick the counter picture on its own. On the map as GER in 1936 with the default counter style, an Infanterie-Division showed a helmet, the motorized division a truck, the Panzer division a tank, the Gebirgs-Brigade a mountain and the Kavallerie-Brigade a horse. That is five pictures for three categories, because vanilla gives `infantry` to infantry, motorized and mountaineers, `armored` to the tanks and `other` to cavalry, and the motorized and mountaineer counters do not show the infantry helmet. In these cases the picture follows the division's leading sub-unit type. What `map_icon_category` controls was not identified. The NATO counter option and the zoomed-out map were not checked.
 
-## Stats <a id="Stats"></a>
+## Stats
 
 Units use modifiers to determine which stats they have and what special actions they may take.
 
@@ -336,22 +292,20 @@ For *combat_width*, vanilla uses the following values:
 - armor support: 1
 - armor: 2
 
-<!-- kit:begin id="unit-stat-values" at="section:Stats" -->
-**Kit correction** The "vanilla uses" values are outdated. Measured over the 158 sub-units in 1.19.4.1 [vanilla-confirmed 1.19.4.1] `common/units/*.txt`:
+The "vanilla uses" values are outdated. Measured over the 158 sub-units in 1.19.4.1:
 
 | Stat | Wiki says | 1.19.4.1 shows |
 | --- | --- | --- |
 | `max_organisation` | infantry support 20, armor 10, armor support 0, ship 40, cavalry 70 | `infantry` group 70 (7), 60 (3), 100 (1), 50 (1), 45 (1); `armor` 10 (8 of 11); `mobile` 60 (5), 70 (2), 20 (1), 100 (1); `support` 0 (22), 20 (21), 30 (16), 10 (4), 60 (2), 12 (1), 45 (1), 70 (1); the three brigade groups 0; ships (no group) 40 (5), 50 (2), 35 (1), 30 (1) |
 | `combat_width` | infantry 0, artillery 0, armor support 1, armor 2 | `infantry`, `mobile` and `armor` battalions 2 (one infantry sub-unit has 1); `support` 0 for every sub-unit that sets it (59 of 68); `combat_support` and `mobile_combat_support` 1 or 3; `armor_combat_support` 2 |
 
-The template lists eight stats as "almost always" used; counts above show `max_organisation` 131, `max_strength` 124, `weight` 124, `manpower` 122, `default_morale` 122, `training_time` 120, `supply_consumption` 118 and `combat_width` 113 of 158, which fits. [vanilla-confirmed 1.19.4.1]
-<!-- kit:end id="unit-stat-values" -->
+The template lists eight stats as "almost always" used; counts above show `max_organisation` 131, `max_strength` 124, `weight` 124, `manpower` 122, `default_morale` 122, `training_time` 120, `supply_consumption` 118 and `combat_width` 113 of 158, which fits.
 
-## Modifiers <a id="Modifiers"></a>
+## Modifiers
 
 The following list is all the valid modifiers for use in units (and equipment):
 
-### Base <a id="Base"></a>
+### Base
 
 ```text
 max_organisation = 20           # Organisation indicates combat readiness and how organized a unit is.
@@ -373,7 +327,7 @@ default_morale = 0.3            # Default morale determines how much extra organ
 combat_width = 0.5              # Combat width determines how much this unit contributes to overall combat width.
 ```
 
-### Costs <a id="Costs"></a>
+### Costs
 
 ```text
 lend_lease_cost = 1             # Space taken up in convoy
@@ -382,7 +336,7 @@ manpower = 300                  # Manpower - Cost in manpower to produce
 training_time = 120             # Training time - Time in days to train this unit
 ```
 
-### Offensive <a id="Offensive"></a>
+### Offensive
 
 ```text
 # Offensive
@@ -395,7 +349,7 @@ ap_attack = 1                   # Piercing - Having equal or greater Piercing to
 breakthrough = 0.5              # Breakthrough - How many enemy attacks a unit can attempt to avoid while on the offensive, effectively allowing it to stay on the offense longer.
 ```
 
-### Defensive <a id="Defensive"></a>
+### Defensive
 
 ```text
 # Defensive
@@ -406,7 +360,7 @@ hardness = 0.5                  # Hardness - Represents how much of your divsion
 entrenchment = 5                # Entrenchment - The ability to make proper defensive entrenchments before a hostile attack
 ```
 
-### Unique <a id="Unique"></a>
+### Unique
 
 ```text
 movement = 0.1                  # Movement - Changes the unit's speed
@@ -418,11 +372,9 @@ recon = 1                       # Reconnaissance - Increases the chance that thi
 initiative = 0.2                # Initiative - The higher the initiative, the quicker it can reinforce into battle, and the quick is completes its planning
 ```
 
-### Boolean <a id="Boolean"></a>
+### Boolean
 
-<!-- kit:begin id="unit-boolean-note" at="heading:Boolean" -->
-**Kit correction** Only `can_be_parachuted` is a sub-unit key (57 vanilla sub-units). `can_license`, `is_convertable` and `carrier_capable` are equipment keys: vanilla sets them on equipment (`can_license` 5 blocks, `is_convertable` 25, `carrier_capable` 11) and on no sub-unit. Other boolean sub-unit keys that vanilla uses are `affects_speed`, `regimental`, `divisional`, `is_artillery_brigade`, `special_forces`, `marines`, `cavalry`, `mountaineers`, `rangers` and `can_exfiltrate_from_coast`. [vanilla-confirmed 1.19.4.1] `common/units/*.txt`, `common/units/equipment/*.txt`
-<!-- kit:end id="unit-boolean-note" -->
+Only `can_be_parachuted` is a sub-unit key (57 vanilla sub-units). `can_license`, `is_convertable` and `carrier_capable` are equipment keys: vanilla sets them on equipment (`can_license` 5 blocks, `is_convertable` 25, `carrier_capable` 11) and on no sub-unit. Other boolean sub-unit keys that vanilla uses are `affects_speed`, `regimental`, `divisional`, `is_artillery_brigade`, `special_forces`, `marines`, `cavalry`, `mountaineers`, `rangers` and `can_exfiltrate_from_coast`.
 
 ```text
 can_be_parachuted = yes         # May be parachuted into battle
@@ -431,11 +383,9 @@ is_convertable = yes            # Can be converted
 carrier_capable = yes           # Is usable in carriers (air only)
 ```
 
-### Navy-specific <a id="Navy-specific"></a>
+### Navy-specific
 
-<!-- kit:begin id="unit-navy-air-note" at="heading:Navy-specific" -->
-**Kit correction** None of the names in this section or in "Air-specific" is a sub-unit key in vanilla: `naval_speed`, `torpedo_attack`, `anti_air_attack`, `surface_detection`, `naval_range`, `air_range`, `air_agility`, `air_bombing`, `air_superiority`, `carrier_size` and the others are equipment stats (all in `script_enum_equipment_stat`), set in `common/units/equipment/` and on modules. No vanilla sub-unit sets any of them, except `air_attack`, which 11 land anti-air sub-units set as a damage stat against planes. Whether the engine would accept them on a sub-unit was not tested. Four names in this list do not exist at all in 1.19.4.1: `fire_range`, `shore_bombardment`, `evasion` and `port_capacity_usage` (see the Equipment modding page for the evidence). Do not write them. Real sub-unit stats for ships are `max_organisation` and `supply_consumption`, plus the damage model keys `critical_parts`, `critical_part_damage_chance_mult` and `hit_profile_mult`. [vanilla-confirmed 1.19.4.1] `common/units/submarine.txt`, `common/units/battleship.txt`, `common/script_enums.txt`; the engine behaviour [unverified]
-<!-- kit:end id="unit-navy-air-note" -->
+None of the names in this section or in "Air-specific" is a sub-unit key in vanilla: `naval_speed`, `torpedo_attack`, `anti_air_attack`, `surface_detection`, `naval_range`, `air_range`, `air_agility`, `air_bombing`, `air_superiority`, `carrier_size` and the others are equipment stats (all in `script_enum_equipment_stat`), set in `common/units/equipment/` and on modules. No vanilla sub-unit sets any of them, except `air_attack`, which 11 land anti-air sub-units set as a damage stat against planes. Whether the engine would accept them on a sub-unit was not tested. Four names in this list do not exist at all in 1.19.4.1: `fire_range`, `shore_bombardment`, `evasion` and `port_capacity_usage` (see the Equipment modding page for the evidence). Do not write them. Real sub-unit stats for ships are `max_organisation` and `supply_consumption`, plus the damage model keys `critical_parts`, `critical_part_damage_chance_mult` and `hit_profile_mult`. The engine behaviour (unverified)
 
 ```text
 naval_speed = 28                        # Max Speed - maximum speed in kilometres per hour of the ship, higher means faster in combat too
@@ -454,7 +404,7 @@ search_and_destroy_coordination = 0.1
 convoy_raiding_coordination = 0.1
 ```
 
-### Air-specific <a id="Air-specific"></a>
+### Air-specific
 
 ```text
 air_attack = 50                         # Air Attack - amount of damage done against other planes
@@ -469,7 +419,7 @@ carrier_size = 0.05
 default_carrier_composition_weight = 1
 ```
 
-## Localization <a id="Localization"></a>
+## Localization
 
 Each unit must be localized in a *.yml* file in the *localisation* folder within your mod.
 
@@ -478,7 +428,7 @@ Each unit must be localized in a *.yml* file in the *localisation* folder within
 <unit>_desc: ""
 ```
 
-## Icons <a id="Icons"></a>
+## Icons
 
 When adding a new unit it may appear, that your unit gets random icons in the division designer (like anti air icon, or what ever)
 This is caused, because the actual unit has no icon. You can provide sprites in `/Hearts of Iron IV/gfx/interface/counters`.
@@ -509,20 +459,4 @@ spriteTypes = {
 }
 ```
 
-<!-- kit:begin id="unit-icons-note" at="section:Icons" -->
-**Kit addition** In `interface/subuniticons.gfx` vanilla defines three sprite suffixes per sub-unit: `GFX_unit_<name>_icon_medium` (184 sprites, `divisions_large` art, 2 frames), `GFX_unit_<name>_icon_medium_white` (138, `divisions_small/onmap_` art) and `GFX_unit_<name>_icon_medium_black` (12). The `_small` sprite the template shows is not in that file. Group icons use `GFX_group_<group>_icon` (6 of the 7 groups; `support` has none). [vanilla-confirmed 1.19.3] `interface/subuniticons.gfx`
-<!-- kit:end id="unit-icons-note" -->
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+In `interface/subuniticons.gfx` vanilla defines three sprite suffixes per sub-unit: `GFX_unit_<name>_icon_medium` (184 sprites, `divisions_large` art, 2 frames), `GFX_unit_<name>_icon_medium_white` (138, `divisions_small/onmap_` art) and `GFX_unit_<name>_icon_medium_black` (12). The `_small` sprite the template shows is not in that file. Group icons use `GFX_group_<group>_icon` (6 of the 7 groups; `support` has none).

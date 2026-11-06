@@ -1,35 +1,35 @@
 #!/usr/bin/env python
 """Regenerate the kit's HOI4 wiki from the live Hearts of Iron IV Wiki.
 
-``hoi4_wiki/`` holds one markdown file per wiki modding page, named after its
-title in lowercase snake_case (``Scripted GUI modding`` is ``scripted_gui_modding.md``),
-plus ``media/`` with every image those pages reference. ``AGENTS.md`` treats that
-snapshot as the required wiki reference, so it has to stay current and self-contained.
+``hoi4_wiki/`` holds one Markdown file per wiki modding page, named after its title in
+lowercase snake_case (``Scripted GUI modding`` is ``scripted_gui_modding.md``), plus
+``media/`` with every image those pages reference. Agents read it, so a page holds a
+title and its content only. ``.tools/wiki/kit_blocks.py`` describes the layout.
 
 For each page the tool:
 
 * fetches the rendered article through the MediaWiki parse API, so the
-  community-notice chrome, edit links and footer boxes never reach the markdown;
-* converts that HTML to clean markdown - real code fences, rectangular tables,
-  LaTeX math kept as text instead of wiki-hosted images, and section anchors
-  that intra-snapshot links can target;
-* links only to pages the snapshot actually contains, so the result works with
-  no network access and carries no outbound hyperlinks;
-* reuses the media already on disk by matching image alt text, and downloads
-  only genuinely new images;
-* restores the wiki's own ``Modding navbox`` as a local navigation list, plus a
-  group for the kit's own pages.
+  community-notice chrome, edit links, footer boxes and navigation boxes never
+  reach the Markdown;
+* converts that HTML to clean Markdown: real code fences, rectangular tables,
+  LaTeX math kept as text instead of wiki-hosted images;
+* links only to pages the snapshot contains, pointing section links at GitHub-style
+  heading ids, so the result works offline and carries no outbound hyperlinks;
+* reuses the media already on disk by matching image alt text, and downloads only
+  genuinely new images;
+* puts the lean text of every kit block from the page's sidecar
+  (``.tools/wiki/kit/<page>.md``) back at the place its ``at`` attribute names, and
+  records the page in ``.tools/wiki/manifest.json``: wiki revision, capture date, the
+  hash of the wiki text and the lines each kit block fills.
 
-Local improvements survive a refresh. Every kit block in the old page file is
-carried into the fresh page at the place its ``at`` attribute names, kit pages
-(written by the kit, not captured from the wiki) are never fetched, and a page
-without a review block gets a placeholder one. ``.tools/wiki/kit_blocks.py``
-defines the format. The run ends with the pages whose wiki revision changed, so
-their kit blocks and reviews can be re-read against the new wiki text.
+Kit pages (written by the kit, not captured from the wiki) are never fetched; they are
+rebuilt from their sidecars, as is ``hoi4_wiki/SOURCES.json``. A page without a sidecar
+gets one with a placeholder review. The run ends with the pages whose wiki revision
+changed, so their kit blocks and reviews can be re-read against the new wiki text.
 
-The tool writes to ``hoi4_wiki/`` in place. Run
-``.tools/wiki/verify_wiki_snapshot.py`` afterwards; it is the acceptance check
-for the result.
+The tool writes to ``hoi4_wiki/`` and the manifest in place. ``--dry-run --out DIR``
+writes the pages, ``manifest.json`` and ``SOURCES.json`` into DIR instead. Run
+``.tools/wiki/verify_wiki_snapshot.py`` afterwards; it is the acceptance check.
 
 Usage::
 
@@ -51,6 +51,7 @@ import re
 import sys
 import time
 from collections import defaultdict
+from pathlib import Path
 
 try:
     import requests
@@ -79,6 +80,8 @@ def find_repo_root(start):
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import kit_blocks  # the page format, next to this script
+import lean  # converted wiki text and kit text -> lean page text
+import render_wiki  # puts kit blocks into a page
 
 REPO = find_repo_root(HERE)
 WIKI_DIR = os.path.join(REPO, "hoi4_wiki")
@@ -956,125 +959,16 @@ def convert(local_title, source_title, html, known_pages):
     return body, conv.anchors, navboxes
 
 
-def build_toc(anchors):
-    lines = []
-    base = None
-    for a in anchors:
-        if not a["id"]:
-            continue
-        if base is None:
-            base = a["level"]
-        depth = max(0, a["level"] - base)
-        lines.append("  " * depth + f"- [{a['text']}](#{a['id']})")
-    return "\n".join(lines)
+def render(local_title, source_title, known_pages):
+    """Return (converted page, wiki revision id) for one wiki page, without kit text.
 
-
-def render_link(page, anchor, label, known):
-    redirect = REDIRECT_ANCHORS.get(page)
-    tgt_page, tgt_anchor = (redirect[0], anchor or redirect[1]) if redirect else (page, anchor)
-    if tgt_page not in known:
-        return label
-    suffix = f"#{tgt_anchor}" if tgt_anchor else ""
-    return f"[{label}](<{WikiConverter.local_name(tgt_page)}{suffix}>)"
-
-
-# The wiki's Modding navbox from the most recent page that carried one; kit pages
-# reuse it for their own footer.
-MODDING_BOX = []
-
-
-def kit_group(kit_pages):
-    """The navigation line listing the kit's own pages."""
-    links = [f"[{title}](<{WikiConverter.local_name(title)}>)" for title in kit_pages]
-    return "- **Kit pages (not on the wiki)**: " + " • ".join(links)
-
-
-def navbox_footer(navboxes, known, kit_pages=()):
-    """Render the wiki's own footer navigation boxes as local link lists."""
-    modding = None
-    others = []
-    for box in navboxes:
-        if box["title"].strip().lower() == "modding":
-            modding = box
-        else:
-            others.append(box)
-    out = ["## Navigation", ""]
-    if modding:
-        MODDING_BOX[:] = [modding]
-        out += [f"**[Modding](<{WikiConverter.local_name('Modding')}>)**", ""]
-        for label, links in modding["groups"]:
-            rendered, seen = [], set()
-            for page, anchor, text in links:
-                if (page, anchor) in seen:
-                    continue
-                seen.add((page, anchor))
-                rendered.append(render_link(page, anchor, text, known))
-            out.append(f"- **{label}**: " + " • ".join(rendered))
-        if kit_pages:
-            out.append(kit_group(kit_pages))
-        out.append("")
-    for box in others:
-        out.append(f"**{box['title']}**")
-        out.append("")
-        for label, links in box["groups"]:
-            rendered, seen = [], set()
-            for page, anchor, text in links:
-                if (page, anchor) in seen:
-                    continue
-                seen.add((page, anchor))
-                rendered.append(render_link(page, anchor, text, known))
-            out.append(f"- **{label}**: " + " • ".join(rendered))
-        out.append("")
-    return "\n".join(out).strip() + "\n"
-
-
-def render(local_title, source_title, known_pages, kit_pages=()):
-    """Return (markdown, wiki revision id) for one wiki page, without kit blocks."""
-    parsed = page_parse(source_title)
-    body, anchors, navboxes = convert(local_title, source_title, parsed["text"],
-                                      known_pages)
-    revision = f", revision {parsed['revid']}" if parsed.get("revid") else ""
-    parts = [f"# {local_title}", ""]
-    parts.append(f"*Offline snapshot of the Hearts of Iron IV Wiki page "
-                 f"\"{source_title}\"{revision}, captured {CAPTURE_DATE}. Wiki text "
-                 f"by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); "
-                 f"kit blocks are local additions under the same license.*")
-    parts.append("")
-    toc = build_toc(anchors)
-    if toc:
-        # Heading text reaches the table of contents before the body escapes are
-        # reduced, so it needs the same treatment.
-        parts += ["## Table of contents", "", reduce_escapes(toc), ""]
-    parts += ["---", "", body.rstrip(), ""]
-    if navboxes:
-        parts += ["---", "", navbox_footer(navboxes, known_pages, kit_pages)]
-    text = "\n".join(parts)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    return text.rstrip() + "\n", parsed.get("revid")
-
-
-def merge_local(fresh, old_text):
-    """Carry the kit blocks of the old page file into a freshly rendered page.
-
-    Returns (page, orphans): the merged page and the blocks whose anchor no longer
-    exists upstream, which are kept at the bottom of the page.
+    The converted page keeps the wiki's heading ids as ``<a id>`` anchors, so links can
+    be pointed at headings before ``lean.lean_wiki_text`` turns it into a lean page.
     """
-    blocks = kit_blocks.find_blocks(old_text) if old_text else []
-    blocks = kit_blocks.ensure_review(blocks)
-    merged, orphans = kit_blocks.place_blocks(fresh, blocks)
-    return kit_blocks.refresh_toc(merged), orphans
-
-
-def read_page(path):
-    if not os.path.exists(path):
-        return ""
-    with open(path, "r", encoding="utf-8") as fh:
-        return fh.read()
-
-
-def write_page(path, text):
-    with open(path, "w", encoding="utf-8", newline="\n") as fh:
-        fh.write(text)
+    parsed = page_parse(source_title)
+    body, _anchors, _navboxes = convert(local_title, source_title, parsed["text"], known_pages)
+    text = f"# {local_title}\n\n{body.rstrip()}\n"
+    return re.sub(r"\n{3,}", "\n\n", text), parsed.get("revid")
 
 
 HTML_TAGS = {
@@ -1188,42 +1082,6 @@ def unescape_safe_angles(text):
     return text
 
 
-def repair_anchors(directory):
-    """Drop fragments that do not exist in the target page.
-
-    The live wiki carries a few stale section links of its own; the snapshot
-    should not inherit them, so a link whose anchor is missing keeps its target
-    file and loses only the fragment.
-    """
-    pages = {n: open(os.path.join(directory, n), encoding="utf-8").read()
-             for n in os.listdir(directory) if n.endswith(".md")}
-    anchors = {n: set(re.findall(r'<a id="([^"]+)"', t)) for n, t in pages.items()}
-    fixed = 0
-    for name, text in pages.items():
-        def replace(match):
-            nonlocal fixed
-            target, anchor = match.group(1), match.group(2)
-            base = target.split("#")[0]
-            if base in anchors and anchor not in anchors[base]:
-                fixed += 1
-                return f"](<{base}>)"
-            return match.group(0)
-
-        new = re.sub(r"\]\(<([^>#]+)#([^>]+)>\)", replace, text)
-
-        def replace_same(match):
-            if match.group(2) in anchors[name]:
-                return match.group(0)
-            return match.group(1)
-
-        new = re.sub(r"\[([^\]]*)\]\(#([^)\s]+)\)", replace_same, new)
-        if new != text:
-            with open(os.path.join(directory, name), "w", encoding="utf-8",
-                      newline="\n") as fh:
-                fh.write(new)
-    return fixed
-
-
 LEGACY_NAME = " - Hearts of Iron 4 Wiki.md"
 
 
@@ -1237,18 +1095,21 @@ def legacy_files():
 
 
 def snapshot_pages():
-    """Return (wiki page titles, kit page titles) present in hoi4_wiki/.
+    """Return (wiki page titles, kit page titles) the snapshot holds, from the manifest and the sidecars.
 
     A page's title is its level-1 heading; the file name is only derived from it.
     """
-    wiki, kit = [], []
-    for name in sorted(os.listdir(WIKI_DIR)):
-        if not name.endswith(".md"):
+    manifest = kit_blocks.load_manifest()
+    entries = manifest.get("pages", {})
+    wiki = sorted(e["title"] for e in entries.values() if e.get("source") == "wiki")
+    kit = sorted(e["title"] for e in entries.values() if e.get("source") == "kit")
+    for path in sorted(kit_blocks.SIDECAR_DIR.glob("*.md")):
+        if path.name in entries:
             continue
-        text = read_page(os.path.join(WIKI_DIR, name))
-        title = kit_blocks.page_title(text) or name[:-len(".md")]
-        if kit_blocks.file_name(title) != name:
-            sys.exit(f"{name} holds the page {title!r}, whose file name is "
+        text = path.read_text(encoding="utf-8")
+        title = kit_blocks.page_title(text) or path.stem
+        if kit_blocks.file_name(title) != path.name:
+            sys.exit(f"{path.name} holds the page {title!r}, whose file name is "
                      f"{kit_blocks.file_name(title)}; rename it with git mv")
         (kit if kit_blocks.is_kit_page(text) else wiki).append(title)
     return wiki, kit
@@ -1279,36 +1140,71 @@ NEW_PAGES = ["Mods", "Mod structure", "Nudger", "List of modifiers"]
 
 
 def sync_page(title, source, context, report):
-    """Render one wiki page, carry its kit blocks over, and write the result."""
+    """Fetch and convert one wiki page. ``write_pages`` writes it once every page's headings are known."""
     name = WikiConverter.local_name(title)
-    old = read_page(os.path.join(WIKI_DIR, name))
-    fresh, revision = render(title, source, context["known"], context["kit_pages"])
-    try:
-        text, orphans = merge_local(fresh, old)
-    except kit_blocks.KitBlockError as error:
-        # Never overwrite a page whose local additions cannot be read back.
-        report["failures"].append((title, f"kit blocks not preserved: {error}"))
-        return
-    old_revision = kit_blocks.capture_revision(old) if old else None
-    if old_revision is not None and old_revision != revision:
-        report["changed"].append(title)
-    report["orphans"] += [(title, block.id, block.at) for block in orphans]
-    if context["out_dir"]:
-        write_page(os.path.join(context["out_dir"], name), text)
+    converted, revision = render(title, source, context["known"])
+    context["converted"][name] = (title, source, converted, revision)
+    context["anchors"][name] = lean.anchor_map(converted.split("\n"))
 
 
-def refresh_kit_pages(context):
-    """Give kit pages the current navigation footer and table of contents."""
-    if not MODDING_BOX or not context["out_dir"]:
-        return
-    footer = navbox_footer(MODDING_BOX, context["known"], context["kit_pages"])
-    for title in context["kit_pages"]:
-        name = WikiConverter.local_name(title)
-        text = read_page(os.path.join(WIKI_DIR, name))
-        updated = kit_blocks.refresh_toc(kit_blocks.replace_footer(text, footer))
-        target = os.path.join(context["out_dir"], name)
-        if updated != read_page(target):
-            write_page(target, updated)
+def sidecar_text(title, name):
+    """The page's sidecar, or a new one with a placeholder review; and whether it is new."""
+    path = kit_blocks.SIDECAR_DIR / name
+    if path.exists():
+        return path.read_text(encoding="utf-8"), False
+    return f"# {title}\n\n{kit_blocks.DEFAULT_REVIEW}\n", True
+
+
+def manifest_entry(old, title, source, base, revision, placed, anchors):
+    """The manifest record of a freshly imported page; the capture date moves only when the text did."""
+    unchanged = old.get("revision") == revision and old.get("base_sha256") == kit_blocks.sha256(base)
+    return {
+        "title": title, "source": "wiki", "wiki_page": source, "revision": revision,
+        "captured": old.get("captured", CAPTURE_DATE) if unchanged else CAPTURE_DATE,
+        "base_sha256": kit_blocks.sha256(base), "anchors": anchors, "blocks": placed.spans,
+    }
+
+
+def write_pages(context, report):
+    """Turn every converted page into a lean page with its kit blocks, and record it in the manifest."""
+    pages = context["manifest"].setdefault("pages", {})
+    for page in pages.values():
+        if page.get("source") == "wiki":
+            context["anchors"].setdefault(WikiConverter.local_name(page["title"]), page.get("anchors", {}))
+    for name, (title, source, converted, revision) in context["converted"].items():
+        base = lean.lean_wiki_text(converted, name, context["anchors"])
+        sidecar, new = sidecar_text(title, name)
+        try:
+            placed = render_wiki.render_wiki_page(base, sidecar)
+        except (render_wiki.RenderError, kit_blocks.KitBlockError) as error:
+            # Never overwrite a page whose local additions cannot be placed.
+            report["failures"].append((title, f"kit blocks not placed: {error}"))
+            continue
+        old = pages.get(name, {})
+        if old.get("revision") not in (None, revision):
+            report["changed"].append(title)
+        report["orphans"] += [(title, block_id) for block_id in placed.orphans]
+        pages[name] = manifest_entry(old, title, source, base, revision, placed, context["anchors"][name])
+        kit_blocks.write_text(Path(context["out_dir"], name), placed.text)
+        if new and not context["dry_run"]:
+            kit_blocks.write_text(kit_blocks.SIDECAR_DIR / name, sidecar)
+
+
+def finish(context):
+    """Write the manifest, then rebuild kit pages and SOURCES.json from it. Returns failures."""
+    manifest = context["manifest"]
+    if context["dry_run"]:
+        out = Path(context["out_dir"])
+        for name, page in manifest.get("pages", {}).items():
+            if page.get("source") == "kit":
+                sidecar = (kit_blocks.SIDECAR_DIR / name).read_text(encoding="utf-8")
+                kit_blocks.write_text(out / name, render_wiki.render_kit_page(sidecar))
+        kit_blocks.write_text(out / "manifest.json", kit_blocks.dump_json(manifest))
+        kit_blocks.write_text(out / kit_blocks.SOURCES_NAME,
+                              kit_blocks.dump_json(kit_blocks.sources_document(manifest)))
+        return []
+    kit_blocks.write_text(kit_blocks.MANIFEST, kit_blocks.dump_json(manifest))
+    return render_wiki.rebuild()["failed"]
 
 
 def check_scope(wiki_pages, kit_pages):
@@ -1330,9 +1226,9 @@ def print_summary(report):
                          + ", ".join(report["changed"]) + "\n"
                          "  re-read their kit blocks against the new wiki text, then "
                          "record the review with wiki_status.py --mark-reviewed\n")
-    for title, block_id, at in report["orphans"]:
-        sys.stderr.write(f"kit block {block_id!r} on {title!r}: anchor of at={at} is gone "
-                         "upstream; kept at the bottom of the page, move it\n")
+    for title, block_id in report["orphans"]:
+        sys.stderr.write(f"kit block {block_id!r} on {title!r}: the heading its at= names is gone "
+                         "upstream; kept at the bottom of the page, point at= at the new heading\n")
     if NEW_MEDIA:
         sys.stderr.write(f"new media files downloaded: {len(NEW_MEDIA)}\n")
     if UNRESOLVED:
@@ -1395,12 +1291,15 @@ def main():
     if not targets:
         sys.stderr.write("no page matched --only\n")
         return 1
+    if args.dry_run and not args.out:
+        sys.stderr.write("--dry-run needs --out DIR\n")
+        return 2
     out_dir = args.out if args.dry_run else WIKI_DIR
-    if out_dir:
-        os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(out_dir, exist_ok=True)
     # Link resolution always uses the whole snapshot, not just this run's filter.
-    context = {"known": set(full_set) | set(kit_pages) | set(REDIRECT_ANCHORS)
-               | {"Effect", "Effects"}, "kit_pages": kit_pages, "out_dir": out_dir}
+    context = {"known": set(full_set) | set(kit_pages) | set(REDIRECT_ANCHORS) | {"Effect", "Effects"},
+               "out_dir": out_dir, "dry_run": args.dry_run, "converted": {}, "anchors": {},
+               "manifest": kit_blocks.load_manifest()}
 
     # Some snapshot files carry the wiki's redirect name (Effects -> Effect);
     # convert the target page but keep the established local file name.
@@ -1417,7 +1316,8 @@ def main():
             sync_page(title, canonical.get(title, title), context, report)
         except Exception as exc:  # noqa: BLE001  (one broken page must not stop the run)
             report["failures"].append((title, repr(exc)))
-    refresh_kit_pages(context)
+    write_pages(context, report)
+    report["failures"] += [(line.split(":", 1)[0], line) for line in finish(context)]
     if not args.only:
         check_scope(existing, kit_pages)
     print_summary(report)
@@ -1427,8 +1327,6 @@ def main():
         for t, e in report["failures"]:
             sys.stderr.write(f"  {t}: {e}\n")
         return 1
-    if out_dir:
-        sys.stderr.write(f"stale section links repaired: {repair_anchors(out_dir)}\n")
     if args.prune_media and not args.dry_run:
         sys.stderr.write(f"unreferenced media files removed: {prune_media(MEDIA_DIR)}\n")
     if not args.dry_run:

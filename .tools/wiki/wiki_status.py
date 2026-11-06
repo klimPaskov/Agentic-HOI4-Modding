@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """Report how current the offline wiki snapshot is against the installed game.
 
-Every snapshot page carries a review block whose marker records the game build the
-page was checked against (``build``), the date (``checked``), the wiki revision that
-was reviewed (``revision``) and the game files it was checked against (``sources``,
-space-separated paths or folder prefixes under the game folder). See
+Every page's sidecar (``.tools/wiki/kit/<page>.md``) carries a review block whose
+marker records the game build the page was checked against (``build``), the date
+(``checked``), the wiki revision that was reviewed (``revision``) and the game files it
+was checked against (``sources``, space-separated paths or folder prefixes under the
+game folder). The wiki revision a page holds now is in ``manifest.json``. See
 ``kit_blocks.py`` for the format.
 
 ``game_docs_index.json`` next to this script records the game's own documentation
@@ -22,8 +23,8 @@ whose ``sources`` name one, not only the pages that cite documentation.
     python -B .tools/wiki/wiki_status.py --carry-forward      # after a build change, see README
     python -B .tools/wiki/wiki_status.py --record             # store the installed build's index
 
-A page is current when its review names the installed build and the wiki revision on
-its capture line. The tool reads the installed game (``HOI4_GAME_DIR``,
+A page is current when its review names the installed build and the wiki revision the
+manifest records for it. The tool reads the installed game (``HOI4_GAME_DIR``,
 ``.tools/local_settings.json`` or the Steam libraries) and never launches it. Only
 ``--mark-reviewed``, ``--carry-forward`` and ``--record`` write anything.
 Standard library only; Python 3.9 or newer.
@@ -138,12 +139,26 @@ def diff_index(old: Dict[str, object], new: Dict[str, object]) -> Dict[str, Dict
 # --- the snapshot pages ---------------------------------------------------
 
 def load_pages() -> Dict[str, str]:
-    """Page title -> text. The title is the page's level-1 heading, not its file name."""
+    """Page title -> sidecar text (review block and kit text). The title is the sidecar's heading."""
     pages: Dict[str, str] = {}
-    for path in sorted(WIKI_DIR.glob("*.md")):
+    for path in sorted(kit_blocks.SIDECAR_DIR.glob("*.md")):
         text = path.read_text(encoding="utf-8")
         pages[kit_blocks.page_title(text) or path.stem] = text
     return pages
+
+
+def page_text(title: str) -> str:
+    """The lean page agents read (empty when it is missing), for the names it mentions."""
+    path = WIKI_DIR / kit_blocks.file_name(title)
+    return path.read_text(encoding="utf-8") if path.exists() else ""
+
+
+def wiki_revision(title: str) -> Optional[int]:
+    """The wiki revision the page holds now, from the manifest (None for kit pages)."""
+    pages = kit_blocks.load_manifest().get("pages", {})
+    assert isinstance(pages, dict)
+    revision = pages.get(kit_blocks.file_name(title), {}).get("revision")
+    return int(revision) if revision is not None else None
 
 
 def page_sources(text: str) -> List[str]:
@@ -163,7 +178,7 @@ def entry_name(key: str) -> Optional[str]:
 
 def affected_pages(diff: Dict[str, Dict[str, List[str]]], pages: Dict[str, str]) -> Dict[str, List[str]]:
     """Page title -> reasons it should be re-checked after a documentation change."""
-    words = {title: set(WORD.findall(text)) for title, text in pages.items()}
+    words = {title: set(WORD.findall(text + "\n" + page_text(title))) for title, text in pages.items()}
     sources = {title: page_sources(text) for title, text in pages.items()}
     reasons: Dict[str, List[str]] = {}
     for doc, change in diff.items():
@@ -220,13 +235,13 @@ def file_reasons(changes: Dict[str, str], pages: Dict[str, str]) -> Dict[str, Li
     return reasons
 
 
-def page_state(text: str, build: str) -> str:
+def page_state(text: str, build: str, revision: Optional[int] = None) -> str:
+    """How current a page is, from its sidecar's review and the wiki revision it holds now."""
     review = kit_blocks.review(text) or {}
     if review.get("build", "none") == "none":
         return "not reviewed"
     if review.get("build") != build:
         return "reviewed on an older build"
-    revision = kit_blocks.capture_revision(text)
     if revision is not None and review.get("revision") != str(revision):
         return "wiki text changed since the review"
     return "current"
@@ -235,17 +250,10 @@ def page_state(text: str, build: str) -> str:
 # --- writing review markers ----------------------------------------------
 
 def set_review(text: str, updates: Dict[str, str]) -> str:
-    blocks = kit_blocks.find_blocks(text)
-    block = next((b for b in blocks if b.id == kit_blocks.REVIEW_ID), None)
-    if block is None:
-        raise SystemExit("page has no review block; run the sync or add one")
-    attrs = {**block.attrs, **updates}
-    attrs = {k: v for k, v in attrs.items() if v != ""}
-    order = ["id", "at", "build", "checked", "revision", "via", "sources"]
-    keys = [k for k in order if k in attrs] + sorted(k for k in attrs if k not in order)
-    marker = "<!-- kit:begin " + "".join(f'{k}="{attrs[k]}" ' for k in keys) + "-->"
-    first_line_end = text.index("\n", block.start)
-    return text[:block.start] + marker + text[first_line_end:]
+    try:
+        return kit_blocks.set_review(text, updates)
+    except kit_blocks.KitBlockError as error:
+        raise SystemExit(f"{error}; add one (see README)") from error
 
 
 def write_lf(path: Path, text: str) -> None:
@@ -254,9 +262,9 @@ def write_lf(path: Path, text: str) -> None:
 
 
 def page_path(name: str) -> Path:
-    """The page file for a title (``Effects``), a file stem (``effects``) or a file name."""
+    """The sidecar for a title (``Effects``), a file stem (``effects``) or a file name."""
     wanted = {name.lower(), kit_blocks.file_name(name)}
-    for path in sorted(WIKI_DIR.glob("*.md")):
+    for path in sorted(kit_blocks.SIDECAR_DIR.glob("*.md")):
         title = kit_blocks.page_title(path.read_text(encoding="utf-8")) or path.stem
         if path.name in wanted or title.lower() == name.lower():
             return path
@@ -268,7 +276,7 @@ def mark_reviewed(names: List[str], build: str, via: str = "") -> None:
     for name in names:
         path = page_path(name)
         text = path.read_text(encoding="utf-8")
-        revision = kit_blocks.capture_revision(text)
+        revision = wiki_revision(kit_blocks.page_title(text) or path.stem)
         updates = {"build": build, "checked": today, "via": via,
                    "revision": "" if revision is None else str(revision)}
         write_lf(path, set_review(text, updates))
@@ -292,7 +300,7 @@ def print_diff(diff: Dict[str, Dict[str, List[str]]], limit: int = 12) -> None:
 def print_status(pages: Dict[str, str], build: str, docs: List[str]) -> int:
     groups: Dict[str, List[str]] = {}
     for title, text in pages.items():
-        groups.setdefault(page_state(text, build), []).append(title)
+        groups.setdefault(page_state(text, build, wiki_revision(title)), []).append(title)
     kit = sum(1 for text in pages.values() if kit_blocks.is_kit_page(text))
     print(f"\npages: {len(pages)} ({len(pages) - kit} from the wiki, {kit} kit pages)")
     for state in ("current", "wiki text changed since the review", "reviewed on an older build", "not reviewed"):

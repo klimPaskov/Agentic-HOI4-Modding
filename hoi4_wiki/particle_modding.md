@@ -1,35 +1,16 @@
 # Particle modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Particle modding", revision 71496, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="71496" sources="gfx/particles/ gfx/entities/particles.gfx gfx/entities/map_lights.asset gfx/entities/buildings.asset previewer_assets/ hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the 141 `.asset` files in `gfx/particles/` and its `environment/`, `infantry/` and `vehicles/` folders plus one in the Man the Guns DLC (142 `particle` blocks, 486 subsystems), the `pdxparticle` entries of `gfx/entities/particles.gfx` and `gfx/particles/WW_particles.gfx`, the 9 `light` blocks of `gfx/entities/map_lights.asset`, and token strings in `hoi4.exe`.
-Kit blocks added: the filled "Adding a Particle" section (link chain, key tables, a trimmed example), a warning on the particle editor text, corrections for the light section.
-Gaps left: no game file explains `{ a b }` pairs, `texture` `x`/`y`, `slave_particles`, `sort` or the force types, so the key tables list only what vanilla sets. The particle editor could not be tried.
-**1.19.4.1 re-check (2026-11-01).** 3 tagged statements depended on files the update changed (the subsystem, animation and force tables over `gfx/particles/**/*.asset`, where `mg_muzzle_tommy.asset` changed), and all of them were re-measured. Every count is unchanged (142 particles, 486 subsystems, 509 animations, 314 forces), and the 16 `particle_editor` command strings are still in the 1.19.4.1 `hoi4.exe`. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Adding a Particle](#Adding_a_Particle)
-- [Particle Editor](#Particle_Editor)
-- [Adding a Light](#Adding_a_Light)
-  - [Animation](#Animation)
-
----
-
 Particles are special entities used by other entities to create visual effects such as lightning, snow, etc.
 
 Particles are defined in **.asset** files which are found in `/Hearts of Iron IV/gfx/particles/`.
 
-## Adding a Particle <a id="Adding_a_Particle"></a>
+## Adding a Particle
 
-<!-- kit:begin id="particle-add-chain" at="section:Adding_a_Particle" -->
-**Kit addition** A particle takes three pieces that are linked by name. This is how the vanilla lamp particle is wired.
+A particle takes three pieces that are linked by name. This is how the vanilla lamp particle is wired.
 
-1. A `particle` block in a `.asset` file under `gfx/particles/`. Its `name` ends in `_file` in vanilla (`lamp_red_file`). Textures are `.dds` files in the same folder tree (`gfx/particles/flare_wide.dds`). [vanilla-confirmed 1.19.3] `gfx/particles/lamp_red.asset`
-2. A `pdxparticle` in an `objectTypes` block of a `.gfx` file. Its `type` is the `name` from step 1 and its `name` is the handle that entities use. Vanilla keeps almost all of its 175 in `gfx/entities/particles.gfx` and has one in `gfx/particles/WW_particles.gfx`. [vanilla-confirmed 1.19.3] `gfx/entities/particles.gfx`
-3. An entity `event` that names the handle: `event = { time = 0.1 node = "lamp" particle = "lamp_red_particle" }`. Entities are described on [Entity modding](<entity_modding.md>). [vanilla-confirmed 1.19.3] `gfx/entities/buildings.asset`
+1. A `particle` block in a `.asset` file under `gfx/particles/`. Its `name` ends in `_file` in vanilla (`lamp_red_file`). Textures are `.dds` files in the same folder tree (`gfx/particles/flare_wide.dds`).
+2. A `pdxparticle` in an `objectTypes` block of a `.gfx` file. Its `type` is the `name` from step 1 and its `name` is the handle that entities use. Vanilla keeps almost all of its 175 in `gfx/entities/particles.gfx` and has one in `gfx/particles/WW_particles.gfx`.
+3. An entity `event` that names the handle: `event = { time = 0.1 node = "lamp" particle = "lamp_red_particle" }`. Entities are described on [Entity modding](entity_modding.md).
 
 ```text
 # gfx/particles/my_glow.asset  (a trimmed copy of lamp_red.asset)
@@ -61,13 +42,11 @@ objectTypes = {
 }
 ```
 
-Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/particles.gfx` with names changed and some keys dropped. Every key kept in the subsystem is set by at least 474 of the 486 vanilla subsystems. [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`. The trimmed form was not run in the game. [unverified] `gfx/particles/lamp_red.asset`
+Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/particles.gfx` with names changed and some keys dropped. Every key kept in the subsystem is set by at least 474 of the 486 vanilla subsystems. The trimmed form was not run in the game. (unverified) `gfx/particles/lamp_red.asset`
 
-`scale` is set in all 175 vanilla `pdxparticle` entries (values such as 1, 1.5 and 2). [vanilla-confirmed 1.19.3] `gfx/entities/particles.gfx`, `gfx/particles/WW_particles.gfx`
-<!-- kit:end id="particle-add-chain" -->
+`scale` is set in all 175 vanilla `pdxparticle` entries (values such as 1, 1.5 and 2).
 
-<!-- kit:begin id="particle-subsystem-keys" at="section:Adding_a_Particle" -->
-**Kit addition** Keys of a `subsystem`, with the number of vanilla subsystems (of 486) that set each. All rows: [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`.
+Keys of a `subsystem`, with the number of vanilla subsystems (of 486) that set each.
 
 | Keys | Sets | Values in vanilla |
 | --- | --- | --- |
@@ -84,13 +63,11 @@ Both files are copies of `gfx/particles/lamp_red.asset` and `gfx/entities/partic
 | `box_emitter_x`, `box_emitter_y`, `box_emitter_z` | about 22 | with `emitter_type = "box"` |
 | `emission_pulse_duration`, `emission_pulse_silence` | 6 and 11 | a number or a pair |
 
-`texture` holds `file`, `x`, `y` and `shader`. Shader values: `"ParticleAdditive"` 267, `"ParticleAlphaBlend"` 218, `"ParticlePreAlphaBlend"` 1. `color` holds `x y z` (470) or `r g b` (12) on the 0 to 255 scale, plus `alpha`. [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`
+`texture` holds `file`, `x`, `y` and `shader`. Shader values: `"ParticleAdditive"` 267, `"ParticleAlphaBlend"` 218, `"ParticlePreAlphaBlend"` 1. `color` holds `x y z` (470) or `r g b` (12) on the 0 to 255 scale, plus `alpha`.
 
-A value can be a single number or a pair `{ a b }`, and `size`, `alpha` and similar keys can name an animation after a comma: `alpha = 255.000,smoke_fade`, `size = { 1.000,glow_scale 1.000 }`. What a pair means is not stated in a game file. [vanilla-confirmed 1.19.4.1] `gfx/particles/flamethrower.asset`, `documentation/*.md`. The reading as a range or a start and end value is a guess and is untested. [unverified] `gfx/particles/flamethrower.asset`
-<!-- kit:end id="particle-subsystem-keys" -->
+A value can be a single number or a pair `{ a b }`, and `size`, `alpha` and similar keys can name an animation after a comma: `alpha = 255.000,smoke_fade`, `size = { 1.000,glow_scale 1.000 }`. What a pair means is not stated in a game file. The reading as a range or a start and end value is a guess and is untested. (unverified) `gfx/particles/flamethrower.asset`
 
-<!-- kit:begin id="particle-animation-force" at="section:Adding_a_Particle" -->
-**Kit addition** Besides subsystems, a `particle` block holds `animation` and `force` blocks that subsystems refer to by name. All rows: [vanilla-confirmed 1.19.4.1] `gfx/particles/**/*.asset`.
+Besides subsystems, a `particle` block holds `animation` and `force` blocks that subsystems refer to by name.
 
 - `animation = { name start duration repeat minValue maxValue curve op time }`: all 509 vanilla animations set all nine keys. `op` is always `"MUL"`. `time` is `"life"` (462), `"life_abs"` (28), `"spawn"` (10) or `"system"` (9). `repeat = yes` in 16. `curve` is a flat list of `x y` pairs, for example `0.000 0.000 0.235 0.375 0.424 0.891 1.000 0.000`.
 - `force = { type name amount direction position local_force yaw division }`: 314 forces. `type` is `"planar"` (150), `"friction"` (94), `"turbulence"` (50), `"point"` (17) or `"vortex"` (3). `direction`, `position`, `local_force`, `yaw` and `division` are set in about 280 of them.
@@ -108,22 +85,19 @@ force = {
 }
 ```
 
-Vanilla force, whitespace changed. [vanilla-confirmed 1.19.3] `gfx/particles/flamethrower.asset`
-<!-- kit:end id="particle-animation-force" -->
+Vanilla force, whitespace changed.
 
-## Particle Editor <a id="Particle_Editor"></a>
+## Particle Editor
 
-<!-- kit:begin id="particle-editor-warning" at="heading:Particle_Editor" -->
-**Kit note** Warning: `particle_editor create <name>` writes `gfx/particles/<name>.asset` into the game install folder immediately, not into the user folder or a mod, and the written file is not a valid asset in 1.19.4.1. Its texture and shader blocks hold raw memory bytes instead of the texture path and the shader name. Do not run the command against a game install you play from. In the test, `particle_editor create b9_test` replied "Created new effect: b9 test" with an empty "Path:" and wrote a 1515 byte file into the install at once. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply and the install folder checked.
+Warning: `particle_editor create <name>` writes `gfx/particles/<name>.asset` into the game install folder immediately, not into the user folder or a mod, and the written file is not a valid asset in 1.19.4.1. Its texture and shader blocks hold raw memory bytes instead of the texture path and the shader name. Do not run the command against a game install you play from. In the test, `particle_editor create b9_test` replied "Created new effect: b9 test" with an empty "Path:" and wrote a 1515 byte file into the install at once.
 
-The version limits in the text below (editor works only on 1.11) cannot be checked from game files. What 1.19.4.1 ships: `hoi4.exe` contains the commands `particle_editor create`, `add_subsystem`, `clone_subsystem`, `remove_subsystem`, `add_animation`, `remove_animation`, `add_force`, `remove_force`, `add_childsystem`, `back_subsystem`, `forward_subsystem`, `save`, `undo`, `redo`, `restart` and `exit`, and the folder `previewer_assets/assetviewer_interface/previewer_interface.gui` has a button labelled "Particle Editor". The button label is [vanilla-confirmed 1.19.4.1] `previewer_assets/assetviewer_interface/previewer_interface.gui`. The command names are executable strings. `particle_editor` itself exists in the release build: `help particle_editor` replied "particle_editor - Spawns a particle editor", and the command alone replied "Load a particle effect before running the editor". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, console reply. `add_subsystem`, `save` and `exit` were not run to avoid more writes into the install, and no editor window was seen, so whether the editor works is untested. [unverified] `hoi4.exe`
+The version limits in the text below (editor works only on 1.11) cannot be checked from game files. What 1.19.4.1 ships: `hoi4.exe` contains the commands `particle_editor create`, `add_subsystem`, `clone_subsystem`, `remove_subsystem`, `add_animation`, `remove_animation`, `add_force`, `remove_force`, `add_childsystem`, `back_subsystem`, `forward_subsystem`, `save`, `undo`, `redo`, `restart` and `exit`, and the folder `previewer_assets/assetviewer_interface/previewer_interface.gui` has a button labelled "Particle Editor". The command names are executable strings. `particle_editor` itself exists in the release build: `help particle_editor` replied "particle_editor - Spawns a particle editor", and the command alone replied "Load a particle effect before running the editor". `add_subsystem`, `save` and `exit` were not run to avoid more writes into the install, and no editor window was seen, so whether the editor works is untested. (unverified) `hoi4.exe`
 
-Particles are plain text, so a mod can also write them by hand from the key tables above. [vanilla-confirmed 1.19.3] `gfx/particles/lamp_red.asset`
-<!-- kit:end id="particle-editor-warning" -->
+Particles are plain text, so a mod can also write them by hand from the key tables above.
 
 The particle editor can be accessed by adding *exclusively* **-editor** to your launch options in Steam and **reverting to 1.11**; anything earlier will result in a non functional launcher, anything later will result in a crash upon trying to access the editor. **Since the particle editor can't access new particles made by the mod, it is necessary to overwrite vanilla particles, move the edited particles to your mod files, and then verify integrity after you've finished.** The particle editor can access any vanilla entity, mesh, or particle; once accessed, the vanilla particle can then be edited to fit your needs.
 
-## Adding a Light <a id="Adding_a_Light"></a>
+## Adding a Light
 
 Lights are special types of particles that are referred to in entities, for example the muzzle flash of the gun during the combat animation.
 
@@ -173,13 +147,12 @@ light = {
 - **position** is the position of the light relative to the entity using it.
 - **animation** is animation to play for the light.
 
-<!-- kit:begin id="particle-light-corrections" at="section:Adding_a_Light" -->
-**Kit correction** Lights are not in `gfx/particles/`. All 9 vanilla `light` blocks are in `gfx/entities/map_lights.asset`: `playerlight`, `muzzle_flash`, `cigarette_light`, `nuke_light`, `rifle_muzzle_flash`, `mg_muzzle_flash`, `citylight`, `nuke_big_light`, `alarm_flash`. An entity event uses one with `light = "<name>"`. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`, `gfx/entities/buildings.asset`
+Lights are not in `gfx/particles/`. All 9 vanilla `light` blocks are in `gfx/entities/map_lights.asset`: `playerlight`, `muzzle_flash`, `cigarette_light`, `nuke_light`, `rifle_muzzle_flash`, `mg_muzzle_flash`, `citylight`, `nuke_big_light`, `alarm_flash`. An entity event uses one with `light = "<name>"`.
 
-- `intensity = 1.5, fade` is not "a value plus whether it fades". In all 9 lights the `animation` is named `fade`, and 7 lights write `intensity = <number>, fade` (also `intensity = 30,fade`); `playerlight` and `citylight` write a plain number. The word after the comma matches the animation name, the same pattern as `alpha = 255,smoke_fade` in particles. [vanilla-confirmed 1.19.4.1] `gfx/entities/map_lights.asset`, recounted: 9 of 9 lights, 7 with the suffix. The reading as "apply this animation to the intensity" is an inference. [unverified] `gfx/entities/map_lights.asset`
-- `op` is `"MUL"` in all 9 lights; the vanilla comment lists `"MUL"/"ADD"/"ABS"`. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`
-- `curve` is a flat list of `time value` pairs, one pair per line in vanilla (4 pairs in `muzzle_flash`). The page's template shows 6 numbers, and its example 10, so the count is free. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`
-- `color` writes each channel as `r = { 1.0 }`, with values 0 to 1. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`
+- `intensity = 1.5, fade` is not "a value plus whether it fades". In all 9 lights the `animation` is named `fade`, and 7 lights write `intensity = <number>, fade` (also `intensity = 30,fade`); `playerlight` and `citylight` write a plain number. The word after the comma matches the animation name, the same pattern as `alpha = 255,smoke_fade` in particles. The reading as "apply this animation to the intensity" is an inference. (unverified) `gfx/entities/map_lights.asset`
+- `op` is `"MUL"` in all 9 lights; the vanilla comment lists `"MUL"/"ADD"/"ABS"`.
+- `curve` is a flat list of `time value` pairs, one pair per line in vanilla (4 pairs in `muzzle_flash`). The page's template shows 6 numbers, and its example 10, so the count is free.
+- `color` writes each channel as `r = { 1.0 }`, with values 0 to 1.
 
 ```text
 light = {
@@ -194,10 +167,9 @@ light = {
 }
 ```
 
-Vanilla light with the layout compressed. [vanilla-confirmed 1.19.3] `gfx/entities/map_lights.asset`
-<!-- kit:end id="particle-light-corrections" -->
+Vanilla light with the layout compressed.
 
-### Animation <a id="Animation"></a>
+### Animation
 
 - **name** is the name of the animation.
 - **start** is the starting position of the curve.
@@ -207,17 +179,3 @@ Vanilla light with the layout compressed. [vanilla-confirmed 1.19.3] `gfx/entiti
 - **minValue** is the minimum value on the curve.
 - **maxValue** is the maximum value on the curve.
 - **curve** is the curve used for the light; each set of two decimals denote an x and y position on the curve graph, the game uses these points to calculate a change in whatever the animation is interacting with. The amount of decimals should always be even; the max y value is determined by "maxValue" argument, the min y value is determined by the "minValue" argument, the max x value is determined by "duration" and the min x value is determined by "start". You can have as many sets of decimals as you want but the last x coordinate must match with the duration and the first must match with "start".
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
