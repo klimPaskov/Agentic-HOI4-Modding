@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8ff77e26fe0abd5a6c1773f433e33d9261711e67",
+  "generated_for_revision": "3e7a3983f49be7a8ba2871d99bbc2a8782e9a10e",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14985,8 +14985,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/fit_prop.py",
-          "sha256": "fdbbaf7703bd04268c58175edf084bc65471e48fe639305cf8833859f01f12ec",
-          "size": 13333
+          "sha256": "aec5473e0381e07e74ab5374ba9c3cb9f9c6f3ae3312694e51189f655190e689",
+          "size": 13779
         },
         {
           "path": ".tools/3d_pipeline/blender/repair_mesh.py",
@@ -15065,8 +15065,8 @@
         },
         {
           "path": ".tools/3d_pipeline/fit_prop.py",
-          "sha256": "15ed732b83335ce1d9eed1ad3e6c836bcc28b706c41ac7ecdfa80762966647e9",
-          "size": 11712
+          "sha256": "ba306dc69596453d54954467d7cbd0432648db9e2ad188e25ecd5693d0505857",
+          "size": 12034
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
@@ -15850,8 +15850,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fit_prop.py",
-          "sha256": "0ec29bb1607e92dfdf4ba7f2117969e2e8d2a03059c1b88c6f3222865d88948d",
-          "size": 6171
+          "sha256": "63202604837b3c29e0385b2630274068a53704764b27bda3ed8b75c66c591ca1",
+          "size": 7658
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fitted_humanoid_repair.py",

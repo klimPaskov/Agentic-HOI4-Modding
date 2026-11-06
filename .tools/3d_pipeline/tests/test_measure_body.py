@@ -43,17 +43,19 @@ SOLDIER = body(
     (0.14, 0.26, 0.0, 0.9, -0.06, 0.06), (-0.26, -0.14, 0.0, 0.9, -0.06, 0.06),  # legs
     (-0.2, 0.2, 0.9, 1.5, -0.1, 0.1),  # torso
     (0.36, 0.44, 0.95, 1.45, -0.04, 0.04), (-0.44, -0.36, 0.95, 1.45, -0.04, 0.04),  # arms held clear, as in an A-pose
+    (0.2, 0.44, 1.42, 1.5, -0.05, 0.05), (-0.44, -0.2, 1.42, 1.5, -0.05, 0.05),  # shoulders joining them to the torso
     (-0.1, 0.1, 1.5, 1.75, -0.1, 0.1),  # head
 )
 BRUTE = body(
     (0.14, 0.3, 0.0, 0.7, -0.08, 0.08), (-0.3, -0.14, 0.0, 0.7, -0.08, 0.08),
     (-0.42, 0.42, 0.7, 1.5, -0.2, 0.2),  # a wide torso
     (0.5, 0.62, 0.35, 1.45, -0.06, 0.06), (-0.62, -0.5, 0.35, 1.45, -0.06, 0.06),  # arms to the knees
+    (0.42, 0.62, 1.37, 1.47, -0.07, 0.07), (-0.62, -0.42, 1.37, 1.47, -0.07, 0.07),  # shoulders
     (-0.12, 0.12, 1.5, 1.75, -0.1, 0.12),
 )
 HORSE_BODY = body(
-    (-0.1, 0.0, 0.0, 0.62, 0.45, 0.55), (0.15, 0.25, 0.0, 0.62, 0.45, 0.55),  # front legs
-    (-0.1, 0.0, 0.0, 0.62, -0.55, -0.45), (0.15, 0.25, 0.0, 0.62, -0.55, -0.45),  # hind legs
+    (-0.13, 0.03, 0.0, 0.62, 0.42, 0.58), (0.12, 0.28, 0.0, 0.62, 0.42, 0.58),  # front legs
+    (-0.13, 0.03, 0.0, 0.62, -0.58, -0.42), (0.12, 0.28, 0.0, 0.62, -0.58, -0.42),  # hind legs
     (-0.15, 0.3, 0.6, 1.0, -0.6, 0.62),  # barrel
     (-0.05, 0.2, 0.9, 1.35, 0.55, 0.75),  # neck and head
 )
@@ -160,6 +162,39 @@ class Presets(unittest.TestCase):
         verdict = self.decide(SOLDIER, "archer")
         self.assertLessEqual(verdict["outputs"]["confidence"], 0.6)
         self.assertIn("anatomy", verdict["checklist"])
+
+
+def with_extras(shape, *boxes):
+    """A body plus extra separate boxes (plates, a prop, a stray shard)."""
+
+    extra = body(*boxes)
+    positions = np.concatenate([shape[0], extra[0]])
+    triangles = np.concatenate([shape[1], extra[1] + len(shape[0])])
+    return positions, triangles
+
+
+class Parts(unittest.TestCase):
+    def decide(self, shape):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "g.glb"
+            write_glb(path, *shape)
+            return measure_body.measure_body(path, "archer", dict(HUMAN), None, "")
+
+    def test_plates_and_a_held_bow_do_not_change_the_measures(self) -> None:
+        # The archer case: dozens of small plates on the body, a quiver and a long bow beside the hand.
+        plates = [(-0.2 + 0.04 * (k % 10), -0.17 + 0.04 * (k % 10), 0.95 + 0.06 * (k // 10), 1.0 + 0.06 * (k // 10), 0.1, 0.13) for k in range(40)]
+        bow = (0.445, 0.455, 0.3, 1.4, -0.005, 0.005)  # thin, reaches below the knee, touching the hand
+        plain, armed = self.decide(SOLDIER), self.decide(with_extras(SOLDIER, *plates, bow))
+        self.assertEqual(armed["verdict"], "pass", armed["findings"])
+        self.assertEqual(armed["outputs"]["measured"]["parts"], 6 + 41 + 2)
+        for key in ("contacts", "legs", "torso_width", "lower_length"):
+            self.assertEqual(plain["outputs"]["measured"][key], armed["outputs"]["measured"][key], key)
+
+    def test_a_shard_floating_apart_is_debris_before_the_rig(self) -> None:
+        verdict = self.decide(with_extras(SOLDIER, (0.9, 0.95, 1.0, 1.05, 0.5, 0.55)))
+        self.assertEqual(verdict["verdict"], "fail")
+        self.assertEqual(verdict["findings"][0]["rule"], "BODY-DEBRIS")
+        self.assertIn("loose_part_edits", verdict["next"][0])
 
 
 class Job(unittest.TestCase):

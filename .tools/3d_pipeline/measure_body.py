@@ -200,6 +200,11 @@ def measure_body(target: Path, unit_type: Optional[str], anatomy: Dict[str, Any]
         steps = ["Answer the anatomy questions from the reference image, add them to the job as `anatomy`, then measure again."]
         return stage_verdict.verdict("measure", False, unit, outputs=outputs, checklist=checklist, next_steps=steps,
                                      findings=[{"rule": "BODY-LOW-CONFIDENCE", "file": geometry.name, "message": f"the {chosen} preset fits only with confidence {confidence} and no anatomy was declared"}])
+    if measures.get("debris"):
+        message = f"{measures['debris']} separate piece(s) float apart from the body, the farthest {measures['debris_gap']:.1%} of its height away"
+        steps = ["Drop them before the rig: add loose_part_edits rules (action drop) for them to the job, or generate again, then measure again."]
+        return stage_verdict.verdict("measure", False, unit, outputs=outputs, checklist=checklist, next_steps=steps,
+                                     findings=[{"rule": "BODY-DEBRIS", "file": geometry.name, "message": message}])
     if not unit_type:
         steps = [f"Pick the job's unit_type from {', '.join(fitting_types)}, then measure again."]
         return stage_verdict.verdict("measure", False, unit, outputs=outputs, checklist=checklist, next_steps=steps,
