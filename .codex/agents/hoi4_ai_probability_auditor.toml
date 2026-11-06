@@ -25,6 +25,7 @@ Audit-patch-compare rule:
 - If the baseline or compare route is unavailable, report the exact blocker and do not claim the balance change is validated.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - AGENTS.md.
 - .claude/skills/hoi4-subagents/SKILL.md.
 - .claude/skills/hoi4-events/SKILL.md when events, event MTTH, event options, random events, or random lists are involved.

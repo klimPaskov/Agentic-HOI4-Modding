@@ -59,8 +59,8 @@ class Mod:
 		self.write(instructions, "# Fixture mod\n\nInstall this template as `CLAUDE.md`.\n\nRead CLAUDE.md before editing.\n")
 		self.write(".claude/agents/hoi4-alpha.md", agent_text("hoi4-alpha"))
 		self.write(".claude/agents/hoi4-beta.md", agent_text("hoi4-beta"))
-		self.write(".claude/skills/skill-a/SKILL.md", "---\nname: skill-a\n---\nSkill A.\n")
-		self.write(".claude/skills/skill-b/SKILL.md", "---\nname: skill-b\n---\nSkill B.\n")
+		self.write(".claude/skills/skill-a/SKILL.md", "---\nname: skill-a\ndescription: Use when a fixture needs skill A.\n---\nSkill A.\n")
+		self.write(".claude/skills/skill-b/SKILL.md", "---\nname: skill-b\ndescription: Use when a fixture needs skill B.\n---\nSkill B, see references/notes.md.\n")
 		self.write(".claude/skills/skill-b/references/notes.md", "Reference notes.\n")
 		self.write(".codex/config.toml", "model = \"inherit\"\n")
 		(self.root / ".codex" / "agents").mkdir(parents=True)
@@ -506,6 +506,116 @@ class GuidanceSize(SyncCase):
 		result = self.size_check(over)
 		self.assertEqual(result.returncode, 1)
 		self.assertIn("OVER: CLAUDE.md", result.stdout)
+
+
+class ContextBudget(unittest.TestCase):
+	"""Maintainer decision R-1: the source package holds the template, each SKILL.md and each skill description to a budget."""
+
+	def setUp(self):
+		self.temp = tempfile.TemporaryDirectory()
+		self.addCleanup(self.temp.cleanup)
+		self.mod = Mod(self.temp.name, source_package=True)
+		self.mod.path(".claude/skills/skill-b/references/notes.md").unlink()  # tests below rewrite skill-b without naming this reference
+
+	def skill(self, name, description="Use when a fixture needs one sentence.", body=100):
+		self.mod.write(f".claude/skills/{name}/SKILL.md", f"---\nname: {name}\ndescription: {description}\n---\n\n" + ("x" * 99 + "\n") * (body // 100))
+
+	def check(self, *extra):
+		return subprocess.run([sys.executable, "-B", str(self.mod.path(".tools/sync/check_guidance_size.py")), "--root", str(self.mod.root), *extra],
+			capture_output=True, text=True)
+
+	def test_files_inside_the_budget_pass(self):
+		self.skill("skill-a")
+		self.skill("skill-b", body=19000)
+		result = self.check()
+		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+		self.assertIn("4,000-token template", result.stdout)
+
+	def test_template_over_four_thousand_tokens_fails(self):
+		self.skill("skill-a")
+		self.skill("skill-b")
+		self.mod.write("CLAUDE_template.md", ("x" * 99 + "\n") * 161)  # 16,100 bytes
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("OVER: CLAUDE_template.md", result.stdout)
+		self.assertIn("template budget", result.stdout)
+
+	def test_skill_over_five_thousand_tokens_fails(self):
+		self.skill("skill-a")
+		self.skill("skill-b", body=20100)
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("OVER: .claude/skills/skill-b/SKILL.md", result.stdout)
+		self.assertNotIn("skill-a", result.stdout)
+
+	def test_long_description_fails(self):
+		self.skill("skill-a", description="Use when " + "a" * 200 + ".")
+		self.skill("skill-b")
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("DESCRIPTION: .claude/skills/skill-a/SKILL.md description is", result.stdout)
+
+	def test_two_sentences_fail(self):
+		self.skill("skill-a", description="Use when one thing happens. Also use it for another.")
+		self.skill("skill-b")
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("more than one sentence", result.stdout)
+
+	def test_colon_in_an_unquoted_description_fails_but_a_quoted_one_passes(self):
+		self.skill("skill-a", description="Use when events chain: country and news events")
+		self.skill("skill-b", description="\"Use when events chain: country and news events\"")
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("skill-a", result.stdout)
+		self.assertNotIn("skill-b", result.stdout)
+
+	def test_a_skill_without_a_description_fails(self):
+		self.mod.write(".claude/skills/skill-a/SKILL.md", "---\nname: skill-a\n---\nSkill A.\n")
+		self.skill("skill-b")
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("no one-line description", result.stdout)
+
+	def test_a_reference_the_skill_never_names_fails(self):
+		self.skill("skill-a")
+		self.skill("skill-b")
+		self.mod.write(".claude/skills/skill-a/references/orphan.md", "Moved rules nobody can find.\n")
+		result = self.check()
+		self.assertEqual(result.returncode, 1)
+		self.assertIn("UNREACHABLE: .claude/skills/skill-a/references/orphan.md", result.stdout)
+
+	def test_references_reached_by_a_link_a_plain_mention_or_another_reference_pass(self):
+		self.skill("skill-a")
+		self.skill("skill-b")
+		self.mod.write(".claude/skills/skill-a/SKILL.md", "---\nname: skill-a\ndescription: Use when a fixture needs one sentence.\n---\n\nSee [one](references/one.md) and references/two.md.\n")
+		self.mod.write(".claude/skills/skill-a/references/one.md", "Rules. More in [three](three.md#part).\n")
+		self.mod.write(".claude/skills/skill-a/references/two.md", "Rules.\n")
+		self.mod.write(".claude/skills/skill-a/references/three.md", "Rules.\n")
+		result = self.check()
+		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+	def test_crlf_does_not_count_toward_the_budget(self):
+		self.skill("skill-b")
+		line = b"x" * 99 + b"\n"
+		self.mod.path(".claude/skills/skill-a/SKILL.md").write_bytes(
+			(b"---\nname: skill-a\ndescription: Use when a fixture needs one sentence.\n---\n\n" + line * 190).replace(b"\n", b"\r\n"))  # 19,000 bytes with LF
+		result = self.check()
+		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+	def test_an_installed_mod_keeps_only_the_single_read_ceiling(self):
+		mod = Mod(self.temp.name + "-installed")
+		self.addCleanup(shutil.rmtree, mod.root, True)
+		mod.write(".claude/skills/own-skill/SKILL.md", "---\nname: own-skill\n---\n" + ("x" * 99 + "\n") * 300)  # 30,000 bytes, no description
+		result = subprocess.run([sys.executable, "-B", str(mod.path(".tools/sync/check_guidance_size.py")), "--root", str(mod.root)], capture_output=True, text=True)
+		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+		forced = subprocess.run([sys.executable, "-B", str(mod.path(".tools/sync/check_guidance_size.py")), "--root", str(mod.root), "--strict"], capture_output=True, text=True)
+		self.assertEqual(forced.returncode, 1)
+
+	def test_the_real_package_stays_inside_the_budget(self):
+		result = subprocess.run([sys.executable, "-B", str(SYNC / "check_guidance_size.py"), "--root", str(SYNC.parents[1])], capture_output=True, text=True)
+		self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+		self.assertIn("context budget", result.stdout)
 
 
 class Concurrency(SyncCase):

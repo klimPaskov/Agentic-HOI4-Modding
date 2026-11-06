@@ -1,6 +1,6 @@
 ---
 name: hoi4-portrait-production
-description: "Use for complete HOI4 character portrait production: real-source research and placeholders, selectable Cloud/Local/RunPod styled replacements, fictional generated portraits, processing, DDS conversion, portrait wiring, manifests, and handoffs."
+description: Use for HOI4 character portraits, from real-source research and placeholders to Cloud, Local or RunPod styled replacements, fictional portraits, DDS processing, wiring and handoffs.
 ---
 
 # HOI4 portrait production

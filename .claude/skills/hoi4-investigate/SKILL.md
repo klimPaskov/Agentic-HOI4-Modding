@@ -1,6 +1,6 @@
 ---
 name: hoi4-investigate
-description: Use for any HOI4 mod bug, regression, crash the user describes, or "it worked before", before any fix, and when checking a "done" or "checks pass" report. Static root-cause protocol from source, vanilla and documentation, with log reading only when a log is already supplied.
+description: Use before fixing any HOI4 mod bug, regression or crash, and to check a "done" report, with a static root-cause protocol from source, vanilla and documentation.
 ---
 
 # HOI4 Investigate

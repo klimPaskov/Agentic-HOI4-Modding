@@ -1,6 +1,6 @@
 ---
 name: hoi4-imagegen
-description: Make Hearts of Iron IV graphical assets (40 families: focus, ideas, decisions, technology and event pictures, flags, portraits, counters and more) with the hoi4-imagegen MCP. Use for any new or replaced mod art that is generated or processed rather than hand-drawn. Covers plan, generate, process, validate, preview, review and install.
+description: Use when making or replacing Hearts of Iron IV mod art in any of the 40 families with the hoi4-imagegen MCP, from plan and generate to process, validate, preview, review and install.
 ---
 
 # hoi4-imagegen

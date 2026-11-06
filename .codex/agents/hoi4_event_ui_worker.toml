@@ -23,6 +23,7 @@ Hard scope gate:
 - Do not scan all GUI files for general quality problems. Restrict discovery and MCP selectors to the exact event-owned identifiers and linked files supplied by the parent.
 
 Required reading:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - `.claude/skills/hoi4-scripted-gui/SKILL.md` and `references/visual-review.md` for references before implementation, native-element mapping, layout and content budgets, active MCP previews, and visual acceptance.
 - `.claude/skills/hoi4-decisions-missions/SKILL.md` for gameplay action integrity, costs, requirements, AI equivalents, cleanup, and balance.
 - `.claude/skills/hoi4-events/SKILL.md` for event ownership and integration.
