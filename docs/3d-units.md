@@ -58,6 +58,18 @@ Every type gets the six land-unit roles: idle, move, attack, defend, retreat and
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs: a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
+## Give every unit its own animations
+
+Two units of the same type would play the same library clips, and players notice. Only reskins of one base unit (the same body and rig with a different look, such as a winter uniform) may share them. Before you pay for any clip, plan them:
+
+```
+py -3.13 -B .tools/3d_pipeline/plan_clips.py --jobs-config <your 3d_jobs.json> --write
+```
+
+It goes through your jobs in order and gives each role the first candidate clip of the unit type that no other unit plays yet. A job with `"reskin_of": "<base job>"` gets exactly its base's clips, and a job that lists its own `required_actions` keeps them. When every candidate for a role is taken, the verdict escalates and names the unit and the role: author that clip in Blender, add another candidate to the unit type in `unit_types.json`, or ask whether the units may share. Without `--write` it only reports. After export, `check_unit_files.py --mod-root .` fails a clip another unit plays; check a reskin with `--reskin-of <base unit>`.
+
+A project whose animations are all authored by hand sets `"animation_policy": "authored"` in its job registry. Then the plan lists every role for live authoring and plans no library clip.
+
 ## Pick units players will see
 
 A division shows the model of its highest-priority sub-unit (`priority` in the unit's `sub_units` entry). A unit that never leads a template, for example archers next to higher-priority infantry, is drawn only when a player builds a template led by it. Before you pay for a model, check that the unit leads at least one starting or AI division template. Spend credits first on units that lead starting divisions.
@@ -69,7 +81,7 @@ Each step is one command, and each prints a one-line verdict. `pass` names the n
 1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. A unit that will hold a weapon has its hands closed in fists, because an open hand cannot be posed into a grip later. You look at it, approve it, and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json` (legs, arms, wings, a tail, extra limbs, a vehicle, a rider on a mount). They go into the job as `anatomy`.
 2. **Model.** `run_pilot.py --jobs-config <your 3d_jobs.json> --phase candidate <unit>` has Meshy turn the picture into a textured model (paid), and Blender imports it, checks it for holes and scales it against vanilla infantry.
 3. **Body check.** `measure_body.py <job folder>` measures the model and checks that it fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). It costs nothing. Pay for nothing more until it passes.
-4. **Rig, animations and export.** `run_pilot.py --jobs-config <your 3d_jobs.json> <unit>` continues the job. Meshy rigs humanoids and animates them from its library (paid). Blender rigs four-legged animals itself and seats riders. Blender then writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, and re-imports them to prove they load. Steps that already succeeded are reused, never paid twice.
+4. **Rig, animations and export.** First, `plan_clips.py --jobs-config <your 3d_jobs.json> --write` gives every unit its own library clips (see [Give every unit its own animations](#give-every-unit-its-own-animations)). Then `run_pilot.py --jobs-config <your 3d_jobs.json> <unit>` continues the job. Meshy rigs humanoids and animates them from its library (paid). Blender rigs four-legged animals itself and seats riders. Blender then writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, and re-imports them to prove they load. Steps that already succeeded are reused, never paid twice.
 5. **Weapon in hand.** An armed unit's weapon is a separate model. `fit_prop.py` fits it to the hand against every clip and binds it there (see [Put the weapon in the hand](#put-the-weapon-in-the-hand)). It costs nothing.
 6. **Checks.** `check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json` reads the exported files. Its verdict names the repair to run, or escalates. When it passes, it names `check_holes.py`, which renders the unit to find holes a player would see (see [Holes the player sees](#holes-the-player-sees)).
 7. **Free repair.** `repair_unit.py` fixes what the check names (holes, faces turned the wrong way, fused body parts, hard weight seams, feet off the ground) in a copy, then the check runs on the copy.

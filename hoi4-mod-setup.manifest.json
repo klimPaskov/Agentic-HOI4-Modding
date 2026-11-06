@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "3e7a3983f49be7a8ba2871d99bbc2a8782e9a10e",
+  "generated_for_revision": "80ad3c94c85129bfa2e949a8020623732aa3cac0",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1784,8 +1784,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "939ee035585e3a42e8d6d150d6b470a61d3cde2900a79db025af6fb128f8b412",
-          "size": 5097
+          "sha256": "d90c56214382f3054e4b3d6cce056e1d60c512bc3377ee223d6903d400c7f423",
+          "size": 5256
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -7238,8 +7238,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "939ee035585e3a42e8d6d150d6b470a61d3cde2900a79db025af6fb128f8b412",
-          "size": 5097
+          "sha256": "d90c56214382f3054e4b3d6cce056e1d60c512bc3377ee223d6903d400c7f423",
+          "size": 5256
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -15020,8 +15020,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "3b4082e7b35fd2391295d308fa27d93e4b01f1b58d87482c61f778b77a56c7c5",
-          "size": 42267
+          "sha256": "5536e1b1ce77e72bd066111c2ca96f8f3588ab894ce42def8e2d411d6a9f0286",
+          "size": 42743
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15080,8 +15080,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/body_measure.py",
-          "sha256": "83a5fa3209d8e93c00acc3626789cee73d4a4c7d7be14a5489d9e10a044cffd0",
-          "size": 12543
+          "sha256": "2a191b2a587987d4a685e598a7bbc4d75e29ea1bf2c7fd1d149d35427c7d2c08",
+          "size": 16707
         },
         {
           "path": ".tools/3d_pipeline/lib/credits.py",
@@ -15155,8 +15155,8 @@
         },
         {
           "path": ".tools/3d_pipeline/measure_body.py",
-          "sha256": "39a8d3e9462ff488dc1d273771784fa8790f33893131d248195a96c8a1c3bae2",
-          "size": 11841
+          "sha256": "4d73e9de51fb973d8f6d80555c579492879e6b1bf5f0a211fcd60bbdb25acf8d",
+          "size": 12400
         },
         {
           "path": ".tools/3d_pipeline/meshy_client.py",
@@ -15177,6 +15177,11 @@
           "path": ".tools/3d_pipeline/pack_pdx_material.py",
           "sha256": "8bb45aed990cc3857405d76e709d0d042614839ea1137e9f0ff9e371ec336a14",
           "size": 12741
+        },
+        {
+          "path": ".tools/3d_pipeline/plan_clips.py",
+          "sha256": "e38b07b1903a366531d6c3988116eeacd7f509ecedf8368981dd64629ad8a600",
+          "size": 8170
         },
         {
           "path": ".tools/3d_pipeline/repair_unit.py",
@@ -15890,8 +15895,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_loose_parts.py",
-          "sha256": "01304df4c4d850bd07ca70b36434196eaf9689d1b803972fbd49cb6775a837d0",
-          "size": 5613
+          "sha256": "e42a22c9042d600fe003e2df8c97061501722b4e6352f0ec1abbae9135a64507",
+          "size": 6236
         },
         {
           "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
@@ -15905,8 +15910,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_measure_body.py",
-          "sha256": "454401df992645d39b250abefb88f5a45b0fa034443967572ec9998e21ea4dc1",
-          "size": 8668
+          "sha256": "5ec6748a787070c4ff14f0863e43d3653ab7c54dead118d62f0e20f493d1556b",
+          "size": 10658
         },
         {
           "path": ".tools/3d_pipeline/tests/test_mesh_components.py",
@@ -15935,8 +15940,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_motion_checks.py",
-          "sha256": "af327775dc86ef425fc3d5e75993e4f7d9d43e757b63d2b762573a09023ff155",
-          "size": 12434
+          "sha256": "ca5fae8f4cbb333ade090dde537fa5c1524e051a462c4b532f63944e88a75d27",
+          "size": 13270
         },
         {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
@@ -15962,6 +15967,11 @@
           "path": ".tools/3d_pipeline/tests/test_pipeline_startup_regressions.py",
           "sha256": "80a1d06d568576fc09f63a79057af81c7155667c6bee8ba076d07c7360e70669",
           "size": 17861
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_plan_clips.py",
+          "sha256": "0da0fb949fb5ea03f186f90dff9c71bf866b11ce59305c9685d04b3e3a60c9f1",
+          "size": 5148
         },
         {
           "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
@@ -19116,8 +19126,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "939ee035585e3a42e8d6d150d6b470a61d3cde2900a79db025af6fb128f8b412",
-          "size": 5097
+          "sha256": "d90c56214382f3054e4b3d6cce056e1d60c512bc3377ee223d6903d400c7f423",
+          "size": 5256
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -24608,8 +24618,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "939ee035585e3a42e8d6d150d6b470a61d3cde2900a79db025af6fb128f8b412",
-          "size": 5097
+          "sha256": "d90c56214382f3054e4b3d6cce056e1d60c512bc3377ee223d6903d400c7f423",
+          "size": 5256
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -30100,8 +30110,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "939ee035585e3a42e8d6d150d6b470a61d3cde2900a79db025af6fb128f8b412",
-          "size": 5097
+          "sha256": "d90c56214382f3054e4b3d6cce056e1d60c512bc3377ee223d6903d400c7f423",
+          "size": 5256
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
