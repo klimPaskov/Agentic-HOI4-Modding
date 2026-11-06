@@ -50,6 +50,10 @@ Each gate is defined once in the guide:
   sheets and `config/visual_review_prompt.md`, finds no defect. Never pass the
   reviewer your conclusions, never review your own renders in its place, and
   keep its reply as evidence ([Independent visual review](references/production-guide.md#independent-visual-review)).
+  Every round gets the same request: the unit's fixed notes (`--note-file`, for an
+  intended look such as a torn hem), the item-by-item checklist, and the same views.
+  After fixes, review only the changed clips (`--clips`), then a full round with a new
+  reviewer before acceptance (decision 3D-7).
 - **Custom units**: defensibly sourced audio (including selection) and bespoke
   vanilla-green counters, or the package stays blocked ([counters](references/production-guide.md#custom-unit-counter-companion), [sound](references/production-guide.md#custom-unit-sound-design-companion)).
 

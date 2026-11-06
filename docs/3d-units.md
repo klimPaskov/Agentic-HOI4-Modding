@@ -100,6 +100,7 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 | At most 50 bones, at most 4 bone weights per vertex | The game's shader skins no more (`gfx/FX/pdxmesh.shader`) |
 | Triangles within the profile's budget | Big meshes slow the map down |
 | Every animation moves only bones the mesh has | Other bones are ignored and the unit freezes |
+| Every clip of a soldier, rider or creature plays at 30 frames a second | Vanilla's do, and Paradox's own exporter knows only 15, 30 and 60. A Blender scene from factory settings runs at 24, so a clip keyed for 30 and written at 24 plays a quarter too slowly. The kit's exports write 30 and keep each clip's length in seconds |
 | Every role has an animation | A missing role shows a frozen pose |
 | A mount has a `Saddle_Node` | The rider has nothing to sit on |
 | Textures are DXT5 or DXT1 with mip levels | Without mips the zoomed-out map shimmers. Uncompressed textures use four times the memory |
@@ -142,6 +143,14 @@ py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --out <job
 ```
 
 The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix the cause, export again and ask a new reviewer. Keep the replies: they are the record that the unit was looked at.
+
+Rounds converge when every reviewer gets the same request:
+
+- **Fixed notes.** If part of the unit's look could be mistaken for a defect, such as a ragged, torn hem or torn wing membranes, say so once in a notes file in the job folder and pass it every round with `--note-file <job folder>/review_notes.md` (or `--note "..."`). The reviewer still judges everything the note does not name, including any hole in the body.
+- **The checklist.** The reviewer goes through the quality bar item by item and ends the reply with a `CHECKLIST:` block. A reply that skips an item is recorded as a fail, and a new reviewer gets the same request.
+- **Changed clips only, then a full round.** After you fix some clips, render and review only those: `--clips attack death` renders them and the rest pose, and the request tells the reviewer to judge only them. A unit is accepted only after a full round, without `--clips`, by a new reviewer. The verdict names that round when an intermediate one passes.
+
+The camera angles never change between rounds.
 
 ### When the reviewer finds defects
 
