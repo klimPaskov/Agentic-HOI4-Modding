@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add six workflow lessons to the skills that own them (L-012 to L-017 in `LESSONS.md`). An interface pass starts from an assembled-screen mockup, and every capture is read against a defect checklist before it is reported. Each icon socket gets its own art, and a duplicate check is never re-baselined. Sapient armed fighters keep their weapon in hand and no two units share a library clip. Sessions in a shared checkout revert only their own hunks. A hand-drawn reference map is followed for placement and shapes, and its omissions are filled by judgment and recorded.
+
 ## 2026-11-06.1
 
 Package release `package-2026-11-06.1`. HOI4 Agent Tools stays on 4.8.0 and HOI4 Live Tools on 1.3.0, the newest published versions.
