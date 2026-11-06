@@ -30,6 +30,9 @@ STRICT = {
     "sink": 0.01,
     "death_sink": 0.01,
     "hover": 0.01,
+    "seam_edges": 0,
+    "knee_backward": 0.0,
+    "still_motion": 0.0,
 }
 
 
