@@ -369,11 +369,47 @@ DEFAULT_STYLE = {
 }
 LOOPING = {"quadruped_idle", "quadruped_walk", "quadruped_trot", "quadruped_gallop"}
 
+
+@dataclass
+class Variant:
+    """How one breed moves. Every mount of a mod gets its own, so no two mounts share a clip."""
+
+    tempo: float = 1.0  # cycle and action length multiplier (above 1 is slower)
+    stride: float = 1.0
+    flex: float = 1.0
+    spine: float = 1.0
+    head: float = 1.0
+    steps: int = 0  # above 0 holds the pose in that many steps per cycle: a stiff, jerky gait
+    rear: float = 1.0
+    collapse: str = "side"  # side, other_side, forward or crumple
+    idle: str = "calm"  # calm, paw, prance or twitch
+
+
+VARIANTS = {
+    "default": Variant(),
+    # a heavy barded destrier: slower, shorter steps, a rolling back, a low rear, it crashes forward and paws the ground
+    "heavy": Variant(tempo=1.25, stride=0.85, flex=0.8, spine=1.6, head=1.5, rear=0.75, collapse="forward", idle="paw"),
+    # a light courser: quick long strides, high knees, a tall rear, it falls on its other side and prances in place
+    "light": Variant(tempo=0.85, stride=1.25, flex=1.3, spine=0.7, head=0.8, rear=1.2, collapse="other_side", idle="prance"),
+    # a dead horse: stiff joints, jerky held poses, a nodding head, a low rear, it crumples where it stands
+    "stiff": Variant(tempo=1.1, stride=0.9, flex=0.35, spine=0.3, head=2.2, steps=8, rear=0.55, collapse="crumple", idle="twitch"),
+}
+
 Rotation = Tuple[Tuple[float, float, float], float]
 
 
+def split_style(style: str) -> Tuple[str, Variant]:
+    """`quadruped_trot@heavy` is the trot of the heavy variant. A plain style uses the default variant."""
+
+    base, _, name = style.partition("@")
+    if name and name not in VARIANTS:
+        raise ValueError(f"Unknown quadruped gait variant {name!r}; known: {', '.join(sorted(VARIANTS))}.")
+    return base, VARIANTS[name or "default"]
+
+
 def frame_count(style: str) -> int:
-    return GAITS[style].cycle_frames if style in GAITS else ROLE_FRAMES[style]
+    base, variant = split_style(style)
+    return max(8, round((GAITS[base].cycle_frames if base in GAITS else ROLE_FRAMES[base]) * variant.tempo))
 
 
 def _smooth(value: float) -> float:
@@ -407,6 +443,37 @@ def _leg_rotations(gait: Gait, t: float, end: str, side: str) -> Dict[str, List[
     return rows
 
 
+def _varied(gait: Gait, variant: Variant) -> Gait:
+    return Gait(
+        gait.cycle_frames,
+        gait.phases,
+        gait.duty,
+        gait.swing_degrees * variant.stride,
+        gait.flex_degrees * variant.flex,
+        gait.spine_degrees * variant.spine,
+        gait.head_degrees * variant.head,
+    )
+
+
+def _idle_habit(pose: Dict[str, List[Rotation]], variant: Variant, t: float) -> None:
+    """The breed's own idle: pawing the ground, prancing, or the twitching head of a dead horse."""
+
+    if variant.idle == "paw":
+        strike = max(0.0, math.sin(2 * math.pi * t * 2)) ** 2
+        pose[leg_name("Front", "Right", "Upper")] = [(X_AXIS, -24.0 * strike)]
+        pose[leg_name("Front", "Right", "Cannon")] = [(X_AXIS, 60.0 * strike)]
+        pose["Neck_01"] = [(X_AXIS, 9.0 * strike)]
+    elif variant.idle == "prance":
+        for k, (end, side) in enumerate(LEGS):
+            lift = max(0.0, math.sin(2 * math.pi * (t * 2 + k / 4))) ** 3
+            pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (45.0 if end == "Front" else -35.0) * lift)]
+        pose["Neck_01"] = [(X_AXIS, -8.0)]
+    elif variant.idle == "twitch":
+        snap = 1.0 if (t * 6) % 1.0 < 0.15 else 0.0
+        pose["Neck_01"] = [(X_AXIS, 14.0 * snap - 6.0), (Z_AXIS, 10.0 * snap)]
+        pose["Head"] = [(X_AXIS, -12.0 * snap)]
+
+
 def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]:
     """Each bone's armature-space rotations (axis, degrees) at `frame`; the key `__root_offset__` moves the Root.
 
@@ -415,11 +482,14 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
 
     names = set(layout.names())
     total = frame_count(style)
+    style, variant = split_style(style)
     t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
+    if variant.steps and style in LOOPING:
+        t = math.floor(t * variant.steps) / variant.steps
     pose: Dict[str, List[Rotation]] = {}
     has_tail = "Tail_01" in names
     if style in GAITS:
-        gait = GAITS[style]
+        gait = _varied(GAITS[style], variant)
         for end, side in LEGS:
             pose.update(_leg_rotations(gait, t, end, side))
         wave = math.sin(4 * math.pi * t)
@@ -441,8 +511,9 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         shift = 2.0 * math.sin(2 * math.pi * t)
         for end, side in LEGS:
             pose[leg_name(end, side, "Upper")] = [(X_AXIS, shift if end == "Front" else -shift)]
+        _idle_habit(pose, variant, t)
     elif style == "quadruped_charge":
-        gallop = GAITS["quadruped_gallop"]
+        gallop = _varied(GAITS["quadruped_gallop"], variant)
         cycle = (t * 2.5) % 1.0
         for end, side in LEGS:
             pose.update(_leg_rotations(gallop, cycle, end, side))
@@ -452,7 +523,7 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         pose["Neck_02"] = [(X_AXIS, 10.0 * lunge)]
         pose["Head"] = [(X_AXIS, 8.0 * lunge)]
     elif style == "quadruped_rear":
-        rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3)))
+        rise = variant.rear * _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3)))
         pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise)]
         for side in ("Left", "Right"):
             kick = 1 + 0.25 * math.sin(6 * math.pi * t + (0 if side == "Left" else 1.5))
@@ -470,12 +541,20 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         buckle = _smooth(min(1.0, t / 0.3))
         fall = _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
         settle = _smooth(max(0.0, (t - 0.65) / 0.35))
+        crumple = variant.collapse == "crumple"
         for end, side in LEGS:
-            fold = 1.0 if end == "Front" else 0.7
+            fold = (1.0 if end == "Front" else 0.7) * (1.35 if crumple else 1.0)
             pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold)]
             pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold)]
             pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.6 * settle))]
-        pose["__root_roll__"] = [(Y_AXIS, 82.0 * fall)]
+        if variant.collapse == "forward":
+            pose["__root_pitch__"] = [(X_AXIS, 38.0 * fall)]
+            pose["__root_roll__"] = [(Y_AXIS, 30.0 * fall)]
+        elif crumple:
+            pose["__root_pitch__"] = [(X_AXIS, 14.0 * fall)]
+            pose["__root_roll__"] = [(Y_AXIS, 18.0 * fall)]
+        else:
+            pose["__root_roll__"] = [(Y_AXIS, (-82.0 if variant.collapse == "other_side" else 82.0) * fall)]
         pose["Neck_01"] = [(X_AXIS, 25.0 * buckle - 30.0 * settle)]
         pose["Neck_02"] = [(Z_AXIS, 20.0 * settle)]
         pose["Head"] = [(X_AXIS, -10.0 * settle)]

@@ -207,6 +207,27 @@ class UnitTypeCatalog(unittest.TestCase):
         self.assertIn("Saddle_Node", types["mount"]["required_nodes"])
 
 
+class UniqueClips(unittest.TestCase):
+    def test_units_of_one_mod_may_not_share_a_clip(self) -> None:
+        import run_pilot
+
+        a, b = {"unit_type": "heavy_brute"}, {"unit_type": "heavy_brute"}
+        self.assertTrue(run_pilot.shared_clips({"a": a, "b": b}))
+        types = check_unit_files.load_unit_types()
+        ids = iter(range(900, 960))
+        b["clip_overrides"] = {role: {"meshy": [[next(ids), f"clip_{role}"]]} for role in types["heavy_brute"]["roles"]}
+        self.assertEqual(run_pilot.shared_clips({"a": a, "b": b}), [])
+        self.assertEqual(run_pilot.unit_clip_keys(b)["meshy:900"], "idle")
+
+    def test_mounts_need_their_own_gait_variant(self) -> None:
+        import run_pilot
+
+        horse, steed = {"unit_type": "mount"}, {"unit_type": "mount"}
+        self.assertTrue(run_pilot.shared_clips({"horse": horse, "steed": steed}))
+        horse["gait_variant"], steed["gait_variant"] = "heavy", "light"
+        self.assertEqual(run_pilot.shared_clips({"horse": horse, "steed": steed}), [])
+
+
 class UnitTypeValidation(unittest.TestCase):
     def test_overrides_are_measured_and_stay_with_their_type(self) -> None:
         import run_pilot

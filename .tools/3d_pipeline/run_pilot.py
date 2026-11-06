@@ -1526,6 +1526,9 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         format_name="fbx",
         filename=generation_download_name(spec, "fbx"),
     )
+    if spec.get("prop_sheet"):
+        # A sheet of separate props (a culture's weapons): the units that hold them take their part from this download.
+        return {"status": "generated", "generation_task": generation_id, "glb": generation_glb["file"]["relative_path"]}
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
     footprint_config = profile.get("footprint", {})
     max_runtime_footprint_m = footprint_config.get("max_runtime_footprint_m")
@@ -3359,7 +3362,10 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
     if not spec.get("required_actions"):
         actions: List[Dict[str, Any]] = []
         first_role_for_clip: Dict[int, str] = {}
+        overrides = spec.get("clip_overrides") or {}
         for role, config in unit["roles"].items():
+            # A job may pick its own clips per role, so units of one mod never share one (see unit_clip_keys).
+            config = {**config, **overrides.get(role, {})}
             row: Dict[str, Any] = {"role": role, "fps": 24, "loop": bool(config.get("loop")), "root_policy": "in_place"}
             if config.get("meshy"):
                 clip_id, clip_key = config["meshy"][0]
@@ -3372,11 +3378,41 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
             elif config.get("blender") == "seated_slump":
                 row.update(provider_action_id=None, task_type="reused_clip", reuse_role="idle", slump=True)
             else:
-                row.update(provider_action_id=None, task_type="blender_authored_skeletal", action_style=config["blender"])
+                # A mount's gait variant rides in the style (quadruped_trot@heavy), so each breed moves its own way.
+                variant = f"@{spec['gait_variant']}" if spec.get("gait_variant") else ""
+                row.update(provider_action_id=None, task_type="blender_authored_skeletal", action_style=config["blender"] + variant)
             actions.append(row)
         spec["required_actions"] = actions
     spec["_unit_type_applied"] = True
     return spec
+
+
+def unit_clip_keys(spec: Dict[str, Any]) -> Dict[str, str]:
+    """The clips one unit job animates with, as {key: role}: a Meshy library id or a Blender style and gait variant.
+
+    Roles that reuse another role's clip of the same unit add nothing, so a unit may reuse its own clips.
+    """
+
+    planned = apply_unit_type(json.loads(json.dumps(spec)))
+    keys: Dict[str, str] = {}
+    for action in planned.get("required_actions", []):
+        if action.get("provider_action_id") is not None:
+            keys.setdefault(f"meshy:{int(action['provider_action_id'])}", action["role"])
+        elif action.get("task_type") == "blender_authored_skeletal":
+            keys.setdefault(f"blender:{action.get('action_style')}", action["role"])
+    return keys
+
+
+def shared_clips(configs: Dict[str, Dict[str, Any]]) -> List[str]:
+    """Every clip that two unit jobs of one jobs file would both use; the owner wants each unit's animations its own."""
+
+    owners: Dict[str, List[str]] = {}
+    for name, spec in configs.items():
+        if not spec.get("unit_type"):
+            continue
+        for key, role in unit_clip_keys(spec).items():
+            owners.setdefault(key, []).append(f"{name} ({role})")
+    return [f"{key} is used by {', '.join(users)}" for key, users in sorted(owners.items()) if len(users) > 1]
 
 
 def verify_library_clips(spec: Dict[str, Any], client: "MeshyClient") -> Dict[str, Any]:
@@ -3837,6 +3873,12 @@ def main() -> int:
     selected_specs = [configs[item] for item in assets]
     for spec in selected_specs:
         vet_spec(spec)
+    duplicates = [line for line in shared_clips(configs) if any(f"{item} (" in line for item in assets)]
+    if duplicates:
+        raise RuntimeError(
+            "Units of one mod must not share an animation clip; give each its own with clip_overrides "
+            "(or gait_variant for a Blender mount). Nothing was submitted: " + "; ".join(duplicates)
+        )
     if phase in {"full", "candidate"}:
         preflight_selected_credits(selected_specs, phase)
     for asset in assets:
@@ -3845,7 +3887,7 @@ def main() -> int:
         if phase in {"full", "candidate"}:
             candidate = run_candidate(spec)
             results.append({"asset": asset, "candidate": candidate})
-        if phase == "candidate":
+        if phase == "candidate" or spec.get("prop_sheet"):
             continue
         if spec["asset_kind"] in STATIC_ASSET_KINDS:
             results.append({"asset": asset, "continuation": continue_static(spec)})

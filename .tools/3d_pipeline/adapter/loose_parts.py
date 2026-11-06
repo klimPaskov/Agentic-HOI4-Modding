@@ -1,12 +1,15 @@
-"""Drop or rigidly bind small loose parts of a rigged unit.
+"""Drop, rigidly bind or put in hand the small loose parts of a rigged unit.
 
 Meshy rigs a prop that hangs free of the body (a maul on a belt, a quiver) with the
 weights of whatever limbs are nearest, so it smears when they move. A rule selects
 the loose parts whose bounds lie inside a box, measured in fractions of the unit's
 height (x and y from the body's centre, z from its lowest point), and either deletes
-them or gives every vertex of the part to one bone. The largest part, the body, is
-never touched. A rule that matches nothing is an error, so a wrong box cannot pass
-silently.
+them, gives every vertex of the part to one bone, or moves the part into a hand:
+`hold` finds the part's long axis, takes the grip point `grip` of the way from its
+butt end, turns the part so it points along `direction` (unit space, -Y forward, +Z
+up) and puts the grip at the hand bone's palm in the rest pose, then binds it to that
+bone. The largest part, the body, is never touched. A rule that matches nothing is an
+error, so a wrong box cannot pass silently.
 """
 
 from __future__ import annotations
@@ -16,6 +19,7 @@ from typing import Any, Dict, List
 
 import bmesh
 import bpy
+from mathutils import Matrix, Vector
 
 AXES = ("x", "y", "z")
 MAX_EDITED_PARTS = 64
@@ -45,10 +49,15 @@ def _validate(rules: Any) -> List[Dict[str, Any]]:
     if not isinstance(rules, list) or not 1 <= len(rules) <= 8:
         raise ValueError("Loose part edits need 1 to 8 rules.")
     for rule in rules:
-        if rule.get("action") not in {"drop", "bind"}:
-            raise ValueError("Each loose part rule's action is drop or bind.")
-        if rule["action"] == "bind" and not isinstance(rule.get("bone"), str):
-            raise ValueError("A bind rule names its bone.")
+        if rule.get("action") not in {"drop", "bind", "hold"}:
+            raise ValueError("Each loose part rule's action is drop, bind or hold.")
+        if rule["action"] in {"bind", "hold"} and not isinstance(rule.get("bone"), str):
+            raise ValueError("A bind or hold rule names its bone.")
+        if rule["action"] == "hold":
+            if not 0.0 <= float(rule.get("grip", 0.15)) <= 1.0 or rule.get("butt", "high") not in {"high", "low"}:
+                raise ValueError("A hold rule's grip is a fraction from 0 to 1 and its butt end is high or low.")
+            if len(rule.get("direction", [0.0, -1.0, 0.5])) != 3:
+                raise ValueError("A hold rule's direction is three numbers.")
         box = rule.get("box", {})
         for axis in AXES:
             low, high = box.get(axis, [-10.0, 10.0])
@@ -64,6 +73,39 @@ def _inside(bounds: Dict[str, List[float]], box: Dict[str, List[float]]) -> bool
     )
 
 
+def _palm(rig: bpy.types.Object, bone: str, palm: float) -> Vector:
+    """The world position `palm` of the way along a bone in the rest pose."""
+
+    data = rig.data.bones[bone]
+    head, tail = rig.matrix_world @ data.head_local, rig.matrix_world @ data.tail_local
+    return head + (tail - head) * palm
+
+
+def _hold_part(obj: bpy.types.Object, bm: bmesh.types.BMesh, part: List[int], rule: Dict[str, Any], rig: bpy.types.Object) -> Dict[str, Any]:
+    """Move one loose part into a hand: its long axis along `direction`, the grip at the palm."""
+
+    import numpy as np
+
+    world = obj.matrix_world
+    points = np.array([list(world @ bm.verts[index].co) for index in part])
+    centre = points.mean(axis=0)
+    axis = np.linalg.svd(points - centre, full_matrices=False)[2][0]
+    if (axis[2] < 0) == (rule.get("butt", "high") == "high"):
+        axis = -axis  # axis now runs from the butt end toward the head
+    along = (points - centre) @ axis
+    butt = centre + axis * along.min()
+    length = float(along.max() - along.min())
+    grip = Vector(butt + axis * length * float(rule.get("grip", 0.15)))
+    target = Vector(rule.get("direction", [0.0, -1.0, 0.5])).normalized()
+    turn = Vector(axis).rotation_difference(target).to_matrix().to_4x4()
+    hand = _palm(rig, rule["bone"], float(rule.get("palm", 0.6)))
+    move = Matrix.Translation(hand) @ turn @ Matrix.Translation(-grip)
+    local = world.inverted() @ move @ world
+    for index in part:
+        bm.verts[index].co = local @ bm.verts[index].co
+    return {"length": length, "grip_world": list(hand), "direction": list(target)}
+
+
 def edit_loose_parts(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -74,6 +116,11 @@ def edit_loose_parts(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     meshes = [obj for obj in h["mesh_objects"]() if any(mod.type == "ARMATURE" for mod in obj.modifiers)]
     if not meshes:
         raise RuntimeError("Loose part edits need a skinned mesh.")
+    rigs = {mod.object for obj in meshes for mod in obj.modifiers if mod.type == "ARMATURE" and mod.object is not None}
+    rig = next(iter(rigs)) if len(rigs) == 1 else None
+    for rule in rules:
+        if rule["action"] in {"bind", "hold"} and (rig is None or rule["bone"] not in rig.data.bones):
+            raise RuntimeError(f"Bone {rule['bone']!r} is not in the unit's one armature.")
     corners = [obj.matrix_world @ vertex.co for obj in meshes for vertex in obj.data.vertices]
     low = [min(c[i] for c in corners) for i in range(3)]
     high = [max(c[i] for c in corners) for i in range(3)]
@@ -102,13 +149,18 @@ def edit_loose_parts(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
             if rule["action"] == "drop":
                 drop.extend(part)
             else:
+                if rule["action"] == "hold":
+                    edited[-1]["hold"] = _hold_part(obj, bm, part, rule, rig)
+                # Weights go through the bmesh deform layer, so the one write below keeps them with the geometry.
                 group = obj.vertex_groups.get(rule["bone"]) or obj.vertex_groups.new(name=rule["bone"])
-                for other in obj.vertex_groups:
-                    if other != group:
-                        other.remove(part)
-                group.add(part, 1.0, "REPLACE")
+                deform = bm.verts.layers.deform.verify()
+                for index in part:
+                    weights = bm.verts[index][deform]
+                    weights.clear()
+                    weights[group.index] = 1.0
         if drop:
             bmesh.ops.delete(bm, geom=[bm.verts[index] for index in drop], context="VERTS")
+        if any(item["object"] == obj.name for item in edited):
             bm.to_mesh(obj.data)
             obj.data.update()
         bm.free()
@@ -125,5 +177,5 @@ def edit_loose_parts(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "unit_height": height,
         "edited_parts": edited,
         "geometry": h["geometry_metrics"](),
-        "policy": "the largest part is kept; a part fully inside a rule's box is dropped or bound to one bone",
+        "policy": "the largest part is kept; a part fully inside a rule's box is dropped, bound to one bone, or put in a hand and bound to it",
     }

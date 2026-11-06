@@ -217,7 +217,8 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     checkpoint = h["within"](job, payload["checkpoint_rel"], allow_missing=True)
     role = str(payload.get("action_role") or "").casefold()
     style = str(payload.get("action_style") or ql.DEFAULT_STYLE.get(role, ""))
-    if style not in ql.GAITS and style not in ql.ROLE_FRAMES:
+    base, _variant = ql.split_style(style)
+    if base not in ql.GAITS and base not in ql.ROLE_FRAMES:
         raise ValueError(f"Unknown quadruped action style {style!r} for role {role!r}.")
     action_name = h["safe_name"](str(payload.get("action_name") or f"quadruped_{role}"))
     bpy.ops.wm.open_mainfile(filepath=str(blend))
@@ -229,7 +230,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     layout = ql.build_layout(landmarks)
     meshes = h["mesh_objects"]()
     total = ql.frame_count(style)
-    loop = style in ql.LOOPING
+    loop = base in ql.LOOPING
     last = total if loop else total - 1
     scene = bpy.context.scene
     scene.render.fps = FPS

@@ -13,7 +13,7 @@ from pathlib import Path
 
 import bmesh
 import bpy
-from mathutils import Matrix
+from mathutils import Matrix, Vector
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT / "adapter"))
@@ -35,7 +35,7 @@ def make_unit(path: Path) -> None:
     working.objects.link(rig)
     bpy.context.view_layer.objects.active = rig
     bpy.ops.object.mode_set(mode="EDIT")
-    for name, head, tail in (("Hips", (0, 0, 1.0), (0, 0, 1.2)), ("LeftFoot", (0.2, 0, 0.1), (0.2, -0.1, 0.0)), ("RightFoot", (-0.2, 0, 0.1), (-0.2, -0.1, 0.0))):
+    for name, head, tail in (("Hips", (0, 0, 1.0), (0, 0, 1.2)), ("LeftFoot", (0.2, 0, 0.1), (0.2, -0.1, 0.0)), ("RightFoot", (-0.2, 0, 0.1), (-0.2, -0.1, 0.0)), ("RightHand", (-0.5, 0, 1.1), (-0.6, 0, 0.9))):
         bone = rig_data.edit_bones.new(name)
         bone.head, bone.tail = head, tail
     bpy.ops.object.mode_set(mode="OBJECT")
@@ -87,6 +87,21 @@ def main() -> None:
         expect(dropped["edited_parts"][0]["action"] == "drop", "the prop must be dropped")
         bpy.ops.wm.open_mainfile(filepath=str(job / "dropped.blend"))
         expect(len(bpy.data.objects["test_unit"].data.vertices) == BODY_VERTICES, "only the body remains")
+        held = run(job, "held.blend", [{"action": "hold", "bone": "RightHand", "box": between_feet, "grip": 0.1, "butt": "high", "direction": [0, -1, 0]}])
+        hold = held["edited_parts"][0]["hold"]
+        expect(abs(hold["length"] - 0.5) < 0.02, f"the prop's long axis is 0.5 long, measured {hold['length']}")
+        bpy.ops.wm.open_mainfile(filepath=str(job / "held.blend"))
+        unit = bpy.data.objects["test_unit"]
+        names = {group.index: group.name for group in unit.vertex_groups}
+        prop = [unit.matrix_world @ unit.data.vertices[i].co for i in range(BODY_VERTICES, 16)]
+        ys = [p.y for p in prop]
+        expect(max(ys) - min(ys) > 0.45, "the prop now lies along -Y")
+        palm = Vector((-0.56, 0.0, 0.98))
+        expect(min((p - palm).length for p in prop) < 0.1, "the grip end sits at the palm")
+        expect(max(ys) < 0.1 and min(ys) < -0.35, "the head points forward (-Y) from the grip")
+        for vertex in unit.data.vertices[BODY_VERTICES:]:
+            weights = {names[item.group]: item.weight for item in vertex.groups if item.weight > 0}
+            expect(weights == {"RightHand": 1.0}, f"held vertex {vertex.index} weights {weights}")
         try:
             run(job, "missed.blend", [{"action": "drop", "box": {"x": [0.4, 0.5]}}])
         except RuntimeError as error:
