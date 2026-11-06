@@ -219,6 +219,17 @@ class MotionRules(unittest.TestCase):
         self.assertTrue(same[0].file.endswith("u_retreat.anim"))
         self.assertIn("u_move.anim", same[0].message)
 
+    def test_a_seated_rider_may_reuse_idle_for_move_and_retreat(self) -> None:
+        rider = {"roles": {}, "entity_template": "rider"}
+        clips = {"idle": (20, walk), "move": (20, walk), "retreat": (20, walk), "attack": (20, strike), "defend": (20, walk)}
+        with tempfile.TemporaryDirectory() as folder:
+            write_unit(Path(folder), "u", clips)
+            findings, _facts = check_unit_files.check_files(Path(folder), rider, None, limits=LIMITS)
+        same = [item for item in findings if item.rule == "UNIT-ANIM-SAME"]
+        # idle, move and retreat are one clip by design; defend repeating it is still a defect.
+        self.assertEqual([Path(item.file).name for item in same], ["u_idle.anim", "u_move.anim", "u_retreat.anim"])
+        self.assertTrue(all("u_defend.anim" in item.message for item in same))
+
     def test_old_calibration_files_skip_the_new_rules(self) -> None:
         limits = {key: value for key, value in LIMITS.items() if key not in ("seam_edges", "still_motion")}
         with tempfile.TemporaryDirectory() as folder:

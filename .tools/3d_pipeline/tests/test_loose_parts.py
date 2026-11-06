@@ -104,6 +104,14 @@ class LooseParts(unittest.TestCase):
         self.assertEqual(loose, [])
         self.assertEqual(len(facts["motion"]["u.mesh"]["loose_parts"]), 6)
 
+    def test_the_archer_case_ninety_plates_on_the_body_pass(self) -> None:
+        # A smart-topology archer welds to 96 parts: a body and many small plates, all skinned and resting on it.
+        plates = [cube((0.0, 1.0 + 0.008 * k, 0.05), 0.02, [("Spine" if k % 2 else "Hips", 1.0)]) for k in range(45)]
+        plates += [cube((0.15, 0.5 + 0.009 * k, 0.04), 0.02, [("LeftLeg" if k < 22 else "LeftUpLeg", 1.0)]) for k in range(45)]
+        loose, facts = findings(plates)
+        self.assertEqual(loose, [])
+        self.assertEqual(len(facts["motion"]["u.mesh"]["loose_parts"]), 10)  # the facts keep the ten farthest
+
     def test_the_selection_box_is_not_a_loose_part(self) -> None:
         box = cube((0.0, 0.9, 0.0), 1.8, [])
         loose, facts = findings([], collision=box)
