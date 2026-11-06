@@ -23,20 +23,8 @@ different parent asset folder.
 
 ## 1. Core purpose
 
-The goal is to turn asset needs from a feature spec into real HOI4-ready files.
-
-The asset workflow must produce:
-
-- source artwork
-- processed PNG previews
-- final DDS files
-- correct file placement
-- sprite handoff notes for the main agent
-- documentation of what was created
-
-Do not leave assets as loose generated or downloaded images.
-
-If an asset is used by the feature, it must be processed, placed, documented, and handed off so the main agent can wire it cleanly.
+The goal is to turn asset needs from a feature spec into real HOI4-ready files: source artwork, processed PNG previews, final DDS files in the correct places, sprite handoff notes for the main agent, and documentation of what was created.
+Never leave an asset used by the feature as a loose generated or downloaded image; process, place, document, and hand it off so the main agent can wire it cleanly.
 
 ## 2. When to use this skill
 
@@ -189,13 +177,13 @@ Read [`references/reference-asset-examples.md`](references/reference-asset-examp
 
 ## 5. Generated artwork rules
 
-Do not create core artwork from simple shapes, placeholders, contact sheets, layout-only mockups, empty UI boxes, or generated charts. Final art must be real generated, sourced, or user-provided artwork, not circles, rectangles, lines, gradients, geometric diagrams, or other primitive-shape stand-ins.
+Do not create core artwork from simple shapes, placeholders, contact sheets, layout-only mockups, empty UI boxes, or generated charts. Final art must be real generated, sourced, or user-provided artwork, not circles, rectangles, lines, gradients, geometric diagrams, or other primitive-shape stand-ins. Every icon socket gets its own meaning-specific art: a shared placeholder or fallback plate is a defect, and the exact-duplicate check (such as the `hoi4.image_audit` reuse report) is never re-baselined or aliased, except for one control shown in two places with the reason recorded.
 
 For custom feature images, this rule is strict: final art must be a real scene, archival image, painted illustration, or generated documentary-style image. Do not use symbolic diagrams, flat icons, abstract geometry, title cards, or UI-like compositions as the final custom feature image unless the user explicitly requests that exact visual approach and the exception is documented.
 
 Use `hoi4-imagegen` for generated artwork (canvas, alpha, margins, naming, DDS or TGA export, sprite handoff); read its skill first.
 
-Generated artwork must be real source art that can be processed into the final game asset. Final assets must be clean: must not have sticking artifacts, an icon is centered in the image, etc. 
+Final assets must be clean: no stray artifacts, and an icon centred in its image.
 ## 5.1 Icon creation rules
 
 Small gameplay icons must be readable at their final in-game size.
@@ -283,9 +271,7 @@ Use [hoi4-scripted-gui](../hoi4-scripted-gui/SKILL.md) for the accepted referenc
 
 ## 7. Asset package structure
 
-When creating a new asset package, use a stable working folder.
-
-Recommended working structure:
+Use a stable working folder for a new asset package, structured like this:
 
 ```text
 docs/assets/<feature_slug>/
@@ -297,9 +283,7 @@ docs/assets/<feature_slug>/
  notes/
 ```
 
-Final DDS files must be moved into the correct gameplay asset folders.
-
-Do not keep final assets under `docs/assets/`.
+Move final DDS files into the correct gameplay asset folders; never keep final assets under `docs/assets/`.
 
 ## 8. Manifest requirements
 
@@ -645,26 +629,10 @@ Animated leader portrait packages must include:
 
 For UI panels, investigation windows, ledgers, and similar assets, separate artwork from functional UI.
 
-Use `hoi4.image_interface` (family `gui_texture` or `super_event`, with the canvas the mod defines) for:
-
-- illustrated background panels
-- thematic decorations
-- symbolic seals
-- propaganda visuals
-- report board visual elements
-
-Use normal UI editing for:
-
-- exact layout slicing
-- cropping
-- button states
-- state variants
-- meter fills
-- final export preparation
-
-Do not let generated art decide exact interactive layout.
-
-The implementation must still follow HOI4 UI rules and existing repo patterns.
+Use `hoi4.image_interface` (family `gui_texture` or `super_event`, with the canvas the mod defines) for illustrated background panels, thematic decorations, symbolic seals, propaganda visuals and report board elements.
+Use normal UI editing for exact layout slicing, cropping, button states, state variants, meter fills and final export preparation.
+Do not let generated art decide exact interactive layout; the implementation still follows HOI4 UI rules and existing repo patterns.
+Before a multi-window interface pass, use the assembled-screen mockup that `hoi4-scripted-gui` requires as the shared target for every window's art.
 
 ## Decision category and scripted GUI visual packs
 
@@ -672,25 +640,7 @@ For a decision category with a scripted GUI or mechanic window, the asset handof
 
 When the asset package belongs to a focus-tree or scripted-GUI change, the corresponding MCP inspect and render evidence is mandatory before and after placement. For technology or doctrine icons, mandatory evidence uses `hoi4.tech_inspect` in `explain` or `lint` mode to verify sprite and texture references, then the `assets` or affected folder view in `hoi4.tech_render`, followed by `hoi4.tech_inspect` with `mode: "compare"` after source edits. If a required route is unavailable, record the exact blocker and leave the linked asset surface unresolved; source-only review is not equivalent. This skill still owns source art, processing, DDS conversion, placement, manifests, and `.gfx`/`.gui` handoff.
 
-Useful assets include:
-
-- category icon
-- category header plate
-- background panel
-- tab buttons
-- normal, hover, selected, locked, disabled, and warning button states
-- progress bars and fill variants
-- meter frames
-- target cards
-- status seals
-- warning overlays
-- animated glow overlays
-- animated particle overlays
-- animated float emblems
-- static fallback for every animated element
-- tooltip icon set
-- close and open buttons
-- mechanic-specific leader, council, or envoy portrait
+Useful assets include the category icon and header plate, background panel, tab buttons, normal, hover, selected, locked, disabled and warning button states, progress bars and fill variants, meter frames, target cards, status seals, warning overlays, animated glow, particle and float overlays (each with a static fallback), the tooltip icon set, close and open buttons, and a mechanic-specific leader, council or envoy portrait.
 
 The asset prompt should state which sprites are decorative and which represent mechanic state. State-driven sprites need clear names that match the mechanic value or route state.
 
@@ -806,15 +756,7 @@ The handoff must include:
 
 If the main agent already registered `.gfx` sprites or texture paths before requesting art, the asset subagent must follow those filenames, sprite names, DDS paths, and target sizes exactly. It should only propose names or paths when they were not provided.
 
-The main agent then:
-
-1. Finds the correct existing `.gfx` file if one exists.
-2. Follows the existing naming and formatting pattern.
-3. Adds the sprite definition.
-4. Points the texture file to the final DDS path.
-5. Keeps sprite names stable.
-6. Updates localisation, GUI, event, focus, idea, or decision references that use the sprite.
-7. Updates docs and any explicitly scoped external records when relevant.
+The main agent then finds the correct existing `.gfx` file, follows its naming and formatting pattern, adds the sprite definition pointing at the final DDS path, keeps sprite names stable, updates the localisation, GUI, event, focus, idea, or decision references that use the sprite, and updates docs and any explicitly scoped external records.
 
 When wiring feature-owned sprite-backed art, the texture path should point to the feature-scoped folder for that asset category. If an asset must stay root-only, document the engine reason in the handoff or manifest.
 
@@ -824,43 +766,19 @@ Do not create a new `.gfx` file if an existing one is clearly the right place. I
 
 When generated or sourced assets are part of a feature or mechanic, update the relevant docs.
 
-The docs should mention:
-
-- what assets exist
-- where the DDS files live
-- which `.gfx` file the main agent should use or has used
-- which sprite names are used or proposed
-- which assets are placeholders, if any
-- what still needs final art, if anything
-
-Do not leave the docs describing old or missing assets.
+The docs should mention what assets exist, where the DDS files live, which `.gfx` file the main agent should use or has used, which sprite names are used or proposed, which assets are placeholders, and what still needs final art. Do not leave the docs describing old or missing assets.
 
 ## 27. Contact sheets
 
 When an asset package contains many generated or sourced images, create a contact sheet for review.
 
-Contact sheets are for review only.
-
-Do not use contact sheets as final game assets.
-
-The contact sheet should make it easy to see:
-
-- asset name
-- asset type
-- selected final version
-- rejected alternatives if relevant
+Contact sheets are for review only and never final game assets. They should make the asset name, type, selected final version, and any rejected alternatives easy to see.
 
 ## 28. Handling blocked assets
 
 If an asset cannot be created or processed cleanly, mark it as blocked.
 
-Record:
-
-- asset name
-- reason blocked
-- what was attempted
-- what is needed from the user
-- whether implementation can continue without it
+Record the asset name, reason blocked, what was attempted, what is needed from the user, and whether implementation can continue without it.
 
 Do not invent a substitute asset unless the user explicitly approves it. A "substitute and report" answer to the fallback question of the upfront consultation is that approval.
 

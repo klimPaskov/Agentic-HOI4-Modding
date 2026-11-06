@@ -1,6 +1,6 @@
 # Scripted GUI visual and usability review
 
-Use this checklist when designing a native mapping and reviewing baseline, intermediate, and post-change MCP artifacts. Inspect the full composition at native output size and detailed crops for text and edges; record measurements when they reveal or verify a defect. Every applicable visible defect blocks visual completion regardless of source-edit method or optional rewrite outcome. Do not resize the preview or change UI scale to disguise a layout problem.
+Use this checklist when designing a native mapping and reviewing baseline, intermediate, and post-change MCP artifacts. Inspect the full composition at native output size and detailed crops for text and edges; record measurements when they reveal or verify a defect. Every applicable visible defect blocks visual completion regardless of source-edit method or optional rewrite outcome, and each capture must be read against this checklist before it is reported. Do not resize the preview or change UI scale to disguise a layout problem.
 
 ## Geometry, typography, and control bounds
 
@@ -14,7 +14,8 @@ Distinguish the source texture canvas, painted or alpha-visible shape, designed 
 | Margins and rhythm | Use consistent outer margins, inner padding, row pitch, column gutters, header gaps, card or button sizes, and divider spacing within the same family. |
 | Alignment and symmetry | Align related edges, centers, baselines, and paired controls; preserve intentional asymmetry from the reference and correct unexplained imbalance. |
 | Scaling and anchoring | Confirm parent-relative placement and usable bounds across the declared resolution and UI-scale matrix; art, text, borders, and hitboxes must remain aligned without distortion or unreadable shrinkage. |
-| Clipping and overflow | Inspect container and scroll boundaries, text boxes, list rows, panels, and tooltips; no truncated labels, cut glyphs, hidden costs, half rows, or controls outside their intended region. |
+| Clipping and overflow | Inspect container and scroll boundaries, text boxes, list rows, panels, and tooltips; no truncated labels, cut glyphs, hidden costs, half rows, or controls outside their intended region. Tab and button labels fit their faces, row labels do not overlap buttons, icons or each other, and text is not cut at the end of a bar. |
+| Content fit | No placeholder or silhouette art reused across surfaces, no large empty panels or empty frames at the screen edge or below the map view, and no vanilla names or headings foreign to the setting (real-world places, modern institutions). |
 | Contrast and font consistency | Match the inspected HOI4 font family and hierarchy; retain readable text and meaningful non-colour state cues against art in every state. |
 
 Use actual native properties documented by the installed game and existing consumers. Do not invent CSS-style alignment fields or assume a sprite's scale transforms label metrics and hit geometry identically. If native button text cannot meet the layout, use a proven native text and control composition with verified click-through and state synchronization; do not leave a second painted label underneath.
