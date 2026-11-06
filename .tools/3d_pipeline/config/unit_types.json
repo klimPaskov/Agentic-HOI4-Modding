@@ -336,12 +336,12 @@
         "retreat": {
           "meshy": [
             [
-              674,
-              "Stumble_Walk_inplace"
-            ],
-            [
               637,
               "Injured_Walk_inplace"
+            ],
+            [
+              645,
+              "Limping_Walk_inplace"
             ]
           ],
           "loop": true
@@ -422,12 +422,12 @@
         "retreat": {
           "meshy": [
             [
-              674,
-              "Stumble_Walk_inplace"
-            ],
-            [
               637,
               "Injured_Walk_inplace"
+            ],
+            [
+              645,
+              "Limping_Walk_inplace"
             ]
           ],
           "loop": true
@@ -512,8 +512,8 @@
               "Elderly_Shaky_Walk_inplace"
             ],
             [
-              674,
-              "Stumble_Walk_inplace"
+              650,
+              "Mummy_Stagger_inplace"
             ]
           ],
           "loop": true

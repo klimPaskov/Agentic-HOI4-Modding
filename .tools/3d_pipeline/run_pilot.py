@@ -19,6 +19,7 @@ REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from blender_client import BlenderAdapterClient  # noqa: E402
+from lib.mcp_stdio import MCPRouteError  # noqa: E402
 from lib.paths import (  # noqa: E402
     append_history,
     dds_converter,
@@ -73,6 +74,7 @@ from lib.reuse import (
     BLOCKING_STATES,
     find_other_job_result,
     sibling_jobs,
+    reconcile_submission,
     unreconciled_submissions,
 )
 from meshy_client import (  # noqa: E402
@@ -2065,26 +2067,7 @@ def humanoid_provider_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
                 f"Required action {role} has no provider action id or Blender authoring route."
             )
         stage = animation_stage_for(spec, role)
-        animation_id = provider_task(
-            client,
-            job,
-            stage,
-            task_type="animation",
-            estimate=spec["animation_estimate_credits"],
-            input_stage=rig_stage,
-            create=lambda action_id=action["provider_action_id"]: client.animate(
-                rig_task_id=rig_id,
-                action_id=action_id,
-                estimate_credits=spec["animation_estimate_credits"],
-            ),
-            request=paid_request(
-                spec,
-                "animation",
-                "meshy_animate",
-                animate_arguments(rig_id, action["provider_action_id"], None),
-                role=role,
-            ),
-        )
+        animation_id = animate_library_clip(client, job, spec, action, stage, rig_stage, rig_id)
         animation_downloads[role] = download_once(
             client,
             job,
@@ -3421,6 +3404,70 @@ def verify_library_clips(spec: Dict[str, Any], client: "MeshyClient") -> Dict[st
         action["provider_action_id"], action["library_key"] = int(chosen[0]), chosen[1]
         report[action["role"]] = {"action_id": int(chosen[0]), "key": chosen[1]}
     return report
+
+
+RETIRED_CLIP_TEXT = "animation is no longer available"
+
+
+def animate_library_clip(
+    client: MeshyClient, job: Path, spec: Dict[str, Any], action: Dict[str, Any], stage: str, rig_stage: str, rig_id: str
+) -> str:
+    """Animate one role, moving to the role's next library candidate when Meshy refuses a retired clip.
+
+    Meshy keeps some retired clips in its library listing but refuses to animate them, so the free key
+    check cannot catch them. A refusal creates no task and costs nothing; any other error is raised.
+    """
+
+    candidates = action.get("library_candidates") or [[action["provider_action_id"], action.get("library_key", "")]]
+    ids = [int(item[0]) for item in candidates]
+    start = ids.index(int(action["provider_action_id"])) if int(action["provider_action_id"]) in ids else 0
+    retired = set()
+    history = job / "history.jsonl"
+    for line in history.read_text(encoding="utf-8").splitlines() if history.is_file() else []:
+        row = json.loads(line)
+        if row.get("state") == "provider_clip_retired" and row.get("event") == stage:
+            retired.add(int(row.get("details", {}).get("refused_action_id", -1)))
+    for index in range(start, len(candidates)):
+        action_id, key = int(candidates[index][0]), str(candidates[index][1])
+        if action_id in retired and index + 1 < len(candidates):
+            continue
+        request = paid_request(
+            spec, "animation", "meshy_animate", animate_arguments(rig_id, action_id, None), role=action["role"]
+        )
+        try:
+            task = provider_task(
+                client,
+                job,
+                stage,
+                task_type="animation",
+                estimate=spec["animation_estimate_credits"],
+                input_stage=rig_stage,
+                create=lambda action_id=action_id: client.animate(
+                    rig_task_id=rig_id,
+                    action_id=action_id,
+                    estimate_credits=spec["animation_estimate_credits"],
+                ),
+                request=request,
+            )
+        except MCPRouteError as error:
+            if RETIRED_CLIP_TEXT not in str(error):
+                raise
+            # Meshy answered 400 Invalid request: no task exists, so release the reservation.
+            for entry in unreconciled_submissions([job], request.fingerprint):
+                reconcile_submission(entry["file"], note=f"Meshy refused retired library clip {action_id} ({key}); no task was created")
+            if index + 1 == len(candidates):
+                raise
+            append_history(
+                job,
+                state="provider_clip_retired",
+                event=stage,
+                actor="meshy_mcp",
+                details={"refused_action_id": action_id, "refused_key": key, "next": list(candidates[index + 1]), "credits": 0},
+            )
+            continue
+        action["provider_action_id"], action["library_key"] = action_id, key
+        return task
+    raise RuntimeError(f"No library clip left for the {action['role']} role.")
 
 
 def glb_animation_name(path: Path) -> str:

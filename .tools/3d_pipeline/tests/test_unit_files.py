@@ -270,5 +270,50 @@ class JobStatus(unittest.TestCase):
                 run_pilot.resolve_job_root = original
 
 
+class RetiredClip(unittest.TestCase):
+    def test_a_refused_clip_falls_back_and_stays_skipped(self) -> None:
+        import run_pilot
+        from lib.mcp_stdio import MCPRouteError
+
+        submitted, reconciled = [], []
+
+        def provider_task(client, job, stage, *, request, **_kwargs):
+            submitted.append(request.action_id)
+            if request.action_id == 674:
+                raise MCPRouteError("Meshy refused the request: Error: Invalid request. This animation is no longer available.")
+            return f"task-{request.action_id}"
+
+        class Request:
+            def __init__(self, action_id: int) -> None:
+                self.action_id, self.fingerprint = action_id, f"fp-{action_id}"
+
+        patches = {
+            "provider_task": provider_task,
+            "paid_request": lambda spec, kind, tool, arguments, role: Request(arguments["action_id"]),
+            "unreconciled_submissions": lambda jobs, fingerprint: [{"file": fingerprint}],
+            "reconcile_submission": lambda file, note: reconciled.append(file),
+        }
+        originals = {name: getattr(run_pilot, name) for name in patches}
+        try:
+            for name, value in patches.items():
+                setattr(run_pilot, name, value)
+            with tempfile.TemporaryDirectory() as name:
+                job = Path(name)
+                spec = {"animation_estimate_credits": 3}
+                action = {"role": "retreat", "provider_action_id": 674, "library_key": "Stumble_Walk_inplace",
+                          "library_candidates": [[674, "Stumble_Walk_inplace"], [637, "Injured_Walk_inplace"]]}
+                task = run_pilot.animate_library_clip(None, job, spec, action, "animation_retreat", "rig", "rig-1")
+                self.assertEqual((task, action["provider_action_id"], action["library_key"]), ("task-637", 637, "Injured_Walk_inplace"))
+                self.assertEqual((submitted, reconciled), ([674, 637], ["fp-674"]))
+                resumed = dict(action, provider_action_id=674)
+                run_pilot.animate_library_clip(None, job, spec, resumed, "animation_retreat", "rig", "rig-1")
+                self.assertEqual(submitted[2:], [637])
+                with self.assertRaises(MCPRouteError):
+                    run_pilot.animate_library_clip(None, job, spec, dict(action, library_candidates=[[674, "x"]], provider_action_id=674), "other", "rig", "rig-1")
+        finally:
+            for name, value in originals.items():
+                setattr(run_pilot, name, value)
+
+
 if __name__ == "__main__":
     unittest.main()
