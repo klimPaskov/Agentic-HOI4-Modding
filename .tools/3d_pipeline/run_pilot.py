@@ -92,6 +92,7 @@ from meshy_client import (  # noqa: E402
     task_id_from,
 )
 from pack_pdx_material import (  # noqa: E402
+    ensure_gltf_metallic_roughness_map,
     pack_pdx_normal_map,
     pack_pdx_specular_map,
     prepare_texture_source_rels,
@@ -199,6 +200,10 @@ def resolve_generation(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[st
     return validate_generation(generation)
 
 
+def is_smart_topology(spec: Dict[str, Any]) -> bool:
+    return (spec.get("generation") or {}).get("model_type") == "smart-topology"
+
+
 def topology_options(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
     """How Blender prepares the provider mesh before rigging.
 
@@ -207,7 +212,7 @@ def topology_options(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str,
     split at its UV seams, which turns whole islands inside out: the ZIN yeti went from 11 to 22,486
     flipped edges and showed holes over 7% of its silhouette.
     """
-    if (spec.get("generation") or {}).get("model_type") == "smart-topology":
+    if is_smart_topology(spec):
         return {"preserve_geometry_topology": True, "target_triangles": 0}
     # Weld the seams before reducing, or the reduction tears the mesh apart along them.
     return {
@@ -1134,6 +1139,10 @@ def select_geometry_textures(job: Path, spec: Dict[str, Any], model_rel: str) ->
     """
 
     rels = provider_texture_rels(model_rel)
+    specular = job / rels["specular"]
+    if not specular.is_file() and all(specular.with_name(name).is_file() for name in ("metallic.png", "roughness.png")):
+        # Smart-topology generations download metallic and roughness as two maps of the same UV layout.
+        ensure_gltf_metallic_roughness_map(job, rels["specular"])
     missing = [rel for rel in rels.values() if not (job / rel).is_file()]
     if missing:
         raise FileNotFoundError(
@@ -1167,6 +1176,7 @@ def gate_texture_lineage(
         geometry_rel,
         provider_sources,
         report_rel=f"blender/reports/texture_lineage_{stem}.json",
+        lineage_model_rel=spec.get("texture_lineage_model_rel"),
     )
     spec.setdefault("_texture_lineage", {})[stem] = report
     return report
@@ -1565,7 +1575,13 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         target_height_m=spec.get("blender_target_height_m", spec["target_height_m"]),
         runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
         runtime_stem=f"{spec['runtime_stem']}_candidate",
-        target_triangles=profile["triangle_range"]["working_triangle_target"],
+        # A smart-topology generation is gated as it arrives; another is reduced for the preview only,
+        # because the route replaces it with a Meshy remesh before anything is exported.
+        **(
+            topology_options(spec, profile)
+            if is_smart_topology(spec)
+            else {"target_triangles": profile["triangle_range"]["working_triangle_target"]}
+        ),
         vanilla_reference=vanilla_reference,
         texture_source_rels=texture_sources,
         max_runtime_footprint_m=max_runtime_footprint_m,

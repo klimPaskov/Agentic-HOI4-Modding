@@ -167,6 +167,7 @@ def verify_texture_lineage(
     provider_sources: Dict[str, str],
     *,
     report_rel: str,
+    lineage_model_rel: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Prove the provider sources belong to the model that supplies the exported geometry.
 
@@ -187,6 +188,12 @@ def verify_texture_lineage(
     sibling_dir = geometry.with_name(f"{geometry.stem}_textures")
     roles: Dict[str, Any] = {}
     problems: List[str] = []
+    # A rig or clip built straight from a model embeds that model's images unchanged, while the maps
+    # downloaded beside the model are encoded apart. Those maps belong to the geometry when the model
+    # they came with embeds the same image.
+    lineage_model = (job / lineage_model_rel).resolve() if lineage_model_rel else None
+    lineage_embedded = embedded_images(lineage_model) if lineage_model and lineage_model.is_file() else {}
+    lineage_dir = lineage_model.with_name(f"{lineage_model.stem}_textures") if lineage_model else None
     for role in ROLE_FILES:
         rel = provider_sources.get(role)
         if not rel:
@@ -211,6 +218,14 @@ def verify_texture_lineage(
             entry["status"], entry["matched_via"] = "pass", "embedded_bytes"
         elif bound_sha == downloaded_sha:
             entry["status"], entry["matched_via"] = "pass", "downloaded_with_model"
+        elif (
+            lineage_dir is not None
+            and bound.parent == lineage_dir.resolve()
+            and embedded_hashes
+            and set(embedded_hashes) & {sha256_bytes(raw) for raw in lineage_embedded.get(role, [])}
+        ):
+            entry["status"], entry["matched_via"] = "pass", "same_embedded_image_as_model"
+            entry["lineage_model_rel"] = lineage_model_rel
         elif not embedded_hashes and downloaded_sha is None:
             entry["matched_via"] = None
             if role == "diffuse":

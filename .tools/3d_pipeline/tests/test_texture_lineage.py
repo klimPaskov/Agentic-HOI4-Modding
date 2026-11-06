@@ -298,6 +298,55 @@ class HumanoidRouteTests(unittest.TestCase):
         self.assertIn("/generation_model_textures/", self.captured["texture_source_rels"]["diffuse"])
 
 
+class ClipsBuiltFromTheModel(unittest.TestCase):
+    """A rig or clip made straight from a model embeds the model's images, not its re-encoded downloads."""
+
+    def check(self, clip_images, with_model):
+        with tempfile.TemporaryDirectory() as temporary:
+            job = Path(temporary).resolve()
+            write_glb(job / "provider/downloads/generation_model.glb", maps(GEN_RGB))
+            # The maps downloaded beside the model carry the same picture in other bytes (a 4x4 encode).
+            write_textures(job, "provider/downloads/generation_model.glb",
+                           {"diffuse": png(GEN_RGB, (4, 4)), "normal": png((128, 128, 255), (4, 4)), "specular": png((0, 90, 40), (4, 4))})
+            write_glb(job / "provider/downloads/animation_idle_provider.glb", clip_images)
+            folder = "provider/downloads/generation_model_textures/"
+            sources = {role: folder + name for role, name in lineage.ROLE_FILES.items()}
+            return lineage.verify_texture_lineage(
+                job, "provider/downloads/animation_idle_provider.glb", sources, report_rel="blender/reports/t.json",
+                lineage_model_rel="provider/downloads/generation_model.glb" if with_model else None,
+            )
+
+    def test_a_clip_with_the_models_embedded_images_takes_its_downloaded_maps(self) -> None:
+        report = self.check(maps(GEN_RGB), with_model=True)
+        self.assertEqual({entry["matched_via"] for entry in report["roles"].values()}, {"same_embedded_image_as_model"})
+
+    def test_without_the_model_or_with_other_images_the_gate_still_fails(self) -> None:
+        with self.assertRaises(lineage.TextureLineageError):
+            self.check(maps(GEN_RGB), with_model=False)
+        with self.assertRaises(lineage.TextureLineageError):
+            self.check(maps(REMESH_RGB), with_model=True)
+
+
+class SmartTopologyMaps(unittest.TestCase):
+    def test_separate_metallic_and_roughness_maps_are_packed_for_the_same_model(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            job = Path(temporary).resolve()
+            folder = job / "provider/downloads/generation_model_textures"
+            folder.mkdir(parents=True)
+            Image.new("RGB", (8, 8), (10, 20, 30)).save(folder / "base_color.png")
+            Image.new("RGB", (8, 8), (128, 128, 255)).save(folder / "normal.png")
+            Image.new("L", (8, 8), 40).save(folder / "metallic.png")
+            Image.new("L", (8, 8), 200).save(folder / "roughness.png")
+            spec = {}
+            rels = run_pilot.select_geometry_textures(job, spec, "provider/downloads/generation_model.glb")
+            with Image.open(job / rels["specular"]) as packed:
+                self.assertEqual(packed.getpixel((0, 0)), (0, 200, 40, 255))
+            (folder / "roughness.png").unlink()
+            (folder / "metallic_roughness.png").unlink()
+            with self.assertRaises(FileNotFoundError):
+                run_pilot.select_geometry_textures(job, {}, "provider/downloads/generation_model.glb")
+
+
 class RebuildTests(unittest.TestCase):
     """Repair a finished job's DDS from files on disk: no Meshy call, no Blender."""
 
