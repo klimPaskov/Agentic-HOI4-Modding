@@ -1,47 +1,58 @@
-"""Page format shared by the wiki snapshot tools: kit blocks, kit pages and review markers.
+"""Page format shared by the wiki tools: lean pages, kit sidecars and the manifest.
 
-A snapshot page is regenerated from the live wiki on every refresh, so a hand edit to
-its wiki text is lost. Local improvements live in kit blocks instead, and the sync
-carries every block over into the fresh page:
+Agents read ``hoi4_wiki/``. Each page there is a title and its content, nothing else:
+no review notes, evidence tags, source lines, navigation or HTML comments. Everything
+the tools need to maintain a page lives next to the tools instead:
 
-    <!-- kit:begin id="effects-scopes" at="section:Country_scope" -->
-    **Kit note** [docs] ...
-    <!-- kit:end id="effects-scopes" -->
+``.tools/wiki/kit/<page>.md`` (the sidecar, written by hand)
+    The kit's text for the page, with its evidence. For a wiki page it holds the
+    review block and the kit blocks that go into the wiki text::
 
-``at`` says where the block belongs, and the sync re-inserts it there:
+        <!-- kit:begin id="review" build="1.19.4.1" checked="2026-11-01" revision="105661" sources="..." -->
+        What was checked, what the kit changed, and the gaps that remain.
+        <!-- kit:end id="review" -->
 
-* ``top``: under the page's capture line, before the table of contents;
-* ``bottom``: after the last section, before the navigation footer;
-* ``section:<anchor>``: at the end of that section's own text, before the next heading;
-* ``heading:<anchor>``: directly under that heading.
+        <!-- kit:begin id="set-autonomy-scope" at="section:autonomy" -->
+        `set_autonomy` runs in country scope. [docs] `documentation/effects_documentation.md`.
+        <!-- kit:end id="set-autonomy-scope" -->
 
-``<anchor>`` is an ``<a id="...">`` of a wiki heading on the same page. Blocks that
-share a place keep their order. A block whose anchor no longer exists upstream is kept
-at the bottom of the page and reported, so nothing written locally is ever dropped.
+    A kit page (one the wiki does not have) has ``<!-- kit:page -->`` under its
+    title, then its review block, then its whole text.
 
-A kit page is written entirely by the kit. One of its first lines is
-``<!-- kit:page -->``; the sync never fetches it and only refreshes its table of
-contents and navigation footer.
+``.tools/wiki/manifest.json`` (generated, never edited)
+    For each page: its source, the wiki revision and capture date, the hash of the
+    wiki text, the wiki's heading ids and the lines each kit block fills on the page.
 
-Every page has one ``review`` block at ``top``. Its begin marker records the review:
-``build`` (the game build the page was checked against, or ``none``), ``checked``
-(the date) and, on wiki pages, ``revision`` (the wiki revision that was reviewed).
+``hoi4_wiki/SOURCES.json`` (generated)
+    The attribution the license asks for: every page's wiki page, URL, revision and
+    capture date.
+
+A block's text reaches the page through ``lean.lean_text`` (evidence removed), at the
+place ``at`` names:
+
+* ``top``: under the title;
+* ``bottom``: at the end of the page;
+* ``section:<slug>``: at the end of that section's own text, before the next heading;
+* ``heading:<slug>``: directly under that heading.
+
+``<slug>`` is the heading's GitHub-style id (``slug``): ``## Focus Types`` is
+``focus-types``. Blocks that share a place keep their sidecar order. A block whose
+heading is gone upstream is put at the bottom and reported.
 
 File names: a page's title is its level-1 heading, and its file is ``file_name(title)``,
-the title in lowercase snake_case plus ``.md`` (``Scripted GUI modding`` is
-``scripted_gui_modding.md``). Tools read the title from the heading, not from the file
-name. The underscore is deliberate: HOI4 Agent Tools derives a wiki page's title from
-its file name by reading ``_`` as a space and compares it with the page names it asks
-for without regard to case, so ``event_modding.md`` is the page "Event modding"
-(see ``agent_title``).
+the title in lowercase snake_case plus ``.md``. HOI4 Agent Tools derives a page's
+title from its file name by reading ``_`` as a space (see ``agent_title``).
 
 Standard library only; Python 3.9 or newer.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from collections import defaultdict
+from pathlib import Path
 from typing import Dict, List, NamedTuple, Optional, Tuple
 
 FENCE = "`" * 3
@@ -53,23 +64,32 @@ KIT_PAGE = "<!-- kit:page -->"
 ID_SHAPE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 AT_SHAPE = re.compile(r"^(top|bottom|(section|heading):[^\s\"]+)$")
 HEADING = re.compile(r"^(#{1,6}) (.*)$")
-ANCHOR = re.compile(r"<a id=\"([^\"]+)\"></a>")
-CAPTURE = re.compile(r"^\*(Offline snapshot of the Hearts of Iron IV Wiki page|Kit page)\b")
-REVISION = re.compile(r"\brevision (\d+)\b")
+ANCHOR = re.compile(r"\s*<a id=\"([^\"]+)\"></a>")
 REVIEW_ID = "review"
 DEFAULT_REVIEW = (
-    '<!-- kit:begin id="review" at="top" build="none" checked="never" -->\n'
-    "**Kit review:** not yet checked against the installed game. Treat version-specific "
-    "statements on this page as unverified until it is.\n"
+    '<!-- kit:begin id="review" build="none" checked="never" -->\n'
+    "Not yet checked against the installed game.\n"
     '<!-- kit:end id="review" -->'
 )
-
-Heading = Tuple[int, int, str, List[str]]  # line index, level, visible text, anchors
+REVIEW_ORDER = ["id", "build", "checked", "revision", "via", "sources"]
 
 PAGE_FILE = re.compile(r"^[a-z0-9]+(?:_[a-z0-9]+)*\.md$")
 MEDIA_FILE = re.compile(r"^[a-z0-9][a-z0-9_.]*$")
 TITLE_LINE = re.compile(r"^# (.+?)\s*$", re.M)
+WIKI_SITE = "https://hoi4.paradoxwikis.com"
 
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parents[1]
+WIKI_DIR = REPO / "hoi4_wiki"
+SIDECAR_DIR = HERE / "kit"
+MANIFEST = HERE / "manifest.json"
+SOURCES_NAME = "SOURCES.json"
+LICENSE_NAME = "LICENSE.txt"
+
+Heading = Tuple[int, int, str]  # line index, level, visible text
+
+
+# --- names ----------------------------------------------------------------
 
 def file_stem(title: str) -> str:
     """The title in lowercase snake_case: ``Scripted GUI modding`` -> ``scripted_gui_modding``."""
@@ -82,13 +102,13 @@ def file_name(title: str) -> str:
 
 
 def agent_title(name: str) -> str:
-    """The title HOI4 Agent Tools derives from a snapshot file name (``event_modding.md`` -> ``event modding``).
-
-    It strips the extension and turns each underscore into a space, then compares the
-    result with the page names it looks for, ignoring case. For a title made of letters,
-    digits and single spaces this equals the heading apart from case.
-    """
+    """The title HOI4 Agent Tools derives from a snapshot file name (``event_modding.md`` -> ``event modding``)."""
     return re.sub(r"\.md$", "", name, flags=re.I).replace("_", " ")
+
+
+def wiki_url(page: str) -> str:
+    """The live wiki URL of a page title."""
+    return f"{WIKI_SITE}/{page.replace(' ', '_')}"
 
 
 def page_title(text: str) -> Optional[str]:
@@ -104,15 +124,60 @@ def page_title(text: str) -> Optional[str]:
     return None
 
 
+def slug(text: str) -> str:
+    """The GitHub-style id of a heading: ``Focus Types`` -> ``focus-types``.
+
+    Markup is dropped first (link targets, HTML tags, code ticks, emphasis stars), then
+    the text is lowercased, every character that is not a letter, digit, space, ``-``
+    or ``_`` is removed, and spaces become hyphens.
+    """
+    text = ANCHOR.sub("", text)
+    text = re.sub(r"!?\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"<[^>]+>", "", text)
+    text = text.replace("`", "").replace("*", "").strip().lower()
+    text = re.sub(r"[^\w\- ]", "", text)
+    return text.replace(" ", "-")
+
+
+# --- headings ---------------------------------------------------------------
+
+def headings(lines: List[str]) -> List[Heading]:
+    """Every heading outside code fences, with anchors removed from its text."""
+    found = []
+    inside = False
+    for index, line in enumerate(lines):
+        if line.lstrip().startswith(FENCE):
+            inside = not inside
+            continue
+        match = None if inside else HEADING.match(line)
+        if match:
+            found.append((index, len(match.group(1)), ANCHOR.sub("", match.group(2)).strip()))
+    return found
+
+
+def heading_slugs(lines: List[str]) -> List[Tuple[int, int, str]]:
+    """(line index, level, slug) for every heading, numbered as GitHub numbers repeats."""
+    seen: Dict[str, int] = {}
+    out = []
+    for index, level, title in headings(lines):
+        base = slug(title)
+        count = seen.get(base, 0)
+        seen[base] = count + 1
+        out.append((index, level, base if count == 0 else f"{base}-{count}"))
+    return out
+
+
+# --- sidecars ---------------------------------------------------------------
+
 class KitBlockError(ValueError):
-    """A page whose kit markers cannot be paired."""
+    """A sidecar whose kit markers cannot be read."""
 
 
 class Block(NamedTuple):
     attrs: Dict[str, str]
     start: int  # character offset of the begin marker
     end: int  # character offset just past the end marker
-    text: str
+    text: str  # the text between the markers
 
     @property
     def id(self) -> str:
@@ -124,7 +189,7 @@ class Block(NamedTuple):
 
 
 def find_blocks(text: str) -> List[Block]:
-    """Return every kit block in page order, or raise KitBlockError."""
+    """Every kit block of a sidecar in order, or raise KitBlockError."""
     blocks: List[Block] = []
     seen = set()
     for begin in BEGIN.finditer(text):
@@ -137,209 +202,197 @@ def find_blocks(text: str) -> List[Block]:
         if block_id in seen:
             raise KitBlockError(f"duplicate kit block id {block_id!r}")
         seen.add(block_id)
-        if not AT_SHAPE.match(attrs.get("at", "")):
-            raise KitBlockError(f"kit block {block_id!r} needs at= top, bottom, section:<anchor> or heading:<anchor>")
+        if block_id != REVIEW_ID and not AT_SHAPE.match(attrs.get("at", "")):
+            raise KitBlockError(f"kit block {block_id!r} needs at= top, bottom, section:<slug> or heading:<slug>")
         end = END.search(text, begin.end())
         if end is None or end.group(1) != block_id:
             raise KitBlockError(f"kit block {block_id!r} is not closed by its own kit:end marker")
         if BEGIN.search(text, begin.end(), end.start()):
             raise KitBlockError(f"kit block {block_id!r} contains another kit:begin marker")
-        blocks.append(Block(attrs, begin.start(), end.end(), text[begin.start():end.end()]))
+        inner = text[begin.end():end.start()].strip("\n")
+        blocks.append(Block(attrs, begin.start(), end.end(), inner))
     if len(ANY_MARKER.findall(text)) != 2 * len(blocks):
         raise KitBlockError("a kit:begin or kit:end marker is malformed or unpaired")
     return blocks
 
 
-def strip_blocks(text: str, blocks: Optional[List[Block]] = None) -> str:
-    """Return the page without its kit blocks: the text the wiki supplied."""
-    blocks = find_blocks(text) if blocks is None else blocks
-    parts, cursor = [], 0
-    for block in blocks:
-        parts.append(text[cursor:block.start])
-        cursor = block.end
-    parts.append(text[cursor:])
-    return re.sub(r"\n{3,}", "\n\n", "".join(parts))
+def is_kit_page(sidecar: str) -> bool:
+    return any(line.strip() == KIT_PAGE for line in sidecar.split("\n")[:4])
 
 
-def is_kit_page(text: str) -> bool:
-    return any(line.strip() == KIT_PAGE for line in text.split("\n")[:8])
-
-
-def headings(lines: List[str]) -> List[Heading]:
-    """Every heading outside code fences."""
-    found = []
-    inside = False
-    for index, line in enumerate(lines):
-        if line.lstrip().startswith(FENCE):
-            inside = not inside
-            continue
-        match = None if inside else HEADING.match(line)
-        if match:
-            title = ANCHOR.sub("", match.group(2)).strip()
-            found.append((index, len(match.group(1)), title, ANCHOR.findall(line)))
-    return found
-
-
-def layout(lines: List[str]) -> Dict[str, int]:
-    """Line indices of the page furniture.
-
-    ``capture`` is the italic capture line, ``toc`` the table of contents heading (-1 when
-    there is none), ``body`` the ``---`` rule that opens the article and ``footer`` the
-    ``---`` rule in front of the navigation footer (the line count when there is none).
-    """
-    capture = next((i for i, line in enumerate(lines[:12]) if CAPTURE.match(line)), 0)
-    marks = headings(lines)
-    toc = next((i for i, _level, title, _a in marks if title == "Table of contents"), -1)
-    start_from = toc if toc >= 0 else capture
-    body = next((i for i in range(start_from + 1, len(lines)) if lines[i].strip() == "---"), len(lines))
-    footer = len(lines)
-    navigation = [i for i, level, title, _a in marks if level == 2 and title == "Navigation" and i > body]
-    if navigation:
-        rule = navigation[-1] - 1
-        while rule > body and lines[rule].strip() == "":
-            rule -= 1
-        footer = rule if lines[rule].strip() == "---" else navigation[-1]
-    return {"capture": capture, "toc": toc, "body": body, "footer": footer}
-
-
-def insertion_line(lines: List[str], at: str) -> Optional[int]:
-    """Index of the line a block placed `at` goes in front of, or None if its anchor is gone.
-
-    `lines` must be a page without kit blocks, so headings inside blocks cannot mislead it.
-    """
-    marks = layout(lines)
-    if at == "top":
-        return marks["capture"] + 1
-    if at == "bottom":
-        return marks["footer"]
-    kind, _, anchor = at.partition(":")
-    found = [h for h in headings(lines) if marks["body"] < h[0] < marks["footer"]]
-    for position, (index, _level, _title, anchors) in enumerate(found):
-        if anchor not in anchors:
-            continue
-        if kind == "heading":
-            return index + 1
-        return found[position + 1][0] if position + 1 < len(found) else marks["footer"]
-    return None
-
-
-def splice(lines: List[str], index: int, block: str) -> List[str]:
-    """Insert text in front of line `index` with exactly one blank line around it."""
-    before, after = lines[:index], lines[index:]
-    while before and before[-1].strip() == "":
-        before.pop()
-    while after and after[0].strip() == "":
-        after.pop(0)
-    return before + [""] + block.split("\n") + [""] + after
-
-
-def place_blocks(text: str, blocks: List[Block]) -> Tuple[str, List[Block]]:
-    """Insert blocks into a page without kit blocks; return it and the blocks whose anchor is gone.
-
-    Insertion points are worked out on the plain page first and filled from the bottom
-    up, so blocks that share a place keep their order. A block whose anchor is missing
-    goes to the bottom with its `at` unchanged, and the verify check reports it until
-    someone moves it.
-    """
-    lines = text.rstrip("\n").split("\n")
-    groups: Dict[int, List[Block]] = defaultdict(list)
-    orphans = []
-    for block in blocks:
-        index = insertion_line(lines, block.at)
-        if index is None:
-            orphans.append(block)
-            index = insertion_line(lines, "bottom") or len(lines)
-        groups[index].append(block)
-    for index in sorted(groups, reverse=True):
-        lines = splice(lines, index, "\n\n".join(block.text for block in groups[index]))
-    return "\n".join(lines).rstrip("\n") + "\n", orphans
-
-
-def ensure_review(blocks: List[Block]) -> List[Block]:
-    """Add the placeholder review block when a page has none."""
-    if any(block.id == REVIEW_ID for block in blocks):
-        return blocks
-    return find_blocks(DEFAULT_REVIEW) + blocks
-
-
-def review(text: str) -> Optional[Dict[str, str]]:
-    """Attributes of the page's review block, or None when it has none."""
+def review(sidecar: str) -> Optional[Dict[str, str]]:
+    """Attributes of the sidecar's review block, or None when it has none."""
     try:
-        blocks = find_blocks(text)
+        blocks = find_blocks(sidecar)
     except KitBlockError:
         return None
     return next((block.attrs for block in blocks if block.id == REVIEW_ID), None)
 
 
-def capture_revision(text: str) -> Optional[int]:
-    """The wiki revision named on the page's capture line."""
-    lines = text.split("\n")
-    line = lines[layout(lines)["capture"]]
-    match = REVISION.search(line) if CAPTURE.match(line) else None
-    return int(match.group(1)) if match else None
+def set_review(sidecar: str, updates: Dict[str, str]) -> str:
+    """The sidecar with its review marker's attributes updated (an empty value removes one)."""
+    block = next((b for b in find_blocks(sidecar) if b.id == REVIEW_ID), None)
+    if block is None:
+        raise KitBlockError("the sidecar has no review block")
+    attrs = {k: v for k, v in {**block.attrs, **updates}.items() if v != ""}
+    keys = [k for k in REVIEW_ORDER if k in attrs] + sorted(k for k in attrs if k not in REVIEW_ORDER)
+    marker = "<!-- kit:begin " + "".join(f'{k}="{attrs[k]}" ' for k in keys) + "-->"
+    return sidecar[:block.start] + marker + sidecar[sidecar.index("\n", block.start):]
 
 
-def refresh_toc(text: str) -> str:
-    """Rebuild the table of contents from the body's headings, kit headings included."""
-    lines = text.rstrip("\n").split("\n")
-    marks = layout(lines)
-    entries: List[str] = []
-    base = None
-    for index, level, title, anchors in headings(lines):
-        if index <= marks["body"] or index >= marks["footer"] or not anchors:
+def kit_page_body(sidecar: str) -> str:
+    """A kit page's text after its title, kit:page marker and review block."""
+    text = sidecar
+    for block in reversed(find_blocks(sidecar)):
+        if block.id == REVIEW_ID:
+            text = text[:block.start] + text[block.end:]
+    lines = [line for line in text.split("\n") if line.strip() != KIT_PAGE]
+    title = next((i for i, line in enumerate(lines) if TITLE_LINE.match(line)), -1)
+    return "\n".join(lines[title + 1:]).strip("\n")
+
+
+# --- placing blocks ---------------------------------------------------------
+
+def insertion_line(lines: List[str], at: str) -> Optional[int]:
+    """Index of the line a block placed `at` goes in front of, or None if its heading is gone.
+
+    `lines` is a page without kit text (``text.rstrip("\\n").split("\\n")``).
+    """
+    if at == "top":
+        return 1
+    if at == "bottom":
+        return len(lines)
+    kind, _, wanted = at.partition(":")
+    marks = [h for h in heading_slugs(lines) if h[1] > 1]
+    for position, (index, _level, name) in enumerate(marks):
+        if name != wanted:
             continue
-        base = level if base is None else base
-        entries.append("  " * max(0, level - base) + f"- [{title}](#{anchors[0]})")
-    head = lines[:marks["toc"] if marks["toc"] >= 0 else marks["body"]]
-    while head and head[-1].strip() == "":
-        head.pop()
-    toc = ["", "## Table of contents", "", *entries] if entries else []
-    return "\n".join(head + toc + [""] + lines[marks["body"]:]).rstrip("\n") + "\n"
+        if kind == "heading":
+            return index + 1
+        return marks[position + 1][0] if position + 1 < len(marks) else len(lines)
+    return None
 
 
-def replace_footer(text: str, footer: str) -> str:
-    """Swap the navigation footer (from its ``---`` rule to the end) for `footer`."""
-    lines = text.rstrip("\n").split("\n")
-    marks = layout(lines)
-    head = lines[:marks["footer"]]
-    while head and head[-1].strip() == "":
-        head.pop()
-    return "\n".join(head + ["", "---", "", footer.strip("\n")]) + "\n"
+def _splice(lines: List[str], index: int, block: List[str]) -> List[str]:
+    """Insert lines in front of line `index` with exactly one blank line around them."""
+    before, after = lines[:index], lines[index:]
+    while before and before[-1].strip() == "":
+        before.pop()
+    while after and after[0].strip() == "":
+        after.pop(0)
+    return before + [""] + block + ([""] + after if after else [])
 
 
-def position_problems(text: str) -> List[str]:
-    """Kit blocks that do not sit where their `at` says, and a missing review block."""
-    try:
-        blocks = find_blocks(text)
-    except KitBlockError as error:
-        return [str(error)]
-    lines = text.split("\n")
-    starts = [0]
+class Placed(NamedTuple):
+    text: str  # the page
+    spans: Dict[str, List[int]]  # block id -> [first line, last line], 1-based
+    orphans: List[str]  # ids of blocks whose heading is gone, kept at the bottom
+
+
+def assemble(base: str, blocks: List[Tuple[str, str, str]]) -> Placed:
+    """Put kit text into a page's wiki text.
+
+    `blocks` holds (id, at, lean text) in sidecar order. The result can be taken apart
+    again with ``disassemble`` to give back `base` exactly.
+    """
+    lines = base.rstrip("\n").split("\n")
+    groups: Dict[int, List[Tuple[str, str]]] = defaultdict(list)
+    orphans = []
+    for block_id, at, text in blocks:
+        index = insertion_line(lines, at)
+        if index is None:
+            orphans.append(block_id)
+            index = len(lines)
+        groups[index].append((block_id, text))
+    for index in sorted(groups, reverse=True):
+        chunk: List[str] = []
+        for block_id, text in groups[index]:
+            body = text.strip("\n").split("\n")
+            # A marker line in front of each block records where it lands; it is removed below.
+            chunk += ([""] if chunk else []) + [f"\0{block_id}\0{len(body)}"] + body
+        lines = _splice(lines, index, chunk)
+    spans: Dict[str, List[int]] = {}
+    out: List[str] = []
     for line in lines:
-        starts.append(starts[-1] + len(line) + 1)
-    upstream = {a for _i, _l, _t, anchors in headings(strip_blocks(text, blocks).split("\n")) for a in anchors}
-    marks = layout(lines)
-    wiki_headings = [h for h in headings(lines) if not any(b.start <= starts[h[0]] < b.end for b in blocks)]
-    problems = []
-    for block in blocks:
-        line = text.count("\n", 0, block.start)
-        problem = _position_problem(block, line, marks, upstream, wiki_headings)
-        if problem:
-            problems.append(f"kit block {block.id!r}: {problem}")
-    if not any(block.id == REVIEW_ID for block in blocks):
-        problems.append("page has no review block")
-    return problems
+        if line.startswith("\0"):
+            _, block_id, count = line.split("\0")
+            spans[block_id] = [len(out) + 1, len(out) + int(count)]
+            continue
+        out.append(line)
+    return Placed("\n".join(out).rstrip("\n") + "\n", spans, orphans)
 
 
-def _position_problem(block: Block, line: int, marks: Dict[str, int], upstream: set, wiki_headings: List[Heading]) -> str:
-    kind, _, anchor = block.at.partition(":")
-    if kind == "top":
-        limit = marks["toc"] if marks["toc"] >= 0 else marks["body"]
-        return "" if line < limit else "at=top but it sits below the table of contents"
-    if kind == "bottom":
-        later = [h for h in wiki_headings if line < h[0] < marks["footer"]]
-        return "at=bottom but a wiki section follows it" if later else ""
-    if anchor not in upstream:
-        return f"anchor {anchor!r} is not a wiki heading on this page"
-    owner = next((h[3] for h in reversed(wiki_headings) if h[0] < line), [])
-    return "" if anchor in owner else f"at={block.at} but it sits under another heading"
+def disassemble(page: str, spans: Dict[str, List[int]]) -> str:
+    """The page without the lines its kit blocks fill: the wiki text it was built from."""
+    lines = page.rstrip("\n").split("\n")
+    for first, last in sorted(spans.values(), reverse=True):
+        start, end = first - 1, last
+        if end < len(lines) and lines[end].strip() == "":
+            end += 1
+        elif start > 0 and lines[start - 1].strip() == "":
+            start -= 1
+        del lines[start:end]
+    return "\n".join(lines).rstrip("\n") + "\n"
+
+
+def sha256(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+# --- manifest and sources ---------------------------------------------------
+
+def load_manifest(path: Optional[Path] = None) -> Dict[str, object]:
+    """The manifest (``MANIFEST`` unless `path` is given), or an empty one."""
+    path = MANIFEST if path is None else path
+    if not path.exists():
+        return {"pages": {}}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def dump_json(data: object) -> str:
+    return json.dumps(data, indent=1, ensure_ascii=False, sort_keys=False) + "\n"
+
+
+def write_text(path: Path, text: str) -> bool:
+    """Write `text` with LF line ends when it differs from the file; return whether it changed."""
+    if path.exists() and path.read_text(encoding="utf-8") == text:
+        return False
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(text)
+    return True
+
+
+SOURCES_NOTICE = (
+    "Wiki pages in this folder are adapted from the Hearts of Iron IV Wiki ({site}), "
+    "written by its editors and licensed under CC BY-SA 3.0. The Agentic HOI4 Modding Kit "
+    "converted them to Markdown, removed site navigation and added its own corrections and "
+    "notes in the text. Kit pages were written by the kit's contributors. Everything the kit "
+    "wrote here is licensed under CC BY-SA 3.0 as well. Images in media/ keep their own terms. "
+    "See LICENSE.txt."
+)
+
+
+def sources_document(manifest: Dict[str, object]) -> Dict[str, object]:
+    """The attribution file for hoi4_wiki/: license and the source of every page."""
+    pages = []
+    entries = manifest.get("pages", {})
+    assert isinstance(entries, dict)
+    for name in sorted(entries):
+        entry = entries[name]
+        item: Dict[str, object] = {"file": name, "title": entry["title"], "source": entry["source"]}
+        if entry["source"] == "wiki":
+            item.update({
+                "wiki_page": entry["wiki_page"],
+                "url": wiki_url(entry["wiki_page"]),
+                "revision": entry.get("revision"),
+                "revision_url": f"{WIKI_SITE}/index.php?oldid={entry.get('revision')}",
+                "captured": entry.get("captured"),
+            })
+        pages.append(item)
+    return {
+        "license": "CC BY-SA 3.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+        "license_file": LICENSE_NAME,
+        "notice": SOURCES_NOTICE.format(site=WIKI_SITE),
+        "pages": pages,
+    }

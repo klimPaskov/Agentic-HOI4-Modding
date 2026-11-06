@@ -1778,19 +1778,54 @@ def constrain_runtime_footprint(
     return record
 
 
+def wind_like_welded_copy(bm: "bmesh.types.BMesh") -> int:
+    """Orient every face as `recalc_face_normals` would on the welded surface; return the flips.
+
+    A provider mesh is split at every UV seam, so each UV island is its own connected piece and
+    recalculating the split mesh orients each island on its own: thin fur, cloth and leaf cards
+    come out facing inward, and the game's back-face culling shows them as holes (ZIN yeti: 22,486
+    flipped edges and 7 % of its silhouette missing). Recalculate on a welded copy instead and
+    flip only the split faces whose welded twin disagrees, so seams, UVs and normals stay as they are.
+    """
+
+    if not bm.faces:
+        return 0
+    marker = bm.faces.layers.int.new("hoi4_winding_face")
+    for index, face in enumerate(bm.faces):
+        face[marker] = index
+    welded = bm.copy()
+    size = max((max(v.co[axis] for v in bm.verts) - min(v.co[axis] for v in bm.verts)) for axis in range(3))
+    bmesh.ops.remove_doubles(welded, verts=list(welded.verts), dist=max(size * 1e-6, 1e-9))
+    bmesh.ops.recalc_face_normals(welded, faces=list(welded.faces))
+    welded.normal_update()
+    bm.normal_update()
+    bm.faces.ensure_lookup_table()
+    welded_marker = welded.faces.layers.int.get("hoi4_winding_face")
+    flips = 0
+    for face in welded.faces:
+        original = bm.faces[face[welded_marker]]
+        if face.normal.length > 0.5 and original.normal.dot(face.normal) < 0:
+            original.normal_flip()
+            flips += 1
+    welded.free()
+    bm.faces.layers.int.remove(marker)
+    return flips
+
+
 def triangulate_and_normals() -> Dict[str, Any]:
     changed = []
+    flipped = {}
     for obj in mesh_objects():
         mesh = obj.data
         bm = bmesh.new()
         bm.from_mesh(mesh)
         bmesh.ops.triangulate(bm, faces=list(bm.faces))
-        bmesh.ops.recalc_face_normals(bm, faces=list(bm.faces))
+        flipped[obj.name] = wind_like_welded_copy(bm)
         bm.to_mesh(mesh)
         bm.free()
         mesh.update()
         changed.append(obj.name)
-    return {"triangulated_objects": changed}
+    return {"triangulated_objects": changed, "faces_flipped": flipped}
 
 
 def controlled_decimate(target_triangles: int) -> Dict[str, Any]:

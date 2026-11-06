@@ -1,54 +1,10 @@
 # Technology modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Technology modding", revision 104524, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+Technologies can be used to apply [effects](effects.md) and static [modifiers](modifiers.md) towards the country researching them. Additionally, technologies can unlock equipment, enable buildings to be built up to a specified level, as well as modifying the stats of the units of the country. Doctrines, while no longer researched as technologies, are still considered technologies in the in-game code, although there are some differences in their required definitions.
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="104524" sources="common/technologies/ common/technology_tags/00_technology.txt common/technology_sharing/ interface/countrytechtreeview.gui interface/countrytechtreeview.gfx common/defines/00_defines.lua documentation/effects_documentation.md documentation/triggers_documentation.md common/doctrines/ hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against all 552 technologies in the 13 vanilla files of `common/technologies/`, `common/technology_tags/00_technology.txt` (16 folders, 133 categories), the 90 technology sharing groups, the 118 `gridboxtype` blocks of `interface/countrytechtreeview.gui`, `NDefines.NTechnology`, the technology effects and triggers in the documentation, and tokens in `hoi4.exe`. The "to be added" marker the inventory flagged is only the phrase "need to be added" in the Folders section and needs no action.
-Kit blocks added: `tech-triggers-note`, `tech-effects-triggers`, `tech-enabling-note`, `tech-cost-note`, `tech-grid-box`, `tech-categories`, `tech-xp-note`, `tech-doctrines-warning` (doctrines are no longer technologies), `tech-keys-extra`, `tech-folders`, `tech-sharing-extra`.
-Gaps left: whether the engine accepts the `ledger` values `military` and `all` (no vanilla folder uses them), the AI category rule and the `on_research_complete` behaviour for history-file technologies are repeated from the wiki and not confirmed; the GUI sections were checked for names and counts only.
-**1.19.4.1 re-check (2026-11-01).** 16 statements depended on files the update changed (five files in `common/technologies/`, `00_technology.txt` in `common/technology_tags/`, `countrytechtreeview.gui`, and the folders behind the `add_tech_bonus` counts), and all 16 were re-measured: the 552 technologies, 133 categories, 16 folders, the enabling and layout key counts and the folder membership are unchanged. Changed: `countrytechtreeview.gui` holds 117 `gridboxtype` blocks (was 118), of which 62 are branch grids with 59 distinct names (was 63 and 60), and `add_tech_bonus` is now counted outside comments as 1946 blocks, 2155 `category` lines, 187 `technology` lines and 90 distinct categories (the old totals 1966, 2156, 189 and 91 could not be reproduced). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
+Technologies themselves are defined in `/Hearts of Iron IV/common/technologies/*.txt` files, while their categories and folders are defined in `/Hearts of Iron IV/common/technology_tags/*.txt` files. The [graphical user interface file](interface_modding.md) where the technology tree is defined is `/Hearts of Iron IV/interface/countrytechtreeview.gui`, requiring edits for each new technology folder or branch within the folder. **This is mandatory to edit in order for new technologies to show up**, unless the new technology requires an existing base game technology with an existing path.
 
-## Table of contents
-
-- [Brief user interface](#Brief_user_interface)
-- [Technologies](#Technologies)
-  - [Triggers](#Triggers)
-  - [Modifiers](#Modifiers)
-  - [Effects](#Effects)
-  - [Kit: Technology effects and triggers](#kit-tech-effects-triggers)
-  - [Enabling objects](#Enabling_objects)
-  - [Hidden technology examples](#Hidden_technology_examples)
-  - [Name and icon](#Name_and_icon)
-  - [Technology's cost](#Technology.27s_cost)
-  - [Position](#Position)
-  - [Kit: The grid box rule, verified](#kit-tech-grid-box)
-  - [Sub-technologies](#Sub-technologies)
-  - [Categories](#Categories)
-  - [Kit: Technology categories in 1.19.3](#kit-tech-categories)
-  - [Experience costs](#Experience_costs)
-  - [AI weighting](#AI_weighting)
-  - [Doctrines](#Doctrines)
-  - [Additional](#Additional)
-  - [Kit: Technology keys the page omits](#kit-tech-keys-extra)
-  - [Examples](#Examples)
-- [Folders](#Folders)
-  - [Kit: The real folder ids](#kit-tech-folders)
-- [Graphical user interface](#Graphical_user_interface)
-  - [Items](#Items)
-    - [Item sprites](#Item_sprites)
-  - [Folder](#Folder)
-  - [Folder tabs](#Folder_tabs)
-- [Technology sharing groups](#Technology_sharing_groups)
-- [References](#References)
-
----
-
-Technologies can be used to apply [effects](<effects.md>) and static [modifiers](<modifiers.md>) towards the country researching them. Additionally, technologies can unlock equipment, enable buildings to be built up to a specified level, as well as modifying the stats of the units of the country. Doctrines, while no longer researched as technologies, are still considered technologies in the in-game code, although there are some differences in their required definitions.
-
-Technologies themselves are defined in `/Hearts of Iron IV/common/technologies/*.txt` files, while their categories and folders are defined in `/Hearts of Iron IV/common/technology_tags/*.txt` files. The [graphical user interface file](<interface_modding.md>) where the technology tree is defined is `/Hearts of Iron IV/interface/countrytechtreeview.gui`, requiring edits for each new technology folder or branch within the folder. **This is mandatory to edit in order for new technologies to show up**, unless the new technology requires an existing base game technology with an existing path.
-
-## Brief user interface <a id="Brief_user_interface"></a>
+## Brief user interface
 
 `/Hearts of Iron IV/interface/countrytechtreeview.gui` and `/Hearts of Iron IV/interface/countrytechtreeview.gfx` in particular define the *appearance* of technology folders as well as the items within them. In particular, this exactly is included in the interface files:
 
@@ -63,14 +19,14 @@ Technologies themselves are defined in `/Hearts of Iron IV/common/technologies/*
   - The name of the technology – whether it should be displayed, and if it is: where to show it and with what font.
   - Sub-technologies – where to position them in the tree, which GFX they use. Technology-specific icons don't exist for sub-technologies, instead using a set of indices.
 - The tabs in the top of the tree allowing changing between technology folders. **This is mandatory to edit when creating new folders.**
-- The standard [interface information about the tree](<interface_modding.md>). Anything that can be done with GUI can be done to a given folder, including but not limited to:
-  - Adding icons, including the background or the stripes highlighting technologies. [This is done with an iconType](<interface_modding.md#iconType>).
-  - Adding text to be visible on the folder, **such as the years showing when each technology stops being ahead-of-time**. [This is done with an instantTextboxType](<interface_modding.md>).
-  - Creating new [container windows](<interface_modding.md>) that [scripted GUI](<scripted_gui_modding.md>) can be linked to with their `parent_window_name`, allowing it.
+- The standard [interface information about the tree](interface_modding.md). Anything that can be done with GUI can be done to a given folder, including but not limited to:
+  - Adding icons, including the background or the stripes highlighting technologies. [This is done with an iconType](interface_modding.md#icontype).
+  - Adding text to be visible on the folder, **such as the years showing when each technology stops being ahead-of-time**. [This is done with an instantTextboxType](interface_modding.md).
+  - Creating new [container windows](interface_modding.md) that [scripted GUI](scripted_gui_modding.md) can be linked to with their `parent_window_name`, allowing it.
 
-For exact technical details, see the [Graphical User Interface section](#Graphical_user_interface).
+For exact technical details, see the [Graphical User Interface section](#graphical-user-interface).
 
-## Technologies <a id="Technologies"></a>
+## Technologies
 
 Each technology is located within `/Hearts of Iron IV/common/technologies/*.txt` files, within the `technologies = { ... }` block traditionally encompassing the entire contents of the file. Like most files, the filename has no bearing on how the file is read: any technology can be in any folder without issues. Each technology is a separate block within `technologies = { ... }`, where the name of the block is used as a technology ID.
 
@@ -87,27 +43,25 @@ technologies = {
 }
 ```
 
-Each technology is hidden by default, requiring special code to be put within GUI. However, AI can still research technology even if it's hidden, so [it should be made impossible to research manually](#Triggers) if it's intended to be hidden.
-A technology can be researched as an effect with `set_technology = { my_technology_1 = 1 }` and unresearched with `set_technology = { my_technology_1 = 0 }`, with `popup = no` possibly being added in order to remove the notification given to the player. Note that while it is possible to unresearch technologies, this does not always work properly: this can fail to unresearch technologies that are mutually exclusive with other technologies and doesn't work properly [those that unlock database objects](#Enabling_objects).
+Each technology is hidden by default, requiring special code to be put within GUI. However, AI can still research technology even if it's hidden, so [it should be made impossible to research manually](#triggers) if it's intended to be hidden.
+A technology can be researched as an effect with `set_technology = { my_technology_1 = 1 }` and unresearched with `set_technology = { my_technology_1 = 0 }`, with `popup = no` possibly being added in order to remove the notification given to the player. Note that while it is possible to unresearch technologies, this does not always work properly: this can fail to unresearch technologies that are mutually exclusive with other technologies and doesn't work properly [those that unlock database objects](#enabling-objects).
 
-### Triggers <a id="Triggers"></a>
+### Triggers
 
-*See also: [Triggers](<triggers.md>)*
+*See also: [Triggers](triggers.md)*
 
 There are two types of trigger blocks used in technologies.
-`allow = { ... }` is a trigger block checked continuosly throughout the game. If it is false, then the technology will be impossible to research through the research menu, but it will still remain possible to research via an effect and it will remain visible in the menu. This is typically [set to be never true](<triggers.md>) for hidden technologies in order to prevent AI from researching it.
+`allow = { ... }` is a trigger block checked continuosly throughout the game. If it is false, then the technology will be impossible to research through the research menu, but it will still remain possible to research via an effect and it will remain visible in the menu. This is typically [set to be never true](triggers.md) for hidden technologies in order to prevent AI from researching it.
 
 `allow_branch = { ... }` is a trigger block that, instead, needs to be met in order for the technology to be visible. If it's not met, then any technology connected to it via `path = { ... }` will also become invisible. If it's met, AI will also not be able to select the technology to research.
 
-<!-- kit:begin id="tech-triggers-note" at="section:Triggers" -->
-**Kit addition** Vanilla use of the two trigger blocks: `allow` appears in 132 of 552 technologies and `allow_branch` in 47. All 47 `allow_branch` blocks are DLC gates (`has_dlc` in 38, `NOT = { has_dlc = ... }` in 9), so in practice it is the "branch exists only with this DLC" switch. The wiki's last sentence for `allow_branch` (that the AI cannot select the technology when it is met) is not supported by anything in vanilla. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`; the AI sentence [unverified]
-<!-- kit:end id="tech-triggers-note" -->
+Vanilla use of the two trigger blocks: `allow` appears in 132 of 552 technologies and `allow_branch` in 47. All 47 `allow_branch` blocks are DLC gates (`has_dlc` in 38, `NOT = { has_dlc = ... }` in 9), so in practice it is the "branch exists only with this DLC" switch. The wiki's last sentence for `allow_branch` (that the AI cannot select the technology when it is met) is not supported by anything in vanilla. The AI sentence (unverified)
 
-### Modifiers <a id="Modifiers"></a>
+### Modifiers
 
-*See also: [Modifiers](<modifiers.md>)*
+*See also: [Modifiers](modifiers.md)*
 
-Each [country-scoped modifier](<modifiers.md#Country_scope>) is allowed to be put directly within the technology, and these will apply to the country after researching the technology. This will look as such:
+Each [country-scoped modifier](modifiers.md#country-scope) is allowed to be put directly within the technology, and these will apply to the country after researching the technology. This will look as such:
 
 ```text
 my_technology_1 = {
@@ -138,9 +92,9 @@ my_technology_1 = {
 
 `show_effect_as_desc = yes` can also be used in order to make the modifiers show up in the description of the technology itself rather than in the tooltip showing up when hovering over the technology. Notably, this also applies to the effects of the technology.
 
-### Effects <a id="Effects"></a>
+### Effects
 
-*See also: [Effects](<effects.md>)*
+*See also: [Effects](effects.md)*
 
 An effect block ran for the country that unlocked the equipment is `on_research_complete = { ... }`. These effects will be run for the country and they will show up in the tooltip of the technology so that the player is aware of them. `on_research_complete = { ... }` WILL run for techs unlocked through effect, but NOT on techs that a country unlocks in its history file.
 
@@ -159,12 +113,11 @@ my_technology_1 = {
 
 `show_effect_as_desc = yes` can also be used in order to make the effects show up in the description of the technology itself rather than in the tooltip showing up when hovering over the technology. Notably, this also applies to the modifiers of the technology.
 
-<!-- kit:begin id="tech-effects-triggers" at="section:Effects" -->
-### Kit: Technology effects and triggers <a id="kit-tech-effects-triggers"></a>
+### Technology effects and triggers
 
-**Kit addition** `on_research_complete_limit` is the supported form: `hoi4.exe` holds the message "limit inside on_research_complete is deprecated, use on_research_complete_limit outside of on_research_complete instead". Vanilla has 107 technologies with `on_research_complete` and 12 with `on_research_complete_limit`. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`. The message is real: a test technology with a `limit` inside `on_research_complete` drew "limit inside on_research_complete is deprecated, use on_research_complete_limit outside of on_research_complete instead" at load with the file and line, and one with `on_research_complete_limit` outside the block drew none. In the old form the technology still loaded but its block was misparsed, so its `log` effect never ran. In the new form the effect block ran when the technology was set with `set_technology`. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read. The limit used was `always = yes`, so whether it filters was not tested.
+`on_research_complete_limit` is the supported form: `hoi4.exe` holds the message "limit inside on_research_complete is deprecated, use on_research_complete_limit outside of on_research_complete instead". Vanilla has 107 technologies with `on_research_complete` and 12 with `on_research_complete_limit`. The message is real: a test technology with a `limit` inside `on_research_complete` drew "limit inside on_research_complete is deprecated, use on_research_complete_limit outside of on_research_complete instead" at load with the file and line, and one with `on_research_complete_limit` outside the block drew none. In the old form the technology still loaded but its block was misparsed, so its `log` effect never ran. In the new form the effect block ran when the technology was set with `set_technology`. The limit used was `always = yes`, so whether it filters was not tested.
 
-Country-scope effects and triggers about technology, from the game documentation. [docs] `documentation/effects_documentation.md`, `documentation/triggers_documentation.md`
+Country-scope effects and triggers about technology, from the game documentation.
 
 | Name | Kind | Syntax and notes |
 | --- | --- | --- |
@@ -183,10 +136,9 @@ Country-scope effects and triggers about technology, from the game documentation
 | `amount_research_slots`, `original_research_slots` | trigger | Current and starting number of slots. |
 | `is_in_tech_sharing_group`, `num_tech_sharing_groups` | trigger | Membership checks. |
 
-`add_tech_bonus` appears in 1946 vanilla blocks outside comments: 2155 `category` lines in total, `technology` in 187, `ahead_reduction` in 177. Every one of the 90 distinct `category` values is a name from `technology_categories` (see the category list below). `mark_technology_tree_layout_dirty` and `select_tech_tree_icon_origin` are documented but not used by any vanilla file. [vanilla-confirmed 1.19.4.1] `common/`, `events/`, `history/`
-<!-- kit:end id="tech-effects-triggers" -->
+`add_tech_bonus` appears in 1946 vanilla blocks outside comments: 2155 `category` lines in total, `technology` in 187, `ahead_reduction` in 177. Every one of the 90 distinct `category` values is a name from `technology_categories` (see the category list below). `mark_technology_tree_layout_dirty` and `select_tech_tree_icon_origin` are documented but not used by any vanilla file.
 
-### Enabling objects <a id="Enabling_objects"></a>
+### Enabling objects
 
 Several database objects can be set to be unlocked by a technology, including equipment types, equipment modules, sub-units, and buildings.
 If the database object is not set to be unlocked by any technology in general, it'll be always possible to select it, while putting them in a technology will require the technology. This can be used to set these to be country-specific, such as the bicycle battalions for ![Flag of Netherlands](media/technology_modding_21e8ff155d__img3.png) Netherlands and ![Flag of Japan](media/technology_modding_21e8ff155d__img4.png) Japan, if they're within a hidden technology only set for specific countries in their history files or other effect blocks. If one of these database objects is locked behind technology, it won't be possible to force a country to use them without having the technology: equipment variants or orders of battle will fail to be created with the specified type.
@@ -204,19 +156,17 @@ enable_building = {
 }
 ```
 
-Uniquely, it's possible to still construct buildings that aren't yet unlocked via technologies by using an [effect](<effects.md>) or with the starting buildings in the [state's history file](<state_modding.md>). This can build up to the max level specified in the [building definition itself](<building_modding.md>). This is because the buildings are set for states themselves, and implementing it otherwise can cause buildings to be lost if the state control goes to a country that doesn't have the building researched.
+Uniquely, it's possible to still construct buildings that aren't yet unlocked via technologies by using an [effect](effects.md) or with the starting buildings in the [state's history file](state_modding.md). This can build up to the max level specified in the [building definition itself](building_modding.md). This is because the buildings are set for states themselves, and implementing it otherwise can cause buildings to be lost if the state control goes to a country that doesn't have the building researched.
 If desiring to make multiple buildings be unlocked by the same technology, another `enable_building = { ... }` block can be set in the technology.
-**The level within the technology cannot be higher than the building's max level** set within the [building definition itself](<building_modding.md>).
+**The level within the technology cannot be higher than the building's max level** set within the [building definition itself](building_modding.md).
 
 `enable_tactic = my_tactic` is also used to enable a combat tactic for the country that may be chosen during a land battle. These tactics are defined within `/Hearts of Iron IV/common/combat_tactics.txt`.
 
 When unresearched via an effect, this doesn't work entirely properly, rather, the database object in question will remain possible to use for the country until a restart of the game. For this reason, it's better to avoid unresearching technologies such as this and treat these database objects as being granted for forever without being possible to take away.
 
-<!-- kit:begin id="tech-enabling-note" at="section:Enabling_objects" -->
-**Kit addition** Vanilla use of the enabling keys across 552 technologies: `enable_equipments` 223, `enable_equipment_modules` 136, `enable_subunits` 70, `enable_building` 14 (always `building` plus `level`). `enable_tactic` appears in none of them; vanilla enables combat tactics through the `enable_tactic` line of a doctrine instead (see the [Doctrine modding](<doctrine_modding.md>) page), so the wiki's `enable_tactic = my_tactic` in a technology is not used in vanilla. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/doctrines/`. It does not unlock the tactic in 1.19.4.1: a test technology with `enable_tactic = tactic_breakthrough` loaded with no error.log line, and after `set_technology` gave the technology, `has_tactic = tactic_breakthrough` still read FALSE. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log and game.log read. The technology was set, not researched, and `has_tactic` is a trigger, so no real combat was run.
-<!-- kit:end id="tech-enabling-note" -->
+Vanilla use of the enabling keys across 552 technologies: `enable_equipments` 223, `enable_equipment_modules` 136, `enable_subunits` 70, `enable_building` 14 (always `building` plus `level`). `enable_tactic` appears in none of them; vanilla enables combat tactics through the `enable_tactic` line of a doctrine instead (see the [Doctrine modding](doctrine_modding.md) page), so the wiki's `enable_tactic = my_tactic` in a technology is not used in vanilla. It does not unlock the tactic in 1.19.4.1: a test technology with `enable_tactic = tactic_breakthrough` loaded with no error.log line, and after `set_technology` gave the technology, `has_tactic = tactic_breakthrough` still read FALSE. The technology was set, not researched, and `has_tactic` is a trigger, so no real combat was run.
 
-### Hidden technology examples <a id="Hidden_technology_examples"></a>
+### Hidden technology examples
 
 **The text in this section has been collapsed by default.**
 
@@ -259,7 +209,7 @@ technologies = {
 }
 ```
 
-### Name and icon <a id="Name_and_icon"></a>
+### Name and icon
 
 The name of the technology for the specified language is set by using the technology's ID as the localisation key, with description by appending `_desc` in the end. For example, this can be used as localisation for the English language within any `/Hearts of Iron IV/localisation/english/*_l_english.yml` file for `my_technology_1`:
 
@@ -288,21 +238,19 @@ spriteType = {
 
 Here it is the other way around compared to names: if the equipment doesn't have a unique icon defined, then it will use the one defined by the technology. The country-specific equipment and technology icons are done with inserting the country tag between GFX and the name of the technology, still separated with underscores, as `name = GFX_HON_my_technology_1_medium`.
 
-### Technology's cost <a id="Technology.27s_cost"></a><a id="Technology's_cost"></a>
+### Technology's cost
 
 There are two primary arguments that modify the cost to a technology.
 
 `research_cost = 1` assigns the base research cost for this technology. For comparison, a value of 1 is equal to 100 days worth of research assuming fully default research speed with no modifiers[1].
 
-`start_year = 1935` assigns the year at which the technology is intended to be researched. Each year in advance adds +200% to the technology's cost[2], applied smoothly depending on the amount of days left. This does not modify the start year shown in the top of the technology folder for some of the folders, this is [defined within the interface file of the folder.](#Folder)
+`start_year = 1935` assigns the year at which the technology is intended to be researched. Each year in advance adds +200% to the technology's cost[2], applied smoothly depending on the amount of days left. This does not modify the start year shown in the top of the technology folder for some of the folders, this is [defined within the interface file of the folder.](#folder)
 
-Additionally, it's possible to make the cost be modified by [other technologies pathing to it](#Position).
+Additionally, it's possible to make the cost be modified by [other technologies pathing to it](#position).
 
-<!-- kit:begin id="tech-cost-note" at="section:Technology.27s_cost" -->
-**Kit correction** `NDefines.NTechnology.BASE_TECH_COST` is 110 in 1.19.3, not 100, so `research_cost = 1` is about 110 days of default research, not 100; the reference [1] at the bottom of the page is out of date for the same reason. The other cited defines still hold: `BASE_YEAR_AHEAD_PENALTY_FACTOR` 2, `MAX_SUBTECHS` 3, `MAX_TECH_SHARING_BONUS` 0.5 and `NAI.RESEARCH_DAYS_BETWEEN_WEIGHT_UPDATE` 7. Other `NTechnology` defines worth knowing: `BASE_RESEARCH_POINTS_SAVED` 30 (per slot), `LICENSE_PRODUCTION_TECH_BONUS` 0.2, `MIN_RESEARCH_SPEED` 0.1, `USE_BONUS_REGRET_TIMER` 3 days, and the three `DEFAULT_XP_*` research cost defaults (0). [vanilla-confirmed 1.19.3] `common/defines/00_defines.lua`
-<!-- kit:end id="tech-cost-note" -->
+`NDefines.NTechnology.BASE_TECH_COST` is 110 in 1.19.3, not 100, so `research_cost = 1` is about 110 days of default research, not 100; the reference [1] at the bottom of the page is out of date for the same reason. The other cited defines still hold: `BASE_YEAR_AHEAD_PENALTY_FACTOR` 2, `MAX_SUBTECHS` 3, `MAX_TECH_SHARING_BONUS` 0.5 and `NAI.RESEARCH_DAYS_BETWEEN_WEIGHT_UPDATE` 7. Other `NTechnology` defines worth knowing: `BASE_RESEARCH_POINTS_SAVED` 30 (per slot), `LICENSE_PRODUCTION_TECH_BONUS` 0.2, `MIN_RESEARCH_SPEED` 0.1, `USE_BONUS_REGRET_TIMER` 3 days, and the three `DEFAULT_XP_*` research cost defaults (0).
 
-### Position <a id="Position"></a>
+### Position
 
 In order to connect a technology to a different one within the tree, `path` is used as such in the technology from which *the branch originates*:
 
@@ -313,7 +261,7 @@ path = {
 }
 ```
 
-In here, the technology where the path leads is specified with leads_to_tech. The path will be created in every folder that contains both of these technologies. This also leads to adding that technology to this technology's tree branch gridbox in every mutual folder. **If a technology doesn't have any other technology as a requirement using path in any folder where it's placed, then [it must have a separate gridboxType definition within the folder's container window.](#Folder) Otherwise, the technology branch will never appear in-game.**
+In here, the technology where the path leads is specified with leads_to_tech. The path will be created in every folder that contains both of these technologies. This also leads to adding that technology to this technology's tree branch gridbox in every mutual folder. **If a technology doesn't have any other technology as a requirement using path in any folder where it's placed, then [it must have a separate gridboxType definition within the folder's container window.](#folder) Otherwise, the technology branch will never appear in-game.**
 The gridbox is used in order to assign the information used by the `folder = { ... }` block later on: the position of the coordinate origin on the screen, the size in pixels that one unit of x and y represent, and in which direction they aim (used for drawing the path). Add the argument `ignore_for_layout = yes` into the path block for secondary paths (such as light cruiser techs leading to heavy cruiser techs without MTG) to prevent the `Found multiple potential grid boxes for tech` error.
 
 A pathing automatically makes the latter technology require the former. If a technology has several technologies connecting to it via path, then at least one of the technologies leading to it must be researched. If there are multiple technologies leading to this one within the same folder, the technology will use the same gridbox used in the technology pathing to it that was defined the earliest. research_cost_coeff can be used to decrease the cost if needed: if this technology is researched, the technology it paths towards will have this cost multiplied by the research_cost_coeff. This can be used if multiple technologies path to the same technology to make it faster to research if a more 'advanced' technology was researched.
@@ -344,36 +292,34 @@ Since this doesn't draw a path, this does not assign the currently-defined techn
 
 Additionally, `XOR = { ... }` is used to make the technology be mutually-exclusive with every technology specified within. The technologies within are separated with any whitespace characters, such as `XOR = { my_technology_1 my_technology_2 }`. A XOR should be in every mutually-exclusive technology, specifying the others, having it in just one of technologies isn't enough.
 
-<!-- kit:begin id="tech-grid-box" at="section:Position" -->
-### Kit: The grid box rule, verified <a id="kit-tech-grid-box"></a>
+### The grid box rule, verified
 
-**Kit addition** A technology only renders in a folder when the tree GUI has a grid box for its branch. `interface/countrytechtreeview.gui` holds 117 `gridboxtype` blocks: 62 are technology branch grids named `<first technology>_tree` (59 distinct names; `experimental_rockets_tree` is repeated in three folders and `early_ship_hull_light_tree` in two), and 55 belong to other windows (`special_project_specialization_list` 23, `stats_grid` 7, `leader_bonuses_grid` 7, `support_category_multipliers_grid` 7, `terrain_modifiers_grid` 5, `subunit_stats_grid` 4, `air_missions_grid` 2). [vanilla-confirmed 1.19.4.1] `interface/countrytechtreeview.gui`
+A technology only renders in a folder when the tree GUI has a grid box for its branch. `interface/countrytechtreeview.gui` holds 117 `gridboxtype` blocks: 62 are technology branch grids named `<first technology>_tree` (59 distinct names; `experimental_rockets_tree` is repeated in three folders and `early_ship_hull_light_tree` in two), and 55 belong to other windows (`special_project_specialization_list` 23, `stats_grid` 7, `leader_bonuses_grid` 7, `support_category_multipliers_grid` 7, `terrain_modifiers_grid` 5, `subunit_stats_grid` 4, `air_missions_grid` 2).
 
-Check against the technologies: the 59 (folder, technology) pairs where no other technology of the same folder paths to the technology (the branch roots) all have a grid box named `<tech>_tree` in the file; none is missing. Technologies that are reached by `path` use the grid box of the root they connect to. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `interface/countrytechtreeview.gui`
+Check against the technologies: the 59 (folder, technology) pairs where no other technology of the same folder paths to the technology (the branch roots) all have a grid box named `<tech>_tree` in the file; none is missing. Technologies that are reached by `path` use the grid box of the root they connect to.
 
-`hoi4.exe` holds the messages that report a break in this rule: "Found no grid box for tech %s", "Found multiple potential grid boxes for tech %s (%s and %s)" (the case `ignore_for_layout = yes` on a secondary `path` avoids; vanilla uses it 3 times), "couldn't find grid box window with name %s", "Technology %s has no coordinates in folder %s for parent %s", "Mutually exclusive Technologies %s and %s have different starting points in folder %s for parent %s" and "Subtechnology %s has two parents (%s and %s), which is undefined behaviour supported". [unverified] (strings seen only in `hoi4.exe`)
+`hoi4.exe` holds the messages that report a break in this rule: "Found no grid box for tech %s", "Found multiple potential grid boxes for tech %s (%s and %s)" (the case `ignore_for_layout = yes` on a secondary `path` avoids; vanilla uses it 3 times), "couldn't find grid box window with name %s", "Technology %s has no coordinates in folder %s for parent %s", "Mutually exclusive Technologies %s and %s have different starting points in folder %s for parent %s" and "Subtechnology %s has two parents (%s and %s), which is undefined behaviour supported". (unverified) (strings seen only in `hoi4.exe`)
 
-A `path` block does not need `leads_to_tech`: vanilla has `path = { research_cost_coeff = 1 }` on 8 technologies (the `excavation` chain, `motorised_infantry`, `heavy_battleship2`, `NOR_rikstanken_tech`). [vanilla-confirmed 1.19.4.1] `common/technologies/industry.txt`
+A `path` block does not need `leads_to_tech`: vanilla has `path = { research_cost_coeff = 1 }` on 8 technologies (the `excavation` chain, `motorised_infantry`, `heavy_battleship2`, `NOR_rikstanken_tech`).
 
-Tab buttons: the `folder_tabs` window has a `<folder>_tab` button for each of the 12 technology folders that vanilla fills (`industry_folder_tab` included), and item windows are named `techtree_<folder>_item` and `techtree_<folder>_small_item`. [vanilla-confirmed 1.19.4.1] `interface/countrytechtreeview.gui`
-<!-- kit:end id="tech-grid-box" -->
+Tab buttons: the `folder_tabs` window has a `<folder>_tab` button for each of the 12 technology folders that vanilla fills (`industry_folder_tab` included), and item windows are named `techtree_<folder>_item` and `techtree_<folder>_small_item`.
 
-### Sub-technologies <a id="Sub-technologies"></a>
+### Sub-technologies
 
 A technology can have specified technologies assigned as sub-technologies by using `sub_technologies = { ... }`, where every listed technology is a sub-technology. The block contains technologies separated with whitespace characters, such as `sub_technologies = { my_technology_1 my_technology_2 }`. This also assigns them the indexes of 0 and 1 respectively, which get used in determining which container exactly to use.
 If desiring to use a container of a sub-technology with a different index, `sub_tech_index = 1` can overwrite it within the definition of the sub-technology itself. For example, setting it to be 2 will make the game treat it as if it's a third sub-technology that the item has, even if it's the first one, which'll move it to the according position and give it the according icon.
 
 As a sub-technology item is directly assigned to each technology folder item as a separate container, the sub-technologies do not need their own gridbox definition and neither do they need the folder argument.
 
-### Categories <a id="Categories"></a>
+### Categories
 
 A technology can have categories assigned to it with `categories = { ... }`, where each category is separated with whitespace characters as `categories = { my_category_1 my_category_2 }`.
 The player never sees the category for each technology, but it does have certain uses, including but not limited to:
 
-- [AI modding](<ai_modding.md>). It's possible to make AI prioritise taking technologies within specific categories, such as within AI focuses or AI strategy plans.
-- [Modifiers](<modifiers.md>). `research_bonus = { my_category_1 = 0.1 }` is a special argument argument within idea, characters, and country leader traits that allows modifying the speed of researching a specific technology category.
-- [the add_tech_bonus effect](<effects.md>), that can grant a one-use bonus for each technology within the specified folder.
-- [Technology sharing groups](#Technology_sharing_groups), which can be limited to only apply towards specified technologies.
+- [AI modding](ai_modding.md). It's possible to make AI prioritise taking technologies within specific categories, such as within AI focuses or AI strategy plans.
+- [Modifiers](modifiers.md). `research_bonus = { my_category_1 = 0.1 }` is a special argument argument within idea, characters, and country leader traits that allows modifying the speed of researching a specific technology category.
+- [the add_tech_bonus effect](effects.md), that can grant a one-use bonus for each technology within the specified folder.
+- [Technology sharing groups](#technology-sharing-groups), which can be limited to only apply towards specified technologies.
 
 Technology categories are defined within a `technology_categories = { ... }` block within `/Hearts of Iron IV/common/technology_tags/*.txt` files, where each category is separated with whitespace characters, no other info being assigned to it. For localisation, there are two keys assigned. Taking my_category_1 as an example, it'd have the localisation of this:
 
@@ -384,10 +330,9 @@ Technology categories are defined within a `technology_categories = { ... }` blo
 
 In particular, the first one, the same as the category's name, is used for most cases (such as the one-time bonuses and technology sharing groups), while the second one, with _research appended in the end, is used for the research_bonus-type modifiers.
 
-<!-- kit:begin id="tech-categories" at="section:Categories" -->
-### Kit: Technology categories in 1.19.4.1 <a id="kit-tech-categories"></a>
+### Technology categories in 1.19.4.1
 
-**Kit addition** `common/technology_tags/00_technology.txt` defines 133 distinct categories in `technology_categories = { }`. The file says not to change tags without changing every reference, and that names must be unique. Vanilla technologies use 105 of them in `categories`. The `category` of `add_tech_bonus` comes from this list: `industry` and `construction_tech` are valid, `construction` and `infrastructure` are not in it, and all 90 distinct categories that vanilla passes to `add_tech_bonus` are in it. [vanilla-confirmed 1.19.4.1] `common/technology_tags/00_technology.txt`, `common/`, `history/`, `events/`
+`common/technology_tags/00_technology.txt` defines 133 distinct categories in `technology_categories = { }`. The file says not to change tags without changing every reference, and that names must be unique. Vanilla technologies use 105 of them in `categories`. The `category` of `add_tech_bonus` comes from this list: `industry` and `construction_tech` are valid, `construction` and `infrastructure` are not in it, and all 90 distinct categories that vanilla passes to `add_tech_bonus` are in it.
 
 ```text
 light_air medium_air heavy_air armor cat_light_armor cat_medium_armor cat_heavy_armor artillery
@@ -423,10 +368,9 @@ mio_cat_tech_all_cruiser_and_modules mio_cat_tech_all_destroyer_and_modules
 mio_cat_tech_all_motorized_mechanized mio_cat_artillery
 ```
 
-The `mio_cat_*` entries at the end are the categories for military industrial organizations. [vanilla-confirmed 1.19.4.1] `common/technology_tags/00_technology.txt`
-<!-- kit:end id="tech-categories" -->
+The `mio_cat_*` entries at the end are the categories for military industrial organizations.
 
-### Experience costs <a id="Experience_costs"></a>
+### Experience costs
 
 In order to assign an experience type to a technology, `xp_research_type = army` is used. This has 3 types: army, navy, and air. This assigns a particular experience type to the technology.
 
@@ -435,15 +379,13 @@ After this, there are two types of experience costs that can be used:
 - `xp_boost_cost = 40` and `xp_research_bonus = 1.5` can be used to make the technology be *boosted* by experience. This is done with the naval folder with ![Man the Guns](media/country_creation_1d4220f262__img8.png)Man the Guns, for example.
 - `xp_unlock_cost = 100` makes the experience cost fully grant the technology. This in particular was commonly done with doctrines.
 
-<!-- kit:begin id="tech-xp-note" at="section:Experience_costs" -->
-**Kit addition** Vanilla uses `xp_research_type` on 20 technologies, always `navy`, together with `xp_boost_cost` and `xp_research_bonus` (the Man the Guns boost). No technology sets `xp_unlock_cost`; the wiki says that form was commonly used with doctrines, which are no longer technologies. The defines `DEFAULT_XP_UNLOCK_RESEARCH_COST`, `DEFAULT_XP_BOOST_RESEARCH_COST` and `DEFAULT_XP_BOOST_RESEARCH_BONUS` default to 0. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/defines/00_defines.lua`
-<!-- kit:end id="tech-xp-note" -->
+Vanilla uses `xp_research_type` on 20 technologies, always `navy`, together with `xp_boost_cost` and `xp_research_bonus` (the Man the Guns boost). No technology sets `xp_unlock_cost`; the wiki says that form was commonly used with doctrines, which are no longer technologies. The defines `DEFAULT_XP_UNLOCK_RESEARCH_COST`, `DEFAULT_XP_BOOST_RESEARCH_COST` and `DEFAULT_XP_BOOST_RESEARCH_BONUS` default to 0.
 
-### AI weighting <a id="AI_weighting"></a>
+### AI weighting
 
-In order for the AI to research any technology, you MUST include at least one of its categories in any `/Hearts of Iron IV/common/ai_focuses/*.txt` [file](<ai_focuses.md>).
+In order for the AI to research any technology, you MUST include at least one of its categories in any `/Hearts of Iron IV/common/ai_focuses/*.txt` [file](ai_focuses.md).
 
-`ai_will_do = { ... }` is a [MTTH block](<ai_modding.md>) that decides the likelihood for the AI to do this focus if an AI strategy plan is not set.
+`ai_will_do = { ... }` is a [MTTH block](ai_modding.md) that decides the likelihood for the AI to do this focus if an AI strategy plan is not set.
 By default, each technology has a score of 1. The arguments of `base` (changing the value), `add`, and `factor` (multiplying it) can be used to modify it.
 Within the `ai_will_do = { ... }` block, `modifier = { ... }` functions as a trigger block where the prior three value-modifying arguments are also supported. The value will be modified if the triggers are true. For example, the following will result in the value of 3 for POL and a value of 1 for every other country:
 
@@ -457,23 +399,21 @@ ai_will_do = {
 }
 ```
 
-An arbitrarily large amount of modifiers is possible to add to an ai_will_do, and they will apply in the order they're put in the code. It is also possible to use [variables](<data_structures.md>) within a modifier of the ai_will_do value.
+An arbitrarily large amount of modifiers is possible to add to an ai_will_do, and they will apply in the order they're put in the code. It is also possible to use [variables](data_structures.md) within a modifier of the ai_will_do value.
 
-The way that the value is evaluated for AI picking the technology is that, every 7 days[3], it generates a random decimal value between 0 and the ai_will_do value for each of the technologies. There are several modifiers additionally, in order to make the AI take the cost, bonuses, and ahead-of-time into considerations. A lot of AI modifiers that apply to every single technology can be changed within [defines](<defines.md>).
+The way that the value is evaluated for AI picking the technology is that, every 7 days[3], it generates a random decimal value between 0 and the ai_will_do value for each of the technologies. There are several modifiers additionally, in order to make the AI take the cost, bonuses, and ahead-of-time into considerations. A lot of AI modifiers that apply to every single technology can be changed within [defines](defines.md).
 
 Additionally, `ai_research_weights = { offensive = -1.0 }` can be used to make the AI prioritise this technology less or more if it has the specified focus. This includes resources, sub-units, offensive and defensive, or sub-unit categories.
 
-### Doctrines <a id="Doctrines"></a>
+### Doctrines
 
-<!-- kit:begin id="tech-doctrines-warning" at="heading:Doctrines" -->
-**Kit correction** Doctrines are not technologies in 1.19.4.1. None of the 552 vanilla technologies uses `doctrine = yes` or `doctrine_name`, no technology is placed in `land_doctrine_folder`, `naval_doctrine_folder`, `air_doctrine_folder` or `special_forces_doctrine_folder` (the four folders still exist in `technology_folders` with `doctrine = yes`), and the doctrine window is built from `common/doctrines/` instead. Write new doctrines as grand doctrines, tracks and subdoctrines; see the [Doctrine modding](<doctrine_modding.md>) page. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/technology_tags/00_technology.txt`, `common/doctrines/`
-<!-- kit:end id="tech-doctrines-warning" -->
+Doctrines are not technologies in 1.19.4.1. None of the 552 vanilla technologies uses `doctrine = yes` or `doctrine_name`, no technology is placed in `land_doctrine_folder`, `naval_doctrine_folder`, `air_doctrine_folder` or `special_forces_doctrine_folder` (the four folders still exist in `technology_folders` with `doctrine = yes`), and the doctrine window is built from `common/doctrines/` instead. Write new doctrines as grand doctrines, tracks and subdoctrines; see the [Doctrine modding](doctrine_modding.md) page.
 
 In order to mark a technology as a doctrine, it must have `doctrine = yes`. It also will have to be within a technology folder that's assigned to hold doctrines.
 
 `doctrine_name = my_doctrine_name` is also defined within the first doctrine of the branch in order to let the player know the name of the doctrine branch when hovering over the icon (e.g. *Strategic destruction* or *Grand battleplan*). This is a localisation key that gets assigned a value for each language within any `/Hearts of Iron IV/localisation/` file.
 
-### Additional <a id="Additional"></a>
+### Additional
 
 `show_equipment_icon = yes` is used in order to make the equipment icon show up when hovering over the technology in the tree. This can be useful for technologies which use an icon that's not the same as the equipment that it unlocks, such as the landing craft or rocket engine technologies in base game.
 
@@ -481,14 +421,13 @@ In order to mark a technology as a doctrine, it must have `doctrine = yes`. It a
 
 `desc = MY_TECHNOLOGY_SPECIAL` provides additional text when hovering over the technology. *This is in addition to the technology's actual description*, rather than overwriting it. This is a localisation key that gets assigned a value for each language within any `/Hearts of Iron IV/localisation/` file.
 
-<!-- kit:begin id="tech-keys-extra" at="section:Additional" -->
-### Kit: Technology keys the page omits <a id="kit-tech-keys-extra"></a>
+### Technology keys the page omits
 
-**Kit addition** Keys in vanilla technologies that the page does not mention. Counts are technologies out of 552. Source: [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, with the exe tokens as [unverified] for meaning.
+Keys in vanilla technologies that the page does not mention. Counts are technologies out of 552. with the exe tokens as unverified for meaning.
 
 | Key | Count | Notes |
 | --- | --- | --- |
-| `special_project_specialization` | 334 | A list such as `{ specialization_land }`; values seen: `specialization_land`, `specialization_naval`, `specialization_air`, `specialization_nuclear`. Feeds the special project system; see the [Special project modding](<special_project_modding.md>) page. |
+| `special_project_specialization` | 334 | A list such as `{ specialization_land }`; values seen: `specialization_land`, `specialization_naval`, `specialization_air`, `specialization_nuclear`. Feeds the special project system; see the [Special project modding](special_project_modding.md) page. |
 | `is_special_project_tech` | 49 | `yes` on the technologies that special projects unlock. |
 | `XOR` and `xor` | 5 and 2 | Both spellings occur in vanilla; the wiki uses both. |
 | `dependencies` | 4 | `{ <tech> = 1 }` AND list, as the page describes. |
@@ -499,10 +438,9 @@ In order to mark a technology as a doctrine, it must have `doctrine = yes`. It a
 | `ai_research_weights` | 19 | Keys seen: `offensive`, `defensive`, `rubber`, `oil`. |
 | `desc` | 1 | Extra tooltip text key. |
 
-Unit and category bonus blocks (`category_all_infantry`, `armored_car`, `destroyer`, ...) are written directly inside the technology, as the Modifiers section says; vanilla has many hundreds of them. Folder blocks use only `name` and `position`; `path` uses `leads_to_tech`, `research_cost_coeff` and `ignore_for_layout`. [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`
-<!-- kit:end id="tech-keys-extra" -->
+Unit and category bonus blocks (`category_all_infantry`, `armored_car`, `destroyer`, ...) are written directly inside the technology, as the Modifiers section says; vanilla has many hundreds of them. Folder blocks use only `name` and `position`; `path` uses `leads_to_tech`, `research_cost_coeff` and `ignore_for_layout`.
 
-### Examples <a id="Examples"></a>
+### Examples
 
 **The text in this section has been collapsed by default.**
 
@@ -608,7 +546,7 @@ technologies = {
 }
 ```
 
-## Folders <a id="Folders"></a>
+## Folders
 
 Folders are defined as blocks within the `technology_folders = { ... }` block in `/Hearts of Iron IV/common/technology_tags/*.txt` files, where the name of the block within is used as the folder's ID.
 In particular, there are 3 arguments that can go into folders:
@@ -626,16 +564,15 @@ The localisation key used for the name of the technology is the same as the fold
 
 In order to make the folder appear in-game, the graphical user interface needs to be edited accordingly, in particular:
 
-- [A folder tab](#Folder_tabs) need to be added to the top bar in order for the player to be able to select the folder.
-- [The folder's container](#Folder) needs to be created and filled with gridboxes in order for the game to know where to place the technologies, as well as any additional elements of the user interface such as textboxes and the background.
-- [Item containers](#Items) decide on the appearance of technologies as they appear in the folder in order to decide the background and the arrangement of elements – such as a research bonus, the name of the technology or sub-technologies — on that background.
+- [A folder tab](#folder-tabs) need to be added to the top bar in order for the player to be able to select the folder.
+- [The folder's container](#folder) needs to be created and filled with gridboxes in order for the game to know where to place the technologies, as well as any additional elements of the user interface such as textboxes and the background.
+- [Item containers](#items) decide on the appearance of technologies as they appear in the folder in order to decide the background and the arrangement of elements – such as a research bonus, the name of the technology or sub-technologies — on that background.
 
-If any of these isn't present, it will be impossible for the player to research any new technologies manually, but the AI will still be able to do so and [set_technology](<effects.md>) may be used to directly assign them to the player.
+If any of these isn't present, it will be impossible for the player to research any new technologies manually, but the AI will still be able to do so and [set_technology](effects.md) may be used to directly assign them to the player.
 
-<!-- kit:begin id="tech-folders" at="section:Folders" -->
-### Kit: The real folder ids <a id="kit-tech-folders"></a>
+### The real folder ids
 
-**Kit addition** `common/technology_tags/00_technology.txt` defines 16 folders. The armour folders use the British spelling, `armour_folder` and `nsb_armour_folder`; `armor_folder` does not exist. [vanilla-confirmed 1.19.4.1] `common/technology_tags/00_technology.txt`
+`common/technology_tags/00_technology.txt` defines 16 folders. The armour folders use the British spelling, `armour_folder` and `nsb_armour_folder`; `armor_folder` does not exist.
 
 | Folder id | `ledger` | `available` | Technologies in vanilla |
 | --- | --- | --- | --- |
@@ -656,19 +593,18 @@ If any of these isn't present, it will be impossible for the player to research 
 | `air_doctrine_folder` | air | always (`doctrine = yes`) | 0 |
 | `special_forces_doctrine_folder` | hidden | "Arms Against Tyranny" or "No Compromise, No Surrender" (`doctrine = yes`) | 0 |
 
-411 technologies have a `folder` block, and 12 of them sit in more than one folder: 4 in both `armour_folder` and `nsb_armour_folder`, 4 in both air folders, 2 in `naval_folder` and `mtgnavalsupportfolder`, and one each in `electronics_folder` with `support_folder` and `infantry_folder` with `support_folder`. Base-game and DLC variants of a folder mostly hold different technology ids. Vanilla `ledger` values are `army`, `navy`, `air`, `civilian` and `hidden`; the wiki's `military` and `all` are not used by vanilla (20 `ledger` lines: army 8, navy 5, air 4, civilian 2, hidden 1). [vanilla-confirmed 1.19.4.1] `common/technologies/*.txt`, `common/technology_tags/00_technology.txt`, `common/doctrines/folders/doctrine_folders.txt`
-<!-- kit:end id="tech-folders" -->
+411 technologies have a `folder` block, and 12 of them sit in more than one folder: 4 in both `armour_folder` and `nsb_armour_folder`, 4 in both air folders, 2 in `naval_folder` and `mtgnavalsupportfolder`, and one each in `electronics_folder` with `support_folder` and `infantry_folder` with `support_folder`. Base-game and DLC variants of a folder mostly hold different technology ids. Vanilla `ledger` values are `army`, `navy`, `air`, `civilian` and `hidden`; the wiki's `military` and `all` are not used by vanilla (20 `ledger` lines: army 8, navy 5, air 4, civilian 2, hidden 1).
 
-## Graphical user interface <a id="Graphical_user_interface"></a>
+## Graphical user interface
 
-*See also: [Interface modding](<interface_modding.md>)*
+*See also: [Interface modding](interface_modding.md)*
 
 The menu for viewing the tree is defined within `/Hearts of Iron IV/interface/countrytechtreeview.gui` for technologies and `/Hearts of Iron IV/interface/countrydoctrinetreeview.gui` for doctrines. However, they are mostly similar in definition.
 
-### Items <a id="Items"></a>
+### Items
 
 A technology or doctrine tree item is the technology itself within the tree. It assigns which background is used, where exactly to locate the technology's icon in the background, where to place the technology bonus icon, where to place sub-technologies (if needed), where to place the technology's name on the research tree (if defined).
-A technology item is defined by using a containerWindowType with the name of `techtree_<folder name>_item`, while the small item is defined with the name of `techtree_<folder name>_small_item`. The definition for doctrine items is fully identical and does not differ from technologies in any way. These container windows for items are *not* contained within any other container window, rather being defined fully independently. **Small items are not inherently smaller**: the categorisation only assigns a different containerWindowType to be used for technologies that don't unlock equipment, and all of the properties are determined within that container window. Both use the exact same images as the default icon, [which must be changed manually](#Item_sprites) if needed.
+A technology item is defined by using a containerWindowType with the name of `techtree_<folder name>_item`, while the small item is defined with the name of `techtree_<folder name>_small_item`. The definition for doctrine items is fully identical and does not differ from technologies in any way. These container windows for items are *not* contained within any other container window, rather being defined fully independently. **Small items are not inherently smaller**: the categorisation only assigns a different containerWindowType to be used for technologies that don't unlock equipment, and all of the properties are determined within that container window. Both use the exact same images as the default icon, [which must be changed manually](#item-sprites) if needed.
 
 When a small item is used and when a regular item is is determined by equipment. If a technology unlocks equipment, it'll use the regular item, while a technology that doesn't unlock equipment will use the small item. However, if the folder has no small item defined in the interface file, then every single technology will use the regular item. `force_use_small_tech_layout = yes` within the technology will force it to use the small item, if it exists.
 
@@ -712,7 +648,7 @@ containerWindowType = {
 }
 ```
 
-In here, "Icon" represents the technology-specific icon. "bonus_icon" represents the icon that's used for the [one-time technology research bonus](<effects.md>) and "bonus" represents the text for the bonus saying how much it actually boosts the research. These can be edited to change the position or the font.
+In here, "Icon" represents the technology-specific icon. "bonus_icon" represents the icon that's used for the [one-time technology research bonus](effects.md) and "bonus" represents the text for the bonus saying how much it actually boosts the research. These can be edited to change the position or the font.
 
 For large items, usually the name of the technology is also shown on the tree without needing to see the description. This is done with inserting an instantTextBoxType with the name of "Name" into the item, usually between the "Icon" and "bonus_icon".
 Additionally, this is also where sub-technologies are assigned. A sub-technology slot is defined with a containerWindowType with the name of "sub_technology_slot_0", with the last number being 0 for the first one, 1 for the second one, and 2 for the third one. By default, there can be no more than 3 sub-technologies defined within an item[4]. The picture defined within is done with the `picture` iconType, and it cannot be changed to be technology-specific, it depends only on the sub-technology index of the technology.
@@ -786,7 +722,7 @@ containerWindowType = {
 }
 ```
 
-#### Item sprites <a id="Item_sprites"></a>
+#### Item sprites
 
 There are 5 sprites defined for item slots. By default, these are defined in `/Hearts of Iron IV/interface/countrytechtreeview.gfx`. If a folder doesn't have specific item slots, these are used for items:
 `GFX_technology_available_item_bg` is used for technologies that are shown to be available for the player to select
@@ -828,7 +764,7 @@ frameAnimatedSpriteType = {
 }
 ```
 
-### Folder <a id="Folder"></a>
+### Folder
 
 A folder is defined as a containerWindowType the name of which is exactly the same as the name of the folder within. That container window would have to be located within the containerWindowType with the name of `countrytechtreeview`, defined within `/Hearts of Iron IV/interface/countrytechtreeview.gui` (**not countrytechnologyview.gui**), for technology folders and within the containerWindowType with the name of `countrydoctrineview`, defined within `/Hearts of Iron IV/interface/countrydoctrinetreeview.gui`, for doctrine folders.
 This container contains information on what's within the folder itself: the background image used, anything else in the background such as the start years of technologies or textboxes telling the branches, as well where each individual technology branch is located.
@@ -878,7 +814,7 @@ In here, one important thing is the iconType representing the background, in thi
 Additionally, incredibly important are the gridboxes representing technology tree branches. The game uses them to know where exactly to locate the branches, how much to distance items within them, and in which direction to take the coordinates. The technology tree branch follows the name formatting of the first technology's name with _tree appended in the end.
 
 - `position = { ... }` argument is the position of the top-left corner of the technology icon counting from the upper left corner. x is left-to-right, y is up-to-down.
-- `slotsize = { ... }` argument is used to tell how to translate [the technology's position](#Position) within `folder = { ... }` into pixels.
+- `slotsize = { ... }` argument is used to tell how to translate [the technology's position](#position) within `folder = { ... }` into pixels.
 - `format = "LEFT"` argument is used to tell into which direction to aim x and y. The two most commonly-used positions in here are "LEFT", for making x point up-to-down and y point left-to-right, and "UP", for making x point left-to-right and y up-to-down. Usually these are used in trees pointed right from left and down from up respectively in order to make y the direction into which the tree moves.
 
 This also modifies how the paths are drawn between technologies. In most cases, with "LEFT", it goes right for one unit, then goes vertically for as much as necessary, and finally continues right for as much as needed; with "UP" it goes down by one unit, goes horizontally for as much as needed, and then continues down towards the technology. This does not always apply, such as when the technology is fairly close, but modifying the format can change the way the paths between technologies are drawn regardless.
@@ -886,7 +822,7 @@ Due to this, "LEFT" is used for horizontal trees (with the parent being on the v
 
 Any icons or textboxes can be added to the container window, and they'll appear in that position in the technology tree. This is what the game does for showing the start years of technologies, for example: each one is a separate instantTextBoxType within the folder's container window.
 
-### Folder tabs <a id="Folder_tabs"></a>
+### Folder tabs
 
 In order to select a technology folder, it should appear in the top selection. While the above folder section detailed the insides of the folder, it didn't detail adding the folder to the selection.
 
@@ -933,10 +869,10 @@ instantTextBoxType = {
 
 The text is what gets used within localisation, and the primary thing needed to change, while the name should just be unique from all the rest.
 
-## Technology sharing groups <a id="Technology_sharing_groups"></a>
+## Technology sharing groups
 
 Technology sharing groups are a feature allowing to receive bonuses to researching technology that other members of the group have already researched, up to 50%.[5] A technology group is defined in `/Hearts of Iron IV/common/technology_sharing/*.txt` files, where each group is represented with a separate `technology_sharing_group = { ... }` block.
-The only way to add a country to a technology sharing group is to [use the add_to_tech_sharing_group effect to do so.](<effects.md>) A similar effect can be used to remove them, and technology sharing groups can be set to automatically kick out members that don't meet requirements.
+The only way to add a country to a technology sharing group is to [use the add_to_tech_sharing_group effect to do so.](effects.md) A similar effect can be used to remove them, and technology sharing groups can be set to automatically kick out members that don't meet requirements.
 
 These arguments are used within technology sharing groups:
 `id = my_tech_group` is used to tell how to refer to the group is internally for the effects or triggers referring to one.
@@ -968,30 +904,14 @@ technology_sharing_group = {
 }
 ```
 
-<!-- kit:begin id="tech-sharing-extra" at="section:Technology_sharing_groups" -->
-**Kit addition** Vanilla defines 90 technology sharing groups in 11 files of `common/technology_sharing/`. Keys: `id`, `name`, `desc`, `picture` and `research_sharing_per_country_bonus` in all 90, `available` in 89, `categories` in 30 and `is_faction_sharing` in 1. The usual bonus is 0.1 per member and the usual picture `GFX_technology_sharing_default`. Membership is changed with `add_to_tech_sharing_group`, `remove_from_tech_sharing_group` and `modify_tech_sharing_bonus = { id = <group> bonus = 0.2 }`, and read with `is_in_tech_sharing_group` and `num_tech_sharing_groups`. `NTechnology.MAX_TECH_SHARING_BONUS` is 0.5, the cap the page cites. [vanilla-confirmed 1.19.3] `common/technology_sharing/*.txt`, `common/defines/00_defines.lua`; [docs] `documentation/effects_documentation.md`
-<!-- kit:end id="tech-sharing-extra" -->
+Vanilla defines 90 technology sharing groups in 11 files of `common/technology_sharing/`. Keys: `id`, `name`, `desc`, `picture` and `research_sharing_per_country_bonus` in all 90, `available` in 89, `categories` in 30 and `is_faction_sharing` in 1. The usual bonus is 0.1 per member and the usual picture `GFX_technology_sharing_default`. Membership is changed with `add_to_tech_sharing_group`, `remove_from_tech_sharing_group` and `modify_tech_sharing_bonus = { id = <group> bonus = 0.2 }`, and read with `is_in_tech_sharing_group` and `num_tech_sharing_groups`. `NTechnology.MAX_TECH_SHARING_BONUS` is 0.5, the cap the page cites.
 
-## References <a id="References"></a>
+## References
 
-1. ↑ NDefines.NTechnology.BASE_TECH_COST = 100
-2. ↑ NDefines.NTechnology.BASE_YEAR_AHEAD_PENALTY_FACTOR = 2
-3. ↑ NDefines.NAI.RESEARCH_DAYS_BETWEEN_WEIGHT_UPDATE = 7
-4. ↑ NDefines.NTechnology.MAX_SUBTECHS = 3
-5. ↑ `NDefines.NTechnology.MAX_TECH_SHARING_BONUS = 0.5` in [Defines](<defines.md>).
+1. NDefines.NTechnology.BASE_TECH_COST = 100
+2. NDefines.NTechnology.BASE_YEAR_AHEAD_PENALTY_FACTOR = 2
+3. NDefines.NAI.RESEARCH_DAYS_BETWEEN_WEIGHT_UPDATE = 7
+4. NDefines.NTechnology.MAX_SUBTECHS = 3
+5. `NDefines.NTechnology.MAX_TECH_SHARING_BONUS = 0.5` in [Defines](defines.md).
 
-Every single one of the above references is specified within [defines](<defines.md>) and can be changed within a mod. When changing the define files, make sure to use an override file rather than copying over the entire base game files, as copying over the entire thing will cause crashes even on otherwise minor game updates, which commonly add new defines.
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+Every single one of the above references is specified within [defines](defines.md) and can be changed within a mod. When changing the define files, make sure to use an override file rather than copying over the entire base game files, as copying over the entire thing will cause crashes even on otherwise minor game updates, which commonly add new defines.
