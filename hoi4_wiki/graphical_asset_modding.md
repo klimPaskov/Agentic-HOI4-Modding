@@ -1,41 +1,14 @@
 # Graphical asset modding
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Graphical asset modding", revision 73705, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="73705" sources="interface/ gfx/entities/ gfx/particles/WW_particles.gfx gfx/models/ gfx/fonts/ hoi4.exe" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: every `.gfx` file under `interface/`, `gfx/`, `dlc/*/` and `integrated_dlc/*/` (214 files with `spriteTypes`, 118 with `objectTypes`, 7 with `bitmapfonts`), `interface/core.gfx`, `interface/arrows.gfx`, `gfx/entities/*.gfx`, `gfx/particles/WW_particles.gfx`, the `.fnt` and `.dds` files in `gfx/fonts/`, and token strings in `hoi4.exe`.
-Kit blocks added: sprite kind census, key corrections for `spriteType` and its animation block, notes for frame animated, progress bar and cornered tile sprites, a correction for the `maskedShieldType` example, the filled "Object Types" and "Font Types" sections.
-Gaps left: no game file explains `steps`, `looping`, `play_on_show`, `tilingCenter`, `dx_offset` or the `gfx/FX/*.lua` effect files, so their meaning stays as the wiki states it.
-**1.19.4.1 re-check (2026-11-01).** 27 tagged statements depended on files the update changed (the `interface/*.gfx` and `.gui` files, and the DLC `gfx/` folders that the sprite and object counts scan), and all of them were re-measured directly on the installed files, including the files of the DLC folder the manifest diff cannot compare. Sprite counts rose (29,966 sprites, 160 `corneredTileSpriteType`, 76 `textSpriteType`), as did `alwaystransparent` (3,292), and a few font and key counts moved; the object file count is 97 (the earlier 118 cannot be reproduced and the update removed no `.gfx` file), and the earlier 'every DLC has an interface folder' claim is 12 of 16. Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Sprite Types](#Sprite_Types)
-  - [spriteType](#spriteType)
-- [frameAnimatedSpriteType](#frameAnimatedSpriteType)
-- [progressbartype](#progressbartype)
-- [corneredTileSpriteType](#corneredTileSpriteType)
-- [maskedShieldType](#maskedShieldType)
-- [Object Types](#Object_Types)
-- [animatedmaptext](#animatedmaptext)
-- [Font Types](#Font_Types)
-- [textcolors](#textcolors)
-- [bitmapfont](#bitmapfont)
-- [bitmapfont_override](#bitmapfont_override)
-
----
-
 Graphical assets are image files that have been defined in a `.gfx` file. This binds the image to a script name that is then referred to in the `.gui` interface files.
 
 Graphical asset files can be found in `/Hearts of Iron IV/interface/*.gfx`.
 
 Note that for many assets, such as technology and equipment asset definitions, the image can be specified for a specific tag, i.e. `GFX_ENG_<name>`, which only displays the asset for the specified tag. This will override the base asset of the same name. This also applies to graphical culture, i.e. `GFX_african_<name>`.
 
-## Sprite Types <a id="Sprite_Types"></a>
+## Sprite Types
 
-<!-- kit:begin id="gfx-sprite-census" at="section:Sprite_Types" -->
-**Kit addition** Sprite block kinds in 1.19.4.1, counted over the `.gfx` files of `interface/` (including its subfolders), `gfx/`, `dlc/*/` and `integrated_dlc/*/`. Keywords and keys are not case sensitive in practice: vanilla writes `spriteType` 18551 times and `SpriteType` 11415 times, and both `texturefile` and `textureFile`. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
+Sprite block kinds in 1.19.4.1, counted over the `.gfx` files of `interface/` (including its subfolders), `gfx/`, `dlc/*/` and `integrated_dlc/*/`. Keywords and keys are not case sensitive in practice: vanilla writes `spriteType` 18551 times and `SpriteType` 11415 times, and both `texturefile` and `textureFile`.
 
 | Keyword | Uses | What it is |
 | --- | --- | --- |
@@ -49,14 +22,11 @@ Note that for many assets, such as technology and equipment asset definitions, t
 | `circularProgressBarType` | 4 | keys `name`, `textureFile1`, `textureFile2`, `size`, `rotation`, `amount` |
 | `LineChartType` | 3 | keys `name`, `size = { x = 380 y = 120 }`, `linewidth` |
 
-All rows: [vanilla-confirmed 1.19.4.1] `interface/countrypoliticsview.gfx`, `interface/mapicons.gfx`, `interface/countryintelledger.gfx`, `interface/countrydiplomacyview.gfx`.
+`progressBarType` with a capital B appears in 4 blocks of `interface/powerbalanceview.gfx` with the same keys as `progressbartype` minus the colours; it is probably the same keyword. Both spellings are accepted as the same keyword: a sprite defined with `progressBarType` and one defined with `progressbartype` were each found by a gui icon when its window was created, with no error.log line, while a sprite that does not exist drew "Failed to create gui object. Could not find sprite type [NAME]". The windows are created at game start, before they are shown, and the look of the two bars was not seen.
 
-`progressBarType` with a capital B appears in 4 blocks of `interface/powerbalanceview.gfx` with the same keys as `progressbartype` minus the colours; it is probably the same keyword. [vanilla-confirmed 1.19.4.1] 4 of 4 blocks, and no other `.gfx` or `.gui` file writes this spelling, `interface/powerbalanceview.gfx`. Both spellings are accepted as the same keyword: a sprite defined with `progressBarType` and one defined with `progressbartype` were each found by a gui icon when its window was created, with no error.log line, while a sprite that does not exist drew "Failed to create gui object. Could not find sprite type [NAME]". [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read at game start. The windows are created at game start, before they are shown, and the look of the two bars was not seen.
+Sprite files are not only `interface/*.gfx`. Vanilla also uses `interface/building_roster/`, `interface/buildings/`, `interface/career_profile/`, `interface/doctrines/`, `interface/factions/`, `interface/international_market/`, `interface/military_industrial_organization/`, `interface/military_raids/`, `interface/pdx_online/`, `interface/special_projects/` and the `interface/` folder of 12 of the 16 DLC folders (`dlc/*/` and `integrated_dlc/*/`).
 
-Sprite files are not only `interface/*.gfx`. Vanilla also uses `interface/building_roster/`, `interface/buildings/`, `interface/career_profile/`, `interface/doctrines/`, `interface/factions/`, `interface/international_market/`, `interface/military_industrial_organization/`, `interface/military_raids/`, `interface/pdx_online/`, `interface/special_projects/` and the `interface/` folder of 12 of the 16 DLC folders (`dlc/*/` and `integrated_dlc/*/`). [vanilla-confirmed 1.19.4.1] `interface/`
-<!-- kit:end id="gfx-sprite-census" -->
-
-### spriteType <a id="spriteType"></a>
+### spriteType
 
 A **spriteType** and **textSpriteType** asset entry follows this format:
 
@@ -127,22 +97,20 @@ spriteTypes = {
 
 Be wary that the maximum file size for a sprite .dds files is around 16MB
 
-<!-- kit:begin id="gfx-sprite-key-corrections" at="section:spriteType" -->
-**Kit correction** Notes on the keys above, checked against all vanilla `spriteTypes` blocks.
+Notes on the keys above, checked against all vanilla `spriteTypes` blocks.
 
-- The page spells the transparency key `allwaystransparent`. Vanilla writes `alwaystransparent` (also `alwaysTransparent`) about 3292 times in `.gfx` and `.gui` files, and the extra-`l` spelling only 8 times in `interface/popupwindow.gfx` and `interface/traittree.gfx`. Write `alwaystransparent = yes`. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`, `interface/*.gui` The extra-`l` spelling is accepted in a `spriteType`, though: it drew no error.log line, while an unknown key in the same block was reported as "Unexpected token: <key>" with the file and line. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read at load. Whether the sprite becomes click-through was not seen.
-- Both spellings exist as token strings in `hoi4.exe`, so the typo is probably also accepted (executable strings only). [unverified] `hoi4.exe`
-- `legacy_lazy_load` is only ever written as `no` in vanilla (4865 uses, no `yes`). [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
-- Keys vanilla puts on `spriteType` that the page lacks: `clicksound` (23 sprites, the name of a sound effect such as `click_chat`, see [Sound modding](<sound_modding.md>)), `loadType` (`"INGAME"` 77 times and `"FRONTEND"` 6 times over all sprite kinds), `generate_mip_maps = yes` (4), `framedirectiony = yes` (4), `dx_offset = { x = -0.5 y = -0.5 }` (7) and `masking_texture` (1). [vanilla-confirmed 1.19.4.1] `interface/chat.gfx`, `interface/core.gfx`, `interface/*.gfx`
-- No game file states what `loadType`, `generate_mip_maps`, `framedirectiony` or `dx_offset` do: no file under `documentation/` names them and no `.gfx` comment explains them. [vanilla-confirmed 1.19.4.1] `documentation/*.md`, `interface/*.gfx`
-- Animation block: vanilla has 6372 `animation` blocks, and each sets the ten keys `animationmaskfile`, `animationtexturefile`, `animationrotation`, `animationlooping`, `animationtime`, `animationdelay`, `animationblendmode`, `animationtype`, `animationrotationoffset` and `animationtexturescale`. [vanilla-confirmed 1.19.4.1] `interface/abilitylist.gfx`
-- `animationblendmode` values in vanilla: `"add"` 6365 times, `"normal"` 4 times, `"overlay"` 3 times. `"multiply"`, which the page lists, is never used. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
-- `animationtype` values in vanilla: `"scrolling"` 6318 times, `"rotating"` 25, `"rotating_ccw"` 24, `"pulsing"` 5. `rotating_ccw` is missing from the page. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
-- `animationframes` appears in only 3 blocks and holds a list of frame numbers (`animationframes = { 1 2 3 }`), not a frame count as the page says. [vanilla-confirmed 1.19.4.1] `interface/crypto.gfx`, `interface/social_view.gfx`
-- `effectFile` is written at most once per sprite in vanilla (0 of 14,948 `spriteType` blocks have two). The page says several can be given; that is not shown by any game file. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
-<!-- kit:end id="gfx-sprite-key-corrections" -->
+- The page spells the transparency key `allwaystransparent`. Vanilla writes `alwaystransparent` (also `alwaysTransparent`) about 3292 times in `.gfx` and `.gui` files, and the extra-`l` spelling only 8 times in `interface/popupwindow.gfx` and `interface/traittree.gfx`. Write `alwaystransparent = yes`. The extra-`l` spelling is accepted in a `spriteType`, though: it drew no error.log line, while an unknown key in the same block was reported as "Unexpected token: <key>" with the file and line. Whether the sprite becomes click-through was not seen.
+- Both spellings exist as token strings in `hoi4.exe`, so the typo is probably also accepted (executable strings only). (unverified) `hoi4.exe`
+- `legacy_lazy_load` is only ever written as `no` in vanilla (4865 uses, no `yes`).
+- Keys vanilla puts on `spriteType` that the page lacks: `clicksound` (23 sprites, the name of a sound effect such as `click_chat`, see [Sound modding](sound_modding.md)), `loadType` (`"INGAME"` 77 times and `"FRONTEND"` 6 times over all sprite kinds), `generate_mip_maps = yes` (4), `framedirectiony = yes` (4), `dx_offset = { x = -0.5 y = -0.5 }` (7) and `masking_texture` (1).
+- No game file states what `loadType`, `generate_mip_maps`, `framedirectiony` or `dx_offset` do: no file under `documentation/` names them and no `.gfx` comment explains them.
+- Animation block: vanilla has 6372 `animation` blocks, and each sets the ten keys `animationmaskfile`, `animationtexturefile`, `animationrotation`, `animationlooping`, `animationtime`, `animationdelay`, `animationblendmode`, `animationtype`, `animationrotationoffset` and `animationtexturescale`.
+- `animationblendmode` values in vanilla: `"add"` 6365 times, `"normal"` 4 times, `"overlay"` 3 times. `"multiply"`, which the page lists, is never used.
+- `animationtype` values in vanilla: `"scrolling"` 6318 times, `"rotating"` 25, `"rotating_ccw"` 24, `"pulsing"` 5. `rotating_ccw` is missing from the page.
+- `animationframes` appears in only 3 blocks and holds a list of frame numbers (`animationframes = { 1 2 3 }`), not a frame count as the page says.
+- `effectFile` is written at most once per sprite in vanilla (0 of 14,948 `spriteType` blocks have two). The page says several can be given; that is not shown by any game file.
 
-## frameAnimatedSpriteType <a id="frameAnimatedSpriteType"></a>
+## frameAnimatedSpriteType
 
 A **frameAnimatedSpriteType** asset entry follows this format:
 
@@ -182,8 +150,7 @@ spriteTypes = {
 
 **allwaystransparent** defines whether the image is bound by its alpha channel with regards to player clicks. Otherwise the bounding box is the image dimensions.
 
-<!-- kit:begin id="gfx-frameanimated-notes" at="section:frameAnimatedSpriteType" -->
-**Kit note** All 160 vanilla `frameAnimatedSpriteType` blocks set `name`, `noOfFrames`, `animation_rate_fps` and `looping`. `play_on_show` is set in 153 and `pause_on_loop` in 156. `animation_rate_fps` is not an integer: vanilla uses 15 (41 blocks), 1 (36), 1.5 (26), 12 (18), 24 (10), 2 (9), 7 (5) and 0.5 (3), and 12 more blocks use other rates. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`
+All 160 vanilla `frameAnimatedSpriteType` blocks set `name`, `noOfFrames`, `animation_rate_fps` and `looping`. `play_on_show` is set in 153 and `pause_on_loop` in 156. `animation_rate_fps` is not an integer: vanilla uses 15 (41 blocks), 1 (36), 1.5 (26), 12 (18), 24 (10), 2 (9), 7 (5) and 0.5 (3), and 12 more blocks use other rates.
 
 ```text
 frameAnimatedSpriteType = {
@@ -199,10 +166,9 @@ frameAnimatedSpriteType = {
 }
 ```
 
-Example block. [vanilla-confirmed 1.19.4.1] `interface/alerts.gfx`
-<!-- kit:end id="gfx-frameanimated-notes" -->
+Example block.
 
-## progressbartype <a id="progressbartype"></a>
+## progressbartype
 
 A **progressbartype** asset entry is used for progress bars. It follows this format:
 
@@ -235,8 +201,7 @@ spriteTypes = {
 **horizontal** defines whether the progress bar is horizontal or not. By default a bar is horizontal.
 **steps** defines the precision of the progressbar or into how many frames it's split into. Defaults to 100 if unset.
 
-<!-- kit:begin id="gfx-progressbar-notes" at="section:progressbartype" -->
-**Kit note** All 106 vanilla `progressbartype` blocks set `name`, `textureFile1`, `textureFile2`, `size` and `effectFile`. `color` and `colortwo` come as a pair in 83 blocks, `horizontal` is set in 38 and `steps` in 16 (values 3, 5, 408, 500, 10000 and 1000000). Colours are decimal 0 to 1. The page's default of 100 for `steps` is not stated in any game file. [vanilla-confirmed 1.19.4.1] `interface/countryproductionlineview.gfx`, `interface/*.gfx`
+All 106 vanilla `progressbartype` blocks set `name`, `textureFile1`, `textureFile2`, `size` and `effectFile`. `color` and `colortwo` come as a pair in 83 blocks, `horizontal` is set in 38 and `steps` in 16 (values 3, 5, 408, 500, 10000 and 1000000). Colours are decimal 0 to 1. The page's default of 100 for `steps` is not stated in any game file.
 
 ```text
 progressbartype = {
@@ -250,10 +215,9 @@ progressbartype = {
 }
 ```
 
-Example block. Vanilla paths mix `/`, `//` and `\\` separators. [vanilla-confirmed 1.19.3] `interface/countryproductionlineview.gfx`
-<!-- kit:end id="gfx-progressbar-notes" -->
+Example block. Vanilla paths mix `/`, `//` and `\\` separators.
 
-## corneredTileSpriteType <a id="corneredTileSpriteType"></a>
+## corneredTileSpriteType
 
 A **corneredTileSpriteType** asset entry is used for tiling textures that tile to fill the size of the interface element they are used in. It follows this format:
 
@@ -302,8 +266,7 @@ spriteTypes = {
 
 **animation_rate_spf** defiens the framerate at which the animation plays.
 
-<!-- kit:begin id="gfx-cornered-notes" at="section:corneredTileSpriteType" -->
-**Kit note** In the 160 vanilla `corneredTileSpriteType` blocks `borderSize` is set in 155, `size` in 132 and `tilingCenter` in 104. `animation_rate_spf` and `looping` appear in 2 blocks only (values 2 and 4). A block with `size = { x = 0 y = 0 }` exists, so a zero size is accepted. [vanilla-confirmed 1.19.4.1] `interface/*.gfx`, `interface/core_bare_minimum.gfx`
+In the 160 vanilla `corneredTileSpriteType` blocks `borderSize` is set in 155, `size` in 132 and `tilingCenter` in 104. `animation_rate_spf` and `looping` appear in 2 blocks only (values 2 and 4). A block with `size = { x = 0 y = 0 }` exists, so a zero size is accepted.
 
 ```text
 corneredTileSpriteType = {
@@ -314,13 +277,11 @@ corneredTileSpriteType = {
 }
 ```
 
-Example block. [vanilla-confirmed 1.19.3] `interface/core_bare_minimum.gfx`
-<!-- kit:end id="gfx-cornered-notes" -->
+Example block.
 
-## maskedShieldType <a id="maskedShieldType"></a>
+## maskedShieldType
 
-<!-- kit:begin id="gfx-maskedshield-correction" at="heading:maskedShieldType" -->
-**Kit correction** The example under this heading opens with `corneredTileSpriteType`, which is a copy error. A masked shield block starts with `maskedShieldType`. All 13 vanilla blocks set `name`, `textureFile1` (the shield image), `textureFile2` (the mask) and `effectFile`; one also sets `alwaystransparent = yes`. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
+The example under this heading opens with `corneredTileSpriteType`, which is a copy error. A masked shield block starts with `maskedShieldType`. All 13 vanilla blocks set `name`, `textureFile1` (the shield image), `textureFile2` (the mask) and `effectFile`; one also sets `alwaystransparent = yes`.
 
 ```text
 maskedShieldType = {
@@ -330,7 +291,6 @@ maskedShieldType = {
 	effectFile = "gfx//FX//maskedflag.lua"
 }
 ```
-<!-- kit:end id="gfx-maskedshield-correction" -->
 
 A **maskedShieldType** asset entry is used for country shields. It follows this format:
 
@@ -353,10 +313,9 @@ spriteTypes = {
 
 **effectFile** is used to define an effect state to apply to the image, i.e. the button press effect on a button image. Effects are found in `/Hearts of Iron IV/gfx/FX/*.lua`. Multiple can be defined to add multiple effects.
 
-## Object Types <a id="Object_Types"></a>
+## Object Types
 
-<!-- kit:begin id="gfx-object-types" at="section:Object_Types" -->
-**Kit addition** `objectTypes = { ... }` blocks define 3D and map objects. Vanilla has 97 files with an `objectTypes` block, holding 1409 `pdxmesh`, 175 `pdxparticle`, 8 `arrowType` and 6 `animatedmaptext` entries. [vanilla-confirmed 1.19.4.1] `gfx/entities/*.gfx`, `gfx/models/`, `interface/core.gfx`, `interface/arrows.gfx`
+`objectTypes = { ... }` blocks define 3D and map objects. Vanilla has 97 files with an `objectTypes` block, holding 1409 `pdxmesh`, 175 `pdxparticle`, 8 `arrowType` and 6 `animatedmaptext` entries.
 
 | Block | Found in | Keys |
 | --- | --- | --- |
@@ -365,11 +324,9 @@ spriteTypes = {
 | `arrowType` | `interface/arrows.gfx` | `name`, `texture`, `normal`, `specular`, `effect` (all 8 set all five) |
 | `animatedmaptext` | `interface/core.gfx` | see the next section |
 
-All rows: [vanilla-confirmed 1.19.4.1] the files named in the table.
+`meshsettings` keys in vanilla: `name` (the mesh shape name), `index`, `texture_diffuse`, `texture_normal`, `texture_specular` and `shader`. Texture names are relative to the folder of the `.mesh` file. Shader values: `"PdxMeshAdvanced"` 645, `"PdxMeshAdvancedAnim"` 56, `"PdxMeshTrain"` 49, `"PdxMeshAdvancedSnow"` 49. `variant = { weight = 1.0 pdxmesh = "<other mesh>" }` is used 19 times, for cavalry horses.
 
-`meshsettings` keys in vanilla: `name` (the mesh shape name), `index`, `texture_diffuse`, `texture_normal`, `texture_specular` and `shader`. Texture names are relative to the folder of the `.mesh` file. Shader values: `"PdxMeshAdvanced"` 645, `"PdxMeshAdvancedAnim"` 56, `"PdxMeshTrain"` 49, `"PdxMeshAdvancedSnow"` 49. `variant = { weight = 1.0 pdxmesh = "<other mesh>" }` is used 19 times, for cavalry horses. [vanilla-confirmed 1.19.4.1] `gfx/entities/tanks.gfx`, `gfx/entities/infantry.gfx`
-
-The vanilla comment above the `variant` lines calls the feature work in progress and gives two limits: all variants must use the same `.mesh` file, and an entity cannot override `meshsettings`. [vanilla-confirmed 1.19.3] `gfx/entities/infantry.gfx`
+The vanilla comment above the `variant` lines calls the feature work in progress and gives two limits: all variants must use the same `.mesh` file, and an entity cannot override `meshsettings`.
 
 ```text
 objectTypes = {
@@ -394,14 +351,13 @@ objectTypes = {
 }
 ```
 
-Both blocks are shortened from vanilla. [vanilla-confirmed 1.19.3] `gfx/entities/tanks.gfx`, `gfx/entities/particles.gfx`
+Both blocks are shortened from vanilla.
 
-For `animatedmaptext`, vanilla defines six entries in `interface/core.gfx`: `MessageMapText`, `ProvinceTaxText`, `ProvinceDirectTaxText`, `CombatLoss`, `siegeinfo` and `debugtext`. One of them gives `color` four values, so alpha is allowed. That a mod cannot add new names, as the page says, is not shown by any game file. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
+For `animatedmaptext`, vanilla defines six entries in `interface/core.gfx`: `MessageMapText`, `ProvinceTaxText`, `ProvinceDirectTaxText`, `CombatLoss`, `siegeinfo` and `debugtext`. One of them gives `color` four values, so alpha is allowed. That a mod cannot add new names, as the page says, is not shown by any game file.
 
-How `pdxmesh` names are used by entities is on [Entity modding](<entity_modding.md>); how `pdxparticle` names are used is on [Particle modding](<particle_modding.md>).
-<!-- kit:end id="gfx-object-types" -->
+How `pdxmesh` names are used by entities is on [Entity modding](entity_modding.md); how `pdxparticle` names are used is on [Particle modding](particle_modding.md).
 
-## animatedmaptext <a id="animatedmaptext"></a>
+## animatedmaptext
 
 A **animatedmaptext** asset entry is used for text that appears from the map. It follows this format:
 
@@ -435,10 +391,9 @@ objectTypes = {
 
 **textblock** controls the attributes of the text that appears.
 
-## Font Types <a id="Font_Types"></a>
+## Font Types
 
-<!-- kit:begin id="gfx-font-types" at="section:Font_Types" -->
-**Kit addition** Fonts are defined by `bitmapfonts = { ... }` blocks. Vanilla has 44 `bitmapfont` and 139 `bitmapfont_override` entries in 7 files of `interface/`. The font bitmaps themselves are `.fnt` plus `.dds` pairs in `gfx/fonts/` and its `chinese/`, `japanese/` and `korean/` subfolders. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`, `gfx/fonts/`
+Fonts are defined by `bitmapfonts = { ... }` blocks. Vanilla has 44 `bitmapfont` and 139 `bitmapfont_override` entries in 7 files of `interface/`. The font bitmaps themselves are `.fnt` plus `.dds` pairs in `gfx/fonts/` and its `chinese/`, `japanese/` and `korean/` subfolders.
 
 | File | `bitmapfont` | `bitmapfont_override` | Content |
 | --- | --- | --- | --- |
@@ -450,16 +405,13 @@ objectTypes = {
 | `interface/fonts.gfx` | 2 | 0 | debug fonts `garamond_12`, `cw_3d_debug` |
 | `interface/core_bare_minimum.gfx` | 1 | 0 | `null_font` |
 
-All rows: [vanilla-confirmed 1.19.4.1] the files named in the table.
+The fonts most used by the base `interface/*.gui` files, counted as `font =` lines: `hoi_18mbs` (1354), `hoi_16mbs` (769), `hoi_36header` (190), `hoi_24header` (138), `hoi_20b` (113), `hoi4_typewriter16` (92), `hoi_20bs` (91), `vic_18` (70), `hoi_18b` (69), `Main_16` (58).
 
-The fonts most used by the base `interface/*.gui` files, counted as `font =` lines: `hoi_18mbs` (1354), `hoi_16mbs` (769), `hoi_36header` (190), `hoi_24header` (138), `hoi_20b` (113), `hoi4_typewriter16` (92), `hoi_20bs` (91), `vic_18` (70), `hoi_18b` (69), `Main_16` (58). [vanilla-confirmed 1.19.4.1] `interface/*.gui`
+The language codes that vanilla puts in `languages = { ... }` are `l_japanese`, `l_simp_chinese`, `l_korean`, `l_russian` and `l_polish`. The game's language list also has `l_english`, `l_braz_por`, `l_french`, `l_german` and `l_spanish`, which vanilla never overrides.
 
-The language codes that vanilla puts in `languages = { ... }` are `l_japanese`, `l_simp_chinese`, `l_korean`, `l_russian` and `l_polish`. The game's language list also has `l_english`, `l_braz_por`, `l_french`, `l_german` and `l_spanish`, which vanilla never overrides. [vanilla-confirmed 1.19.4.1] `localisation/languages.yml`, `interface/core.gfx`
+See [Font modding](font_modding.md) for making the bitmaps.
 
-See [Font modding](<font_modding.md>) for making the bitmaps.
-<!-- kit:end id="gfx-font-types" -->
-
-## textcolors <a id="textcolors"></a>
+## textcolors
 
 A **textcolors** entry defines the text colors used in localization with the § symbol. It follows this format:
 
@@ -475,7 +427,7 @@ bitmapfonts = {
 
 **RGB** is the color that the symbol applies. It is integer RGB.
 
-## bitmapfont <a id="bitmapfont"></a>
+## bitmapfont
 
 A **bitmapfont** entry defines a font used in the game. It follows this format:
 
@@ -515,16 +467,14 @@ bitmapfonts = {
 
 **cursor_offset** offsets the text cursor for the font. Defines the *x* position and then the *y* position.
 
-<!-- kit:begin id="gfx-font-key-notes" at="section:bitmapfont" -->
-**Kit note** Facts about `bitmapfont` keys from the vanilla files.
+Facts about `bitmapfont` keys from the vanilla files.
 
-- The global `textcolors` block in `interface/core.gfx` defines 23 symbols: `C L W B G R b g Y H T O`, the digits `0` to `9` and `t`. Colours are integer `{ r g b }`. A `textcolors` block inside one `bitmapfont` overrides only the symbols it lists, for that font. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
-- `color` is `0xAARRGGBB`; vanilla uses values like `0xffffffff` and `0xff7799ff`. `border_color` is set in one font (`Main_14`, `0x00000000`). [vanilla-confirmed 1.19.4.1] `interface/core.gfx`
-- `cursor_offset = { 0 4 }` is written as two numbers on one line and set on 3 header fonts. The page shows it as two lines. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`, `interface/load_screen_font.gfx`
-- `path` is used in 20 fonts, `fontfiles` in 24. The exe has the message "Font '%s' has both path and fontfiles scripted? Will only use fontfiles", so `fontfiles` wins when both are present. [vanilla-confirmed 1.19.4.1] `interface/core.gfx`. No vanilla font block writes both (0 of 44). The message is real: a test font with both keys drew "Font 'igc_e_font' has both path and fontfiles scripted? Will only use fontfiles" in error.log at load. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, error.log read. The claim that `fontfiles` wins rests on that engine message, not on a screenshot of the rendered font.
-<!-- kit:end id="gfx-font-key-notes" -->
+- The global `textcolors` block in `interface/core.gfx` defines 23 symbols: `C L W B G R b g Y H T O`, the digits `0` to `9` and `t`. Colours are integer `{ r g b }`. A `textcolors` block inside one `bitmapfont` overrides only the symbols it lists, for that font.
+- `color` is `0xAARRGGBB`; vanilla uses values like `0xffffffff` and `0xff7799ff`. `border_color` is set in one font (`Main_14`, `0x00000000`).
+- `cursor_offset = { 0 4 }` is written as two numbers on one line and set on 3 header fonts. The page shows it as two lines.
+- `path` is used in 20 fonts, `fontfiles` in 24. The exe has the message "Font '%s' has both path and fontfiles scripted? Will only use fontfiles", so `fontfiles` wins when both are present. No vanilla font block writes both (0 of 44). The message is real: a test font with both keys drew "Font 'igc_e_font' has both path and fontfiles scripted? Will only use fontfiles" in error.log at load. The claim that `fontfiles` wins rests on that engine message, not on a screenshot of the rendered font.
 
-## bitmapfont_override <a id="bitmapfont_override"></a>
+## bitmapfont_override
 
 A **bitmapfont_override** entry is used to override a font for a specific locale. It follows this format:
 
@@ -549,17 +499,3 @@ bitmapfonts = {
 **fontfiles** is used when their are multiple font images for one font, i.e. to support English and Cryllic. This is used inplace of **path**.
 
 **languages** defines which languages this override applies for.
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)

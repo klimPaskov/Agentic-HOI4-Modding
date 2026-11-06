@@ -1,37 +1,12 @@
 # Nudger
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Nudger", revision 97432, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
-
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="97432" sources="interface/nudge.gui interface/nudge.gfx interface/frontendmainview.gui map/buildings.txt map/unitstacks.txt map/supply_nodes.txt map/railways.txt map/weatherpositions.txt map/definition.csv map/strategicregions/ history/states/ buildings_nudger_markers.txt unit_nudger_markers.txt common/defines/00_graphics.lua documentation/console_commands_documentation.md" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** Checked against: the nudger's own interface file `interface/nudge.gui` (every window and button label), `interface/frontendmainview.gui`, the map files the nudger reads and writes (row counts and column layout of `map/buildings.txt` and `map/unitstacks.txt`, sizes of the others), the two marker files in the game folder, the nudger define, the `nudge` console command, and class names in `hoi4.exe`.
-Kit blocks added: the nudger menu in 1.19.3, the filled "Strategic regions", "Buildings", "Units" and "References and notes" sections, a folder name correction in "Weather".
-Gaps left: the wiki's long behaviour descriptions (shift-click rules, save and update semantics, crash causes) cannot be checked from game files and are left as written. What the "Mark/Unmark", "Random" and "Validate" buttons do exactly, and what the marker files hold, is not documented, so those statements are marked `[unverified]`.
-**1.19.4.1 re-check (2026-11-01).** 9 kit statements depended on files the update changed (`map/buildings.txt`, `history/states/`, the core localisation, the graphics defines and the strings and class names of `hoi4.exe`) and all were re-measured. One fact changed: the last column of the 2334 `floating_harbor` rows in `map/buildings.txt` is a land province, not a sea province (only the 2362 `naval_base_spawn` rows name a sea province). Every other statement cites files that are byte-identical in 1.19.4.1 (Steam depot manifest diff).
-<!-- kit:end id="review" -->
-
-## Table of contents
-
-- [Overview](#Overview)
-- [States](#States)
-  - [Buildings](#Buildings)
-- [Strategic regions](#Strategic_regions)
-  - [Weather](#Weather)
-    - [Weather positions](#Weather_positions)
-    - [Weather chances](#Weather_chances)
-- [Database](#Database)
-- [Units](#Units)
-- [Supply](#Supply)
-- [References and notes](#References_and_notes)
-
----
-
 The nudger is a tool in Hearts of Iron IV used in creation of map-related files.
 
-The nudger is accessed via the [nudge console command](<console_commands.md>) or the "Nudge!" button in the main menu, which appears when the [debug launch option](<modding.md>) is used when launching the game. Upon launching, it will show the default state of the world, as it appears in the [bookmark](<bookmark_modding.md>) that's set to be the default. If there is no default bookmark, then the map will appear as having no countries.
+The nudger is accessed via the [nudge console command](console_commands.md) or the "Nudge!" button in the main menu, which appears when the [debug launch option](modding.md) is used when launching the game. Upon launching, it will show the default state of the world, as it appears in the [bookmark](bookmark_modding.md) that's set to be the default. If there is no default bookmark, then the map will appear as having no countries.
 
-The nudger will always output the files directly into the [user directory](<modding.md>), such as `C:/Users/username/Documents/Paradox Interactive/Hearts of Iron IV/` (the default location on Windows without OneDrive). **Unless moved, the generated files will be loaded when opening the base game**, potentially causing crashes and at the very least map definition errors that cause the game to close itself without the debug mode. This potentially includes the `history/states/`, `map/`, and `localisation/english/`.
+The nudger will always output the files directly into the [user directory](modding.md), such as `C:/Users/username/Documents/Paradox Interactive/Hearts of Iron IV/` (the default location on Windows without OneDrive). **Unless moved, the generated files will be loaded when opening the base game**, potentially causing crashes and at the very least map definition errors that cause the game to close itself without the debug mode. This potentially includes the `history/states/`, `map/`, and `localisation/english/`.
 
-## Overview <a id="Overview"></a>
+## Overview
 
 - States: Used to edit the state history files. It doesn't modify the state-wide building model positions, necessary for a new state to work as intended.
 - Supply areas: The supply areas were removed in 1.11 (the update with the ![No Step Back](media/country_creation_1d4220f262__img16.png)No Step Back DLC), and the button is currently non-functional.
@@ -44,23 +19,21 @@ The nudger will always output the files directly into the [user directory](<modd
 - Supply: Used for positioning the starting locations and levels of supply hubs and railways.
 - Leave nudge: Attempts to return to the main menu. If the nudger was entered using the console instead of the main menu, results in a crash to desktop.
 
-<!-- kit:begin id="nudger-menu" at="section:Overview" -->
-**Kit note** The nudger menu as 1.19.3 defines it. The selection window is headed "Choose nudger" and lists, in this order: States, Supply Areas, Strategic Regions, Ambient objects, Database, Weather, Buildings, Units, Supply, and a "Leave Nudge" button. The main menu button is `nudge_button`, labelled "Nudge!". [vanilla-confirmed 1.19.3] `interface/nudge.gui`, `interface/frontendmainview.gui`
+The nudger menu as 1.19.3 defines it. The selection window is headed "Choose nudger" and lists, in this order: States, Supply Areas, Strategic Regions, Ambient objects, Database, Weather, Buildings, Units, Supply, and a "Leave Nudge" button. The main menu button is `nudge_button`, labelled "Nudge!".
 
-The console command `nudge` is documented as "Go to the nudge tool". [docs] `documentation/console_commands_documentation.md`
+The console command `nudge` is documented as "Go to the nudge tool".
 
-"Supply Areas" is still in the menu and `nudge_window_supplyarea` is still in the interface file (fields "Supply area name" and "Base value", buttons "Apply value", "Generate", "Regenerate All", "Open File", "Delete region", "Create region", "Update", "Save"). `hoi4.exe` has nudger classes for states, strategic regions, ambient objects, the database, weather, buildings, units and supply hubs, and none for supply areas, which fits the page's remark that the button does nothing. [vanilla-confirmed 1.19.3] `interface/nudge.gui`. The class list is [unverified] `hoi4.exe`. The button does nothing visible in 1.19.4.1: from the main menu "Nudge!", the "Choose nudger" list showed States, Supply Areas, Strategic Regions, Ambient objects, Database, Weather, Buildings, Units, Supply and Leave Nudge, and clicking Supply Areas changed nothing on screen, from the start view and from the States view, while clicking States switched the map to a state-border view. No file was written to the user folder. The exe class part was not checked, because no binary was inspected. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, Nudge from the main menu, screenshots.
+"Supply Areas" is still in the menu and `nudge_window_supplyarea` is still in the interface file (fields "Supply area name" and "Base value", buttons "Apply value", "Generate", "Regenerate All", "Open File", "Delete region", "Create region", "Update", "Save"). `hoi4.exe` has nudger classes for states, strategic regions, ambient objects, the database, weather, buildings, units and supply hubs, and none for supply areas, which fits the page's remark that the button does nothing. The class list is unverified `hoi4.exe`. The button does nothing visible in 1.19.4.1: from the main menu "Nudge!", the "Choose nudger" list showed States, Supply Areas, Strategic Regions, Ambient objects, Database, Weather, Buildings, Units, Supply and Leave Nudge, and clicking Supply Areas changed nothing on screen, from the start view and from the States view, while clicking States switched the map to a state-border view. No file was written to the user folder. The exe class part was not checked, because no binary was inspected.
 
-The game's own map error text tells the player: "You can still access the Nudger to attempt to fix the issues", and after coming back from it, restart the game so everything reloads. [vanilla-confirmed 1.19.4.1] `localisation/english/core_l_english.yml` (`MAP_LOADING_ERROR_INGAME_MITIGATION`)
-<!-- kit:end id="nudger-menu" -->
+The game's own map error text tells the player: "You can still access the Nudger to attempt to fix the issues", and after coming back from it, restart the game so everything reloads.
 
-## States <a id="States"></a>
+## States
 
-*See also: [State modding](<state_modding.md>)*
+*See also: [State modding](state_modding.md)*
 
 The state section of the nudger is used for defining the borders and names of states. Any state border changes will also automatically change the borders of the strategic regions that cover the states, taking provinces out of strategic regions completely for new states. Within the user directory, this edits the `/Hearts of Iron IV/history/states/` and `/Hearts of Iron IV/map/strategicregions/` folders and the `/Hearts of Iron IV/localisation/english/state_names_l_english.yml` file (for the English language).
-**The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has_dlc](<triggers.md>) checks, which will result in the entirety of the state breaking thereafter.
-**The nudger interprets version number–less [localisation](<localisation.md>) values as having a version of -1**, and writes that in the output. As the game only expects numeric values in the version number, this will break the localisation after that point, with an error of the `Expected quotation mark (") at line 113 and column 16 in ...` sort.
+**The nudger will remove quotation marks from the state file, aside from the `name` attribute.** This can break the rest of the script that's located inside of them. Most commonly, this will break any [has_dlc](triggers.md) checks, which will result in the entirety of the state breaking thereafter.
+**The nudger interprets version number–less [localisation](localisation.md) values as having a version of -1**, and writes that in the output. As the game only expects numeric values in the version number, this will break the localisation after that point, with an error of the `Expected quotation mark (") at line 113 and column 16 in ...` sort.
 
 Clicking onto a province is used to select a province. After a province is selected, `⇧Shift`-clicking onto a province causes the following behaviour, depending on the selected and clicked provinces:
 
@@ -78,33 +51,32 @@ If a province or several not in any state are selected, it is possible to create
 If the selected province(s) are in a state, it is possible to select "Open file" or "Delete state":
 
 - Opening the file will use the default text editor for .txt files to open the file of the state in the user directory. If the user directory doesn't contain the file, a copy will be created. This copy doesn't contain the changes made in the nudger and instead will have those that were loaded into the memory when the files were last fetched (by opening the game, with "Update", or with "Save"). If the button is used and the file's version in the user directory is deleted, the button will do nothing until the next fetch of state files.
-- "Delete state" will not necessarily delete the state, but instead remove the file from the user directory (if it exists) and unload from memory all changes that were made to it in the nudger. This will also cause the game to try reading the state files related to the state ID: if the [loaded files](<modding.md#Loading_files>) contain a state with the same ID, it will get used for the state's information, otherwise it will be deleted.
+- "Delete state" will not necessarily delete the state, but instead remove the file from the user directory (if it exists) and unload from memory all changes that were made to it in the nudger. This will also cause the game to try reading the state files related to the state ID: if the [loaded files](modding.md#loading-files) contain a state with the same ID, it will get used for the state's information, otherwise it will be deleted.
 
 Among the buttons that can always be selected, there are "Delete all empty" and "Find collision".
 
 - "Delete all empty" works similarly to deleting an individual state: it checks for all provinces that have no provinces in memory (taking unsaved changes into consideration). If it finds any, the state gets deleted from memory and the user directory. Afterwards, the game will try finding a file to use as the new state information for each of the deleted states.
 - "Find collision" detects provinces that are located in several states at the same time. When pressed, it will move the player's camera to one of such provinces and give a selection of which state it must remain in; upon making a choice, it will be removed from every other state.
 
-"Update" is used to disregard all unsaved changes and re-read the state files among the [loaded files](<modding.md#Loading_files>). If the state borders were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game.
-"Save" is used to write all changes to the user directory. Upon doing so, the changes will be purged from memory and the game will re-read the state files among the [loaded files](<modding.md#Loading_files>). **If the state files in the user directory are overwritten or unloaded by mod files, it will appear that (some of) the changes will instantly revert, however they'll still be present in the user directory.** This will require moving the files into the mod's files and updating the state of the game with "Update". Only the files since the last fetching of files will be created or changed within the user directory after saving.
+"Update" is used to disregard all unsaved changes and re-read the state files among the [loaded files](modding.md#loading-files). If the state borders were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game.
+"Save" is used to write all changes to the user directory. Upon doing so, the changes will be purged from memory and the game will re-read the state files among the [loaded files](modding.md#loading-files). **If the state files in the user directory are overwritten or unloaded by mod files, it will appear that (some of) the changes will instantly revert, however they'll still be present in the user directory.** This will require moving the files into the mod's files and updating the state of the game with "Update". Only the files since the last fetching of files will be created or changed within the user directory after saving.
 
-### Buildings <a id="Buildings"></a>
+### Buildings
 
 \*Please help improve this article or section by expanding it .\*
 
-<!-- kit:begin id="nudger-buildings" at="section:Buildings" -->
-**Kit addition** The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;province` (see the last column below) and is explained on [Map modding](<map_modding.md#Buildings>) and [Building modding](<building_modding.md#Models>). The output path is inferred from the file names in the exe. [unverified] `hoi4.exe`
+The Buildings section writes `map/buildings.txt` (to the user directory, like the other sections). The row layout is `state id;building id;x;y;z;rotation;province` (see the last column below) and is explained on [Map modding](map_modding.md#buildings) and [Building modding](building_modding.md#models). The output path is inferred from the file names in the exe. (unverified) `hoi4.exe`
 
-What a correct vanilla file looks like, to check a nudged file against. All rows: [vanilla-confirmed 1.19.4.1] `map/buildings.txt`.
+What a correct vanilla file looks like, to check a nudged file against.
 
 - 66664 rows, each with exactly 7 `;` separated columns, LF line ends, no final newline, coordinates with 2 decimals.
 - State ids run from 1 to 1081 and every one of the 1081 files in `history/states/` has rows.
 - Every state has exactly 1 `air_base`, 1 `rocket_site_spawn`, 1 `nuclear_reactor_spawn`, 1 `synthetic_refinery`, 1 `fuel_silo`, 1 `radar_station` and 1 `stronghold_network` row, 3 `anti_air_building` rows, 6 `arms_factory` rows and 6 `industrial_complex` rows.
 - The last column is non-zero in all 4696 `naval_base_spawn` and `floating_harbor` rows and 0 in all other rows. It is a sea province in the 2362 `naval_base_spawn` rows and a land province in the 2334 `floating_harbor` rows.
 - The page's overview says each state needs one province for the air base and the rocket site. The 1081 single `air_base` and `rocket_site_spawn` rows are the data behind that.
-- The page warns that a new state without these rows crashes the game. Why it crashes is not stated in any game file. [unverified] `map/buildings.txt`
+- The page warns that a new state without these rows crashes the game. Why it crashes is not stated in any game file. (unverified) `map/buildings.txt`
 
-The window `nudge_window_buildings` has these controls. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`.
+The window `nudge_window_buildings` has these controls.
 
 | Control | Label or key |
 | --- | --- |
@@ -117,19 +89,17 @@ The window `nudge_window_buildings` has these controls. All rows: [vanilla-confi
 | Output | "Save", "Cancel" |
 | Text boxes | `hints` and `message`, filled in by the game at run time |
 
-What the buttons do is read from their labels; no game file describes them. In particular "Random" probably places models and "Validate" probably checks the rows against rules like the list above. [unverified] `interface/nudge.gui`
+What the buttons do is read from their labels; no game file describes them. In particular "Random" probably places models and "Validate" probably checks the rows against rules like the list above. (unverified) `interface/nudge.gui`
 
-The define `DEFAULT_NUDGE_FLOATING_HARBOR_DIST = 7.0` is the default distance of a floating harbor from the coast in pixels, "for nudger". [vanilla-confirmed 1.19.4.1] `common/defines/00_graphics.lua`
+The define `DEFAULT_NUDGE_FLOATING_HARBOR_DIST = 7.0` is the default distance of a floating harbor from the coast in pixels, "for nudger".
 
-The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is NUL (0x00), so it is not a readable text file; its name is also a string in `hoi4.exe`. It probably stores the marks set with "Mark/Unmark", but no game file says so. [vanilla-confirmed 1.19.4.1] `buildings_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
-<!-- kit:end id="nudger-buildings" -->
+The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is NUL (0x00), so it is not a readable text file; its name is also a string in `hoi4.exe`. It probably stores the marks set with "Mark/Unmark", but no game file says so. The purpose is unverified `hoi4.exe`
 
-## Strategic regions <a id="Strategic_regions"></a>
+## Strategic regions
 
 \*Please help improve this article or section by expanding it .\*
 
-<!-- kit:begin id="nudger-strategic-regions" at="section:Strategic_regions" -->
-**Kit addition** The strategic region window in `interface/nudge.gui`. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`.
+The strategic region window in `interface/nudge.gui`.
 
 | Part | Controls |
 | --- | --- |
@@ -138,16 +108,15 @@ The game folder holds `buildings_nudger_markers.txt` (874 bytes). Every byte is 
 | Modifiers panel | heading "Modifiers", boxes "Name" and "Trigger", buttons "Update" and "Delete", a list of the region's modifiers |
 | Naval Terrains panel | heading "Naval Terrains", ten buttons: the first is labelled "Default"; the other nine are all labelled "Supply Areas" in the file, which looks like a copy-paste placeholder |
 
-The panels line up with the page's overview line "Edits the strategic region borders and, for naval regions, terrain and modifiers". What each button does is read from its label only. [unverified] `interface/nudge.gui`
+The panels line up with the page's overview line "Edits the strategic region borders and, for naval regions, terrain and modifiers". What each button does is read from its label only. (unverified) `interface/nudge.gui`
 
-The panel was seen in the running game. With Nudge! from the main menu and then Strategic Regions, the regions are coloured, and clicking a region (Eastern Germany) opened a panel with a region name field, the buttons Open File, Delete region, Update and Save, a Naval Terrains list with Default, Ocean, Fjords and Archipelagos, Shallow Sea and Deep Oceans, and a Modifiers block with Name, Trigger, Update and Delete. So the terrain list shows five terrain names and not the nine "Supply Areas" labels of the file. Open File showed nothing and opened no window, and no file changed in the install map folder or the scratch user folder. Update, Save, Delete region and the terrain and modifier buttons were not pressed, because the particle editor showed that debug tools can write into the game install at once, so what they do is still [unverified]. [game-tested 1.19.4.1] HOI4 Live Tools run, 2026-11-02, Nudge from the main menu, screenshot.
+The panel was seen in the running game. With Nudge! from the main menu and then Strategic Regions, the regions are coloured, and clicking a region (Eastern Germany) opened a panel with a region name field, the buttons Open File, Delete region, Update and Save, a Naval Terrains list with Default, Ocean, Fjords and Archipelagos, Shallow Sea and Deep Oceans, and a Modifiers block with Name, Trigger, Update and Delete. So the terrain list shows five terrain names and not the nine "Supply Areas" labels of the file. Open File showed nothing and opened no window, and no file changed in the install map folder or the scratch user folder. Update, Save, Delete region and the terrain and modifier buttons were not pressed, because the particle editor showed that debug tools can write into the game install at once, so what they do is still unverified.
 
-Vanilla has 304 strategic region files in `map/strategicregions/` (for example `1-Southern England.txt`). Their format is on [Map modding](<map_modding.md#Strategic_regions>) and [Strategic region modding](<strategic_region_modding.md>). [vanilla-confirmed 1.19.3] `map/strategicregions/`
-<!-- kit:end id="nudger-strategic-regions" -->
+Vanilla has 304 strategic region files in `map/strategicregions/` (for example `1-Southern England.txt`). Their format is on [Map modding](map_modding.md#strategic-regions) and [Strategic region modding](strategic_region_modding.md).
 
-### Weather <a id="Weather"></a>
+### Weather
 
-*See also: [Map modding § Weather](<map_modding.md#Weather>)*
+*See also: [Map modding § Weather](map_modding.md#weather)*
 
 ![Nudger weather](media/nudger_14dc29a6a3__img2.png)Instruments in the Weather section
 
@@ -161,13 +130,11 @@ Weather can only be modified with a strategic region selected. When a region is 
 
 "Save" in the bottom left will output all of the changes to the user directory, "Cancel" will purge all of the changes from memory, while "Reload regions" in the top left will purge the changes from memory and re-read the strategic region and weather position files.
 
-<!-- kit:begin id="nudger-weather-correction" at="section:Weather" -->
-**Kit correction** The text above names `/Hearts of Iron IV/map/strategic_regions/`. The vanilla folder is `map/strategicregions/` without an underscore, as the States section writes it. [vanilla-confirmed 1.19.3] `map/strategicregions/`
+The text above names `/Hearts of Iron IV/map/strategic_regions/`. The vanilla folder is `map/strategicregions/` without an underscore, as the States section writes it.
 
-`map/weatherpositions.txt` has one row per weather position: `region id;x;y;z;size`, with `size` either `small` or `big`. Vanilla has 588 rows over 287 regions (452 `big`, 136 `small`), for example `1;2781.24;9.90;1571.49;small`. [vanilla-confirmed 1.19.3] `map/weatherpositions.txt`. The first column is the strategic region id, the number at the start of the region's file name: all 287 distinct values match a region file, and 552 of 588 positions fall on a province that belongs to that region (checked with `map/provinces.bmp`, `map/definition.csv` and `map/strategicregions/`). [vanilla-confirmed 1.19.4.1] `map/weatherpositions.txt`
-<!-- kit:end id="nudger-weather-correction" -->
+`map/weatherpositions.txt` has one row per weather position: `region id;x;y;z;size`, with `size` either `small` or `big`. Vanilla has 588 rows over 287 regions (452 `big`, 136 `small`), for example `1;2781.24;9.90;1571.49;small`. The first column is the strategic region id, the number at the start of the region's file name: all 287 distinct values match a region file, and 552 of 588 positions fall on a province that belongs to that region (checked with `map/provinces.bmp`, `map/definition.csv` and `map/strategicregions/`).
 
-#### Weather positions <a id="Weather_positions"></a>
+#### Weather positions
 
 The menu on the far right is used for the positions of weather-related particle effects, in particular these buttons are used:
 
@@ -180,7 +147,7 @@ The menu on the far right is used for the positions of weather-related particle 
 
 The "Preview effects" is used for previewing how the particle effects will look like in-game. Only one weather effect can be selected in a strategic region at a time, however they can be played over multiple strategic regions at the same time. **Enabling weather in the graphics settings is mandatory for this to have effect**. Selecting an effect will show the particles associated with it generated by the weather positions. "Disable" is used for removing the particle effects from the currently-selected strategic region, while "Disable All" removes the effect from every single strategic region.
 
-#### Weather chances <a id="Weather_chances"></a>
+#### Weather chances
 
 The weather chances are decided by the time periods. On the right, a list of periods is given, and "Add Period" will create a new one in the list. The checkbox in the top-right will select the current weather period, while "Delete" will remove it from existence. "Between Day.Month" is used for applying the time during which the time period should apply, in the Day.Month format. Both begin with 1 as the first day or month, and the range includes both ends. "Apply" is used to set the changes to the period's length, as they will otherwise reset upon creating a new period and will not save.
 **Periods in the nudger aren't region-specific**: editing the lengths of periods and adding/removing them will result in changes for every single strategic region. "Check errors" in the bottom left is used for checking the period-related errors, such as there being days covered by no periods or several of them at once.
@@ -190,7 +157,7 @@ The menu on the left allows changing the temperature range and the chances for e
 - "Temperature" is the temperature range of the region. This allows setting a minimum and maximum temperature as separate ranges. Very cold or hot temperatures will modify the combat with the ranges listed in Weather § Temperature.
 - The button next to "Mud" allows instantly changing the chance of Arctic Water to either 1.00 or 0.00. This is generally useful for setting a lot of sea strategic regions to be always frozen in a certain period.
 
-## Database <a id="Database"></a>
+## Database
 
 *See also: Province modding*
 
@@ -209,14 +176,13 @@ There are the following buttons present in the Database section:
 - "Continent" is used for assigning a continent to a province. By default, the first continent is selected, but it can be changed with the buttons showing a list of continents. Clicking onto a province will change the province's continent to the currently-selected one and change the text in the bottom to "Continent". Despite that, the previously-selected continent is still used to paint provinces and clicking onto another province will change its continent as well. The map mode shows each continent in its own colour. AI areas are not updated within the nudger, so the only way to check the continents after the painting is to reset the map by switching onto another tab.
 - "Show colors" changes the map mode to have each province's colour in `map/provinces.bmp` get overlaid as stripes over it.
 
-## Units <a id="Units"></a>
+## Units
 
 \*Please help improve this article or section by expanding it .\*
 
-<!-- kit:begin id="nudger-units" at="section:Units" -->
-**Kit addition** The Units section writes `map/unitstacks.txt`. The row layout is `province id;type;x;y;z;rotation;offset`, with 39 types (0 Standstill ... 38 Victory point); the type table is on [Map modding](<map_modding.md#Unit_model_and_victory_point_positions>). The output path is inferred from the file name in the exe. [unverified] `hoi4.exe`
+The Units section writes `map/unitstacks.txt`. The row layout is `province id;type;x;y;z;rotation;offset`, with 39 types (0 Standstill ... 38 Victory point); the type table is on [Map modding](map_modding.md#unit-model-and-victory-point-positions). The output path is inferred from the file name in the exe. (unverified) `hoi4.exe`
 
-Vanilla `map/unitstacks.txt`, as a reference for a nudged file. All rows: [vanilla-confirmed 1.19.3] `map/unitstacks.txt`.
+Vanilla `map/unitstacks.txt`, as a reference for a nudged file.
 
 - 265355 rows with 7 columns each, LF line ends, final newline present.
 - Rows cover 13282 provinces. 132 provinces of `map/definition.csv` have no rows (ids 0, 1, 843, 1050 and others).
@@ -224,14 +190,13 @@ Vanilla `map/unitstacks.txt`, as a reference for a nudged file. All rows: [vanil
 - The supply nudger takes the position of the "Standstill" model as the province's position, as the Supply section says, so a province without a type 0 row falls back to the middle of the province.
 - The `offset` column holds small positive decimals (0.18 to 1.34 seen at the top of the file).
 
-The window `nudge_window_units` has: "Save", "Cancel", "Mark/Unmark" (key `m`), "Auto in Prov" (key `a`), "Auto in All", a list `stacks_list` and a `hints` text box. All rows: [vanilla-confirmed 1.19.3] `interface/nudge.gui`. "Auto" probably generates positions for the selected province or for all provinces; that is read from the label only. [unverified] `interface/nudge.gui`
+The window `nudge_window_units` has: "Save", "Cancel", "Mark/Unmark" (key `m`), "Auto in Prov" (key `a`), "Auto in All", a list `stacks_list` and a `hints` text box. "Auto" probably generates positions for the selected province or for all provinces; that is read from the label only. (unverified) `interface/nudge.gui`
 
-The game folder holds `unit_nudger_markers.txt` (13208 bytes), also all NUL bytes and named in `hoi4.exe`, probably the unit counterpart of the buildings marker file. [vanilla-confirmed 1.19.4.1] `unit_nudger_markers.txt`. The purpose is [unverified] `hoi4.exe`
-<!-- kit:end id="nudger-units" -->
+The game folder holds `unit_nudger_markers.txt` (13208 bytes), also all NUL bytes and named in `hoi4.exe`, probably the unit counterpart of the buildings marker file. The purpose is unverified `hoi4.exe`
 
-## Supply <a id="Supply"></a>
+## Supply
 
-*"Supply hub" and "Supply node" are used interchangeably here**See also: [Map modding § Supply](<map_modding.md#Supply>)*
+*"Supply hub" and "Supply node" are used interchangeably here**See also: [Map modding § Supply](map_modding.md#supply)*
 
 The supply section in the nudge is used for determining the starting positions and levels of supply hubs and railways. This edits the `/Hearts of Iron IV/map/supply_nodes.txt` and `/Hearts of Iron IV/map/railways.txt` files. **If either of these files contains references to provinces that don't exist or aren't in any state, the nudger will crash upon selecting this tab.**
 
@@ -259,13 +224,12 @@ While `^Ctrl`, the edit mode is enabled. Letting go of `^Ctrl` will immediately 
 - If a non-existing railway is selected, "Add Railway" is used to create it on the world map, allowing it to exist in-game and outside of the edit mode. The level it'll be created on is the same as the one entered on the right of the menu. If the selected level is higher than the maximum possible level of railways, it resets to 1.
 
 "Update" is used to re-read only the `/Hearts of Iron IV/map/supply_nodes.txt` file, while ignoring the changes to railways. **This cannot delete existing supply nodes**, this can only create new supply nodes or change the building level of them. To remove a supply node from memory, it must be deleted individually.
-"Load" is used to disregard all unsaved changes and re-read the supply files among the [loaded files](<modding.md#Loading_files>). If the railways were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game. This cannot delete supply nodes from memory, similarly to "Update".
-"Save" is used to write all changes to the user directory. Upon doing so, the changes to railways will be purged from memory and the game will re-read the supply files among the [loaded files](<modding.md#Loading_files>). **If the railway files in the user directory are overwritten or unloaded by mod files, it will appear that (some of) the changes will instantly revert, however they'll still be present in the user directory.** This will require moving the railways file into the mod's files and updating the state of the game with "Load". This cannot delete supply nodes from memory, similarly to "Update".
+"Load" is used to disregard all unsaved changes and re-read the supply files among the [loaded files](modding.md#loading-files). If the railways were manually changed, such as by moving the outputs into the mod files from the user directory, this is necessary to load them without restarting the game. This cannot delete supply nodes from memory, similarly to "Update".
+"Save" is used to write all changes to the user directory. Upon doing so, the changes to railways will be purged from memory and the game will re-read the supply files among the [loaded files](modding.md#loading-files). **If the railway files in the user directory are overwritten or unloaded by mod files, it will appear that (some of) the changes will instantly revert, however they'll still be present in the user directory.** This will require moving the railways file into the mod's files and updating the state of the game with "Load". This cannot delete supply nodes from memory, similarly to "Update".
 
-## References and notes <a id="References_and_notes"></a>
+## References and notes
 
-<!-- kit:begin id="nudger-references" at="section:References_and_notes" -->
-**Kit addition** Which file each nudger section works on, with the size of the vanilla file. The file names come from the page text; the sizes were counted in the installed game. All rows: [vanilla-confirmed 1.19.4.1] the files named in the table.
+Which file each nudger section works on, with the size of the vanilla file. The file names come from the page text; the sizes were counted in the installed game.
 
 | Section | File | Vanilla size |
 | --- | --- | --- |
@@ -277,24 +241,9 @@ While `^Ctrl`, the edit mode is enabled. Letting go of `^Ctrl` will immediately 
 | Supply | `map/railways.txt` | 909 lines |
 | Weather | `map/weatherpositions.txt` | 588 rows |
 | Database | `map/definition.csv` | 13414 lines (ids 0 to 13413) |
-| Ambient objects | `map/ambient_object.txt` | see [Entity modding](<entity_modding.md>) |
+| Ambient objects | `map/ambient_object.txt` | see [Entity modding](entity_modding.md) |
 | Supply areas | `map/supplyareas/` | 1 file, `1-SupplyArea.txt` |
 
-Related pages: [Map modding](<map_modding.md>), [State modding](<state_modding.md>), [Strategic region modding](<strategic_region_modding.md>), [Supply areas modding](<supply_areas_modding.md>), [Building modding](<building_modding.md>), [Console commands](<console_commands.md>).
+Related pages: [Map modding](map_modding.md), [State modding](state_modding.md), [Strategic region modding](strategic_region_modding.md), [Supply areas modding](supply_areas_modding.md), [Building modding](building_modding.md), [Console commands](console_commands.md).
 
-The nudger's own windows are in `interface/nudge.gui` (about 2760 lines) and its sprites in `interface/nudge.gfx`. [vanilla-confirmed 1.19.3] `interface/nudge.gui`, `interface/nudge.gfx`
-<!-- kit:end id="nudger-references" -->
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Defines](<defines.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
+The nudger's own windows are in `interface/nudge.gui` (about 2760 lines) and its sprites in `interface/nudge.gfx`.

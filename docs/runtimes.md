@@ -82,7 +82,7 @@ Frontmatter requires `name` and `description`; `name` must be kebab-case and mat
 DSH additionally accepts an optional `whenToUse` string, and reads `metadata`, `disable-model-invocation`, and `user-invocable` as optional keys. It rejects the camel-case spellings of the two invocation keys with an explicit warning instead of ignoring them.
 A skill with missing or invalid frontmatter is skipped with a warning rather than surfaced as broken, so a skill that does not appear in the catalog usually has a frontmatter problem.
 
-Every skill, agent prompt, and instruction file must stay within the single-read ceiling in `.tools/sync/read_limits.json`; `python .tools/sync/check_guidance_size.py` reports a file above it.
+Every skill, agent prompt, and instruction file must stay within the single-read ceiling in `.tools/sync/read_limits.json`; `python .tools/sync/check_guidance_size.py` reports a file above it. In the kit's source package the stricter context budget also applies: the instruction template holds at most 4,000 tokens, each `SKILL.md` at most 5,000 with its detail in `references/`, and each skill description is one sentence of at most 200 characters.
 
 ## Subagents
 

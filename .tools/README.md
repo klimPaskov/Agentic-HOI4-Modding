@@ -47,7 +47,7 @@ Every check follows `lib/report.py`: an `error` is an exact rule and fails the r
 | `script-rules` | `audits/audit_script_rules.py` | Does script use `<=` or `>=`, unary minus on a variable token, or `§`/`£` written into scripted localisation? Lexical only; fixtures in `tests/fixtures/script_rules/`. | no |
 | `gfx` | `gfx/gfx.py audit` | Frame-strip widths, the flag size ladder and TGA origin, achievement art size, LFS pointers and truncated runtime binaries, profiled icon families and report-image provenance (`gfx/README.md`). | for vanilla textures |
 | `shelf` | `audits/audit_shelf.py` | Does every PNG of the vanilla reference shelf match `gfx/shelf/catalog.json` (hash, count, contact sheet), do `CATALOG.md` and `REFERENCE_MANIFEST.md` still render from it, do the documents name only folders that exist, and do `gfx/profiles.json`, the catalog and the shelf builder input name exactly the 40 hoi4-imagegen families of `gfx/family_ids.json`? `--write-docs` rewrites the two documents after a shelf rebuild. | no |
-| `guidance` | `sync/check_guidance_size.py` | Are instructions, skills and agent prompts within the single-read ceiling? | no |
+| `guidance` | `sync/check_guidance_size.py` | Are instructions, skills and agent prompts within the single-read ceiling, and in the source package within the context budget (template 4,000 tokens, each `SKILL.md` 5,000, each skill description one sentence of at most 200 characters)? | no |
 | `generators` | `sync/generators.py --check` | Does every generated file in `sync/generators.json` (`AGENTS.md`, the generated agents, the skill copies) match its canonical source? A generator that is missing or crashes cannot run, which is never a pass. | no |
 | `tests` | `unittest` over `tests/`, `gfx/` and skill `tools/tests/` folders | Do the maintained tests pass? | no |
 | `quality` | `quality.py` | Ruff defect rules, the complexity ratchet in `quality_baseline.json` and `mypy --strict` for the strict tooling files; skipped with a notice without `uv`. | no |
@@ -128,7 +128,7 @@ Do not commit secrets, provider outputs, job artifacts, virtual environments, ve
 
 ### HOI4 wiki
 
-`wiki/sync_wiki_snapshot.py` regenerates `hoi4_wiki/` from the live Hearts of Iron IV wiki and keeps the kit's local additions (kit blocks and kit pages), `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
+`wiki/sync_wiki_snapshot.py` regenerates `hoi4_wiki/` from the live Hearts of Iron IV wiki and puts the kit's local additions back from their sidecars in `wiki/kit/`, `wiki/render_wiki.py` rebuilds the pages after a sidecar edit, `wiki/verify_wiki_snapshot.py` is the read-only acceptance check for the result, and `wiki/wiki_status.py` reports which pages are current for the installed game build and which to re-check after a game update.
 The snapshot ships as the `wiki.snapshot` manifest component and is named by the project instructions as the required modding reference, so the commands run together whenever the wiki or the game moves:
 
 ```powershell

@@ -28,7 +28,7 @@ Checks (rule ids and levels are defined by each tool; see `.tools/lib/report.py`
                    profiled icon families and report-image provenance
 - shelf            `audits/audit_shelf.py`                 vanilla reference shelf, its catalog and documents, and the 40
                    hoi4-imagegen family ids in `gfx/profiles.json` (needs no game)
-- guidance         `sync/check_guidance_size.py`           single-read ceiling for instructions, skills and agents
+- guidance         `sync/check_guidance_size.py`           single-read ceiling, plus the context budget in the source package
 - generators       `sync/generators.py --check`            every generated file listed in `sync/generators.json`
 - tests            maintained tests in `.tools/`, the 3D pipeline suite in `.tools/3d_pipeline/tests/` and in skill
                    `tools/tests/` folders (full, or quick when they change)
@@ -128,6 +128,12 @@ def run_guidance(paths: Optional[List[str]]) -> Tuple[List[Finding], Optional[st
 		if over:
 			findings.append(Finding("guidance", "GUIDE-SIZE", "error", relative(over.group(1)), 0,
 				f"{over.group(2)} bytes exceeds the {over.group(3)}-byte ceiling in .tools/sync/read_limits.json"))
+		description = re.match(r"DESCRIPTION: (\S+) (.+)", line)
+		if description:
+			findings.append(Finding("guidance", "GUIDE-DESC", "error", relative(description.group(1)), 0, description.group(2)))
+		unreachable = re.match(r"UNREACHABLE: (\S+) (.+)", line)
+		if unreachable:
+			findings.append(Finding("guidance", "GUIDE-REACH", "error", relative(unreachable.group(1)), 0, unreachable.group(2)))
 	if completed.returncode not in (0, 1) or (completed.returncode == 1 and not findings):
 		tail = (completed.stderr or completed.stdout).strip().splitlines()[-3:]
 		return findings, f"check_guidance_size.py exited {completed.returncode}: {' | '.join(tail)}"

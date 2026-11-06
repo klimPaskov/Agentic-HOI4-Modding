@@ -34,6 +34,24 @@ File rules (always):
 - UNIT-DDS-EMISSIVE (warning): a normal map whose blue channel is not black. `PdxMeshAdvanced`
   reads normals as RRxG and uses blue as emissive light.
 
+Surface and deformation rules (always; limits are the largest values measured on vanilla units by
+`calibrate_deformation.py`, stored in `config/deformation_calibration.json`, for the unit type's
+`calibration_group`: `organic` by default, `vehicle` for tanks, guns and trucks, `air_naval` for planes and ships):
+
+- UNIT-HOLE: a larger share of open edges, or a larger open loop, than any vanilla unit of the
+  group after welding coincident vertices.
+- UNIT-WINDING: more edges between triangles facing opposite ways than any vanilla unit. The game
+  culls back faces, so the flipped side shows as a hole.
+- UNIT-INSIDE-OUT: a closed part whose triangles face inward.
+- UNIT-BRIDGE: more rest-pose edges joining far-apart bones' regions (three or more parent steps,
+  for example a hand and a thigh) than any vanilla unit. Skinning tears these joins.
+- UNIT-ANIM-STRETCH: in some frame, more edges stretched or squashed (by 1.5 times and by 0.5 % of the
+  unit's height), or one edge stretched further, than in any vanilla clip. The mesh is skinned per
+  frame from the bytes, as the game does.
+- UNIT-ANIM-GROUND: the lowest point sinks below, or (outside death) lifts above, the rest pose's
+  ground further than in any vanilla clip. Riders are skipped: they sit on the mount's `Saddle_Node`.
+- UNIT-CALIBRATION-MISSING (warning): no calibration file, so these rules were skipped.
+
 Registration rules (with `--mod-root`):
 
 - UNIT-REG-PDXMESH: no `pdxmesh` uses the folder's mesh file.
@@ -44,6 +62,8 @@ Registration rules (with `--mod-root`):
 - UNIT-REG-MESHSETTINGS, UNIT-REG-TEXTURE: a `meshsettings` name that is not an object of the
   mesh, or a texture that is not next to the mesh.
 - UNIT-REG-SPRITE (warning): no sub-unit's sprite resolves to an entity that shows the unit.
+- UNIT-REG-UNAVAILABLE (warning): the mod's `.tools/audits/audit_asset_wiring_static.py` is missing or an older
+  copy without the kit's model API, so registration was not checked. The file rules still run.
 """
 
 from __future__ import annotations
@@ -68,6 +88,7 @@ MAX_TEXTURE_SIDE = 2048
 EMISSIVE_TOLERANCE = 8
 SHINY_METALLIC = 120
 SHINY_GLOSS = 140
+CALIBRATION = PIPELINE_ROOT / "config" / "deformation_calibration.json"
 
 
 @dataclass
@@ -178,6 +199,63 @@ def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None)
 
 
 
+def load_calibration(group: str = "organic", path: Optional[Path] = None) -> Optional[Dict[str, float]]:
+    """One group's vanilla limits measured by `calibrate_deformation.py`, or None when the file is missing."""
+
+    path = path or CALIBRATION
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    measures = payload.get("groups", {}).get(group)
+    return {measure: float(entry["value"]) for measure, entry in measures.items()} if measures else None
+
+
+def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False):
+    """The surface, bridge and per-frame deformation rules, against the vanilla limits. A seated rider skips the ground rule."""
+
+    from lib import pdx_deform
+
+    if limits is None:
+        add("UNIT-CALIBRATION-MISSING", "warning", CALIBRATION, "no vanilla calibration; run calibrate_deformation.py to check holes and deformation")
+        return
+    try:
+        mesh = pdx_deform.load_mesh(mesh_path)
+    except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError) as error:
+        add("UNIT-MESH-UNREADABLE", "error", mesh_path, f"cannot decode the mesh geometry: {error}")
+        return
+    surface = pdx_deform.surface_report(mesh)
+    bridges = pdx_deform.bridge_edges(mesh)
+    facts["surface"][mesh_path.name] = {**asdict(surface), "open_loops": surface.open_loops[:10], "bridge_edges": bridges.edges, "bridge_pairs": dict(list(bridges.pairs.items())[:6])}
+    edges = max(len(pdx_deform.mesh_edges(mesh)), 1)
+    if surface.largest_open_loop > limits["largest_open_loop"] or surface.open_edges / edges > limits["open_edge_share"]:
+        add("UNIT-HOLE", "error", mesh_path, f"{surface.open_edges} open edges ({surface.open_edges / edges:.2%} of all edges) in {len(surface.open_loops)} loops, the largest {surface.largest_open_loop} edges; vanilla units reach {limits['open_edge_share']:.2%} and loops of {limits['largest_open_loop']:.0f}")
+    if surface.winding_flips > limits["winding_flips"]:
+        add("UNIT-WINDING", "error", mesh_path, f"{surface.winding_flips} edges between triangles facing opposite ways; the game culls back faces, so one side shows as a hole")
+    if sum(surface.inside_out_parts) > limits["inside_out_triangles"]:
+        add("UNIT-INSIDE-OUT", "error", mesh_path, f"{len(surface.inside_out_parts)} closed part(s) face inward ({sum(surface.inside_out_parts)} triangles); the game culls their outside")
+    if bridges.edges > limits["bridge_edges"]:
+        pairs = ", ".join(f"{pair} {count}" for pair, count in list(bridges.pairs.items())[:4])
+        add("UNIT-BRIDGE", "error", mesh_path, f"{bridges.edges} edges join body parts that move apart ({pairs}); cut the join before rigging or the clips tear it")
+    for anim_path in sorted(folder.glob("*.anim")):
+        if stems and _owner_of(anim_path, stems) != stem:
+            continue
+        try:
+            report = pdx_deform.deformation_report(mesh, pdx_deform.load_anim(anim_path))
+        except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError):
+            continue  # UNIT-ANIM-UNREADABLE already reports it
+        facts["deformation"][anim_path.name] = asdict(report)
+        stretched, squashed = report.stretched_edges / edges, report.squashed_edges / edges
+        if stretched > limits["stretched_share"] or squashed > limits["squashed_share"] or report.worst_stretch_share > limits["worst_stretch_share"]:
+            pairs = ", ".join(f"{pair} {count}" for pair, count in list(report.worst_pairs.items())[:3])
+            add("UNIT-ANIM-STRETCH", "error", anim_path, f"frame {report.worst_frame}: {report.stretched_edges} edges stretched and {report.squashed_edges} squashed, the worst by {report.worst_stretch_share:.1%} of the unit's height ({pairs}); vanilla units reach {limits['stretched_share']:.2%} and {limits['squashed_share']:.2%} of their edges and {limits['worst_stretch_share']:.1%}")
+        death = (_role_of(anim_path, stem) or "") == "death"
+        sink, sink_limit = -report.lowest, limits["death_sink"] if death else limits["sink"]
+        hover = 0.0 if death else report.highest_lowest
+        if not seated and (sink > sink_limit or hover > limits["hover"]):
+            add("UNIT-ANIM-GROUND", "error", anim_path, f"the lowest point goes {sink:.1%} of the unit's height below the ground and up to {report.highest_lowest:.1%} above it; vanilla {'deaths sink' if death else 'units sink'} at most {sink_limit:.1%} and lift at most {limits['hover']:.1%}")
+
+
 def _check_textures(folder, add, facts):
     """The texture rules."""
 
@@ -219,12 +297,17 @@ def _check_textures(folder, add, facts):
 
 
 def check_files(
-    folder: Path, unit_type: Optional[dict], profile: Optional[dict], stem: Optional[str] = None
+    folder: Path,
+    unit_type: Optional[dict],
+    profile: Optional[dict],
+    stem: Optional[str] = None,
+    deformation: bool = True,
+    limits: Optional[Dict[str, float]] = None,
 ) -> tuple[List[Finding], dict]:
     """Check a unit folder. `stem` checks one mesh and its animations in a folder shared with another unit (a mount and its rider)."""
 
     findings: List[Finding] = []
-    facts: dict = {"meshes": {}, "animations": {}, "textures": {}}
+    facts: dict = {"meshes": {}, "animations": {}, "textures": {}, "surface": {}, "deformation": {}}
 
     def add(rule: str, severity: str, path: Path, message: str) -> None:
         findings.append(Finding(rule, severity, path.as_posix(), message))
@@ -241,6 +324,10 @@ def check_files(
     needs_animation = bool(unit_type and unit_type.get("roles"))
     _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skeleton)
     _check_animations(folder, stem, unit_type, skeleton, add, facts, stems if only_stem else None)
+    if deformation and meshes:
+        group = (unit_type or {}).get("calibration_group", "organic")
+        seated = (unit_type or {}).get("entity_template") == "rider"
+        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated)
     _check_textures(folder, add, facts)
     return findings, facts
 
@@ -261,6 +348,31 @@ def _import_registration_audit():
             del sys.modules[name]
         sys.modules.update(pipeline_lib)
     return audit
+
+
+REGISTRATION_API = ("ModelLookup", "game_model_roots", "check_pdxmesh", "_files", "_parse_source", "_scalar_node")
+
+
+def _registration_audit():
+    """The kit's registration audit, or None and the reason a mod's copy cannot be used."""
+
+    try:
+        audit = _import_registration_audit()
+    except ImportError as error:
+        return None, f"cannot import it ({error})"
+    missing = [name for name in REGISTRATION_API if not hasattr(audit, name)]
+    return (None, f"it lacks {', '.join(missing)}") if missing else (audit, "")
+
+
+def check_unit_registration(folder: Path, mod_root: Path, unit_type: Optional[dict]) -> List[Finding]:
+    """The registration rules, or one warning when the mod's audit cannot run them."""
+
+    _audit, reason = _registration_audit()
+    if reason:
+        # A mod that carries its own, older `.tools/audits` checks registration with its own audits.
+        return [Finding("UNIT-REG-UNAVAILABLE", "warning", (mod_root / ".tools" / "audits").as_posix(),
+                        f"registration not checked: the mod's audit_asset_wiring_static.py is not the kit's ({reason})")]
+    return check_registration(folder, mod_root, unit_type)
 
 
 def check_registration(folder: Path, mod_root: Path, unit_type: Optional[dict]) -> List[Finding]:
@@ -395,7 +507,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         raise SystemExit(f"Not a folder: {folder}")
     findings, facts = check_files(folder, unit_type, profile, args.stem)
     if args.mod_root:
-        findings.extend(check_registration(folder, args.mod_root, unit_type))
+        findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
     errors = [item for item in findings if item.severity == "error"]
     if args.json:
         print(json.dumps({"findings": [asdict(item) for item in findings], "facts": facts}, indent=2))

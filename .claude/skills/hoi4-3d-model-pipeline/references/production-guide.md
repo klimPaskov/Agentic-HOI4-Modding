@@ -359,6 +359,14 @@ A visual variant that shares a unit's mesh and actions, such as an elite or regi
 
 For static map buildings, also audit the runtime consumer after reimport: the `.gfx` scale and shader, meshsettings object name, runtime mesh and DDS paths, building definition, and spawn policy must agree. A custom map building must not use vanilla `special_project_facility_spawn`. Use a dedicated `type = province` spawn pool for a direct map consumer, and define the matching `building_<spawn_point>` entity in the active `.asset` file. Different meshes must never share one spawn point because HOI4 resolves one map entity per spawn point. When every gameplay building level must appear, wire the gameplay building directly and provide one explicit spawn position per possible rendered level. Use a hidden provincial anchor only for an intentional single visual independent of gameplay level, place it with state-scoped `set_building_level`, and explicitly clean it up on conversion, dismantlement, annexation, or deletion. Leave automatic nudging enabled unless complete `map/buildings.txt` coverage is maintained; if nudging fails, preserve every vanilla row in a deterministic generated override and add complete custom coverage.
 
+## Independent visual review
+
+Passing checks is not acceptance. Numeric gates passed units with torn joins, smeared cloth and holes because nobody looked at every clip from every side. After the final export and `check_unit_files.py`, render the unit with `review_unit.py <unit folder> --mod-root <mod> --out <job>/evidence/review`. It renders every clip from front, left, back, right, the HOI4 map camera and below, at evenly spaced frames plus the frames of worst stretch and lowest and highest ground contact, with back faces culled and a magenta background so holes show, and writes one contact sheet per clip and `REVIEW_REQUEST.md`.
+
+Give `REVIEW_REQUEST.md` and the sheets, and nothing else, to a reviewer with a fresh context: a new subagent or a person who did not make the unit. Do not add your own findings, metrics, earlier verdicts or the unit's history. Do not review your own renders in its place. Save the reviewer's whole reply and record it with `review_unit.py <unit folder> --out <job>/evidence/review --record <reply>`. The unit passes only on `VERDICT: pass` with `DEFECTS: none`. Any listed defect fails it, whatever severity the reviewer gives it.
+
+After a fail, fix the root cause, export again, rerun the checks and render a new review for a new fresh reviewer. Keep every reply and `verdict.json` as evidence. Never raise a check's limit, mark a defect as accepted, or crop or hide views to get a pass. Only the maintainer may waive a listed defect, and the waiver is recorded with the reply.
+
 ## Evidence package and handoff
 
 The job package must contain, as applicable:

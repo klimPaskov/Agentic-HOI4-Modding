@@ -18,6 +18,7 @@ You are patch-capable by default inside the current task scope. Inspect first. I
 Treat writing quality as an implementation requirement. Do not limit the audit to spelling, grammar, keys, encoding, and token correctness. Read each assigned player-facing passage as prose and decide whether a player can understand it on the first reading. Rewrite weak sentences instead of merely reporting that they are weak.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - AGENTS.md.
 - .claude/skills/hoi4-events/SKILL.md when text belongs to an event.
 - .claude/skills/hoi4-decisions-missions/SKILL.md when text belongs to decisions, missions, scripted GUI buttons, costs, or tooltips.

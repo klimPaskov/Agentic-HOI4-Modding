@@ -18,6 +18,7 @@ Any AI-weight or probability-bearing patch requires `hoi4_ai_probability_auditor
 You are patch-capable by default inside the current task scope. Inspect first. If you find a small, local country package issue tied to the requested feature, patch it directly. Do not wait for a separate permission prompt to fix tag references, focus loading, party names, leader ids, country localisation, simple starting setup, AI strategy references, or existing formable checks.
 
 Read and apply:
+Each `SKILL.md` named below is a router. Open the `references/` files it points to for your task, and read a skill's completion or audit checklist reference before you give a verdict.
 - AGENTS.md.
 - .claude/skills/hoi4-subagents/SKILL.md.
 - .claude/skills/hoi4-events/SKILL.md when the country belongs to an event, crisis, release system, or escalation variant chain.

@@ -1,62 +1,16 @@
 # Defines
 
-*Offline snapshot of the Hearts of Iron IV Wiki page "Defines", revision 104682, captured 2026-10-31. Wiki text by the wiki's contributors under CC BY-SA 3.0 (see LICENSE.txt); kit blocks are local additions under the same license.*
+The tables on this page are out of date. Build 1.19.4.1 has 4523 defines in 39 categories. These tables lack 617 defines, show 127 values that have since changed, and list 58 names that no longer exist.
 
-<!-- kit:begin id="review" at="top" build="1.19.4.1" checked="2026-11-01" revision="104682" sources="common/defines/ localisation/english/core_l_english.yml" -->
-**Kit review (HOI4 1.19.3.0, 2026-10-31).** The tables on this page date from an older build. Checked against: all three files in `common/defines/` (`00_defines.lua`, `00_graphics.lua`, `01_career_profile.lua`: 4504 defines in 39 categories), parsed with a script and compared name by name and value by value with this page's 37 category tables. They lack 617 defines, list 127 values that changed and carry 58 names that no longer exist.
-The missing defines, the changed values, the removed names and the two new categories `NFactions` and `NDoctrines` are on the kit page [Defines additions](<defines_additions.md>); the wiki text here is left unchanged, so a refresh can replace it without touching kit text. Re-check that page when this page's wiki revision changes.
-Gaps left: meanings come from the Lua comments or, where there is none, from the define name. The "Usage" and "Developer comment" cells of existing rows were not rewritten. Which defines the engine still reads was not tested.
-**1.19.4.1 re-check (2026-11-01).** The same script compared the 1.19.3 define set with the 1.19.4.1 files: 4523 defines in the same 39 categories, 19 new, none removed, and one changed value (`NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT` is now `true`, while this page's table shows `false`). They are on [Defines additions](<defines_additions.md#Changes_1_19_4_1>). This page holds no kit statement besides this review, and its wiki text is unchanged.
-<!-- kit:end id="review" -->
+The missing defines, the changed values, the removed names and the two new categories `NFactions` and `NDoctrines` are on [Defines additions](defines_additions.md). Check that page before relying on a value from the tables below.
 
-## Table of contents
-
-- [Overrides](#Overrides)
-- [NGame](#NGame)
-- [NGeography](#NGeography)
-- [NDiplomacy](#NDiplomacy)
-- [NCountry](#NCountry)
-- [NResistance](#NResistance)
-- [NProduction](#NProduction)
-- [NMarket](#NMarket)
-- [NTechnology](#NTechnology)
-- [NPolitics](#NPolitics)
-- [NBuildings](#NBuildings)
-- [NDeployment](#NDeployment)
-- [NMilitary](#NMilitary)
-- [NAir](#NAir)
-- [NNavy](#NNavy)
-- [NRailwayGun](#NRailwayGun)
-- [NTrade](#NTrade)
-- [NAI](#NAI)
-- [NFocus](#NFocus)
-- [NOperatives](#NOperatives)
-- [NIntel](#NIntel)
-- [NCharacter](#NCharacter)
-- [NSupply](#NSupply)
-- [NAITheatre](#NAITheatre)
-- [NIndustrialOrganisation](#NIndustrialOrganisation)
-- [NProject](#NProject)
-- [NRaids](#NRaids)
-- [NWiki](#NWiki)
-- [NMapMode](#NMapMode)
-- [NMapIcons](#NMapIcons)
-- [NAirGfx](#NAirGfx)
-- [NGraphics](#NGraphics)
-- [NInterface](#NInterface)
-- [NFrontend](#NFrontend)
-- [NSound](#NSound)
-- [NFriendGUI](#NFriendGUI)
-- [NCareerProfile](#NCareerProfile)
-- [NCareerProfileGUI](#NCareerProfileGUI)
-
----
+`NDefines.NMarket.REQUEST_AUTOMATION_AUTO_ACCEPT_PURCHASE_DEFAULT` is `true`, not `false` as the table below shows.
 
 Defines are exposed constants used by the game to control almost every aspect of it. They allow modders to influence systems that do not have a direct script component.
 
 Defines are defined in `/Hearts of Iron IV/common/defines/*.lua` files.
 
-## Overrides <a id="Overrides"></a>
+## Overrides
 
 As defines are Lua code rather than a PDXscript-interpreted file, any Lua code can go in there, however modules allowing to go out of this directory are not available. As a consequence of this, **there is no need to copy the entire file to edit it**. Defines, including graphical defines, are merely a Lua-contained array, and it is possible to modify a single member of the array in Lua using, for example, `NDefines.NGame.START_DATE = "1936.1.2.12"`. Each of these lines is contained on a separate line and **there are no commas separating them**, such as the following:
 
@@ -69,7 +23,7 @@ This goes into a separate file set to be evaluated after the base game defines, 
 In the base game files, the graphical defines are set to be merged into NDefines in the last line of the base game file. However, since Lua does not create copies of tables by default, the base game's NDefines contains pointers to the actual elements, which are contained within NDefines_Graphics regardless. For this reason, modifying either NDefines or NDefines_Graphics works for changing graphical defines.
 A mod should **never** contain the 00_defines.lua and 00_graphics.lua files within of itself: these files are commonly changed even in minor game updates, and having a define missing from a file results in the mod being unstable, potentially having a crash on startup.
 
-## NGame <a id="NGame"></a>
+## NGame
 
 | Name | Default | Developer comment | Usage |  |  |  |  |  |  |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -90,20 +44,20 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | EVENT_TIMEOUT_DEFAULT | 13 | Default days before an event times out if not scripted |  |  |  |  |  |  |  |
 | MISSION_REMOVE_FROM_INTERFACE_DEFAULT | 13 | Default days before a mission is removed from the interface after having failed or completed |  |  |  |  |  |  |  |
 | DECISION_ALERT_TIMEOUT_DAYS | 30 | Days left when player will be alerted about timing out events or decisions |  |  |  |  |  |  |  |
-| FUEL_RESOURCE | "oil" | resource that will give country fuel | If changed, localisation may need to be updated to make the icon show the new resource. The default values that can be [replaced](<localisation.md#Replacing>) are `FUEL_DAILY_GAIN_FROM_OIL:0 "From $OIL$£resources_strip | 1 : $NUM | H$"` and `FUEL_DAILY_GAIN_OIL_ONLY:0 "Daily Gain: $NUM | H$ (from $OIL | H$£resources_strip | 1 )"`. `£resources_strip | 1` is a [text icon](<localisation.md>) which may need to be updated, and `$OIL$` shouldn't be changed. |
+| FUEL_RESOURCE | "oil" | resource that will give country fuel | If changed, localisation may need to be updated to make the icon show the new resource. The default values that can be [replaced](localisation.md#replacing) are `FUEL_DAILY_GAIN_FROM_OIL:0 "From $OIL$£resources_strip | 1 : $NUM | H$"` and `FUEL_DAILY_GAIN_OIL_ONLY:0 "Daily Gain: $NUM | H$ (from $OIL | H$£resources_strip | 1 )"`. `£resources_strip | 1` is a [text icon](localisation.md) which may need to be updated, and `$OIL$` shouldn't be changed. |
 | MAX_EFFECT_ITERATION | 1000 | maximum allowed iteration for loop effects |  |  |  |  |  |  |  |
 | MAX_SCRIPTED_LOC_RECURSION | 30 | max recursion for scripted localizations |  |  |  |  |  |  |  |
 | HANDS_OFF_START_TAG | "HAI" | tag for player country for -hands_off runs. use an existing tag that is less likely to affect the game |  |  |  |  |  |  |  |
 | ALERT_SFX_COOLDOWN_DAYS | 14 | After playing an alert sound, don't play the same sound for XXX days, even if it fires again. |  |  |  |  |  |  |  |
 | MUSIC_PLAYER_RECENTLY_PLAYED_SIZE | 10 | The music player keeps track of recently played music to try and avoid playing the same songs too often. This determines the max number of songs in the recently played list. |  |  |  |  |  |  |  |
 
-## NGeography <a id="NGeography"></a>
+## NGeography
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
 | MEDITERRANEAN_SEA_REGIONS | { 29, 68, 69, 168, 169, 202 } | The sea regions that are considered as part of the Mediterranean sea |  |
 
-## NDiplomacy <a id="NDiplomacy"></a>
+## NDiplomacy
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -311,7 +265,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MARKET_ACCESS_ACCEPTANCE_NO_TRADE_ROUTE | -100 | Acceptance value added if there is no valid trade route between the countries |  |
 | MARKET_ACCESS_ACCEPTANCE_NON_AGGRESSION_PACT | 25 | Acceptance value added if there is a non-aggression pact between the countries |  |
 
-## NCountry <a id="NCountry"></a>
+## NCountry
 
 | Name | Default | Developer comment | Usage |  |  |
 | --- | --- | --- | --- | --- | --- |
@@ -351,8 +305,8 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CONVOY_INTERNATIONAL_MARKET_RANGE_FACTOR | 1 | How much range affects convoy need for international market |  |  |  |
 | LOCAL_MANPOWER_ACCESSIBLE_NON_CORE_FACTOR | 0.02 | accessible recruitable factor base |  |  |  |
 | MAX_NON_CORE_MANPOWER_FACTOR | 1.0 | max clamp for recruitable local non core manpower factor for states |  |  |  |
-| DEFAULT_STABILITY | 0.5 | Default stability if not scripted otherwise. | Also used for calculating the modifiers applied to the country with the `stability_good_modifier` and `stability_bad_modifier` [static modifiers](<modifiers.md>), multiplying the relevant modifiers by `{\frac { | {\text{Current Stability}}-{\text{DEFAULT STABILITY}} | }{\text{DEFAULT STABILITY}}}`. Highly unstable on the low values and completely disables the modifier if set to 0. |
-| DEFAULT_WAR_SUPPORT | 0.5 | Default war support if not scripted otherwise. | Also used for calculating the modifiers applied to the country with the `war_support_good_modifier` and `war_support_bad_modifier` [static modifiers](<modifiers.md>), multiplying the relevant modifiers by `{\frac { | {\text{Current War Support}}-{\text{DEFAULT WAR SUPPORT}} | }{\text{DEFAULT WAR SUPPORT}}}`. Highly unstable on the low values and completely disables the modifier if set to 0. |
+| DEFAULT_STABILITY | 0.5 | Default stability if not scripted otherwise. | Also used for calculating the modifiers applied to the country with the `stability_good_modifier` and `stability_bad_modifier` [static modifiers](modifiers.md), multiplying the relevant modifiers by `{\frac { | {\text{Current Stability}}-{\text{DEFAULT STABILITY}} | }{\text{DEFAULT STABILITY}}}`. Highly unstable on the low values and completely disables the modifier if set to 0. |
+| DEFAULT_WAR_SUPPORT | 0.5 | Default war support if not scripted otherwise. | Also used for calculating the modifiers applied to the country with the `war_support_good_modifier` and `war_support_bad_modifier` [static modifiers](modifiers.md), multiplying the relevant modifiers by `{\frac { | {\text{Current War Support}}-{\text{DEFAULT WAR SUPPORT}} | }{\text{DEFAULT WAR SUPPORT}}}`. Highly unstable on the low values and completely disables the modifier if set to 0. |
 | BASE_STABILITY_WAR_FACTOR | -0.2 | Default stability war factor |  |  |  |
 | BASE_STABILITY_PARTY_POPULARITY_FACTOR | 0.15 | Default stability rulling party popularity factor |  |  |  |
 | MIN_COUP_STABILITY_FACTOR | 0.0 | Min value of coup factor in stability |  |  |  |
@@ -492,7 +446,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_COUNT_DAILY_LERP_FOR_TRAINING_XP | 0.002 | number of armies that is used in training xp calculates daily lerps to actual number (if real number is lower) |  |  |  |
 | ARMY_COUNT_DAILY_DECREASE_FOR_TRAINING_XP | 0.1 | number of armies that is used in training xp calculates daily linearly approaches this number (if real number is lower) |  |  |  |
 
-## NResistance <a id="NResistance"></a>
+## NResistance
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -557,7 +511,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | INITIAL_GARRISON_STRENGTH | 1 | garrison value for initial colony states |  |
 | STATE_COMPLIANCE_DECAY_FOR_LOST_STATES | 0.05 | daily compliance decay for the states you lost control of |  |
 
-## NProduction <a id="NProduction"></a>
+## NProduction
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -621,7 +575,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MINIMUM_NUMBER_OF_FACTORIES_TAKEN_BY_CONSUMER_GOODS_PERCENT | 0.1 | The minimum number of factories we have to put on consumer goods, in percent. |  |
 | INITIAL_ALLOWED_FACTORY_RATIO_FOR_REPAIRS | 1.0 | max % of factories allowed on autorepairs |  |
 
-## NMarket <a id="NMarket"></a>
+## NMarket
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -644,7 +598,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CONTRACT_ESTIMATE_AVERAGE_CONVOY_SUNK_MULTIPLIER_SNAP_LIMIT | 0.05 | If the difference between current and estimated sunk efficiency convoy count is smaller then this value, we will use the current value for calculations. |  |
 | WARNING_CONVOYS_SUNK_MAX_DAYS | 30 | The contracts will show sunk convoy message if there was sunk convoy in this amount of days |  |
 
-## NTechnology <a id="NTechnology"></a>
+## NTechnology
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -660,7 +614,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MIN_RESEARCH_SPEED | 0.1 | research speed can't go below this value |  |
 | USE_BONUS_REGRET_TIMER | 3 | Number of days the player has to regret using a limited tech bonus |  |
 
-## NPolitics <a id="NPolitics"></a>
+## NPolitics
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -679,7 +633,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | INSTANT_WIN_REVOLTER_POPULARITY_RATIO | 0.4 | Min party popularity for instant win in one province state |  |
 | INSTANT_WIN_POPULARITY_WIN | 50 | New party popularity |  |
 
-## NBuildings <a id="NBuildings"></a>
+## NBuildings
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -704,13 +658,13 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SUPPLY_ROUTE_RESOURCE_BONUS | 0.2 | multiplicative resource bonus for having a railway/naval connection to the capital |  |
 | INFRASTRUCTURE_MUD_EFFECT | -0.8 | multiplicative effect on mud growth for max infra |  |
 
-## NDeployment <a id="NDeployment"></a>
+## NDeployment
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
 | BASE_DEPLOYMENT_TRAINING | 1 | Base training done each day during deployment. |  |
 
-## NMilitary <a id="NMilitary"></a>
+## NMilitary
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -1046,7 +1000,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | DAMAGE_SPLIT_ON_FIRST_TARGET | 0.35 | % of damage dealt to the first target in a combat. The rest will be split amongst subsequent targets. Modifiers can affect this up to a maximum of 0.9. That value must not be exposed as a define. |  |
 | NEW_ARMY_LEADER_LEVEL_CHANCES | { 0.95, 0.05 } | chances for new army leaders to start at a given level<br>95% for level one<br>5% for level two<br>0% for level three to ten |  |
 
-## NAir <a id="NAir"></a>
+## NAir
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -1217,7 +1171,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | USE_SINGLE_NAVAL_ARMAMENT_CATEGORY | true | If true, only the armament module category that inflicts the greatest damage to naval targets will contribute naval strike and port strike mission specific stats. Only modules with both naval_strike_attack and naval_strike_targetting are considered. This is used to prevent torpedo_mounting and bomb_locks stats from stacking. |  |
 | PORT_STRIKE_DAMAGE_FACTOR | 1.0 | How much damage is dealt to ports during a port strike (per plane damage `[complex number]` \* num flying planes \* define) |  |
 
-## NNavy <a id="NNavy"></a>
+## NNavy
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -1562,7 +1516,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | NAVY_PIERCING_THRESHOLD_CRITICAL_VALUES | { 2.00, 1.00, 0.75, 0.50, 0.10, 0.00 } | 0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit.<br>For criticals, you could reduce crit chance unlike damage in army combat, but we do not for now. |  |
 | NAVY_PIERCING_THRESHOLD_DAMAGE_VALUES | { 1.00, 1.00, 0.70, 0.40, 0.30, 0.10 } | all of these NEED to be the same size!!!!0 armor will always receive maximum damage (so add overmatching at your own peril). the system expects at least 2 values, with no upper limit. |  |
 
-## NRailwayGun <a id="NRailwayGun"></a>
+## NRailwayGun
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -1593,7 +1547,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | DISTRIBUTION_NO_RAILWAY_SCORE | -500 | Score for provinces with no railways (need to be low, but we allow RG to enter port provinces without railways) |  |
 | DISTRIBUTION_SUPPLY_DEFICIT_SCORE | -100 | Score for provinces without sufficient supply cap |  |
 
-## NTrade <a id="NTrade"></a>
+## NTrade
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -1611,7 +1565,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ANTI_MONOPOLY_TRADE_FACTOR | -100 | This is added to the factor value when anti-monopoly threshold is exceeded |  |
 | NAVAL_ROUTE_ACCESS_AVOID_COST_MULT | 1 | Naval pathfinding should avoid certain regions that you mark. High "cost multiplier" will make it less willingly go through a specific region. |  |
 
-## NAI <a id="NAI"></a>
+## NAI
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2441,7 +2395,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | AI_WANTED_LAND_BASED_PLANES_FACTOR | 0.50 | Factor applied to desire for land based planes (total airbase space \* define) |  |
 | AI_WANTED_CARRIER_BASED_PLANES_FACTOR | 1.0 | Factor applied to desire for carrier based planes (total carrier space \* define) |  |
 
-## NFocus <a id="NFocus"></a>
+## NFocus
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2450,7 +2404,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | FOCUS_PROGRESS_WAR | 1 | Progress during war |  |
 | MAX_SAVED_FOCUS_PROGRESS | 10 | This much progress can be saved while not having a focus selected |  |
 
-## NOperatives <a id="NOperatives"></a>
+## NOperatives
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2579,7 +2533,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | TECH_STEAL_EQUIPMENT_FACTOR | 4 |  |  |
 | TECH_STEAL_YEAR_FACTOR | 4 |  |  |
 
-## NIntel <a id="NIntel"></a>
+## NIntel
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2801,7 +2755,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | AIR_MAPICON_AIR_PORT_PLANE_FUZZY_THRESHOLD | 0.5 |  |  |
 | AIR_MIN_INTEL_TO_SHOW_EQUIPMENT_DESIGN_DETAILS | 0.8 | ~intel ledger defines |  |
 
-## NCharacter <a id="NCharacter"></a>
+## NCharacter
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2819,7 +2773,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | EXPERT_ADVISOR_MIN_RANK | 6 |  |  |
 | GENIUS_ADVISOR_MIN_RANK | 8 |  |  |
 
-## NSupply <a id="NSupply"></a>
+## NSupply
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2926,7 +2880,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | NON_CORE_MANPOWER_STATE_SUPPLY | 0.2 | Factor for population sttate supply when controlled by an occupier (NO TAKE FOOD) |  |
 | STORED_SUPPLY_CONSUMPTION_RATE_FACTOR | 0.75 | Multiplies consumption rate of stored supply (more/less easement) |  |
 
-## NAITheatre <a id="NAITheatre"></a>
+## NAITheatre
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2948,7 +2902,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | AI_THEATRE_SUPPLY_CRISIS_LIMIT | 0.1 | If a unit is standing in an area with this supply ratio it will try to escape |  |
 | AI_THEATRE_AI_FRONT_MIN_DESIRED_RATIO | 0.18 | Fronts are sorted based on priority, we nudge unit demand based on this sorting, the higher the value the more units the most important front gets |  |
 
-## NIndustrialOrganisation <a id="NIndustrialOrganisation"></a>
+## NIndustrialOrganisation
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -2970,7 +2924,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | DEFAULT_INITIAL_ATTACH_POLICY_COOLDOWN | 180 | Default start cooldown in days after attaching a policy |  |
 | LEGACY_COST_FACTOR_SCALE | 1.0 | Multiplier to use when legacy Designer cost factors is applied to MIOs (<IdeaGroup>_cost_factor) |  |
 
-## NProject <a id="NProject"></a>
+## NProject
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -3004,7 +2958,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | BREAKTHROUGH_DAILY_NUCLEAR_REACTOR_GAIN | 1 | Amount in 1/100th percentage gained per nuclear reactor. E.g. 2 = 0.02% per nuclear reactor. |  |
 | BREAKTHROUGH_GAIN_ANIMATION_SPEED_MAX | 1.0 | The animation for gaining breakthrough progress is a ratio of this value and current daily gain. |  |
 
-## NRaids <a id="NRaids"></a>
+## NRaids
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -3046,14 +3000,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | ARMY_TRANSFER_AVOID_ENEMY | true | Whether to avoid enemy when transferring divisions to the raid source |  |
 | MAX_TARGETS_TO_UPDATE_PER_FRAME | 100 | PERFORMANCE (FRAME) : max raid targets to evaluate per frame (affects raid map icon refresh rate) |  |
 
-## NWiki <a id="NWiki"></a>
+## NWiki
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
 | BASE_URL | "https://hoi4.paradoxwikis.com/" |  |  |
 | FORUM_URL | "https://forum.paradoxplaza.com/forum/index.php?forums/hearts-of-iron-iv.844/" |  |  |
 
-## NMapMode <a id="NMapMode"></a>
+## NMapMode
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -3137,7 +3091,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SELECTION_HOVERED_STATE_COLOR_INDEX_CONTROLLED | 5 | Border color of hovered controlled states in various select mapmodes. Refers to the colors in BORDER_COLOR_CUSTOM_HIGHLIGHTS. |  |
 | SELECTION_HOVERED_STATE_COLOR_INDEX_FOREIGN | 6 | Border color of hovered foreign states in various select mapmodes. Refers to the colors in BORDER_COLOR_CUSTOM_HIGHLIGHTS. |  |
 
-## NMapIcons <a id="NMapIcons"></a>
+## NMapIcons
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -3552,7 +3506,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | OPERATION_PRIORITY_PREPARED | 4 | The order of the operation map icons (lower in first) |  |
 | OPERATION_PRIORITY_DEFAULT | 5 | The order of the operation map icons (lower in first) |  |
 
-## NAirGfx <a id="NAirGfx"></a>
+## NAirGfx
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -3595,7 +3549,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MAX_TRAINING_SCENARIOS | 2 | Max number of training scenarios in a strategic region |  |
 | MAX_SCOUT_SCENARIOS | 2 |  |  |
 
-## NGraphics <a id="NGraphics"></a>
+## NGraphics
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -4023,7 +3977,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | INTEL_LEDGER_GRAPH_GREEN | { 0.0, 1.0, 0.0, 1.0 } |  |  |
 | DEFAULT_NUDGE_FLOATING_HARBOR_DIST | 7.0 | Default distance of floating harbors from the coast in pixels, for nudger |  |
 
-## NInterface <a id="NInterface"></a>
+## NInterface
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -4111,7 +4065,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | MIO_CENTRAL_TREE_HORIZONTAL_POSITION | 1 | Horizontal position for auto-generated MIO traits |  |
 | SLOW_INTERFACE_THRESHOLD | 5000 | Show warning "SLOW INTERFACE" in debug when interface refresh takes more that this (in microseconds) |  |
 
-## NFrontend <a id="NFrontend"></a>
+## NFrontend
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -4144,7 +4098,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | SOCIALVIEW_CONTEXT_MENU_BUTTON_OFFSET | 10 |  |  |
 | SOCIALVIEW_CONTEXT_MENU_MARGIN | 2 |  |  |
 
-## NSound <a id="NSound"></a>
+## NSound
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -4160,14 +4114,14 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | VOICE_OVER_CATEGORY | "Voices" |  |  |
 | VOICE_OVER_COOL_DOWN | 2.8 | Wait for this many seconds before playing another vo |  |
 
-## NFriendGUI <a id="NFriendGUI"></a>
+## NFriendGUI
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
 | OFFLINE_COLOR | { 0.7, 0.7, 0.7, 1.0 } | Text color of offline state |  |
 | ONLINE_COLOR | { 0.56, 0.85, 0.56, 1.0 } | Text color of online state |  |
 
-## NCareerProfile <a id="NCareerProfile"></a>
+## NCareerProfile
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -4189,7 +4143,7 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CASTLES_IN_THE_AIR_MEDAL_AIR_DEFENSE_SILVER | 50 | The air defense required for the airplanes to get the Castles in the Air Silver Medal |  |
 | CASTLES_IN_THE_AIR_MEDAL_AIR_DEFENSE_GOLD | 100 | The air defense required for the airplanes to get the Castles in the Air Gold Medal |  |
 
-## NCareerProfileGUI <a id="NCareerProfileGUI"></a>
+## NCareerProfileGUI
 
 | Name | Default | Developer comment | Usage |
 | --- | --- | --- | --- |
@@ -4198,17 +4152,3 @@ A mod should **never** contain the 00_defines.lua and 00_graphics.lua files with
 | CAREER_POINTS_ANIMATION_DELAY | 950 | Delay the career points count-up animation by this many milliseconds |  |
 | CAREER_POINTS_ANIMATION_DURATION | 950 | Count the career points up for this many milliseconds |  |
 | PROFILE_PICTURE_BACKGROUND_OPACITY | 0.8 | The opacity of the dark background square behind profile pictures |  |
-
----
-
-## Navigation
-
-**[Modding](<modding.md>)**
-
-- **Documentation**: [Effects](<effects.md>) • [Triggers](<triggers.md>) • [Modifiers](<modifiers.md>) • [List of modifiers](<list_of_modifiers.md>) • [Scopes](<scopes.md>) • [Localisation](<localisation.md>) • [On actions](<on_actions.md>) • [Data structures](<data_structures.md>) • [Flags](<data_structures.md#Flags>) • [Event targets](<data_structures.md#Event_targets>) • [Country tag aliases](<data_structures.md#Country_tag_aliases>) • [Variables](<data_structures.md#Variables>) • [Arrays](<data_structures.md#Arrays>)
-- **Scripting**: [Achievements](<achievement_modding.md>) • [AI](<ai_modding.md>) • [AI focuses](<ai_focuses.md>) • [Autonomous states](<autonomy_state_modding.md>) • [Balances of power](<balance_of_power_modding.md>) • [Bookmarks/Scenarios](<bookmark_modding.md>) • [Game rules](<bookmark_modding.md#Game_rules>) • [Buildings](<building_modding.md>) • [Characters and traits](<character_modding.md>) • [Cosmetic tags](<cosmetic_tag_modding.md>) • [Countries](<country_creation.md>) • [Divisions](<division_modding.md>) • [Decisions](<decision_modding.md>) • [Doctrines](<doctrine_modding.md>) • [Equipment](<equipment_modding.md>) • [Events](<event_modding.md>) • [Factions](<faction_modding.md>) • [Ideas](<idea_modding.md>) • [Ideologies](<ideology_modding.md>) • [Military industrial organizations](<military_industrial_organization_modding.md>) • [National focuses](<national_focus_modding.md>) • [Resources](<resources_modding.md>) • [Scripted GUI](<scripted_gui_modding.md>) • [Technologies and doctrines](<technology_modding.md>) • [Units](<unit_modding.md>)
-- **Map**: [Map](<map_modding.md>) • [States](<state_modding.md>) • [Supply areas](<supply_areas_modding.md>) • [Strategic regions](<strategic_region_modding.md>)
-- **Graphical**: [Interface](<interface_modding.md>) • [Graphical assets](<graphical_asset_modding.md>) • [Entities](<entity_modding.md>) • [Posteffects](<posteffect_modding.md>) • [Particles](<particle_modding.md>) • [Fonts](<font_modding.md>)
-- **Cosmetic**: [Portraits](<portrait_modding.md>) • [Namelists](<namelist_modding.md>) • [Music](<music_modding.md>) • [Sound](<sound_modding.md>)
-- **Other**: [Console commands](<console_commands.md>) • [Troubleshooting](<troubleshooting.md>) • [Mod structure](<mod_structure.md>) • [Mods](<mods.md>) • [Nudger](<nudger.md>)
-- **Kit pages (not on the wiki)**: [Collection modding](<collection_modding.md>) • [Defines additions](<defines_additions.md>) • [Game rule modding](<game_rule_modding.md>) • [Intelligence operation modding](<intelligence_operation_modding.md>) • [Map mode modding](<map_mode_modding.md>) • [Occupation and resistance modding](<occupation_and_resistance_modding.md>) • [Peace conference modding](<peace_conference_modding.md>) • [Raid modding](<raid_modding.md>) • [Script constant modding](<script_constant_modding.md>) • [Special project modding](<special_project_modding.md>)
