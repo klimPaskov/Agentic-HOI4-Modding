@@ -62,7 +62,7 @@ A division shows the model of its highest-priority sub-unit (`priority` in the u
 
 ## What happens
 
-1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. You look at it and approve it.
+1. **Reference image.** One clean picture of the unit, without weapons in hand and on a plain background. A unit that will hold a weapon has its hands closed in fists, because an open hand cannot be posed into a grip later. You look at it and approve it.
 2. **Model.** Meshy turns the picture into a textured model. Blender imports it, checks it for holes and loose parts, and scales it against vanilla infantry.
 3. **Rig and animations.** Meshy rigs humanoids and animates them from its library. Blender rigs four-legged animals itself and seats riders.
 4. **Export.** Blender writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, then re-imports them to prove they load.

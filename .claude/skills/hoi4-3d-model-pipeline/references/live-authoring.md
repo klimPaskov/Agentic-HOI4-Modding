@@ -46,9 +46,10 @@ Free live work comes before any paid clip or new generation.
    - Plant the feet that carry weight: `h.plant(frame, thigh, shin, foot, [foot groups], mesh)` puts the
      lowest skinned vertex of that foot on the ground and keys the leg.
    - Check every leg: `h.knee_bend(thigh, shin, foot)` must not be negative.
+   - Key only the bones you posed: `h.key([...], frame)`. Key before you render: a render evaluates
+     the action again, so an unkeyed pose is gone from it.
    - Render: `h.shot(tag, frame)` gives front, left and the HOI4 camera, with back faces culled on
      magenta. Add close-ups with `close={...}` for hands and feet.
-   - Key only the bones you posed: `h.key([...], frame)`.
 3. Look at the in-betweens: `h.strip(tag, frames)` renders one view at several frames.
 4. Split long work (an export plus dozens of renders) into several calls. The bridge times out while
    Blender keeps working, so confirm by file timestamps.
@@ -72,6 +73,15 @@ place, measure, render and key what you name at the call site.
   finger bones, never from hand-typed rotations.
 - Measure contact: `h.grip_gap([knuckle points], prop_object)` should stay under a tenth of the hand's
   length in every key.
+- A provider hand that is open or splayed never reads as a grip, however the fingers are curled. Replace
+  it with a grip shell: delete the hand past the wrist (every vertex dominated by the hand or finger
+  bones), fill and triangulate the wrist, model a fist-sized bevelled block with knuckle bumps on the
+  hand's knuckle line, bind it fully to the hand bone, give it the body material with every UV on the
+  glove's texel, and seat the prop's grip at the block's centre at every key. Export it as an extra
+  shape; the PDX exporter needs triangles after hole fills. A hull of the open fingers reads as a flat
+  wedge, and a box around them grows to crate size. Generating the fists closed avoids all of this.
+- Slots and vents in a prop whose side walls are missing show magenta: join a dark core inside the prop,
+  with the prop's material and a dark texel.
 - Show hand contact to the reviewer: `h.flat_colours(True, props=[...])` renders flat colours with the
   prop in yellow. Dark-coated units read nearly black with textures.
 
@@ -85,6 +95,15 @@ Weight fixes correct existing weights; they never invent a weight set.
   far thigh 0.24). `repair_unit.py --repairs weights` does the same blend without a live session.
 - Hard edges inside one skin and four-influence limits: `repair_unit.py --repairs weights`.
 
+## Rigs with extra limbs
+
+- Count limbs from the geometry, not from a render: `measure_body.py` slices the body and counts the
+  separate pieces per slice. A long clawed arm can read as a tentacle in a render.
+- Provider rigs on extra limbs can misplace joints as well as weights: a hand bone sitting on a claw, a
+  chain bone that owns no vertices. Before posing, check that each bone's head lies inside its own
+  vertices and that every chain bone owns some; place joints at the centres of slices taken along the
+  limb from the shoulder.
+
 ## Posture and reading on the map
 
 - Judge lean from the silhouette, not the bones. A hunched fur mass reads 20 to 30 degrees forward
@@ -92,6 +111,12 @@ Weight fixes correct existing weights; they never invent a weight set.
   (0.3, 0.35, 0.35))`, never with a neck pitch alone, which tears chin fur from the chest.
 - On a hunched heavy body an overhead swing hides the head from the map camera. Prefer shoulder-height
   strikes for large bipeds and beasts.
+- Roles read at map zoom through whole-body changes, not limb tweaks. A retreat turns the body away
+  (about 60 degrees) with the arms pulled back; training moves the feet with lunges; a support attack
+  pitches the whole torso into a crouch (on a Meshy humanoid pitch `Hips`, since an upper-spine pitch
+  barely moves the head); a death lies flat, face down for spiky or long-limbed bodies.
+  `check_unit_files.py` fails two roles with the same motion (UNIT-ANIM-SAME), but a reviewer judges the
+  read.
 
 ## After authoring
 
@@ -100,5 +125,7 @@ Weight fixes correct existing weights; they never invent a weight set.
    UNIT-ANIM-SAME and UNIT-ANIM-SHARED.
 2. Re-time the entity's timed events (muzzle flashes, sounds) in `gfx/entities/*.asset` to the new
    fire and contact frames.
-3. Render with `review_unit.py` and hand the sheets to a fresh reviewer, as for any unit.
+3. Render with `review_unit.py` and hand the sheets to a fresh reviewer, as for any unit. Fresh reviewers
+   look at different frames each round, so keep every earlier round's reply and check its findings
+   again yourself before the next review: a fix elsewhere can bring an old defect back.
 4. Add what you learned to the project's lessons log, so the kit can turn it into a check or helper.
