@@ -3569,7 +3569,7 @@ def finish_unit_base(job: Path, slug: str, spec: Dict[str, Any], blender: Blende
     if spec.get("loose_part_edits"):
         # A prop the provider rig weighted to several limbs (a maul hanging between the legs) is dropped or bound to one bone.
         edited = blender.edit_loose_parts(slug, base, "blender/checkpoints/base_loose_parts.blend", spec["loose_part_edits"])
-        write_json(job / "blender" / "reports" / "loose_part_edits.json", edited)
+        write_json(job / "blender" / "reports" / "loose_part_edits.json", {**edited, "reason": spec.get("loose_part_edits_reason", "")})
         base = edited["checkpoint"]
     blender.save_checkpoint(slug, base, "unit_base_pre_export")
     return textures
