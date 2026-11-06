@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Move the `hoi4-imagegen` release route to v0.3.5. The install writes `legacy_lazy_load = no` on a unit's text-icon sprite, which the division tooltip needs. The install notes say a landmark needs a `building_<key>` entity and a technology needs a `path` or its own tree box. The technology canvas follows the tree item's vanilla size. The kit's reference shelf no longer hands other countries' focus art to a generic brief. Counter art that holds more than the unit's glyph is refused.
+
 ## 2026-11-06
 
 Package release `package-2026-11-06`. HOI4 Agent Tools stays on 4.8.0 and HOI4 Live Tools on 1.3.0, the newest published versions.
