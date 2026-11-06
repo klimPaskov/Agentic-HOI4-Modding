@@ -132,6 +132,14 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py gfx/models/units/<unit> --out <job
 
 Repairs never make new bones, a new weight set or new keyframes: a clip that does not read as its role, or a prop that passes through the body, needs its motion authored again in Blender. It writes the repaired copy to `<job folder>/repair/files` and leaves `gfx/` alone. The skeleton, materials and the weights of every vertex it does not cut stay as they were, so the unit's `.anim` files still play. `repair_report.json` lists what changed and the check results before and after. Review the copy with `review_unit.py`, and copy it into `gfx/` only after a fresh reviewer passes it.
 
+## Author animations live in Blender
+
+Some units need motion no library clip gives them: a body with wings, extra arms or a tail, a creature on which human clips look wrong, a project that wants every unit's clips to be its own, or a clip that failed the review twice. Then your agent poses the unit by hand in a live Blender session, through an interactive Blender MCP, one key at a time, and looks at every key before it keeps it. It costs nothing.
+
+The kit gives that session helpers in `.tools/3d_pipeline/authoring/live_helpers.py`: solve a leg with the knee toward the toes, put a hand on a point with a temporary IK, plant a foot on the ground at a key, spread a lean down the spine, weight a crotch seam across the pelvis and both thighs, keep a hand on a weapon wherever the weapon moves, and render the views a reviewer sees. They never make keys on their own. The agent's guide is the skill's `references/live-authoring.md`.
+
+The result goes through the same checks and the same independent review as any other unit.
+
 ## When something fails
 
 Ask where a unit stands at any time. This reads files only and costs nothing:

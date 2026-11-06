@@ -23,7 +23,9 @@ check, and completion boundaries. This file only points to it.
 Read [source-reference policy](references/source-reference-policy.md) before
 searching or approving a model input. Read [motion and repair QA](references/motion-and-repair-qa.md)
 before standalone motion, retargeting, skeletal repair, material rebinding,
-assembly yaw, or export acceptance. Read only the other system/asset references
+assembly yaw, or export acceptance. Read [live authoring](references/live-authoring.md)
+before posing, keying, re-weighting or seating a prop by hand in a live Blender
+session (the escalation path). Read only the other system/asset references
 needed for the actual consumer; do not start provider/runtime operations for a
 workflow-documentation task.
 
