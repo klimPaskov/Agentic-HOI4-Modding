@@ -78,6 +78,54 @@ def weights_of(obj, bm):
     return {v.index: {names[g]: w for g, w in v[layer].items() if g in names and w > 0} for v in bm.verts}
 
 
+def blend_seams(obj, bm, seams, rings, passes):
+    """Blend the existing weights across each weight seam, so the skin bends over a band instead
+    of tearing along one edge. Only vertices within `rings` edges of a seam change, and each takes
+    a mix of its own and its neighbours' existing weights; no bone gains a vertex it was not near."""
+
+    layer = bm.verts.layers.deform.verify()
+    region = {v for e in seams for v in e.verts}
+    frontier = set(region)
+    for _ in range(rings):
+        frontier = {n for v in frontier for e in v.link_edges for n in e.verts} - region
+        region |= frontier
+    for _ in range(passes):
+        current = {v: dict(v[layer].items()) for v in region}
+        for v in region:
+            neighbours = [n for e in v.link_edges for n in e.verts if n is not v]
+            mixed = {group: weight * 0.5 for group, weight in current[v].items()}
+            for n in neighbours:
+                for group, weight in (current.get(n) or dict(n[layer].items())).items():
+                    mixed[group] = mixed.get(group, 0.0) + 0.5 * weight / len(neighbours)
+            total = sum(mixed.values())
+            if total <= 0:
+                continue
+            deform = v[layer]
+            deform.clear()
+            for group, weight in mixed.items():
+                deform[group] = weight / total
+    return len(region)
+
+
+def limit_influences(obj, bm, limit):
+    """Keep each vertex's `limit` strongest existing weights and normalize them; return the vertices changed."""
+
+    layer = bm.verts.layers.deform.verify()
+    changed = 0
+    for v in bm.verts:
+        items = sorted(v[layer].items(), key=lambda item: -item[1])
+        kept = [(group, weight) for group, weight in items[:limit] if weight > 1e-4]
+        total = sum(weight for _group, weight in kept)
+        if len(kept) == len(items) and abs(total - 1.0) < 1e-4:
+            continue
+        deform = v[layer]
+        deform.clear()
+        for group, weight in kept:
+            deform[group] = weight / total if total > 0 else weight
+        changed += 1
+    return changed
+
+
 def bridge_edges(bm, weights):
     found = []
     for edge in bm.edges:
@@ -273,6 +321,12 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
                       "caps": cap_loops(bm, rims, 0)})  # a cut rim is always closed, whatever its size
     if "holes" in repairs:
         entry["holes_closed"] = cap_loops(bm, list(bm.edges), request["max_hole_edges"])
+    if "weights" in repairs and rig is not None:
+        bm.verts.ensure_lookup_table()
+        weights = weights_of(obj, bm)
+        _fused, seams = split_fusions(bm, bridge_edges(bm, weights), weights)
+        entry["seam_vertices_blended"] = blend_seams(obj, bm, seams, request["seam_rings"], request["seam_passes"])
+        entry["influences_limited"] = limit_influences(obj, bm, 4)
     open_edges = [e for e in bm.edges if e.is_boundary]
     entry["open_edges_after"] = len(open_edges)
     entry["open_junctions_after"] = sum(1 for v in {v for e in open_edges for v in e.verts} if sum(1 for e in v.link_edges if e.is_boundary) > 2)

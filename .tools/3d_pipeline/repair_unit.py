@@ -15,6 +15,11 @@ Repairs:
 - `bridges`: delete faces that join far-apart body parts and cap both sides (fixes UNIT-BRIDGE
   and the stretch it causes).
 - `holes`: close open loops of at most `--max-hole-edges` edges (UNIT-HOLE).
+- `ground`: shift each clip's root translation keys so the lowest point meets the ground in every
+  frame; a death clip is only lifted where it sinks (UNIT-ANIM-GROUND). Runs without Blender.
+- `weights`: blend the existing weights across each weight seam (a bridge inside one continuous
+  skin, which `bridges` keeps) over a few edge rings, then keep at most four influences per
+  vertex and normalize. No weight is created for a bone a vertex was not already near.
 
 The report `<out>/repair_report.json` lists what each repair changed and the rules before and after.
 """
@@ -34,16 +39,35 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import check_unit_files
-from lib import pdx_deform
+from lib import pdx_deform, pdx_ground
 from review_unit import find_blender
 
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
-REPAIRS = ("winding", "bridges", "holes")
+# A weight seam is blended over this many edge rings on each side, in this many smoothing passes.
+SEAM_RINGS = 3
+SEAM_PASSES = 4
+MESH_REPAIRS = ("winding", "bridges", "holes", "weights")
+REPAIRS = MESH_REPAIRS + ("ground",)
 
 
 def rule_counts(folder: Path, stem: Optional[str], unit_type: Optional[dict]) -> dict:
     findings, _facts = check_unit_files.check_files(folder, unit_type, None, stem)
     return dict(Counter(f.rule for f in findings if f.severity == "error"))
+
+
+def ground_clips(files: Path, mesh: Path, stem: Optional[str], stems: List[str]) -> dict:
+    """Ground every clip of the unit in `files` in place; a death clip is only lifted where it sinks."""
+
+    owner = mesh.stem
+    results = {}
+    for anim in sorted(files.glob("*.anim")):
+        owners = [candidate for candidate in stems if anim.stem.startswith(candidate + "_")]
+        if owners and max(owners, key=len) != owner:
+            continue
+        correction = pdx_ground.ground(mesh, anim, anim, death=anim.stem.endswith("_death"))
+        results[anim.name] = {"root": correction.root, "shifted": correction.corrected,
+                              "largest_shift": round(correction.largest_shift, 4), "note": correction.reason}
+    return results
 
 
 def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max_hole_edges: int, unit_type: Optional[dict]) -> dict:
@@ -55,30 +79,38 @@ def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max
     if files.exists():
         shutil.rmtree(files)
     shutil.copytree(folder, files, ignore=shutil.ignore_patterns("review", "*.blend*"))
-    request = {
-        "mesh": str(mesh.resolve()),
-        "out": str((files / mesh.name).resolve()),
-        "report": str((out / "blender_report.json").resolve()),
-        "repairs": repairs,
-        "hops": pdx_deform.BRIDGE_HOPS,
-        "max_hole_edges": max_hole_edges,
-    }
-    request_path = out / "repair_request.json"
-    request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-    completed = subprocess.run(
-        [str(find_blender()), "-b", "--python", str(BLENDER_SCRIPT), "--", str(request_path.resolve())],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    (out / "blender.log").write_text(completed.stdout[-20000:] + completed.stderr[-20000:], encoding="utf-8")
-    if "REPAIR_DONE" not in completed.stdout:
-        raise SystemExit(f"Blender did not finish the repair; see {out / 'blender.log'}")
+    mesh_repairs = [name for name in repairs if name in MESH_REPAIRS]
+    blender_report: dict = {}
+    if mesh_repairs:
+        request = {
+            "mesh": str(mesh.resolve()),
+            "out": str((files / mesh.name).resolve()),
+            "report": str((out / "blender_report.json").resolve()),
+            "repairs": mesh_repairs,
+            "hops": pdx_deform.BRIDGE_HOPS,
+            "max_hole_edges": max_hole_edges,
+            "seam_rings": SEAM_RINGS,
+            "seam_passes": SEAM_PASSES,
+        }
+        request_path = out / "repair_request.json"
+        request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
+        completed = subprocess.run(
+            [str(find_blender()), "-b", "--python", str(BLENDER_SCRIPT), "--", str(request_path.resolve())],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+        (out / "blender.log").write_text(completed.stdout[-20000:] + completed.stderr[-20000:], encoding="utf-8")
+        if "REPAIR_DONE" not in completed.stdout:
+            raise SystemExit(f"Blender did not finish the repair; see {out / 'blender.log'}")
+        blender_report = json.loads((out / "blender_report.json").read_text(encoding="utf-8"))
+    grounding = ground_clips(files, files / mesh.name, stem, [m.stem for m in meshes]) if "ground" in repairs else {}
     report = {
         "unit": mesh.stem,
         "repairs": repairs,
-        "blender": json.loads((out / "blender_report.json").read_text(encoding="utf-8")),
+        "blender": blender_report,
+        "ground": grounding,
         "rules_before": rule_counts(folder, stem, unit_type),
         "rules_after": rule_counts(files, stem, unit_type),
     }
