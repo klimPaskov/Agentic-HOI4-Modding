@@ -13,6 +13,9 @@ No Blender: joints are posed with `pdx_deform.skinning_matrices`, the way the ga
 - `motion_amount` measures how far a clip moves the joints, as a share of the unit's height.
 - `clip_distance` measures how different two clips of one skeleton are: the average distance
   from each pose of one clip to the nearest pose of the other, both ways.
+- `loose_parts` finds the parts that are not joined to the body's surface (straps, plates, a
+  quiver, a separate weapon) and measures whether each is skinned and how far it gets from the
+  body region it rests on, in the rest pose and in every frame of every clip.
 - `rotation_profile` and `same_clip` compare clips between units: how far each joint has turned
   since the first frame does not depend on how the rig's bones rest, so one library clip played on
   two bodies gives the same profile. Joint directions and rest-relative rotations were tried
@@ -26,7 +29,7 @@ from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 
-from .pdx_deform import Animation, SkinnedMesh, dominant_bones, mesh_edges, skinning_matrices
+from .pdx_deform import Animation, SkinnedMesh, dominant_bones, mesh_edges, skin, skinning_matrices, weld
 
 # Rest-pose shares of the unit's height that make a chain a leg: the ankle near the ground,
 # the hip in the upper half of the legs' reach, and both leg segments long enough to bend.
@@ -363,3 +366,89 @@ def same_clip(first: np.ndarray, second: np.ndarray) -> Optional[float]:
         return None
     distance = profile_distance(first, second)
     return distance if distance < SHARED_DEGREES and distance < SHARED_SHARE * larger else None
+
+
+# A loose part is followed through a clip by the closest pairs of (part vertex, body vertex) at rest:
+# while the part stays attached, at least one pair stays close.
+ANCHOR_PAIRS = 16
+PART_SAMPLES = 64
+BODY_SAMPLES = 6000
+
+
+@dataclass
+class LoosePart:
+    triangles: int
+    vertices: int
+    unweighted: int  # vertices with no skin weight: they stay at the bind position in every frame
+    rest_gap: float  # smallest distance to the rest of the unit, as a share of height
+    worst_gap: float  # largest such distance in any frame of any clip
+    worst_clip: str = ""
+    worst_frame: int = -1
+
+
+def _parts(mesh: SkinnedMesh) -> np.ndarray:
+    """A part label for every vertex: connected over shared (welded) vertices of triangles."""
+
+    canon = weld(mesh.positions, max(mesh.height, 1e-6) * 1e-5)
+    parent = np.arange(len(mesh.positions))
+
+    def find(a: int) -> int:
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    tris = canon[mesh.triangles]
+    for a, b, c in tris:
+        ra, rb, rc = find(int(a)), find(int(b)), find(int(c))
+        parent[rb] = ra
+        parent[find(rc)] = ra
+    roots = np.array([find(int(i)) for i in range(len(parent))])
+    return roots[canon]
+
+
+def _evenly(indices: np.ndarray, count: int) -> np.ndarray:
+    return indices if len(indices) <= count else indices[np.linspace(0, len(indices) - 1, count).round().astype(int)]
+
+
+def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePart]:
+    """Every part but the largest, with its skinning and its distance from the rest of the unit per frame."""
+
+    labels = _parts(mesh)
+    if len(mesh.collision) == len(mesh.positions) and mesh.collision.any():
+        labels = np.where(mesh.collision, -1, labels)  # the selection box never renders
+    triangle_part = labels[mesh.triangles[:, 0]] if len(mesh.triangles) else np.zeros(0, dtype=np.int64)
+    parts, counts = np.unique(triangle_part, return_counts=True)
+    if len(parts[parts != -1]) < 2:
+        return []
+    main = parts[parts != -1][np.argmax(counts[parts != -1])]
+    height = max(mesh.height, 1e-6)
+    used = np.unique(mesh.triangles)
+    found: List[LoosePart] = []
+    anchors = []
+    for part, triangles in zip(parts, counts):
+        if part in (main, -1):
+            continue
+        mine = used[labels[used] == part]
+        others = used[(labels[used] != part) & (labels[used] != -1)]
+        if not len(mine) or not len(others):
+            continue
+        sample = _evenly(mine, PART_SAMPLES)
+        body = _evenly(others, BODY_SAMPLES)
+        distance = np.linalg.norm(mesh.positions[sample][:, None] - mesh.positions[body][None], axis=2)
+        flat = np.argsort(distance, axis=None)[:ANCHOR_PAIRS]
+        pairs = np.stack(np.unravel_index(flat, distance.shape), axis=1)
+        unweighted = int((mesh.weights[mine].sum(axis=1) <= 0).sum()) if mesh.skinned else 0
+        gap = float(distance.min()) / height
+        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap))
+        anchors.append((sample[pairs[:, 0]], body[pairs[:, 1]]))
+    if mesh.skinned and found:
+        for name, anim in clips.items():
+            matrices = skinning_matrices(mesh, anim)
+            for frame in range(matrices.shape[0]):
+                moved = skin(mesh, matrices[frame])
+                for record, (a, b) in zip(found, anchors):
+                    gap = float(np.linalg.norm(moved[a] - moved[b], axis=1).min()) / height
+                    if gap > record.worst_gap:
+                        record.worst_gap, record.worst_clip, record.worst_frame = gap, name, frame
+    return sorted(found, key=lambda item: -item.worst_gap)

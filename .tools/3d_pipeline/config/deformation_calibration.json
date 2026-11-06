@@ -96,6 +96,11 @@
     "value": 0.003261,
     "mesh": "FIN_infantry_alt_2_snow.mesh",
     "clip": "gfx/models/units/bicycle_infantry_idle.anim"
+   },
+   "loose_gap": {
+    "value": 0.019719,
+    "mesh": "cavalry_horse.mesh",
+    "clip": "gfx/models/units/cavalry_horse_idle_forward.anim"
    }
   },
   "vehicle": {

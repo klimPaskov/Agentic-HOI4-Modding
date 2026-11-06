@@ -90,7 +90,6 @@ def weights(deforming_zero: int = 0, static_zero: int = 0) -> list[dict]:
 VIOLATIONS = {
     "non_manifold_edges": ({"non_manifold_edges": 12}, "welded non-manifold edges 12 exceed profile allowance 0"),
     "boundary_edges": ({"loose_boundary_edges": 40}, "welded boundary edges 40 exceed profile allowance 0"),
-    "loose_components": ({"loose_component_count": 5}, "welded loose components 5 exceed profile allowance 1"),
     "triangle_range": ({"triangles": 3000}, "triangles 3000 are outside the profile's preferred range 5000-30000"),
 }
 
@@ -106,7 +105,7 @@ class EvaluateCandidateTests(unittest.TestCase):
             {
                 "non_manifold_edges": "passed",
                 "boundary_edges": "passed",
-                "loose_components": "passed",
+                "loose_components": "measured",
                 "triangle_range": "passed",
                 "material_slots": "passed",
                 "zero_weight_vertices": "not_evaluated",
@@ -119,6 +118,13 @@ class EvaluateCandidateTests(unittest.TestCase):
                 result = gates.evaluate_candidate(profile(), prep(**override))
                 self.assertEqual(result["failures"], [expected])
                 self.assertEqual(result["checks"][check]["status"], "failed")
+
+    def test_loose_parts_are_recorded_not_counted(self) -> None:
+        # A smart-topology archer arrives with its plates, straps and gear as 96 separate parts;
+        # check_unit_files.py judges each part after export (UNIT-LOOSE-PART).
+        result = gates.evaluate_candidate(profile(), prep(loose_component_count=96))
+        self.assertEqual(result["failures"], [])
+        self.assertEqual((result["checks"]["loose_components"]["status"], result["checks"]["loose_components"]["measured"]), ("measured", 96))
 
     def test_triangle_range_blocks_on_both_sides(self) -> None:
         for triangles in (4999, 30001):
@@ -137,7 +143,7 @@ class EvaluateCandidateTests(unittest.TestCase):
         self.assertEqual(gates.evaluate_candidate(profile(), candidate)["failures"], [])
 
     def test_a_measurement_missing_from_the_report_blocks_instead_of_passing(self) -> None:
-        for key in ("non_manifold_edges", "loose_boundary_edges", "loose_component_count"):
+        for key in ("non_manifold_edges", "loose_boundary_edges"):
             candidate = prep()
             del candidate["geometry"]["position_welded_topology"][key]
             with self.subTest(missing_welded=key):
@@ -145,7 +151,7 @@ class EvaluateCandidateTests(unittest.TestCase):
                 self.assertTrue(failures and "not measured" in failures[0], failures)
         candidate = prep()
         del candidate["geometry"]["position_welded_topology"]  # raw counts alone are never judged
-        self.assertEqual(len(gates.evaluate_candidate(profile(), candidate)["failures"]), 3)
+        self.assertEqual(len(gates.evaluate_candidate(profile(), candidate)["failures"]), 2)
         for key in ("triangles",):
             candidate = prep()
             del candidate["geometry"][key]
@@ -170,11 +176,11 @@ class EvaluateCandidateTests(unittest.TestCase):
         self.assertEqual(gates.evaluate_candidate(relaxed, prep(**override))["failures"], [])
         strict_by_default = profile()
         del strict_by_default["validation"]
-        self.assertEqual(len(gates.evaluate_candidate(strict_by_default, prep(**override))["failures"]), 2)
+        self.assertEqual(len(gates.evaluate_candidate(strict_by_default, prep(**override))["failures"]), 1)
         self.assertEqual(gates.evaluate_candidate(strict_by_default, prep())["failures"], [])
         for bad in (-1, 1.5, "0", True):
             with self.subTest(bad=bad), self.assertRaises(gates.ProfileGateError):
-                gates.evaluate_candidate(profile(validation={"max_loose_components": bad}), prep())
+                gates.evaluate_candidate(profile(validation={"max_boundary_edges": bad}), prep())
         with self.assertRaises(gates.ProfileGateError):
             gates.evaluate_candidate(profile(validation=[]), prep())
 
@@ -222,7 +228,7 @@ class WeldedTopologyTests(unittest.TestCase):
     def test_the_raw_counts_alone_are_not_a_measurement(self) -> None:
         candidate = measured((0, 0, 1), (0, 0, 1), triangles=21000)
         del candidate["geometry"]["position_welded_topology"]
-        self.assertEqual(len(self.failures(candidate)), 3)
+        self.assertEqual(len(self.failures(candidate)), 2)
 
     def test_shipped_units_pass_the_humanoid_profile(self) -> None:
         shipped = {
@@ -254,12 +260,14 @@ class WeldedTopologyTests(unittest.TestCase):
         self.assertEqual(self.failures(measured((0, 1, 1), (0, 1, 1), triangles=21000)), expected)
         self.assertEqual(self.failures(measured((0, 1, 1), (0, 1, 1), triangles=8000), self.strict), expected)
 
-    def test_a_detached_part_still_fails(self) -> None:
+    def test_detached_parts_are_judged_after_export_not_counted(self) -> None:
+        # Whether a part floats or drifts shows only once it is skinned: UNIT-LOOSE-PART judges it then.
         stray = measured((0, 0, 2), (0, 0, 2), triangles=8000)
-        self.assertEqual(self.failures(stray, self.strict), ["welded loose components 2 exceed profile allowance 1"])
-        # The humanoid profile allows the accessory parts measured on shipped units (up to 7), not 9.
-        many = measured((0, 0, 9), (0, 0, 9), triangles=21000)
-        self.assertEqual(self.failures(many), ["welded loose components 9 exceed profile allowance 8"])
+        self.assertEqual(self.failures(stray, self.strict), [])
+        many = measured((0, 0, 96), (0, 0, 96), triangles=21000)
+        result = gates.evaluate_candidate(self.humanoid, many)
+        self.assertEqual(result["failures"], [])
+        self.assertEqual(result["checks"]["loose_components"]["measured"], 96)
 
     def test_profiles_without_measured_models_keep_the_strict_defaults(self) -> None:
         # Only a profile whose calibration names the models it was measured on may relax the defaults.

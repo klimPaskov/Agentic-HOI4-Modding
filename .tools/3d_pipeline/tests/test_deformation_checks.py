@@ -247,7 +247,8 @@ class Calibration(unittest.TestCase):
         for group in ("organic", "vehicle", "air_naval"):
             limits = check_unit_files.load_calibration(group)
             self.assertIsNotNone(limits, "config/deformation_calibration.json is missing; run calibrate_deformation.py")
-            self.assertEqual(set(STRICT), set(limits))
+            # Loose parts are calibrated on a vanilla soldier and horse only, so only organic units have that limit.
+            self.assertEqual(set(STRICT) | ({"loose_gap"} if group == "organic" else set()), set(limits))
         # Soldiers and animals get far tighter hole limits than vehicles with open panel backs.
         organic, vehicle = check_unit_files.load_calibration("organic"), check_unit_files.load_calibration("vehicle")
         self.assertLess(organic["open_edge_share"], vehicle["open_edge_share"])

@@ -55,6 +55,10 @@ MEASURES = (
 )
 # Measures whose limit is the smallest vanilla value, not the largest.
 LOWEST = ("still_motion",)
+# Loose parts (straps, plates, gear, a held weapon) are measured on these two units over every clip
+# they play: a soldier with separate gear and a horse with separate tack (coordinator decision of
+# 2026-11-06). The other vanilla soldiers share their clips but not always their parts' weights.
+LOOSE_REFERENCES = ("GER_infantry.mesh", "cavalry_horse.mesh")
 
 
 def group_of(relative_path: str) -> str:
@@ -138,6 +142,25 @@ class Calibration:
             except (PdxFormatError, ValueError, IndexError):
                 continue
 
+    def loose(self, mesh: pdx_deform.SkinnedMesh, rel: str, group: str, clips: List[Path]) -> None:
+        """The farthest any loose part of a reference unit gets from the rest of it, at rest or in a frame."""
+
+        anims = {}
+        for clip in clips:
+            try:
+                anims[clip.stem] = pdx_deform.load_anim(clip)
+            except (PdxFormatError, ValueError, IndexError):
+                continue
+        worst = 0.0
+        where = ""
+        for part in pdx_motion.loose_parts(mesh, anims):
+            if part.worst_gap > worst:
+                worst, where = part.worst_gap, part.worst_clip
+        current = self.groups[group].get("loose_gap", {}).get("value") or 0.0
+        if worst >= current:
+            clip = next((c for c in clips if c.stem == where), None)
+            self.groups[group]["loose_gap"] = {"value": round(worst, 6), "mesh": rel, "clip": clip.relative_to(self.game).as_posix() if clip else ""}
+
     def clip(self, mesh: pdx_deform.SkinnedMesh, rel: str, group: str, clip: Path, edges: int, legs: pdx_motion.LegSet) -> None:
         try:
             anim = pdx_deform.load_anim(clip)
@@ -192,6 +215,8 @@ def main() -> int:
         legs = pdx_motion.find_legs(mesh)
         edges = calibration.surface(mesh, rel, group, legs)
         calibration.motion(mesh, rel, group, clips)
+        if mesh_path.name in LOOSE_REFERENCES:
+            calibration.loose(mesh, rel, group, clips)
         for clip in rng.sample(clips, min(args.clips_per_mesh, len(clips))):
             calibration.clip(mesh, rel, group, clip, edges, legs)
     payload = {
