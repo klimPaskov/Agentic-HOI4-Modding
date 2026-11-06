@@ -47,6 +47,8 @@ class SkinnedMesh:
     collision: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=bool))
     # (V,) the index of the shape (the `object` child) each vertex belongs to, in file order.
     shape: np.ndarray = field(default_factory=lambda: np.zeros(0, dtype=np.int64))
+    # (V, 3) the stored vertex normals (the `n` property); zeros for a stream without them.
+    normals: np.ndarray = field(default_factory=lambda: np.zeros((0, 3)))
 
     @property
     def height(self) -> float:
@@ -110,7 +112,7 @@ def load_mesh(path: Path) -> SkinnedMesh:
     if objects is None:
         raise PdxFormatError("the file has no object block")
     skeleton = _Skeleton()
-    positions, triangles, names, weights, collision, shapes = [], [], [], [], [], []
+    positions, triangles, names, weights, collision, shapes, normals = [], [], [], [], [], [], []
     offset = 0
     for shape_index, shape in enumerate(objects.children):
         local = skeleton.add_shape(shape.child("skeleton"))
@@ -118,6 +120,8 @@ def load_mesh(path: Path) -> SkinnedMesh:
             p = np.asarray(mesh.properties.get("p", []), dtype=float).reshape(-1, 3)
             stream_names, stream_weights = _stream_skin(mesh, len(p), local)
             positions.append(p)
+            n = np.asarray(mesh.properties.get("n", []), dtype=float)
+            normals.append(n.reshape(-1, 3) if len(n) == len(p) * 3 else np.zeros((len(p), 3)))
             triangles.append(np.asarray(mesh.properties.get("tri", []), dtype=np.int64).reshape(-1, 3) + offset)
             names.append(stream_names)
             weights.append(stream_weights)
@@ -144,6 +148,7 @@ def load_mesh(path: Path) -> SkinnedMesh:
         skinned=bool(bones) and bool((total > 0).any()),
         collision=np.concatenate(collision),
         shape=np.concatenate(shapes),
+        normals=np.concatenate(normals),
     )
 
 
@@ -249,6 +254,30 @@ def surface_report(mesh: SkinnedMesh, tolerance_share: float = 1e-5) -> SurfaceR
         parts=len(part_ids),
         inside_out_parts=sorted(inside_out, reverse=True),
     )
+
+
+def normals_against_faces(mesh: SkinnedMesh) -> tuple[int, int]:
+    """(vertices whose stored normal points against every triangle that uses them, vertices used).
+
+    A triangle's winding normal is (p1 - p0) x (p2 - p0), the side `surface_report` calls outward.
+    `Collision` shapes and degenerate triangles are skipped, and so are vertices with no stored normal.
+    Such a normal shades as a pale flat facet: the light meets the surface from behind.
+    """
+
+    p, t = mesh.positions, mesh.triangles
+    if not len(t) or len(mesh.normals) != len(p):
+        return 0, 0
+    face = np.cross(p[t[:, 1]] - p[t[:, 0]], p[t[:, 2]] - p[t[:, 0]])
+    length = np.linalg.norm(face, axis=1)
+    keep = (length > 1e-12) & ~mesh.collision[t[:, 0]]
+    face[keep] /= length[keep, None]
+    best = np.full(len(p), -2.0)
+    used = np.zeros(len(p), dtype=bool)
+    for corner in range(3):
+        dot = np.einsum("ij,ij->i", mesh.normals[t[:, corner]], face)
+        np.maximum.at(best, t[keep, corner], dot[keep])
+        used[t[keep, corner]] = True
+    return int(((best < 0) & used).sum()), int(used.sum())
 
 
 def bone_hops(parents: List[int]) -> np.ndarray:
