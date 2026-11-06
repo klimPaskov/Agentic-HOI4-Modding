@@ -56,7 +56,8 @@ A division shows the model of its highest-priority sub-unit (`priority` in the u
 4. **Export.** Blender writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, then re-imports them to prove they load.
 5. **Checks.** `check_unit_files.py` reads the exported files and stops on anything the game cannot use.
 6. **Hand-over.** The files land in the job's `runtime/files` folder with their final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste.
-7. **In game.** You or your live-testing setup place the unit and look at it idle, moving and fighting.
+7. **Independent review.** `review_unit.py` renders every clip from six sides, including the map camera, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty. See [Independent review](#independent-review).
+8. **In game.** You or your live-testing setup place the unit and look at it idle, moving and fighting.
 
 ## Automatic checks
 
@@ -87,6 +88,26 @@ py -3.13 -B .tools/3d_pipeline/check_unit_files.py gfx/models/units/<unit> --uni
 The surface and deformation limits are the worst values measured on the game's own soldiers, riders and horses (or on its vehicles, for a unit type with `"calibration_group": "vehicle"`). They live in `.tools/3d_pipeline/config/deformation_calibration.json`. After a game update, measure them again with `calibrate_deformation.py "<game folder>" --out .tools/3d_pipeline/config/deformation_calibration.json`. Never raise a limit by hand to pass a unit: fix the unit.
 
 Add `--repair-textures` to convert old uncompressed or unmipped textures in place. When a mount and its rider share one folder, check each with `--stem`, for example `--stem <unit> --unit-type mount` and `--stem <unit>_rider --unit-type rider`.
+
+## Independent review
+
+Checks count things. They cannot tell you that a cape tears into spikes in the death clip, or that a sword passes through a leg. Look at every clip from every side, and let someone else look, because the person who made a unit sees what they meant to make.
+
+```
+py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --mod-root . --out <job folder>/evidence/review
+```
+
+It renders each clip at several frames, always including the frames where the surface stretches most and where the unit sits lowest and highest, from front, left, back, right, the map camera and below. Back faces are hidden as in the game and the background is magenta, so any magenta inside the unit is a hole. A dark disc marks the ground. You get one contact sheet per clip and `REVIEW_REQUEST.md`, which holds the reviewer instructions and the quality bar.
+
+Give `REVIEW_REQUEST.md` and the sheets, and nothing else, to a reviewer that has not seen how the unit was made: a new agent session or subagent, or a friend. Do not tell it what you already fixed or what you think is fine. Save its whole reply and record it:
+
+```
+py -3.13 -B .tools/3d_pipeline/review_unit.py gfx/models/units/<unit> --out <job folder>/evidence/review --record reply.md
+```
+
+The unit passes only on `VERDICT: pass` with no listed defect. After a fail, fix the cause, export again and ask a new reviewer. Keep the replies: they are the record that the unit was looked at.
+
+The renders need Blender with io_pdx_mesh, which HOI4 Mod Setup installs. Set `BLENDER_EXE` to use a particular Blender.
 
 ## When something fails
 

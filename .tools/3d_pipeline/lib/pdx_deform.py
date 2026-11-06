@@ -438,6 +438,8 @@ class DeformationReport:
     lowest: float  # lowest point in any frame, as a share of height above the rest pose's ground
     highest_lowest: float  # highest "lowest point" in any frame (the unit hovering)
     worst_pairs: Dict[str, int] = field(default_factory=dict)
+    lowest_frame: int = 0
+    highest_frame: int = 0
 
 
 def deformation_report(mesh: SkinnedMesh, anim: Animation) -> DeformationReport:
@@ -466,8 +468,10 @@ def deformation_report(mesh: SkinnedMesh, anim: Animation) -> DeformationReport:
         report.squashed_edges = max(report.squashed_edges, int(squashed.sum()))
         report.worst_stretch_share = max(report.worst_stretch_share, float(growth.max()))
         lowest = (float(moved[:, 1].min()) - ground) / height
-        report.lowest = min(report.lowest, lowest)
-        report.highest_lowest = max(report.highest_lowest, lowest)
+        if lowest < report.lowest:
+            report.lowest, report.lowest_frame = lowest, frame
+        if lowest > report.highest_lowest:
+            report.highest_lowest, report.highest_frame = lowest, frame
     if worst_mask is not None:
         pairs: Dict[str, int] = {}
         for x, y in zip(dominant[edges[worst_mask, 0]], dominant[edges[worst_mask, 1]]):
