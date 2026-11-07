@@ -259,8 +259,8 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertEqual(parameters["runtime_entry_sha256"], bootstrap.RUNTIME_ENTRY_SHA256)
         self.assertEqual(parameters["runtime_entry_size"], bootstrap.RUNTIME_ENTRY_SIZE)
         self.assertEqual(parameters["required_tools"], list(pin.REQUIRED_TOOLS))
-        self.assertEqual(len(parameters["required_tools"]), 30)
-        self.assertEqual(len(set(parameters["required_tools"])), 30)
+        self.assertEqual(len(parameters["required_tools"]), 34)
+        self.assertEqual(len(set(parameters["required_tools"])), 34)
 
     def test_repin_rejects_malformed_integrity_before_reading_package(self) -> None:
         for integrity in ("sha256-wrong", "sha512-???", "sha512-YWJj", "sha512-" + "A" * 88):
@@ -283,7 +283,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             self.assertEqual(evidence["package_file_count"], 2)
             self.assertEqual(evidence["runtime_entry_size"], len(b"synthetic runtime"))
             self.assertEqual(evidence["runtime_entry_sha256"], __import__("hashlib").sha256(b"synthetic runtime").hexdigest())
-            self.assertEqual(len(evidence["required_tools"]), 30)
+            self.assertEqual(len(evidence["required_tools"]), 34)
             lock.write_text(json.dumps({"packages": {}}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "lock"):
                 pin.measure(prefix, integrity, platform="windows")
