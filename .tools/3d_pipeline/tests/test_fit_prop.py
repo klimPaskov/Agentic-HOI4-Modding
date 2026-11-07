@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import math
 import sys
 import tempfile
 import unittest
@@ -88,6 +89,25 @@ class Textures(unittest.TestCase):
                 fit_prop.find_textures(Path(folder) / "missing" / "geometry.glb", None)
 
 
+def cylinder(radius, low, high, rings, sides):
+    """A closed cylinder along Y (glTF up), wound outward: rings of vertices and two capped ends."""
+
+    positions = [(radius * math.cos(2 * math.pi * s / sides), low + (high - low) * r / (rings - 1), radius * math.sin(2 * math.pi * s / sides)) for r in range(rings) for s in range(sides)]
+    triangles = []
+    for r in range(rings - 1):
+        for s in range(sides):
+            a, b = r * sides + s, r * sides + (s + 1) % sides
+            c, d = a + sides, b + sides
+            triangles += [(a, c, b), (b, c, d)]
+    bottom, top = len(positions), len(positions) + 1
+    positions += [(0.0, low, 0.0), (0.0, high, 0.0)]
+    for s in range(sides):
+        a, b = s, (s + 1) % sides
+        triangles.append((bottom, a, b))
+        triangles.append((top, (rings - 1) * sides + b, (rings - 1) * sides + a))
+    return np.asarray(positions, dtype=np.float32), np.asarray(triangles, dtype=np.uint32)
+
+
 @unittest.skipUnless(BLENDER and BLENDER.exists(), "no supported Blender installed")
 class FitInBlender(unittest.TestCase):
     def test_a_club_is_fitted_to_the_right_hand_and_bound_to_it(self) -> None:
@@ -120,6 +140,32 @@ class FitInBlender(unittest.TestCase):
         hand = fitted.bones.index("HandR")
         self.assertTrue(np.all(fitted.joints[added, 0] == hand))
         self.assertEqual(report["frames_checked"], 6)
+
+    def test_a_blade_of_small_plates_is_kept_and_a_lone_fragment_dropped(self) -> None:
+        # A smart-topology polearm: a shaft of many vertices, a blade of six small plates each far
+        # smaller than the shaft, stacked 1 cm apart, and a neighbour's sliver half a metre away.
+        import test_deformation_checks as arms
+        import test_measure_body as glb
+
+        positions, triangles = cylinder(0.03, 0.0, 1.0, rings=8, sides=8)
+        plates = glb.body(*[(-0.05, 0.05, 1.01 + 0.04 * k, 1.04 + 0.04 * k, -0.01, 0.01) for k in range(6)], (-0.05, 0.05, -0.55, -0.5, -0.05, 0.05))
+        offset = len(positions)
+        positions = np.vstack([positions, plates[0]])
+        triangles = np.vstack([triangles, plates[1] + offset])
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "unit"
+            unit.mkdir()
+            body, body_triangles, bones = arms.two_arm_strip()
+            arms.write_mesh(unit / "u.mesh", body, body_triangles, bones)
+            arms.write_anim(unit / "u_idle.anim", 4, lambda frame: {})
+            prop = Path(folder) / "prop" / "geometry.glb"
+            maps(prop.parent / "geometry_textures")
+            glb.write_glb(prop, positions.astype(np.float32), triangles.astype(np.uint32))
+            out = Path(folder) / "props"
+            with redirect_stdout(io.StringIO()):
+                fit_prop.main([str(unit), "--prop", str(prop), "--bone", "HandR", "--length", "0.6", "--size", "16", "--step", "1", "--out", str(out)])
+            log = (out / "blender.log").read_text(encoding="utf-8", errors="replace")
+        self.assertIn("FIT_PIECES 8 kept 7", log)
 
     def test_fitting_again_replaces_the_prop(self) -> None:
         import test_deformation_checks as arms

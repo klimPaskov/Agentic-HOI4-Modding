@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "336fd9d57451a4ec6cd22b4e498652f0de338a35",
+  "generated_for_revision": "c030c40d9879ed0b8986df1038576b6dad1e3a48",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14985,8 +14985,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/fit_prop.py",
-          "sha256": "aec5473e0381e07e74ab5374ba9c3cb9f9c6f3ae3312694e51189f655190e689",
-          "size": 13779
+          "sha256": "c90a2f872c7e876d72d5fc991caddd9562f83ed4505a615e72714a63a80a24a9",
+          "size": 15385
         },
         {
           "path": ".tools/3d_pipeline/blender/repair_mesh.py",
@@ -15855,8 +15855,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fit_prop.py",
-          "sha256": "63202604837b3c29e0385b2630274068a53704764b27bda3ed8b75c66c591ca1",
-          "size": 7658
+          "sha256": "1140fc93962e32b5ccff616bf0b5e4db836517bf69ebeb73047f9c40a4b8802a",
+          "size": 10276
         },
         {
           "path": ".tools/3d_pipeline/tests/test_fitted_humanoid_repair.py",
