@@ -6,8 +6,10 @@ Ported from the ZIN 3D session's `fit_weapon.py` (2026-11-06), which fitted the 
 fixed grip hit the ground and clipped the body.
 
 1. The unit and its clips are imported from the exported bytes.
-2. The prop is the source's longest piece, closed: thin loose bits dropped, welded, open loops capped,
-   winding made consistent. It is scaled to `length` of the unit's height.
+2. The prop is the source's largest chain of pieces, closed: pieces whose surfaces lie within 3 % of
+   the prop's size of each other chain together (a smart-topology prop arrives as many small shaft
+   segments, bands and blade plates), lone fragments are dropped, then it is welded, open loops are
+   capped and the winding made consistent. It is scaled to `length` of the unit's height.
 3. The palm is the rest-pose centre of the vertices weighted mostly to `bone`. The grip point sits
    `grip` of the prop's length from its butt, and the butt points up (`butt: high`) or down.
 4. Each of 42 directions in the hand bone's own frame is scored over every `step`-th frame of every
@@ -34,6 +36,7 @@ import addon_utils
 import bmesh
 import bpy
 import numpy as np
+from mathutils.kdtree import KDTree
 from mathutils import Matrix, Vector
 from mathutils.bvhtree import BVHTree
 
@@ -150,9 +153,46 @@ chosen = max((g[2] for g in groups), key=lambda g: max(bm.verts[i].co.z for i in
 keep = set(chosen)
 bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.index not in keep], context="VERTS")
 bm.verts.ensure_lookup_table()
+# Pieces whose surfaces lie within CHAIN of the prop's size of each other are one prop. Dropping
+# every piece far smaller than the largest threw away a smart-topology blade made of small plates.
+CHAIN = 0.03
+
+
+def largest_chain(bm, pieces):
+    """The vertex indices of the chain of pieces holding the most vertices."""
+
+    coords = [v.co.copy() for v in bm.verts]
+    size = max(max(c[axis] for c in coords) - min(c[axis] for c in coords) for axis in range(3))
+    owner = {index: k for k, piece in enumerate(pieces) for index in piece}
+    tree = KDTree(len(coords))
+    for index, co in enumerate(coords):
+        tree.insert(co, index)
+    tree.balance()
+    parent = list(range(len(pieces)))
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    for k, piece in enumerate(pieces):
+        for index in piece:
+            for _co, other, _distance in tree.find_range(coords[index], CHAIN * max(size, 1e-6)):
+                a, b = find(k), find(owner[other])
+                if a != b:
+                    parent[b] = a
+    chains = {}
+    for k, piece in enumerate(pieces):
+        chains.setdefault(find(k), []).extend(piece)
+    return max(chains.values(), key=len)
+
+
 pieces = components(bm)
-largest = max(len(p) for p in pieces)
-bmesh.ops.delete(bm, geom=[bm.verts[i] for p in pieces if len(p) < 0.15 * largest for i in p], context="VERTS")
+keep = set(largest_chain(bm, pieces))
+print("FIT_PIECES", len(pieces), "kept", sum(1 for piece in pieces if piece[0] in keep))
+bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.index not in keep], context="VERTS")
+bm.verts.ensure_lookup_table()
 span_z = max(v.co.z for v in bm.verts) - min(v.co.z for v in bm.verts)
 bmesh.ops.remove_doubles(bm, verts=list(bm.verts), dist=1e-3 * max(span_z, 1e-6))
 bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)

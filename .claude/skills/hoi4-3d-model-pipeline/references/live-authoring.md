@@ -102,6 +102,9 @@ Weight fixes correct existing weights; they never invent a weight set.
   `h.weight_seam(mesh, vertices, pelvis, (left_thigh, right_thigh))` (pelvis 0.40, near thigh 0.36,
   far thigh 0.24). `repair_unit.py --repairs weights` does the same blend without a live session.
 - Hard edges inside one skin and four-influence limits: `repair_unit.py --repairs weights`.
+- A skirt weighted to the thighs flares into flat plates whenever a thigh lifts past about 60 degrees
+  (a kneel, a death). Without new bones, blend only the cloth that stands off the thigh axis, up to about
+  half its weight, onto the hips.
 - Long coats and skirts weighted to the thighs tear and fan in every stride, crouch and lying pose. Give
   them their own bones under the hips, give the thighs at most 0.15 weight on the cloth, and blend
   toward the hem. Key the cloth bones to follow each thigh part of the way.
@@ -175,6 +178,18 @@ route: rig and animate it here, and the checks judge it against vanilla's vehicl
   skirt and the deck past about 25 degrees of yaw, so author at most 25 degrees. Make the roles read
   through other motion: recoil on the attack, rock and weave on the move, spin on the wheels or tracks,
   a lurch on the retreat and a settling slump on the death.
+
+## When the session breaks
+
+- If the Blender MCP fails to connect but its Blender still listens, its add-on speaks a plain socket
+  protocol: send `{"type": "execute", "code": ..., "strict_json": false}` followed by a NUL byte, and
+  read the reply up to the next NUL. A short client keeps the session going without restarting Blender.
+- A grounding pass that keys the root on every frame overrides any later posing in that range: a lying
+  body stayed up in the air after it was re-posed. Delete the per-frame root keys in a range before
+  re-keying its poses, or ground only frames without pose keys, and only where the error is real.
+- A unit whose entity events (sounds, muzzle flashes) are timed in another rate's frames keeps that
+  rate: `h.export_clip(action, path, fps=24)`, then `check_unit_files.py ... --fps 24`. Every other
+  unit plays at 30.
 
 ## Repairing the mesh
 

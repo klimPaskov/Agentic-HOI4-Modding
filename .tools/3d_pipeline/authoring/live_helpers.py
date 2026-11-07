@@ -692,7 +692,7 @@ def clear_sharp_faces(mesh_name: str) -> int:
 # ---- export ----
 
 
-def export_clip(action_name: str, path: str) -> int:
+def export_clip(action_name: str, path: str, fps: int = 30) -> int:
     """Export one action as a `.anim` at 30 fps with exactly its own frames, and check the file. Returns the sample count.
 
     Never export with `bpy.ops.io_pdx_mesh.export_anim`: it ignores its start and end frames unless the
@@ -723,11 +723,12 @@ def export_clip(action_name: str, path: str) -> int:
     from anim_frame_range import HOI4_FPS, retime_action, verify_fps, verify_frame_range
 
     source_fps = scene.render.fps / scene.render.fps_base
-    if abs(source_fps - HOI4_FPS) > 1e-6:
+    target = int(fps or HOI4_FPS)  # a unit whose entity events are timed in another rate's frames keeps that rate
+    if abs(source_fps - target) > 1e-6:
         old_end = end
-        start, end = retime_action(action, start, end, source_fps, HOI4_FPS)
-        print(f"export_clip: the scene ran at {source_fps:g} fps; {action_name} was retimed from frames {start}-{old_end} to {start}-{end} so it keeps its length at {HOI4_FPS} fps")
-    scene.render.fps, scene.render.fps_base = HOI4_FPS, 1.0
+        start, end = retime_action(action, start, end, source_fps, target)
+        print(f"export_clip: the scene ran at {source_fps:g} fps; {action_name} was retimed from frames {start}-{old_end} to {start}-{end} so it keeps its length at {target} fps")
+    scene.render.fps, scene.render.fps_base = target, 1.0
     saved = (scene.frame_start, scene.frame_end, scene.frame_current)
     bpy.context.view_layer.objects.active = rig  # the exporter takes the active object as the rig
     try:
@@ -736,7 +737,7 @@ def export_clip(action_name: str, path: str) -> int:
     finally:
         scene.frame_start, scene.frame_end = saved[0], saved[1]
         scene.frame_set(saved[2])
-    verify_fps(path, HOI4_FPS)
+    verify_fps(path, target)
     return verify_frame_range(path, start, end)
 
 

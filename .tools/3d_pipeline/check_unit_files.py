@@ -80,6 +80,10 @@ Surface and deformation rules (always; limits are the largest values measured on
   part however many pieces it has, judged against the body vertices that follow the same bone (the
   hand that holds it): it must touch them at rest and stay on them in every frame. A polearm's head
   may reach as far from the body as its shaft carries it.
+- UNIT-PROP-CLIP (warning): a held prop goes inside the body in some frame, more than 2 % of its
+  sampled points (`fit_prop.py`'s bar), with the hand and forearm holding it left out. Every frame
+  counts, in-betweens included. The warning names the worst clip and frame to look at. A point behind
+  an open, one-sided sheet (a cape) also reads as inside, so look before changing the clip.
 
 Mod rule (with `--mod-root`, or `--compare-units <folder>`):
 
@@ -242,10 +246,14 @@ def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None)
                 add("UNIT-ANIM-JOINTS", "error", anim_path, f"animates {len(unknown)} bones the mesh does not have: {', '.join(unknown[:6])}")
         if not anim.animated_joints or anim.samples < 2:
             add("UNIT-ANIM-STATIC", "error", anim_path, f"moves nothing ({len(anim.animated_joints)} animated joints, {anim.samples} samples)")
-        if (unit_type or {}).get("calibration_group", "organic") == "organic":
-            if abs(anim.fps - ORGANIC_FPS) > ORGANIC_FPS_TOLERANCE:
+        declared = (unit_type or {}).get("fps")
+        if declared or (unit_type or {}).get("calibration_group", "organic") == "organic":
+            expected = float(declared or ORGANIC_FPS)
+            if abs(anim.fps - expected) > ORGANIC_FPS_TOLERANCE:
+                why = "the rate this unit declares (--fps)" if declared else "the rate soldiers, riders and creatures play at"
                 add("UNIT-ANIM-FPS", "error", anim_path,
-                    f"plays at {anim.fps:g} frames a second; soldiers, riders and creatures play at 30. Export it again with the kit (it keeps the clip's length in seconds)")
+                    f"plays at {anim.fps:g} frames a second, not {expected:g}, {why}. Export it again with the kit (it keeps the clip's length in seconds), "
+                    "or declare the unit's own rate with --fps when its entity events are timed in that rate's frames")
         elif not 10 <= anim.fps <= 60:
             add("UNIT-ANIM-FPS", "warning", anim_path, f"frame rate {anim.fps:.2f} is outside 10 to 60")
     for role in (unit_type or {}).get("roles", {}):
@@ -361,6 +369,7 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
         if "turn_per_frame" in limits and turn.degrees > limits["turn_per_frame"]:
             add("UNIT-ANIM-SPIN", "error", anim_path, f"frame {turn.frame}: {turn.joint} turns {turn.degrees:.0f} degrees in one frame; vanilla's fastest joint turns {limits['turn_per_frame']:.0f}. Keys on opposite sides of the quaternion sphere make Blender turn the long way: flip them (live_helpers.normalize_quaternion_keys) and export again, or spread the turn over more frames")
     _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
+    _check_prop_clearance(mesh, mesh_path, loaded, add, facts)
     paths = sorted(loaded)
     for index, first in enumerate(paths):
         for second in paths[index + 1 :]:
@@ -449,6 +458,25 @@ def check_files(
         _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated, group)
     _check_textures(folder, add, facts)
     return findings, facts
+
+
+def _check_prop_clearance(mesh, mesh_path, loaded, add, facts):
+    """UNIT-PROP-CLIP (warning): the frames in which a held prop goes inside the body, hand and forearm left out."""
+
+    from lib import pdx_motion
+
+    reports = pdx_motion.prop_clearance(mesh, {path.name: anim for path, anim in loaded.items()})
+    facts["motion"][mesh_path.name]["props"] = [
+        {"prop_bone": r.prop_bone, "triangles": r.pieces_triangles, "worst_inside_share": round(r.worst_share, 4),
+         "worst_clip": r.worst_clip, "worst_frame": r.worst_frame, "frames_over": r.frames_over}
+        for r in reports
+    ]
+    for report in reports:
+        if report.frames_over:
+            add("UNIT-PROP-CLIP", "warning", mesh_path,
+                f"the prop bound to {report.prop_bone} goes inside the body in {report.frames_over} frame(s), worst {report.worst_share:.0%} of its points in "
+                f"{report.worst_clip} frame {report.worst_frame} (the hand and forearm holding it are left out). Look at those frames: an in-between can swing it "
+                f"through the head or a leg although every key is clear")
 
 
 def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
@@ -736,6 +764,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("folder", type=Path, help="the folder that holds the unit's .mesh, .anim and .dds files")
     parser.add_argument("--unit-type", help="a type from config/unit_types.json; sets the roles, nodes and profile")
+    parser.add_argument("--fps", type=float, help="the unit's own frame rate (default 30), for a unit whose entity events are timed in another rate's frames")
     parser.add_argument("--stem", help="check only <stem>.mesh and its animations, in a folder shared with another unit")
     parser.add_argument("--profile", help="an asset profile for the triangle budget (default: the unit type's)")
     parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit, and compare its clips with the mod's other units")
@@ -764,6 +793,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     folder = args.folder.resolve()
     if not folder.is_dir():
         raise SystemExit(f"Not a folder: {folder}")
+    if args.fps:
+        unit_type = dict(unit_type or {}, fps=args.fps)
     findings, facts = check_files(folder, unit_type, profile, args.stem)
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))

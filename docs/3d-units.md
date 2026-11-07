@@ -318,7 +318,7 @@ py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> --
 | The quadruped rig cannot find four legs | The legs touch each other or the ground is uneven. Your agent can pass measured landmarks instead |
 | A hanging prop (a maul on the belt, a quiver) smears when the unit walks | Meshy weighted a loose part to the nearest limbs. Add `loose_part_edits` to the job: each rule's box, in fractions of the unit's height (x and y from the body's centre, z from the ground), selects the loose parts inside it, which are dropped (`"action": "drop"`) or given to one bone (`"action": "bind", "bone": "Hips"`). Put the reason in `loose_part_edits_reason`. Rerun the job. It costs nothing |
 | A check fails after export | Read `runtime/files.json` in the job folder. It names the file and the rule |
-| UNIT-ANIM-FPS fails on a clip made by hand | Export it again with `export_clip`, which writes 30 frames a second and keeps the clip's length |
+| UNIT-ANIM-FPS fails on a clip made by hand | Export it again with `export_clip`, which writes 30 frames a second and keeps the clip's length. A unit whose entity events (sounds, flashes) are timed in another rate's frames keeps that rate: `export_clip(action, path, fps=24)`, and check it with `--fps 24` |
 | UNIT-NORMALS fails | No free repair: the winding repair keeps imported normals. In Blender, flip those corner normals, or recalculate them on a welded copy and copy the result back |
 | UNIT-STREAM-VERTICES fails after a Blender edit | Run `clear_sharp_faces` on the mesh and export again |
 | Holes remain after `repair_unit.py` | Rebuild the faces in Blender, or make a new model |
