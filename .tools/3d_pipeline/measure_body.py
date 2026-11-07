@@ -177,6 +177,11 @@ def measure_body(target: Path, unit_type: Optional[str], anatomy: Dict[str, Any]
     }
     checklist = None if anatomy else "Answer the anatomy questions in config/body_presets.json from the reference image and add them to the job as `anatomy`."
     status = f"py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> --status {unit}"
+    if geometry.suffix.lower() == ".glb":
+        # Holes the player would see are cheapest to catch here, before the paid rig.
+        holes_out = (target / "evidence" / "holes").as_posix() if target.is_dir() else "<job folder>/evidence/holes"
+        holes = f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_holes.py {stage_verdict.quote(geometry.as_posix())} --out {stage_verdict.quote(holes_out)}"
+        status = f"{holes}, then {status}"
     if override:
         if override not in config["presets"] or not reason.strip():
             raise SystemExit("body_preset needs a preset from config/body_presets.json and a body_preset_reason.")

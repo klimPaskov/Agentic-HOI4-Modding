@@ -189,7 +189,7 @@
       },
       "validation": {
         "max_non_manifold_edges": 0,
-        "max_boundary_edges": 700,
+        "holes": "silhouette",
         "max_loose_components": 8,
         "max_residual_zero_weight_vertices": 0
       },
@@ -197,10 +197,10 @@
         "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
         "measured_on": "13 shipped humanoid_unit meshes: 5 zin units (zin_elves_warden, zin_men_infantry, zin_orcs_warrior, zin_the_dead_revenant, zin_trolls_brute) and 8 chaos_redux zombie units (demonic, infected, mutant, necrotic, parasitic, rabid, undead, base zombies), read from the exported .mesh files on 2026-11-01 in Blender 5.1; and on 2026-11-06 the ZIN grave rider (an armoured skeleton, Meshy remesh reduced to 21,000 triangles) in Blender 5.2.2",
         "max_non_manifold_edges": "measured 0 on all 13, limit 0",
-        "max_boundary_edges": "measured 0 on all 8 chaos_redux units, 90, 214, 371, 468, 563 on the five zin pilots, and 624 on the ZIN grave rider (150 loops of at most 12 edges in the gaps between bones and plates; every bounded cap was rolled back as non-manifold). Limit 700 is the largest measured 624 plus about 12 percent",
         "max_loose_components": "measured 1 on the five zin units and on 3 of 8 chaos_redux units (demonic, mutant, rabid), 2, 3, 4, 5 and 7 on the other five (separate accessory parts, largest 7 on parasitic_zombies), limit 8 is the largest measured 7 plus 1",
         "max_residual_zero_weight_vertices": "measured 0 on all 13, limit 0",
-        "not_measured": "the other profiles have no shipped model on disk, so their limits are unchanged"
+        "not_measured": "the other profiles have no shipped model on disk, so their limits are unchanged",
+        "holes": "judged by check_holes.py, not by a count: the pixels only back faces cover, rendered from 17 views at the rest pose and in every clip, against the largest speck vanilla GER_infantry and cavalry_horse show the same way (config/silhouette_calibration.json). The welded open-edge count is still recorded; before 2026-11-06 it was limited to 700 (measured 0 on all 8 chaos_redux units, 90, 214, 371, 468, 563 on the five zin pilots, and 624 on the ZIN grave rider (150 loops of at most 12 edges in the gaps between bones and plates; every bounded cap was rolled back as non-manifold). Limit 700 is the largest measured 624 plus about 12 percent)."
       },
       "exceptions": [],
       "rig_route": "meshy_humanoid_candidate_then_blender_audit",
@@ -287,13 +287,14 @@
       },
       "validation": {
         "max_non_manifold_edges": 0,
-        "max_boundary_edges": 0,
+        "holes": "silhouette",
         "max_loose_components": 1,
         "max_residual_zero_weight_vertices": 0
       },
       "validation_calibration": {
         "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
-        "not_measured": "No shipped or candidate model of this profile has been measured yet, so the strict defaults stay: a closed, single-piece, fully skinned mesh. Calibrate from a measured shipped model before relaxing them."
+        "not_measured": "No shipped or candidate model of this profile has been measured yet, so the strict defaults stay: a closed, single-piece, fully skinned mesh. Calibrate from a measured shipped model before relaxing them.",
+        "holes": "judged by check_holes.py, not by a count: the pixels only back faces cover, rendered from 17 views at the rest pose and in every clip, against the largest speck vanilla GER_infantry and cavalry_horse show the same way (config/silhouette_calibration.json). The welded open-edge count is still recorded; before 2026-11-06 it was limited to 0."
       },
       "exceptions": [],
       "rig_route": "blender_custom_winged_biped_rig",
@@ -386,7 +387,7 @@
       },
       "validation": {
         "max_non_manifold_edges": 0,
-        "max_boundary_edges": 2700,
+        "holes": "silhouette",
         "max_loose_components": 8,
         "max_residual_zero_weight_vertices": 0
       },
@@ -394,11 +395,11 @@
         "counted_on": "position-welded geometry (1e-6), so UV and normal seams are not holes or loose parts",
         "measured_on": "the Meshy remesh (30,000 triangles) of the ZIN knights' barded warhorse, 2026-11-06, Blender 5.2.2: the first creature measured",
         "max_non_manifold_edges": "measured 0, limit 0",
-        "max_boundary_edges": "measured 2489 in 451 small loops of at most 19 edges, the open edges of barding plates, straps and saddle flaps; the bounded hole fill capped 367 of them and rolled every cap back because capping made the shells non-manifold. Limit 2700 is the measurement plus about 8 percent",
         "max_loose_components": "measured 4 (separate strap and stirrup parts); limit 8 matches the humanoid profile",
         "max_residual_zero_weight_vertices": "limit 0, unchanged",
         "review": "the remeshed previews show an intact horse with no visible hole; recalibrate when more creatures are measured",
-        "working_triangle_target": "21,000 like humanoid_unit: the exporter keeps one stream under 65,535 triangle-index entries (63,000 at 21,000 triangles); the knights' warhorse at 29,833 triangles needed 89,499"
+        "working_triangle_target": "21,000 like humanoid_unit: the exporter keeps one stream under 65,535 triangle-index entries (63,000 at 21,000 triangles); the knights' warhorse at 29,833 triangles needed 89,499",
+        "holes": "judged by check_holes.py, not by a count: the pixels only back faces cover, rendered from 17 views at the rest pose and in every clip, against the largest speck vanilla GER_infantry and cavalry_horse show the same way (config/silhouette_calibration.json). The welded open-edge count is still recorded; before 2026-11-06 it was limited to 2700 (measured 2489 in 451 small loops of at most 19 edges, the open edges of barding plates, straps and saddle flaps; the bounded hole fill capped 367 of them and rolled every cap back because capping made the shells non-manifold. Limit 2700 is the measurement plus about 8 percent)."
       },
       "exceptions": [],
       "rig_route": "blender_custom_creature_rig",

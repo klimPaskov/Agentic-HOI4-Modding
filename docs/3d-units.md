@@ -50,6 +50,8 @@ py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
 
 It counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It measures the body only, not separate plates, a quiver or a weapon, and it fails a model with pieces floating apart from the body, so you drop them before paying for the rig. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles: such a unit is rigged and animated live in Blender (see [Author animations live in Blender](#author-animations-live-in-blender)). It reads files only and costs nothing.
 
+When it passes, its verdict names `check_holes.py` on the model, which looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). A hole is cheapest to fix now, before the rig. It costs nothing either.
+
 Give the job its anatomy, answered from the reference image when you review it, so the check knows what a measurement cannot see: `"anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false}` in the job's registry entry. When you know better than the measurement, set `"body_preset"` and say why in `"body_preset_reason"`.
 
 Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. Walks use Meshy's in-place clips, so the unit does not slide.
@@ -81,7 +83,7 @@ Each step is one command, and each prints a one-line verdict. `pass` names the n
 3. **Body check.** `measure_body.py <job folder>` measures the model and checks that it fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). It costs nothing. Pay for nothing more until it passes.
 4. **Rig, animations and export.** First, `plan_clips.py --jobs-config <your 3d_jobs.json> --write` gives every unit its own library clips (see [Give every unit its own animations](#give-every-unit-its-own-animations)). Then `run_pilot.py --jobs-config <your 3d_jobs.json> <unit>` continues the job. Meshy rigs humanoids and animates them from its library (paid). Blender rigs four-legged animals itself and seats riders. Blender then writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, and re-imports them to prove they load. Steps that already succeeded are reused, never paid twice.
 5. **Weapon in hand.** An armed unit's weapon is a separate model. `fit_prop.py` fits it to the hand against every clip and binds it there (see [Put the weapon in the hand](#put-the-weapon-in-the-hand)). It costs nothing.
-6. **Checks.** `check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json` reads the exported files. Its verdict names the repair to run, or escalates.
+6. **Checks.** `check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json` reads the exported files. Its verdict names the repair to run, or escalates. When it passes, it names `check_holes.py`, which renders the unit to find holes a player would see (see [Holes the player sees](#holes-the-player-sees)).
 7. **Free repair.** `repair_unit.py` fixes what the check names (holes, faces turned the wrong way, fused body parts, hard weight seams, feet off the ground) in a copy, then the check runs on the copy.
 8. **Hand-over.** The export lands in the job's `runtime/files` folder with its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. Each later step writes a full copy of the unit to its own folder (`<job folder>/props/files`, `<job folder>/repair/files`): the newest copy that passed its check is the one you review and install.
 9. **Independent review.** `review_unit.py` renders every clip from six sides, including the map camera, plus a diagnostics sheet per clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty. See [Independent review](#independent-review).
@@ -126,6 +128,18 @@ The surface and deformation limits are the worst values measured on the game's o
 Add `--verdict <job folder>/evidence/check.json` for a short verdict instead of the full list. It says `pass` and names the review command, `fail` with the exact repair command to run next, or `escalate` when no script can fix a rule, such as a knee that bends backward or a clip shared with another unit, and points to live authoring. `repair_unit.py` and `review_unit.py` print the same kind of verdict, so you can follow a unit from one step to the next.
 
 Add `--repair-textures` to convert old uncompressed or unmipped textures in place. When a mount and its rider share one folder, check each with `--stem`, for example `--stem <unit> --unit-type mount` and `--stem <unit>_rider --unit-type rider`.
+
+### Holes the player sees
+
+The game hides back faces. A missing face, a face turned the wrong way, or a one-sided sheet seen from behind shows the ground through the unit. A count of open edges cannot tell those apart from the open edges a model keeps on trims, plates and straps that never show, so `check_holes.py` looks instead:
+
+```
+py -3.13 -B .tools/3d_pipeline/check_holes.py gfx/models/units/<unit> --out <job folder>/evidence/holes
+```
+
+It renders the unit in Blender from 17 views (eight around it, low and high, and the map camera), at rest and at several frames of every clip, once with back faces hidden and once with them shown. The pixels that only back faces cover are holes. Vanilla units show a few specks too, for example a sleeve seen edge-on, so the unit passes when its largest patch is no larger than the largest one vanilla `GER_infantry` and `cavalry_horse` show the same way (58 pixels in a death clip, where a body lies on the ground, and 50 in every other clip, at the 256-pixel tile size). Given a `.glb` instead of a unit folder, it checks the provider model at rest, before the rig.
+
+`sheets/holes_worst.png` shows the worst views, with the unit grey and the holes red. A failing verdict names the free repair (`repair_unit.py --repairs winding holes`) and the check to run on the repaired copy. Holes left after that need the faces rebuilt in Blender, or a new generation. The limit lives in `.tools/3d_pipeline/config/silhouette_calibration.json`. After a game update, measure it again with `calibrate_holes.py "<game folder>" --work <scratch folder>`. Both need Blender, like the review.
 
 ## Independent review
 

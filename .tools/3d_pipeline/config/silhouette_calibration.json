@@ -1,0 +1,69 @@
+{
+  "size": 256,
+  "frames": 3,
+  "views": 17,
+  "measured_on": "vanilla GER_infantry.mesh, cavalry_horse.mesh, every registered clip, 2026-11-07",
+  "method": "the largest 8-connected cluster of pixels that only back faces cover (rendered with and without back-face culling, Workbench, no anti-aliasing, orthographic camera at 1.45 times the rest pose's largest extent)",
+  "largest": {
+    "pixels": 58,
+    "mesh": "GER_infantry.mesh",
+    "clip": "GER_infantry_death_mg",
+    "frame": 91,
+    "view": [
+      45,
+      10
+    ]
+  },
+  "by_kind": {
+    "death": {
+      "pixels": 58,
+      "mesh": "GER_infantry.mesh",
+      "clip": "GER_infantry_death_mg",
+      "frame": 91,
+      "view": [
+        45,
+        10
+      ]
+    },
+    "other": {
+      "pixels": 50,
+      "mesh": "cavalry_horse.mesh",
+      "clip": "cavalry_horse_idle_forward",
+      "frame": 87,
+      "view": [
+        270,
+        40
+      ]
+    }
+  },
+  "references": {
+    "GER_infantry.mesh": {
+      "clips": 44,
+      "renders": 3808,
+      "largest": 58,
+      "where": {
+        "clip": "GER_infantry_death_mg",
+        "frame": 91,
+        "view": [
+          45,
+          10
+        ]
+      },
+      "renders_with_any": 678
+    },
+    "cavalry_horse.mesh": {
+      "clips": 5,
+      "renders": 527,
+      "largest": 50,
+      "where": {
+        "clip": "cavalry_horse_idle_forward",
+        "frame": 87,
+        "view": [
+          270,
+          40
+        ]
+      },
+      "renders_with_any": 507
+    }
+  }
+}
