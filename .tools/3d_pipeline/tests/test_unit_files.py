@@ -142,6 +142,10 @@ class CheckUnitFiles(unittest.TestCase):
             errors = [item for item in self.run_check(folder, "infantry_melee") if item.severity == "error"]
             self.assertEqual([(item.rule, Path(item.file).name) for item in errors], [("UNIT-ANIM-FPS", "unit_attack.anim")])
             self.assertIn("plays at 24", errors[0].message)
+            # A unit whose entity events are timed in 24-fps frames declares its own rate.
+            declared = check_unit_files.load_unit_types()["infantry_melee"] | {"fps": 24.0}
+            errors = [item.file for item in check_unit_files.check_files(folder, declared, None)[0] if item.rule == "UNIT-ANIM-FPS"]
+            self.assertEqual(sorted(Path(name).name for name in errors), sorted(f"unit_{role}.anim" for role in LAND_ROLES if role != "attack"))
             found = []
             vehicle = {"calibration_group": "vehicle", "roles": {}}
             check_unit_files._check_animations(folder, "unit", vehicle, bones, lambda *item: found.append(item), {"animations": {}})

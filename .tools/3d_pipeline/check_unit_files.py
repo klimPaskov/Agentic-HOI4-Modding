@@ -246,10 +246,14 @@ def _check_animations(folder, stem, unit_type, skeleton, add, facts, stems=None)
                 add("UNIT-ANIM-JOINTS", "error", anim_path, f"animates {len(unknown)} bones the mesh does not have: {', '.join(unknown[:6])}")
         if not anim.animated_joints or anim.samples < 2:
             add("UNIT-ANIM-STATIC", "error", anim_path, f"moves nothing ({len(anim.animated_joints)} animated joints, {anim.samples} samples)")
-        if (unit_type or {}).get("calibration_group", "organic") == "organic":
-            if abs(anim.fps - ORGANIC_FPS) > ORGANIC_FPS_TOLERANCE:
+        declared = (unit_type or {}).get("fps")
+        if declared or (unit_type or {}).get("calibration_group", "organic") == "organic":
+            expected = float(declared or ORGANIC_FPS)
+            if abs(anim.fps - expected) > ORGANIC_FPS_TOLERANCE:
+                why = "the rate this unit declares (--fps)" if declared else "the rate soldiers, riders and creatures play at"
                 add("UNIT-ANIM-FPS", "error", anim_path,
-                    f"plays at {anim.fps:g} frames a second; soldiers, riders and creatures play at 30. Export it again with the kit (it keeps the clip's length in seconds)")
+                    f"plays at {anim.fps:g} frames a second, not {expected:g}, {why}. Export it again with the kit (it keeps the clip's length in seconds), "
+                    "or declare the unit's own rate with --fps when its entity events are timed in that rate's frames")
         elif not 10 <= anim.fps <= 60:
             add("UNIT-ANIM-FPS", "warning", anim_path, f"frame rate {anim.fps:.2f} is outside 10 to 60")
     for role in (unit_type or {}).get("roles", {}):
@@ -762,6 +766,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("folder", type=Path, help="the folder that holds the unit's .mesh, .anim and .dds files")
     parser.add_argument("--unit-type", help="a type from config/unit_types.json; sets the roles, nodes and profile")
+    parser.add_argument("--fps", type=float, help="the unit's own frame rate (default 30), for a unit whose entity events are timed in another rate's frames")
     parser.add_argument("--stem", help="check only <stem>.mesh and its animations, in a folder shared with another unit")
     parser.add_argument("--profile", help="an asset profile for the triangle budget (default: the unit type's)")
     parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit, and compare its clips with the mod's other units")
@@ -790,6 +795,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     folder = args.folder.resolve()
     if not folder.is_dir():
         raise SystemExit(f"Not a folder: {folder}")
+    if args.fps:
+        unit_type = dict(unit_type or {}, fps=args.fps)
     findings, facts = check_files(folder, unit_type, profile, args.stem)
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
