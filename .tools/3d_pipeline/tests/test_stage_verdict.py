@@ -92,6 +92,8 @@ class CheckVerdict(unittest.TestCase):
         code, payload = self.run_check({"move": (20, legged.walk), "attack": (20, legged.strike)}, 0.5)
         self.assertEqual((code, payload["verdict"]), (0, "pass"))
         self.assertIn("review_unit.py", payload["next"][-1])
+        # The holes the player would see are checked in Blender before the review.
+        self.assertIn("check_holes.py", payload["next"][-2])
         # The ribbons of the synthetic unit are open, so the pass also offers the free hole repair first.
         self.assertIn("--repairs holes", payload["next"][0])
 

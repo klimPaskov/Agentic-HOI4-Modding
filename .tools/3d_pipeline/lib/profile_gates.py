@@ -85,6 +85,20 @@ def _limit(profile: Mapping[str, Any], key: str) -> int:
     return value
 
 
+def _holes_by_silhouette(profile: Mapping[str, Any]) -> bool:
+    """True when the profile judges holes by the culled silhouette (`validation.holes: "silhouette"`)."""
+
+    block = profile.get("validation", {})
+    holes = block.get("holes") if isinstance(block, dict) else None
+    if holes is None:
+        return False
+    if holes != "silhouette":
+        raise ProfileGateError('Profile validation.holes must be "silhouette" when set.')
+    if "max_boundary_edges" in block:
+        raise ProfileGateError("Profile validation.max_boundary_edges does not apply when holes are judged by the silhouette; remove it.")
+    return True
+
+
 def residual_zero_weight_vertices(weights: Any) -> Optional[int]:
     """Count zero-weight vertices on deforming meshes in a `weight_metrics()` list.
 
@@ -195,13 +209,26 @@ def _check_topology(evaluation: _Evaluation, profile: Mapping[str, Any], geometr
         raw=geometry.get("non_manifold_edges"),
     )
     # The worker's "loose_boundary_edges" counts edges with exactly one face.
-    evaluation.at_most(
-        "boundary_edges",
-        "welded boundary edges",
-        welded.get("loose_boundary_edges"),
-        _limit(profile, "max_boundary_edges"),
-        raw=geometry.get("loose_boundary_edges"),
-    )
+    if _holes_by_silhouette(profile):
+        # A unit's open edges are counted, not limited: a smart-topology generation keeps open edges on
+        # its trims, plates and straps that never show, and raising a count per body type let real holes
+        # through. check_holes.py judges what the player sees instead: the pixels only back faces cover,
+        # against vanilla's own specks.
+        evaluation.checks["boundary_edges"] = {
+            "status": "measured",
+            "measured": welded.get("loose_boundary_edges"),
+            "limit": None,
+            "raw_as_imported": geometry.get("loose_boundary_edges"),
+            "judged_by": "check_holes.py UNIT-HOLE-SILHOUETTE (on the provider .glb before the rig, and after export)",
+        }
+    else:
+        evaluation.at_most(
+            "boundary_edges",
+            "welded boundary edges",
+            welded.get("loose_boundary_edges"),
+            _limit(profile, "max_boundary_edges"),
+            raw=geometry.get("loose_boundary_edges"),
+        )
     # Loose parts are not counted against a limit any more: a smart-topology generation keeps an
     # armoured figure's plates, straps and gear as separate closed parts by design (an elven archer
     # arrived in 96). check_unit_files.py judges each one after export instead (UNIT-LOOSE-PART: skinned,

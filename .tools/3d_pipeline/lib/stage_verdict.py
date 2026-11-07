@@ -33,6 +33,7 @@ REPAIRS = {
     "UNIT-INSIDE-OUT": "winding",
     "UNIT-BRIDGE": "bridges",
     "UNIT-HOLE": "holes",
+    "UNIT-HOLE-SILHOUETTE": "winding holes",
     "UNIT-SEAM": "weights",
     "UNIT-ANIM-GROUND": "ground",
     # Most stretch comes from fused parts and hard weight seams; when it stays after these, it escalates.

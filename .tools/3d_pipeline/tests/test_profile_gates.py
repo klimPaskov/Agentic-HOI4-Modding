@@ -126,6 +126,22 @@ class EvaluateCandidateTests(unittest.TestCase):
         self.assertEqual(result["failures"], [])
         self.assertEqual((result["checks"]["loose_components"]["status"], result["checks"]["loose_components"]["measured"]), ("measured", 96))
 
+    def test_a_unit_profile_records_open_edges_and_leaves_holes_to_the_silhouette(self) -> None:
+        # An ent arrived with 1,144 open edges between its bark plates and showed no hole; a yeti with
+        # fewer showed holes. The count cannot tell them apart, so a unit profile records it and
+        # check_holes.py judges what the player sees.
+        unit = profile(validation={"max_non_manifold_edges": 0, "holes": "silhouette", "max_loose_components": 1, "max_residual_zero_weight_vertices": 0})
+        result = gates.evaluate_candidate(unit, prep(loose_boundary_edges=1250))
+        self.assertEqual(result["failures"], [])
+        check = result["checks"]["boundary_edges"]
+        self.assertEqual((check["status"], check["measured"], check["limit"]), ("measured", 1250, None))
+        self.assertIn("check_holes.py", check["judged_by"])
+
+    def test_holes_take_only_the_silhouette_and_no_edge_limit_beside_it(self) -> None:
+        for validation in ({"holes": "count"}, {"holes": "silhouette", "max_boundary_edges": 980}):
+            with self.subTest(validation=validation), self.assertRaises(gates.ProfileGateError):
+                gates.evaluate_candidate(profile(validation=validation), prep())
+
     def test_triangle_range_blocks_on_both_sides(self) -> None:
         for triangles in (4999, 30001):
             with self.subTest(triangles=triangles):
@@ -228,7 +244,9 @@ class WeldedTopologyTests(unittest.TestCase):
     def test_the_raw_counts_alone_are_not_a_measurement(self) -> None:
         candidate = measured((0, 0, 1), (0, 0, 1), triangles=21000)
         del candidate["geometry"]["position_welded_topology"]
-        self.assertEqual(len(self.failures(candidate)), 2)
+        # Non-manifold edges and, on a static profile, open edges: a unit's open edges are only recorded.
+        self.assertEqual(len(self.failures(candidate)), 1)
+        self.assertEqual(len(self.failures(candidate, self.strict)), 2)
 
     def test_shipped_units_pass_the_humanoid_profile(self) -> None:
         shipped = {
@@ -246,10 +264,11 @@ class WeldedTopologyTests(unittest.TestCase):
         # Measured zin_men_infantry provider remesh: 81 boundary and 56 non-manifold edges once welded.
         remesh = measured((54388, 0, 6463), (81, 56, 1), triangles=21000)
         self.assertEqual(self.failures(remesh), ["welded non-manifold edges 56 exceed profile allowance 0"])
-        # A large open area exceeds the measured maximum of 624 boundary edges (the ZIN grave rider).
+        # A unit's open edges are recorded, and check_holes.py judges whether they show (UNIT-HOLE-SILHOUETTE).
         holed = measured((90000, 0, 1500), (900, 0, 1), triangles=21000)
-        self.assertEqual(self.failures(holed), ["welded boundary edges 900 exceed profile allowance 700"])
-        # A profile with no calibration allows no open edge at all.
+        self.assertEqual(self.failures(holed), [])
+        self.assertEqual(gates.evaluate_candidate(self.humanoid, holed)["checks"]["boundary_edges"]["measured"], 900)
+        # A static profile with no calibration allows no open edge at all.
         self.assertEqual(
             self.failures(measured((40, 0, 1), (40, 0, 1), triangles=8000), self.strict),
             ["welded boundary edges 40 exceed profile allowance 0"],
@@ -271,10 +290,15 @@ class WeldedTopologyTests(unittest.TestCase):
 
     def test_profiles_without_measured_models_keep_the_strict_defaults(self) -> None:
         # Only a profile whose calibration names the models it was measured on may relax the defaults.
+        # A rigged unit's holes are judged against vanilla's silhouette instead of an open-edge count.
         for name, value in self.registry.items():
             if "measured_on" not in value.get("validation_calibration", {}):
+                expected = dict(gates.DEFAULT_LIMITS)
+                if value.get("rig_route") not in (None, "none"):
+                    del expected["max_boundary_edges"]
+                    expected["holes"] = "silhouette"
                 with self.subTest(profile=name):
-                    self.assertEqual(value["validation"], gates.DEFAULT_LIMITS)
+                    self.assertEqual(value["validation"], expected)
         self.assertIn("measured_on", self.registry["humanoid_unit"]["validation_calibration"])
 
     def test_every_profile_documents_its_calibration(self) -> None:
@@ -407,8 +431,13 @@ class ShippedProfileTests(unittest.TestCase):
         self.assertTrue(self.registry)
         for name, value in self.registry.items():
             with self.subTest(profile=name):
-                self.assertEqual(set(value["validation"]), set(gates.DEFAULT_LIMITS))
-                for limit in value["validation"].values():
+                validation = dict(value["validation"])
+                rigged = value.get("rig_route") not in (None, "none")
+                # Every rigged unit judges holes by the culled silhouette; static models keep the strict edge limit.
+                self.assertEqual(validation.pop("holes", None), "silhouette" if rigged else None)
+                expected = set(gates.DEFAULT_LIMITS) - ({"max_boundary_edges"} if rigged else set())
+                self.assertEqual(set(validation), expected)
+                for limit in validation.values():
                     self.assertIsInstance(limit, int)
                     self.assertGreaterEqual(limit, 0)
                 self.assertEqual(value["exceptions"], [])
