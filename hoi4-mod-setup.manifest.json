@@ -12956,7 +12956,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.8.0",
+          "version": "4.11.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -12975,12 +12975,13 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.8.0",
-            "package_integrity": "sha512-evI+RnKm5ZmnP1UPgowZh7cssnY6SMSLCuiAfMhX61xJPjYWrWIFUeNs0eRDGoFfOW7dziRJqDogIXbotJJAEg==",
+            "package_version": "4.11.0",
+            "package_integrity": "sha512-YfIVALpiWzHF6S9FxDlLTsv/Odsx/hGWC3XtoHDOnC7udaFCdidr9RqAYumUvdBfVgD7ZEbDC17EPtL5r+ROgA==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
             "runtime_entry_size": 4205,
             "required_tools": [
+              "hoi4.asset_inspect",
               "hoi4.decision_inspect",
               "hoi4.error_log",
               "hoi4.event_inspect",
@@ -13008,31 +13009,34 @@
               "hoi4.reference_search",
               "hoi4.scenario_test",
               "hoi4.script_validate",
+              "hoi4.skill",
               "hoi4.source_lookup",
+              "hoi4.system_inspect",
               "hoi4.tech_inspect",
-              "hoi4.tech_render"
+              "hoi4.tech_render",
+              "hoi4.unit_inspect"
             ],
             "network_access": "None. This read-only health action runs the already installed exact package.",
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "e52a349fe14fbc7d254527b9cca8e0ff0b9a68eca7e89ea19f8d612f6a7309ab",
-            "package_file_count": 5869,
+            "package_tree_sha256": "ca70fbcba474c7fd98d6396ba14fc0d6e9a9b1c670961456a6c4c43b1716b967",
+            "package_file_count": 5876,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "e52a349fe14fbc7d254527b9cca8e0ff0b9a68eca7e89ea19f8d612f6a7309ab",
-                "package_file_count": 5869,
+                "package_tree_sha256": "ca70fbcba474c7fd98d6396ba14fc0d6e9a9b1c670961456a6c4c43b1716b967",
+                "package_file_count": 5876,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "65a9bda0090c04842f8a4d6c6c3249b15a3c9172a0b21ab6dff6977197fcfd9f",
-                "package_file_count": 5733,
+                "package_tree_sha256": "bb6d420a281ed18f7dd6e5df1b40e678fa622b3bf1286ae412457208364d231c",
+                "package_file_count": 5740,
                 "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
                 "runtime_entry_size": 4205,
                 "package_symlinks": {
