@@ -120,6 +120,7 @@ REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib import pdx_binary  # noqa: E402
+from lib.paths import load_unit_types  # also reached as check_unit_files.load_unit_types
 
 MAX_BONES = 50
 MAX_INFLUENCES = 4
@@ -147,10 +148,6 @@ class Finding:
     severity: str
     file: str
     message: str
-
-
-def load_unit_types() -> Dict[str, dict]:
-    return json.loads((PIPELINE_ROOT / "config" / "unit_types.json").read_text(encoding="utf-8"))["types"]
 
 
 def load_profile(name: str) -> dict:

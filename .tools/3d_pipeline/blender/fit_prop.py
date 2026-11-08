@@ -2,8 +2,8 @@
 
 blender -b --python fit_prop.py -- <request.json>
 
-Ported from the ZIN 3D session's `fit_weapon.py` (2026-11-06), which fitted the yeti's club after a
-fixed grip hit the ground and clipped the body.
+Replaces a fixed grip, which hit the ground and clipped the body of a large biped, with a search over
+grip directions.
 
 1. The unit and its clips are imported from the exported bytes.
 2. The prop is the source's largest chain of pieces, closed: pieces whose surfaces lie within 3 % of

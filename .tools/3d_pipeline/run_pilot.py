@@ -25,6 +25,7 @@ from lib.paths import (  # noqa: E402
     dds_converter,
     ensure_job_layout,
     file_record,
+    load_unit_types,
     read_job_document,
     read_json,
     resolve_job_root,
@@ -3320,10 +3321,6 @@ def run_shared_humanoid_batch(
 
 
 UNIT_SCALE_REFERENCE = {"source_head_bones": ["LeftFoot", "Head"], "target_head_bones": ["LeftFoot", "Head"]}
-
-
-def load_unit_types() -> Dict[str, Any]:
-    return read_json(PIPELINE_ROOT / "config" / "unit_types.json")["types"]
 
 
 def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:

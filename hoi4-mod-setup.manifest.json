@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "730fd5a5bdefa56f83de7f692c1ce469eeac494d",
+  "generated_for_revision": "3d1ecd290934b9e9c34b482e0385047900d08bf3",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -317,8 +317,8 @@
         },
         {
           "path": ".tools/quality_baseline.json",
-          "sha256": "bb0822a1f91eac368324787e46c26b4bff4b2d4a117a9a6433f9421503ff3938",
-          "size": 14187
+          "sha256": "d97da90e59f758a0c195ded1b52a46292c97622715edfe6fd03fc06464e688d2",
+          "size": 13715
         },
         {
           "path": ".tools/requirements-dev.txt",
@@ -1784,13 +1784,13 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "9b78d7901ed2b7ef9b15bba8c80da64de13675205771b6d635e4076691f45963",
-          "size": 5699
+          "sha256": "5205783273a4cb1d716b416bddbef7808a1e72e102a1eb8ebff6eb33c5c53ae3",
+          "size": 5789
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "904b2f92c10bfcd28ff9990fb2aeb49eafae069205b4f7928aedb082643be9a4",
-          "size": 16623
+          "sha256": "af5ff3ffe222050961641dd09ad389202d73e9f257cf516977eb74d85ade5a21",
+          "size": 16895
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -7238,13 +7238,13 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "9b78d7901ed2b7ef9b15bba8c80da64de13675205771b6d635e4076691f45963",
-          "size": 5699
+          "sha256": "5205783273a4cb1d716b416bddbef7808a1e72e102a1eb8ebff6eb33c5c53ae3",
+          "size": 5789
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "904b2f92c10bfcd28ff9990fb2aeb49eafae069205b4f7928aedb082643be9a4",
-          "size": 16623
+          "sha256": "af5ff3ffe222050961641dd09ad389202d73e9f257cf516977eb74d85ade5a21",
+          "size": 16895
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -14928,19 +14928,9 @@
           "size": 22648
         },
         {
-          "path": ".tools/3d_pipeline/adapter/mesh_winding_seam.py",
-          "sha256": "9a3976844a3f6d5eea83deb110b9381b08b82a342d3001f9881e151b0da15a9e",
-          "size": 27564
-        },
-        {
           "path": ".tools/3d_pipeline/adapter/normalization_convergence.py",
           "sha256": "91ac1d4ba9be4d39ab4697f9044060a9f119a8998e1dada8f4a8e6f58a5f9ed5",
           "size": 1988
-        },
-        {
-          "path": ".tools/3d_pipeline/adapter/pdx_skin_membership.py",
-          "sha256": "3365a7a3d596a6a1018d171cbd0138ce3f38f58e0b1f5dbb4a92596fae10b130",
-          "size": 7796
         },
         {
           "path": ".tools/3d_pipeline/adapter/profile_exceptions.py",
@@ -14989,8 +14979,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/fit_prop.py",
-          "sha256": "c90a2f872c7e876d72d5fc991caddd9562f83ed4505a615e72714a63a80a24a9",
-          "size": 15385
+          "sha256": "fe8a9918b00b4ac304695b64c91f218d4924e509ebe24659f98a31d6a0aa7dfa",
+          "size": 15356
         },
         {
           "path": ".tools/3d_pipeline/blender/hole_render.py",
@@ -15039,8 +15029,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "7c5f5b9a20f8fd9123903df0db1902e1ede72649e692947f3d592bd1085d1119",
-          "size": 49755
+          "sha256": "dc920f0c407c36b50288b3f21086b6a090ea1467cf38e425c8b20e52fd2c240b",
+          "size": 49694
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15129,8 +15119,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/paths.py",
-          "sha256": "416bb45aeabe170002af0098fe2d7df0a922c923b7b6d61ab0f20de0a8ece713",
-          "size": 8173
+          "sha256": "17469c00be0db3cb275cd132b1ffd2cb0b80cfe615d57afabf22c7c3f8a19494",
+          "size": 8343
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_binary.py",
@@ -15219,8 +15209,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "30dc4c2b62301923c97a26dcc57644f7b2195d8938c3bb40e16f498ecca6d1ad",
-          "size": 156356
+          "sha256": "bcdd5af68a6b344f831e90d05f4bab05ab3d1880ab57c9dc44f614a06cacc5d3",
+          "size": 156258
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -15956,11 +15946,6 @@
           "path": ".tools/3d_pipeline/tests/test_mesh_winding_repair.py",
           "sha256": "a756db6e089b2c1ecf14aa18582af4e395594b89fb709dc22e04d8261fd0495c",
           "size": 4803
-        },
-        {
-          "path": ".tools/3d_pipeline/tests/test_mesh_winding_seam.py",
-          "sha256": "acb9a1c5abb3741bad15ec9dbf60d804875a4ee3af581c620a2c709bc5973d3a",
-          "size": 3347
         },
         {
           "path": ".tools/3d_pipeline/tests/test_meshy_contract_lock.py",
@@ -16786,8 +16771,8 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "fcc56b4a92671c55576a4ae6430fe806adcb3d78b87e889408b10090fb86aa03",
-          "size": 109057
+          "sha256": "0fbbd3cc2b2d3914bccbad9565ea103ddbd60faf2b431b3c157461ad408a5751",
+          "size": 108945
         },
         {
           "path": ".tools/image_generation/runtime/server.py",
@@ -19155,13 +19140,13 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "9b78d7901ed2b7ef9b15bba8c80da64de13675205771b6d635e4076691f45963",
-          "size": 5699
+          "sha256": "5205783273a4cb1d716b416bddbef7808a1e72e102a1eb8ebff6eb33c5c53ae3",
+          "size": 5789
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "904b2f92c10bfcd28ff9990fb2aeb49eafae069205b4f7928aedb082643be9a4",
-          "size": 16623
+          "sha256": "af5ff3ffe222050961641dd09ad389202d73e9f257cf516977eb74d85ade5a21",
+          "size": 16895
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -24647,13 +24632,13 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "9b78d7901ed2b7ef9b15bba8c80da64de13675205771b6d635e4076691f45963",
-          "size": 5699
+          "sha256": "5205783273a4cb1d716b416bddbef7808a1e72e102a1eb8ebff6eb33c5c53ae3",
+          "size": 5789
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "904b2f92c10bfcd28ff9990fb2aeb49eafae069205b4f7928aedb082643be9a4",
-          "size": 16623
+          "sha256": "af5ff3ffe222050961641dd09ad389202d73e9f257cf516977eb74d85ade5a21",
+          "size": 16895
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -30139,13 +30124,13 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "9b78d7901ed2b7ef9b15bba8c80da64de13675205771b6d635e4076691f45963",
-          "size": 5699
+          "sha256": "5205783273a4cb1d716b416bddbef7808a1e72e102a1eb8ebff6eb33c5c53ae3",
+          "size": 5789
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
-          "sha256": "904b2f92c10bfcd28ff9990fb2aeb49eafae069205b4f7928aedb082643be9a4",
-          "size": 16623
+          "sha256": "af5ff3ffe222050961641dd09ad389202d73e9f257cf516977eb74d85ade5a21",
+          "size": 16895
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/motion-and-repair-qa.md",
@@ -36272,7 +36257,7 @@
           "source_repository": "https://github.com/klimPaskov/hoi4-imagegen-mcp",
           "source_revision": null,
           "package_name": "hoi4-imagegen",
-          "package_version": "0.3.7",
+          "package_version": "0.3.6",
           "package_tree_sha256": null,
           "source_tree_sha256": null,
           "package_lock_sha256": null,
@@ -36393,57 +36378,57 @@
           ],
           "requires_primary_coding_environment": null,
           "release_binary": {
-            "version": "0.3.7",
+            "version": "0.3.6",
             "install_root": ".tools/image_generation/hoi4-imagegen",
             "targets": {
               "x86_64-pc-windows-msvc": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc.zip",
-                "sha256": "75808cd878f6e6db3403df19d507c99e23bfcea687650ec06fef8f4172949908",
-                "size": 19885602,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-x86_64-pc-windows-msvc.zip",
+                "sha256": "8506aa88cf3501d2804e1251c2b3ea6419a2076154fd5611adf2a9b09d9f526d",
+                "size": 19461462,
                 "archive": "zip",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
-                  "cli": "hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
+                  "mcp": "hoi4-imagegen-v0.3.6-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
+                  "cli": "hoi4-imagegen-v0.3.6-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
                 }
               },
               "aarch64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-aarch64-apple-darwin.tar.gz",
-                "sha256": "5e295a27e6f0ac0e4556d167f2fc93b6d6f65659676ab685787d820c07343197",
-                "size": 19884012,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-aarch64-apple-darwin.tar.gz",
+                "sha256": "2fcbb9b870cf890a8fd32fa72ff12fc351f0a2b5d1a4fd6f60ae3dff05f6474d",
+                "size": 19456767,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.7-aarch64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.7-aarch64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.6-aarch64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.6-aarch64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-x86_64-apple-darwin.tar.gz",
-                "sha256": "498f52e68cbed6dc0061b8eb7d96812534d4e678f89b0a84e01cd8aef24357c9",
-                "size": 21853084,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-x86_64-apple-darwin.tar.gz",
+                "sha256": "527609e35d9241e10a0190346389627f608be9fc4bf4be63ba4978b39529a236",
+                "size": 21372411,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.7-x86_64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.7-x86_64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.6-x86_64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.6-x86_64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu.tar.gz",
-                "sha256": "0915d7bbd7a66132fb70ef3ba2a513b5bfb2defb8c83571acb899c3b779001ed",
-                "size": 24172177,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-x86_64-unknown-linux-gnu.tar.gz",
+                "sha256": "f3a78c13f8a0ff8dfb42ccd2702f6cc1bdbd4ae14c08976adfcdfef5e59b6664",
+                "size": 23687647,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.6-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.6-x86_64-unknown-linux-gnu/hoi4-imagegen"
                 }
               },
               "aarch64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu.tar.gz",
-                "sha256": "fe1556d9f7eb4babcb91653e1908353594b3816637a0123aacb6b2e79dc64fb8",
-                "size": 23250882,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-aarch64-unknown-linux-gnu.tar.gz",
+                "sha256": "53fe95ddc7c29dd2c966da42cfdc3e588f34489da82042d7fa20b53225085e01",
+                "size": 22781863,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.6-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.6-aarch64-unknown-linux-gnu/hoi4-imagegen"
                 }
               }
             }
@@ -36722,7 +36707,7 @@
             "hoi4.image_unit",
             "hoi4.image_interface"
           ],
-          "version": "0.3.7"
+          "version": "0.3.6"
         }
       },
       {
@@ -36741,8 +36726,6 @@
         "cost_summary": "Pay per image; price changes with model and quality.",
         "documentation_url": "https://developers.openai.com/api/docs/guides/image-generation/",
         "models": [
-          "GPT Image 2.6 Sunburst",
-          "GPT Image 2.6 Flare",
           "GPT Image 2.5 Sunburst",
           "GPT Image 2.5 Flare",
           "GPT Image 2"
@@ -36780,8 +36763,6 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
-            "gpt-image-2.6-sunburst",
-            "gpt-image-2.6-flare",
             "gpt-image-2.5-sunburst",
             "gpt-image-2.5-flare",
             "gpt-image-2"
@@ -36799,7 +36780,7 @@
           "auth_headers": [],
           "api_protocol": "openai_images",
           "api_base_url": "https://api.openai.com/v1",
-          "default_model": "gpt-image-2.6-sunburst",
+          "default_model": "gpt-image-2.5-sunburst",
           "result_format": "png",
           "credential_fields": [
             {
@@ -38122,10 +38103,9 @@
           "Choosing among providers",
           "Reference edits where supported"
         ],
-        "cost_summary": "Pay per model; the connected route uses GPT Image 2.6 Sunburst.",
+        "cost_summary": "Pay per model; the connected route uses GPT Image 2.5 Sunburst.",
         "documentation_url": "https://openrouter.ai/docs/guides/features/images",
         "models": [
-          "GPT Image 2.6 Sunburst",
           "GPT Image 2.5 Sunburst"
         ],
         "supported_coding_environments": [
@@ -38161,7 +38141,6 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
-            "openai/gpt-image-2.6-sunburst",
             "openai/gpt-image-2.5-sunburst"
           ],
           "tool_arguments": {
@@ -38176,7 +38155,7 @@
           "auth_headers": [],
           "api_protocol": "openrouter_images",
           "api_base_url": "https://openrouter.ai/api/v1",
-          "default_model": "openai/gpt-image-2.6-sunburst",
+          "default_model": "openai/gpt-image-2.5-sunburst",
           "result_format": "png",
           "credential_fields": [
             {
