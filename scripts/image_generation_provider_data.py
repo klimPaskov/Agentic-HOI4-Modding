@@ -12,17 +12,17 @@ from coding_environment_data import MCP_ROUTE_CLIENTS  # noqa: E402
 ALL_CLIENTS = list(MCP_ROUTE_CLIENTS)
 
 IMAGEGEN_REPOSITORY = "klimPaskov/hoi4-imagegen-mcp"
-IMAGEGEN_VERSION = "0.3.6"
+IMAGEGEN_VERSION = "0.3.7"
 IMAGEGEN_INSTALL_ROOT = ".tools/image_generation/hoi4-imagegen"
 IMAGEGEN_COMPONENT_ID = "imagegen.hoi4_imagegen"
-# Published v0.3.6 release assets (SHA256SUMS of the release, sizes from the GitHub release).
+# Published v0.3.7 release assets (SHA256SUMS of the release, sizes from the GitHub release).
 # HOI4 Mod Setup downloads only the URL it derives from the version and target, and checks size and hash first.
 IMAGEGEN_RELEASE_ASSETS = {
-    "x86_64-pc-windows-msvc": ("zip", 19461462, "8506aa88cf3501d2804e1251c2b3ea6419a2076154fd5611adf2a9b09d9f526d"),
-    "aarch64-apple-darwin": ("tar.gz", 19456767, "2fcbb9b870cf890a8fd32fa72ff12fc351f0a2b5d1a4fd6f60ae3dff05f6474d"),
-    "x86_64-apple-darwin": ("tar.gz", 21372411, "527609e35d9241e10a0190346389627f608be9fc4bf4be63ba4978b39529a236"),
-    "x86_64-unknown-linux-gnu": ("tar.gz", 23687647, "f3a78c13f8a0ff8dfb42ccd2702f6cc1bdbd4ae14c08976adfcdfef5e59b6664"),
-    "aarch64-unknown-linux-gnu": ("tar.gz", 22781863, "53fe95ddc7c29dd2c966da42cfdc3e588f34489da82042d7fa20b53225085e01"),
+    "x86_64-pc-windows-msvc": ("zip", 19885602, "75808cd878f6e6db3403df19d507c99e23bfcea687650ec06fef8f4172949908"),
+    "aarch64-apple-darwin": ("tar.gz", 19884012, "5e295a27e6f0ac0e4556d167f2fc93b6d6f65659676ab685787d820c07343197"),
+    "x86_64-apple-darwin": ("tar.gz", 21853084, "498f52e68cbed6dc0061b8eb7d96812534d4e678f89b0a84e01cd8aef24357c9"),
+    "x86_64-unknown-linux-gnu": ("tar.gz", 24172177, "0915d7bbd7a66132fb70ef3ba2a513b5bfb2defb8c83571acb899c3b779001ed"),
+    "aarch64-unknown-linux-gnu": ("tar.gz", 23250882, "fe1556d9f7eb4babcb91653e1908353594b3816637a0123aacb6b2e79dc64fb8"),
 }
 IMAGEGEN_CREDENTIAL_FIELDS = [
     {"id": "openai_api_key", "display_name": "OpenAI API key", "environment_name": "OPENAI_API_KEY"},
@@ -351,7 +351,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
                 "Release binary installed by HOI4 Mod Setup; the archives, sizes and hashes are declared in the provider route.", version=IMAGEGEN_VERSION)),
         _provider("openai_api", "OpenAI Images API", "Use OpenAI image models with a key saved on this computer.",
             ["An OpenAI API key saved in the operating-system credential store."], ["General image work", "Reference edits", "Transparent PNG output"],
-            "Pay per image; price changes with model and quality.", ["GPT Image 2.5 Sunburst", "GPT Image 2.5 Flare", "GPT Image 2"], "api_key_vault",
+            "Pay per image; price changes with model and quality.", ["GPT Image 2.6 Sunburst", "GPT Image 2.6 Flare", "GPT Image 2.5 Sunburst", "GPT Image 2.5 Flare", "GPT Image 2"], "api_key_vault",
             _capabilities(references=True, edits=True, alpha=True, accepts_dimensions=True, width=3840, height=3840, maximum_pixels=8_294_400, reference_limit=16,
                 reference_notes="Reference count depends on model and endpoint. Use local image paths with the edit tool.",
                 alpha_notes="Supported GPT Image models can request transparent output. Verify the saved alpha.")),
@@ -426,7 +426,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             reference_mcp=_reference("Together Images API", "https://www.together.ai/models/flux-2-pro", "official", "Together API key", ["generate_image", "edit_image"])),
         _provider("openrouter", "OpenRouter", "Use one account to try image models from many providers.",
             ["An OpenRouter API key saved in the operating-system credential store."], ["Comparing image models", "Choosing among providers", "Reference edits where supported"],
-            "Pay per model; the connected route uses GPT Image 2.5 Sunburst.", ["GPT Image 2.5 Sunburst"], "api_key_vault",
+            "Pay per model; the connected route uses GPT Image 2.6 Sunburst.", ["GPT Image 2.6 Sunburst", "GPT Image 2.5 Sunburst"], "api_key_vault",
             _capabilities(references=True, edits=True, alpha=True, reference_limit=16,
                 size_notes="Choose one of the selected model's supported aspect ratios; the model chooses output pixel dimensions.",
                 reference_notes="The connected model accepts reference images for editing.", alpha_notes="Request a transparent PNG and check that its pixels include transparency."),
@@ -496,7 +496,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
             route=_route("none", "none", kind="manual", tools={}, tool_arguments={})),
     ]
     api_routes = {
-        "openai_api": ("openai_images", "https://api.openai.com/v1", "gpt-image-2.5-sunburst", [("api_key", "OpenAI API key", "OPENAI_API_KEY")]),
+        "openai_api": ("openai_images", "https://api.openai.com/v1", "gpt-image-2.6-sunburst", [("api_key", "OpenAI API key", "OPENAI_API_KEY")]),
         "gemini_api": ("gemini_generate_content", "https://generativelanguage.googleapis.com/v1", "gemini-nano-banana-2.1", [("api_key", "Google AI Studio API key", "GEMINI_API_KEY")]),
         "fal_ai": ("fal_queue", "https://queue.fal.run", "fal-ai/flux-2-pro", [("api_key", "fal API key", "FAL_KEY")]),
         "replicate": ("replicate_predictions", "https://api.replicate.com/v1", "black-forest-labs/flux-schnell", [("api_key", "Replicate API token", "REPLICATE_API_TOKEN")]),
@@ -508,7 +508,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         "adobe_firefly": ("adobe_firefly", "https://firefly-api.adobe.io/v3", "firefly_image", [("ims_token", "Adobe IMS access token", "ADOBE_IMS_TOKEN"), ("service_key", "Adobe service API key", "ADOBE_SERVICE_API_KEY")]),
         "xai_grok": ("xai_imagine", "https://api.x.ai/v1", "grok-imagine-image-2.0", [("api_key", "xAI API key", "XAI_API_KEY")]),
         "together_ai": ("together_images", "https://api.together.ai/v1", "black-forest-labs/FLUX.2-pro", [("api_key", "Together API key", "TOGETHER_API_KEY")]),
-        "openrouter": ("openrouter_images", "https://openrouter.ai/api/v1", "openai/gpt-image-2.5-sunburst", [("api_key", "OpenRouter API key", "OPENROUTER_API_KEY")]),
+        "openrouter": ("openrouter_images", "https://openrouter.ai/api/v1", "openai/gpt-image-2.6-sunburst", [("api_key", "OpenRouter API key", "OPENROUTER_API_KEY")]),
         "comfyui_local": ("comfyui", None, None, []),
         "automatic1111_local": ("automatic1111", "http://127.0.0.1:7860", None, []),
         "forge_local": ("automatic1111", "http://127.0.0.1:7860", None, []),
@@ -517,7 +517,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         "huggingface_inference": ("huggingface_inference", "https://router.huggingface.co/hf-inference/models", "black-forest-labs/FLUX.1-Krea-dev", [("api_key", "Hugging Face token", "HF_TOKEN")]),
     }
     adapter_models = {
-        "openai_api": ["gpt-image-2.5-sunburst", "gpt-image-2.5-flare", "gpt-image-2"],
+        "openai_api": ["gpt-image-2.6-sunburst", "gpt-image-2.6-flare", "gpt-image-2.5-sunburst", "gpt-image-2.5-flare", "gpt-image-2"],
         "gemini_api": ["gemini-nano-banana-2.1", "gemini-3.1-flash-image", "gemini-3-pro-image"],
         "black_forest_labs": ["flux-2-pro", "flux-2-max", "flux-2-flex"],
         "stability_ai": ["stable-image-core", "stable-image-ultra"],
@@ -525,7 +525,7 @@ def build_image_generation_table(source_root: Path | None = None) -> dict:
         "recraft": ["recraftv4_1", "recraftv4"],
         "leonardo": ["7b592283-e8a7-4c5a-9ba6-d18c31f258b9"],
         "xai_grok": ["grok-imagine-image-2.0"],
-        "openrouter": ["openai/gpt-image-2.5-sunburst"],
+        "openrouter": ["openai/gpt-image-2.6-sunburst", "openai/gpt-image-2.5-sunburst"],
         "aws_bedrock": ["stability.stable-image-core-v1:1", "stability.stable-image-ultra-v1:1"],
         "huggingface_inference": ["black-forest-labs/FLUX.1-Krea-dev"],
     }
