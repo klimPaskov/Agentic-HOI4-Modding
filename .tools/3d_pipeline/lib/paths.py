@@ -192,6 +192,12 @@ def read_json(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def load_unit_types() -> Dict[str, Any]:
+    """The unit types of `config/unit_types.json`, by name."""
+
+    return read_json(CONFIG_ROOT / "unit_types.json")["types"]
+
+
 def append_jsonl(path: Path, value: Dict[str, Any]) -> Path:
     """Append one immutable event to a JSONL history file."""
 
