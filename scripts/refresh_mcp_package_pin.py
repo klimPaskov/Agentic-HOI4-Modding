@@ -19,7 +19,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 BOOTSTRAP = ROOT / ".tools/mcp/bootstrap_hoi4_agent_tools.py"
 MANIFEST = ROOT / "hoi4-mod-setup.manifest.json"
-# Reviewed 34-route contract of 4.11.0: the 30 routes of 4.8.0 plus
+# Reviewed 34-route contract of 4.11.0 and 4.12.0: the 30 routes of 4.8.0 plus
 # hoi4.asset_inspect, hoi4.system_inspect, hoi4.unit_inspect and hoi4.skill.
 REQUIRED_TOOLS = tuple(sorted((
     "hoi4.reference_context", "hoi4.reference_search", "hoi4.reference_read",
