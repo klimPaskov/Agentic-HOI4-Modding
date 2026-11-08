@@ -220,6 +220,20 @@ class UnitTypeValidation(unittest.TestCase):
         self.assertEqual(tree["profile_validation_overrides"], {"max_boundary_edges": 1250})
         self.assertNotIn("profile_validation_overrides", run_pilot.apply_unit_type({"unit_type": "archer"}))
 
+    def test_the_provider_candidate_gate_sees_the_overrides(self) -> None:
+        import run_pilot
+
+        profile = {"validation": {"max_boundary_edges": 700, "max_loose_components": 8}}
+        tree = run_pilot.apply_unit_type({"unit_type": "tree_creature"})
+        self.assertEqual(run_pilot.gate_profile_for(tree, profile)["validation"]["max_boundary_edges"], 1250)
+        job = {"profile_validation_overrides": {"max_loose_components": 96}}
+        gated = run_pilot.gate_profile_for(job, profile)["validation"]
+        self.assertEqual((gated["max_loose_components"], gated["max_boundary_edges"]), (96, 700))
+        self.assertEqual(profile["validation"]["max_loose_components"], 8, "the registry profile is left as it was")
+        source = Path(run_pilot.__file__).read_text(encoding="utf-8")
+        gate_call = source[source.index('stage="provider_candidate"'):][:600]
+        self.assertIn("profile=gate_profile_for(spec, profile)", gate_call)
+
 
 class UnitTypeActions(unittest.TestCase):
     def test_rider_pays_once_per_clip_and_seats_its_death(self) -> None:
@@ -277,7 +291,9 @@ class UnitTypeActions(unittest.TestCase):
         self.assertNotIn("remesh", operations)
         self.assertFalse(run_pilot.route_remeshes(spec))
         profile = run_pilot.load_profile(spec["profile"])
-        self.assertEqual(run_pilot.topology_options(spec, profile), {"preserve_geometry_topology": True, "target_triangles": 0})
+        self.assertEqual(run_pilot.topology_options(spec, profile, source_triangles=20800), {"preserve_geometry_topology": True, "target_triangles": 0})
+        over = run_pilot.topology_options(spec, profile, source_triangles=22259)
+        self.assertEqual((over["target_triangles"], over["repair_before_reduction"]), (21000, True))
         legacy = run_pilot.prepare_spec({"unit_type": "archer", "asset_id": "x.archer", "runtime_stem": "archer"}, require_budget=False)
         self.assertTrue(run_pilot.topology_options(legacy, profile)["repair_before_reduction"])
 
@@ -295,6 +311,31 @@ class UnitTypeActions(unittest.TestCase):
                     {"unit_type": "beast_biped", "asset_id": "x.yeti", "runtime_stem": "yeti", "meshy_ai_model": "meshy-7"},
                     require_budget=False,
                 )
+
+    def test_a_replaced_clip_never_reuses_the_paid_one(self) -> None:
+        import json
+        from unittest import mock
+
+        import run_pilot
+        from meshy_client import animate_arguments
+        from lib.credits import request_fingerprint
+
+        spec = run_pilot.prepare_spec({"unit_type": "beast_biped", "asset_id": "x.yeti", "runtime_stem": "yeti", "credit_budget": 60})
+        action = next(a for a in spec["required_actions"] if a["role"] == "move")
+        stage = run_pilot.animation_stage_for(spec, "move")
+        with tempfile.TemporaryDirectory() as temporary:
+            job = Path(temporary)
+            (job / "provider/tasks").mkdir(parents=True)
+            paid = request_fingerprint("meshy_animate", animate_arguments("rig-1", 999, None))
+            (job / "provider/tasks" / f"{stage}.json").write_text(json.dumps({"status": "SUCCEEDED", "fingerprint": paid, "task_id": "t"}))
+            client = mock.Mock()
+            with mock.patch.object(run_pilot, "read_history", return_value=[], create=True):
+                with self.assertRaises(RuntimeError) as raised:
+                    run_pilot.animate_library_clip(client, job, spec, action, stage, "rig", "rig-1")
+            self.assertIn("stage_revision", str(raised.exception))
+            client.animate.assert_not_called()
+        action["stage_revision"] = 2
+        self.assertTrue(run_pilot.animation_stage_for(spec, "move").endswith("animation_move_r2"))
 
     def test_job_actions_win_and_unknown_types_fail(self) -> None:
         import run_pilot

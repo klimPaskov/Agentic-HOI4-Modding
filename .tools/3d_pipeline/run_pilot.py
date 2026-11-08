@@ -200,26 +200,33 @@ def resolve_generation(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[st
     return validate_generation(generation)
 
 
+def candidate_triangles(job: Path, spec: Dict[str, Any]) -> int:
+    """The provider candidate's triangle count, from its prepare report (0 when there is none)."""
+
+    report = job / "blender" / "reports" / f"{spec['runtime_stem']}_candidate_prepare.json"
+    if not report.is_file():
+        return 0
+    data = read_json(report)
+    return int((data.get("geometry") or {}).get("triangles") or (data.get("imported_geometry") or {}).get("triangles") or 0)
+
+
 def is_smart_topology(spec: Dict[str, Any]) -> bool:
     return (spec.get("generation") or {}).get("model_type") == "smart-topology"
 
 
-def topology_options(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
+def topology_options(spec: Dict[str, Any], profile: Dict[str, Any], source_triangles: int = 0) -> Dict[str, Any]:
     """How Blender prepares the provider mesh before rigging.
 
-    A smart-topology generation arrives as triangles at the working budget with consistent winding,
-    so it keeps its topology. The reduction path recalculates normals on the mesh while it is still
-    split at its UV seams, which turns whole islands inside out: the ZIN yeti went from 11 to 22,486
-    flipped edges and showed holes over 7% of its silhouette.
+    A smart-topology generation arrives as triangles with consistent winding, so within the working
+    budget it keeps its topology untouched. Meshy overshoots its face target by a few percent (the ZIN
+    yeti came at 22,259 for 21,000), and a mesh over the budget would overflow one export stream, so
+    that one is welded and reduced to the budget like any other.
     """
-    if is_smart_topology(spec):
+    target = int(profile["triangle_range"]["working_triangle_target"])
+    if is_smart_topology(spec) and source_triangles <= target:
         return {"preserve_geometry_topology": True, "target_triangles": 0}
     # Weld the seams before reducing, or the reduction tears the mesh apart along them.
-    return {
-        "target_triangles": profile["triangle_range"]["working_triangle_target"],
-        "repair_before_reduction": True,
-        "topology_weld_distance": 0.0,
-    }
+    return {"target_triangles": target, "repair_before_reduction": True, "topology_weld_distance": 0.0}
 
 
 def provider_animated_roles(spec: Dict[str, Any]) -> List[str]:
@@ -637,9 +644,12 @@ def rig_download_name(spec: Dict[str, Any], extension: str) -> str:
 def animation_stage_for(spec: Dict[str, Any], role: str) -> str:
     rig_stage = rig_stage_for(spec)
     default_rig_stage = continuation_stage_for(spec, "rig")
+    # A role whose clip is replaced after it was paid for orders the new one under its own stage.
+    revision = next((int(a.get("stage_revision") or 0) for a in spec.get("required_actions", []) if a.get("role") == role), 0)
+    suffix = f"_r{revision}" if revision else ""
     if rig_stage == default_rig_stage:
-        return continuation_stage_for(spec, f"animation_{role}")
-    return f"{rig_stage}_animation_{role}"
+        return continuation_stage_for(spec, f"animation_{role}{suffix}")
+    return f"{rig_stage}_animation_{role}{suffix}"
 
 
 def animation_download_name(spec: Dict[str, Any], role: str, extension: str) -> str:
@@ -1594,6 +1604,8 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         stage="provider_candidate",
         max_runtime_footprint_m=max_runtime_footprint_m,
         runtime_entity_scale=float(spec.get("runtime_entity_scale", 1.0)),
+        # The type's and job's measured overrides apply here too, not only at the animated base gate.
+        profile=gate_profile_for(spec, profile),
         defer_topology_reason=(
             "the route exports Meshy's remesh of this generation, never the generation itself"
             if route_remeshes(spec)
@@ -3476,12 +3488,28 @@ def animate_library_clip(
         row = json.loads(line)
         if row.get("state") == "provider_clip_retired" and row.get("event") == stage:
             retired.add(int(row.get("details", {}).get("refused_action_id", -1)))
+    paid = existing_task(job, stage)
+    if paid and paid.get("status") in SUCCEEDED_STATUSES and paid.get("fingerprint"):
+        # A paid clip is reused only for the clip it was ordered as; a replaced clip never hides behind it.
+        ordered = {
+            paid_request(spec, "animation", "meshy_animate", animate_arguments(rig_id, int(item[0]), None), role=action["role"]).fingerprint.upper()
+            for item in candidates
+        }
+        if str(paid["fingerprint"]).upper() not in ordered:
+            raise RuntimeError(
+                f"Stage {stage} already holds a paid clip that is not one of the {action['role']} role's clips "
+                f"{[item[0] for item in candidates]}. To order the new clip, give the action the next stage_revision, "
+                "with the user's approval for its credits; the paid clip stays on record."
+            )
     for index in range(start, len(candidates)):
         action_id, key = int(candidates[index][0]), str(candidates[index][1])
         if action_id in retired and index + 1 < len(candidates):
             continue
+        # A revised clip is a new order with its own single attempt; a failed one is still never retried.
+        revision = int(action.get("stage_revision") or 0)
+        scope_role = f"{action['role']}#r{revision}" if revision else action["role"]
         request = paid_request(
-            spec, "animation", "meshy_animate", animate_arguments(rig_id, action_id, None), role=action["role"]
+            spec, "animation", "meshy_animate", animate_arguments(rig_id, action_id, None), role=scope_role
         )
         try:
             task = provider_task(
@@ -3605,10 +3633,16 @@ def export_unit_roles(
     return {"unit_type": spec["unit_type"], "mesh_export": mesh_export, "textures": textures, "roles": roles, "final_checkpoint": chain, "runtime": staged["check"]}
 
 
+def gate_profile_for(spec: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
+    """The asset profile with the unit type's and the job's measured validation overrides applied."""
+
+    return dict(profile, validation={**profile.get("validation", {}), **spec.get("profile_validation_overrides", {})})
+
+
 def finish_unit_base(job: Path, slug: str, spec: Dict[str, Any], blender: BlenderAdapterClient, prep: Dict[str, Any], profile: Dict[str, Any]) -> Dict[str, Any]:
     """Gate the prepared base, pack its textures, apply the job's loose part edits and save `unit_base_pre_export`."""
 
-    gate_profile = dict(profile, validation={**profile.get("validation", {}), **spec.get("profile_validation_overrides", {})})
+    gate_profile = gate_profile_for(spec, profile)
     candidate_gate(job, prep, hard_max=profile["triangle_range"]["hard_max"], stage="animated_candidate_base", profile=gate_profile)
     textures = finalize_pdx_runtime_textures(job, spec, blender.process_textures(slug, prep["checkpoints"]["pre_export"]))
     base = prep["checkpoints"]["pre_export"]
@@ -3658,7 +3692,7 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         vanilla_reference=stages["vanilla_reference"],
         texture_source_rels=texture_sources,
         geometry_source_rel=spec.get("geometry_source_rel"),
-        **topology_options(spec, profile),
+        **topology_options(spec, profile, source_triangles=candidate_triangles(job, spec)),
     )
     textures = finish_unit_base(job, slug, spec, blender, prep, profile)
     chain = "blender/checkpoints/unit_base_pre_export.blend"
