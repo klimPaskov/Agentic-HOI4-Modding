@@ -37,7 +37,7 @@ def _channel_stats(image: Image.Image) -> Dict[str, Dict[str, float]]:
 def _record(path: Path, root: Path) -> Dict[str, Any]:
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     return {
-        "path": str(path.relative_to(root)).replace("\\", "/"),
+        "path": str(path.resolve().relative_to(root.resolve())).replace("\\", "/"),
         "bytes": path.stat().st_size,
         "sha256": digest,
     }
