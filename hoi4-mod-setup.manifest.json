@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "21c0e6ee4c5ec4a9dea401a38a0c1794d023fc83",
+  "generated_for_revision": "08ce107f5355e05f65c72358718fbf81ce670ada",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "bec5f53baed3f125491161659f74ae71a4dea7e13a54472d9fc60a056a93cdb8",
-          "size": 15870
+          "sha256": "edf580912dc8fe567f1999353509b33e067218ba1baa70d35c5b044c31eb3e28",
+          "size": 15880
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "3ad0750d394e4bc46b8a9483caf000be19815c73210fba31a1f4b2d7b8ae661a",
-          "size": 15870
+          "sha256": "33c32fa7a06a18330b41065cf5bba417c463b538aca3279562ddfef80b11716c",
+          "size": 15880
         }
       ]
     },
@@ -6639,8 +6639,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mcp-usage.md",
-          "sha256": "7ab8b282517c88ae4571d4016b1bcf8ebdedf20b91d2843e9957470fb782b093",
-          "size": 4237
+          "sha256": "76716c67a770ae4001f28b71e1b84221ffb10c76f7e1c2e88f84ae2773d90d1b",
+          "size": 6104
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mechanic-checklist.md",
@@ -12093,8 +12093,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mcp-usage.md",
-          "sha256": "7ab8b282517c88ae4571d4016b1bcf8ebdedf20b91d2843e9957470fb782b093",
-          "size": 4237
+          "sha256": "76716c67a770ae4001f28b71e1b84221ffb10c76f7e1c2e88f84ae2773d90d1b",
+          "size": 6104
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mechanic-checklist.md",
@@ -23995,8 +23995,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mcp-usage.md",
-          "sha256": "7ab8b282517c88ae4571d4016b1bcf8ebdedf20b91d2843e9957470fb782b093",
-          "size": 4237
+          "sha256": "76716c67a770ae4001f28b71e1b84221ffb10c76f7e1c2e88f84ae2773d90d1b",
+          "size": 6104
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mechanic-checklist.md",
@@ -29487,8 +29487,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mcp-usage.md",
-          "sha256": "7ab8b282517c88ae4571d4016b1bcf8ebdedf20b91d2843e9957470fb782b093",
-          "size": 4237
+          "sha256": "76716c67a770ae4001f28b71e1b84221ffb10c76f7e1c2e88f84ae2773d90d1b",
+          "size": 6104
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mechanic-checklist.md",
@@ -34979,8 +34979,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mcp-usage.md",
-          "sha256": "7ab8b282517c88ae4571d4016b1bcf8ebdedf20b91d2843e9957470fb782b093",
-          "size": 4237
+          "sha256": "76716c67a770ae4001f28b71e1b84221ffb10c76f7e1c2e88f84ae2773d90d1b",
+          "size": 6104
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/mechanic-checklist.md",
