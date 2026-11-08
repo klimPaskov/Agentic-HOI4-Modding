@@ -13020,16 +13020,16 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "766abe248366c2f1ab1abc2788a90a10f387d71dfd34b5ee57ad9578a437c612",
-            "package_file_count": 5670,
+            "package_tree_sha256": "afe8f81db2ba1074459961e6d9ab3364fe6fe8b1c6bf5af3978e315fe92cb192",
+            "package_file_count": 5876,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "766abe248366c2f1ab1abc2788a90a10f387d71dfd34b5ee57ad9578a437c612",
-                "package_file_count": 5670,
+                "package_tree_sha256": "afe8f81db2ba1074459961e6d9ab3364fe6fe8b1c6bf5af3978e315fe92cb192",
+                "package_file_count": 5876,
                 "runtime_entry_sha256": "da6037bf284bcf07a245c3f747ae63f0c6393fb6c7868dcf863b37f152853062",
                 "runtime_entry_size": 4447,
                 "package_symlinks": {}
