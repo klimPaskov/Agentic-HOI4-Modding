@@ -161,15 +161,6 @@
    "PLR0915 plan_consistent_outward_winding": 104,
    "PLR0915 repair_mesh_winding": 89
   },
-  ".tools/3d_pipeline/adapter/mesh_winding_seam.py": {
-   "C901 _orient_component": 23,
-   "C901 repair_mesh_winding_seam": 24,
-   "PLR0915 _orient_component": 73,
-   "PLR0915 repair_mesh_winding_seam": 93
-  },
-  ".tools/3d_pipeline/adapter/pdx_skin_membership.py": {
-   "PLR0915 verify_pdx_skin_membership": 60
-  },
   ".tools/3d_pipeline/adapter/quadruped_layout.py": {
    "C901 detect_landmarks": 17,
    "F841 Local variable `names` is assigned to but never used": 1,
@@ -258,10 +249,6 @@
   ".tools/3d_pipeline/tests/test_io_pdx_compat.py": {
    "F401 `copy.deepcopy` imported but unused": 1,
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 2
-  },
-  ".tools/3d_pipeline/tests/test_mesh_winding_seam.py": {
-   "F401 `json` imported but unused": 1,
-   "F401 `re` imported but unused": 1
   },
   ".tools/3d_pipeline/tests/test_partition_image_consumers.py": {
    "B023 Function definition does not bind loop variable `mapping`": 1

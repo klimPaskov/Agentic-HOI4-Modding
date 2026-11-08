@@ -2,6 +2,14 @@
 
 This page is for modders who want their own 3D units on the HOI4 map: soldiers, archers, riders, beasts and vehicles. Your coding agent does the work through the `hoi4-3d-model-pipeline` skill. You approve the picture and the credit budget, and you look at the result. This page explains what you need, what each step does, and what to do when one fails.
 
+## How to use it
+
+1. In HOI4 Mod Setup, tick **3D models workflow** (see [Setup](#setup)) and set your Meshy key.
+2. Tell your coding agent: "Make a 3D unit for `<unit>` with the `hoi4-3d-model-pipeline` skill." That skill is the one entry point. Everything below is what it does for you.
+3. Approve the reference picture and the credit budget when it asks.
+4. Every step prints a one-line verdict. `pass` names the next command, `fail` names the free fix, `escalate` means no script can fix it, so the agent looks for another rigging tool or animation preset (see [Rigging and animation](#rigging-and-animation)). The agent keeps running what the verdict names until the independent review passes.
+5. Look at the result in game. If a step fails, see [When something fails](#when-something-fails).
+
 ## What it is
 
 Two routes make a unit. Both end in the same checks and the same independent review.
@@ -9,9 +17,15 @@ Two routes make a unit. Both end in the same checks and the same independent rev
 | Route | Used for | How it works |
 | --- | --- | --- |
 | Default | Soldiers, archers, riders, giants, mounts, four-legged beasts | Meshy makes the model from one picture, then rigs and animates humanoids from its clip library. The kit's scripts check, repair and fit the result the same way every time. Each step is one command that prints a one-line verdict |
-| Live authoring in Blender | Whatever a verdict escalates: clips that do not read as their role, a body no preset fits (wings, extra arms, tentacles), vehicles | Your agent poses the unit key by key in a live Blender session through the Blender Lab MCP, and looks at every key before keeping it |
+| Researched tools | A body the default route cannot rig or animate (wings, extra arms, tentacles), clips that do not read as their role, vehicles | Your agent picks an auto-rig tool and animation presets found by research, from motion libraries or generative motion tools, per unit |
 
-A verdict is `pass` (it names the next command), `fail` (it names the free fix to run) or `escalate` (no script can fix it, so the unit goes to [live authoring](#author-animations-live-in-blender)). Run the command the verdict names and keep going until the unit passes the review.
+Live keyframing in Blender is not a route. It is the small-fix and last-resort tool (see [Rigging and animation](#rigging-and-animation)).
+
+A verdict is `pass` (it names the next command), `fail` (it names the free fix to run) or `escalate` (no script can fix it, so the agent researches another rig tool or preset). Run the command the verdict names and keep going until the unit passes the review.
+
+### Rigging and animation
+
+Units are rigged with auto-rig tools and animated with fitting presets that your agent finds by research, from motion libraries or generative motion tools, chosen per unit. Manual rigging or keyframing in Blender is only for small fixes, or when no tool or preset works, and the agent records the reason in the job.
 
 ## Setup
 
@@ -255,13 +269,13 @@ The checks pass anything within vanilla's limits, so a reviewer can still see de
 | Surface that tears or smears where two body parts meet, red on the diagnostics sheet in every clip | `repair_unit.py ... --repairs bridges weights` |
 | A foot above or below the ground | `repair_unit.py ... --repairs ground` |
 | The weapon through the head or body | `fit_prop.py` again on the same copy, first with a shorter `--length` such as 0.4, then another `--grip` between 0.1 and 0.3. A two-handed hold is made live |
-| A part that tears or crushes only in some clips (a death or an attack that twists the torso hard), or a clip that does not read as its role | No script fixes the motion itself. Author those clips live in Blender, or ask before paying for other clips |
+| A part that tears or crushes only in some clips (a death or an attack that twists the torso hard), or a clip that does not read as its role | No script fixes the motion itself. Find another preset or tool for those clips, or ask before paying for others. Keying them by hand in Blender is the last resort, with the reason recorded |
 
 Fix the free ones first, in this order: the mesh repairs, then the weapon. Render again and ask a new reviewer, then take what is left to Blender.
 
-### Author animations live in Blender
+### Small fixes and last resort: live Blender
 
-Some units need motion no library clip gives them: a body with wings, extra arms or a tail, a creature on which human clips look wrong, a vehicle, a project that wants every clip to be its own, or a clip that failed review twice. Your agent then poses the unit in a live Blender session through the Blender Lab MCP, one key at a time, and looks at every key before it keeps it. It costs nothing.
+When a small fix is needed, or no rig tool or preset works for a unit (wings, extra arms, a tail, a vehicle, a clip that failed review twice), your agent may pose the unit in a live Blender session through the Blender Lab MCP, one key at a time, and look at every key before it keeps it. It records why a tool or preset could not do the job. It costs nothing.
 
 The kit's helpers in `.tools/3d_pipeline/authoring/live_helpers.py` turn, place, measure, render and key only what the agent names. They solve a leg with the knee toward the toes, put a hand on a point with a temporary IK, plant a foot, spread a lean down the spine, weight a crotch seam, keep a hand on a weapon wherever it moves, and render the reviewer's views. `export_clip` writes a clip over the action's own frame range at 30 frames a second. `normalize_quaternion_keys` flips keys that would make a joint turn the long way. `stretch_share` gives the share of edges the stretch check counts at a frame. `lowest_regions` lists the lowest point of each body region and prop, to find what holds a dead body up. `clear_sharp_faces` removes import flags that push a stream past 65,535 vertices.
 
@@ -294,7 +308,7 @@ Units are the tested route. For other models, only the parts below have been pro
 
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
 - **A weapon sinking in a death clip.** No free repair lifts a held prop out of the ground yet. Run `fit_prop.py` again (a higher `--ground-weight`, such as 40 instead of 10, cleared it on one unit), or turn the wrist live in Blender.
-- **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect some live authoring.
+- **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect to look for another preset, and sometimes a small live fix.
 - **Planes** are not covered.
 - **UNIT-PROP-CLIP** reads a point behind an open, one-sided sheet such as a cape as inside the body. Look at the named frames before changing a clip.
 - **Review rounds** converge only with fixed notes and scoped rounds. Without them each fresh reviewer raises new minor items.

@@ -1,10 +1,14 @@
-# Live authoring in Blender (the escalation path)
+# Live authoring in Blender (small fixes and last resort)
 
 Read before posing, keying, re-weighting or re-seating a prop by hand in a live Blender session. The
-default route measures the body, picks a preset and lets code do the spatial work. This path is for
-everything a preset cannot do, under the same checks and the same independent review.
+default path rigs with auto-rig tools and animates with fitting presets found by research (motion
+libraries or generative motion tools), chosen per unit (decision 3D-11). Manual rigging or keyframing
+is only for small fixes, or when no tool or preset works, and the reason is recorded in the job. It
+runs under the same checks and the same independent review.
 
 ## When to take it
+
+Research a tool or preset first. Take this path only for a small fix or when none works:
 
 - `measure_body.py` or a stage verdict says `escalate`: the body is not eligible for a preset (wings,
   extra limbs, tentacles, no legs, a rider fused to its mount), or its measured shape disagrees with the

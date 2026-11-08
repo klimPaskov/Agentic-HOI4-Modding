@@ -25,7 +25,7 @@ searching or approving a model input. Read [motion and repair QA](references/mot
 before standalone motion, retargeting, skeletal repair, material rebinding,
 assembly yaw, or export acceptance. Read [live authoring](references/live-authoring.md)
 before posing, keying, re-weighting or seating a prop by hand in a live Blender
-session (the escalation path). Read only the other system/asset references
+session (small fixes and last resort only: rig with auto-rig tools and animate with researched presets first, per unit). Read only the other system/asset references
 needed for the actual consumer; do not start provider/runtime operations for a
 workflow-documentation task.
 
