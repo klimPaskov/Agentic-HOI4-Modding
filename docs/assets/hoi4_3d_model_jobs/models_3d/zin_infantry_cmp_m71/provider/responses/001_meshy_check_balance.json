@@ -1,0 +1,14 @@
+{
+  "content": [
+    {
+      "text": "# Meshy Credit Balance\n\n**Balance**: 110 credits\n- Monthly: 100 (expire and refresh at 2026-11-01T00:00:00.000Z)\n- Permanent: 10 (never expire)",
+      "type": "text"
+    }
+  ],
+  "structuredContent": {
+    "balance": 110,
+    "monthly_credits": 100,
+    "monthly_resets_at": "2026-11-01T00:00:00.000Z",
+    "permanent_credits": 10
+  }
+}

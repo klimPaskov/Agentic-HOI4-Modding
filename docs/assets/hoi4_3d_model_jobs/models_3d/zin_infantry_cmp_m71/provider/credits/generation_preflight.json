@@ -1,0 +1,14 @@
+{
+  "balance_before_paid_call": 110,
+  "estimated_credits": 30,
+  "hard_limit": 30,
+  "job_budget": {
+    "consumed": 0,
+    "credit_budget": 30,
+    "remaining": 30,
+    "reserved": 0
+  },
+  "paid_call_authorized_by": "job_credit_budget",
+  "stage": "generation",
+  "timestamp": "2026-11-01T19:14:10Z"
+}

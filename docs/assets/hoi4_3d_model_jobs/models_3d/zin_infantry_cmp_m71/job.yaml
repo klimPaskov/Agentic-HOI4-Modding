@@ -1,0 +1,145 @@
+{
+  "animation_estimate_credits": 3,
+  "asset_id": "zin.model.unit.zin_infantry_cmp_m71",
+  "asset_kind": "humanoid",
+  "asset_slug": "zin_infantry_cmp_m71",
+  "blender_plan": {
+    "dependency_lock": ".tools/3d_pipeline/config/dependencies.lock.json",
+    "effective_runtime_height_m": 5.8814594268,
+    "max_runtime_footprint_m": null,
+    "provider_height_m": 1.8,
+    "runtime_diffuse_gamma": 0.72,
+    "runtime_entity_scale": 0.8,
+    "runtime_footprint_policy": "reject",
+    "runtime_stem": "zin_infantry_cmp_m71",
+    "target_height_m": 7.3518242835,
+    "vanilla_scale_reference": {
+      "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity (and infantry_entity clone, scale 0.8)",
+      "entity_scale": 0.8,
+      "exclude_name_patterns": [
+        "collision"
+      ],
+      "forward_axis": "-Y",
+      "mesh": "C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV/gfx/models/units/western_european_infantry.mesh",
+      "mesh_height": 7.3518242835,
+      "mesh_object_names": [
+        "polySurface106"
+      ],
+      "pdxmesh": "generic_western_european_rifle_infantry_mesh",
+      "runtime_height": 5.8814594268,
+      "up_axis": "+Z"
+    }
+  },
+  "brief": "Middle Kingdom royal infantryman of the Golden King: sturdy human soldier, dark steel open-faced helmet with short gold crest, mail shirt under a deep blue tabard with a small gold sun emblem, steel shoulder plates, leather belt and pouches, steel greaves over boots. Weapon-free A-pose body; weapons become separate attachment entities later.",
+  "created_at": "2026-11-01T17:46:56Z",
+  "creature_rig_family": null,
+  "credit_budget": 30,
+  "estimated_credits": 30,
+  "excluded_provider_objects": [
+    "Icosphere"
+  ],
+  "forbidden_additions": [
+    "weapons or held props on the body mesh",
+    "shields, banners, staffs",
+    "extra characters",
+    "floating disconnected geometry",
+    "ground plane or base",
+    "multi-view board",
+    "turnaround collage",
+    "text or watermark"
+  ],
+  "generation": {
+    "ai_model": "meshy-7.1",
+    "enable_pbr": true,
+    "model_type": "standard",
+    "should_remesh": true,
+    "target_polycount": 21000,
+    "target_polycount_applies": true,
+    "texture_resolution": "2k"
+  },
+  "generation_stage": "generation",
+  "handoff": {
+    "crosswalk": "runtime/crosswalk.md",
+    "manifest": "manifest.md",
+    "runtime_handoff": "runtime/handoff.md"
+  },
+  "humanoid_rig_route": "blender_failure_recovery_humanoid_v1",
+  "image_to_3d_estimate_credits": 30,
+  "job_id": "hoi4_3d_model_jobs_zin_infantry_cmp_m71",
+  "meshy_input_gate": {
+    "image": "refs/original/meshy_input.png",
+    "image_count": 1,
+    "multi_view_thumbnails": false,
+    "side_profile_sheet": false,
+    "turnaround_board": false
+  },
+  "owner_id": "hoi4_3d_model_jobs",
+  "profile": "humanoid_unit_cmp_m71",
+  "provider_plan": {
+    "ai_model": "meshy-7.1",
+    "enable_pbr": true,
+    "estimated_credits": {
+      "animation": 3,
+      "image_to_3d": 30,
+      "remesh": 5,
+      "rig": 5
+    },
+    "model_type": "standard",
+    "paid_attempts": 1,
+    "pose_mode": "a-pose",
+    "resolved_ai_model": "meshy-7.1",
+    "retry_paid_calls": false,
+    "should_texture": true,
+    "target_polycount": 21000,
+    "topology": "triangle"
+  },
+  "remesh_estimate_credits": 5,
+  "required_actions": [],
+  "required_components": [
+    "complete weapon-free humanoid body matching the approved reference",
+    "head, torso, two arms with hands, two legs with feet, all attached",
+    "armour and clothing pieces solid and attached to the body",
+    "grounded riggable biped proportions"
+  ],
+  "rig_estimate_credits": 5,
+  "rig_input_mode": "input_task_id",
+  "rig_source_target_polycount": 50000,
+  "rig_stage": null,
+  "runtime": {
+    "actual_registration": null,
+    "in_game_evidence": null,
+    "live_consumer": null,
+    "proposed_identifiers": {
+      "animations": {},
+      "consumer": "land-unit entity",
+      "entity": "zin_infantry_cmp_m71_entity",
+      "entity_scale": 0.8,
+      "model_dir": "gfx/models/units/zin/zin_infantry_cmp_m71/",
+      "pdxmesh": "zin_infantry_cmp_m71_mesh",
+      "sprite": "zin_infantry_cmp_m71"
+    }
+  },
+  "scale_crosswalk": null,
+  "schema_version": "1.0.0",
+  "shared_humanoid_batch": null,
+  "shared_humanoid_rig_owner": null,
+  "shared_humanoid_role": null,
+  "source": {
+    "authorization": "User-authorized agent-generated model reference.",
+    "dimensions": {
+      "height": 1536,
+      "width": 1024
+    },
+    "generator_output": "gptimage gpt-6-astra 1024x1536 high; prompt, owner approval quote and checksum in refs/source/provenance.json",
+    "mode": "source_free_owner_rule",
+    "reference": {
+      "bytes": 1880052,
+      "name": "meshy_input.png",
+      "path": "C:\\Users\\klimp\\Documents\\Projects\\agentic-hoi4-modding\\.claude\\worktrees\\meshy-compare\\docs\\assets\\hoi4_3d_model_jobs\\models_3d\\zin_infantry_cmp_m71\\refs\\original\\meshy_input.png",
+      "relative_path": "refs/original/meshy_input.png",
+      "sha256": "4F337148EFB179C2E2B167CB3385FAD06C30D46A4860B3E09F826E00606A4086"
+    }
+  },
+  "status": "preflight",
+  "updated_at": "2026-11-01T19:12:44Z"
+}

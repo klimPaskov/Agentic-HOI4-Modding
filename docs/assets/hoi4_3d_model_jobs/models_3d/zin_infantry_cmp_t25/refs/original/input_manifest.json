@@ -1,0 +1,22 @@
+{
+  "approval_basis": "Owner approved all five unit references on 2026-10-18; parent task authorizes Meshy spend.",
+  "candidate_status": "user_accepted",
+  "dimensions": {
+    "height": 1536,
+    "width": 1024
+  },
+  "image_count": 1,
+  "input": {
+    "bytes": 1880052,
+    "name": "meshy_input.png",
+    "path": "C:\\Users\\klimp\\Documents\\Projects\\agentic-hoi4-modding\\.claude\\worktrees\\meshy-compare\\docs\\assets\\hoi4_3d_model_jobs\\models_3d\\zin_infantry_cmp_t25\\refs\\original\\meshy_input.png",
+    "relative_path": "refs/original/meshy_input.png",
+    "sha256": "4F337148EFB179C2E2B167CB3385FAD06C30D46A4860B3E09F826E00606A4086"
+  },
+  "owner_approval": {
+    "at": "2026-10-18",
+    "quote": "Approved all five unit references."
+  },
+  "sent_to_meshy": false,
+  "source_mode": "source_free_owner_rule"
+}

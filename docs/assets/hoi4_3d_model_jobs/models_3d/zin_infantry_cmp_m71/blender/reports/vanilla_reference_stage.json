@@ -1,0 +1,12 @@
+{
+  "read_only_source": true,
+  "source_path": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\Hearts of Iron IV\\gfx\\models\\units\\western_european_infantry.mesh",
+  "source_sha256": "F00FBADFDACDD1046F7119E62E2C47D644EA7A92D0F686B71D230BC843AEF8BA",
+  "staged_file": {
+    "bytes": 201966,
+    "name": "western_european_infantry.mesh",
+    "path": "C:\\Users\\klimp\\Documents\\Projects\\agentic-hoi4-modding\\.claude\\worktrees\\meshy-compare\\docs\\assets\\hoi4_3d_model_jobs\\models_3d\\zin_infantry_cmp_m71\\blender\\reference\\western_european_infantry.mesh",
+    "relative_path": "blender/reference/western_european_infantry.mesh",
+    "sha256": "F00FBADFDACDD1046F7119E62E2C47D644EA7A92D0F686B71D230BC843AEF8BA"
+  }
+}

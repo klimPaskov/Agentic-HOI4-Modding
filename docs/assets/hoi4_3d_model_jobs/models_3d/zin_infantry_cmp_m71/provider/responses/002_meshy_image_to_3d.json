@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "text": "Error: Payment required (402). NoMorePendingTasks: Task creation on the free plan is no longer supported. To continue creating tasks, please upgrade your plan. You can manage your plan at https://www.meshy.ai/settings/subscription Check the balance with `meshy_check_balance`; add credits or upgrade at https://www.meshy.ai/pricing.",
+      "type": "text"
+    }
+  ],
+  "isError": true
+}

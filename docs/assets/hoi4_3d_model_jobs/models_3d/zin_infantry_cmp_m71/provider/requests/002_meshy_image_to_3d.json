@@ -1,0 +1,27 @@
+{
+  "arguments": {
+    "ai_model": "meshy-7.1",
+    "enable_pbr": true,
+    "file_path": "C:\\Users\\klimp\\Documents\\Projects\\agentic-hoi4-modding\\.claude\\worktrees\\meshy-compare\\docs\\assets\\hoi4_3d_model_jobs\\models_3d\\zin_infantry_cmp_m71\\refs\\original\\meshy_input.png",
+    "image_enhancement": true,
+    "model_type": "standard",
+    "multi_view_thumbnails": false,
+    "pose_mode": "a-pose",
+    "response_format": "json",
+    "should_remesh": true,
+    "should_texture": true,
+    "target_formats": [
+      "glb",
+      "fbx"
+    ],
+    "target_polycount": 21000,
+    "texture_resolution": "2k",
+    "topology": "triangle"
+  },
+  "paid": true,
+  "provider": "meshy",
+  "server_package": "@meshy-ai/meshy-mcp-server",
+  "server_version": "0.6.7",
+  "timestamp": "2026-11-01T19:15:49Z",
+  "tool": "meshy_image_to_3d"
+}

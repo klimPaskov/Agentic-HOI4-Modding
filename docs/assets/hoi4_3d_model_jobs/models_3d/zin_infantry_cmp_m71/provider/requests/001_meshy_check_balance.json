@@ -1,0 +1,9 @@
+{
+  "arguments": {},
+  "paid": false,
+  "provider": "meshy",
+  "server_package": "@meshy-ai/meshy-mcp-server",
+  "server_version": "0.6.7",
+  "timestamp": "2026-11-01T19:14:10Z",
+  "tool": "meshy_check_balance"
+}

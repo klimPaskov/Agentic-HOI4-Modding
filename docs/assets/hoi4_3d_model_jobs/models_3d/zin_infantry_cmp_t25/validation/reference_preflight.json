@@ -1,0 +1,31 @@
+{
+  "checks": {
+    "approval": "parent_agent_visual_review",
+    "complete_silhouette": true,
+    "component_separation": true,
+    "neutral_background": true,
+    "no_multi_view_board": true,
+    "no_side_profile_sheet": true,
+    "review": {
+      "notes": "Answered by the parent agent looking at refs/original/meshy_input.png (SHA-256 4F337148EFB179C2..., the image already approved and used for the zin_men_infantry job): one weapon-free armoured infantryman in a front A-pose on a flat grey background, head to boots inside the frame, arms and legs clearly apart from the torso, no board, turnaround or side view. Not a fresh approval of a new image.",
+      "reference_sha256": "4F337148EFB179C2E2B167CB3385FAD06C30D46A4860B3E09F826E00606A4086",
+      "reviewed_at": "2026-11-01T17:47:06Z",
+      "reviewer": "parent agent (Claude Sonnet 5.5), reviewing the image already approved for zin_men_infantry",
+      "status": "reviewed"
+    },
+    "single_subject": true
+  },
+  "dimensions": {
+    "height": 1536,
+    "width": 1024
+  },
+  "input": {
+    "bytes": 1880052,
+    "name": "meshy_input.png",
+    "path": "C:\\Users\\klimp\\Documents\\Projects\\agentic-hoi4-modding\\.claude\\worktrees\\meshy-compare\\docs\\assets\\hoi4_3d_model_jobs\\models_3d\\zin_infantry_cmp_t25\\refs\\original\\meshy_input.png",
+    "relative_path": "refs/original/meshy_input.png",
+    "sha256": "4F337148EFB179C2E2B167CB3385FAD06C30D46A4860B3E09F826E00606A4086"
+  },
+  "input_count": 1,
+  "status": "passed"
+}
