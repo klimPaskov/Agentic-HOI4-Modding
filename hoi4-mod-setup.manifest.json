@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "0e3a15b9cbea22057a00ba00bad4a141578812ea",
+  "generated_for_revision": "730fd5a5bdefa56f83de7f692c1ce469eeac494d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16786,8 +16786,8 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "0fbbd3cc2b2d3914bccbad9565ea103ddbd60faf2b431b3c157461ad408a5751",
-          "size": 108945
+          "sha256": "fcc56b4a92671c55576a4ae6430fe806adcb3d78b87e889408b10090fb86aa03",
+          "size": 109057
         },
         {
           "path": ".tools/image_generation/runtime/server.py",
@@ -36272,7 +36272,7 @@
           "source_repository": "https://github.com/klimPaskov/hoi4-imagegen-mcp",
           "source_revision": null,
           "package_name": "hoi4-imagegen",
-          "package_version": "0.3.6",
+          "package_version": "0.3.7",
           "package_tree_sha256": null,
           "source_tree_sha256": null,
           "package_lock_sha256": null,
@@ -36393,57 +36393,57 @@
           ],
           "requires_primary_coding_environment": null,
           "release_binary": {
-            "version": "0.3.6",
+            "version": "0.3.7",
             "install_root": ".tools/image_generation/hoi4-imagegen",
             "targets": {
               "x86_64-pc-windows-msvc": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-x86_64-pc-windows-msvc.zip",
-                "sha256": "8506aa88cf3501d2804e1251c2b3ea6419a2076154fd5611adf2a9b09d9f526d",
-                "size": 19461462,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc.zip",
+                "sha256": "75808cd878f6e6db3403df19d507c99e23bfcea687650ec06fef8f4172949908",
+                "size": 19885602,
                 "archive": "zip",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.6-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
-                  "cli": "hoi4-imagegen-v0.3.6-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
+                  "mcp": "hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
+                  "cli": "hoi4-imagegen-v0.3.7-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
                 }
               },
               "aarch64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-aarch64-apple-darwin.tar.gz",
-                "sha256": "2fcbb9b870cf890a8fd32fa72ff12fc351f0a2b5d1a4fd6f60ae3dff05f6474d",
-                "size": 19456767,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-aarch64-apple-darwin.tar.gz",
+                "sha256": "5e295a27e6f0ac0e4556d167f2fc93b6d6f65659676ab685787d820c07343197",
+                "size": 19884012,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.6-aarch64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.6-aarch64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.7-aarch64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.7-aarch64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-x86_64-apple-darwin.tar.gz",
-                "sha256": "527609e35d9241e10a0190346389627f608be9fc4bf4be63ba4978b39529a236",
-                "size": 21372411,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-x86_64-apple-darwin.tar.gz",
+                "sha256": "498f52e68cbed6dc0061b8eb7d96812534d4e678f89b0a84e01cd8aef24357c9",
+                "size": 21853084,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.6-x86_64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.6-x86_64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.7-x86_64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.7-x86_64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-x86_64-unknown-linux-gnu.tar.gz",
-                "sha256": "f3a78c13f8a0ff8dfb42ccd2702f6cc1bdbd4ae14c08976adfcdfef5e59b6664",
-                "size": 23687647,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu.tar.gz",
+                "sha256": "0915d7bbd7a66132fb70ef3ba2a513b5bfb2defb8c83571acb899c3b779001ed",
+                "size": 24172177,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.6-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.6-x86_64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.7-x86_64-unknown-linux-gnu/hoi4-imagegen"
                 }
               },
               "aarch64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.6/hoi4-imagegen-v0.3.6-aarch64-unknown-linux-gnu.tar.gz",
-                "sha256": "53fe95ddc7c29dd2c966da42cfdc3e588f34489da82042d7fa20b53225085e01",
-                "size": 22781863,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.3.7/hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu.tar.gz",
+                "sha256": "fe1556d9f7eb4babcb91653e1908353594b3816637a0123aacb6b2e79dc64fb8",
+                "size": 23250882,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.3.6-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.3.6-aarch64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.3.7-aarch64-unknown-linux-gnu/hoi4-imagegen"
                 }
               }
             }
@@ -36722,7 +36722,7 @@
             "hoi4.image_unit",
             "hoi4.image_interface"
           ],
-          "version": "0.3.6"
+          "version": "0.3.7"
         }
       },
       {
@@ -36741,6 +36741,8 @@
         "cost_summary": "Pay per image; price changes with model and quality.",
         "documentation_url": "https://developers.openai.com/api/docs/guides/image-generation/",
         "models": [
+          "GPT Image 2.6 Sunburst",
+          "GPT Image 2.6 Flare",
           "GPT Image 2.5 Sunburst",
           "GPT Image 2.5 Flare",
           "GPT Image 2"
@@ -36778,6 +36780,8 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
+            "gpt-image-2.6-sunburst",
+            "gpt-image-2.6-flare",
             "gpt-image-2.5-sunburst",
             "gpt-image-2.5-flare",
             "gpt-image-2"
@@ -36795,7 +36799,7 @@
           "auth_headers": [],
           "api_protocol": "openai_images",
           "api_base_url": "https://api.openai.com/v1",
-          "default_model": "gpt-image-2.5-sunburst",
+          "default_model": "gpt-image-2.6-sunburst",
           "result_format": "png",
           "credential_fields": [
             {
@@ -38118,9 +38122,10 @@
           "Choosing among providers",
           "Reference edits where supported"
         ],
-        "cost_summary": "Pay per model; the connected route uses GPT Image 2.5 Sunburst.",
+        "cost_summary": "Pay per model; the connected route uses GPT Image 2.6 Sunburst.",
         "documentation_url": "https://openrouter.ai/docs/guides/features/images",
         "models": [
+          "GPT Image 2.6 Sunburst",
           "GPT Image 2.5 Sunburst"
         ],
         "supported_coding_environments": [
@@ -38156,6 +38161,7 @@
             "auth_status": "image_auth_status"
           },
           "supported_models": [
+            "openai/gpt-image-2.6-sunburst",
             "openai/gpt-image-2.5-sunburst"
           ],
           "tool_arguments": {
@@ -38170,7 +38176,7 @@
           "auth_headers": [],
           "api_protocol": "openrouter_images",
           "api_base_url": "https://openrouter.ai/api/v1",
-          "default_model": "openai/gpt-image-2.5-sunburst",
+          "default_model": "openai/gpt-image-2.6-sunburst",
           "result_format": "png",
           "credential_fields": [
             {
