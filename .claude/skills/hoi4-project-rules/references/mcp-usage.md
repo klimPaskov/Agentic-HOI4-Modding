@@ -1,6 +1,6 @@
 # Project rules: HOI4 MCP usage
 
-Part of the [hoi4-project-rules](../SKILL.md) skill. `CLAUDE.md` summarizes section 0 (HOI4 MCP). Read before using the HOI4 Agent Tools routes, when a route fails, and before reporting MCP evidence.
+Part of the [hoi4-project-rules](../SKILL.md) skill. `CLAUDE.md` keeps only the short HOI4 MCP rules in section 0. Read before using the HOI4 Agent Tools routes, when a route fails, and before reporting MCP evidence.
 
 ### HOI4 MCP
 
@@ -22,3 +22,17 @@ Tool exposure does not prove service health or the availability of a standalone 
 MCP supports implementation and review; successful MCP output is not a universal completion gate. When a skill calls an MCP route mandatory and it is unavailable, record the exact blocker and report that evidence as missing: source review and local checks can then support completion, but never describe them as MCP proof or live engine validation, and an auditor marks the missing evidence unresolved, never passed.
 
 The detailed capability, artifact, probability-scenario, rewrite-recovery, and troubleshooting notes are in `docs/systems/hoi4_agent_tools_mcp_integration.md`.
+
+### Route notes
+
+Use a route only when the connected server advertises it, and read its live schema first.
+
+- `hoi4.reference_context`, `hoi4.reference_search`, `hoi4.reference_read`: the wiki and installed documentation, instead of reading those files. Follow `nextLine` only for the relevant section. A result with `omittedSources` needs a higher limit or targeted search and read calls before coverage is claimed. `missing` means absent files.
+- `hoi4.source_lookup`: exact vanilla and mod definitions, overrides and indexed usages. Read the underlying source when more context is needed.
+- `hoi4.script_validate`: file mode (`path`) for changed files. Inspect `known_mistakes`, each `KNOWN_MISTAKE_<RULE>` finding with its cited fix, unresolved commands, `valid = null`, unchecked argument blocks and omitted findings.
+- `hoi4.probability_inspect`: weights found and evaluated in one call (`evaluate: false` returns the inventory). `hoi4.probability_analyze` takes an explicit `analysis` of `compare`, `sweep`, `simulate`, `sequence` or `render`.
+- `hoi4.event_inspect`, `hoi4.tech_inspect`: graph inspection, with `mode = compare` for comparisons. Verify the server version, live schemas and task negotiation before `mode = helper_expansion`, `hoi4.job_inspect`, `hoi4.job_cancel` or asynchronous tasks, and otherwise record the missing capability.
+- `hoi4.focus_render`, `hoi4.map_inspect`: renders and map layers. Keep viewer and inspector use read-only, and check a standalone viewer only when the task needs it.
+- `hoi4.mod_index`: `mode = overview`, or `mode = next_id` before allocating an ID. It does not reserve the ID.
+- `hoi4.error_log`: only for user-supplied or explicitly requested logs. Never seek logs during ordinary issue review.
+- Keep continuation URIs, source revisions, coverage and unresolved findings from final results.
