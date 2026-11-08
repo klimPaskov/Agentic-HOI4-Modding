@@ -12956,7 +12956,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.11.0",
+          "version": "4.12.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -12975,11 +12975,11 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.11.0",
-            "package_integrity": "sha512-YfIVALpiWzHF6S9FxDlLTsv/Odsx/hGWC3XtoHDOnC7udaFCdidr9RqAYumUvdBfVgD7ZEbDC17EPtL5r+ROgA==",
+            "package_version": "4.12.0",
+            "package_integrity": "sha512-eH1tSIucM48FZ/YzAC7fJxFb1LfYdSc/wVAD/XOEphyKfJH3QtlUWHKNPHn9ClPOcSIYoEhehLapgtBRqit+3w==",
             "runtime_entry": "dist/bin/stdio.js",
-            "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
-            "runtime_entry_size": 4205,
+            "runtime_entry_sha256": "da6037bf284bcf07a245c3f747ae63f0c6393fb6c7868dcf863b37f152853062",
+            "runtime_entry_size": 4447,
             "required_tools": [
               "hoi4.asset_inspect",
               "hoi4.decision_inspect",
@@ -13020,7 +13020,7 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "ca70fbcba474c7fd98d6396ba14fc0d6e9a9b1c670961456a6c4c43b1716b967",
+            "package_tree_sha256": "afe8f81db2ba1074459961e6d9ab3364fe6fe8b1c6bf5af3978e315fe92cb192",
             "package_file_count": 5876,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
@@ -13028,17 +13028,17 @@
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "ca70fbcba474c7fd98d6396ba14fc0d6e9a9b1c670961456a6c4c43b1716b967",
+                "package_tree_sha256": "afe8f81db2ba1074459961e6d9ab3364fe6fe8b1c6bf5af3978e315fe92cb192",
                 "package_file_count": 5876,
-                "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
-                "runtime_entry_size": 4205,
+                "runtime_entry_sha256": "da6037bf284bcf07a245c3f747ae63f0c6393fb6c7868dcf863b37f152853062",
+                "runtime_entry_size": 4447,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "bb6d420a281ed18f7dd6e5df1b40e678fa622b3bf1286ae412457208364d231c",
+                "package_tree_sha256": "12c24027b596da307acad277fbf45b77bc96b1d597a0f558ef72925a5669d53b",
                 "package_file_count": 5740,
-                "runtime_entry_sha256": "e503ef634bcd473b5a7225f6752ff7d99c9897cb2126dac3eb2c4cc55859f24e",
-                "runtime_entry_size": 4205,
+                "runtime_entry_sha256": "da6037bf284bcf07a245c3f747ae63f0c6393fb6c7868dcf863b37f152853062",
+                "runtime_entry_size": 4447,
                 "package_symlinks": {
                   "node_modules/.bin/node-which": "../which/bin/node-which",
                   "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
