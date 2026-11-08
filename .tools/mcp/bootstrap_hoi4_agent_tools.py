@@ -453,6 +453,45 @@ def read_package_file(path: Path) -> bytes:
         return source.read(MAX_PACKAGE_FILE_BYTES + 1)
 
 
+def reviewed_link_record(path: Path, package_root: Path, allowed_symlinks: dict[str, str]) -> tuple[str, bytes]:
+    """Check one reviewed link inside the package and return its relative path and digest record."""
+    relative = path.relative_to(package_root).as_posix()
+    target = os.readlink(path)
+    if allowed_symlinks.get(relative) != target:
+        raise BootstrapError("The installed MCP package contains an unreviewed link.")
+    destination = path.parent / target
+    try:
+        destination.resolve(strict=True).relative_to(package_root.resolve(strict=True))
+    except (OSError, ValueError) as exc:
+        raise BootstrapError("The installed MCP package link escapes its tree.") from exc
+    for part in (destination, *destination.parents):
+        if part == package_root.parent:
+            break
+        if part.is_symlink():
+            raise BootstrapError("The installed MCP package link target contains a link.")
+    if not destination.is_file():
+        raise BootstrapError("The installed MCP package link target is not a regular file.")
+    return relative, b"symlink\0" + target.encode("utf-8")
+
+
+def read_package_files(unread: list[tuple[str, Path]]) -> list[tuple[str, bytes]]:
+    """Read the listed files concurrently and check their sizes against what was actually read.
+
+    Reading thousands of small files is bound by per-file open latency (real-time antivirus on Windows). The
+    bytes, and so the digest, are the same as a sequential read.
+    """
+    with ThreadPoolExecutor(max_workers=PACKAGE_READ_WORKERS) as pool:
+        contents = list(pool.map(read_package_file, (path for _, path in unread)))
+    read_bytes = 0
+    files = []
+    for (relative, _), data in zip(unread, contents):
+        read_bytes += len(data)
+        if len(data) > MAX_PACKAGE_FILE_BYTES or read_bytes > MAX_PACKAGE_TREE_BYTES:
+            raise BootstrapError("The installed MCP package contains an oversized file.")
+        files.append((relative, data))
+    return files
+
+
 def package_tree_sha256(package_root: Path, allowed_symlinks: dict[str, str] | None = None) -> tuple[str, int]:
     allowed_symlinks = platform_evidence()["package_symlinks"] if allowed_symlinks is None else allowed_symlinks
     if package_root.is_symlink():
@@ -473,43 +512,15 @@ def package_tree_sha256(package_root: Path, allowed_symlinks: dict[str, str] | N
         if len(files) + len(unread) >= MAX_PACKAGE_FILES:
             raise BootstrapError("The installed MCP package exceeds its file-count bound.")
         if entry.is_symlink():
-            relative = path.relative_to(package_root).as_posix()
-            target = os.readlink(path)
-            if allowed_symlinks.get(relative) != target:
-                raise BootstrapError("The installed MCP package contains an unreviewed link.")
-            destination = path.parent / target
-            try:
-                destination.resolve(strict=True).relative_to(package_root.resolve(strict=True))
-            except (OSError, ValueError) as exc:
-                raise BootstrapError("The installed MCP package link escapes its tree.") from exc
-            for part in (destination, *destination.parents):
-                if part == package_root.parent:
-                    break
-                if part.is_symlink():
-                    raise BootstrapError("The installed MCP package link target contains a link.")
-            if not destination.is_file():
-                raise BootstrapError("The installed MCP package link target is not a regular file.")
+            relative, record = reviewed_link_record(path, package_root, allowed_symlinks)
             seen_symlinks.add(relative)
-            files.append((relative, b"symlink\0" + target.encode("utf-8")))
-            continue
-        if not entry.is_file(follow_symlinks=False):
-            continue
-        relative = path.relative_to(package_root).as_posix()
-        if metadata.st_size > MAX_PACKAGE_FILE_BYTES or total_bytes + metadata.st_size > MAX_PACKAGE_TREE_BYTES:
-            raise BootstrapError("The installed MCP package contains an oversized file.")
-        total_bytes += metadata.st_size
-        unread.append((relative, path))
-    # Reading thousands of small files is bound by per-file open latency (real-time antivirus on Windows), so
-    # read them concurrently. The bytes and the digest below are unchanged, and the sizes are checked again
-    # against what was actually read.
-    with ThreadPoolExecutor(max_workers=PACKAGE_READ_WORKERS) as pool:
-        contents = list(pool.map(read_package_file, (path for _, path in unread)))
-    read_bytes = 0
-    for (relative, _), data in zip(unread, contents):
-        read_bytes += len(data)
-        if len(data) > MAX_PACKAGE_FILE_BYTES or read_bytes > MAX_PACKAGE_TREE_BYTES:
-            raise BootstrapError("The installed MCP package contains an oversized file.")
-        files.append((relative, data))
+            files.append((relative, record))
+        elif entry.is_file(follow_symlinks=False):
+            if metadata.st_size > MAX_PACKAGE_FILE_BYTES or total_bytes + metadata.st_size > MAX_PACKAGE_TREE_BYTES:
+                raise BootstrapError("The installed MCP package contains an oversized file.")
+            total_bytes += metadata.st_size
+            unread.append((path.relative_to(package_root).as_posix(), path))
+    files.extend(read_package_files(unread))
     if seen_symlinks != set(allowed_symlinks):
         raise BootstrapError("The installed MCP package is missing a reviewed link.")
     digest = hashlib.sha256()
