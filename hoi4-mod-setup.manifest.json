@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5fe56ab4691cbea4731624d4f7bab97bbee4fd38",
+  "generated_for_revision": "da0af148b297c1935000d6070cb2cbbcf8801836",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15159,8 +15159,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/texture_lineage.py",
-          "sha256": "c10a5229ca2d0fddf8c8ad32224150c59eae7805fe53dc6c2a8c831a36a2da3e",
-          "size": 11401
+          "sha256": "ea7be0b25f7dec1720cc7db41fe2d7e44e2eca45e599eab1907c3c14d7c47423",
+          "size": 11411
         },
         {
           "path": ".tools/3d_pipeline/lib/unit_registration.py",
@@ -15189,8 +15189,8 @@
         },
         {
           "path": ".tools/3d_pipeline/pack_pdx_material.py",
-          "sha256": "8bb45aed990cc3857405d76e709d0d042614839ea1137e9f0ff9e371ec336a14",
-          "size": 12741
+          "sha256": "d2f1361eff5e32d05b95f3e31d75919e45f54f973bad228b2e3312ccaea979ca",
+          "size": 12761
         },
         {
           "path": ".tools/3d_pipeline/plan_clips.py",
@@ -15924,8 +15924,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_material_visibility_probe.py",
-          "sha256": "b57bdf895c978266d99f5ab37127dde9ec369851ad3e2e42edebae8d7373b9a2",
-          "size": 4998
+          "sha256": "76ffebc10b1aa22b8e114b04eab161d23d7eb95fce3070a4054b19080087fc69",
+          "size": 5008
         },
         {
           "path": ".tools/3d_pipeline/tests/test_measure_body.py",
@@ -15959,8 +15959,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
-          "sha256": "2dec1b381a312f6b3122651d7d02f4bd301640f4983f277bee003abe27061622",
-          "size": 8674
+          "sha256": "c60c33ce9049f40d5e7fbadfc0ac03f4c6b1bd8af81a6d3402ee4d0d0316024f",
+          "size": 8684
         },
         {
           "path": ".tools/3d_pipeline/tests/test_orphan_image_retention.py",
