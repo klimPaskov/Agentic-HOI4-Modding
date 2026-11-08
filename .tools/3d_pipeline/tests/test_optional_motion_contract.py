@@ -24,7 +24,7 @@ class OptionalMotionTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.client = object.__new__(MeshyClient)
         self.client.repo_root = Path(self.temp.name)
-        self.client.job_root = Path(self.temp.name) / "job"
+        self.client.job_root = Path(self.temp.name).resolve() / "job"
         self.client.job_root.mkdir()
         self.client.launcher = Path(self.temp.name) / "app-owned.exe"
         self.client.sequence = 0

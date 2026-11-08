@@ -203,7 +203,7 @@ def verify_texture_lineage(
             "bound_sha256": bound_sha,
             "geometry_embedded_sha256": embedded_hashes,
             "geometry_downloaded_rel": (
-                downloaded.relative_to(job).as_posix() if downloaded_sha else None
+                downloaded.relative_to(job.resolve()).as_posix() if downloaded_sha else None
             ),
             "geometry_downloaded_sha256": downloaded_sha,
         }

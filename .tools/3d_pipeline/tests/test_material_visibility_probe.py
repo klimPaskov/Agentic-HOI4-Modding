@@ -20,7 +20,7 @@ class MaterialVisibilityGuards(unittest.TestCase):
     def setUp(self):
         directory = tempfile.TemporaryDirectory()
         self.addCleanup(directory.cleanup)
-        self.job = Path(directory.name)
+        self.job = Path(directory.name).resolve()
         (self.job / "source.blend").write_bytes(b"contract fixture only")
         self.payload = {"blend_rel": "source.blend", "expected_source_sha256": hashlib.sha256(b"contract fixture only").hexdigest().upper(), "preview_frame": 24, "runtime_stem": "visibility_proof", "preview_view_names": ["front", "three_quarter"], "render_previews": True, "material_visibility": {"target_mesh_names": ["char1.002"]}}
         self.req = {"job_root": str(self.job), "payload": self.payload}
