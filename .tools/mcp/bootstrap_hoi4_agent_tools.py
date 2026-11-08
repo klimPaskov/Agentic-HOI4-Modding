@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
 import gzip
 import hashlib
@@ -428,24 +429,50 @@ def read_json(path: Path, maximum: int) -> dict:
     return value
 
 
+PACKAGE_READ_WORKERS = 8
+
+
+def package_entries(package_root: Path):
+    """Yield every entry below the package root with its directory-listing record.
+
+    Like Path.rglob, it never descends into a link. Directories are yielded before their contents so the caller
+    can reject a reparse point or an excessive tree before reading it.
+    """
+    pending = [package_root]
+    while pending:
+        with os.scandir(pending.pop()) as listing:
+            for entry in listing:
+                path = Path(entry.path)
+                yield path, entry
+                if entry.is_dir(follow_symlinks=False):
+                    pending.append(path)
+
+
+def read_package_file(path: Path) -> bytes:
+    with path.open("rb") as source:
+        return source.read(MAX_PACKAGE_FILE_BYTES + 1)
+
+
 def package_tree_sha256(package_root: Path, allowed_symlinks: dict[str, str] | None = None) -> tuple[str, int]:
     allowed_symlinks = platform_evidence()["package_symlinks"] if allowed_symlinks is None else allowed_symlinks
     if package_root.is_symlink():
         raise BootstrapError("The installed MCP package root contains a link.")
     files: list[tuple[str, bytes]] = []
+    unread: list[tuple[str, Path]] = []
     seen_symlinks = set()
     total_bytes = 0
     entries = 0
-    for path in package_root.rglob("*"):
+    for path, entry in package_entries(package_root):
         entries += 1
-        metadata = path.lstat()
+        # The directory listing already carries the file type and size, so this needs no further stat calls.
+        metadata = entry.stat(follow_symlinks=False)
         if entries > MAX_PACKAGE_ENTRIES or len(path.relative_to(package_root).parts) > MAX_PACKAGE_DEPTH:
             raise BootstrapError("The installed MCP package exceeds its directory bounds.")
         if getattr(metadata, "st_file_attributes", 0) & 0x400:
             raise BootstrapError("The installed MCP package contains a Windows reparse point.")
-        if len(files) >= MAX_PACKAGE_FILES:
+        if len(files) + len(unread) >= MAX_PACKAGE_FILES:
             raise BootstrapError("The installed MCP package exceeds its file-count bound.")
-        if path.is_symlink():
+        if entry.is_symlink():
             relative = path.relative_to(package_root).as_posix()
             target = os.readlink(path)
             if allowed_symlinks.get(relative) != target:
@@ -465,15 +492,22 @@ def package_tree_sha256(package_root: Path, allowed_symlinks: dict[str, str] | N
             seen_symlinks.add(relative)
             files.append((relative, b"symlink\0" + target.encode("utf-8")))
             continue
-        if not path.is_file():
+        if not entry.is_file(follow_symlinks=False):
             continue
         relative = path.relative_to(package_root).as_posix()
         if metadata.st_size > MAX_PACKAGE_FILE_BYTES or total_bytes + metadata.st_size > MAX_PACKAGE_TREE_BYTES:
             raise BootstrapError("The installed MCP package contains an oversized file.")
-        with path.open("rb") as source:
-            data = source.read(min(MAX_PACKAGE_FILE_BYTES, MAX_PACKAGE_TREE_BYTES - total_bytes) + 1)
-        total_bytes += len(data)
-        if len(data) > MAX_PACKAGE_FILE_BYTES or total_bytes > MAX_PACKAGE_TREE_BYTES:
+        total_bytes += metadata.st_size
+        unread.append((relative, path))
+    # Reading thousands of small files is bound by per-file open latency (real-time antivirus on Windows), so
+    # read them concurrently. The bytes and the digest below are unchanged, and the sizes are checked again
+    # against what was actually read.
+    with ThreadPoolExecutor(max_workers=PACKAGE_READ_WORKERS) as pool:
+        contents = list(pool.map(read_package_file, (path for _, path in unread)))
+    read_bytes = 0
+    for (relative, _), data in zip(unread, contents):
+        read_bytes += len(data)
+        if len(data) > MAX_PACKAGE_FILE_BYTES or read_bytes > MAX_PACKAGE_TREE_BYTES:
             raise BootstrapError("The installed MCP package contains an oversized file.")
         files.append((relative, data))
     if seen_symlinks != set(allowed_symlinks):
@@ -520,12 +554,16 @@ def verify_installation(prefix: Path) -> Path:
     return wrapper
 
 
-def installed_package_matches(prefix: Path) -> bool:
+def installed_wrapper(prefix: Path) -> Path | None:
+    """The command wrapper of the installed package when it is exactly the reviewed release, otherwise None."""
     try:
-        verify_installation(prefix)
+        return verify_installation(prefix)
     except (BootstrapError, OSError, ValueError):
-        return False
-    return True
+        return None
+
+
+def installed_package_matches(prefix: Path) -> bool:
+    return installed_wrapper(prefix) is not None
 
 
 def remove_mismatched_package(node: Path, npm_cmd: Path, prefix: Path) -> None:
@@ -571,15 +609,19 @@ def main() -> int:
     platform_name()
     node, _ = ensure_node()
     prefix = user_prefix()
-    with pinned_npm_runtime() as npm_cmd:
-        if arguments.local_tarball is None:
-            verify_registry_integrity(node, npm_cmd)
-        else:
-            verify_local_tarball(arguments.local_tarball)
-        if not installed_package_matches(prefix):
+    if arguments.local_tarball is not None:
+        verify_local_tarball(arguments.local_tarball)
+    # An installation whose complete tree already matches the reviewed release needs neither the private npm
+    # toolchain nor the registry: nothing is installed or removed, and the tree hash is the evidence. Verify it
+    # once and keep that result instead of hashing the tree again afterwards.
+    wrapper = installed_wrapper(prefix)
+    if wrapper is None:
+        with pinned_npm_runtime() as npm_cmd:
+            if arguments.local_tarball is None:
+                verify_registry_integrity(node, npm_cmd)
             remove_mismatched_package(node, npm_cmd, prefix)
             install_package(node, npm_cmd, prefix, arguments.local_tarball)
-    wrapper = verify_installation(prefix)
+        wrapper = verify_installation(prefix)
     if not arguments.quiet:
         print(f"Installed {PACKAGE_SPEC} at {wrapper.parent}")
     return 0
