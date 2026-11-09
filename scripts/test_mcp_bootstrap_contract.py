@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import importlib.util
 import json
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -259,8 +260,32 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertEqual(parameters["runtime_entry_sha256"], bootstrap.RUNTIME_ENTRY_SHA256)
         self.assertEqual(parameters["runtime_entry_size"], bootstrap.RUNTIME_ENTRY_SIZE)
         self.assertEqual(parameters["required_tools"], list(pin.REQUIRED_TOOLS))
-        self.assertEqual(len(parameters["required_tools"]), 34)
-        self.assertEqual(len(set(parameters["required_tools"])), 34)
+        self.assertEqual(len(parameters["required_tools"]), 13)
+        self.assertEqual(len(set(parameters["required_tools"])), 13)
+        self.assertTrue(set(pin.REQUIRED_TOOLS) <= set(pin.ROUTE_CONTRACT))
+        self.assertEqual(len(pin.ROUTE_CONTRACT), 39)
+        self.assertEqual(len(set(pin.ROUTE_CONTRACT)), 39)
+
+    def test_route_check_reads_a_live_listing_and_rejects_a_wrong_one(self) -> None:
+        def server(core: tuple[str, ...], everything: tuple[str, ...]) -> list[str]:
+            script = "\n".join((
+                "import json, os, sys",
+                f"core, everything = {list(core)!r}, {list(everything)!r}",
+                "for line in sys.stdin:",
+                "    message = json.loads(line)",
+                "    if message.get('id') == 2:",
+                "        names = everything if os.environ.get('HOI4_AGENT_TOOLS_PROFILES') == 'all' else core",
+                "        print(json.dumps({'jsonrpc': '2.0', 'id': 2, 'result': {'tools': [{'name': n} for n in names]}}), flush=True)",
+            ))
+            return [sys.executable, "-I", "-c", script]
+
+        pin.check_routes(server(pin.REQUIRED_TOOLS, pin.ROUTE_CONTRACT))
+        with self.assertRaisesRegex(ValueError, "core profile"):
+            pin.check_routes(server(pin.ROUTE_CONTRACT, pin.ROUTE_CONTRACT))
+        with self.assertRaisesRegex(ValueError, "missing"):
+            pin.check_routes(server(pin.REQUIRED_TOOLS, pin.ROUTE_CONTRACT[:-1]))
+        with self.assertRaisesRegex(ValueError, "no tools/list"):
+            pin.list_routes([sys.executable, "-I", "-c", "pass"], None)
 
     def test_repin_rejects_malformed_integrity_before_reading_package(self) -> None:
         for integrity in ("sha256-wrong", "sha512-???", "sha512-YWJj", "sha512-" + "A" * 88):
@@ -283,7 +308,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             self.assertEqual(evidence["package_file_count"], 2)
             self.assertEqual(evidence["runtime_entry_size"], len(b"synthetic runtime"))
             self.assertEqual(evidence["runtime_entry_sha256"], __import__("hashlib").sha256(b"synthetic runtime").hexdigest())
-            self.assertEqual(len(evidence["required_tools"]), 34)
+            self.assertEqual(len(evidence["required_tools"]), 13)
             lock.write_text(json.dumps({"packages": {}}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "lock"):
                 pin.measure(prefix, integrity, platform="windows")

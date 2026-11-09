@@ -19,9 +19,10 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 BOOTSTRAP = ROOT / ".tools/mcp/bootstrap_hoi4_agent_tools.py"
 MANIFEST = ROOT / "hoi4-mod-setup.manifest.json"
-# Reviewed 34-route contract of 4.11.0 and 4.12.0: the 30 routes of 4.8.0 plus
-# hoi4.asset_inspect, hoi4.system_inspect, hoi4.unit_inspect and hoi4.skill.
-REQUIRED_TOOLS = tuple(sorted((
+# Reviewed 39-route contract of 4.13.0: the 34 routes of 4.11.0 and 4.12.0 plus
+# hoi4.explain_error, hoi4.mod_health, hoi4.script_guard, hoi4.localisation_write and
+# hoi4.compat_check. The server lists it when HOI4_AGENT_TOOLS_PROFILES=all.
+ROUTE_CONTRACT = tuple(sorted((
     "hoi4.reference_context", "hoi4.reference_search", "hoi4.reference_read",
     "hoi4.source_lookup", "hoi4.script_validate", "hoi4.error_log", "hoi4.mod_index",
     "hoi4.focus_inspect", "hoi4.focus_render", "hoi4.focus_rewrite",
@@ -33,7 +34,72 @@ REQUIRED_TOOLS = tuple(sorted((
     "hoi4.asset_inspect", "hoi4.system_inspect", "hoi4.unit_inspect", "hoi4.skill",
     "hoi4.mechanic_test", "hoi4.package_check", "hoi4.scenario_test",
     "hoi4.job_inspect", "hoi4.job_cancel",
+    "hoi4.explain_error", "hoi4.mod_health", "hoi4.script_guard",
+    "hoi4.localisation_write", "hoi4.compat_check",
 )))
+# The core profile, which a stdio server lists when nothing chooses profiles (4.13.0, R-4).
+# HOI4 Mod Setup's health check starts the server with a cleared environment, so the manifest
+# requires only these; the kit's client registrations set HOI4_AGENT_TOOLS_PROFILES=all.
+REQUIRED_TOOLS = tuple(sorted((
+    "hoi4.skill", "hoi4.reference_search", "hoi4.reference_read", "hoi4.reference_context",
+    "hoi4.source_lookup", "hoi4.script_validate", "hoi4.script_guard", "hoi4.error_log",
+    "hoi4.explain_error", "hoi4.mod_health", "hoi4.mod_index", "hoi4.localisation_inspect",
+    "hoi4.localisation_write",
+)))
+PROFILES_ENV = "HOI4_AGENT_TOOLS_PROFILES"
+
+
+def list_routes(command: list[str], profiles: str | None, timeout: float = 120.0) -> list[str]:
+    """Start the server over stdio and return the tool names its tools/list answers.
+
+    The child gets a scratch home so it never reads the maintainer's own configuration, and the
+    profile choice (or none) is the only variable that picks the listing.
+    """
+    import os
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as scratch:
+        # The server starts only inside a mod, so the child runs in a scratch mod folder.
+        mod = Path(scratch) / "mod"
+        mod.mkdir()
+        (mod / "descriptor.mod").write_bytes(b'name="route-contract-check"\nversion="1.0"\nsupported_version="1.*"\n')
+        env = {key: os.environ[key] for key in ("SystemRoot", "PATH", "PATHEXT", "TEMP", "TMP") if key in os.environ}
+        for key in ("HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_STATE_HOME", "XDG_CACHE_HOME"):
+            env[key] = scratch
+        if profiles is not None:
+            env[PROFILES_ENV] = profiles
+        requests = [
+            {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {
+                "protocolVersion": "2025-06-18", "capabilities": {},
+                "clientInfo": {"name": "route-contract-check", "version": "1.0.0"}}},
+            {"jsonrpc": "2.0", "method": "notifications/initialized"},
+            {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
+        ]
+        payload = "".join(json.dumps(item) + "\n" for item in requests)
+        # The server answers requests as it reads them and exits when stdin closes.
+        done = subprocess.run(command, input=payload, capture_output=True, text=True, encoding="utf-8",
+                              env=env, cwd=mod, timeout=timeout, check=False)
+    for line in done.stdout.splitlines():
+        try:
+            message = json.loads(line)
+        except ValueError:
+            continue
+        if message.get("id") == 2 and isinstance(message.get("result"), dict):
+            return sorted(tool["name"] for tool in message["result"]["tools"])
+    raise ValueError("The server answered no tools/list result.")
+
+
+def check_routes(command: list[str]) -> None:
+    """Assert the default listing is the core profile and the all-profiles listing is the contract."""
+    core = list_routes(command, None)
+    if core != list(REQUIRED_TOOLS):
+        raise ValueError(f"The default tools/list is not the core profile: {core}")
+    everything = list_routes(command, "all")
+    if everything != list(ROUTE_CONTRACT):
+        missing = sorted(set(ROUTE_CONTRACT) - set(everything))
+        extra = sorted(set(everything) - set(ROUTE_CONTRACT))
+        raise ValueError(f"The all-profiles tools/list differs from the reviewed contract: missing {missing}, extra {extra}")
 
 
 def measure(prefix: Path, integrity: str, version: str | None = None, platform: str | None = None) -> dict:
@@ -125,8 +191,12 @@ def main() -> None:
     parser.add_argument("--integrity", required=True, help="Reviewed published npm dist.integrity")
     parser.add_argument("--version", help="Exact reviewed public version; defaults to the current bootstrap pin")
     parser.add_argument("--platform", choices=("windows", "linux"), help="Measured native installation platform; defaults to the current host")
+    parser.add_argument("--skip-route-check", action="store_true", help="Skip the live tools/list check (the check needs Node on PATH)")
     args = parser.parse_args()
     evidence = measure(args.prefix, args.integrity, args.version, args.platform)
+    if not args.skip_route_check:
+        package = args.prefix.resolve(strict=True) / ("lib/node_modules" if evidence["platform"] == "linux" else "node_modules") / "hoi4-agent-tools"
+        check_routes(["node", str(package / evidence["runtime_entry"])])
     repin(evidence)
     print(json.dumps(evidence, sort_keys=True))
 

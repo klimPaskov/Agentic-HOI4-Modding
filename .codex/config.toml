@@ -15,7 +15,7 @@ startup_timeout_sec = 120
 tool_timeout_sec = 600
 default_tools_approval_mode = "auto"
 # Codex keeps a server per subagent connected after the subagent finishes; an idle server exits.
-env = { HOI4_AGENT_STDIO_IDLE_EXIT_MINUTES = "30" }
+env = { HOI4_AGENT_STDIO_IDLE_EXIT_MINUTES = "30", HOI4_AGENT_TOOLS_PROFILES = "all" }
 
 [mcp_servers.comfy_cloud_portraits]
 url = "https://cloud.comfy.org/mcp"

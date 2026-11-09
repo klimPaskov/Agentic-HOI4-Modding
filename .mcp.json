@@ -4,7 +4,9 @@
       "type": "stdio",
       "command": "hoi4-agent-tools.cmd",
       "args": [],
-      "env": {}
+      "env": {
+        "HOI4_AGENT_TOOLS_PROFILES": "all"
+      }
     }
   }
 }
