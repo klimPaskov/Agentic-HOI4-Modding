@@ -9,6 +9,10 @@ from coding_environment_data import MCP_ROUTE_CLIENTS  # noqa: E402
 
 ALL_CLIENTS = list(MCP_ROUTE_CLIENTS)
 CLAUSEWITZ_REVISION = "97c85437081904d5ad07bae1623ec58d1c0a5b9e"
+LIVE_TOOLS_PLATFORMS = ("windows", "macos")
+MACOS_NETWORK_ACCESS = ("Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked "
+    "against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless and the "
+    "PyObjC frameworks Cocoa, Quartz, ApplicationServices, ScreenCaptureKit and Vision) from https://pypi.org.")
 
 def build_live_testing_table(source_root=None):
     def row(id, name, description, requirements, platforms, experimental, kind, server, component, repository, revision, guidance, version, author, license):
@@ -31,11 +35,11 @@ def build_live_testing_table(source_root=None):
              "Check advertised capabilities before attempting actions; do not assume HOI4 Live Tools operation parity.",
              "Clausewitz MCP by smerss is MIT licensed: https://github.com/smerss/Clausewitz-MCP."] ,
             "1.19.2", "smerss", "MIT"),
-        row("hoi4_live_tools", "HOI4 Live Tools (experimental)", "Windows game interface, console, log and save tools; slower and not thoroughly tested.",
-            ["Windows", "Python 3.9 or newer", "Installed Hearts of Iron IV"], ["windows"], True,
-            "local_install", "hoi4-live", "workflow.live_tools", "klimPaskov/HOI4-Live-Tools", "v1.4.0",
+        row("hoi4_live_tools", "HOI4 Live Tools (experimental)", "Game interface, console, log and save tools on Windows and macOS; slower and not thoroughly tested.",
+            ["Windows or macOS", "Python 3.9 or newer", "Installed Hearts of Iron IV"], ["windows", "macos"], True,
+            "local_install", "hoi4-live", "workflow.live_tools", "klimPaskov/HOI4-Live-Tools", "v1.4.1",
             ["Use the connected hoi4-live server and its advertised tools with qualified tool names.",
-             "Windows is the verified platform; upstream macOS support is incomplete.",
+             "It runs on Windows and macOS. On macOS the app that starts the server needs Screen Recording and Accessibility permission.",
              "This provider is experimental, slower and not thoroughly tested.",
              "Follow references/hoi4-live-tools.md for provider-specific operations and setup."],
             "Not pinned; verify against your installed game", "klimPaskov", "Apache-2.0"),
@@ -53,15 +57,24 @@ def build_live_testing_components(components):
     common.pop("required_tools", None)
     common["source"]["include"]=["hoi4-live-playtest/**"]
     common["source"]["exclude"]=["**/.DS_Store", "hoi4-live-playtest/references/hoi4-live-tools.md"]
-    live["description"]="Install the experimental Windows HOI4 Live Tools runtime; project client registrations are managed by HOI4 Mod Setup."
+    live["description"]="Install the experimental HOI4 Live Tools runtime on Windows or macOS; project client registrations are managed by HOI4 Mod Setup."
+    live["platforms"]=list(LIVE_TOOLS_PLATFORMS)
     live["dependencies"]=["workflow.live_testing", "mcp.hoi4_live.bootstrap"]
     live["source"]["include"]=["hoi4-live-playtest/references/hoi4-live-tools.md"]
-    live["notes"]=["Windows verified only; upstream macOS support is incomplete. Experimental, slower and not thoroughly tested."]
+    live["notes"]=["Windows and macOS. Experimental, slower and not thoroughly tested."]
     parameters=live["validation"][0]["parameters"]
     parameters["arguments"]=["--quiet", "--register", "none"]
     parameters["expected_writes"]=["%LOCALAPPDATA%/hoi4-live-tools/**"]
+    parameters["platform_pins"]={"macos":{
+        "expected_writes":["~/Library/Application Support/hoi4-live-tools/**"],
+        "network_access":MACOS_NETWORK_ACCESS}}
     parameters["rollback_boundary"]="Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none."
-    codex=by_id["runtime.codex.live_tools_skill"]
-    codex["platforms"]=["windows"]
-    codex["dependencies"]=["runtime.codex.skills", "workflow.live_tools"]
-    return [common, live, codex]
+    script=by_id["mcp.hoi4_live.bootstrap"]
+    script["platforms"]=list(LIVE_TOOLS_PLATFORMS)
+    skills=[]
+    for client in ("codex", "grok", "kiro", "qwen"):
+        skill=by_id[f"runtime.{client}.live_tools_skill"]
+        skill["platforms"]=list(LIVE_TOOLS_PLATFORMS)
+        skill["dependencies"]=[f"runtime.{client}.skills", "workflow.live_tools"]
+        skills.append(skill)
+    return [common, live, script, *skills]

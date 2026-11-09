@@ -80,7 +80,7 @@ The `hoi4-agent-tools` server (`hoi4_agent_tools`) does lookups, script validati
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:START -->
 ### HOI4 Live Tools (optional)
 
-- HOI4 Live Tools (`hoi4-live`) is experimental, slower and not thoroughly tested. Windows is verified, and upstream macOS support is incomplete.
+- HOI4 Live Tools (`hoi4-live`) is experimental, slower and not thoroughly tested. It runs on Windows and macOS.
 - HOI4 Mod Setup installs the runtime per user with `--register none` and writes project registrations for selected clients. Manual bootstrap defaults to user-client registration.
 - Follow `hoi4-live-playtest` and its provider reference. Acquire any advertised lock for multi-step actions and release it when finished.
 <!-- HOI4_MOD_SETUP:COMPONENT:workflow.live_tools:END -->

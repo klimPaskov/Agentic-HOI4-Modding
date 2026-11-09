@@ -9,6 +9,7 @@ SCHEMA_FILES = {
     "4": "hoi4-mod-setup.v4.schema.json",
     "5": "remote-manifest.v5.schema.json",
     "6": "remote-manifest.v6.schema.json",
+    "7": "remote-manifest.v7.schema.json",
 }
 
 

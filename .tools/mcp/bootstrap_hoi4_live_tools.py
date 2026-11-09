@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Install the pinned HOI4 Live Tools release for the current Windows user.
+"""Install the pinned HOI4 Live Tools release for the current Windows or macOS user.
 
 HOI4 Mod Setup runs this script (``--quiet``) when the HOI4 Live Tools workflow is selected. It downloads the release
 archive named below, checks its size and SHA-256 against the pinned values, extracts it into a private temporary folder
 (no absolute paths, parent references, links, or oversized members), runs that folder's ``install.py`` with the same
-Python, and removes the temporary folder. ``install.py`` creates ``%LOCALAPPDATA%\\hoi4-live-tools`` (program, private
-Python environment, artifacts), starts the installed server once to confirm it lists its tools, and registers it in
+Python, and removes the temporary folder. ``install.py`` creates ``%LOCALAPPDATA%\\hoi4-live-tools`` on Windows or
+``~/Library/Application Support/hoi4-live-tools`` on macOS (program, private Python environment, artifacts), starts the installed server once to confirm it lists its tools, and registers it in
 the user configuration of every coding client it finds. When the pinned version is already installed, the installed
 copy's ``install.py`` runs again instead (it repairs the environment and the registrations without a download).
 
@@ -34,10 +34,10 @@ import urllib.request
 import zipfile
 
 
-RELEASE_VERSION = "1.4.0"
-RELEASE_URL = "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.0/hoi4-live-tools-1.4.0.zip"
-RELEASE_SHA256 = "dc253264dd52ee703477ee5844491b9a99bce3eec326a3408b1f772867e1926c"
-RELEASE_SIZE = 2249530
+RELEASE_VERSION = "1.4.1"
+RELEASE_URL = "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.1/hoi4-live-tools-1.4.1.zip"
+RELEASE_SHA256 = "32fb7956479966d7ed939c3d29322fd83f7f1bc2b9bf4c23514a403ec8aa9380"
+RELEASE_SIZE = 2707672
 ARCHIVE_TOP = f"hoi4-live-tools-{RELEASE_VERSION}"
 ALLOWED_HOSTS = ("github.com",)
 ALLOWED_HOST_SUFFIXES = (".githubusercontent.com",)
@@ -75,9 +75,16 @@ def local_app_data() -> Path:
     return Path(base) if base else Path.home() / "AppData" / "Local"
 
 
+SUPPORTED_PLATFORMS = ("win32", "darwin")
+
+
 def installed_prefix() -> Path:
     override = os.environ.get("HOI4_LIVE_PREFIX")
-    return Path(override) if override else local_app_data() / "hoi4-live-tools"
+    if override:
+        return Path(override)
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Application Support" / "hoi4-live-tools"
+    return local_app_data() / "hoi4-live-tools"
 
 
 def installed_version(prefix: Path) -> str | None:
@@ -200,8 +207,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--archive", type=Path, help="use this local copy of the pinned archive instead of downloading")
     parser.add_argument("--register", choices=("auto", "none"), default="auto", help="register detected user clients, or install runtime only")
     args = parser.parse_args(argv)
-    if sys.platform != "win32":
-        print("HOI4 Live Tools installs on Windows only.", file=sys.stderr)
+    if sys.platform not in SUPPORTED_PLATFORMS:
+        print("HOI4 Live Tools installs on Windows and macOS only.", file=sys.stderr)
         return 2
     if sys.version_info < (3, 9):
         print(f"HOI4 Live Tools needs Python 3.9 or newer; this is {sys.version.split()[0]}.", file=sys.stderr)

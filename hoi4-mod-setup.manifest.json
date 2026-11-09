@@ -1,7 +1,7 @@
 {
-  "schema_version": "6.0.0",
+  "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "74a9ce19166b159fee7389e8097f31ac4323b556",
+  "generated_for_revision": "f2e6972181449996e2a7892dd9323598077174bb",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "edf580912dc8fe567f1999353509b33e067218ba1baa70d35c5b044c31eb3e28",
-          "size": 15880
+          "sha256": "a7eca6efe1e7a30bbac5ad02e6423ce582084212f72a8e58c03fee85f416b797",
+          "size": 15847
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "33c32fa7a06a18330b41065cf5bba417c463b538aca3279562ddfef80b11716c",
-          "size": 15880
+          "sha256": "6747f632bd370c60cf84ef581c4e5445b4f6b78a6565d38c9fa58bfa4e39e7b6",
+          "size": 15847
         }
       ]
     },
@@ -671,6 +671,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -1272,12 +1273,13 @@
     {
       "id": "runtime.cursor.mcp",
       "display_name": "Cursor HOI4 MCP configuration",
-      "description": "Install the Windows project registration for the verified HOI4 Agent Tools server.",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
       "category": "environment",
       "coding_environment": "cursor",
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -1325,12 +1327,13 @@
     {
       "id": "runtime.qoder.mcp",
       "display_name": "Qoder HOI4 MCP configuration",
-      "description": "Install the Windows project registration for the verified HOI4 Agent Tools server.",
+      "description": "Install the project registration for the verified HOI4 Agent Tools server.",
       "category": "environment",
       "coding_environment": "qoder",
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -12768,7 +12771,8 @@
       "coding_environment": "codex",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -12802,8 +12806,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -12812,13 +12816,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ],
       "shared_coding_environments": [
@@ -12831,11 +12835,12 @@
     {
       "id": "mcp.hoi4_agent_tools.bootstrap",
       "display_name": "HOI4 Agent Tools automatic bootstrap",
-      "description": "Install and verify pinned HOI4 Agent Tools in current-user storage on Windows or native Linux.",
+      "description": "Install and verify pinned HOI4 Agent Tools in current-user storage on Windows, native Linux or Apple Silicon macOS.",
       "category": "script",
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -12861,7 +12866,7 @@
           "id": "node-npm",
           "required": true,
           "version_policy": "repository_script",
-          "version": "Native x64 Node.js 22.19+ in major 22 or major 24; private npm 11.19.0 on Windows and npm 10.9.9 on Linux",
+          "version": "Native x64 Node.js 22.19+ in major 22 or major 24 on Windows and Linux; on macOS the private official Node.js 24.22.0 (arm64) that the bootstrap installs; private npm 11.19.0 on Windows and npm 10.9.9 on Linux and macOS",
           "commands": [
             "winget install OpenJS.NodeJS.LTS --scope user --silent --disable-interactivity --accept-source-agreements --accept-package-agreements"
           ],
@@ -12885,12 +12890,13 @@
             "arguments": [
               "--quiet"
             ],
-            "network_access": "Downloads the SHA-512-pinned private npm 11.19.0 (Windows) or npm 10.9.9 (Linux) archive, then the exact hoi4-agent-tools@4.8.0 package from https://registry.npmjs.org. Requires native x64 Node.js 22.19+ in major 22 or major 24; Windows may install current-user Node.js LTS when missing.",
+            "network_access": "Downloads the SHA-512-pinned private npm 11.19.0 (Windows) or npm 10.9.9 (Linux and macOS) archive, then the exact hoi4-agent-tools package from https://registry.npmjs.org. On macOS it also downloads the SHA-256-pinned official Node.js 24.22.0 darwin-arm64 archive from https://nodejs.org/dist and keeps only its Node.js Foundation-signed node executable. Windows and Linux require native x64 Node.js 22.19+ in major 22 or major 24; Windows may install current-user Node.js LTS when missing.",
             "expected_writes": [
               "%APPDATA%/npm/** on Windows",
               "Current-user winget-managed Node.js LTS distribution, including bundled npm, when a compatible runtime is missing on Windows",
               "$XDG_DATA_HOME/hoi4-mod-setup/npm/** on Linux (fallback ~/.local/share/hoi4-mod-setup/npm)",
-              "Fresh system-temporary hoi4-setup-npm-* directory for verified npm files, isolated config and cache; removed on ordinary completion"
+              "~/Library/Application Support/hoi4-mod-setup/npm/** on macOS, including the private Node.js runtime at node/bin/node",
+              "Fresh system-temporary hoi4-setup-npm-* directory (and on macOS a hoi4-setup-node-* staging directory inside the private prefix) for verified npm files, isolated config and cache; removed on ordinary completion"
             ],
             "privilege": "current_user",
             "rollback_boundary": "Managed project files roll back transactionally. Node.js and the user-scoped hoi4-agent-tools package are external tool state; replaced package versions are not restored automatically. Private npm never replaces the ambient npm executable or config. Installing a missing compatible Node.js distribution also installs its bundled npm. Temporary private npm files are cleaned on ordinary completion and never reused after interruption."
@@ -12910,8 +12916,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "28809c89e4d8406205a91ae75daa36cf033510b50f0e17dd11d375368163cd32",
-          "size": 29136
+          "sha256": "f5dd1043ed8c9d2bce6cbf4f1ca2ef014c56d44ee78c42438acd82467f66d7d1",
+          "size": 36990
         }
       ]
     },
@@ -12923,6 +12929,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -12950,7 +12957,7 @@
             "node --version",
             "npm --version"
           ],
-          "version": "Native x64 Node.js 22.19+ in major 22 or Node.js 24 LTS"
+          "version": "Native x64 Node.js 22.19+ in major 22 or Node.js 24 LTS on Windows and Linux; the private official Node.js 24.22.0 (arm64) on macOS"
         },
         {
           "id": "hoi4-agent-tools.cmd",
@@ -13003,7 +13010,8 @@
             "package_file_count": 5896,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
-              "linux": "hoi4-agent-tools"
+              "linux": "hoi4-agent-tools",
+              "macos": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
@@ -13016,6 +13024,17 @@
               "linux": {
                 "package_tree_sha256": "9f4e9dea93a51e041aa779ea0244d4ad388ef6634c44dd54370ca9d07b02c898",
                 "package_file_count": 5760,
+                "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
+                "runtime_entry_size": 4587,
+                "package_symlinks": {
+                  "node_modules/.bin/node-which": "../which/bin/node-which",
+                  "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
+                  "node_modules/.bin/semver": "../semver/bin/semver.js"
+                }
+              },
+              "macos": {
+                "package_tree_sha256": "00688f7c5a21640181c01426d1c62931a897f41677192fc4ad048bebd0820c26",
+                "package_file_count": 5749,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
@@ -13049,7 +13068,7 @@
       ],
       "notes": [
         "The exact public package is installed automatically on Windows and all required tools must appear in tools/list. Technology tool exposure does not establish standalone viewer availability.",
-        "The inspected source declares a Windows command and no verified macOS route."
+        "On macOS (Apple Silicon) the registration starts the bootstrap-installed, Node.js Foundation-signed private Node.js with the package entry; Intel Macs have no reviewed route."
       ],
       "expected_files": []
     },
@@ -13060,7 +13079,8 @@
       "category": "script",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "file",
@@ -13103,8 +13123,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
-          "sha256": "4f2506557de75fa81f8810d1aec72e22d104943c015d174f50f18c89eb978739",
-          "size": 9982
+          "sha256": "5dfc0e786436015e8a22b315ab54570494ac9edc387455a6a9539e626704afa7",
+          "size": 10265
         }
       ]
     },
@@ -13255,8 +13275,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "f3591a5a1af39f9508e294a109676826791aa96e2ed5cc30262e8d8a816c1898",
-          "size": 19332
+          "sha256": "a00cf5cbcee20e39be915387456ac102b696f413ac48b72d086c96c4040da039",
+          "size": 19736
         }
       ]
     },
@@ -16071,11 +16091,12 @@
     {
       "id": "workflow.live_tools",
       "display_name": "HOI4 Live Tools",
-      "description": "Install the experimental Windows HOI4 Live Tools runtime; project client registrations are managed by HOI4 Mod Setup.",
+      "description": "Install the experimental HOI4 Live Tools runtime on Windows or macOS; project client registrations are managed by HOI4 Mod Setup.",
       "category": "workflow",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -16113,16 +16134,24 @@
               "--register",
               "none"
             ],
-            "release_version": "1.4.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.0/hoi4-live-tools-1.4.0.zip",
-            "release_sha256": "dc253264dd52ee703477ee5844491b9a99bce3eec326a3408b1f772867e1926c",
-            "release_size": 2249530,
+            "release_version": "1.4.1",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.1/hoi4-live-tools-1.4.1.zip",
+            "release_sha256": "32fb7956479966d7ed939c3d29322fd83f7f1bc2b9bf4c23514a403ec8aa9380",
+            "release_size": 2707672,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**"
             ],
             "privilege": "current_user",
-            "rollback_boundary": "Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none."
+            "rollback_boundary": "Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none.",
+            "platform_pins": {
+              "macos": {
+                "expected_writes": [
+                  "~/Library/Application Support/hoi4-live-tools/**"
+                ],
+                "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless and the PyObjC frameworks Cocoa, Quartz, ApplicationServices, ScreenCaptureKit and Vision) from https://pypi.org."
+              }
+            }
           }
         }
       ],
@@ -16139,13 +16168,13 @@
         "game launch, load, and time control"
       ],
       "notes": [
-        "Windows verified only; upstream macOS support is incomplete. Experimental, slower and not thoroughly tested."
+        "Windows and macOS. Experimental, slower and not thoroughly tested."
       ],
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         }
       ],
       "required_tools": [
@@ -16824,8 +16853,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -16834,8 +16863,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -16885,8 +16914,8 @@
       "expected_files": [
         {
           "path": "docs/linux.md",
-          "sha256": "ef008103af109256d4662b3cc18cd6a589faded104c12399dfc41e195141dc23",
-          "size": 8278
+          "sha256": "e76ba5fa8dc7d18728c086c7108ace28db7a45da5ada32cf44d576f25ffde2ca",
+          "size": 8270
         }
       ]
     },
@@ -24509,7 +24538,8 @@
       "coding_environment": "grok_build",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -24543,8 +24573,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -24553,13 +24583,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -30001,7 +30031,8 @@
       "coding_environment": "kiro",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -30035,8 +30066,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -30045,13 +30076,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -35493,7 +35524,8 @@
       "coding_environment": "qwen_code",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -35527,8 +35559,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -35537,13 +35569,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -35556,6 +35588,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -35609,6 +35642,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -35662,6 +35696,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -35715,6 +35750,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -35774,6 +35810,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -35827,6 +35864,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -35880,6 +35918,7 @@
       "optional": true,
       "platforms": [
         "windows",
+        "macos",
         "linux"
       ],
       "source": {
@@ -39132,15 +39171,16 @@
       {
         "id": "hoi4_live_tools",
         "display_name": "HOI4 Live Tools (experimental)",
-        "description": "Windows game interface, console, log and save tools; slower and not thoroughly tested.",
+        "description": "Game interface, console, log and save tools on Windows and macOS; slower and not thoroughly tested.",
         "requirements": [
-          "Windows",
+          "Windows or macOS",
           "Python 3.9 or newer",
           "Installed Hearts of Iron IV"
         ],
         "documentation_url": "https://github.com/klimPaskov/HOI4-Live-Tools",
         "supported_platforms": [
-          "windows"
+          "windows",
+          "macos"
         ],
         "supported_coding_environments": [
           "claude_code",
@@ -39160,11 +39200,11 @@
           "server_id": "hoi4-live",
           "component_id": "workflow.live_tools",
           "source_repository": "klimPaskov/HOI4-Live-Tools",
-          "source_revision": "v1.4.0"
+          "source_revision": "v1.4.1"
         },
         "guidance": [
           "Use the connected hoi4-live server and its advertised tools with qualified tool names.",
-          "Windows is the verified platform; upstream macOS support is incomplete.",
+          "It runs on Windows and macOS. On macOS the app that starts the server needs Screen Recording and Accessibility permission.",
           "This provider is experimental, slower and not thoroughly tested.",
           "Follow references/hoi4-live-tools.md for provider-specific operations and setup."
         ],
@@ -39173,7 +39213,7 @@
           "author": "klimPaskov",
           "url": "https://github.com/klimPaskov/HOI4-Live-Tools",
           "license": "Apache-2.0",
-          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.4.0/LICENSE"
+          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.4.1/LICENSE"
         }
       },
       {

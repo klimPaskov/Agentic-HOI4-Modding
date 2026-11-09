@@ -55,7 +55,7 @@ Images come from `hoi4-imagegen`, which HOI4 Mod Setup installs. It makes the 40
 
 **HOI4 Agent Tools** (`hoi4_agent_tools`) helps your agent build focus trees, events, decisions and maps, preview windows and trees, find modding rules, fix script and balance AI choices. The project bootstrap installs the release selected by the package manifest.
 
-**HOI4 Live Tools** (`hoi4-live`) works with the running game on Windows: launch and load, events and effects, time advancement, popups, screen evidence, saves, and error-log changes. The app installs its runtime per user and writes project registrations for selected clients. For manual installation:
+**HOI4 Live Tools** (`hoi4-live`) works with the running game on Windows and macOS: launch and load, events and effects, time advancement, popups, screen evidence, saves, and error-log changes. The app installs its runtime per user and writes project registrations for selected clients. For manual installation:
 
 ```powershell
 python .tools/mcp/bootstrap_hoi4_live_tools.py
@@ -86,4 +86,4 @@ Back up and commit your mod work, then use the setup app to update or repair the
 
 HOI4 Mod Setup offers Clausewitz MCP (default), experimental HOI4 Live Tools, and manual testing. [Clausewitz MCP](https://github.com/smerss/Clausewitz-MCP) by smerss is MIT licensed and reads state directly from native Linux HOI4 **1.19.2 only**, without OCR or saves for those reads. Windows uses WSL; macOS uses SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 
-HOI4 Live Tools is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs its pinned runtime without global registration and manages project registrations for selected coding clients. Manual testing registers no server. Use update or repair to reselect the provider and clients, review changed guidance and registrations, and preserve custom instructions. Follow the selected server tool list; providers do not promise identical operations.
+HOI4 Live Tools runs on Windows and macOS. It is experimental, slower and not thoroughly tested. The app installs its pinned runtime without global registration and manages project registrations for selected coding clients. Manual testing registers no server. Use update or repair to reselect the provider and clients, review changed guidance and registrations, and preserve custom instructions. Follow the selected server tool list; providers do not promise identical operations.

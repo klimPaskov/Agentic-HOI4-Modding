@@ -20,7 +20,8 @@ class LiveTestingContractTests(unittest.TestCase):
         self.assertEqual(cw["attribution"]["license"], "MIT")
         self.assertIn("1.19.2", cw["supported_game_version"])
         self.assertTrue(any("Linux game and server are ready" in x for x in cw["guidance"]))
-        self.assertEqual(rows["hoi4_live_tools"]["supported_platforms"], ["windows"])
+        self.assertEqual(rows["hoi4_live_tools"]["supported_platforms"], ["windows", "macos"])
+        self.assertEqual(rows["hoi4_live_tools"]["route"]["source_revision"], "v1.4.1")
         self.assertTrue(rows["hoi4_live_tools"]["experimental"])
         self.assertEqual(rows["none"]["display_name"], "None")
         self.assertIsNone(rows["none"]["route"]["server_id"])
@@ -64,7 +65,7 @@ class LiveTestingContractTests(unittest.TestCase):
             self.assertIn("qualified tool",text,name)
 
     def test_schema_optional_catalog_and_rejects_unknown_route(self):
-        schema=json.loads((ROOT/"schemas/remote-manifest.v6.schema.json").read_text())
+        schema=json.loads((ROOT/"schemas/remote-manifest.v7.schema.json").read_text())
         validator=Draft202012Validator(schema)
         manifest=contract.manifest()
         validator.validate(manifest)

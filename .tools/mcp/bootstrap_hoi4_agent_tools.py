@@ -38,6 +38,25 @@ LINUX_PACKAGE_SYMLINKS = {
     "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
     "node_modules/.bin/semver": "../semver/bin/semver.js",
 }
+MACOS_PACKAGE_TREE_SHA256 = "00688f7c5a21640181c01426d1c62931a897f41677192fc4ad048bebd0820c26"
+MACOS_PACKAGE_FILE_COUNT = 5749
+MACOS_PACKAGE_SYMLINKS = dict(LINUX_PACKAGE_SYMLINKS)
+# macOS has no reviewed system Node.js location, so the bootstrap installs the official Node.js build into the
+# private prefix. Archive and binary SHA-256 come from https://nodejs.org/dist/v24.22.0/SHASUMS256.txt and the
+# extracted binary; only Apple Silicon has a reviewed route, because the package bundles its native engine and
+# image libraries for darwin-arm64 only. Setup checks the binary's Developer ID signature (Node.js Foundation, Team ID HX7739G8FX).
+MACOS_NODE_VERSION = "24.22.0"
+MACOS_NODE_TEAM_ID = "HX7739G8FX"
+MACOS_NODE_BUILDS = {
+    "arm64": {
+        "archive_sha256": "6a9724d9b50a5f22b4816cded441b5a8d9ddae546191a5e5b7efa5a5e2ee26d5",
+        "binary_sha256": "b468fb9c67427c9d3aec07ee1105e63020923a631a9a2a00beb71a7ba3768bfd",
+        "binary_size": 122503472,
+    },
+}
+MACOS_NODE_ORIGIN = "https://nodejs.org/dist"
+MAX_NODE_ARCHIVE_BYTES = 160 * 1024 * 1024
+MAX_NODE_BINARY_BYTES = 256 * 1024 * 1024
 RUNTIME_ENTRY = "dist/bin/stdio.js"
 RUNTIME_ENTRY_SHA256 = "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec"
 RUNTIME_ENTRY_SIZE = 4587
@@ -52,6 +71,7 @@ MAX_PACKAGE_ARCHIVE_BYTES = 512 * 1024 * 1024
 NPM_TOOLCHAINS = {
     "windows": ("11.19.0", "sha512-SDd/hHg3KqHE5Ht2NHWxNYNtqCQ2pXAPLl6OtQhPyED5PHsRfrOtO199MZTIG2cQoQ1ZRI9t28shrD+2cr3AAw=="),
     "linux": ("10.9.9", "sha512-1g+6jLQvaIuB4zwvHL7yrXuXcWZwDsCtBX8bbWDqbvJSSr9nPiDDWTHNgwXR27iIcTTW7v3A57hDW9RYv2W4Yg=="),
+    "macos": ("10.9.9", "sha512-1g+6jLQvaIuB4zwvHL7yrXuXcWZwDsCtBX8bbWDqbvJSSr9nPiDDWTHNgwXR27iIcTTW7v3A57hDW9RYv2W4Yg=="),
 }
 MAX_NPM_ARCHIVE_BYTES = 8 * 1024 * 1024
 MAX_NPM_TAR_BYTES = 32 * 1024 * 1024
@@ -68,24 +88,37 @@ def platform_name() -> str:
         return "windows"
     if sys.platform.startswith("linux"):
         return "linux"
-    raise BootstrapError("The reviewed bootstrap supports native Windows and Linux.")
+    if sys.platform == "darwin":
+        return "macos"
+    raise BootstrapError("The reviewed bootstrap supports native Windows, Linux and macOS.")
+
+
+def posix_layout(platform: str | None = None) -> bool:
+    """npm's global layout on Linux and macOS: lib/node_modules plus a bin/ link to the entry."""
+    return (platform or platform_name()) in {"linux", "macos"}
 
 
 def platform_evidence(platform: str | None = None) -> dict:
     platform = platform or platform_name()
-    if platform not in {"windows", "linux"}:
+    pins = {
+        "windows": (PACKAGE_TREE_SHA256, PACKAGE_FILE_COUNT, {}),
+        "linux": (LINUX_PACKAGE_TREE_SHA256, LINUX_PACKAGE_FILE_COUNT, LINUX_PACKAGE_SYMLINKS),
+        "macos": (MACOS_PACKAGE_TREE_SHA256, MACOS_PACKAGE_FILE_COUNT, MACOS_PACKAGE_SYMLINKS),
+    }
+    if platform not in pins:
         raise BootstrapError("The MCP platform has no reviewed package evidence.")
+    tree, count, links = pins[platform]
     return {
-        "package_tree_sha256": PACKAGE_TREE_SHA256 if platform == "windows" else LINUX_PACKAGE_TREE_SHA256,
-        "package_file_count": PACKAGE_FILE_COUNT if platform == "windows" else LINUX_PACKAGE_FILE_COUNT,
+        "package_tree_sha256": tree,
+        "package_file_count": count,
         "runtime_entry_sha256": RUNTIME_ENTRY_SHA256,
         "runtime_entry_size": RUNTIME_ENTRY_SIZE,
-        "package_symlinks": {} if platform == "windows" else dict(LINUX_PACKAGE_SYMLINKS),
+        "package_symlinks": dict(links),
     }
 
 
 def modules_directory(prefix: Path) -> Path:
-    modules = prefix / ("lib/node_modules" if platform_name() == "linux" else "node_modules")
+    modules = prefix / ("lib/node_modules" if posix_layout() else "node_modules")
     for path in (modules, *modules.parents):
         if path == prefix.parent:
             break
@@ -161,11 +194,135 @@ def supported_node_version(version: str) -> bool:
 def verify_node_runtime(node: Path) -> None:
     if not supported_node_version(run([str(node), "--version"]).strip()):
         raise BootstrapError("HOI4 Agent Tools requires Node.js 22.19+ in major 22, or Node.js 24 LTS.")
-    if run([str(node), "-p", "process.arch"]).strip() != "x64":
-        raise BootstrapError("The reviewed HOI4 Agent Tools runtime requires native x64 Node.js.")
+    expected = macos_node_arch() if platform_name() == "macos" else "x64"
+    if run([str(node), "-p", "process.arch"]).strip() != expected:
+        raise BootstrapError(f"The reviewed HOI4 Agent Tools runtime requires native {expected} Node.js.")
+
+
+def macos_node_arch() -> str:
+    """The native architecture of this Mac. A translated (Rosetta) Python still reports arm64 hardware."""
+    try:
+        if run(["/usr/sbin/sysctl", "-n", "hw.optional.arm64"], timeout=30).strip() == "1":
+            return "arm64"
+    except BootstrapError:
+        pass
+    raise BootstrapError("HOI4 Agent Tools on macOS needs an Apple Silicon Mac; Intel Macs have no reviewed engine build.")
+
+
+def macos_node_path(prefix: Path) -> Path:
+    """The private official Node.js binary; HOI4 Mod Setup registers this exact path with the coding clients."""
+    return prefix / "node/bin/node"
+
+
+def file_sha256(path: Path, maximum: int) -> str:
+    digest = hashlib.sha256()
+    total = 0
+    with path.open("rb") as stream:
+        while chunk := stream.read(1024 * 1024):
+            total += len(chunk)
+            if total > maximum:
+                raise BootstrapError("A verified Node.js file exceeds its size bound.")
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def macos_node_matches(node: Path, build: dict) -> bool:
+    try:
+        metadata = node.lstat()
+        if not node.is_file() or node.is_symlink() or metadata.st_size != build["binary_size"]:
+            return False
+        return file_sha256(node, MAX_NODE_BINARY_BYTES) == build["binary_sha256"]
+    except (OSError, BootstrapError):
+        return False
+
+
+def verify_macos_node_signature(node: Path) -> None:
+    requirement = (
+        "anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] exists and "
+        "certificate leaf[field.1.2.840.113635.100.6.1.13] exists and "
+        f'certificate leaf[subject.OU] = "{MACOS_NODE_TEAM_ID}"'
+    )
+    try:
+        run(["/usr/bin/codesign", "--verify", "--strict", f"-R={requirement}", str(node)], timeout=120)
+    except BootstrapError as exc:
+        raise BootstrapError("The private Node.js runtime does not carry the Node.js Foundation signature.") from exc
+
+
+def download_macos_node_archive(arch: str, build: dict, destination: Path) -> None:
+    name = f"node-v{MACOS_NODE_VERSION}-darwin-{arch}.tar.gz"
+    url = f"{MACOS_NODE_ORIGIN}/v{MACOS_NODE_VERSION}/{name}"
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}), NoRedirect())
+    digest = hashlib.sha256()
+    total = 0
+    try:
+        with opener.open(url, timeout=120) as response, destination.open("xb") as output:
+            if response.status != 200 or response.url != url:
+                raise BootstrapError("The pinned Node.js archive response is invalid.")
+            while chunk := response.read(1024 * 1024):
+                total += len(chunk)
+                if total > MAX_NODE_ARCHIVE_BYTES:
+                    raise BootstrapError("The pinned Node.js archive exceeds its size bound.")
+                digest.update(chunk)
+                output.write(chunk)
+    except (OSError, urllib.error.URLError) as exc:
+        raise BootstrapError("The official Node.js runtime could not be downloaded. Retry the setup.") from exc
+    if digest.hexdigest() != build["archive_sha256"]:
+        raise BootstrapError("The pinned Node.js archive SHA-256 does not match.")
+
+
+def extract_macos_node_binary(archive_path: Path, arch: str, build: dict, destination: Path) -> None:
+    """Extract only the node executable, by its exact member name, with no links or path from the archive."""
+    member_name = f"node-v{MACOS_NODE_VERSION}-darwin-{arch}/bin/node"
+    try:
+        with tarfile.open(archive_path, mode="r:gz") as archive:
+            member = archive.getmember(member_name)
+            if not member.isfile() or member.linkname or member.size != build["binary_size"]:
+                raise BootstrapError("The Node.js archive executable is not the reviewed file.")
+            source = archive.extractfile(member)
+            if source is None:
+                raise BootstrapError("The Node.js archive executable is unreadable.")
+            digest = hashlib.sha256()
+            with source, destination.open("xb") as output:
+                while chunk := source.read(1024 * 1024):
+                    digest.update(chunk)
+                    output.write(chunk)
+    except (OSError, EOFError, KeyError, tarfile.TarError) as exc:
+        raise BootstrapError("The Node.js archive could not be safely extracted.") from exc
+    if digest.hexdigest() != build["binary_sha256"]:
+        raise BootstrapError("The extracted Node.js executable SHA-256 does not match.")
+    destination.chmod(0o755)
+
+
+def ensure_macos_node(prefix: Path) -> Path:
+    arch = macos_node_arch()
+    build = MACOS_NODE_BUILDS[arch]
+    node = macos_node_path(prefix)
+    if not macos_node_matches(node, build):
+        node.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        for path in (node.parent, *node.parent.parents):
+            if path == prefix.parent:
+                break
+            if path.is_symlink():
+                raise BootstrapError("The private Node.js directory contains a link.")
+        with tempfile.TemporaryDirectory(prefix="hoi4-setup-node-", dir=node.parent) as temporary:
+            staging = Path(temporary)
+            archive = staging / "node.tar.gz"
+            download_macos_node_archive(arch, build, archive)
+            extracted = staging / "node"
+            extract_macos_node_binary(archive, arch, build, extracted)
+            os.replace(extracted, node)
+    if not macos_node_matches(node, build):
+        raise BootstrapError("The private Node.js runtime does not match the reviewed build.")
+    verify_macos_node_signature(node)
+    verify_node_runtime(node)
+    return node
 
 
 def resolve_node_and_npm() -> tuple[Path, Path]:
+    if platform_name() == "macos":
+        # npm always comes from the separately pinned private toolchain.
+        node = ensure_macos_node(user_prefix())
+        return node, node
     if platform_name() == "linux":
         node_value = shutil.which("node")
         npm_value = shutil.which("npm")
@@ -192,7 +349,7 @@ def ensure_node() -> tuple[Path, Path]:
     try:
         return resolve_node_and_npm()
     except BootstrapError:
-        if platform_name() == "linux":
+        if platform_name() in {"linux", "macos"}:
             raise
         winget = shutil.which("winget.exe") or shutil.which("winget")
         if not winget:
@@ -335,6 +492,14 @@ def npm(node: Path, runtime: PinnedNpm, arguments: list[str], timeout: int = 900
 
 
 def user_prefix() -> Path:
+    if platform_name() == "macos":
+        root = (Path.home() / "Library/Application Support").resolve()
+        prefix = (root / "hoi4-mod-setup/npm").resolve()
+        try:
+            prefix.relative_to(root)
+        except ValueError as exc:
+            raise BootstrapError("The current-user npm prefix escaped application-data storage.") from exc
+        return prefix
     if platform_name() == "linux":
         xdg = os.environ.get("XDG_DATA_HOME", "").strip()
         if xdg:
@@ -556,10 +721,10 @@ def verify_installation(prefix: Path) -> Path:
     digest = hashlib.sha256(entry.read_bytes()).hexdigest()
     if digest != RUNTIME_ENTRY_SHA256:
         raise BootstrapError("The installed MCP runtime entry has the wrong SHA-256.")
-    wrapper = prefix / ("bin/hoi4-agent-tools" if platform_name() == "linux" else "hoi4-agent-tools.cmd")
+    wrapper = prefix / ("bin/hoi4-agent-tools" if posix_layout() else "hoi4-agent-tools.cmd")
     if not wrapper.is_file():
         raise BootstrapError("The installed MCP command wrapper is missing.")
-    if platform_name() == "linux":
+    if posix_layout():
         if not wrapper.is_symlink() or os.readlink(wrapper) != f"../lib/node_modules/{PACKAGE_NAME}/{RUNTIME_ENTRY}" or wrapper.resolve() != entry.resolve():
             raise BootstrapError("The installed native MCP locator does not point to its reviewed entry.")
     return wrapper
