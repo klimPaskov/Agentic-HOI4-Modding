@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "d36958bf33eb3e4afac088b9ef4c57855281710d",
+  "generated_for_revision": "74a9ce19166b159fee7389e8097f31ac4323b556",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -713,8 +713,8 @@
       "expected_files": [
         {
           "path": ".mcp.json",
-          "sha256": "04db1cc3d24be5535ca8f6223db94b2570f77753ab6f666f1e0481101f7bb602",
-          "size": 156
+          "sha256": "c7e5e430313e7bd019ffc60c75271bd56fa23a033315d98e3e83a8c893a61e37",
+          "size": 206
         }
       ]
     },
@@ -1264,8 +1264,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/opencode.json",
-          "sha256": "97de34b73437fb2388eac64ddaa2583322d7d97706414d98cbe45a560935a0fb",
-          "size": 244
+          "sha256": "ece64e1b4ea7b8780631f066dad000bbd2f76b7c5a89a6eaccbc410466792a0b",
+          "size": 319
         }
       ]
     },
@@ -1317,8 +1317,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.cursor/mcp.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
+          "sha256": "c63f43dd2f1703f506f36758acd6d123175f9f8cfeaeb46f33ce1df3adce9899",
+          "size": 183
         }
       ]
     },
@@ -1370,8 +1370,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.qoder/mcp.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
+          "sha256": "c63f43dd2f1703f506f36758acd6d123175f9f8cfeaeb46f33ce1df3adce9899",
+          "size": 183
         }
       ]
     },
@@ -7047,8 +7047,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "c8f564f280c7c8f5035daa0d00da4287089028588d3245d34d9fbf65c412ddff",
-          "size": 9781
+          "sha256": "cd92569746d2063c00ba07b4a4e1e3ca5aa278e5516361cf7405807221097a41",
+          "size": 9816
         }
       ]
     },
@@ -12910,7 +12910,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "da15ef7c8624a3f2c7f61dfa42e6e1ad0e280024b6a770c57056ca920f3c5e60",
+          "sha256": "28809c89e4d8406205a91ae75daa36cf033510b50f0e17dd11d375368163cd32",
           "size": 29136
         }
       ]
@@ -13103,7 +13103,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
-          "sha256": "c00b4032b9cb46ad860d886d99f389fc42880af05af2f21253ee4f37864bc4f7",
+          "sha256": "4f2506557de75fa81f8810d1aec72e22d104943c015d174f50f18c89eb978739",
           "size": 9982
         }
       ]
@@ -13154,8 +13154,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "1aeb2b6a55066ab33500495c75bf89fd65429775d1a819845badfd210a9f3a49",
-          "size": 30386
+          "sha256": "b380896fe33a62cf0033f7db40cbfb6f086b29f658ccf5ab1d5883fae4fd7ca2",
+          "size": 31895
         }
       ]
     },
@@ -35595,8 +35595,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.vscode/mcp.json",
-          "sha256": "3fc79876068ce68de123eb59d7b5feb0e3927912a1d27b87b08b12a9cf09221a",
-          "size": 136
+          "sha256": "5a680932722a26f5852acf6de87ed202a5a0907ead86c0ddb9cccbd7763d0568",
+          "size": 203
         }
       ]
     },
@@ -35648,8 +35648,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.gemini/settings.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
+          "sha256": "c63f43dd2f1703f506f36758acd6d123175f9f8cfeaeb46f33ce1df3adce9899",
+          "size": 183
         }
       ]
     },
@@ -35701,8 +35701,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.agents/mcp_config.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
+          "sha256": "c63f43dd2f1703f506f36758acd6d123175f9f8cfeaeb46f33ce1df3adce9899",
+          "size": 183
         }
       ]
     },
@@ -35760,8 +35760,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.grok/config.toml",
-          "sha256": "ec6959b41df86b2454536a3edddd7c52909637a28e7190b89a5f3ba38a0f6730",
-          "size": 74
+          "sha256": "d7b75d00e8ac7a0070e8c998af12539d0980739285cf747727d35b55490b49c9",
+          "size": 118
         }
       ]
     },
@@ -35813,8 +35813,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.kilo/kilo.json",
-          "sha256": "19bd86dca60317c99eeb26908bf96982ea0d1aeeec05d5212329c97d371584b5",
-          "size": 155
+          "sha256": "6a6683bda13e0a24e19f166296a8c038e6d4f1397626bf95e92725a0af6fcbea",
+          "size": 230
         }
       ]
     },
@@ -35866,8 +35866,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.kiro/settings/mcp.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
+          "sha256": "c63f43dd2f1703f506f36758acd6d123175f9f8cfeaeb46f33ce1df3adce9899",
+          "size": 183
         }
       ]
     },
@@ -35919,8 +35919,8 @@
       "expected_files": [
         {
           "path": ".tools/clients/.qwen/settings.json",
-          "sha256": "bbe31d3605b8229de2c8d1ac14db28ffd9a14e7611d37b80669b8499a2c31d2e",
-          "size": 116
+          "sha256": "c63f43dd2f1703f506f36758acd6d123175f9f8cfeaeb46f33ce1df3adce9899",
+          "size": 183
         }
       ]
     }
