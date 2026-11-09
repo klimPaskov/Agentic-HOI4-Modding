@@ -29,9 +29,9 @@ images = module("linux_source_images", ".tools/image_generation/runtime/server.p
 
 class LinuxSourceContractTests(unittest.TestCase):
     def test_schema_majors_are_explicit_and_unknown_majors_fail(self):
-        for version in ("3.0.0", "4.0.0", "5.0.0", "6.0.0"):
+        for version in ("3.0.0", "4.0.0", "5.0.0", "6.0.0", "7.0.0"):
             Draft202012Validator.check_schema(load_manifest_schema(version, ROOT))
-        for version in ("7.0.0", "5", "5.0.0-extra", None):
+        for version in ("8.0.0", "5", "5.0.0-extra", None):
             with self.assertRaises(ValueError):
                 load_manifest_schema(version, ROOT)
         manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
@@ -56,8 +56,8 @@ class LinuxSourceContractTests(unittest.TestCase):
     def test_platform_manifest_pins_match_the_bootstrap(self):
         manifest = json.loads((ROOT / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8"))
         health = next(v for c in manifest["components"] for v in c.get("validation", []) if v["id"] == "mcp.hoi4.health")
-        self.assertEqual(health["parameters"]["platform_targets"], {"windows": "hoi4-agent-tools.cmd", "linux": "hoi4-agent-tools"})
-        for platform in ("windows", "linux"):
+        self.assertEqual(health["parameters"]["platform_targets"], {"windows": "hoi4-agent-tools.cmd", "macos": "hoi4-agent-tools", "linux": "hoi4-agent-tools"})
+        for platform in ("windows", "linux", "macos"):
             self.assertEqual(health["parameters"]["platform_pins"][platform], bootstrap.platform_evidence(platform))
         self.assertNotEqual(bootstrap.platform_evidence("linux")["package_tree_sha256"], bootstrap.platform_evidence("windows")["package_tree_sha256"])
 

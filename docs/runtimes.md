@@ -160,6 +160,8 @@ On Windows every project-scoped file above points at the `hoi4-agent-tools.cmd` 
 
 On native Linux, HOI4 Mod Setup adapts the registrations for every selected coding client to the verified absolute Node executable and package entry. The current-user npm prefix is `$XDG_DATA_HOME/hoi4-mod-setup/npm`, or `~/.local/share/hoi4-mod-setup/npm` when XDG_DATA_HOME is unset. The native `bin/hoi4-agent-tools` locator points to the reviewed entry; setup verifies it and launches the entry directly. Shared skill and agent projections remain identical across platforms. The source package's raw MCP examples use Windows commands, so manual Linux setup must adapt them as described in [the Linux guide](linux.md).
 
+On Apple Silicon macOS, HOI4 Mod Setup adapts the registrations in the same way. The bootstrap installs a private, Node.js Foundation-signed Node.js under `~/Library/Application Support/hoi4-mod-setup/npm/node/bin/node`. The registrations use that runtime and the package entry under the same prefix. Intel Macs have no reviewed route. See [the macOS guide](macos.md).
+
 DSH has no project-scoped MCP file.
 Its servers are deployment configuration, not repository content, so the registration lives in the active profile and stays out of Git.
 One row per server, and the profile must also depend on the MCP client package:

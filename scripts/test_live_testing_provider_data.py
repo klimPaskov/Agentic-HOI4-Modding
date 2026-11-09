@@ -64,7 +64,7 @@ class LiveTestingContractTests(unittest.TestCase):
             self.assertIn("qualified tool",text,name)
 
     def test_schema_optional_catalog_and_rejects_unknown_route(self):
-        schema=json.loads((ROOT/"schemas/remote-manifest.v6.schema.json").read_text())
+        schema=json.loads((ROOT/"schemas/remote-manifest.v7.schema.json").read_text())
         validator=Draft202012Validator(schema)
         manifest=contract.manifest()
         validator.validate(manifest)

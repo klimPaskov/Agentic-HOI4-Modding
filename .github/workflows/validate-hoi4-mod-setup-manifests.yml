@@ -27,6 +27,7 @@ on:
       - "scripts/coding_environment_data.py"
       - "scripts/test_coding_environment_data.py"
       - "schemas/remote-manifest.v6.schema.json"
+      - "schemas/remote-manifest.v7.schema.json"
       - ".tools/sync/**"
       - ".tools/mcp/**"
       - ".tools/3d_pipeline/**"
