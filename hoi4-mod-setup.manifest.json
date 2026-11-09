@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "bf1c86ca7c815deb975ea2e26864f971253400bc",
+  "generated_for_revision": "f2e6972181449996e2a7892dd9323598077174bb",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "edf580912dc8fe567f1999353509b33e067218ba1baa70d35c5b044c31eb3e28",
-          "size": 15880
+          "sha256": "a7eca6efe1e7a30bbac5ad02e6423ce582084212f72a8e58c03fee85f416b797",
+          "size": 15847
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "33c32fa7a06a18330b41065cf5bba417c463b538aca3279562ddfef80b11716c",
-          "size": 15880
+          "sha256": "6747f632bd370c60cf84ef581c4e5445b4f6b78a6565d38c9fa58bfa4e39e7b6",
+          "size": 15847
         }
       ]
     },
@@ -12806,8 +12806,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -12816,13 +12816,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ],
       "shared_coding_environments": [
@@ -13123,8 +13123,8 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_live_tools.py",
-          "sha256": "4f2506557de75fa81f8810d1aec72e22d104943c015d174f50f18c89eb978739",
-          "size": 9982
+          "sha256": "5dfc0e786436015e8a22b315ab54570494ac9edc387455a6a9539e626704afa7",
+          "size": 10265
         }
       ]
     },
@@ -13275,8 +13275,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "24954db3850b5d5de18f6b9b9e17b8c4581ee97ba1b17f5051391ac2e61655ca",
-          "size": 19702
+          "sha256": "a00cf5cbcee20e39be915387456ac102b696f413ac48b72d086c96c4040da039",
+          "size": 19736
         }
       ]
     },
@@ -16173,8 +16173,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         }
       ],
       "required_tools": [
@@ -16853,8 +16853,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -16863,8 +16863,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -16914,8 +16914,8 @@
       "expected_files": [
         {
           "path": "docs/linux.md",
-          "sha256": "ef008103af109256d4662b3cc18cd6a589faded104c12399dfc41e195141dc23",
-          "size": 8278
+          "sha256": "e76ba5fa8dc7d18728c086c7108ace28db7a45da5ada32cf44d576f25ffde2ca",
+          "size": 8270
         }
       ]
     },
@@ -24573,8 +24573,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -24583,13 +24583,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -30066,8 +30066,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -30076,13 +30076,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
@@ -35559,8 +35559,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/SKILL.md",
-          "sha256": "f74fba2fb4afad51ccc68c7ef4de86d3c191b7963d162a77ec39e26e33b74c36",
-          "size": 3379
+          "sha256": "bdee6c867ab159f07d2718b1a615b1bacb47c960b93a3746e45dea3f0d708e4a",
+          "size": 3342
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/clausewitz-mcp.md",
@@ -35569,13 +35569,13 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "68c841ee22b32f911591848b1d1274256efe8d12b26de09926c9a344e50a568e",
-          "size": 15745
+          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
+          "size": 16919
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
-          "sha256": "fdb8b56b0a569a735042ff2341e867975bc01eb866a79a705637424674d8f48a",
-          "size": 1509
+          "sha256": "9e1681fb6494b55f34a4495b6b1034e58072d2eb8f07c1b9046924b54469bf31",
+          "size": 1472
         }
       ]
     },
