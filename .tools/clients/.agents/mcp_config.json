@@ -2,7 +2,10 @@
   "mcpServers": {
     "hoi4_agent_tools": {
       "command": "hoi4-agent-tools.cmd",
-      "args": []
+      "args": [],
+      "env": {
+        "HOI4_AGENT_TOOLS_PROFILES": "all"
+      }
     }
   }
 }

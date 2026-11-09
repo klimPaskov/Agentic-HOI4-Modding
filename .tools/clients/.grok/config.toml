@@ -1,3 +1,4 @@
 [mcp_servers.hoi4_agent_tools]
 command = "hoi4-agent-tools.cmd"
 args = []
+env = { HOI4_AGENT_TOOLS_PROFILES = "all" }

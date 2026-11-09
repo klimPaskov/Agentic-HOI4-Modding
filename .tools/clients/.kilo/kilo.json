@@ -5,6 +5,9 @@
       "command": [
         "hoi4-agent-tools.cmd"
       ],
+      "environment": {
+        "HOI4_AGENT_TOOLS_PROFILES": "all"
+      },
       "enabled": true
     }
   }
