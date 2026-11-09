@@ -114,7 +114,7 @@ class McpBootstrapContractTests(unittest.TestCase):
             stack.enter_context(mock.patch.object(bootstrap.sys, "argv", ["bootstrap", "--quiet", "--local-tarball", "reviewed.tgz"]))
             local = stack.enter_context(mock.patch.object(bootstrap, "verify_local_tarball"))
             registry = stack.enter_context(mock.patch.object(bootstrap, "verify_registry_integrity"))
-            stack.enter_context(mock.patch.object(bootstrap, "installed_package_matches", return_value=False))
+            stack.enter_context(mock.patch.object(bootstrap, "installed_wrapper", return_value=None))
             stack.enter_context(mock.patch.object(bootstrap, "remove_mismatched_package"))
             install = stack.enter_context(mock.patch.object(bootstrap, "install_package"))
             verify = stack.enter_context(mock.patch.object(bootstrap, "verify_installation", return_value=Path("prefix/hoi4-agent-tools.cmd")))
@@ -145,15 +145,55 @@ class McpBootstrapContractTests(unittest.TestCase):
         with mock.patch.object(bootstrap.subprocess, "run", return_value=result):
             self.assertEqual(bootstrap.run(["node.exe", "npm-cli.js", "view"]).strip(), '"sha512-abc"')
 
+    def test_package_tree_digest_is_the_sorted_path_length_content_digest(self) -> None:
+        # The concurrent, directory-listing based reader must keep the pinned digest definition exactly.
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "package"
+            expected = {}
+            for index in range(40):
+                relative = f"dist/part{index % 4}/file{index:02d}.js" if index % 3 else f"file{index:02d}.json"
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                data = (f"content {index}\n" * (index + 1)).encode()
+                path.write_bytes(data)
+                expected[relative] = data
+            (root / "empty-directory").mkdir()
+            digest = __import__("hashlib").sha256()
+            for relative, data in sorted(expected.items()):
+                digest.update(relative.encode("utf-8") + b"\x00" + str(len(data)).encode("ascii") + b"\x00" + data)
+            self.assertEqual(bootstrap.package_tree_sha256(root, {}), (digest.hexdigest(), 40))
+
+    def test_package_tree_bounds_still_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "package"
+            (root / "dist").mkdir(parents=True)
+            for index in range(3):
+                (root / "dist" / f"f{index}.js").write_bytes(b"0123456789")
+            with mock.patch.object(bootstrap, "MAX_PACKAGE_FILE_BYTES", 5):
+                with self.assertRaisesRegex(bootstrap.BootstrapError, "oversized"):
+                    bootstrap.package_tree_sha256(root, {})
+            with mock.patch.object(bootstrap, "MAX_PACKAGE_TREE_BYTES", 25):
+                with self.assertRaisesRegex(bootstrap.BootstrapError, "oversized"):
+                    bootstrap.package_tree_sha256(root, {})
+            with mock.patch.object(bootstrap, "MAX_PACKAGE_FILES", 2):
+                with self.assertRaisesRegex(bootstrap.BootstrapError, "file-count"):
+                    bootstrap.package_tree_sha256(root, {})
+            with mock.patch.object(bootstrap, "MAX_PACKAGE_ENTRIES", 2):
+                with self.assertRaisesRegex(bootstrap.BootstrapError, "directory bounds"):
+                    bootstrap.package_tree_sha256(root, {})
+            with mock.patch.object(bootstrap, "MAX_PACKAGE_DEPTH", 1):
+                with self.assertRaisesRegex(bootstrap.BootstrapError, "directory bounds"):
+                    bootstrap.package_tree_sha256(root, {})
+
     def test_matching_installation_is_kept_without_npm(self) -> None:
         with contextlib.ExitStack() as stack:
-            stack.enter_context(mock.patch.object(bootstrap, "installed_package_matches", return_value=True))
             stack.enter_context(
                 mock.patch.object(bootstrap, "resolve_node_and_npm", return_value=(Path("node.exe"), Path("npm.cmd")))
             )
             stack.enter_context(mock.patch.object(bootstrap, "user_prefix", return_value=Path("prefix")))
-            stack.enter_context(mock.patch.object(bootstrap, "verify_registry_integrity"))
-            stack.enter_context(
+            registry = stack.enter_context(mock.patch.object(bootstrap, "verify_registry_integrity"))
+            runtime = stack.enter_context(mock.patch.object(bootstrap, "pinned_npm_runtime"))
+            verify = stack.enter_context(
                 mock.patch.object(bootstrap, "verify_installation", return_value=Path("prefix/hoi4-agent-tools.cmd"))
             )
             stack.enter_context(mock.patch.object(bootstrap, "platform_name", return_value="windows"))
@@ -161,6 +201,11 @@ class McpBootstrapContractTests(unittest.TestCase):
             npm = stack.enter_context(mock.patch.object(bootstrap, "npm"))
             self.assertEqual(bootstrap.main(), 0)
         npm.assert_not_called()
+        registry.assert_not_called()
+        # The private npm toolchain is neither downloaded nor extracted for a matching installation, and the
+        # package tree is verified exactly once.
+        runtime.assert_not_called()
+        verify.assert_called_once_with(Path("prefix"))
 
     def test_mismatched_installation_is_removed_before_a_clean_install(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
