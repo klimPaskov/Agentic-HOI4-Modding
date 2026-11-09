@@ -2,7 +2,7 @@
 
 HOI4 Mod Setup supports macOS alongside Windows and native Linux. HOI4 Agent Tools runs on Apple Silicon Macs (arm64); this package records its macOS evidence measured on macOS 26.5. Intel Macs have no reviewed route, because the package bundles its native engine and image libraries for darwin-arm64 only. Shared instructions, skills and specialist definitions are the same on every platform. The app writes MCP registrations for every selected coding client that has a project MCP file; the coding client must itself be installed.
 
-HOI4 Live Tools and the Meshy/Blender 3D bootstrap remain Windows-verified workflows and are not offered on macOS. Image generation (hoi4-imagegen) is offered on every platform.
+HOI4 Live Tools is offered on macOS (see [Live Tools on macOS](#hoi4-live-tools)). The Meshy/Blender 3D bootstrap remains a Windows workflow and is not offered on macOS. Image generation (hoi4-imagegen) is offered on every platform.
 
 ## Prerequisites and files
 
@@ -31,3 +31,9 @@ The source archive's raw MCP examples use `hoi4-agent-tools.cmd`, and the app ad
 For manual setup, use the same two absolute paths in the shapes from [the Linux guide](linux.md#manual-client-registration), replacing `/usr/bin/node` with `<prefix>/node/bin/node`. The path contains a space (`Application Support`), so keep it as a single JSON or TOML string and never split it. No shell wrapper or PATH change is needed.
 
 Claude Code asks once before it starts a project server, and Gemini CLI starts project servers only in a trusted folder.
+
+## HOI4 Live Tools
+
+Select HOI4 Live Tools as the live-testing provider. Setup runs the pinned bootstrap, `.tools/mcp/bootstrap_hoi4_live_tools.py --quiet --register none`, with the same verified Python as the Agent Tools bootstrap. It checks the release archive's size and SHA-256 and runs the archive's `install.py`. That installer creates `~/Library/Application Support/hoi4-live-tools` (`app`, `venv`, `artifacts`, `install.json`), installs numpy, Pillow, OpenCV and the PyObjC frameworks from PyPI into the private `venv`, and confirms that the server lists its tools. Setup then registers `~/Library/Application Support/hoi4-live-tools/app/hoi4-live-tools` as the `hoi4-live` server for the selected clients.
+
+The app that starts the server (the terminal or coding client) needs Screen Recording and Accessibility permission in System Settings. A tool that lacks one returns an error that names it. See [the provider reference](../.claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md) for manual installation, registration and troubleshooting.

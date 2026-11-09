@@ -623,23 +623,38 @@
               }
             },
             "platform_pins": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": [
-                "windows",
-                "linux"
-              ],
-              "properties": {
-                "windows": {
-                  "$ref": "#/$defs/mcpPlatformPin"
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "windows",
+                    "linux"
+                  ],
+                  "properties": {
+                    "windows": {
+                      "$ref": "#/$defs/mcpPlatformPin"
+                    },
+                    "linux": {
+                      "$ref": "#/$defs/mcpPlatformPin"
+                    },
+                    "macos": {
+                      "$ref": "#/$defs/mcpPlatformPin"
+                    }
+                  }
                 },
-                "linux": {
-                  "$ref": "#/$defs/mcpPlatformPin"
-                },
-                "macos": {
-                  "$ref": "#/$defs/mcpPlatformPin"
+                {
+                  "description": "Per-platform values of a HOI4 Live Tools bootstrap action; the base parameters hold the Windows values.",
+                  "type": "object",
+                  "additionalProperties": false,
+                  "minProperties": 1,
+                  "properties": {
+                    "macos": {
+                      "$ref": "#/$defs/liveToolsPlatformPin"
+                    }
+                  }
                 }
-              }
+              ]
             }
           }
         }
@@ -1798,6 +1813,28 @@
             "minLength": 1,
             "maxLength": 512
           }
+        }
+      }
+    },
+    "liveToolsPlatformPin": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "expected_writes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "network_access": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
         }
       }
     }

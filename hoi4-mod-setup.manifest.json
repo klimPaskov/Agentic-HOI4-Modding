@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5d4dfa5c8d69f314e63baded19cd2e2846634d37",
+  "generated_for_revision": "bf1c86ca7c815deb975ea2e26864f971253400bc",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -12771,7 +12771,8 @@
       "coding_environment": "codex",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -13078,7 +13079,8 @@
       "category": "script",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "file",
@@ -16089,11 +16091,12 @@
     {
       "id": "workflow.live_tools",
       "display_name": "HOI4 Live Tools",
-      "description": "Install the experimental Windows HOI4 Live Tools runtime; project client registrations are managed by HOI4 Mod Setup.",
+      "description": "Install the experimental HOI4 Live Tools runtime on Windows or macOS; project client registrations are managed by HOI4 Mod Setup.",
       "category": "workflow",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -16131,16 +16134,24 @@
               "--register",
               "none"
             ],
-            "release_version": "1.4.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.0/hoi4-live-tools-1.4.0.zip",
-            "release_sha256": "dc253264dd52ee703477ee5844491b9a99bce3eec326a3408b1f772867e1926c",
-            "release_size": 2249530,
+            "release_version": "1.4.1",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.1/hoi4-live-tools-1.4.1.zip",
+            "release_sha256": "32fb7956479966d7ed939c3d29322fd83f7f1bc2b9bf4c23514a403ec8aa9380",
+            "release_size": 2707672,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**"
             ],
             "privilege": "current_user",
-            "rollback_boundary": "Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none."
+            "rollback_boundary": "Managed project registrations roll back transactionally. The per-user runtime and Python environment are external state; the bootstrap does not register global clients with --register none.",
+            "platform_pins": {
+              "macos": {
+                "expected_writes": [
+                  "~/Library/Application Support/hoi4-live-tools/**"
+                ],
+                "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless and the PyObjC frameworks Cocoa, Quartz, ApplicationServices, ScreenCaptureKit and Vision) from https://pypi.org."
+              }
+            }
           }
         }
       ],
@@ -16157,7 +16168,7 @@
         "game launch, load, and time control"
       ],
       "notes": [
-        "Windows verified only; upstream macOS support is incomplete. Experimental, slower and not thoroughly tested."
+        "Windows and macOS. Experimental, slower and not thoroughly tested."
       ],
       "expected_files": [
         {
@@ -24527,7 +24538,8 @@
       "coding_environment": "grok_build",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -30019,7 +30031,8 @@
       "coding_environment": "kiro",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -35511,7 +35524,8 @@
       "coding_environment": "qwen_code",
       "optional": true,
       "platforms": [
-        "windows"
+        "windows",
+        "macos"
       ],
       "source": {
         "kind": "tree",
@@ -39157,15 +39171,16 @@
       {
         "id": "hoi4_live_tools",
         "display_name": "HOI4 Live Tools (experimental)",
-        "description": "Windows game interface, console, log and save tools; slower and not thoroughly tested.",
+        "description": "Game interface, console, log and save tools on Windows and macOS; slower and not thoroughly tested.",
         "requirements": [
-          "Windows",
+          "Windows or macOS",
           "Python 3.9 or newer",
           "Installed Hearts of Iron IV"
         ],
         "documentation_url": "https://github.com/klimPaskov/HOI4-Live-Tools",
         "supported_platforms": [
-          "windows"
+          "windows",
+          "macos"
         ],
         "supported_coding_environments": [
           "claude_code",
@@ -39185,11 +39200,11 @@
           "server_id": "hoi4-live",
           "component_id": "workflow.live_tools",
           "source_repository": "klimPaskov/HOI4-Live-Tools",
-          "source_revision": "v1.4.0"
+          "source_revision": "v1.4.1"
         },
         "guidance": [
           "Use the connected hoi4-live server and its advertised tools with qualified tool names.",
-          "Windows is the verified platform; upstream macOS support is incomplete.",
+          "It runs on Windows and macOS. On macOS the app that starts the server needs Screen Recording and Accessibility permission.",
           "This provider is experimental, slower and not thoroughly tested.",
           "Follow references/hoi4-live-tools.md for provider-specific operations and setup."
         ],
@@ -39198,7 +39213,7 @@
           "author": "klimPaskov",
           "url": "https://github.com/klimPaskov/HOI4-Live-Tools",
           "license": "Apache-2.0",
-          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.4.0/LICENSE"
+          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.4.1/LICENSE"
         }
       },
       {

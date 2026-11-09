@@ -187,7 +187,7 @@ Kiro and Kilo Code document no working directory for project servers, so they re
 
 Clausewitz MCP (`clausewitz_linux`) supports native Linux HOI4 1.19.2 only. Linux connects directly; Windows connects through WSL; macOS connects through SSH to Linux. Complete manual Linux, game and server setup, then confirm the Linux game and server are ready in HOI4 Mod Setup before registration.
 
-HOI4 Live Tools (`hoi4-live`) is Windows verified only; upstream macOS support is incomplete. It is experimental, slower and not thoroughly tested. The app installs the pinned runtime under `%LOCALAPPDATA%\hoi4-live-tools` with `--quiet --register none`, then writes project registrations for selected clients. The manual bootstrap defaults to detected user-client registration; use `--register none` for runtime installation alone.
+HOI4 Live Tools (`hoi4-live`) runs on Windows and macOS. It is experimental, slower and not thoroughly tested. The app installs the pinned runtime under `%LOCALAPPDATA%\hoi4-live-tools` on Windows or `~/Library/Application Support/hoi4-live-tools` on macOS with `--quiet --register none`, then writes project registrations for selected clients. The manual bootstrap defaults to detected user-client registration; use `--register none` for runtime installation alone.
 
 None registers no server. Agents provide bounded manual recipes and record user observations. No automatic desktop fallback is allowed. See `.claude/skills/hoi4-live-playtest/references/setup.md` for setup and troubleshooting, and inspect the selected server's advertised tools before each test.
 
