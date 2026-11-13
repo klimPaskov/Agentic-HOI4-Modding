@@ -8,7 +8,7 @@
 2. Copy [CLAUDE_template.md](../CLAUDE_template.md) to your mod as `CLAUDE.md` and replace its placeholders (`[MOD_NAME]`, `[MOD_PREFIX]`, `[HOI4_GAME_DIR]`, `[STEAM_WORKSHOP_DIR]`). Delete the blocks for optional workflows you do not install.
 3. Copy `.claude/skills/`, `.claude/agents/`, `.claude/settings.json`, `.mcp.json` and `.tools/sync/` into the mod. Make the installed game files and the included `hoi4_wiki/` folder readable to the agent.
 4. Copy `.tools/mcp/`, [docs/runtimes.md](runtimes.md) and [docs/systems/hoi4_agent_tools_mcp_integration.md](systems/hoi4_agent_tools_mcp_integration.md) into the mod. Install Python 3.13 and native x64 Node.js 22.19 or later within major 22, or Node.js 24 LTS, with npm on PATH. On Windows, `py -3.13` can replace `python` in these commands.
-5. Install HOI4 Agent Tools with `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects. The bootstrap uses its own verified npm toolchain and leaves your npm installation alone.
+5. Install HOI4 Agent Tools with `python -I .tools/mcp/bootstrap_hoi4_agent_tools.py`, then approve the project server in your coding client and check that it connects. The bootstrap uses its own verified npm toolchain and leaves your npm installation alone. The shipped `.mcp.json` sets `HOI4_AGENT_TOOLS_PROFILES=all`, which makes the server list all its tools instead of the 13 core ones. Keep it in every registration you write by hand.
 
 On native Linux, follow the [Linux setup guide](linux.md) for the Node.js and Python prerequisites, the current-user install prefix and every client's MCP registration.
 
