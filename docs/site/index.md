@@ -17,6 +17,8 @@ Use Claude Code, Codex, Cursor, GitHub Copilot or one of many more coding client
 
 The app installs the MCP releases pinned in the package manifest. Its update and repair flows preserve local additions and let you review instruction conflicts. You can change the image and live-testing providers later and have the app update its MCP registrations and guidance.
 
+The [first-run guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/docs/first-run.md) lists the prerequisites (Python 3.13 on Windows, a package-manager Node.js 22 on Linux) and how to check that your agent works.
+
 [Setup app screenshots](https://github.com/klimPaskov/HOI4-Mod-Setup/tree/main/docs/screenshots) show the install and maintenance screens.
 
 ## Install manually
