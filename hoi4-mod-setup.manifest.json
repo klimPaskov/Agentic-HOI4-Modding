@@ -1,7 +1,7 @@
 {
   "schema_version": "6.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "74a9ce19166b159fee7389e8097f31ac4323b556",
+  "generated_for_revision": "4254f4db5a76473c208abd87c25b2bc3c96b5160",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -312,13 +312,13 @@
         },
         {
           "path": ".tools/quality.py",
-          "sha256": "b4737545f93b00d59591c5463848466fbbe09cbe659534719cccfdc9c607d604",
-          "size": 11486
+          "sha256": "8170fe17cd78e0f01ffe968cde8fab23cf45090672e4defd0fe1b49f1452f61e",
+          "size": 11595
         },
         {
           "path": ".tools/quality_baseline.json",
-          "sha256": "d97da90e59f758a0c195ded1b52a46292c97622715edfe6fd03fc06464e688d2",
-          "size": 13715
+          "sha256": "90e9f9912badffd6a8b2ea353ef485e25444c2529e6882c28008178e568dda81",
+          "size": 13382
         },
         {
           "path": ".tools/requirements-dev.txt",
@@ -13203,8 +13203,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "5164beb2ebbd48ef153e4eab59eabd46ca9b4113caf1788f0093867ac9807512",
-          "size": 5360
+          "sha256": "30ccda0e66c3a31c99942aa7b76bedfa3f12b3526d4de6b2f7581b4b38450c1e",
+          "size": 5544
         }
       ]
     },
@@ -13255,8 +13255,8 @@
       "expected_files": [
         {
           "path": "docs/runtimes.md",
-          "sha256": "f3591a5a1af39f9508e294a109676826791aa96e2ed5cc30262e8d8a816c1898",
-          "size": 19332
+          "sha256": "bfacf02ff77a26c19580f885b495363aef2c965ea6ba237d7380a85b56696026",
+          "size": 19548
         }
       ]
     },
@@ -16885,8 +16885,8 @@
       "expected_files": [
         {
           "path": "docs/linux.md",
-          "sha256": "ef008103af109256d4662b3cc18cd6a589faded104c12399dfc41e195141dc23",
-          "size": 8278
+          "sha256": "ed2a2d63da7b1869e0d33b7cb195ea5588193eb593db21e6fa1d8a5c0e795965",
+          "size": 8833
         }
       ]
     },
