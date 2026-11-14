@@ -103,16 +103,28 @@ def safe_animation_name(name: str, limit: int = 60) -> str:
     return (cleaned or "clip")[:limit]
 
 
-def parse_part_triangles(items) -> Dict[str, int]:
-    """`PART=N` items (a part and its triangle budget) as {part: N}; a budget must be a whole number of at least 12."""
+# `PART=auto` tries these in order and keeps the first one whose reduction passes the shape check.
+# Measured on Tripo's separately modelled axe (19,992 triangles): welding first keeps one shell at every
+# budget, and the silhouettes agree 0.95 to 0.96 at 1500, 0.96 to 0.97 at 2500, 0.96 to 0.98 at 4000.
+AUTO_BUDGETS = (1500, 2500, 4000)
 
-    budgets: Dict[str, int] = {}
+
+def parse_part_triangles(items) -> Dict[str, object]:
+    """`PART=N` or `PART=auto` items as {part: N or "auto"}; N must be a whole number of at least 12."""
+
+    budgets: Dict[str, object] = {}
     for item in items:
         part, separator, count = str(item).partition("=")
-        if not part or not separator or not count.isdigit() or int(count) < 12:
-            raise ValueError(f"A part triangle budget must look like PART=N with N at least 12, got {item!r}")
-        budgets[part] = int(count)
+        if not part or not separator or not (count == "auto" or (count.isdigit() and int(count) >= 12)):
+            raise ValueError(f"A part triangle budget must look like PART=N (N at least 12) or PART=auto, got {item!r}")
+        budgets[part] = "auto" if count == "auto" else int(count)
     return budgets
+
+
+def budget_list(value) -> tuple:
+    """The budgets to try for one part: its number, or the automatic list."""
+
+    return AUTO_BUDGETS if value == "auto" else (int(value),)
 
 
 def decimate_ratio(triangles: int, budget: int) -> Optional[float]:

@@ -22,10 +22,16 @@ and then `run_pilot.py` as for any unit. The job entry says `"provider": "tripo"
 clip with its whole prompt). A start that matches two clips or none is refused with the list of clip names,
 and the intake prints the clip names it found. `weapon` is optional: the named part is bound
 rigidly to the bone (`source` "rigged": the part is a mesh in the rigged export; "twin": the vertices
-whose nearest vertex in the `segmented` export belongs to the part). `trim` is optional: it cuts a
+whose nearest vertex in the `segmented` export belongs to the part). `weapon.bone` may be `Weapon`, the bone a
+separate weapon gets from `tripo/grip_weapon.py --weapon-bone`; `weapon.release_roles` (for example `["death"]`) names the
+roles in which the unit lets go of it: the kit grounds those clips by the body alone and the loose-part check does not
+judge that bone's part for drifting. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
 `part_triangles` is optional too: `{"tripo_part_1": 1500}` reduces a part to about that many triangles
-before it is bound (a separately modelled weapon has far more than a hand weapon needs).
+before it is bound (a separately modelled weapon has far more than a hand weapon needs), and `"auto"` takes
+the first of 1500, 2500 and 4000 that keeps the part's shape. The reduction welds first and is checked
+(shell count, front/side/top silhouette agreement of at least `part_shape_iou`, default 0.97), and a part that
+fails the check stops the intake.
 
 The intake records each file's SHA-256, size and name in `provider/tripo_intake.json`, runs
 `tripo/prepare_tripo_unit.py` in headless Blender for a unit, and places Meshy-shaped files in
@@ -105,7 +111,9 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         "--roles", *[f"{role}={clip}" for role, clip in roles.items() if role in wanted],
     ]
     for part, budget in (config.get("part_triangles") or {}).items():
-        command += ["--part-triangles", f"{part}={int(budget)}"]
+        command += ["--part-triangles", f"{part}={budget if budget == 'auto' else int(budget)}"]
+    if config.get("part_shape_iou") is not None:
+        command += ["--shape-iou", str(float(config["part_shape_iou"]))]
     for role, frames in (config.get("trim") or {}).items():
         command += ["--trim", f"{role}={int(frames)}"]
     weapon = config.get("weapon")

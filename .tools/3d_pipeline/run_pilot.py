@@ -3757,7 +3757,14 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, slump=bool(action.get("slump")))
         else:
             finished_rel = f"blender/checkpoints/unit_{role}_grounded.blend"
-            finishing = blender.correct_action_grounding(slug, chain, finished_rel, target, target_armature_name=armature)
+            # In a clip where the unit lets go of its weapon (the job names the roles in tripo.weapon.release_roles),
+            # the weapon bone never decides where the ground is: the body does.
+            weapon_cfg = ((spec.get("tripo") or {}).get("weapon") or {}) if tripo else {}
+            weapon_bone = weapon_cfg.get("bone") if role in (weapon_cfg.get("release_roles") or []) else None
+            finishing = blender.correct_action_grounding(
+                slug, chain, finished_rel, target, target_armature_name=armature,
+                excluded_contact_bones=[weapon_bone] if weapon_bone else None,
+            )
         chain = finished_rel
         roles[role] = {"action": target, "clip_role": clip_role, "receipt": receipt_rel, "import": imported, "finishing": finishing}
     return export_unit_roles(job, spec, blender, roles, mesh_rel, chain, library, mesh_export, textures)
@@ -3882,7 +3889,9 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
     if repaired:
         records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         records[f"{stem}.mesh"]["repairs"] = repaired["repairs"]
-    findings, facts = check_unit_files.check_files(staged, unit, profile)
+    weapon_cfg = ((spec.get("tripo") or {}).get("weapon") or {}) if uses_tripo(spec) else {}
+    weapon_bones = [weapon_cfg["bone"]] if weapon_cfg.get("release_roles") and weapon_cfg.get("bone") else []
+    findings, facts = check_unit_files.check_files(staged, unit, profile, weapon_bones=weapon_bones)
     errors = [item.__dict__ for item in findings if item.severity == "error"]
     shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []
     roles = sorted(exports["animations"])

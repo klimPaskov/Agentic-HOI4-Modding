@@ -36,6 +36,7 @@ import tempfile
 import zlib
 from pathlib import Path
 
+import bmesh
 import bpy
 import numpy as np
 from mathutils import Vector, kdtree
@@ -44,7 +45,8 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images  # noqa: E402
-from lib.tripo import atlas_layout, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name  # noqa: E402
+from lib import tripo_shape  # noqa: E402
+from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name  # noqa: E402
 
 MAX_BONES = 50
 # Texels of every atlas cell kept as a gutter: the tile is resampled inside it and its edge pixels are repeated
@@ -61,6 +63,9 @@ for _side in ("Left", "Right"):
     for _part in ("Shoulder", "Arm", "ForeArm", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"):
         KIT_BONES[f"{_side}{_part}"] = f"{_side}{_part}"
 KIT_NAMES = set(KIT_BONES.values())
+# The grip stage may add a bone for the separate weapon (a child of the hand); it is kept when the rig has it.
+OPTIONAL_BONES = {"Weapon": "Weapon"}
+KIT_BONES.update(OPTIONAL_BONES)
 
 
 def parse_args():
@@ -74,8 +79,11 @@ def parse_args():
     parser.add_argument("--rigid-from-twin", nargs=2, metavar=("GLB", "PART=BONE"))
     parser.add_argument("--trim", action="append", default=[], metavar="ROLE=MAX_FRAMES",
                         help="cut a long clip to at most MAX_FRAMES frames, ending on the frame whose pose is closest to frame 0")
-    parser.add_argument("--part-triangles", action="append", default=[], metavar="PART=N",
-                        help="reduce a part to about N triangles (Blender Decimate, UVs kept) before it is bound")
+    parser.add_argument("--part-triangles", action="append", default=[], metavar="PART=N|auto",
+                        help="reduce a part to about N triangles (weld, then Blender Decimate, UVs kept) before it is bound; "
+                        "auto tries 1500, 2500, 4000 and keeps the first that passes the shape check")
+    parser.add_argument("--shape-iou", type=float, default=tripo_shape.MIN_IOU,
+                        help="the least silhouette agreement (front, side, top; intersection over union) a reduced part must keep")
     parser.add_argument("--report", type=Path)
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -237,28 +245,79 @@ def separate_coincident_weapon_vertices(meshes, rigid_for):
     return moved
 
 
-def decimate_part(obj, armature, budget: int):
-    """Collapse-decimate `obj` to about `budget` triangles with the armature modifier off, then put it back.
+def part_arrays(obj):
+    """World-space vertex positions (V, 3) and triangle vertex indices (T, 3) of a mesh object, as numpy arrays."""
 
-    Vertex groups and UVs go through the collapse (the groups are replaced by the rigid bind afterwards
-    for a weapon). Returns {"from": n, "to": m} or None when the part is already within the budget.
+    mesh = obj.data
+    positions = np.empty(len(mesh.vertices) * 3)
+    mesh.vertices.foreach_get("co", positions)
+    positions = positions.reshape(-1, 3) @ np.array(obj.matrix_world)[:3, :3].T + np.array(obj.matrix_world)[:3, 3]
+    mesh.calc_loop_triangles()
+    triangles = np.empty(len(mesh.loop_triangles) * 3, dtype=np.int64)
+    mesh.loop_triangles.foreach_get("vertices", triangles)
+    return positions, triangles.reshape(-1, 3)
+
+
+def weld_by_position(obj):
+    """Merge vertices that share a position. UVs live on the face corners, so they are kept."""
+
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    size = max(max(v.co[axis] for v in bm.verts) - min(v.co[axis] for v in bm.verts) for axis in range(3))
+    before = len(bm.verts)
+    bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=size * 1e-5)
+    merged = before - len(bm.verts)
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+    return merged
+
+
+def decimate_part(obj, armature, budget, min_iou: float):
+    """Reduce `obj` to a triangle budget without breaking its shape; fail the stage when no budget keeps it.
+
+    A mesh split along its UV seams has one shell per UV island, and collapsing the islands separately
+    tears the part into floating fragments (19 shells from one on Tripo's axe at 1500 triangles). So the
+    vertices are welded by position first (the UVs stay on the face corners), then collapse-decimated with
+    the armature modifier off. `budget` is a number or "auto" (the first of 1500, 2500, 4000 that passes).
+    Every attempt is checked by `lib.tripo_shape`: the shell count must not grow and the front, side and top
+    silhouettes must agree with the original to `min_iou`. Returns the receipt, or None when the part is
+    already within the (single) budget.
     """
 
+    budgets = budget_list(budget)
     before = sum(len(p.vertices) - 2 for p in obj.data.polygons)
-    ratio = decimate_ratio(before, budget)
-    if ratio is None:
+    if budget != "auto" and decimate_ratio(before, budgets[0]) is None:
         return None
+    original = part_arrays(obj)
     for modifier in [m for m in obj.modifiers if m.type == "ARMATURE"]:
         obj.modifiers.remove(modifier)
     select_only([obj], obj)
-    decimate = obj.modifiers.new("tripo_decimate", "DECIMATE")
-    decimate.decimate_type = "COLLAPSE"
-    decimate.ratio = ratio
-    decimate.use_collapse_triangulate = True
-    bpy.ops.object.modifier_apply(modifier=decimate.name)
+    source = obj.data
+    attempts, chosen = [], None
+    for candidate in budgets:
+        obj.data = source.copy()
+        merged = weld_by_position(obj)
+        ratio = decimate_ratio(sum(len(p.vertices) - 2 for p in obj.data.polygons), candidate)
+        if ratio is not None:
+            decimate = obj.modifiers.new("tripo_decimate", "DECIMATE")
+            decimate.decimate_type = "COLLAPSE"
+            decimate.ratio = ratio
+            decimate.use_collapse_triangulate = True
+            bpy.ops.object.modifier_apply(modifier=decimate.name)
+        report = tripo_shape.shape_report(original, part_arrays(obj))
+        problems = tripo_shape.shape_problems(report, min_iou)
+        attempts.append({"budget": candidate, "triangles": report["triangles_after"], "welded_vertices": merged, "shells": report["shells_after"]["shells"],
+                         "iou": report["iou"], "problems": problems})
+        if not problems:
+            chosen = attempts[-1]
+            break
+    if chosen is None:
+        table = "; ".join(f"{a['budget']}: shells {a['shells']}, IoU {a['iou']}, {a['problems'][0]}" for a in attempts)
+        raise SystemExit(f"Reducing {obj.name} broke its shape at every budget tried ({table}). Raise the budget or lower --shape-iou.")
     skin = obj.modifiers.new("Armature", "ARMATURE")
     skin.object = armature
-    return {"from": before, "to": sum(len(p.vertices) - 2 for p in obj.data.polygons), "ratio": ratio}
+    return {"from": before, "to": chosen["triangles"], "budget": chosen["budget"], "min_iou": min_iou, "shape": report, "attempts": attempts}
 
 
 def connected_weapon_parts(obj, flags):
@@ -448,25 +507,34 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
     folder.mkdir(parents=True, exist_ok=True)
     # Empty atlas area: black, a flat normal, and matte (roughness 1) so it never counts as glossy in the packed specular map.
     written, tiles, fill = {}, {}, {"diffuse": (0, 0, 0), "normal": (128, 128, 255), "specular": (0, 255, 0)}
+    neutral_parts = {}
     for role in ROLE_FILES:
         have = [role in images[name] for name in names]
         if not any(have):
             continue
+        if not all(have) and role == "diffuse":
+            raise SystemExit(f"Not every part has a base color map: {dict(zip(names, have))}")
+        # A part without a normal or metallic-roughness map (a separately modelled weapon) gets the neutral
+        # stand-in in its cell: a flat normal, or not metal with roughness 0.8, at the size of its base color.
+        tiles[role] = [decode_rgb(images[name][role]) if images[name].get(role) else None for name in names]
         if not all(have):
-            raise SystemExit(f"Not every part has a {role} map: {dict(zip(names, have))}")
-        tiles[role] = [decode_rgb(images[name][role]) for name in names]
+            neutral_parts.setdefault(role, [n for n, ok in zip(names, have) if not ok])
     if "diffuse" not in tiles:
         raise SystemExit(f"{source_glb.name} embeds no base color map")
     sizes = [tile.shape[:2] for tile in tiles["diffuse"]]
     # A part's normal and metallic-roughness maps may be smaller or larger than its diffuse (a separately
     # modelled weapon often is): every tile is resampled to its cell anyway, so only the diffuse sizes lay out the atlas.
-    map_sizes = {role: [list(tile.shape[:2]) for tile in row] for role, row in tiles.items()}
+    map_sizes = {role: [list(tile.shape[:2]) if tile is not None else None for tile in row] for role, row in tiles.items()}
     layout = atlas_layout(sizes)
     side, rects = layout["size"], layout["rects"]
     for role, row in tiles.items():
         atlas = np.empty((side, side, 3), dtype=np.uint8)
         atlas[:, :] = fill[role]
+        stand_in = (0, NEUTRAL_ROUGHNESS, 0) if role == "specular" else fill[role]
         for tile, (x, y, width, height) in zip(row, rects):
+            if tile is None:
+                tile = np.empty((height, width, 3), dtype=np.uint8)
+                tile[:, :] = stand_in
             inner = resize_rgb(tile, width - 2 * ATLAS_GUTTER, height - 2 * ATLAS_GUTTER)
             padded = np.pad(inner, ((ATLAS_GUTTER, ATLAS_GUTTER), (ATLAS_GUTTER, ATLAS_GUTTER), (0, 0)), mode="edge")
             atlas[side - y - height : side - y, x : x + width] = padded
@@ -522,7 +590,7 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         obj.data.materials.append(material)
         for polygon in obj.data.polygons:
             polygon.material_index = 0
-    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "map_sizes": map_sizes, "neutral_specular": neutral_specular, "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
+    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "map_sizes": map_sizes, "neutral_specular": neutral_specular, "neutral_map_parts": neutral_parts, "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
 
 
 def trimmed_copy(action, cap: int):
@@ -599,7 +667,7 @@ def main():
         twin_part, twin_bone = split_pair(args.rigid_from_twin[1], "--rigid-from-twin")
         twin = (Path(args.rigid_from_twin[0]), twin_part, twin_bone)
     for bone in list(rigid_parts.values()) + ([twin[2]] if twin else []):
-        if bone not in KIT_NAMES:
+        if bone not in KIT_NAMES | set(OPTIONAL_BONES.values()):
             raise SystemExit(f"Weapon bone {bone!r} is not a kit bone name: {sorted(KIT_NAMES)}")
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -624,7 +692,7 @@ def main():
     decimated = {}
     for obj in meshes:
         if obj.name in budgets:
-            decimated[obj.name] = decimate_part(obj, armature, budgets[obj.name])
+            decimated[obj.name] = decimate_part(obj, armature, budgets[obj.name], args.shape_iou)
 
     # Weapon vertices, decided on the untouched mesh.
     twin_report, twin_flags = None, {}
@@ -645,7 +713,7 @@ def main():
     # Bones: keep the kit's, merge the rest into their nearest kept parent, then rename.
     bones_before = len(armature.data.bones)
     keep = {b.name: KIT_BONES[short_name(b.name)] for b in armature.data.bones if short_name(b.name) in KIT_BONES}
-    if len(keep) != len(KIT_NAMES):
+    if not KIT_NAMES <= set(keep.values()):
         raise SystemExit(f"The rig lacks kit bones: {sorted(KIT_NAMES - set(keep.values()))}")
     merge_into = {}
     for bone in armature.data.bones:
@@ -681,7 +749,7 @@ def main():
             if old in keep:
                 fcurve.data_path = fcurve.data_path.replace(f'pose.bones["{old}"]', f'pose.bones["{keep[old]}"]', 1)
     bone_names = [b.name for b in armature.data.bones]
-    if len(bone_names) > MAX_BONES or set(bone_names) != KIT_NAMES:
+    if len(bone_names) > MAX_BONES or set(bone_names) - set(OPTIONAL_BONES.values()) != KIT_NAMES:
         raise SystemExit(f"Bone set wrong after the merge: {bone_names}")
 
     weapon_summary = []

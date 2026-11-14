@@ -312,6 +312,12 @@ class PartTriangleBudget(unittest.TestCase):
         from lib.tripo import parse_part_triangles
 
         self.assertEqual(parse_part_triangles(["tripo_part_1=1500", "shield=800"]), {"tripo_part_1": 1500, "shield": 800})
+        self.assertEqual(parse_part_triangles(["tripo_part_1=auto"]), {"tripo_part_1": "auto"})
+        from lib.tripo import AUTO_BUDGETS, budget_list
+
+        self.assertEqual(budget_list("auto"), AUTO_BUDGETS)
+        self.assertEqual(AUTO_BUDGETS, (1500, 2500, 4000))
+        self.assertEqual(budget_list(1500), (1500,))
         for bad in ("tripo_part_1", "tripo_part_1=", "tripo_part_1=abc", "tripo_part_1=5", "=100", "tripo_part_1=-3"):
             with self.assertRaises(ValueError, msg=bad):
                 parse_part_triangles([bad])
@@ -328,6 +334,10 @@ class PartTriangleBudget(unittest.TestCase):
         spec["tripo"]["part_triangles"] = {"tripo_part_1": 1500}
         command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
         self.assertEqual(command[command.index("--part-triangles") + 1], "tripo_part_1=1500")
+        spec["tripo"].update(part_triangles={"tripo_part_1": "auto"}, part_shape_iou=0.95)
+        command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
+        self.assertEqual(command[command.index("--part-triangles") + 1], "tripo_part_1=auto")
+        self.assertEqual(command[command.index("--shape-iou") + 1], "0.95")
 
 
 class DefaultRepairs(unittest.TestCase):

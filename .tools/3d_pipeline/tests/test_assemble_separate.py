@@ -34,7 +34,7 @@ def box_triangles(offset: int = 0) -> np.ndarray:
     return np.array(tris, dtype=np.int64)
 
 
-def make_body(clip: str, mesh_name: str = "tripo_node_a", shift_ibm: float = 0.0, hand_name: str = "mixamorig:RightHand", track_y: float = 0.0) -> bytes:
+def make_body(clip: str, mesh_name: str = "tripo_node_a", shift_ibm: float = 0.0, hand_name: str = "mixamorig:RightHand", track_y: float = 0.0, scale_y_end: float = 0.0) -> bytes:
     """A box body (hips) with a small fist blob on the right hand, one clip that lowers the hand by `track_y`."""
 
     names = list(JOINT_NAMES)
@@ -53,7 +53,7 @@ def make_body(clip: str, mesh_name: str = "tripo_node_a", shift_ibm: float = 0.0
     fist = box_vertices(HAND - 0.05, HAND + 0.05)
     positions = np.concatenate([torso, fist])
     joints = np.zeros((16, 4), np.uint8)
-    joints[8:, 0] = 1
+    joints[8:, 0] = [2, 3, 4, 2, 3, 4, 2, 3]  # the fist blob is weighted to the finger joints
     weights = np.zeros((16, 4), np.float32)
     weights[:, 0] = 1.0
     indices = np.concatenate([box_triangles(0), box_triangles(8)]).ravel()
@@ -72,10 +72,16 @@ def make_body(clip: str, mesh_name: str = "tripo_node_a", shift_ibm: float = 0.0
         ibm[i, :3, 3] = -w + shift_ibm
     # glTF stores matrices column-major: the translation sits in elements 12..14.
     glb.doc["skins"].append({"joints": [0, 1, 2, 3, 4], "inverseBindMatrices": glb.add_accessor(ibm.transpose(0, 2, 1), "MAT4", asm.FLOAT)})
-    times = glb.add_accessor(np.array([0.0, 1.0]), "SCALAR", asm.FLOAT, bounds=True)
-    moved = np.array([HAND, HAND - [0, track_y, 0]])
+    times = glb.add_accessor(np.array([0.0, 1.0, 2.0, 3.0]), "SCALAR", asm.FLOAT, bounds=True)
+    # The hand zigzags up and down by `track_y`, so the weapon head travels 3 x track_y in the clip.
+    moved = np.array([HAND + [0, track_y * (i % 2), 0] for i in range(4)])
     out = glb.add_accessor(moved, "VEC3", asm.FLOAT)
-    glb.doc["animations"].append({"name": clip, "samplers": [{"input": times, "output": out, "interpolation": "LINEAR"}], "channels": [{"sampler": 0, "target": {"node": 1, "path": "translation"}}]})
+    anim = {"name": clip, "samplers": [{"input": times, "output": out, "interpolation": "LINEAR"}], "channels": [{"sampler": 0, "target": {"node": 1, "path": "translation"}}]}
+    if scale_y_end:
+        squash = glb.add_accessor(np.array([[1, 1, 1], [1, scale_y_end, 1], [1, scale_y_end, 1], [1, scale_y_end, 1]]), "VEC3", asm.FLOAT)
+        anim["samplers"].append({"input": times, "output": squash, "interpolation": "LINEAR"})
+        anim["channels"].append({"sampler": 1, "target": {"node": 0, "path": "scale"}})
+    glb.doc["animations"].append(anim)
     return glb.to_bytes()
 
 
@@ -122,8 +128,8 @@ class Merge(Workspace):
         clips = {name: (tracks, end) for name, tracks, end in rig.clips()}
         self.assertEqual(set(clips), {"idle", "chop"})
         times, values = clips["chop"][0][1]["translation"]
-        self.assertEqual(times.tolist(), [0.0, 1.0])
-        self.assertAlmostEqual(float(values[1][1]), 0.5 - 0.2, places=5)
+        self.assertEqual(times.tolist(), [0.0, 1.0, 2.0, 3.0])
+        self.assertAlmostEqual(float(values[1][1]), 0.5 + 0.2, places=5)
         names = [n.get("name") for n in merged.doc["nodes"]]
         self.assertIn(asm.BODY_NODE, names)
         self.assertNotIn("tripo_node_a", names)
@@ -156,7 +162,7 @@ class Merge(Workspace):
 class Assemble(Workspace):
     def run_assemble(self, verify: bool = False, max_tilt: float = 25.0, grip_range=(0.2, 0.7)) -> dict:
         a = self.write("a.glb", make_body("idle"))
-        b = self.write("b.glb", make_body("chop", track_y=0.1))
+        b = self.write("b.glb", make_body("chop", track_y=0.5))
         weapon = self.write("w.glb", make_weapon())
         out = self.dir / "out.glb"
         report = asm.assemble([a, b], weapon, out, 1.06, 0.6, "RightHand", grip_range, max_tilt, trade_tilts=(), fit_frames=3, directions=60, rolls=6, candidates=3, weapon_triangles=10, verify=verify, selection_samples=4, log=lambda *_: None)
@@ -234,6 +240,86 @@ class Assemble(Workspace):
     def test_a_grip_range_that_cannot_satisfy_the_hard_rules_is_refused(self) -> None:
         with self.assertRaisesRegex(asm.AssembleError, "no pose meets the hard rules"):
             self.run_assemble(max_tilt=10.0, grip_range=(0.6, 0.7))
+
+
+class Measures(Workspace):
+    """The fist, the weapon head path, the death test, and clip names given as prefixes."""
+
+    def multi_clip_body(self, **clips) -> Path:
+        """One body GLB holding several clips: name -> make_body keywords."""
+
+        files = [self.write(f"{name}.glb", make_body(name, **kw)) for name, kw in clips.items()]
+        merged, _ = asm.merge_body_clips(files)
+        return self.write("multi.glb", merged.to_bytes())
+
+    def go(self, body: Path, roles: dict, **kw) -> dict:
+        weapon = self.write("w.glb", make_weapon())
+        args = dict(grip_range=(0.2, 0.7), max_tilt=25.0, trade_tilts=(), fit_frames=3, directions=60, rolls=6, candidates=3, selection_samples=4, log=lambda *_: None)
+        args.update(kw)
+        return asm.assemble([body], weapon, self.dir / "out.glb", 1.06, 0.6, "RightHand", roles=roles, **args)
+
+    def test_fist_axis_from_joints_follows_the_row_of_knuckles_and_the_flexion_planes(self) -> None:
+        names, pos = [], []
+        for f, finger in enumerate(("Index", "Middle", "Ring", "Pinky")):
+            for k in (1, 2, 3, 4):
+                names.append(f"mixamorig:RightHand{finger}{k}")
+                pos.append([0.03 * (k - 1), 0.01 * (k - 1) ** 2, 0.02 * f])  # each finger curls in its own plane z = const
+        axis, details = asm.fist_hole_axis(names, "mixamorig:RightHand", np.array(pos))
+        self.assertGreater(abs(float(axis @ [0, 0, 1])), 0.999)
+        self.assertLess(details["knuckle_vs_flexion_deg"], 5.0)
+        self.assertEqual(details["fingers_used"], 4)
+
+    def test_one_body_file_with_many_clips_and_clip_prefixes(self) -> None:
+        body = self.multi_clip_body(idle={}, chop={"track_y": 0.5}, collapse={"scale_y_end": 0.3})
+        report = self.go(body, {"idl": "idle", "ch": "attack", "coll": "death"})
+        self.assertEqual(report["clips_in_body"], ["idle", "chop", "collapse"])
+        self.assertEqual(report["fit"]["role_map"], {"idle": "idle", "chop": "attack", "collapse": "death"})
+        with self.assertRaisesRegex(asm.AssembleError, "several"):
+            self.go(body, {"c": "attack", "idle": "idle"})
+
+    def test_the_haft_axis_passes_through_the_fist_and_the_numbers_are_reported(self) -> None:
+        body = self.multi_clip_body(idle={}, chop={"track_y": 0.5})
+        report = self.go(body, {"idle": "idle", "chop": "attack"})
+        fist = report["pose"]["fist"]
+        self.assertLessEqual(fist["rest"]["distance_cm"], fist["fist_radius_cm"] + 1e-6)
+        self.assertLessEqual(fist["idle"]["distance_cm_worst"], fist["fist_radius_cm"] + 1e-6)
+        self.assertGreaterEqual(fist["rest"]["angle_deg"], 0.0)
+        self.assertGreater(report["grip_geometry"]["finger_vertices"], 3)
+
+    def test_the_head_must_travel_to_make_an_attack(self) -> None:
+        body = self.multi_clip_body(idle={}, chop={"track_y": 0.5}, twitch={"track_y": 0.1})
+        report = self.go(body, {"idle": "idle", "chop": "attack", "twitch": "attack"})
+        roles = report["pose"]["clip_roles"]
+        self.assertAlmostEqual(roles["chop"]["head_travel_body_heights"], 1.5, delta=0.1)
+        self.assertAlmostEqual(roles["twitch"]["head_travel_body_heights"], 0.3, delta=0.05)
+        self.assertGreater(roles["chop"]["head_max_speed_body_heights_per_s"], 0.4)
+        self.assertAlmostEqual(roles["_idle_baseline"]["head_travel_body_heights"], 0.0, delta=0.01)
+        status = report["pose"]["roles"]["attack"]
+        self.assertEqual(status["best_passing_clip"], "chop")
+        self.assertTrue(status["clips"]["twitch"].startswith("not an attack"))
+        only_twitch = self.go(body, {"idle": "idle", "twitch": "attack"})
+        self.assertIsNone(only_twitch["pose"]["roles"]["attack"]["best_passing_clip"])
+
+    def test_a_death_must_end_on_the_ground_and_the_fallen_clip_gets_the_lying_tolerance(self) -> None:
+        body = self.multi_clip_body(idle={}, collapse={"scale_y_end": 0.3}, stand={})
+        report = self.go(body, {"idle": "idle", "collapse": "death", "stand": "death"})
+        roles = report["pose"]["clip_roles"]
+        self.assertAlmostEqual(roles["collapse"]["last_frame_extent_pct_of_standing_height"], 30.0, delta=2.0)
+        self.assertTrue(roles["collapse"]["eligible"])
+        self.assertFalse(roles["stand"]["eligible"])
+        self.assertEqual(roles["collapse"]["ground_tolerance_pct"], 100 * asm.DEATH_GROUND_TOLERANCE_SHARE)
+        self.assertEqual(roles["stand"]["ground_tolerance_pct"], 100 * cc.FRAME_GROUND_TOLERANCE_SHARE)
+        self.assertTrue(report["pose"]["roles"]["death"]["clips"]["stand"].startswith("not a death"))
+        self.assertNotEqual(report["pose"]["roles"]["death"]["best_passing_clip"], "stand")
+
+    def test_clip_check_takes_its_own_ground_tolerance_for_named_clips(self) -> None:
+        body = self.multi_clip_body(idle={}, collapse={"scale_y_end": 0.3})
+        self.go(body, {"idle": "idle", "collapse": "death"})
+        out = self.dir / "out.glb"
+        strict = cc.check(out, per_frame_ground=True, samples=4)["clips"]["collapse"]["weapon_below_ground_pct"]
+        lax = cc.check(out, per_frame_ground=True, samples=4, ground_tolerance_by_clip={"collapse": 5.0})["clips"]["collapse"]["weapon_below_ground_pct"]
+        self.assertLessEqual(lax, strict)
+        self.assertEqual(lax, 0.0)
 
 
 if __name__ == "__main__":

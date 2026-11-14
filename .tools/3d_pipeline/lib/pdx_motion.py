@@ -426,6 +426,7 @@ class LoosePart:
     worst_frame: int = -1
     prop_bone: str = ""  # for a held prop: the bone the whole shape follows
     held_by: str = ""  # the bone whose body vertices it is judged against (the prop bone, or its nearest ancestor with any)
+    rigid_to: str = ""  # the one bone every vertex of the part follows wholly (any part, not only a separate shape), or ""
     pieces: int = 1
 
 
@@ -642,7 +643,8 @@ def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePar
         gap = float(distance.min()) / height
         bone = mesh.bones[props[key[1]]] if key[0] == "prop" else ""
         held_by = mesh.bones[holder] if holder >= 0 else ""
-        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap, prop_bone=bone, held_by=held_by, pieces=len(members)))
+        rigid = rigid_bone(mesh, mine)
+        found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap, prop_bone=bone, held_by=held_by, rigid_to=mesh.bones[rigid] if rigid >= 0 else "", pieces=len(members)))
         anchors.append((sample[pairs[:, 0]], body[pairs[:, 1]]))
     if mesh.skinned and found:
         for name, anim in clips.items():

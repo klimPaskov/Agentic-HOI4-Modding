@@ -414,7 +414,7 @@ def resolve_weapon_joint(names: Sequence[str], weapon_rest: np.ndarray, joint_re
 # ---------------------------------------------------------------------------------------------
 
 
-def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", samples=24, grip_radius=GRIP_RADIUS_SHARE, per_frame_ground=False, only: Optional[Sequence[str]] = None) -> dict:
+def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", samples=24, grip_radius=GRIP_RADIUS_SHARE, per_frame_ground=False, only: Optional[Sequence[str]] = None, ground_tolerance_by_clip: Optional[Dict[str, float]] = None) -> dict:
     rig = Rig(path, body, weapon)
     body_part, weapon_part = rig.body, rig.weapon
     rest_worlds = rig.joint_worlds({})
@@ -441,6 +441,7 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
     for name, tracks, end in rig.clips():
         if only is not None and name not in only:
             continue
+        tolerance = (ground_tolerance_by_clip or {}).get(name, FRAME_GROUND_TOLERANCE_SHARE)
         worst_stretch = {"stretched": 0.0, "squashed": 0.0, "frame": 0}
         growth = 0.0
         worst_in, worst_in_frame, deepest, deepest_frame, worst_ground = 0.0, 0, 0.0, 0, 0.0
@@ -460,7 +461,7 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
             lowest_body = max(lowest_body, float((ground + GROUND_TOLERANCE_SHARE * height - now[:, 1].min()) / height))
             hand = mats[joint]
             world_all = (all_points @ hand.T)[:, :3]
-            frame_ground = float(now[:, 1].min()) - FRAME_GROUND_TOLERANCE_SHARE * height if per_frame_ground else ground
+            frame_ground = float(now[:, 1].min()) - tolerance * height if per_frame_ground else ground
             worst_ground = max(worst_ground, float((world_all[:, 1] < frame_ground).mean()))
             worst_rest_ground = max(worst_rest_ground, float((world_all[:, 1] < ground).mean()))
             if not len(free_points):
@@ -537,10 +538,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--samples", type=int, default=24)
     parser.add_argument("--grip-radius", type=float, default=GRIP_RADIUS_SHARE, help="grip zone radius as a share of the body height")
     parser.add_argument("--ground-per-frame", action="store_true", help="below-ground test against the lowest body vertex of each frame (for clips where the body sinks)")
+    parser.add_argument("--ground-tolerance", help="clip=share,... : own per-frame below-ground tolerance (share of the body height) for named clips, for example a death clip that lies on the ground")
     parser.add_argument("--json", type=Path, help="write the full report here")
     parser.add_argument("--fail-on-verdict", action="store_true", help="exit 1 when any clip fails")
     args = parser.parse_args(argv)
-    result = check(args.glb, args.body, args.weapon, args.weapon_bone, args.samples, args.grip_radius, args.ground_per_frame)
+    result = check(args.glb, args.body, args.weapon, args.weapon_bone, args.samples, args.grip_radius, args.ground_per_frame, ground_tolerance_by_clip={k: float(v) for k, _, v in (item.rpartition("=") for item in args.ground_tolerance.split(","))} if args.ground_tolerance else None)
     print_table(result)
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)

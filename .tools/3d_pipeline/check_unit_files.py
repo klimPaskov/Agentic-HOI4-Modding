@@ -271,7 +271,7 @@ def load_calibration(group: str = "organic", path: Optional[Path] = None) -> Opt
     return {measure: float(entry["value"]) for measure, entry in measures.items()} if measures else None
 
 
-def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False, group="organic"):
+def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seated=False, group="organic", weapon_bones=()):
     """The surface, bridge and per-frame deformation rules, against the vanilla limits. A seated rider skips the ground rule."""
 
     from lib import pdx_deform
@@ -322,14 +322,14 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
         hover = 0.0 if death else report.highest_lowest
         if not seated and (sink > sink_limit or hover > limits["hover"]):
             add("UNIT-ANIM-GROUND", "error", anim_path, f"the lowest point goes {sink:.1%} of the unit's height below the ground and up to {report.highest_lowest:.1%} above it; vanilla {'deaths sink' if death else 'units sink'} at most {sink_limit:.1%} and lift at most {limits['hover']:.1%}")
-    _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated)
+    _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated, weapon_bones)
 
 
 # A seated rider's idle, move, retreat and training are one clip by design: the mount's gait carries it.
 SEATED_REUSE = {"idle", "move", "retreat", "training"}
 
 
-def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
+def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False, weapon_bones=()):
     """The seam, knee, still and same-role rules (lib/pdx_motion.py)."""
 
     from lib import pdx_motion
@@ -365,7 +365,7 @@ def _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated=False):
         facts["motion"][mesh_path.name]["clips"][anim_path.name]["fastest_turn"] = round(turn.degrees, 1)
         if "turn_per_frame" in limits and turn.degrees > limits["turn_per_frame"]:
             add("UNIT-ANIM-SPIN", "error", anim_path, f"frame {turn.frame}: {turn.joint} turns {turn.degrees:.0f} degrees in one frame; vanilla's fastest joint turns {limits['turn_per_frame']:.0f}. Keys on opposite sides of the quaternion sphere make Blender turn the long way: flip them (live_helpers.normalize_quaternion_keys) and export again, or spread the turn over more frames")
-    _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits)
+    _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits, weapon_bones)
     _check_prop_clearance(mesh, mesh_path, loaded, add, facts)
     paths = sorted(loaded)
     for index, first in enumerate(paths):
@@ -428,8 +428,14 @@ def check_files(
     stem: Optional[str] = None,
     deformation: bool = True,
     limits: Optional[Dict[str, float]] = None,
+    weapon_bones: Sequence[str] = (),
 ) -> tuple[List[Finding], dict]:
-    """Check a unit folder. `stem` checks one mesh and its animations in a folder shared with another unit (a mount and its rider)."""
+    """Check a unit folder. `stem` checks one mesh and its animations in a folder shared with another unit (a mount and its rider).
+
+    `weapon_bones` names bones the job records as carrying a weapon the unit can let go of: a part bound wholly to one
+    of them is not judged for drifting off the body (it falls away from the hand by design), though it is still
+    judged for skin weights and for floating apart at rest.
+    """
 
     findings: List[Finding] = []
     facts: dict = {"meshes": {}, "animations": {}, "textures": {}, "surface": {}, "deformation": {}, "motion": {}}
@@ -452,7 +458,7 @@ def check_files(
     if deformation and meshes:
         group = (unit_type or {}).get("calibration_group", "organic")
         seated = (unit_type or {}).get("entity_template") == "rider"
-        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated, group)
+        _check_deformation(meshes[0], folder, stem, stems if only_stem else None, add, facts, load_calibration(group) if limits is None else limits, seated, group, weapon_bones)
     _check_textures(folder, add, facts)
     return findings, facts
 
@@ -476,7 +482,7 @@ def _check_prop_clearance(mesh, mesh_path, loaded, add, facts):
                 f"through the head or a leg although every key is clear")
 
 
-def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
+def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits, weapon_bones=()):
     """UNIT-LOOSE-PART: every loose part is skinned and stays within vanilla's contact distance in every frame."""
 
     from lib import pdx_motion
@@ -485,7 +491,7 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
     facts["motion"][mesh_path.name]["loose_parts"] = [
         {"triangles": part.triangles, "unweighted": part.unweighted, "rest_gap": round(part.rest_gap, 4),
          "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame,
-         "prop_bone": part.prop_bone, "held_by": part.held_by, "pieces": part.pieces}
+         "prop_bone": part.prop_bone, "held_by": part.held_by, "rigid_to": part.rigid_to, "pieces": part.pieces}
         for part in parts[:10]
     ]
     unweighted = [part for part in parts if part.unweighted and mesh.skinned]
@@ -502,7 +508,8 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits):
             add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} slides {prop.worst_gap:.1%} of the unit's height off {where} in {prop.worst_clip} frame {prop.worst_frame}; vanilla loose parts stay within {limit:.1%}")
     parts = [part for part in parts if not (part.prop_bone and part.held_by)]
     floating = [part for part in parts if part.rest_gap > limit]
-    drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap]
+    released = {bone for bone in weapon_bones if bone}
+    drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap and not (part.rigid_to and part.rigid_to in released)]
     if floating:
         worst = max(floating, key=lambda part: part.rest_gap)
         add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(floating)} loose part(s) float apart from the body at rest, the farthest {worst.rest_gap:.1%} of the unit's height away ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Move the part onto the body or drop it")
@@ -769,6 +776,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit, and compare its clips with the mod's other units")
     parser.add_argument("--compare-units", type=Path, help="compare the unit's clips with every unit under this folder (default with --mod-root: <mod-root>/gfx/models/units)")
     parser.add_argument("--reskin-of", action="append", default=[], metavar="UNIT", help="a unit folder or mesh stem this unit reskins; it may share that unit's clips (repeatable)")
+    parser.add_argument("--weapon-bone", action="append", default=[], metavar="BONE", help="a bone the job records as carrying a weapon the unit lets go of: a part bound wholly to it may leave the body (repeatable)")
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--verdict", type=Path, help="write the stage verdict (pass, fail with repair commands, or escalate) to this file and print it")
     parser.add_argument(
@@ -794,7 +802,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         raise SystemExit(f"Not a folder: {folder}")
     if args.fps:
         unit_type = dict(unit_type or {}, fps=args.fps)
-    findings, facts = check_files(folder, unit_type, profile, args.stem)
+    findings, facts = check_files(folder, unit_type, profile, args.stem, weapon_bones=args.weapon_bone)
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
     units_root = args.compare_units or (args.mod_root / "gfx" / "models" / "units" if args.mod_root else None)
