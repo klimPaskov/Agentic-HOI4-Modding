@@ -19,6 +19,10 @@ Repairs, each optional and run in this order:
 - `holes`: close open loops of at most `max_hole_edges` edges.
 - `weights`: blend existing weights across each weight seam and each leg seam named in
   `leg_seam_pairs` (bone pairs found by `lib/pdx_motion.seam_edges`), then keep four influences.
+- `normals`: runs last, after `winding` and `holes`. A stored corner normal that points against its own
+  face (winding flipped the face, the stored normal did not follow) takes the normal of its vertex on the
+  welded copy, the angle-weighted average of the faces that share it, so split UV-seam corners agree.
+  Every other corner keeps its imported normal. Bones, weights, UVs and animations are not touched.
 
 Every cap vertex is an existing boundary vertex, so caps inherit their neighbours' weights and no
 new weight is invented. Imported corner normals are kept, and cap corners take the cap's face normal.
@@ -373,6 +377,17 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
         entry["leg_seam_edges"] = len(legs)
         entry["seam_vertices_blended"] = blend_seams(obj, bm, seams + legs, request["seam_rings"], request["seam_passes"])
         entry["influences_limited"] = limit_influences(obj, bm, 4)
+    if "normals" in repairs:
+        bm.normal_update()
+        replaced = 0
+        for face in bm.faces:
+            for loop in face.loops:
+                stored = loop[kept]
+                if stored.length >= 0.5 and stored.dot(face.normal) < 0:
+                    vertex_normal = loop.vert.normal.copy()
+                    loop[kept] = vertex_normal if vertex_normal.dot(face.normal) > 0 else face.normal.copy()
+                    replaced += 1
+        entry["normal_corners_recalculated"] = replaced
     open_edges = [e for e in bm.edges if e.is_boundary]
     entry["open_edges_after"] = len(open_edges)
     entry["open_junctions_after"] = sum(1 for v in {v for e in open_edges for v in e.verts} if sum(1 for e in v.link_edges if e.is_boundary) > 2)

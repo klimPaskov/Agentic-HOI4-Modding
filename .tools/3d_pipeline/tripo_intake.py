@@ -18,7 +18,9 @@ and then `run_pilot.py` as for any unit. The job entry says `"provider": "tripo"
               "weapon": {"part": "tripo_part_1", "bone": "RightHand", "source": "rigged"},
               "trim": {"idle": 120}}
 
-`roles` maps each HOI4 role to a Tripo clip name. `weapon` is optional: the named part is bound
+`roles` maps each HOI4 role to a Tripo clip name, or to the start of one (Tripo names a text-to-motion
+clip with its whole prompt). A start that matches two clips or none is refused with the list of clip names,
+and the intake prints the clip names it found. `weapon` is optional: the named part is bound
 rigidly to the bone (`source` "rigged": the part is a mesh in the rigged export; "twin": the vertices
 whose nearest vertex in the `segmented` export belongs to the part). `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
@@ -217,8 +219,10 @@ def run_intake(
         command = prepare_command(find_blender(blender), spec, files, downloads, report)
         completed = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
         if completed.returncode != 0:
-            raise RuntimeError(f"Blender failed ({completed.returncode}): {(completed.stdout + completed.stderr)[-2000:]}")
+            raise RuntimeError(f"Blender failed ({completed.returncode}): {(completed.stdout + completed.stderr)[-2500:]}")
         prepared = parse_report(completed.stdout)
+        print(f"Tripo clips in {files['rigged'].name}: {prepared['clips_in_file']}", file=sys.stderr)
+        print(f"Roles use: { {role: clip['clip'] for role, clip in prepared['clips'].items()} }", file=sys.stderr)
         outputs["generation"] = write_manifest(job, base, task_id, sources, textures=True)
         write_task(job, generation_stage, "image-to-3d", task_id, sources)
         for role, clip in prepared["clips"].items():

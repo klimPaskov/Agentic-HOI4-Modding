@@ -48,7 +48,7 @@ def fake_prepare_output(out_dir: Path, command: list) -> subprocess.CompletedPro
         name = pattern.format(role=role) + ".glb"
         (out_dir / name).write_bytes(b"role " + role.encode())
         clips[role] = {"clip": clip, "file": name, "animation_name": clip, "frames": 10, "joints": 22}
-    report = {"tool": "prepare_tripo_unit", "blender": "5.2.2", "bones_before": 65, "bones_after": 22, "weapon": [], "clips": clips, "triangles": 100}
+    report = {"tool": "prepare_tripo_unit", "clips_in_file": sorted(c for _r, c in (i.split("=") for i in roles)), "blender": "5.2.2", "bones_before": 65, "bones_after": 22, "weapon": [], "clips": clips, "triangles": 100}
     return subprocess.CompletedProcess(command, 0, "Blender noise\n" + json.dumps(report, sort_keys=True) + "\n", "")
 
 
@@ -277,6 +277,64 @@ class AnimationReceipt(unittest.TestCase):
     def test_a_meshy_job_still_writes_meshy_animate(self) -> None:
         self.assertEqual(self.receipt()["source_kind"], "meshy_animate")
         self.assertEqual(animation_source_kind({"unit_type": "infantry_melee"}), "meshy_animate")
+
+
+class ClipNames(unittest.TestCase):
+    CLIPS = ["walk", "idle", "hit_to_body_01", "hit_to_side", "A heavy warrior holding a long axe in his right hand swings it with a wide arc"]
+
+    def test_an_exact_name_or_one_unambiguous_start_resolves(self) -> None:
+        from lib.tripo import resolve_clip_name
+
+        self.assertEqual(resolve_clip_name("idle", self.CLIPS), "idle")
+        self.assertEqual(resolve_clip_name("A heavy warrior holding a long axe", self.CLIPS), self.CLIPS[-1])
+        self.assertEqual(resolve_clip_name("hit_to_b", self.CLIPS), "hit_to_body_01")
+        # An exact name wins even when it is also the start of a longer one.
+        self.assertEqual(resolve_clip_name("walk", self.CLIPS + ["walk_fast"]), "walk")
+
+    def test_an_ambiguous_or_unknown_start_is_refused_and_the_error_lists_the_clips(self) -> None:
+        from lib.tripo import resolve_clip_name
+
+        with self.assertRaisesRegex(ValueError, "matches several clips.*hit_to_side"):
+            resolve_clip_name("hit_to", self.CLIPS)
+        with self.assertRaisesRegex(ValueError, "matches no clip.*walk"):
+            resolve_clip_name("run", self.CLIPS)
+
+    def test_a_prompt_length_name_becomes_a_name_the_blender_stage_accepts(self) -> None:
+        from lib.tripo import safe_animation_name
+
+        name = safe_animation_name(self.CLIPS[-1] + ", then it falls.")
+        self.assertRegex(name, r"^[A-Za-z0-9_.-]{1,60}$")
+        self.assertEqual(safe_animation_name("walk"), "walk")
+
+
+class DefaultRepairs(unittest.TestCase):
+    def test_tripo_unit_jobs_repair_winding_holes_and_normals_and_meshy_jobs_none(self) -> None:
+        self.assertEqual(run_pilot.default_repairs(tripo_spec()), ["winding", "holes", "normals"])
+        self.assertEqual(run_pilot.default_repairs({"unit_type": "infantry_melee"}), [])
+
+    def test_the_repair_replaces_the_staged_mesh_and_records_the_counts(self) -> None:
+        import repair_unit
+
+        with tempfile.TemporaryDirectory() as name:
+            job = Path(name) / "job"
+            staged = job / "runtime" / "files"
+            staged.mkdir(parents=True)
+            (job / "history.jsonl").parent.mkdir(exist_ok=True)
+            (staged / "u.mesh").write_bytes(b"before")
+
+            def fake_repair(folder, out, repairs, stem, max_hole_edges, unit):
+                (out / "files").mkdir(parents=True)
+                (out / "files" / "u.mesh").write_bytes(b"after")
+                return {"repairs": repairs, "rules_before": {"UNIT-WINDING": 1, "UNIT-NORMALS": 1}, "rules_after": {},
+                        "blender": {"objects": {"Mesh": {"faces_flipped": 361, "holes_closed": 17}}}}
+
+            with mock.patch.object(repair_unit, "repair", side_effect=fake_repair):
+                summary = run_pilot.tripo_default_repairs(job, staged, "u", None, run_pilot.default_repairs(tripo_spec()))
+            self.assertEqual((staged / "u.mesh").read_bytes(), b"after")
+            self.assertEqual(summary["rules_before"], {"UNIT-WINDING": 1, "UNIT-NORMALS": 1})
+            recorded = json.loads((job / "runtime" / "tripo_repair.json").read_text(encoding="utf-8"))
+            self.assertEqual(recorded["mesh"]["Mesh"]["holes_closed"], 17)
+            self.assertIn("tripo_default_repairs", (job / "history.jsonl").read_text(encoding="utf-8"))
 
 
 class MeshyBootstrapGate(unittest.TestCase):

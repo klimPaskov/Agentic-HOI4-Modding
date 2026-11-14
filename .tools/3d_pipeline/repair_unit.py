@@ -15,6 +15,9 @@ Repairs:
 - `bridges`: delete faces that join far-apart body parts and cap both sides (fixes UNIT-BRIDGE
   and the stretch it causes).
 - `holes`: close open loops of at most `--max-hole-edges` edges (UNIT-HOLE).
+- `normals`: after `winding` and `holes`, give each corner whose stored normal points against its own
+  face the welded vertex's normal (UNIT-NORMALS; the winding repair keeps stored normals, so it can
+  make them worse). It never touches bones, weights, UVs or animations.
 - `ground`: shift each clip's root translation keys so the lowest point meets the ground in every
   frame; a death clip is only lifted where it sinks (UNIT-ANIM-GROUND). Runs without Blender.
 - `weights`: blend the existing weights across each weight seam (a bridge inside one continuous
@@ -47,8 +50,14 @@ BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
 # A weight seam is blended over this many edge rings on each side, in this many smoothing passes.
 SEAM_RINGS = 3
 SEAM_PASSES = 4
-MESH_REPAIRS = ("winding", "bridges", "holes", "weights")
+MESH_REPAIRS = ("winding", "bridges", "holes", "weights", "normals")
 REPAIRS = MESH_REPAIRS + ("ground",)
+
+
+def ordered(repairs: List[str]) -> List[str]:
+    """The repairs in the order they run, whatever order they were named in (`normals` after `winding`)."""
+
+    return sorted(dict.fromkeys(repairs), key=REPAIRS.index)
 
 
 def rule_counts(folder: Path, stem: Optional[str], unit_type: Optional[dict]) -> dict:
@@ -90,6 +99,7 @@ def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max
     if files.exists():
         shutil.rmtree(files)
     shutil.copytree(folder, files, ignore=shutil.ignore_patterns("review", "*.blend*"))
+    repairs = ordered(repairs)
     mesh_repairs = [name for name in repairs if name in MESH_REPAIRS]
     blender_report: dict = {}
     if mesh_repairs:

@@ -35,7 +35,7 @@ def box(x0: float, x1: float, y0: float, y1: float, z0: float, z1: float, offset
     return points, triangles
 
 
-def fused_unit(path: Path) -> None:
+def fused_unit(path: Path, inward_right: bool = False) -> None:
     """Two hand boxes joined by a sheet (the fusion), with one triangle of the left box flipped."""
 
     left, left_tris = box(-2.2, -1.8, 0.9, 1.3, -0.2, 0.2, 0)
@@ -49,7 +49,11 @@ def fused_unit(path: Path) -> None:
     triangles = left_tris + right_tris + sheet
     bones = [2] * 8 + [4] * 8  # HandL, HandR
     normals = []
-    for x, _y, _z in positions:
+    for x, y, z in positions:
+        if inward_right and x > 0:
+            # Diagonal, pointing into the right box: against all three faces that meet at the corner.
+            normals += [-0.577 if x > 2.0 else 0.577, -0.577 if y > 1.1 else 0.577, -0.577 if z > 0.0 else 0.577]
+            continue
         normals += [1.0 if x > 0 else -1.0, 0.0, 0.0]
     data = b"@@b@" + _obj("object", 1) + _obj("unit", 2) + _obj("mesh", 3)
     data += _prop("p", "f", [float(v) for p in positions for v in p])
@@ -72,8 +76,35 @@ def fused_unit(path: Path) -> None:
     path.write_bytes(data)
 
 
+class RepairOrder(unittest.TestCase):
+    def test_normals_run_after_winding_and_holes_whatever_the_order_named(self) -> None:
+        self.assertEqual(repair_unit.ordered(["normals", "holes", "winding", "normals"]), ["winding", "holes", "normals"])
+        self.assertEqual(repair_unit.ordered(["ground", "normals", "weights"]), ["weights", "normals", "ground"])
+        self.assertIn("normals", repair_unit.MESH_REPAIRS)
+
+
 @unittest.skipUnless(blender_available(), "Blender with io_pdx_mesh is not installed here")
 class RepairInBlender(unittest.TestCase):
+    def test_the_normals_repair_fixes_normals_and_touches_nothing_else(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "unit"
+            unit.mkdir()
+            fused_unit(unit / "u.mesh", inward_right=True)
+            write_anim(unit / "u_idle.anim", 4, lambda frame: {"HandR": ((1.0 + 0.5 * frame, 0.0, 0.0), (0.0, 0.0, 0.0, 1.0))})
+            before = pdx_deform.load_mesh(unit / "u.mesh")
+            self.assertGreater(pdx_deform.normals_against_faces(before)[0], 0)
+            out = Path(folder) / "repair"
+            with redirect_stdout(io.StringIO()):
+                repair_unit.main([str(unit), "--out", str(out), "--repairs", "normals", "winding"])
+            report = json.loads((out / "repair_report.json").read_text(encoding="utf-8"))
+            self.assertEqual(report["repairs"], ["winding", "normals"])
+            self.assertGreater(next(iter(report["blender"]["objects"].values()))["normal_corners_recalculated"], 0)
+            after_path = out / "files" / "u.mesh"
+            after = pdx_deform.load_mesh(after_path)
+            self.assertLess(pdx_deform.normals_against_faces(after)[0], pdx_deform.normals_against_faces(before)[0], (pdx_deform.normals_against_faces(before), pdx_deform.normals_against_faces(after)))
+            self.assertEqual(pdx_binary.summarize_mesh(pdx_binary.read(after_path)).bones, [name for name, _p, _x in BONES])
+            self.assertEqual((out / "files" / "u_idle.anim").read_bytes(), (unit / "u_idle.anim").read_bytes())
+
     def test_cuts_the_fusion_fixes_the_winding_and_keeps_the_skeleton(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
             unit = Path(folder) / "unit"

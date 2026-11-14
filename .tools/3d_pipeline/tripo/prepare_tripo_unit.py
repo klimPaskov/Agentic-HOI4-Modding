@@ -44,9 +44,12 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images  # noqa: E402
-from lib.tripo import atlas_layout  # noqa: E402
+from lib.tripo import atlas_layout, resolve_clip_name, safe_animation_name  # noqa: E402
 
 MAX_BONES = 50
+# Texels of every atlas cell kept as a gutter: the tile is resampled inside it and its edge pixels are repeated
+# into it, so filtering and mipmaps never mix a part's edge with its neighbour's cell.
+ATLAS_GUTTER = 4
 MAX_INFLUENCES = 4
 
 # Mixamo name (without the `mixamorig:` prefix) -> the kit's name. Every bone not named here is merged.
@@ -194,6 +197,39 @@ def classify_from_twin(armature_meshes, twin_path: Path, part: str):
         "nearest_distance_max_in_heights": round(distances[-1], 5),
     }
     return flags, report
+
+
+def separate_coincident_weapon_vertices(meshes, rigid_for):
+    """Move every weapon vertex that sits on a body vertex 0.02 % of the height along its own normal.
+
+    Tripo's Segment cuts a part with some of its boundary vertices on the neighbour's (the axe shaft
+    inside the fist). They are separate vertices, but tools that weld by position (the kit's deformation
+    check, and the winding repair's weld) join them, and then a rigid weapon vertex is skinned like the
+    forearm vertex it coincides with. A 0.4 mm shift keeps them apart and cannot be seen.
+    Returns the number of vertices moved.
+    """
+
+    points = [m.matrix_world @ v.co for m in meshes for v in m.data.vertices]
+    height = max(p.z for p in points) - min(p.z for p in points)
+    tolerance, shift = height * 3e-5, height * 2e-4
+    body = [m.matrix_world @ v.co for m in meshes for i, v in enumerate(m.data.vertices)
+            if not (m.name in rigid_for and rigid_for[m.name][1][i])]
+    tree = kdtree.KDTree(len(body))
+    for index, point in enumerate(body):
+        tree.insert(point, index)
+    tree.balance()
+    moved = 0
+    for obj in meshes:
+        if obj.name not in rigid_for:
+            continue
+        for index, flag in enumerate(rigid_for[obj.name][1]):
+            if not flag:
+                continue
+            vertex = obj.data.vertices[index]
+            if tree.find_range(obj.matrix_world @ vertex.co, tolerance):
+                vertex.co = vertex.co + vertex.normal * shift
+                moved += 1
+    return moved
 
 
 def connected_weapon_parts(obj, flags):
@@ -381,7 +417,8 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
     if missing:
         raise SystemExit(f"No texture set found for {missing}; the GLB meshes are {sorted(images)}")
     folder.mkdir(parents=True, exist_ok=True)
-    written, tiles, fill = {}, {}, {"diffuse": (0, 0, 0), "normal": (128, 128, 255), "specular": (0, 0, 0)}
+    # Empty atlas area: black, a flat normal, and matte (roughness 1) so it never counts as glossy in the packed specular map.
+    written, tiles, fill = {}, {}, {"diffuse": (0, 0, 0), "normal": (128, 128, 255), "specular": (0, 255, 0)}
     for role in ROLE_FILES:
         have = [role in images[name] for name in names]
         if not any(have):
@@ -400,11 +437,14 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         atlas = np.empty((side, side, 3), dtype=np.uint8)
         atlas[:, :] = fill[role]
         for tile, (x, y, width, height) in zip(row, rects):
-            atlas[side - y - height : side - y, x : x + width] = resize_rgb(tile, width, height)
+            inner = resize_rgb(tile, width - 2 * ATLAS_GUTTER, height - 2 * ATLAS_GUTTER)
+            padded = np.pad(inner, ((ATLAS_GUTTER, ATLAS_GUTTER), (ATLAS_GUTTER, ATLAS_GUTTER), (0, 0)), mode="edge")
+            atlas[side - y - height : side - y, x : x + width] = padded
         write_png(folder / ROLE_FILES[role], side, side, atlas)
         if role == "specular":
             write_rm_siblings(folder, atlas)
         written[role] = ROLE_FILES[role]
+    uv_ranges = {}
     for obj, (x, y, width, height) in zip(meshes, rects):
         layer = obj.data.uv_layers.active
         values = np.empty(len(layer.data) * 2, dtype=np.float32)
@@ -412,9 +452,11 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         us, vs = values[0::2], values[1::2]
         if min(us.min(), vs.min()) < -1e-4 or max(us.max(), vs.max()) > 1.0001:
             raise SystemExit(f"{obj.name} UVs leave [0, 1] ({us.min():.3f}..{us.max():.3f}, {vs.min():.3f}..{vs.max():.3f}); cannot pack an atlas")
-        values[0::2] = (x + np.clip(us, 0.0, 1.0) * width) / side
-        values[1::2] = (y + np.clip(vs, 0.0, 1.0) * height) / side
+        inner_w, inner_h = width - 2 * ATLAS_GUTTER, height - 2 * ATLAS_GUTTER
+        values[0::2] = (x + ATLAS_GUTTER + np.clip(us, 0.0, 1.0) * inner_w) / side
+        values[1::2] = (y + ATLAS_GUTTER + np.clip(vs, 0.0, 1.0) * inner_h) / side
         layer.data.foreach_set("uv", values)
+        uv_ranges[obj.name] = [round(float(v), 5) for v in (values[0::2].min(), values[0::2].max(), values[1::2].min(), values[1::2].max())]
     material = bpy.data.materials.new("unit_atlas")
     material.use_nodes = True
     nodes, links = material.node_tree.nodes, material.node_tree.links
@@ -443,7 +485,7 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         obj.data.materials.append(material)
         for polygon in obj.data.polygons:
             polygon.material_index = 0
-    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "rects": [list(rect) for rect in rects]}
+    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
 
 
 def trimmed_copy(action, cap: int):
@@ -569,9 +611,11 @@ def main():
     all_weights = {obj.name: read_weights(obj) for obj in meshes}
 
     clip_names = {action.name for action in bpy.data.actions}
-    for role, clip in roles.items():
-        if clip not in clip_names:
-            raise SystemExit(f"Role {role} wants clip {clip!r}; the file has {sorted(clip_names)}")
+    print("TRIPO_CLIPS " + json.dumps(sorted(clip_names)), file=sys.stderr)
+    try:
+        roles = {role: resolve_clip_name(clip, clip_names) for role, clip in roles.items()}
+    except ValueError as problem:
+        raise SystemExit(str(problem))
     for action in bpy.data.actions:
         for fcurve, container in action_fcurves(action):
             if bone_of_path(fcurve.data_path) in set(dropped):
@@ -606,6 +650,8 @@ def main():
                 "connected_groups": connected_weapon_parts(obj, flags)[:5],
             })
 
+    separated = separate_coincident_weapon_vertices(meshes, rigid_for) if rigid_for else 0
+
     # Several parts (a segmented export): one atlas and one material, then join into one mesh.
     body = meshes[0]
     atlas = None
@@ -639,7 +685,7 @@ def main():
             armature.animation_data.action_slot = slots[0]
         role_path = args.out_dir / (args.role_name.format(role=role) + ".glb")
         export_glb(role_path, [armature, body], armature, animated=True)
-        name_glb_animation(role_path, clip)
+        name_glb_animation(role_path, safe_animation_name(clip))
         animations, joints = glb_animations(role_path)
         if len(animations) != 1:
             raise SystemExit(f"{role_path.name} holds {len(animations)} animations, expected exactly one")
@@ -658,11 +704,13 @@ def main():
         "blender": bpy.app.version_string,
         "input": args.rigged.name,
         "ignored_objects": ignored,
+        "clips_in_file": sorted(clip_names),
         "bones_before": bones_before,
         "bones_after": len(bone_names),
         "bone_names": bone_names,
         "dropped_bones": len(dropped),
         "weapon": weapon_summary,
+        "weapon_vertices_separated_from_body": separated,
         "twin": twin_report,
         "materials": materials,
         "atlas": atlas,

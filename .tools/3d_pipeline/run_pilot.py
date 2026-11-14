@@ -3824,6 +3824,37 @@ def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, 
     return result
 
 
+# Tripo meshes come with flipped triangles (UNIT-WINDING), small open loops (UNIT-HOLE) and stored normals that
+# disagree with the faces (UNIT-NORMALS) on every unit measured, so the unit route repairs them for free.
+TRIPO_DEFAULT_REPAIRS = ("winding", "holes", "normals")
+
+
+def default_repairs(spec: Dict[str, Any]) -> List[str]:
+    """The `repair_unit.py` repairs the unit route runs on its own export: Tripo's three, none for Meshy."""
+
+    return list(TRIPO_DEFAULT_REPAIRS) if uses_tripo(spec) else []
+
+
+def tripo_default_repairs(job: Path, staged: Path, stem: str, unit: Optional[Dict[str, Any]], repairs: List[str]) -> Dict[str, Any]:
+    """Repair the staged mesh in place (the unrepaired export stays in export/mesh) and record the counts."""
+
+    import repair_unit
+
+    out = job / "validation" / "tripo_repair"
+    report = repair_unit.repair(staged, out, repairs, stem, 16, unit)
+    shutil.copy2(out / "files" / f"{stem}.mesh", staged / f"{stem}.mesh")
+    summary = {
+        "repairs": report["repairs"],
+        "rules_before": report["rules_before"],
+        "rules_after": report["rules_after"],
+        "mesh": {name: {key: value for key, value in entry.items()} for name, entry in report["blender"].get("objects", {}).items()},
+        "unrepaired_export": f"export/mesh/{stem}.mesh",
+    }
+    write_json(job / "runtime" / "tripo_repair.json", summary)
+    append_history(job, state="pdx_exported", event="tripo_default_repairs", actor="hoi4_3d_model_pipeline", details=summary)
+    return summary
+
+
 def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]) -> Dict[str, Any]:
     """Copy the selected exports into runtime/files under their final names, check them and write the registration."""
 
@@ -3846,6 +3877,11 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         records[name] = {"source": file_record(source, relative_to=job), "staged": file_record(staged / name, relative_to=job)}
     unit = load_unit_types().get(spec.get("unit_type") or "")
     profile = load_profile(spec["profile"])
+    repairs = default_repairs(spec)
+    repaired = tripo_default_repairs(job, staged, stem, unit, repairs) if repairs else None
+    if repaired:
+        records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        records[f"{stem}.mesh"]["repairs"] = repaired["repairs"]
     findings, facts = check_unit_files.check_files(staged, unit, profile)
     errors = [item.__dict__ for item in findings if item.severity == "error"]
     shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []

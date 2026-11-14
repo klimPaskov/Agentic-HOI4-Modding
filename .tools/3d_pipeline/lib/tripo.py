@@ -7,6 +7,7 @@ Blender stage runs unchanged. A job without `provider` is a Meshy job.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any, Dict, Optional
 
@@ -76,3 +77,27 @@ def atlas_layout(sizes, strip: float = ATLAS_STRIP):
             rects.append(((slot - column) * cell, body, cell, cell))
         slot += 1
     return {"size": side, "main": main, "rects": rects}
+
+
+def resolve_clip_name(wanted: str, names) -> str:
+    """The clip a role names: an exact clip name, else the one clip whose name starts with `wanted`.
+
+    Tripo names a text-to-motion clip with its whole prompt, so a role may give just its first words.
+    A prefix that matches two clips or none is refused, and the error lists every clip name.
+    """
+
+    names = sorted(set(names))
+    if wanted in names:
+        return wanted
+    found = [name for name in names if name.startswith(wanted)]
+    if len(found) == 1:
+        return found[0]
+    problem = "matches several clips" if found else "matches no clip"
+    raise ValueError(f"The clip name {wanted!r} {problem}. The file has these clips: {names}")
+
+
+def safe_animation_name(name: str, limit: int = 60) -> str:
+    """A glTF animation name the Blender stage accepts (letters, digits, `_.-`, at most `limit` characters)."""
+
+    cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", name).strip("_")
+    return (cleaned or "clip")[:limit]

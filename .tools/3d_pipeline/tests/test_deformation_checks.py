@@ -210,13 +210,12 @@ class NormalsRule(unittest.TestCase):
             found[group] = [item.rule for item in findings if item.rule == "UNIT-NORMALS"]
         self.assertEqual(found, {"organic": ["UNIT-NORMALS"], "vehicle": []})
 
-    def test_the_verdict_escalates_with_a_one_line_fix(self) -> None:
+    def test_the_verdict_names_the_free_normals_repair(self) -> None:
         from lib import stage_verdict
 
-        steps, escalation = stage_verdict.next_for_findings(["UNIT-NORMALS"], "u", "out")
-        self.assertEqual(steps, [])
-        self.assertEqual(escalation["rules"], ["UNIT-NORMALS"])
-        self.assertIn("flip those normals", escalation["why"][0])
+        steps, escalation = stage_verdict.next_for_findings(["UNIT-NORMALS", "UNIT-WINDING"], "u", "out")
+        self.assertIsNone(escalation)
+        self.assertIn("--repairs winding normals", steps[0])
 
 
 class BridgeRule(unittest.TestCase):
