@@ -1,132 +1,128 @@
-# 3D units with Meshy and Blender
+# 3D units with Tripo and Blender
 
-This page is for modders who want their own 3D units on the HOI4 map: soldiers, archers, riders, beasts and vehicles. Your coding agent does the work through the `hoi4-3d-model-pipeline` skill. You approve the picture and the credit budget, and you look at the result. This page explains what you need, what each step does, and what to do when one fails.
+This page is for modders who want their own 3D units on the HOI4 map: soldiers, archers, riders, beasts and vehicles. Tripo makes the model from your picture, rigs it and animates it. Blender turns the result into HOI4 files. Your coding agent does the work through the `hoi4-3d-model-pipeline` skill. You approve the picture and the credit budget, and you look at the result.
+
+Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
 ## How to use it
 
-1. In HOI4 Mod Setup, tick **3D models workflow** (see [Setup](#setup)) and set your Meshy key.
-2. Tell your coding agent: "Make a 3D unit for `<unit>` with the `hoi4-3d-model-pipeline` skill." That skill is the one entry point. Everything below is what it does for you.
+1. In HOI4 Mod Setup, tick **3D models workflow** (see [Setup](#setup)). Sign in to [Tripo Studio](https://studio.tripo3d.ai) in your browser.
+2. Tell your coding agent: "Make a 3D unit for `<unit>` with the `hoi4-3d-model-pipeline` skill." That skill is the one entry point.
 3. Approve the reference picture and the credit budget when it asks.
-4. Every step prints a one-line verdict. `pass` names the next command, `fail` names the free fix, `escalate` means no script can fix it, so the agent looks for another rigging tool or animation preset (see [Rigging and animation](#rigging-and-animation)). The agent keeps running what the verdict names until the independent review passes.
-5. Look at the result in game. If a step fails, see [When something fails](#when-something-fails).
+4. Pick how Tripo is driven:
+   - **By hand.** The agent gives you one short card per model. You click through Tripo and save the export into the inbox folder. About five minutes a model.
+   - **By agent.** The agent drives Tripo in your Chrome through Claude in Chrome, while you stay signed in.
+5. The agent picks the export up, runs the Blender stage and the checks, and shows you renders. Every step prints a one-line verdict: `pass` names the next command, `fail` names the free fix, `escalate` means no script can fix it.
+6. Look at the result in game. If a step fails, see [When something fails](#when-something-fails).
 
 ## What it is
 
-Two routes make a unit. Both end in the same checks and the same independent review.
-
-| Route | Used for | How it works |
+| Step | Where | Who |
 | --- | --- | --- |
-| Default | Soldiers, archers, riders, giants, mounts, four-legged beasts | Meshy makes the model from one picture, then rigs and animates humanoids from its clip library. The kit's scripts check, repair and fit the result the same way every time. Each step is one command that prints a one-line verdict |
-| Researched tools | A body the default route cannot rig or animate (wings, extra arms, tentacles), clips that do not read as their role, vehicles | Your agent picks an auto-rig tool and animation presets found by research, from motion libraries or generative motion tools, per unit |
+| Picture to textured model | Tripo web app | you, or the agent in Chrome |
+| Split a held weapon off, rig, pick animations, export | Tripo web app | you, or the agent in Chrome |
+| Intake, fit to HOI4, export `.mesh`, `.anim` and textures | Blender, on your PC | the agent |
+| Checks, repairs, independent review | your PC | the agent |
 
-Live keyframing in Blender is not a route. It is the small-fix and last-resort tool (see [Rigging and animation](#rigging-and-animation)).
+Tripo has no key to set up and the kit calls no Tripo API. Everything in Tripo happens in its web app, under your own sign-in. Blender is the one shared stage for every generator, so a model from Tripo, from Meshy or from your own files ends in the same checks and the same review.
 
-A verdict is `pass` (it names the next command), `fail` (it names the free fix to run) or `escalate` (no script can fix it, so the agent researches another rig tool or preset). Run the command the verdict names and keep going until the unit passes the review.
+A verdict is `pass` (it names the next command), `fail` (it names the free fix to run) or `escalate` (no script can fix it, so the agent looks for another preset or tool). Run the command the verdict names and keep going until the unit passes the review.
 
 ### Rigging and animation
 
-Units are rigged with auto-rig tools and animated with fitting presets that your agent finds by research, from motion libraries or generative motion tools, chosen per unit. Manual rigging or keyframing in Blender is only for small fixes, or when no tool or preset works, and the agent records the reason in the job.
+Units are rigged with Tripo's auto-rig and animated with its preset library, chosen per unit. Where no preset fits a role, the agent tries Tripo's text-to-motion, then other researched presets. Manual rigging or keyframing in Blender is only for small fixes, or when no tool or preset works, and the agent records the reason in the job.
 
 ## Setup
 
-The Meshy and Blender routes are Windows only today. In HOI4 Mod Setup, tick **3D models workflow**. It installs:
+The Blender stage is Windows only today. In HOI4 Mod Setup, tick **3D models workflow**. It installs:
 
 - The kit's 3D pipeline (`.tools/3d_pipeline/`) and the `hoi4-3d-model-pipeline` skill.
 - Blender 5.2.3, when no Blender 5.1 or 5.2 is installed. A portable Blender in `%LOCALAPPDATA%\Programs` is found too. Set `BLENDER_EXE` to use a particular one.
 - The `io_pdx_mesh` add-on for that Blender, which reads and writes HOI4's `.mesh` and `.anim` files.
-- The pinned Meshy MCP server and the Blender Lab MCP server, registered for your coding client.
+- The Blender Lab MCP server, registered for your coding client. It also installs the pinned Meshy MCP server, which only old Meshy jobs use. HOI4 Mod Setup may still ask for a Meshy key. Leave it empty when you use Tripo.
 
-**The Meshy key.** Meshy creates API tasks only for accounts on a paid plan or in the Meshy contributor program. On the free plan every task is refused with HTTP 402 and nothing is charged, although the balance still shows the free monthly credits. HOI4 Mod Setup asks for your API key and keeps it in the Windows credential store.
+**The Tripo account.** A free account can try the route (about 13 models a month, public models, non-commercial use). A paid plan gives private models, commercial use and enough credits for a unit roster. You sign in yourself. The agent never types your password.
 
-**Without Meshy.** No free step makes a new model from a picture. Every step after the paid ones needs no key: the checks, the hole check, the repairs, the weapon fit, the review and live authoring all run on a model you already have. A static building can be built and textured in Blender with no provider at all (see [Other model kinds](#other-model-kinds)).
+**By agent needs Chrome.** The agent uploads your pictures and collects the exports through the Claude in Chrome extension. In Chrome's settings, turn off "Ask where to save each file before downloading", so exports land in your Downloads folder without a dialog. A browser pane inside a coding client cannot upload a local picture, and it asks you to confirm each download, so it only suits the by-hand mode.
 
 ## What a unit costs
 
-Prices come from `.tools/3d_pipeline/config/meshy_pricing.json`.
+Tripo prices its steps in credits. These were read from the app on a Pro plan in November 2026, with the settings in [Tripo settings](#tripo-settings). Check the number on the button before you press it.
 
-| Unit | Meshy steps | Credits |
+| Step | Credits |
+| --- | --- |
+| Model from one picture or from four views | 30 |
+| Extra views of your picture (front, left, back, right), T-pose picture | free |
+| Split a held weapon off (Segment) | 40 |
+| Auto-rig | 20 |
+| Preset animations (96 in the library) | free |
+| Text-to-motion, one clip of up to 5 seconds | 20 |
+
+| Unit | Steps | Credits |
 | --- | --- | --- |
-| Foot unit (soldier, archer, giant, beast) | model 30, remesh 5, rig 5, six animations at 3 each | about 58 |
-| Rider of a mounted unit | model 30, remesh 5, rig 5, three animations | about 49 |
-| Mount or four-legged beast | model 30, remesh 5 (Blender rigs and animates it) | 35 |
-| Mounted unit (rider plus mount) | both of the above | about 84 |
+| Unarmed foot unit (beast, brute) | model, rig, six presets | 50 |
+| Armed foot unit (soldier with a weapon in hand) | model, segment, rig, six presets | 90 |
+| Static model (building, landmark, ship hull) | model | 30 |
 
-A held weapon is its own model job, priced from the same file. A vehicle pays only for Meshy's model steps: Meshy cannot rig it, so it is rigged and animated in Blender.
+Every step on your PC is free. Your agent asks you once for a credit budget per unit, notes the balance before and after each Tripo step in the job's ledger, and stops at the budget.
 
-Every step after the paid ones is free: the body and hole checks, the weapon fit, the file checks, the repairs, the review and live authoring. Your agent asks you once for a credit budget per unit and never pays for a retry. To see what a job has spent:
-
-```
-py -3.13 -B .tools/3d_pipeline/run_pilot.py --credits-report <job folder>
-```
-
-**Spend credits where players look.** A division shows the model of its highest-priority sub-unit (`priority` in the unit's `sub_units` entry). A unit that never leads a template, for example archers next to higher-priority infantry, is drawn only when a player builds a template led by it. Before you pay for a model, check that the unit leads at least one starting or AI division template, and pay first for units that lead starting divisions.
+**Spend credits where players look.** A division shows the model of its highest-priority sub-unit (`priority` in the unit's `sub_units` entry). A unit that never leads a template is drawn only when a player builds a template led by it. Pay first for units that lead starting divisions.
 
 ## The route step by step
 
-Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `credit_budget` and `anatomy`. `<unit folder>` is the newest copy of the unit that passed its check (see step 11).
+Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget` and `anatomy`.
 
-### 1. Reference image
+### 1. Reference picture
 
-One clean picture of the unit, without weapons in hand and on a plain background. A unit that will hold a weapon has its hands closed in fists, because Meshy's rig has no finger bones and an open hand cannot be posed into a grip later. A rider and its mount are two pictures and two jobs. You look at the picture, approve it, and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json` (legs, arms, wings, a tail, extra limbs, a vehicle, a rider on a mount). They go into the job as `anatomy`.
+One clean picture of the unit on a plain or transparent background, facing the viewer, limbs apart. A weapon may stay in the hand: hold it in a closed fist, upright and clear of the body. Tripo keeps it in the model, and step 4 splits it off so it stays rigid. A rider and its mount are two pictures and two jobs. You look at the picture, approve it, and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
 
-### 2. Clip plan (free)
+### 2. Card and inbox
 
-Two units of the same type would play the same library clips, and players notice. Only reskins of one base unit (the same body and rig with a different look, such as a winter uniform) may share them. Plan the clips before any is paid for:
+The agent writes one card per model from `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` and makes the job's inbox folder. The card names the picture, every Tripo setting, the animation presets for each role and the file name to save under. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
+
+### 3. Model (Tripo, 30 credits)
+
+In Tripo Studio open **Model**, **HD Model**. Add the picture and press **Generate Multi-Views** (free). Tripo draws the left, back and right views. Check them, then generate from the four views with the settings on the card. Look at the result from all sides before you pay for more.
+
+### 4. Weapon split (Tripo, 40 credits, armed units only)
+
+Open **Segment**, **Custom**, and ask for exactly two parts: the weapon, and everything else including the hand that holds it. Press **Save**. Without this step Tripo's rig bends a long weapon with the leg and the torso. Segment must come before the rig. Tripo does not segment a rigged model.
+
+### 5. Rig and animations (Tripo, 20 credits)
+
+Open **Rig**: **Humanoid**, skeleton preset **Mixamo**, **Auto Rig**. Then open **Animate** and click the six presets on the card, one per role. Each is applied in a few seconds and costs nothing. Watch each one play.
+
+### 6. Export into the inbox
+
+On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on, and tick the six animations. Tripo builds the file in about two minutes. Save it into the job's inbox under the name on the card, `<asset>__rigged.glb`. A static model is exported from the Model page as `<asset>__model.glb`.
+
+### 7. Intake (free)
 
 ```
-py -3.13 -B .tools/3d_pipeline/plan_clips.py --jobs-config <your 3d_jobs.json> --write
+py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <your 3d_jobs.json> <unit> --inbox <job folder>/inbox --credits <spent> --credits-note "<steps>"
 ```
 
-It goes through your jobs in order and gives each role the first candidate clip of the unit type that no other unit plays yet. A job with `"reskin_of": "<base job>"` gets exactly its base's clips, and a job that lists its own `required_actions` keeps them. When every candidate for a role is taken, the verdict escalates and names the unit and the role: author that clip in Blender, add another candidate to the unit type in `unit_types.json`, or decide that the units may share. Without `--write` it only reports. A registry with `"animation_policy": "authored"` plans no library clip and lists every role for live authoring.
+The intake records each file's name, size and SHA-256, then prepares it for the shared stage in Blender: it renames Tripo's bones to the kit's names, folds the finger bones into the hands so the unit stays within HOI4's 50 bones, binds the weapon part rigidly to its hand, and writes one file per role.
 
-### 3. Model (paid)
-
-```
-py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> --phase candidate <unit>
-```
-
-Meshy turns the picture into a textured model. Blender imports it, scales it against vanilla infantry and records its open edges. Holes are judged in the next step.
-
-### 4. Body and hole check (free)
-
-```
-py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
-py -3.13 -B .tools/3d_pipeline/check_holes.py <job folder>/provider/downloads/generation_model.glb --out <job folder>/evidence/holes
-```
-
-`measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). When it passes, its verdict names `check_holes.py` on the same model, which looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). A hole is cheapest to fix now, before the rig. Pay for nothing more until both pass.
-
-### 5. Rig, animations and export (paid)
+### 8. Blender stage and export (free)
 
 ```
 py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> <unit>
 ```
 
-Meshy rigs humanoids and animates them with the planned library clips. Blender rigs four-legged animals itself and seats riders. Blender then writes the `.mesh`, one `.anim` per role at 30 frames a second, and three DXT5 textures with mip levels, and imports them again to prove they load. Steps that already succeeded are reused and never paid twice.
+Blender scales the unit against vanilla infantry, grounds every clip, and writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, then imports them again to prove they load.
 
-### 6. Weapon in hand (free)
-
-An armed unit's weapon is a separate model. `fit_prop.py` fits it to the hand against every clip and binds it there (see [Put the weapon in the hand](#put-the-weapon-in-the-hand)).
-
-### 7. File checks (free)
+### 9. Checks, repair and review (free)
 
 ```
+py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
 py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json
-```
-
-It reads the exported files (see [Automatic checks](#automatic-checks)). Its verdict names the repair to run, or escalates. When it passes, it names the hole check and then the review.
-
-### 8. Hole check (free)
-
-```
 py -3.13 -B .tools/3d_pipeline/check_holes.py <unit folder> --out <job folder>/evidence/holes
 ```
 
-The same check as step 4, now at rest and in every clip.
+`measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). `check_unit_files.py` reads the exported files (see [Automatic checks](#automatic-checks)), and `check_holes.py` looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). Each verdict names the repair to run, or escalates.
 
-### 9. Free repair
-
-`repair_unit.py` fixes the mesh faults the checks name, in Blender, without Meshy. The verdict gives the exact command, for example:
+`repair_unit.py` fixes the mesh faults the checks name, in Blender, with no credits. The verdict gives the exact command, for example:
 
 ```
 py -3.13 -B .tools/3d_pipeline/repair_unit.py <unit folder> --out <job folder>/repair --repairs winding holes
@@ -140,15 +136,49 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py <unit folder> --out <job folder>/r
 | `weights` | Hard weight edges inside one skin, and a crotch whose two sides follow one leg each (UNIT-SEAM). Weights are blended over a few rings, then each vertex keeps at most four influences |
 | `ground` | Feet off or under the ground: the root's translation keys are shifted so the lowest point meets the ground in every frame. A death clip is only lifted where it sinks (UNIT-ANIM-GROUND). Needs no Blender |
 
-Repairs never make new bones, a new weight set or new keyframes. The skeleton, materials and the weights of every vertex not cut stay as they were, so the `.anim` files still play. The copy goes to `<job folder>/repair/files`, and `repair_report.json` lists what changed with the check results before and after. Nothing under `gfx/` changes. Mesh repairs come before the weapon: when a repair is needed, run it, then fit the weapon again on the repaired copy (a refit replaces the old weapon).
+Repairs never make new bones, a new weight set or new keyframes. The copy goes to `<job folder>/repair/files`, and `repair_report.json` lists what changed with the check results before and after. Nothing under `gfx/` changes.
 
-### 10. Independent review (free)
+`review_unit.py` then renders every clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty (see [Independent review](#independent-review)).
 
-`review_unit.py` renders every clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty (see [Independent review](#independent-review)).
+### 10. Hand-over and in game
 
-### 11. Hand-over and in game
+The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. The newest copy that passed its check is the one you review. Copy it into `gfx/` only after a fresh reviewer passes it. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
 
-The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. Each later step writes a full copy of the unit to its own folder (`<job folder>/props/files`, `<job folder>/repair/files`). The newest copy that passed its check is the one you review. Copy it into `gfx/` only after a fresh reviewer passes it. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
+## Tripo settings
+
+These gave the best result for the price in the kit's own test (one armed orc, November 2026). They are a starting point, not a law.
+
+| Setting | Value | Why |
+| --- | --- | --- |
+| Tool | Model, HD Model | Comes textured. Smart Mesh sculpts sharper detail but comes untextured, in loose parts, and costs more |
+| AI model | H3.1 | Same price as H3.0 at these settings |
+| Input | Your picture plus Tripo's generated views | The back and sides follow the picture instead of a guess |
+| Ultra Mesh Quality | off | It adds 15 credits. The map camera does not show the difference |
+| Texture | on, 2K, Remove Lighting on, PBR on | HOI4 unit textures are 1K to 2K. PBR gives the normal and roughness maps the pipeline packs |
+| Topology | Triangle | HOI4 meshes are triangles |
+| Polycount | 20,000 | The unit profile's working budget |
+| Generate in Parts | off | Use Segment after the model instead, with your own two-part instruction |
+| Rig | Humanoid, Mixamo skeleton | The intake maps Mixamo's bone names to the kit's |
+| Export | GLB, skeleton on, stay in place on | In-place walks do not slide on the map |
+
+Presets that read well for the six roles of an armed fighter: `idle`, `walk`, `chop` or `slash` (attack), `hit_to_body_01` (defend), `flee_01` (retreat), `fall` (death). Give two units of one type different presets where the library has a second one that fits, so they do not move alike.
+
+### By agent: how the agent drives Tripo
+
+The agent works in your Chrome through Claude in Chrome, on the tab where you are signed in to Tripo Studio. It follows the same card as you would.
+
+- It loads `.tools/3d_pipeline/tripo/tripo_studio.js` into the page. The helpers read the credit balance and the price on each button, set the model settings, and refuse to press Generate when the price differs from the card.
+- It uploads the picture with the extension's file upload, never through a file dialog.
+- It presses each paid button once, then waits for the new task. A second press starts a second paid task.
+- It never reloads the Tripo page in the middle of a step.
+- Exports go to your Downloads folder. The agent moves them into the inbox and renames them.
+- It writes the balance before and after each paid step into the job's ledger, and stops at the budget.
+
+The page helpers were checked against Tripo Studio on 2026-11-13. The upload and the unattended download through Chrome are designed but were not yet run end to end. Tripo changes its page from time to time. When a helper stops finding a button, the agent says so and you finish that step by hand from the card.
+
+## Old Meshy jobs
+
+A job without `"provider": "tripo"` still runs the Meshy route: `run_pilot.py --phase candidate <unit>` makes the model through the Meshy API, and `run_pilot.py <unit>` rigs and animates it from Meshy's clip library. That route needs a Meshy key and a paid Meshy plan, and its prices are in `.tools/3d_pipeline/config/meshy_pricing.json`. `plan_clips.py` plans Meshy library clips so that two units do not share one. Exported Meshy units need nothing from Meshy any more: the checks, repairs, weapon fit and review all run on the files you have.
 
 ## Unit types and bodies
 
@@ -156,18 +186,18 @@ Pick one type per unit in the job's `unit_type`. The type sets the rig, the clip
 
 | Type | For | Body | Rig | Clips |
 | --- | --- | --- | --- | --- |
-| `infantry_melee` | swords, axes, maces | humanoid | Meshy humanoid | sword slash, parry, wounded retreat, fall |
-| `spearman` | spears and pikes | humanoid | Meshy humanoid | spear walk, thrust, two-handed parry |
-| `archer` | bows | humanoid | Meshy humanoid | archery shot, aim and scan, step back with bow |
-| `heavy_brute` | giants, trolls, ogres | large biped | Meshy humanoid | slow heavy walk, hammer swing, ground stomp |
-| `beast_biped` | yeti, ghouls | large biped | Meshy humanoid | lumbering walk, two-fist strike, roar |
-| `tree_creature` | ents | large biped | Meshy humanoid | unsteady walk, ground slam |
-| `rider`, `mounted_archer` | the person on a mount | humanoid | Meshy humanoid, seated by Blender | the upper body plays the clip, the legs stay astride |
+| `infantry_melee` | swords, axes, maces | humanoid | Tripo humanoid | sword slash, parry, wounded retreat, fall |
+| `spearman` | spears and pikes | humanoid | Tripo humanoid | spear walk, thrust, two-handed parry |
+| `archer` | bows | humanoid | Tripo humanoid | archery shot, aim and scan, step back with bow |
+| `heavy_brute` | giants, trolls, ogres | large biped | Tripo humanoid | slow heavy walk, hammer swing, ground stomp |
+| `beast_biped` | yeti, ghouls | large biped | Tripo humanoid | lumbering walk, two-fist strike, roar |
+| `tree_creature` | ents | large biped | Tripo humanoid | unsteady walk, ground slam |
+| `rider`, `mounted_archer` | the person on a mount | humanoid | Tripo humanoid, seated by Blender | the upper body plays the clip, the legs stay astride |
 | `mount` | horses, camels, dead horses | quadruped | Blender quadruped with a `Saddle_Node` | idle, trot, charge, rear, gallop, collapse |
 | `quadruped_beast` | wolves, war beasts, elephants | quadruped | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
 | `vehicle` | tanks, armoured cars, other wheeled or tracked units | none | live in Blender | idle, drive, fire, brace, reverse, wreck |
 
-Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. Most Meshy roles list two library candidates, so the clip plan can give two units of one type different clips. Walks use Meshy's in-place clips, so the unit does not slide. A `vehicle` has `calibration_group: vehicle`: its checks use vanilla's tanks and trucks as the limit, not its soldiers.
+Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. A Tripo job names one Tripo preset per role on its card (see [Tripo settings](#tripo-settings)), and the export's stay-in-place option keeps walks from sliding. The clips column above describes the motion each role should read as. For an old Meshy job most roles list two library candidates in `unit_types.json`, so the clip plan can give two units of one type different clips. A `vehicle` has `calibration_group: vehicle`: its checks use vanilla's tanks and trucks as the limit, not its soldiers.
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs, a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
@@ -323,7 +353,13 @@ py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> --
 
 | Problem | What to do |
 | --- | --- |
-| Meshy answers 402 | Your account is on the free plan. Upgrade or join the contributor program. Nothing was charged |
+| Tripo's page looks signed out, or the sign-in code page vanishes | Tripo's service may be down for a few minutes. Wait, then load the page again. Nothing is lost: finished models stay in your Assets |
+| A paid Tripo button was pressed and nothing seems to happen | Do not press it again. Look at the Assets panel and the credit balance first. A new tile or a lower balance means the task started |
+| The weapon bends or shears in an animation | The model was rigged in one piece. Run Segment on the unrigged model (step 4), rig again, export again |
+| Tripo's rig prompt sends you to a T-pose picture | Tripo prefers a T-pose or A-pose. The rig still works on a relaxed pose with arms away from the body. Use the T Pose picture template only when the rig fails |
+| The rigged export is named `download.glb` | Tripo's server names it. Rename it to the name on the card when you move it into the inbox |
+| The intake says it finds no export | The file name must be `<asset>__rigged.glb`, `<asset>__segmented.glb` or `<asset>__model.glb`, in the inbox folder you passed |
+| Meshy answers 402 (old Meshy jobs) | Your account is on the free plan. Upgrade or join the contributor program. Nothing was charged |
 | "Unreconciled submission" | A paid step may have reached Meshy without an answer. Look the task up in Meshy's task list and record it as the message says. Never start the step again by hand |
 | A paid step fails | Run the same command again. Steps that succeeded are reused and never paid twice |
 | The body or hole check fails on the model | Read the verdict. Change `unit_type`, drop floating pieces, or ask for a new reference image and one more model |

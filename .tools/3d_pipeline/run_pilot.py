@@ -69,6 +69,7 @@ from lib.texture_lineage import (
     provider_texture_rels,
     verify_texture_lineage,
 )
+from lib.tripo import animation_source_kind, provider_name, uses_tripo  # noqa: E402
 from lib.reuse import (
     block_message,
     copy_artifacts,
@@ -172,6 +173,21 @@ def require_api_key() -> None:
         raise SystemExit(2)
 
 
+def require_meshy_bootstrap(lock_path: Path = PIPELINE_ROOT / "config" / "dependencies.lock.json") -> None:
+    """Refuse Meshy work when the last bootstrap ran without Meshy (the Blender-only mode)."""
+
+    try:
+        route = read_json(lock_path).get("routes", {}).get("meshy_mcp", {})
+    except (OSError, ValueError, AttributeError):
+        return
+    if isinstance(route, dict) and route.get("verified") is False:
+        print(
+            "The 3D workflow was bootstrapped without Meshy, so Meshy jobs are blocked. Set MESHY_API_KEY, "
+            "restart the shell, and run .tools/3d_pipeline/bootstrap_3d_workflow.py again (through HOI4 Mod Setup)."
+        )
+        raise SystemExit(2)
+
+
 def load_profile(name: str) -> Dict[str, Any]:
     return read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][name]
 
@@ -267,6 +283,16 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
     spec["generation"] = generation
     spec["meshy_ai_model"] = spec["resolved_meshy_ai_model"] = generation["ai_model"]
     spec["target_polycount"] = generation["target_polycount"]
+    if uses_tripo(spec):
+        # Tripo has no API and no credit estimates here; its credits are typed in at intake.
+        for key in ("image_to_3d", "remesh", "rig", "animation"):
+            spec[f"{key}_estimate_credits"] = 0
+        spec.setdefault("meshy_pose_mode", None)
+        # Blender's glTF import adds a bone-shape Icosphere to every rigged file; it must not count as the unit's mesh.
+        spec.setdefault("excluded_provider_objects", ["Icosphere"])
+        spec["planned_total_credits"] = spec["credit_budget"] = 0
+        spec["_credits_prepared"] = True
+        return spec
     spec["image_to_3d_estimate_credits"] = generation_estimate(generation, pricing=pricing)
     for operation in ("remesh", "rig", "animation"):
         spec[f"{operation}_estimate_credits"] = operation_credits(operation, pricing=pricing)
@@ -1473,10 +1499,34 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
     prepare_spec(spec)
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
-    client = MeshyClient(REPO_ROOT, job)
     blender = BlenderAdapterClient(REPO_ROOT)
     vanilla_reference = stage_vanilla_reference(job, spec)
     generation_stage = generation_stage_for(spec)
+    if uses_tripo(spec):
+        generation_id, generation_glb = tripo_generation(job, spec)
+    else:
+        generation_id, generation_glb = meshy_generation(spec, job, MeshyClient(REPO_ROOT, job), generation_stage)
+    return prepare_generation_candidate(spec, slug, job, blender, vanilla_reference, generation_id, generation_glb)
+
+
+def tripo_generation(job: Path, spec: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+    """The generation task and base GLB `tripo_intake.py` placed in the job, with the maps it came with."""
+
+    task = existing_task(job, generation_stage_for(spec))
+    manifest = job / "provider" / "downloads" / f"{generation_download_name(spec, 'glb')}.manifest.json"
+    if not task or not manifest.is_file():
+        raise RuntimeError(
+            f"{spec['asset_id']} is a Tripo job with no intake yet. Export the files from Tripo into an inbox and run: "
+            f"py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <jobs.json> {job.name} --inbox <folder>"
+        )
+    glb = read_json(manifest)
+    select_geometry_textures(job, spec, glb["file"]["relative_path"])
+    return str(task["task_id"]), glb
+
+
+def meshy_generation(spec: Dict[str, Any], job: Path, client: MeshyClient, generation_stage: str) -> Tuple[str, Dict[str, Any]]:
+    """The paid (or reused) Meshy image-to-3D task and its GLB."""
+
     # The legacy unrecorded-task recovery scans response names that do not
     # contain a logical attempt id. Restrict it to the original stage so a
     # rejected response can never be mistaken for an explicitly authorised
@@ -1527,6 +1577,20 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         format_name="fbx",
         filename=generation_download_name(spec, "fbx"),
     )
+    return generation_id, generation_glb
+
+
+def prepare_generation_candidate(
+    spec: Dict[str, Any],
+    slug: str,
+    job: Path,
+    blender: BlenderAdapterClient,
+    vanilla_reference: Optional[Dict[str, Any]],
+    generation_id: str,
+    generation_glb: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Prepare and gate the provider's generation GLB in Blender (Meshy and Tripo alike)."""
+
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
     footprint_config = profile.get("footprint", {})
     max_runtime_footprint_m = footprint_config.get("max_runtime_footprint_m")
@@ -3053,14 +3117,21 @@ def require_budget_headroom(pending: List[Dict[str, Any]], specs: List[Dict[str,
 def vet_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Refuse a job before any provider call: route blockers, reference approval, then settings and budget."""
 
+    provider_name(spec)
     require_route_ready(spec)
     require_reference_approval(spec)
-    return prepare_spec(spec)
+    prepared = prepare_spec(spec)
+    if uses_tripo(spec) and spec["asset_kind"] not in STATIC_ASSET_KINDS | {"humanoid"}:
+        raise RuntimeError(f"{spec['asset_id']}: Tripo jobs cover units on a humanoid unit_type and static models, not {spec['asset_kind']}.")
+    if uses_tripo(spec) and spec["asset_kind"] == "humanoid" and not spec.get("unit_type"):
+        raise RuntimeError(f"{spec['asset_id']}: a Tripo unit job needs a unit_type.")
+    return prepared
 
 
 def preflight_selected_credits(specs: List[Dict[str, Any]], phase: str) -> None:
     """Check the full selected tranche before any paid provider call."""
 
+    specs = [spec for spec in specs if not uses_tripo(spec)]
     if not specs:
         return
     require_budget_headroom([item for spec in specs for item in pending_stages(spec, phase)], specs)
@@ -3499,7 +3570,8 @@ def write_animation_receipt(
     provider_name: str,
     source_rel: str,
     source_sha: str,
-    library_clip: Optional[Dict[str, Any]],
+    library_clip: Any,
+    source_kind: str = "meshy_animate",
 ) -> str:
     """Write the provenance receipt animation import requires, once per role, and return its job path."""
 
@@ -3510,7 +3582,7 @@ def write_animation_receipt(
         # A receipt from a failed attempt that named another clip is replaced, never reused.
         write_json(job / receipt_rel, {
             "verification_status": "verified",
-            "source_kind": "meshy_animate",
+            "source_kind": source_kind,
             "source_reference_id": task.get("task_id"),
             "source_action_name": scene_name,
             "provider_file_action_name": provider_name,
@@ -3519,7 +3591,11 @@ def write_animation_receipt(
             "library_clip": library_clip,
             "verified_by": "hoi4_3d_model_pipeline",
             "verified_at": utc_now(),
-            "basis": "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest.",
+            "basis": (
+                "Tripo's own animation exported from its app, intake-recorded with a checksum manifest."
+                if source_kind == "professional_source"
+                else "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest."
+            ),
         })
     return receipt_rel
 
@@ -3574,6 +3650,31 @@ def finish_unit_base(job: Path, slug: str, spec: Dict[str, Any], blender: Blende
     return textures
 
 
+def tripo_unit_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """What `humanoid_provider_stages` returns, read from the files `tripo_intake.py` placed: no provider call."""
+
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    job = ensure_job_layout(resolve_job_root(slug))
+    tripo_generation(job, spec)  # binds the base model's texture maps, or says to run the intake
+    downloads: Dict[str, Dict[str, Any]] = {}
+    for action in spec["required_actions"]:
+        role = action.get("reuse_role") or action["role"]
+        if role in downloads:
+            continue
+        manifest = job / "provider" / "downloads" / f"{animation_download_name(spec, role, 'glb')}.manifest.json"
+        if not manifest.is_file() or not existing_task(job, animation_stage_for(spec, role)):
+            raise RuntimeError(f"The Tripo intake has no clip for the {role} role; add it to the job's tripo.roles and run the intake again.")
+        downloads[role] = read_json(manifest)
+    return {
+        "slug": slug,
+        "job": job,
+        "blender": BlenderAdapterClient(REPO_ROOT),
+        "vanilla_reference": stage_vanilla_reference(job, spec),
+        "rig_id": None,
+        "animation_downloads": downloads,
+    }
+
+
 def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
 
@@ -3586,8 +3687,9 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     unit = load_unit_types()[spec["unit_type"]]
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
-    library = verify_library_clips(spec, MeshyClient(REPO_ROOT, job))
-    stages = humanoid_provider_stages(spec)
+    tripo = uses_tripo(spec)
+    library = {} if tripo else verify_library_clips(spec, MeshyClient(REPO_ROOT, job))
+    stages = tripo_unit_stages(spec) if tripo else humanoid_provider_stages(spec)
     blender = stages["blender"]
     downloads = stages["animation_downloads"]
     profile = load_profile(spec["profile"])
@@ -3597,7 +3699,8 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     texture_sources = prepare_pilot_texture_sources(
         job,
         spec,
-        exported_rels=[item["file"]["relative_path"] for item in downloads.values()],
+        # A Tripo clip GLB carries no maps (as Meshy's rig GLBs): the base model they all share is the lineage source.
+        exported_rels=[spec["texture_lineage_model_rel"]] if tripo else [item["file"]["relative_path"] for item in downloads.values()],
         geometry_source_rel=spec.get("geometry_source_rel"),
     )
     prep = blender.prepare_candidate(
@@ -3638,12 +3741,15 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         scene_name = provider_name + (".001" if provider_name == base_clip else "")
         task = existing_task(job, animation_stage_for(spec, clip_role)) or {}
         source_sha = sha256_file(job / source_rel)
-        receipt_rel = write_animation_receipt(job, role, task, scene_name, provider_name, source_rel, source_sha, library.get(clip_role))
+        receipt_rel = write_animation_receipt(
+            job, role, task, scene_name, provider_name, source_rel, source_sha,
+            task.get("library_clip") if tripo else library.get(clip_role), animation_source_kind(spec),
+        )
         target = f"{stem}_{role}"
         imported_rel = f"blender/checkpoints/unit_{role}.blend"
         imported = blender.import_animation_action(
             slug, chain, source_rel, receipt_rel, imported_rel, scene_name, armature, target,
-            "meshy_animate", str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
+            animation_source_kind(spec), str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
         )
         chain = imported_rel
         if unit.get("seated"):
@@ -3686,7 +3792,12 @@ def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, 
     result["credits_consumed"] = sum(int(row.get("consumed_credits") or 0) for row in ledger)
     result["credit_budget"] = spec.get("credit_budget")
     exports = document.get("exports") or {}
-    if not preflight.is_file() or read_json(preflight).get("status") != "passed":
+    if uses_tripo(spec) and not existing_task(job, generation_stage_for(spec)):
+        result["next"] = (
+            f"Export the files from Tripo into an inbox folder as {slug}__rigged.glb (a unit) or {slug}__model.glb "
+            f"(a building or prop), then: py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config {config} {slug} --inbox <folder>"
+        )
+    elif not preflight.is_file() or read_json(preflight).get("status") != "passed":
         result["next"] = (
             "Look at refs/original/meshy_input.png, answer the six visual checks in a JSON file, then: "
             f"py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config {config} --record-visual-review {slug} "
@@ -3821,7 +3932,15 @@ def main() -> int:
     handled = run_file_only_command(args, parser)
     if handled is not None:
         return handled
-    require_api_key()
+    try:
+        configs = load_job_configs(args.jobs_config)
+        selected = list(configs) if args.all or not args.assets else args.assets
+        needs_key = bool(args.shared_humanoid_batch) or any(not uses_tripo(configs.get(name, {})) for name in selected)
+    except (OSError, ValueError):
+        needs_key = True  # report the missing key first, as before
+    if needs_key:
+        require_api_key()
+        require_meshy_bootstrap()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:
         batch_id = args.shared_humanoid_batch
