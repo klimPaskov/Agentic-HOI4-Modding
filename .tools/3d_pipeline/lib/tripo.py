@@ -40,3 +40,39 @@ def inbox_file(inbox: Path, asset_slug: str, kind: str) -> Optional[Path]:
         raise ValueError(f"Unknown Tripo export kind {kind!r}; use one of {', '.join(KINDS)}.")
     path = Path(inbox) / f"{asset_slug}__{kind}.glb"
     return path if path.is_file() else None
+
+
+ATLAS_STRIP = 0.125
+
+
+def atlas_layout(sizes, strip: float = ATLAS_STRIP):
+    """Where each part's texture goes in one square atlas, in pixels from the bottom-left corner.
+
+    `sizes` holds one (height, width) per part. The part with the largest texture is the body.
+    It keeps a square of (1 - strip) of the atlas side in the bottom-left corner, so it loses
+    one eighth of its resolution per axis at the default strip. Every other part (a weapon, a
+    shield) gets one square cell of `strip` of the side: first up the right edge, then along the
+    top edge. Returns {"size": side, "main": index, "rects": [(x, y, width, height), ...]}.
+    """
+
+    if not sizes:
+        raise ValueError("No texture sizes to lay out")
+    areas = [height * width for height, width in sizes]
+    main = areas.index(max(areas))
+    side = max(sizes[main])
+    cell = max(1, int(round(side * strip)))
+    body = side - cell
+    column, row = side // cell, body // cell
+    if len(sizes) - 1 > column + row:
+        raise ValueError(f"{len(sizes) - 1} extra parts do not fit an atlas with {column + row} cells")
+    rects, slot = [], 0
+    for index in range(len(sizes)):
+        if index == main:
+            rects.append((0, 0, body, body))
+            continue
+        if slot < column:
+            rects.append((body, slot * cell, cell, cell))
+        else:
+            rects.append(((slot - column) * cell, body, cell, cell))
+        slot += 1
+    return {"size": side, "main": main, "rects": rects}

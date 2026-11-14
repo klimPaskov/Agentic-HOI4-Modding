@@ -318,5 +318,39 @@ class MeshyJobsUnchanged(unittest.TestCase):
         self.assertEqual(stop.exception.code, 2)
 
 
+class AtlasLayout(unittest.TestCase):
+    def test_the_body_keeps_seven_eighths_and_the_weapon_gets_an_edge_cell(self) -> None:
+        from lib.tripo import atlas_layout
+
+        layout = atlas_layout([(2048, 2048), (512, 512)])
+        self.assertEqual(layout["size"], 2048)
+        self.assertEqual(layout["main"], 0)
+        self.assertEqual(layout["rects"], [(0, 0, 1792, 1792), (1792, 0, 256, 256)])
+
+    def test_the_largest_texture_is_the_body_whatever_its_position(self) -> None:
+        from lib.tripo import atlas_layout
+
+        layout = atlas_layout([(512, 512), (2048, 2048), (512, 512)])
+        self.assertEqual(layout["main"], 1)
+        self.assertEqual(layout["rects"], [(1792, 0, 256, 256), (0, 0, 1792, 1792), (1792, 256, 256, 256)])
+
+    def test_cells_never_overlap_and_stay_inside_the_atlas(self) -> None:
+        from lib.tripo import atlas_layout
+
+        layout = atlas_layout([(2048, 2048)] + [(512, 512)] * 15)
+        side, covered = layout["size"], set()
+        for x, y, width, height in layout["rects"]:
+            self.assertTrue(0 <= x and x + width <= side and 0 <= y and y + height <= side)
+            cells = {(cx, cy) for cx in range(x // 256, (x + width) // 256) for cy in range(y // 256, (y + height) // 256)}
+            self.assertFalse(cells & covered)
+            covered |= cells
+
+    def test_too_many_parts_are_refused(self) -> None:
+        from lib.tripo import atlas_layout
+
+        with self.assertRaises(ValueError):
+            atlas_layout([(2048, 2048)] + [(512, 512)] * 16)
+
+
 if __name__ == "__main__":
     unittest.main()

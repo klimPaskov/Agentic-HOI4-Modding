@@ -44,6 +44,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images  # noqa: E402
+from lib.tripo import atlas_layout  # noqa: E402
 
 MAX_BONES = 50
 MAX_INFLUENCES = 4
@@ -345,11 +346,33 @@ def part_images(glb: Path):
     return result
 
 
-def pack_atlas(meshes, source_glb: Path, folder: Path):
-    """Put the parts' texture sets side by side in one atlas and remap each part's U into its slice.
+def resize_rgb(tile, width: int, height: int):
+    """Resample an (h, w, 3) uint8 tile to width x height with Blender's image scaler."""
 
-    Nothing is baked: every part keeps its own pixels (a part's U goes from [0, 1] to
-    slice i of N, scaled to the part's own size). One material with the three atlas maps replaces the parts' materials.
+    if tile.shape[1] == width and tile.shape[0] == height:
+        return tile
+    source_h, source_w = tile.shape[:2]
+    image = bpy.data.images.new("tripo_resize", source_w, source_h, alpha=False)
+    try:
+        rgba = np.ones((source_h, source_w, 4), dtype=np.float32)
+        rgba[:, :, :3] = tile[::-1].astype(np.float32) / 255.0
+        image.pixels.foreach_set(rgba.ravel())
+        image.scale(width, height)
+        buffer = np.empty(width * height * 4, dtype=np.float32)
+        image.pixels.foreach_get(buffer)
+    finally:
+        bpy.data.images.remove(image)
+    pixels = np.clip(np.rint(buffer * 255.0), 0, 255).astype(np.uint8).reshape(height, width, 4)
+    return pixels[::-1, :, :3]
+
+
+def pack_atlas(meshes, source_glb: Path, folder: Path):
+    """Put the parts' texture sets into one square atlas and remap each part's UVs into its cell.
+
+    The part with the largest texture (the body) keeps seven eighths of the atlas side, and every
+    other part (a weapon) gets a one-eighth cell at the edge (`lib.tripo.atlas_layout`). Tiles are
+    resampled to their cells and nothing is baked. One material with the three atlas maps replaces
+    the parts' materials.
     """
 
     images = part_images(source_glb)
@@ -371,28 +394,26 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
     sizes = [tile.shape[:2] for tile in tiles["diffuse"]]
     if any([tile.shape[:2] for tile in row] != sizes for row in tiles.values()):
         raise SystemExit("A part's maps differ in size between roles")
-    slot_h, slot_w = max(h for h, _ in sizes), max(w for _, w in sizes)
-    count = len(meshes)
-    # One slot per part, the part's own pixels (never resampled) in the slot's bottom-left corner.
+    layout = atlas_layout(sizes)
+    side, rects = layout["size"], layout["rects"]
     for role, row in tiles.items():
-        atlas = np.empty((slot_h, slot_w * count, 3), dtype=np.uint8)
+        atlas = np.empty((side, side, 3), dtype=np.uint8)
         atlas[:, :] = fill[role]
-        for index, tile in enumerate(row):
-            atlas[slot_h - tile.shape[0] :, index * slot_w : index * slot_w + tile.shape[1]] = tile
-        write_png(folder / ROLE_FILES[role], slot_w * count, slot_h, atlas)
+        for tile, (x, y, width, height) in zip(row, rects):
+            atlas[side - y - height : side - y, x : x + width] = resize_rgb(tile, width, height)
+        write_png(folder / ROLE_FILES[role], side, side, atlas)
         if role == "specular":
             write_rm_siblings(folder, atlas)
         written[role] = ROLE_FILES[role]
-    for index, obj in enumerate(meshes):
-        part_h, part_w = sizes[index]
+    for obj, (x, y, width, height) in zip(meshes, rects):
         layer = obj.data.uv_layers.active
         values = np.empty(len(layer.data) * 2, dtype=np.float32)
         layer.data.foreach_get("uv", values)
         us, vs = values[0::2], values[1::2]
         if min(us.min(), vs.min()) < -1e-4 or max(us.max(), vs.max()) > 1.0001:
             raise SystemExit(f"{obj.name} UVs leave [0, 1] ({us.min():.3f}..{us.max():.3f}, {vs.min():.3f}..{vs.max():.3f}); cannot pack an atlas")
-        values[0::2] = (np.clip(us, 0.0, 1.0) * part_w / slot_w + index) / count
-        values[1::2] = np.clip(vs, 0.0, 1.0) * part_h / slot_h
+        values[0::2] = (x + np.clip(us, 0.0, 1.0) * width) / side
+        values[1::2] = (y + np.clip(vs, 0.0, 1.0) * height) / side
         layer.data.foreach_set("uv", values)
     material = bpy.data.materials.new("unit_atlas")
     material.use_nodes = True
@@ -422,7 +443,7 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         obj.data.materials.append(material)
         for polygon in obj.data.polygons:
             polygon.material_index = 0
-    return {"textures": written, "parts": names, "atlas_size": [slot_w * count, slot_h], "part_sizes": [list(size) for size in sizes]}
+    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "rects": [list(rect) for rect in rects]}
 
 
 def trimmed_copy(action, cap: int):
