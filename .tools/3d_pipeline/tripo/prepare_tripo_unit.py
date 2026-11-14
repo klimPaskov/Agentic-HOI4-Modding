@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 import struct
@@ -39,7 +40,7 @@ from pathlib import Path
 import bmesh
 import bpy
 import numpy as np
-from mathutils import Vector, kdtree
+from mathutils import Quaternion, Vector, kdtree
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
@@ -84,6 +85,7 @@ def parse_args():
                         "auto tries 1500, 2500, 4000 and keeps the first that passes the shape check")
     parser.add_argument("--shape-iou", type=float, default=tripo_shape.MIN_IOU,
                         help="the least silhouette agreement (front, side, top; intersection over union) a reduced part must keep")
+    parser.add_argument("--ease-snaps", nargs="?", type=float, const=20.0, default=None, metavar="DEGREES", help="ease a joint turn faster than DEGREES per frame (default 20) over more frames, to three quarters of that, in every role clip, and keep each bone's quaternions on one hemisphere, so the kit's UNIT-ANIM-SPIN check does not fail a clip for one fast frame (the kit retimes 24 fps clips to 30 and a step can double)")
     parser.add_argument("--report", type=Path)
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -658,6 +660,85 @@ def name_glb_animation(path: Path, name: str):
     path.write_bytes(data[:8] + total.to_bytes(4, "little") + len(text).to_bytes(4, "little") + data[16:20] + text + rest)
 
 
+PREFIX = ""  # the bones are renamed to the kit's names before the keys are eased
+
+
+def rotation_curves(action):
+    """{bone: {component: fcurve}} of the quaternion rotation channels."""
+
+    found = {}
+    for fcurve, _c in action_fcurves(action):
+        if fcurve.data_path.startswith("pose.bones[") and fcurve.data_path.endswith(".rotation_quaternion"):
+            found.setdefault(fcurve.data_path.split('"')[1], {})[fcurve.array_index] = fcurve
+    return {bone: curves for bone, curves in found.items() if len(curves) == 4}
+
+
+def key_quaternions(curves):
+    count = len(curves[0].keyframe_points)
+    return [Quaternion([curves[i].keyframe_points[k].co.y for i in range(4)]) for k in range(count)]
+
+
+def write_quaternions(curves, quaternions):
+    for k, q in enumerate(quaternions):
+        for i in range(4):
+            point = curves[i].keyframe_points[k]
+            point.co.y = q[i]
+            point.handle_left.y = q[i]
+            point.handle_right.y = q[i]
+    for fcurve in curves.values():
+        fcurve.update()
+
+
+def step_degrees(a, b):
+    return 2.0 * math.degrees(math.acos(min(1.0, abs(a.dot(b)))))
+
+
+def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16):
+    """Keep every bone's quaternions on one hemisphere and ease a snap over more frames.
+
+    A step faster than `trigger_degrees` per frame is replaced by a slerp between the keys `w` frames before and
+    after it, with the smallest `w` (up to `max_window`) that brings every step in the range to `target_degrees`
+    per frame or less. Returns what was found: flips fixed, and per bone the fastest step before and after
+    (degrees per frame) for the bones that had a flip or a step over the trigger.
+    """
+
+    out = {"flips_fixed": 0, "snaps_eased": {}}
+    for bone, curves in rotation_curves(action).items():
+        quats = key_quaternions(curves)
+        frames = [kp.co.x for kp in curves[0].keyframe_points]
+
+        def rates(values):
+            return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
+
+        flips = 0
+        for k in range(1, len(quats)):
+            if quats[k].dot(quats[k - 1]) < 0:
+                quats[k].negate()
+                flips += 1
+        before = max(rates(quats), default=0.0)
+        eased = []
+        k = 1
+        while k < len(quats):
+            if rates(quats)[k - 1] > trigger_degrees:
+                for window in range(2, max_window + 1):
+                    a, b = max(k - window, 0), min(k + window - 1, len(quats) - 1)
+                    trial = list(quats)
+                    for m in range(a, b + 1):
+                        trial[m] = quats[a].slerp(quats[b], (frames[m] - frames[a]) / max(frames[b] - frames[a], 1e-6))
+                    if max(rates(trial)[max(a - 1, 0): b + 1], default=0.0) <= target_degrees or (a == 0 and b == len(quats) - 1):
+                        quats = trial
+                        eased.append([int(frames[a]), int(frames[b])])
+                        k = b
+                        break
+            k += 1
+        after = max(rates(quats), default=0.0)
+        out["flips_fixed"] += flips
+        if flips or eased or before > trigger_degrees:
+            out["snaps_eased"][bone.replace(PREFIX, "")] = {"flips": flips, "per_frame_before": round(before, 1), "per_frame_after": round(after, 1), "eased_frames": eased}
+        write_quaternions(curves, quats)
+    return out
+
+
 def main():
     args = parse_args()
     roles = dict(split_pair(item, "--roles item") for item in args.roles)
@@ -788,10 +869,13 @@ def main():
     # One GLB per role: mesh, the shared armature and exactly one clip.
     clips = {}
     trims = dict(split_pair(item, "--trim") for item in args.trim)
+    eased = {}
     for role, clip in roles.items():
         action, trimmed = bpy.data.actions[clip], None
         if role in trims:
             action, trimmed = trimmed_copy(action, int(trims[role]))
+        if args.ease_snaps:
+            eased[role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
         armature.animation_data_create()
         armature.animation_data.action = action
         slots = getattr(action, "slots", None)
@@ -820,6 +904,7 @@ def main():
         "ignored_objects": ignored,
         "clips_in_file": sorted(clip_names),
         "bones_before": bones_before,
+        "ease_snaps": eased,
         "bones_after": len(bone_names),
         "bone_names": bone_names,
         "dropped_bones": len(dropped),

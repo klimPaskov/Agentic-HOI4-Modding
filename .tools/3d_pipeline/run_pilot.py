@@ -294,6 +294,7 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
         # infantry's 36-87 and 36-105 at their means): raise both to vanilla's range (specular level 56, gloss scale 1.4).
         spec.setdefault("runtime_specular_level", 56)
         spec.setdefault("runtime_gloss_scale", 1.4)
+        spec.setdefault("runtime_gloss_p95_limit", 130)  # a shiny map (the zombie's p95 reached 183 at 1.4) is scaled down to stay under UNIT-DDS-SHINY's 140
         # Blender's glTF import adds a bone-shape Icosphere to every rigged file; it must not count as the unit's mesh.
         spec.setdefault("excluded_provider_objects", ["Icosphere"])
         spec["planned_total_credits"] = spec["credit_budget"] = 0
@@ -1456,7 +1457,7 @@ def finalize_pdx_runtime_textures(
             packer=pack_pdx_specular_map,
             packer_options={
                 key: spec[name]
-                for key, name in (("specular_level", "runtime_specular_level"), ("gloss_scale", "runtime_gloss_scale"))
+                for key, name in (("specular_level", "runtime_specular_level"), ("gloss_scale", "runtime_gloss_scale"), ("gloss_p95_limit", "runtime_gloss_p95_limit"))
                 if spec.get(name) is not None
             },
             report_key="pdx_specular_pack",

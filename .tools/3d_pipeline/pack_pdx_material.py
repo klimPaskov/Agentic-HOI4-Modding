@@ -11,12 +11,22 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from PIL import Image, ImageOps
 
 
 PDX_SPECULAR_LEVEL = 32
+
+
+def _percentile(channel: Image.Image, percent: float) -> int:
+    histogram = channel.convert("L").histogram()
+    target, running = sum(histogram) * percent / 100.0, 0
+    for level, count in enumerate(histogram):
+        running += count
+        if running >= target:
+            return level
+    return 255
 
 
 def _channel_stats(image: Image.Image) -> Dict[str, Dict[str, float]]:
@@ -61,8 +71,12 @@ def pack_pdx_specular_map(
     specular_source_rel: str,
     specular_level: int = PDX_SPECULAR_LEVEL,
     gloss_scale: float = PDX_GLOSS_SCALE,
+    gloss_p95_limit: Optional[float] = None,
 ) -> Dict[str, Any]:
     """Pack Meshy metallic and roughness maps into the HOI4 PDX layout.
+
+    With `gloss_p95_limit` the gloss scale is lowered, if need be, until the 95th percentile of the glossiness (alpha) is at
+    most that (the kit's UNIT-DDS-SHINY warns above about 140): a shiny unit then keeps vanilla's range.
 
     `specular_level` (green) and `gloss_scale` (alpha) default to the Meshy values; a Tripo job passes its own
     (`runtime_specular_level`, `runtime_gloss_scale`), because Tripo's maps are far more matte than Meshy's.
@@ -108,7 +122,12 @@ def pack_pdx_specular_map(
         # 36-87 mean and 77-114 at the 95th percentile (ENG, FRA, FIN infantry, 1.19.4.1). Unscaled,
         # the ZIN knights rendered with white specular speckles in game, so both channels are scaled.
         metal_l = metal_l.point(lambda value: round(value * PDX_METALLIC_SCALE))
-        gloss_l = ImageOps.invert(rough_l).point(lambda value: min(255, round(value * gloss_scale)))
+        raw_gloss = ImageOps.invert(rough_l)
+        if gloss_p95_limit is not None:
+            raw_p95 = float(_percentile(raw_gloss, 95.0))
+            if raw_p95 > 0:
+                gloss_scale = min(gloss_scale, gloss_p95_limit / raw_p95)
+        gloss_l = raw_gloss.point(lambda value: min(255, round(value * gloss_scale)))
         packed = Image.merge("RGBA", (zero, specular, metal_l, gloss_l))
 
     output = source.with_name("pdx_specular.png")
@@ -122,7 +141,7 @@ def pack_pdx_specular_map(
             "blue": "metallic",
             "alpha": "glossiness_255_minus_roughness",
         },
-        "gloss_scale": gloss_scale,
+        "gloss_scale": round(gloss_scale, 4),
         "source": {
             "glTF_packed_map": _record(source, job) if source.is_file() else None,
             "metallic": _record(metal, job),

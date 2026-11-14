@@ -1,0 +1,146 @@
+"""Checks that fail what a viewer fails on a Tripo unit: maths only (numpy), no file or Blender access.
+
+`tripo/tripo_checks.py` loads a unit and calls these. Each function answers one question a reviewer asked of the
+orc and returns numbers; the thresholds are named constants here, with the reason for each value.
+
+- `enclosure_share`: how much of the haft's circumference, at the grip point and a little either side of it, has
+  hand skin close to it. An open hand laid along a haft covers a third of it or less; a hand that wraps it covers
+  nearly all.
+- `blade_facing_degrees`: the angle between the broad face of the weapon's head and the direction the unit faces.
+- `cloak_region` and `region_stretch_share`: the vertices that hang behind the body, and the share of their edges that
+  a clip stretches or squashes.
+"""
+
+from __future__ import annotations
+
+from typing import Optional, Sequence, Tuple
+
+import numpy as np
+
+# Grip readability. Hand meshes are a few hundred vertices, so skin counts as covering a point of the haft when a vertex lies within
+# 1.2% of the body height of it. Calibrated 2026-11: the orc's hand covers 0.32 of the haft's circumference at the grip; a hand lying
+# open against a haft covers 0.3 or less and a synthetic wrap (280 degrees round the haft over 6 cm) 0.8 to 0.9. 0.50 sits between.
+ENCLOSURE_TOLERANCE_SHARE = 0.012
+MIN_ENCLOSURE_SHARE = 0.50
+# The thumb closes from the other side of the haft than the fingertips: at least this many degrees apart around it.
+MIN_THUMB_OPPOSITION_DEGREES = 90.0
+# The broad face of a blade must face the camera within this angle in the idle pose (the front view shows the shape the
+# artist drew; edge-on it reads as a stick).
+MAX_BLADE_FACING_DEGREES = 50.0
+
+
+def unit(vector: np.ndarray) -> np.ndarray:
+    vector = np.asarray(vector, float)
+    length = float(np.linalg.norm(vector))
+    return vector / length if length > 1e-12 else vector
+
+
+def principal_axes(points: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """The centre of `points` and their principal axes, longest first (rows)."""
+
+    points = np.asarray(points, float)
+    centre = points.mean(axis=0)
+    values, vectors = np.linalg.eigh(np.cov((points - centre).T))
+    order = np.argsort(values)[::-1]
+    return centre, vectors[:, order].T, values[order]
+
+
+def enclosure_share(
+    haft_point: np.ndarray,
+    haft_direction: np.ndarray,
+    radius: float,
+    skin_points: np.ndarray,
+    tolerance: float,
+    half_length: float,
+    angles: int = 36,
+    rings: int = 5,
+) -> float:
+    """Share of sample points on the haft's surface (rings along it, angles round it) that have skin within `tolerance`."""
+
+    d = unit(haft_direction)
+    helper = np.array([1.0, 0.0, 0.0]) if abs(d[0]) < 0.9 else np.array([0.0, 1.0, 0.0])
+    u = unit(np.cross(d, helper))
+    v = np.cross(d, u)
+    skin_points = np.asarray(skin_points, float)
+    covered, total = 0, 0
+    for z in np.linspace(-half_length, half_length, rings):
+        for a in np.linspace(0.0, 2.0 * np.pi, angles, endpoint=False):
+            point = haft_point + z * d + radius * (np.cos(a) * u + np.sin(a) * v)
+            nearest = float(np.linalg.norm(skin_points - point, axis=1).min()) if len(skin_points) else 1e9
+            covered += nearest <= tolerance
+            total += 1
+    return covered / max(total, 1)
+
+
+def blade_facing_degrees(weapon_points: np.ndarray, hand_point: np.ndarray, front: np.ndarray, head_share: float = 0.25) -> Tuple[float, np.ndarray]:
+    """Angle (0 to 90 degrees) between the broad face of a weapon's head and `front`, and the face's normal.
+
+    The haft is the longest principal axis of the weapon's points. The head is the `head_share` of the points
+    that lie farthest from the hand along it; its face normal is the head's thinnest principal axis. 0 means the
+    face looks straight at a camera in front of the unit, 90 means edge-on.
+    """
+
+    centre, axes, _values = principal_axes(weapon_points)
+    haft = axes[0]
+    along = (np.asarray(weapon_points, float) - hand_point) @ haft
+    far_end = along > 0 if abs(along.max()) >= abs(along.min()) else along < 0
+    order = np.argsort(np.abs(np.where(far_end, along, 0.0)))[::-1]
+    head = np.asarray(weapon_points, float)[order[: max(int(head_share * len(weapon_points)), 10)]]
+    _c, head_axes, _v = principal_axes(head)
+    normal = head_axes[2]
+    cosine = abs(float(unit(normal) @ unit(front)))
+    return float(np.degrees(np.arccos(np.clip(cosine, 0.0, 1.0)))), normal
+
+
+def cloak_region(
+    positions: np.ndarray,
+    dominant: Sequence[str],
+    hips: np.ndarray,
+    front: np.ndarray,
+    height: float,
+    bones: Sequence[str],
+    behind_share: float = 0.06,
+    low_share: float = 0.25,
+    high_share: float = 0.85,
+    ground: Optional[float] = None,
+    up_axis: int = 1,
+) -> np.ndarray:
+    """Mask of the vertices that hang behind the body: weighted mostly to a torso, hip or thigh bone, behind the hips by
+    more than `behind_share` of the height along `front`, between `low_share` and `high_share` of the height."""
+
+    positions = np.asarray(positions, float)
+    floor = float(positions[:, up_axis].min()) if ground is None else ground
+    level = (positions[:, up_axis] - floor) / max(height, 1e-9)
+    behind = (positions - hips) @ unit(front) < -behind_share * height
+    return behind & np.isin(np.asarray(dominant), list(bones)) & (level > low_share) & (level < high_share)
+
+
+def region_stretch_share(
+    rest: np.ndarray,
+    posed_frames: Sequence[np.ndarray],
+    edges: np.ndarray,
+    mask: np.ndarray,
+    height: float,
+    long_ratio: float = 1.5,
+    short_ratio: float = 0.5,
+    significant: float = 0.005,
+) -> Tuple[float, int]:
+    """Worst frame's share of the masked edges (both ends in `mask`) that are stretched past `long_ratio` or squashed under
+    `short_ratio` of their rest length by more than `significant` of the height, and that frame's index."""
+
+    inside = mask[edges[:, 0]] & mask[edges[:, 1]]
+    selected = edges[inside]
+    if not len(selected):
+        return 0.0, 0
+    rest_length = np.linalg.norm(rest[selected[:, 0]] - rest[selected[:, 1]], axis=1)
+    usable = rest_length > 1e-9
+    worst, worst_frame = 0.0, 0
+    for index, posed in enumerate(posed_frames):
+        length = np.linalg.norm(posed[selected[:, 0]] - posed[selected[:, 1]], axis=1)
+        ratio = np.where(usable, length / np.where(usable, rest_length, 1.0), 1.0)
+        change = np.abs(length - rest_length) / max(height, 1e-9)
+        bad = ((ratio > long_ratio) | (ratio < short_ratio)) & (change > significant)
+        share = float(bad.mean())
+        if share > worst:
+            worst, worst_frame = share, index
+    return worst, worst_frame

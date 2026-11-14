@@ -27,6 +27,7 @@ separate weapon gets from `tripo/grip_weapon.py --weapon-bone`; `weapon.release_
 roles in which the unit lets go of it: the kit grounds those clips by the body alone and the loose-part check does not
 judge that bone's part for drifting. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
+`ease_snaps` (true, or the degrees per frame to ease from, default 20) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `part_triangles` is optional too: `{"tripo_part_1": 1500}` reduces a part to about that many triangles
 before it is bound (a separately modelled weapon has far more than a hand weapon needs), and `"auto"` takes
 the first of 1500, 2500 and 4000 that keeps the part's shape. The reduction welds first and is checked
@@ -116,6 +117,9 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
     for role, frames in (config.get("trim") or {}).items():
         command += ["--trim", f"{role}={int(frames)}"]
+    if config.get("ease_snaps"):
+        value = config["ease_snaps"]
+        command += ["--ease-snaps"] + ([] if value is True else [str(float(value))])
     weapon = config.get("weapon")
     if weapon:
         pair = f"{weapon['part']}={weapon['bone']}"

@@ -414,7 +414,7 @@ def resolve_weapon_joint(names: Sequence[str], weapon_rest: np.ndarray, joint_re
 # ---------------------------------------------------------------------------------------------
 
 
-def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", samples=24, grip_radius=GRIP_RADIUS_SHARE, per_frame_ground=False, only: Optional[Sequence[str]] = None, ground_tolerance_by_clip: Optional[Dict[str, float]] = None) -> dict:
+def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", samples=24, grip_radius=GRIP_RADIUS_SHARE, per_frame_ground=False, only: Optional[Sequence[str]] = None, ground_tolerance_by_clip: Optional[Dict[str, float]] = None, frame_rate: float = 24.0, margin_share: float = PENETRATION_MARGIN_SHARE) -> dict:
     rig = Rig(path, body, weapon)
     body_part, weapon_part = rig.body, rig.weapon
     rest_worlds = rig.joint_worlds({})
@@ -442,12 +442,15 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
         if only is not None and name not in only:
             continue
         tolerance = (ground_tolerance_by_clip or {}).get(name, FRAME_GROUND_TOLERANCE_SHARE)
+        # samples == "all": every frame of the clip at `frame_rate`, and the per-frame series is kept in the report
+        count = int(round(end * frame_rate)) + 1 if samples == "all" else int(samples)
+        deep_series, in_series = [], []
         worst_stretch = {"stretched": 0.0, "squashed": 0.0, "frame": 0}
         growth = 0.0
         worst_in, worst_in_frame, deepest, deepest_frame, worst_ground = 0.0, 0, 0.0, 0, 0.0
         worst_deep, worst_deep_frame, lowest_body, worst_rest_ground = 0.0, 0, 0.0, 0.0
-        for step in range(samples):
-            t = end * step / max(samples - 1, 1)
+        for step in range(count):
+            t = end * step / max(count - 1, 1)
             worlds = rig.joint_worlds(rig.pose_for(tracks, t))
             mats = rig.skin_mats(worlds)
             now = rig.skin(body_part, mats)
@@ -465,6 +468,8 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
             worst_ground = max(worst_ground, float((world_all[:, 1] < frame_ground).mean()))
             worst_rest_ground = max(worst_rest_ground, float((world_all[:, 1] < ground).mean()))
             if not len(free_points):
+                deep_series.append(0.0)
+                in_series.append(0.0)
                 continue
             world_free = (free_points @ hand.T)[:, :3]
             lo, hi = now.min(axis=0), now.max(axis=0)
@@ -473,13 +478,16 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
             if near.any():
                 inside[near] = points_inside_mesh(world_free[near], now[tri])
             share = float(inside.mean())
+            in_series.append(share)
+            deep_series.append(0.0)
             if share > worst_in:
                 worst_in, worst_in_frame = share, step
             if inside.any():
                 depths = nearest_vertex_distance(world_free[inside], now) / height
                 if float(depths.max()) > deepest:
                     deepest, deepest_frame = float(depths.max()), step
-                deep = float((depths > PENETRATION_MARGIN_SHARE).sum()) / len(world_free)
+                deep = float((depths > margin_share).sum()) / len(world_free)
+                deep_series[-1] = deep
                 if deep > worst_deep:
                     worst_deep, worst_deep_frame = deep, step
         verdict = clip_verdict(worst_deep, worst_ground, 100 * worst_stretch["stretched"])
@@ -500,6 +508,10 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
             "body_lowest_below_rest_ground_pct_of_height": round(100 * max(lowest_body, 0.0), 1),
             **verdict,
         }
+        if samples == "all":
+            report[name]["frames"] = count
+            report[name]["weapon_deep_in_body_pct_by_frame"] = [round(100 * v, 2) for v in deep_series]
+            report[name]["weapon_in_body_pct_by_frame"] = [round(100 * v, 2) for v in in_series]
     return {
         "file": "<bytes>" if isinstance(path, (bytes, bytearray)) else str(path),
         "body": body,
@@ -535,7 +547,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--body", default="tripo_part_0")
     parser.add_argument("--weapon", default="tripo_part_1")
     parser.add_argument("--weapon-bone", default="auto")
-    parser.add_argument("--samples", type=int, default=24)
+    parser.add_argument("--samples", type=lambda v: v if v == "all" else int(v), default=24, help="sampled times per clip, or `all` for every frame at 24 fps with the per-frame series")
     parser.add_argument("--grip-radius", type=float, default=GRIP_RADIUS_SHARE, help="grip zone radius as a share of the body height")
     parser.add_argument("--ground-per-frame", action="store_true", help="below-ground test against the lowest body vertex of each frame (for clips where the body sinks)")
     parser.add_argument("--ground-tolerance", help="clip=share,... : own per-frame below-ground tolerance (share of the body height) for named clips, for example a death clip that lies on the ground")

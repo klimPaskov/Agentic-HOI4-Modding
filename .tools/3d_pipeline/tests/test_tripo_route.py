@@ -346,6 +346,7 @@ class TripoTextureDefaults(unittest.TestCase):
         self.assertEqual(spec["runtime_diffuse_gamma"], 1.0)
         self.assertEqual(spec["runtime_specular_level"], 56)
         self.assertEqual(spec["runtime_gloss_scale"], 1.4)
+        self.assertEqual(spec["runtime_gloss_p95_limit"], 130)
 
     def test_a_job_may_still_ask_for_a_grade(self) -> None:
         raw = tripo_spec()
@@ -366,6 +367,10 @@ class TripoTextureDefaults(unittest.TestCase):
             stats = report["channel_stats"]
             self.assertEqual(stats["G"]["mean"], 56.0)
             self.assertEqual(stats["A"]["mean"], round((255 - 200) * 1.4))
+            Image.new("L", (8, 8), 20).save(maps / "roughness.png")  # a shiny map: glossiness 235 before the scale
+            shiny = pack_pdx_material.pack_pdx_specular_map(job, "maps/metallic_roughness.png", specular_level=56, gloss_scale=1.4, gloss_p95_limit=130)
+            self.assertLessEqual(shiny["channel_stats"]["A"]["max"], 131)
+            Image.new("L", (8, 8), 200).save(maps / "roughness.png")
             default = pack_pdx_material.pack_pdx_specular_map(job, "maps/metallic_roughness.png")["channel_stats"]
             self.assertEqual(default["G"]["mean"], float(pack_pdx_material.PDX_SPECULAR_LEVEL))
 
@@ -384,6 +389,16 @@ class TripoTextureDefaults(unittest.TestCase):
             packed = Image.open(job / "textures" / "dds" / "texture_specular.dds").convert("RGBA")
             green = [packed.getpixel((x, y))[1] for x in range(0, 16, 5) for y in range(0, 16, 5)]
             self.assertTrue(all(abs(value - 56) <= 3 for value in green), green)
+
+
+class EaseSnaps(unittest.TestCase):
+    def test_the_intake_passes_the_option_only_when_the_job_asks_for_it(self) -> None:
+        spec = run_pilot.prepare_spec(tripo_spec())
+        command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
+        self.assertNotIn("--ease-snaps", command)
+        spec["tripo"]["ease_snaps"] = True
+        command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
+        self.assertIn("--ease-snaps", command)
 
 
 class DefaultRepairs(unittest.TestCase):
