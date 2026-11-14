@@ -24,6 +24,8 @@ and the intake prints the clip names it found. `weapon` is optional: the named p
 rigidly to the bone (`source` "rigged": the part is a mesh in the rigged export; "twin": the vertices
 whose nearest vertex in the `segmented` export belongs to the part). `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
+`part_triangles` is optional too: `{"tripo_part_1": 1500}` reduces a part to about that many triangles
+before it is bound (a separately modelled weapon has far more than a hand weapon needs).
 
 The intake records each file's SHA-256, size and name in `provider/tripo_intake.json`, runs
 `tripo/prepare_tripo_unit.py` in headless Blender for a unit, and places Meshy-shaped files in
@@ -102,6 +104,8 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         "--role-name", Path(run_pilot.animation_download_name(spec, "{role}", "glb")).stem,
         "--roles", *[f"{role}={clip}" for role, clip in roles.items() if role in wanted],
     ]
+    for part, budget in (config.get("part_triangles") or {}).items():
+        command += ["--part-triangles", f"{part}={int(budget)}"]
     for role, frames in (config.get("trim") or {}).items():
         command += ["--trim", f"{role}={int(frames)}"]
     weapon = config.get("weapon")

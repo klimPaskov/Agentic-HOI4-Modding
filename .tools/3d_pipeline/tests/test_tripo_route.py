@@ -307,6 +307,29 @@ class ClipNames(unittest.TestCase):
         self.assertEqual(safe_animation_name("walk"), "walk")
 
 
+class PartTriangleBudget(unittest.TestCase):
+    def test_budgets_parse_and_a_bad_one_is_refused(self) -> None:
+        from lib.tripo import parse_part_triangles
+
+        self.assertEqual(parse_part_triangles(["tripo_part_1=1500", "shield=800"]), {"tripo_part_1": 1500, "shield": 800})
+        for bad in ("tripo_part_1", "tripo_part_1=", "tripo_part_1=abc", "tripo_part_1=5", "=100", "tripo_part_1=-3"):
+            with self.assertRaises(ValueError, msg=bad):
+                parse_part_triangles([bad])
+
+    def test_the_ratio_is_none_when_a_part_is_already_within_its_budget(self) -> None:
+        from lib.tripo import decimate_ratio
+
+        self.assertIsNone(decimate_ratio(1200, 1500))
+        self.assertIsNone(decimate_ratio(1500, 1500))
+        self.assertAlmostEqual(decimate_ratio(19992, 1500), 0.075030, places=5)
+
+    def test_the_intake_passes_the_budget_to_the_prepare_script(self) -> None:
+        spec = run_pilot.prepare_spec(tripo_spec())
+        spec["tripo"]["part_triangles"] = {"tripo_part_1": 1500}
+        command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
+        self.assertEqual(command[command.index("--part-triangles") + 1], "tripo_part_1=1500")
+
+
 class DefaultRepairs(unittest.TestCase):
     def test_tripo_unit_jobs_repair_winding_holes_and_normals_and_meshy_jobs_none(self) -> None:
         self.assertEqual(run_pilot.default_repairs(tripo_spec()), ["winding", "holes", "normals"])

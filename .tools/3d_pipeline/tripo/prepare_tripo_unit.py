@@ -44,12 +44,15 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images  # noqa: E402
-from lib.tripo import atlas_layout, resolve_clip_name, safe_animation_name  # noqa: E402
+from lib.tripo import atlas_layout, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name  # noqa: E402
 
 MAX_BONES = 50
 # Texels of every atlas cell kept as a gutter: the tile is resampled inside it and its edge pixels are repeated
 # into it, so filtering and mipmaps never mix a part's edge with its neighbour's cell.
 ATLAS_GUTTER = 4
+# A Tripo export without PBR maps (the separately modelled weapon, and a body exported without them) has no
+# metallic-roughness map, which the kit's texture route requires. Its stand-in is constant: not metal, roughness 0.8.
+NEUTRAL_ROUGHNESS = 204
 MAX_INFLUENCES = 4
 
 # Mixamo name (without the `mixamorig:` prefix) -> the kit's name. Every bone not named here is merged.
@@ -71,6 +74,8 @@ def parse_args():
     parser.add_argument("--rigid-from-twin", nargs=2, metavar=("GLB", "PART=BONE"))
     parser.add_argument("--trim", action="append", default=[], metavar="ROLE=MAX_FRAMES",
                         help="cut a long clip to at most MAX_FRAMES frames, ending on the frame whose pose is closest to frame 0")
+    parser.add_argument("--part-triangles", action="append", default=[], metavar="PART=N",
+                        help="reduce a part to about N triangles (Blender Decimate, UVs kept) before it is bound")
     parser.add_argument("--report", type=Path)
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -230,6 +235,30 @@ def separate_coincident_weapon_vertices(meshes, rigid_for):
                 vertex.co = vertex.co + vertex.normal * shift
                 moved += 1
     return moved
+
+
+def decimate_part(obj, armature, budget: int):
+    """Collapse-decimate `obj` to about `budget` triangles with the armature modifier off, then put it back.
+
+    Vertex groups and UVs go through the collapse (the groups are replaced by the rigid bind afterwards
+    for a weapon). Returns {"from": n, "to": m} or None when the part is already within the budget.
+    """
+
+    before = sum(len(p.vertices) - 2 for p in obj.data.polygons)
+    ratio = decimate_ratio(before, budget)
+    if ratio is None:
+        return None
+    for modifier in [m for m in obj.modifiers if m.type == "ARMATURE"]:
+        obj.modifiers.remove(modifier)
+    select_only([obj], obj)
+    decimate = obj.modifiers.new("tripo_decimate", "DECIMATE")
+    decimate.decimate_type = "COLLAPSE"
+    decimate.ratio = ratio
+    decimate.use_collapse_triangulate = True
+    bpy.ops.object.modifier_apply(modifier=decimate.name)
+    skin = obj.modifiers.new("Armature", "ARMATURE")
+    skin.object = armature
+    return {"from": before, "to": sum(len(p.vertices) - 2 for p in obj.data.polygons), "ratio": ratio}
 
 
 def connected_weapon_parts(obj, flags):
@@ -429,8 +458,9 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
     if "diffuse" not in tiles:
         raise SystemExit(f"{source_glb.name} embeds no base color map")
     sizes = [tile.shape[:2] for tile in tiles["diffuse"]]
-    if any([tile.shape[:2] for tile in row] != sizes for row in tiles.values()):
-        raise SystemExit("A part's maps differ in size between roles")
+    # A part's normal and metallic-roughness maps may be smaller or larger than its diffuse (a separately
+    # modelled weapon often is): every tile is resampled to its cell anyway, so only the diffuse sizes lay out the atlas.
+    map_sizes = {role: [list(tile.shape[:2]) for tile in row] for role, row in tiles.items()}
     layout = atlas_layout(sizes)
     side, rects = layout["size"], layout["rects"]
     for role, row in tiles.items():
@@ -444,6 +474,13 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         if role == "specular":
             write_rm_siblings(folder, atlas)
         written[role] = ROLE_FILES[role]
+    neutral_specular = "specular" not in tiles
+    if neutral_specular:
+        constant = np.zeros((side, side, 3), dtype=np.uint8)
+        constant[:, :, 1] = NEUTRAL_ROUGHNESS
+        write_png(folder / ROLE_FILES["specular"], side, side, constant)
+        write_rm_siblings(folder, constant)
+        written["specular"] = ROLE_FILES["specular"]
     uv_ranges = {}
     for obj, (x, y, width, height) in zip(meshes, rects):
         layer = obj.data.uv_layers.active
@@ -485,7 +522,7 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         obj.data.materials.append(material)
         for polygon in obj.data.polygons:
             polygon.material_index = 0
-    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
+    return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "map_sizes": map_sizes, "neutral_specular": neutral_specular, "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
 
 
 def trimmed_copy(action, cap: int):
@@ -579,6 +616,15 @@ def main():
     for obj in [o for o in bpy.data.objects if o.type == "MESH" and o not in meshes]:
         ignored.append(obj.name)
         bpy.data.objects.remove(obj, do_unlink=True)
+
+    budgets = parse_part_triangles(args.part_triangles)
+    unknown = [part for part in budgets if not any(m.name == part for m in meshes)]
+    if unknown:
+        raise SystemExit(f"--part-triangles names no mesh: {unknown}; meshes are {[m.name for m in meshes]}")
+    decimated = {}
+    for obj in meshes:
+        if obj.name in budgets:
+            decimated[obj.name] = decimate_part(obj, armature, budgets[obj.name])
 
     # Weapon vertices, decided on the untouched mesh.
     twin_report, twin_flags = None, {}
@@ -711,6 +757,7 @@ def main():
         "dropped_bones": len(dropped),
         "weapon": weapon_summary,
         "weapon_vertices_separated_from_body": separated,
+        "part_triangles": decimated,
         "twin": twin_report,
         "materials": materials,
         "atlas": atlas,

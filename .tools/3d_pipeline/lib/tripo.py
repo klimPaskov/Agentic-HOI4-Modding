@@ -101,3 +101,23 @@ def safe_animation_name(name: str, limit: int = 60) -> str:
 
     cleaned = re.sub(r"[^A-Za-z0-9_.-]+", "_", name).strip("_")
     return (cleaned or "clip")[:limit]
+
+
+def parse_part_triangles(items) -> Dict[str, int]:
+    """`PART=N` items (a part and its triangle budget) as {part: N}; a budget must be a whole number of at least 12."""
+
+    budgets: Dict[str, int] = {}
+    for item in items:
+        part, separator, count = str(item).partition("=")
+        if not part or not separator or not count.isdigit() or int(count) < 12:
+            raise ValueError(f"A part triangle budget must look like PART=N with N at least 12, got {item!r}")
+        budgets[part] = int(count)
+    return budgets
+
+
+def decimate_ratio(triangles: int, budget: int) -> Optional[float]:
+    """The Decimate ratio that brings `triangles` to about `budget`, or None when it is already within it."""
+
+    if triangles <= budget:
+        return None
+    return round(budget / triangles, 6)
