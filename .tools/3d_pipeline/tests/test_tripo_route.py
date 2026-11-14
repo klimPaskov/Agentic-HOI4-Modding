@@ -340,6 +340,52 @@ class PartTriangleBudget(unittest.TestCase):
         self.assertEqual(command[command.index("--shape-iou") + 1], "0.95")
 
 
+class TripoTextureDefaults(unittest.TestCase):
+    def test_a_tripo_job_gets_no_diffuse_grade_and_a_vanilla_range_specular_by_default(self) -> None:
+        spec = run_pilot.prepare_spec(tripo_spec())
+        self.assertEqual(spec["runtime_diffuse_gamma"], 1.0)
+        self.assertEqual(spec["runtime_specular_level"], 56)
+        self.assertEqual(spec["runtime_gloss_scale"], 1.4)
+
+    def test_a_job_may_still_ask_for_a_grade(self) -> None:
+        raw = tripo_spec()
+        raw["runtime_diffuse_gamma"] = 0.8
+        self.assertEqual(run_pilot.prepare_spec(raw)["runtime_diffuse_gamma"], 0.8)
+
+    def test_the_specular_pack_takes_a_level_and_a_gloss_scale(self) -> None:
+        import pack_pdx_material
+        from PIL import Image
+
+        with tempfile.TemporaryDirectory() as folder:
+            job = Path(folder)
+            maps = job / "maps"
+            maps.mkdir()
+            for name, value in (("metallic", 0), ("roughness", 200), ("metallic_roughness", 128)):
+                Image.new("L", (8, 8), value).save(maps / f"{name}.png")
+            report = pack_pdx_material.pack_pdx_specular_map(job, "maps/metallic_roughness.png", specular_level=56, gloss_scale=1.4)
+            stats = report["channel_stats"]
+            self.assertEqual(stats["G"]["mean"], 56.0)
+            self.assertEqual(stats["A"]["mean"], round((255 - 200) * 1.4))
+            default = pack_pdx_material.pack_pdx_specular_map(job, "maps/metallic_roughness.png")["channel_stats"]
+            self.assertEqual(default["G"]["mean"], float(pack_pdx_material.PDX_SPECULAR_LEVEL))
+
+    def test_a_resized_specular_map_keeps_its_green_channel(self) -> None:
+        # Pillow's RGBA resize premultiplies by alpha, so a map whose alpha is small data lost most of its green.
+        from PIL import Image
+
+        with tempfile.TemporaryDirectory() as folder:
+            job = Path(folder)
+            (job / "textures" / "processed").mkdir(parents=True)
+            (job / "textures" / "dds").mkdir(parents=True)
+            Image.new("RGBA", (64, 64), (0, 56, 0, 26)).save(job / "textures" / "processed" / "texture_specular.png")
+            textures = {"conversions": [{"image": "texture_specular", "png": "textures/processed/texture_specular.png",
+                                         "dds": "textures/dds/texture_specular.dds", "width": 16, "height": 16}]}
+            run_pilot.compress_runtime_textures(job, run_pilot.prepare_spec(tripo_spec()), textures)
+            packed = Image.open(job / "textures" / "dds" / "texture_specular.dds").convert("RGBA")
+            green = [packed.getpixel((x, y))[1] for x in range(0, 16, 5) for y in range(0, 16, 5)]
+            self.assertTrue(all(abs(value - 56) <= 3 for value in green), green)
+
+
 class DefaultRepairs(unittest.TestCase):
     def test_tripo_unit_jobs_repair_winding_holes_and_normals_and_meshy_jobs_none(self) -> None:
         self.assertEqual(run_pilot.default_repairs(tripo_spec()), ["winding", "holes", "normals"])

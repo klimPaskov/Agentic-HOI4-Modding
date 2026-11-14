@@ -288,6 +288,12 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
         for key in ("image_to_3d", "remesh", "rig", "animation"):
             spec[f"{key}_estimate_credits"] = 0
         spec.setdefault("meshy_pose_mode", None)
+        # No diffuse gamma grade for Tripo: its basecolor is already inside vanilla infantry's luma and saturation range, and the grade desaturates it.
+        spec.setdefault("runtime_diffuse_gamma", 1.0)
+        # Tripo's materials are more matte than Meshy's (glossiness about 26 and specular level 22 after the pack, against vanilla
+        # infantry's 36-87 and 36-105 at their means): raise both to vanilla's range (specular level 56, gloss scale 1.4).
+        spec.setdefault("runtime_specular_level", 56)
+        spec.setdefault("runtime_gloss_scale", 1.4)
         # Blender's glTF import adds a bone-shape Icosphere to every rigged file; it must not count as the unit's mesh.
         spec.setdefault("excluded_provider_objects", ["Icosphere"])
         spec["planned_total_credits"] = spec["credit_budget"] = 0
@@ -1188,10 +1194,11 @@ def _finalize_pdx_runtime_texture(
     packer: Any,
     report_key: str,
     layout: Dict[str, str],
+    packer_options: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Replace one extracted working map with its final PDX-layout DDS."""
 
-    pack_report = packer(job, source_rel)
+    pack_report = packer(job, source_rel, **(packer_options or {}))
     if pack_report.get("status") not in {"packed", "already_packed"}:
         return textures
     output_rel = pack_report["output"]["path"]
@@ -1378,7 +1385,10 @@ def compress_runtime_textures(job: Path, spec: Dict[str, Any], textures: Dict[st
         with Image.open(source) as image:
             if width and height and image.size != (width, height):
                 sized = job / "textures" / "processed" / f"{Path(png_rel).stem}_runtime.png"
-                image.convert("RGBA").resize((width, height), Image.Resampling.LANCZOS).save(sized, format="PNG")
+                # Per channel: Pillow's RGBA resize premultiplies by alpha, which ruins the colour channels of a map whose alpha is
+                # data (a specular map with glossiness near 26 lost a third of its green; a normal map's alpha is its tangent Y).
+                channels = [band.resize((width, height), Image.Resampling.LANCZOS) for band in image.convert("RGBA").split()]
+                Image.merge("RGBA", channels).save(sized, format="PNG")
         written[dds_rel] = write_dxt5(sized, job / dds_rel)
     textures["runtime_texture_format"] = {"format": "DXT5", "mips": "full chain", "files": written}
     return textures
@@ -1444,6 +1454,11 @@ def finalize_pdx_runtime_textures(
             source_rel=specular_rel,
             image_name=image_names["specular"],
             packer=pack_pdx_specular_map,
+            packer_options={
+                key: spec[name]
+                for key, name in (("specular_level", "runtime_specular_level"), ("gloss_scale", "runtime_gloss_scale"))
+                if spec.get(name) is not None
+            },
             report_key="pdx_specular_pack",
             layout={
                 "red": "unused_mask_zero",

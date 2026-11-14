@@ -56,8 +56,16 @@ PDX_METALLIC_SCALE = 0.35
 PDX_GLOSS_SCALE = 0.65
 
 
-def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]:
+def pack_pdx_specular_map(
+    job: Path,
+    specular_source_rel: str,
+    specular_level: int = PDX_SPECULAR_LEVEL,
+    gloss_scale: float = PDX_GLOSS_SCALE,
+) -> Dict[str, Any]:
     """Pack Meshy metallic and roughness maps into the HOI4 PDX layout.
+
+    `specular_level` (green) and `gloss_scale` (alpha) default to the Meshy values; a Tripo job passes its own
+    (`runtime_specular_level`, `runtime_gloss_scale`), because Tripo's maps are far more matte than Meshy's.
 
     The source must be the provider's ``metallic_roughness.png``. The sibling
     grayscale maps are authoritative because the glTF packed alpha channel is
@@ -94,13 +102,13 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
                 f"{metal_l.size} != {rough_l.size}"
             )
         zero = Image.new("L", metal_l.size, 0)
-        specular = Image.new("L", metal_l.size, PDX_SPECULAR_LEVEL)
+        specular = Image.new("L", metal_l.size, int(specular_level))
         # Meshy materials are far shinier than vanilla units, whose specular maps keep metalness
         # (blue) near 10-21 mean and 57-79 at the 95th percentile, and glossiness (alpha) near
         # 36-87 mean and 77-114 at the 95th percentile (ENG, FRA, FIN infantry, 1.19.4.1). Unscaled,
         # the ZIN knights rendered with white specular speckles in game, so both channels are scaled.
         metal_l = metal_l.point(lambda value: round(value * PDX_METALLIC_SCALE))
-        gloss_l = ImageOps.invert(rough_l).point(lambda value: round(value * PDX_GLOSS_SCALE))
+        gloss_l = ImageOps.invert(rough_l).point(lambda value: min(255, round(value * gloss_scale)))
         packed = Image.merge("RGBA", (zero, specular, metal_l, gloss_l))
 
     output = source.with_name("pdx_specular.png")
@@ -110,10 +118,11 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
         "status": "packed",
         "layout": {
             "red": "unused_mask_zero",
-            "green": f"specular_level_{PDX_SPECULAR_LEVEL}",
+            "green": f"specular_level_{int(specular_level)}",
             "blue": "metallic",
             "alpha": "glossiness_255_minus_roughness",
         },
+        "gloss_scale": gloss_scale,
         "source": {
             "glTF_packed_map": _record(source, job) if source.is_file() else None,
             "metallic": _record(metal, job),

@@ -43,7 +43,12 @@ bpy.ops.wm.read_homefile(use_empty=True)
 scene = bpy.context.scene
 bpy.ops.io_pdx_mesh.import_mesh(filepath=request["mesh"], chk_locs=True)
 rig = next((o for o in scene.objects if o.type == "ARMATURE"), None)
-meshes = [o for o in scene.objects if o.type == "MESH" and "collision" not in o.name.lower()]
+def is_collision(o):
+    # the selection box: named for it in our units, a plain "pCube1" with the Collision shader in vanilla's
+    return "collision" in o.name.lower() or any(slot.material and slot.material.get("shader") == "Collision" for slot in o.material_slots)
+
+
+meshes = [o for o in scene.objects if o.type == "MESH" and not is_collision(o)]
 for o in scene.objects:
     if o.type == "MESH" and o not in meshes:
         o.hide_render = True
@@ -71,8 +76,13 @@ for o in meshes:
 scene.render.engine = "BLENDER_WORKBENCH"
 scene.render.resolution_x = scene.render.resolution_y = int(request["size"])
 scene.view_settings.view_transform = "Standard"
+# Workbench's studio light leaves a unit about 40% darker than its own diffuse map (vanilla's ENG infantry measured 95 unlit,
+# 55 lit; the game shows it near the diffuse map's brightness). One stop and a bit of exposure puts the lit tiles back near the
+# texture (lit 85 against unlit 86 on that unit). The flat-colour diagnostic tiles keep exposure 0 so their colours read as before.
+EXPOSURE = float(request.get("exposure", 1.1))
+scene.view_settings.exposure = EXPOSURE
 shading = scene.display.shading
-shading.light = "STUDIO"
+shading.light = request.get("light", "STUDIO")  # "FLAT" shows the diffuse map alone, unlit (`tripo/colour_compare.py`)
 shading.color_type = "TEXTURE"
 shading.show_backface_culling = True
 shading.show_cavity = False
@@ -220,6 +230,7 @@ def paint_diagnostics():
 def render_diagnostics(clip, frames, views):
     rows = []
     shading.color_type = "VERTEX"
+    scene.view_settings.exposure = 0.0
     for frame in frames:
         scene.frame_set(frame)
         worst = paint_diagnostics()
@@ -232,6 +243,7 @@ def render_diagnostics(clip, frames, views):
             row["tiles"][view] = path.name
         rows.append(row)
     shading.color_type = "TEXTURE"
+    scene.view_settings.exposure = EXPOSURE
     next(item for item in index["clips"] if item["name"] == clip)["diagnostic_rows"] = rows
 
 
