@@ -345,8 +345,8 @@ class TripoTextureDefaults(unittest.TestCase):
         spec = run_pilot.prepare_spec(tripo_spec())
         self.assertEqual(spec["runtime_diffuse_gamma"], 1.0)
         self.assertEqual(spec["runtime_specular_level"], 56)
-        self.assertEqual(spec["runtime_gloss_scale"], 1.4)
-        self.assertEqual(spec["runtime_gloss_p95_limit"], 130)
+        self.assertEqual(spec["runtime_gloss_remap"], "vanilla_infantry")
+        self.assertNotIn("runtime_gloss_scale", spec)
 
     def test_a_job_may_still_ask_for_a_grade(self) -> None:
         raw = tripo_spec()
@@ -374,6 +374,31 @@ class TripoTextureDefaults(unittest.TestCase):
             default = pack_pdx_material.pack_pdx_specular_map(job, "maps/metallic_roughness.png")["channel_stats"]
             self.assertEqual(default["G"]["mean"], float(pack_pdx_material.PDX_SPECULAR_LEVEL))
 
+    def test_gloss_is_remapped_onto_vanilla_infantrys_distribution(self) -> None:
+        import json
+
+        import numpy as np
+        import pack_pdx_material
+        from PIL import Image
+
+        target = json.loads((Path(run_pilot.__file__).resolve().parent / "config" / "vanilla_gloss.json").read_text(encoding="utf-8"))["quantiles"]
+        self.assertEqual(len(target), 101)
+        rng = np.random.default_rng(5)
+        for shape in (rng.uniform(1, 255, 40000), rng.beta(2, 8, 40000) * 255, rng.beta(8, 2, 40000) * 255):
+            gloss = Image.fromarray(np.clip(shape, 1, 255).astype(np.uint8).reshape(200, 200))
+            table = pack_pdx_material.remap_gloss_table(gloss, target)
+            mapped = np.asarray(gloss.point(table)).astype(float)
+            self.assertAlmostEqual(float(np.percentile(mapped, 95)), target[95], delta=3.0)
+            self.assertAlmostEqual(float(np.percentile(mapped, 50)), target[50], delta=3.0)
+            present = [table[level] for level, count in enumerate(gloss.histogram()) if count and level > 0]
+            self.assertTrue(all(b >= a for a, b in zip(present, present[1:])))  # order is kept
+        empty = Image.fromarray(np.zeros((8, 8), np.uint8))
+        self.assertEqual(pack_pdx_material.remap_gloss_table(empty, target), list(range(256)))
+        part_empty = np.zeros((100, 100), np.uint8)
+        part_empty[:, :20] = 120
+        table = pack_pdx_material.remap_gloss_table(Image.fromarray(part_empty), target)
+        self.assertEqual(table[0], 0)  # the empty part of an atlas stays matte
+
     def test_a_resized_specular_map_keeps_its_green_channel(self) -> None:
         # Pillow's RGBA resize premultiplies by alpha, so a map whose alpha is small data lost most of its green.
         from PIL import Image
@@ -395,10 +420,13 @@ class EaseSnaps(unittest.TestCase):
     def test_the_intake_passes_the_option_only_when_the_job_asks_for_it(self) -> None:
         spec = run_pilot.prepare_spec(tripo_spec())
         command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
-        self.assertNotIn("--ease-snaps", command)
-        spec["tripo"]["ease_snaps"] = True
+        self.assertEqual(command[command.index("--ease-snaps") + 1], "14.0")  # the default
+        spec["tripo"]["ease_snaps"] = False
         command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
-        self.assertIn("--ease-snaps", command)
+        self.assertNotIn("--ease-snaps", command)
+        spec["tripo"]["ease_snaps"] = 18
+        command = tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
+        self.assertEqual(command[command.index("--ease-snaps") + 1], "18.0")
 
 
 class DefaultRepairs(unittest.TestCase):

@@ -290,11 +290,11 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
         spec.setdefault("meshy_pose_mode", None)
         # No diffuse gamma grade for Tripo: its basecolor is already inside vanilla infantry's luma and saturation range, and the grade desaturates it.
         spec.setdefault("runtime_diffuse_gamma", 1.0)
-        # Tripo's materials are more matte than Meshy's (glossiness about 26 and specular level 22 after the pack, against vanilla
-        # infantry's 36-87 and 36-105 at their means): raise both to vanilla's range (specular level 56, gloss scale 1.4).
+        # Tripo's glossiness differs from unit to unit (the orc's mean was 26 after the Meshy scale, the zombie's p95 reached 183), so
+        # a scale or a cap fits one and not the other. The unit's gloss is remapped onto vanilla infantry's distribution (ENG, GER, SOV:
+        # mean 60, 95th percentile 101, config/vanilla_gloss.json); the specular level (green) is 56, the SOV value.
         spec.setdefault("runtime_specular_level", 56)
-        spec.setdefault("runtime_gloss_scale", 1.4)
-        spec.setdefault("runtime_gloss_p95_limit", 130)  # a shiny map (the zombie's p95 reached 183 at 1.4) is scaled down to stay under UNIT-DDS-SHINY's 140
+        spec.setdefault("runtime_gloss_remap", "vanilla_infantry")
         # Blender's glTF import adds a bone-shape Icosphere to every rigged file; it must not count as the unit's mesh.
         spec.setdefault("excluded_provider_objects", ["Icosphere"])
         spec["planned_total_credits"] = spec["credit_budget"] = 0
@@ -1185,6 +1185,12 @@ def gate_texture_lineage(
     return report
 
 
+def load_vanilla_gloss() -> list:
+    """The 101 quantiles of vanilla infantry's glossiness (config/vanilla_gloss.json)."""
+
+    return json.loads((Path(__file__).resolve().parent / "config" / "vanilla_gloss.json").read_text(encoding="utf-8"))["quantiles"]
+
+
 def _finalize_pdx_runtime_texture(
     job: Path,
     spec: Dict[str, Any],
@@ -1459,7 +1465,7 @@ def finalize_pdx_runtime_textures(
                 key: spec[name]
                 for key, name in (("specular_level", "runtime_specular_level"), ("gloss_scale", "runtime_gloss_scale"), ("gloss_p95_limit", "runtime_gloss_p95_limit"))
                 if spec.get(name) is not None
-            },
+            } | ({"gloss_remap": load_vanilla_gloss()} if spec.get("runtime_gloss_remap") == "vanilla_infantry" else {}),
             report_key="pdx_specular_pack",
             layout={
                 "red": "unused_mask_zero",

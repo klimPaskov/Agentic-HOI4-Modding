@@ -17,6 +17,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-CLOAK-STRETCH: in a clip, more than `CLOAK_MAX_STRETCH_SHARE` of the edges of the cloak region (vertices behind
   the body, weighted to the torso, hips or thighs) are stretched past 1.5x or squashed under 0.5x. The limit is the worst
   vanilla clothing stretch with a margin (see `CLOAK_MAX_STRETCH_SHARE`).
+- TRIPO-LIMB-IN-TORSO: in a death clip, limb skin (arms, legs) is deeper than `LIMB_MARGIN_SHARE` of the height inside the torso in some frame, in more
+  than `MAX_LIMB_IN_TORSO_SHARE` of the limb points: an arm or a leg through the body.
+- TRIPO-NOT-PRONE: a death clip must end low (body extent under `MAX_FINAL_EXTENT_SHARE` of its standing height).
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on).
 """
@@ -46,6 +49,11 @@ VANILLA_CLOAK_WORST = 0.069
 CLOAK_MAX_STRETCH_SHARE = 0.07
 CLOAK_BONES = ("Hips", "Spine", "Spine01", "Spine02", "LeftUpLeg", "RightUpLeg")
 ENCLOSURE_HALF_LENGTH_SHARE = 0.03
+TORSO_BONES = ("Hips", "Spine", "Spine01", "Spine02", "neck", "Head")
+LIMB_BONES = tuple(f"{side}{part}" for side in ("Left", "Right") for part in ("Arm", "ForeArm", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"))
+LIMB_MARGIN_SHARE = 0.015  # limb skin this deep inside the torso counts (1.5% of the height)
+MAX_LIMB_IN_TORSO_SHARE = 0.01  # of the limb points, in any frame
+MAX_FINAL_EXTENT_SHARE = 0.4
 ENCLOSURE_TOLERANCE_SHARE = T.ENCLOSURE_TOLERANCE_SHARE
 MIN_ENCLOSURE_SHARE = T.MIN_ENCLOSURE_SHARE
 MIN_THUMB_OPPOSITION_DEGREES = T.MIN_THUMB_OPPOSITION_DEGREES
@@ -121,6 +129,62 @@ def blade_findings(mesh, anims: Dict[str, object], weapon_bone: str) -> (List[di
     return [], numbers
 
 
+def limb_torso_core(frames, triangles, torso: np.ndarray, limb: np.ndarray, height: float, margin_share: float = LIMB_MARGIN_SHARE) -> List[float]:
+    """Per frame: the share of limb points (at most 400, evenly spaced) deeper than `margin_share` of the height inside the torso.
+
+    `frames` are posed vertex positions, `torso` and `limb` vertex masks, `triangles` the mesh's (indices)."""
+
+    import clip_check as cc
+
+    torso_triangles = triangles[torso[triangles].all(axis=1)]
+    limb_index = np.where(limb)[0]
+    limb_index = limb_index[np.linspace(0, len(limb_index) - 1, min(400, len(limb_index))).astype(int)] if len(limb_index) else limb_index
+    torso_index = np.where(torso)[0]
+    out = []
+    for posed in frames:
+        points = posed[limb_index]
+        lo, hi = posed[torso_index].min(axis=0), posed[torso_index].max(axis=0)
+        near = np.all((points >= lo) & (points <= hi), axis=1)
+        inside = np.zeros(len(points), dtype=bool)
+        if near.any():
+            inside[near] = cc.points_inside_mesh(points[near], posed[torso_triangles])
+        deep = 0
+        if inside.any():
+            depth = cc.nearest_vertex_distance(points[inside], posed[torso_index]) / height
+            deep = int((depth > margin_share).sum())
+        out.append(deep / max(len(points), 1))
+    return out
+
+
+def limb_torso_series(mesh, anim, step: int = 2, margin_share: float = LIMB_MARGIN_SHARE) -> List[float]:
+    names = np.array(mesh.bones)
+    dominant = pdx_deform.dominant_bones(mesh)
+    dominant_names = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
+    return limb_torso_core(posed_frames(mesh, anim, step), mesh.triangles, np.isin(dominant_names, TORSO_BONES), np.isin(dominant_names, LIMB_BONES), mesh.height, margin_share)
+
+
+def final_extent_share(mesh, anim) -> float:
+    posed = posed_frames(mesh, anim, step=max(1, anim.frames))
+    last = pdx_deform.skin(mesh, pdx_deform.skinning_matrices(mesh, anim)[-1])
+    return float(np.ptp(last[:, 1]) / max(mesh.height, 1e-9))
+
+
+def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if not clip.endswith("death"):
+            continue
+        series = limb_torso_series(mesh, anim)
+        extent = final_extent_share(mesh, anim)
+        worst = max(series) if series else 0.0
+        numbers[clip] = {"limb_in_torso_worst_share": round(worst, 4), "worst_frame": int(np.argmax(series)) * 2 if series else 0, "final_extent_share": round(extent, 3)}
+        if worst > MAX_LIMB_IN_TORSO_SHARE:
+            out.append(finding("TRIPO-LIMB-IN-TORSO", clip, f"{worst:.1%} of the limb points are more than {LIMB_MARGIN_SHARE:.1%} of the height inside the torso in frame {numbers[clip]['worst_frame']} (limit {MAX_LIMB_IN_TORSO_SHARE:.0%}): a limb goes through the body", share=round(worst, 4)))
+        if extent > MAX_FINAL_EXTENT_SHARE:
+            out.append(finding("TRIPO-NOT-PRONE", clip, f"the body is still {extent:.0%} of its standing height at the end (limit {MAX_FINAL_EXTENT_SHARE:.0%}): it does not end on the ground", share=round(extent, 3)))
+    return out, numbers
+
+
 def weapon_in_body_findings(gripped: Path, clips: Sequence[str], weapon_joint: str) -> (List[dict], dict):
     import clip_check as cc
 
@@ -190,11 +254,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--weapon-bone", default="", help="the weapon's bone in the unit's mesh (blade facing)")
     parser.add_argument("--weapon-joint", default="mixamorig:Weapon", help="the weapon's joint in the gripped GLB")
     parser.add_argument("--clips", nargs="*", default=[], help="clips of the gripped GLB to check for the weapon in the body (default all)")
+    parser.add_argument("--cape", action="store_true", help="the unit has a cloak or cape: run the cloak check (the job's `cape: true` does the same with --jobs-config and --slug)")
+    parser.add_argument("--jobs-config", type=Path)
+    parser.add_argument("--slug")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
-    found, numbers["cloak"] = cloak_findings(mesh, anims)
+    cape = args.cape
+    if args.jobs_config and args.slug:
+        cape = cape or bool(json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug].get("cape"))
+    if cape:
+        found, numbers["cloak"] = cloak_findings(mesh, anims)
+        findings += found
+    else:
+        numbers["cloak"] = "not run: the job's anatomy has no cape"
+    found, numbers["death"] = death_findings(mesh, anims)
     findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)

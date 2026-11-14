@@ -11,7 +11,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Sequence
 
 from PIL import Image, ImageOps
 
@@ -27,6 +27,33 @@ def _percentile(channel: Image.Image, percent: float) -> int:
         if running >= target:
             return level
     return 255
+
+
+def remap_gloss_table(gloss: Image.Image, target_quantiles: Sequence[float]) -> list:
+    """A 256-entry table that maps a glossiness channel onto a target distribution (quantile matching).
+
+    Each level goes to the target value at its mid-rank among the non-zero pixels (zero stays zero: the empty
+    parts of an atlas are matte and must not count toward the unit's distribution). `target_quantiles` holds the
+    target's value at percentiles 0 to 100.
+    """
+
+    histogram = gloss.convert("L").histogram()
+    counted = sum(histogram[1:])
+    if counted <= 0:
+        return list(range(256))
+    target = list(target_quantiles)
+    table, running = [0] * 256, 0
+    for level in range(1, 256):
+        count = histogram[level]
+        if count:
+            rank = (running + count / 2.0) / counted
+            position = rank * (len(target) - 1)
+            low = int(position)
+            high = min(low + 1, len(target) - 1)
+            value = target[low] + (target[high] - target[low]) * (position - low)
+            table[level] = max(1, min(255, int(round(value))))
+        running += count
+    return table
 
 
 def _channel_stats(image: Image.Image) -> Dict[str, Dict[str, float]]:
@@ -72,9 +99,12 @@ def pack_pdx_specular_map(
     specular_level: int = PDX_SPECULAR_LEVEL,
     gloss_scale: float = PDX_GLOSS_SCALE,
     gloss_p95_limit: Optional[float] = None,
+    gloss_remap: Optional[Sequence[float]] = None,
 ) -> Dict[str, Any]:
     """Pack Meshy metallic and roughness maps into the HOI4 PDX layout.
 
+    With `gloss_remap` (101 quantiles of a target glossiness distribution, `config/vanilla_gloss.json`) the unit's gloss is
+    remapped onto that distribution instead of scaled (`remap_gloss`); `gloss_scale` and `gloss_p95_limit` are then ignored.
     With `gloss_p95_limit` the gloss scale is lowered, if need be, until the 95th percentile of the glossiness (alpha) is at
     most that (the kit's UNIT-DDS-SHINY warns above about 140): a shiny unit then keeps vanilla's range.
 
@@ -123,11 +153,14 @@ def pack_pdx_specular_map(
         # the ZIN knights rendered with white specular speckles in game, so both channels are scaled.
         metal_l = metal_l.point(lambda value: round(value * PDX_METALLIC_SCALE))
         raw_gloss = ImageOps.invert(rough_l)
-        if gloss_p95_limit is not None:
+        if gloss_p95_limit is not None and gloss_remap is None:
             raw_p95 = float(_percentile(raw_gloss, 95.0))
             if raw_p95 > 0:
                 gloss_scale = min(gloss_scale, gloss_p95_limit / raw_p95)
-        gloss_l = raw_gloss.point(lambda value: min(255, round(value * gloss_scale)))
+        if gloss_remap is not None:
+            gloss_l = raw_gloss.point(remap_gloss_table(raw_gloss, gloss_remap))
+        else:
+            gloss_l = raw_gloss.point(lambda value: min(255, round(value * gloss_scale)))
         packed = Image.merge("RGBA", (zero, specular, metal_l, gloss_l))
 
     output = source.with_name("pdx_specular.png")

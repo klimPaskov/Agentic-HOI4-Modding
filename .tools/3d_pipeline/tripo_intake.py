@@ -27,7 +27,7 @@ separate weapon gets from `tripo/grip_weapon.py --weapon-bone`; `weapon.release_
 roles in which the unit lets go of it: the kit grounds those clips by the body alone and the loose-part check does not
 judge that bone's part for drifting. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
-`ease_snaps` (true, or the degrees per frame to ease from, default 20) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
+`ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `part_triangles` is optional too: `{"tripo_part_1": 1500}` reduces a part to about that many triangles
 before it is bound (a separately modelled weapon has far more than a hand weapon needs), and `"auto"` takes
 the first of 1500, 2500 and 4000 that keeps the part's shape. The reduction welds first and is checked
@@ -58,6 +58,10 @@ from lib.credits import append_entry, read_ledger  # noqa: E402
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json  # noqa: E402
 from lib.tripo import inbox_file, uses_tripo  # noqa: E402
 
+# Every Tripo job eases joint turns faster than this many degrees per frame (tripo/prepare_tripo_unit.py --ease-snaps). The kit retimes
+# Tripo's 24 fps clips to 30 and one frame's step can double, so a clip with 20 degrees a frame arrives at 38 against the kit's limit of 37
+# (the zombie's `fall` did at 20). 14 holds for the zombie and the orc (spin per clip in their reports) and moves little else.
+DEFAULT_EASE_SNAPS = 14.0
 PREPARE_SCRIPT = PIPELINE_ROOT / "tripo" / "prepare_tripo_unit.py"
 RECEIPT = "provider/tripo_intake.json"
 SUCCEEDED = "SUCCEEDED"
@@ -117,8 +121,8 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
     for role, frames in (config.get("trim") or {}).items():
         command += ["--trim", f"{role}={int(frames)}"]
-    if config.get("ease_snaps"):
-        value = config["ease_snaps"]
+    value = config.get("ease_snaps", DEFAULT_EASE_SNAPS)
+    if value:
         command += ["--ease-snaps"] + ([] if value is True else [str(float(value))])
     weapon = config.get("weapon")
     if weapon:

@@ -73,7 +73,79 @@ for o in meshes:
         node.image = images[path]
         slot.material.node_tree.nodes.active = node
 
-scene.render.engine = "BLENDER_WORKBENCH"
+PBR = bool(request.get("pbr"))
+if PBR:
+    # Shade from the packed PDX specular the game gets: green = specular level, alpha = glossiness, blue = metalness
+    # (roughness = 1 - glossiness). Workbench cannot read a texture for these, so this mode renders with EEVEE.
+    spec_images = {}
+    for o in meshes:
+        shapes = [shape for shape in request["diffuse"] if shape != "*" and o.name.startswith(shape)]
+        key = max(shapes, key=len) if shapes else "*"
+        spec_path = request.get("specular", {}).get(key) or request.get("specular", {}).get("*")
+        diffuse_path = request["diffuse"].get(key) or request["diffuse"].get("*")
+        if not spec_path or not diffuse_path:
+            continue
+        if spec_path not in spec_images:
+            spec_images[spec_path] = bpy.data.images.load(spec_path)
+            spec_images[spec_path].colorspace_settings.name = "Non-Color"
+            spec_images[spec_path].alpha_mode = "CHANNEL_PACKED"
+        for slot in o.material_slots:
+            material = slot.material
+            if material is None:
+                continue
+            material.use_nodes = True
+            material.use_backface_culling = True
+            tree = material.node_tree
+            tree.nodes.clear()
+            out_node = tree.nodes.new("ShaderNodeOutputMaterial")
+            bsdf = tree.nodes.new("ShaderNodeBsdfPrincipled")
+            diffuse = tree.nodes.new("ShaderNodeTexImage")
+            diffuse.image = images[diffuse_path]
+            spec = tree.nodes.new("ShaderNodeTexImage")
+            spec.image = spec_images[spec_path]
+            split = tree.nodes.new("ShaderNodeSeparateColor")
+            invert = tree.nodes.new("ShaderNodeMath")
+            invert.operation = "SUBTRACT"
+            invert.inputs[0].default_value = 1.0
+            level = tree.nodes.new("ShaderNodeMath")
+            level.operation = "MULTIPLY"
+            level.inputs[1].default_value = 2.0
+            level.use_clamp = True
+            links = tree.links
+            links.new(diffuse.outputs["Color"], bsdf.inputs["Base Color"])
+            links.new(spec.outputs["Color"], split.inputs["Color"])
+            links.new(spec.outputs["Alpha"], invert.inputs[1])
+            links.new(invert.outputs["Value"], bsdf.inputs["Roughness"])
+            links.new(split.outputs["Blue"], bsdf.inputs["Metallic"])
+            links.new(split.outputs["Green"], level.inputs[0])
+            links.new(level.outputs["Value"], bsdf.inputs["Specular IOR Level"])
+            links.new(bsdf.outputs["BSDF"], out_node.inputs["Surface"])
+    scene.render.engine = "BLENDER_EEVEE"
+    # The world lights the unit grey and shows magenta to the camera; one sun gives the form.
+    world = bpy.data.worlds.new("review")
+    world.use_nodes = True
+    wt = world.node_tree
+    wt.nodes.clear()
+    light_path = wt.nodes.new("ShaderNodeLightPath")
+    grey = wt.nodes.new("ShaderNodeBackground")
+    grey.inputs["Color"].default_value = (0.55, 0.55, 0.57, 1.0)
+    grey.inputs["Strength"].default_value = float(request.get("ambient", 1.0))
+    magenta = wt.nodes.new("ShaderNodeBackground")
+    magenta.inputs["Color"].default_value = (1.0, 0.0, 1.0, 1.0)
+    mix = wt.nodes.new("ShaderNodeMixShader")
+    world_out = wt.nodes.new("ShaderNodeOutputWorld")
+    wt.links.new(light_path.outputs["Is Camera Ray"], mix.inputs[0])
+    wt.links.new(grey.outputs["Background"], mix.inputs[1])
+    wt.links.new(magenta.outputs["Background"], mix.inputs[2])
+    wt.links.new(mix.outputs["Shader"], world_out.inputs["Surface"])
+    scene.world = world
+    sun_data = bpy.data.lights.new("sun", "SUN")
+    sun_data.energy = float(request.get("sun", 3.0))
+    sun = bpy.data.objects.new("sun", sun_data)
+    sun.rotation_euler = (math.radians(55), 0.0, math.radians(-25))
+    scene.collection.objects.link(sun)
+else:
+    scene.render.engine = "BLENDER_WORKBENCH"
 scene.render.resolution_x = scene.render.resolution_y = int(request["size"])
 scene.view_settings.view_transform = "Standard"
 # Workbench's studio light leaves a unit about 40% darker than its own diffuse map (vanilla's ENG infantry measured 95 unlit,
@@ -86,8 +158,9 @@ shading.light = request.get("light", "STUDIO")  # "FLAT" shows the diffuse map a
 shading.color_type = "TEXTURE"
 shading.show_backface_culling = True
 shading.show_cavity = False
-scene.world = bpy.data.worlds.new("review")
-scene.world.color = (1.0, 0.0, 1.0)
+if not PBR:
+    scene.world = bpy.data.worlds.new("review")
+    scene.world.color = (1.0, 0.0, 1.0)
 
 
 def bounds():
@@ -111,6 +184,15 @@ rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * 
 disc.from_pydata([(0.0, 0.0, rest_low.z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
 ground_material = bpy.data.materials.new("ground")
 ground_material.diffuse_color = (0.08, 0.16, 0.08, 1.0)
+if PBR:
+    # unlit, so the disc has no shadows and its colour is the same wherever the unit stands
+    ground_material.use_nodes = True
+    gt = ground_material.node_tree
+    gt.nodes.clear()
+    emission = gt.nodes.new("ShaderNodeEmission")
+    emission.inputs["Color"].default_value = (0.08, 0.16, 0.08, 1.0)
+    gt_out = gt.nodes.new("ShaderNodeOutputMaterial")
+    gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
 disc.materials.append(ground_material)
 scene.collection.objects.link(bpy.data.objects.new("ground", disc))
 

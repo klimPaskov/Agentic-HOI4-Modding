@@ -120,6 +120,31 @@ class Cloak(unittest.TestCase):
         self.assertLess(TC.CLOAK_MAX_STRETCH_SHARE, 1.5 * TC.VANILLA_CLOAK_WORST)
 
 
+class LimbInTorso(unittest.TestCase):
+    def setUp(self) -> None:
+        # A unit cube of torso vertices (8 corners, 12 triangles) and a row of limb vertices.
+        corners = np.array([[x, y, z] for x in (0.0, 1.0) for y in (0.0, 1.0) for z in (0.0, 1.0)])
+        quads = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+        triangles = [[a, b, c] for a, b, c, d in quads] + [[a, c, d] for a, b, c, d in quads]
+        self.limb_points = np.array([[0.5, 0.5, z] for z in np.linspace(-1.0, 0.5, 20)])
+        self.positions = np.concatenate([corners, self.limb_points])
+        self.triangles = np.array(triangles)
+        self.torso = np.zeros(len(self.positions), bool)
+        self.torso[:8] = True
+        self.limb = ~self.torso
+
+    def test_a_limb_poking_deep_into_the_torso_is_counted_and_one_outside_is_not(self) -> None:
+        inside = TC.limb_torso_core([self.positions], self.triangles, self.torso, self.limb, 10.0, margin_share=0.01)[0]
+        self.assertGreater(inside, 0.05)
+        outside = self.positions.copy()
+        outside[8:, 2] -= 5.0
+        self.assertEqual(TC.limb_torso_core([outside], self.triangles, self.torso, self.limb, 10.0)[0], 0.0)
+
+    def test_the_death_limits_are_named_constants(self) -> None:
+        self.assertGreater(TC.MAX_FINAL_EXTENT_SHARE, 0.3)
+        self.assertLess(TC.MAX_LIMB_IN_TORSO_SHARE, 0.05)
+
+
 class Thresholds(unittest.TestCase):
     def test_the_weapon_in_body_thresholds_are_the_strict_ones(self) -> None:
         import clip_check

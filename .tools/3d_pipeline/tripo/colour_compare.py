@@ -47,6 +47,8 @@ def render(mesh: Path, label: str, light: str, out: Path) -> None:
     }
     if light == "FLAT":
         request["exposure"] = 0.0  # unlit means the diffuse map as it is, with no exposure on top
+    if light == "PBR":
+        request.update(pbr=True, light="STUDIO", exposure=0.0, specular=specular_maps(mesh))
     path = out / f"{label}_{light}_request.json"
     path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
     completed = subprocess.run(
@@ -56,6 +58,16 @@ def render(mesh: Path, label: str, light: str, out: Path) -> None:
     if "REVIEW_RENDERED" not in completed.stdout:
         raise SystemExit("Blender did not finish the renders: " + (completed.stdout + completed.stderr)[-1500:])
     print("rendered", request["out"], "diffuse", request["diffuse"])
+
+
+def specular_maps(mesh: Path) -> dict:
+    """The packed specular map beside the mesh (`<stem>_specular.dds`, `_spec.dds`, or any `*spec*.dds`)."""
+
+    for pattern in (f"{mesh.stem}_specular.dds", f"{mesh.stem}_spec.dds", f"{mesh.stem}*spec*.dds", "*spec*.dds"):
+        found = sorted(mesh.parent.glob(pattern))
+        if found:
+            return {"*": str(found[0])}
+    return {}
 
 
 def unit_pixels(image: Image.Image) -> np.ndarray:
@@ -77,7 +89,7 @@ def numbers(image: Image.Image) -> tuple:
 
 
 def compose(folder: Path, labels, out: Path) -> dict:
-    rows = [("STUDIO", "lit (review renderer)"), ("FLAT", "unlit, diffuse map only")]
+    rows = [(light, title) for light, title in (("STUDIO", "lit, studio light (old)"), ("PBR", "lit, shaded from the packed PDX specular"), ("FLAT", "unlit, diffuse map only")) if (folder / f"{labels[0]}_{light}").exists()]
     width = SIZE
     sheet = Image.new("RGB", (width * len(labels) * len(VIEWS), (SIZE + LABEL) * len(rows)), (30, 30, 30))
     draw = ImageDraw.Draw(sheet)
@@ -106,7 +118,7 @@ def main() -> int:
     a = sub.add_parser("render")
     a.add_argument("mesh", type=Path)
     a.add_argument("--label", required=True)
-    a.add_argument("--light", choices=["STUDIO", "FLAT"], required=True)
+    a.add_argument("--light", choices=["STUDIO", "FLAT", "PBR"], required=True)
     a.add_argument("--out", type=Path, required=True)
     b = sub.add_parser("compose")
     b.add_argument("folder", type=Path)
