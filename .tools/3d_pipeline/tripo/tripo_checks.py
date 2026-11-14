@@ -19,7 +19,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   vanilla clothing stretch with a margin (see `CLOAK_MAX_STRETCH_SHARE`).
 - TRIPO-LIMB-IN-TORSO: in a death clip, limb skin (arms, legs) is deeper than `LIMB_MARGIN_SHARE` of the height inside the torso in some frame, in more
   than `MAX_LIMB_IN_TORSO_SHARE` of the limb points: an arm or a leg through the body.
-- TRIPO-NOT-PRONE: a death clip must end low (body extent under `MAX_FINAL_EXTENT_SHARE` of its standing height).
+- TRIPO-NOT-DOWN: a death clip must end lying down, prone or supine: the body's extent at the end at most `MAX_FINAL_EXTENT_SHARE` of its
+  standing height and the torso (hips to head) near horizontal (at most `MAX_TORSO_VERTICAL_SHARE` of its length vertical).
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on).
 """
@@ -43,17 +44,23 @@ from lib import pdx_deform, pdx_motion, tripo_checks as T, tripo_grip as G  # no
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
 PENETRATION_MARGIN_SHARE = 0.01
-# The cloak: the worst share of region edges a clip stretches or squashes. Vanilla's worst clothing (back and coat-tail
-# vertices of ENG, GER and FRA infantry over their clips) reaches `VANILLA_CLOAK_WORST`; the limit is that with a margin.
-VANILLA_CLOAK_WORST = 0.069
-CLOAK_MAX_STRETCH_SHARE = 0.07
-CLOAK_BONES = ("Hips", "Spine", "Spine01", "Spine02", "LeftUpLeg", "RightUpLeg")
+# The cloak: the worst share of region edges a clip stretches or squashes. Vanilla clothing (the torso and thigh vertices of the GER infantry
+# mesh, Hip, back_mid and the thighs, over 16 of its clips) reaches `VANILLA_CLOAK_WORST`, 2.0%. A cloak is loose cloth and may move more
+# than tailored clothing, so the limit is 2.5 times that: the orc idle (3.6%) and move (4.7%) pass, its defend (8.6%) and retreat (10%) fail.
+VANILLA_CLOAK_WORST = 0.0197
+CLOAK_MAX_STRETCH_SHARE = 0.05
+# Tripo's skeleton names the torso Hips, Spine, Spine01, Spine02; vanilla infantry's names it Hip and back_mid. Both are listed so one rule serves both.
+CLOAK_BONES = ("Hips", "Spine", "Spine01", "Spine02", "Hip", "back_mid", "LeftUpLeg", "RightUpLeg")
 ENCLOSURE_HALF_LENGTH_SHARE = 0.03
-TORSO_BONES = ("Hips", "Spine", "Spine01", "Spine02", "neck", "Head")
-LIMB_BONES = tuple(f"{side}{part}" for side in ("Left", "Right") for part in ("Arm", "ForeArm", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"))
+TORSO_BONES = ("Hips", "Spine", "Spine01", "Spine02", "neck", "Head", "Hip", "back_mid", "head")
+LIMB_BONES = tuple(f"{side}{part}" for side in ("Left", "Right") for part in ("Arm", "ForeArm", "ForeArmRoll", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"))
 LIMB_MARGIN_SHARE = 0.015  # limb skin this deep inside the torso counts (1.5% of the height)
-MAX_LIMB_IN_TORSO_SHARE = 0.01  # of the limb points, in any frame
+# Calibrated on the only two vanilla infantry death clips (GER_infantry_death_rifle and _mg, on the GER mesh): their worst frames put 5.5% and
+# 2.0% of the limb points inside the torso by this measure (a low-poly mesh overstates depth: it is the distance to the nearest vertex). 1% would
+# fail the vanilla deaths themselves; the limit is the worst of them with a margin of half again. The orc death measures 1.0%, the zombie 0.5 to 1.5%.
+MAX_LIMB_IN_TORSO_SHARE = 0.08
 MAX_FINAL_EXTENT_SHARE = 0.4
+MAX_TORSO_VERTICAL_SHARE = 0.5  # the vanilla death clips end at 0.02 and 0.08
 ENCLOSURE_TOLERANCE_SHARE = T.ENCLOSURE_TOLERANCE_SHARE
 MIN_ENCLOSURE_SHARE = T.MIN_ENCLOSURE_SHARE
 MIN_THUMB_OPPOSITION_DEGREES = T.MIN_THUMB_OPPOSITION_DEGREES
@@ -164,9 +171,25 @@ def limb_torso_series(mesh, anim, step: int = 2, margin_share: float = LIMB_MARG
 
 
 def final_extent_share(mesh, anim) -> float:
-    posed = posed_frames(mesh, anim, step=max(1, anim.frames))
+    """The body height at the end of the clip as a share of its standing height (the selection box of a vanilla mesh is left out)."""
+
     last = pdx_deform.skin(mesh, pdx_deform.skinning_matrices(mesh, anim)[-1])
-    return float(np.ptp(last[:, 1]) / max(mesh.height, 1e-9))
+    keep = ~mesh.collision if len(mesh.collision) == len(last) else np.ones(len(last), bool)
+    standing = mesh.positions[keep][:, 1]
+    return float(np.ptp(last[keep][:, 1]) / max(float(np.ptp(standing)), 1e-9))
+
+
+def torso_vertical_share(mesh, anim) -> float:
+    """How upright the torso is at the end: the vertical part of the hips-to-head vector as a share of its length (1 upright, 0 lying)."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    hips = next((index[n] for n in ("Hips", "Hip") if n in index), None)
+    head = next((index[n] for n in ("Head", "head") if n in index), None)
+    if hips is None or head is None:
+        return 1.0
+    last = pdx_motion.posed_joints(mesh, anim)[-1]
+    axis = last[head] - last[hips]
+    return float(abs(axis[1]) / max(float(np.linalg.norm(axis)), 1e-9))
 
 
 def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
@@ -176,12 +199,13 @@ def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
             continue
         series = limb_torso_series(mesh, anim)
         extent = final_extent_share(mesh, anim)
+        upright = torso_vertical_share(mesh, anim)
         worst = max(series) if series else 0.0
-        numbers[clip] = {"limb_in_torso_worst_share": round(worst, 4), "worst_frame": int(np.argmax(series)) * 2 if series else 0, "final_extent_share": round(extent, 3)}
+        numbers[clip] = {"limb_in_torso_worst_share": round(worst, 4), "worst_frame": int(np.argmax(series)) * 2 if series else 0, "final_extent_share": round(extent, 3), "torso_vertical_share": round(upright, 2)}
         if worst > MAX_LIMB_IN_TORSO_SHARE:
             out.append(finding("TRIPO-LIMB-IN-TORSO", clip, f"{worst:.1%} of the limb points are more than {LIMB_MARGIN_SHARE:.1%} of the height inside the torso in frame {numbers[clip]['worst_frame']} (limit {MAX_LIMB_IN_TORSO_SHARE:.0%}): a limb goes through the body", share=round(worst, 4)))
-        if extent > MAX_FINAL_EXTENT_SHARE:
-            out.append(finding("TRIPO-NOT-PRONE", clip, f"the body is still {extent:.0%} of its standing height at the end (limit {MAX_FINAL_EXTENT_SHARE:.0%}): it does not end on the ground", share=round(extent, 3)))
+        if extent > MAX_FINAL_EXTENT_SHARE or upright > MAX_TORSO_VERTICAL_SHARE:
+            out.append(finding("TRIPO-NOT-DOWN", clip, f"the body ends {extent:.0%} of its standing height with the torso {upright:.0%} upright (limits {MAX_FINAL_EXTENT_SHARE:.0%} and {MAX_TORSO_VERTICAL_SHARE:.0%}): it does not end lying down", share=round(extent, 3), torso_vertical=round(upright, 2)))
     return out, numbers
 
 

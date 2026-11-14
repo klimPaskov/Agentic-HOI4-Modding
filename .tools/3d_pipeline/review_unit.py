@@ -99,6 +99,16 @@ def diffuse_maps(mesh_path: Path, gfx_texts: List[str]) -> Dict[str, str]:
     return maps
 
 
+def specular_maps(mesh_path: Path) -> Dict[str, str]:
+    """The packed specular map beside the mesh (`<stem>_specular.dds`, `_spec.dds`, or any `*spec*.dds`), for the PBR review tiles."""
+
+    for pattern in (f"{mesh_path.stem}_specular.dds", f"{mesh_path.stem}_spec.dds", f"{mesh_path.stem}*spec*.dds", "*spec*.dds"):
+        found = sorted(mesh_path.parent.glob(pattern))
+        if found:
+            return {"*": str(found[0])}
+    return {}
+
+
 def gfx_texts(mod_root: Optional[Path]) -> List[str]:
     if mod_root is None:
         return []
@@ -355,6 +365,7 @@ def render(
         "out": str(tile_dir.resolve()),
         "mesh": str(mesh_path.resolve()),
         "diffuse": diffuse_maps(mesh_path.resolve(), gfx_texts(mod_root)),
+        "specular": specular_maps(mesh_path.resolve()),
         "clips": clips,
         "views": VIEWS,
         "diagnostic_views": DIAGNOSTIC_VIEWS if diagnostics else [],

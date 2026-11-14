@@ -73,7 +73,7 @@ for o in meshes:
         node.image = images[path]
         slot.material.node_tree.nodes.active = node
 
-PBR = bool(request.get("pbr"))
+PBR = bool(request.get("pbr", True))  # the default: shaded from the packed PDX specular. "pbr": false keeps the old Workbench studio light
 if PBR:
     # Shade from the packed PDX specular the game gets: green = specular level, alpha = glossiness, blue = metalness
     # (roughness = 1 - glossiness). Workbench cannot read a texture for these, so this mode renders with EEVEE.
@@ -83,9 +83,9 @@ if PBR:
         key = max(shapes, key=len) if shapes else "*"
         spec_path = request.get("specular", {}).get(key) or request.get("specular", {}).get("*")
         diffuse_path = request["diffuse"].get(key) or request["diffuse"].get("*")
-        if not spec_path or not diffuse_path:
+        if not diffuse_path:
             continue
-        if spec_path not in spec_images:
+        if spec_path and spec_path not in spec_images:
             spec_images[spec_path] = bpy.data.images.load(spec_path)
             spec_images[spec_path].colorspace_settings.name = "Non-Color"
             spec_images[spec_path].alpha_mode = "CHANNEL_PACKED"
@@ -102,7 +102,8 @@ if PBR:
             diffuse = tree.nodes.new("ShaderNodeTexImage")
             diffuse.image = images[diffuse_path]
             spec = tree.nodes.new("ShaderNodeTexImage")
-            spec.image = spec_images[spec_path]
+            if spec_path:
+                spec.image = spec_images[spec_path]
             split = tree.nodes.new("ShaderNodeSeparateColor")
             invert = tree.nodes.new("ShaderNodeMath")
             invert.operation = "SUBTRACT"
@@ -113,12 +114,16 @@ if PBR:
             level.use_clamp = True
             links = tree.links
             links.new(diffuse.outputs["Color"], bsdf.inputs["Base Color"])
-            links.new(spec.outputs["Color"], split.inputs["Color"])
-            links.new(spec.outputs["Alpha"], invert.inputs[1])
-            links.new(invert.outputs["Value"], bsdf.inputs["Roughness"])
-            links.new(split.outputs["Blue"], bsdf.inputs["Metallic"])
-            links.new(split.outputs["Green"], level.inputs[0])
-            links.new(level.outputs["Value"], bsdf.inputs["Specular IOR Level"])
+            if spec_path:
+                links.new(spec.outputs["Color"], split.inputs["Color"])
+                links.new(spec.outputs["Alpha"], invert.inputs[1])
+                links.new(invert.outputs["Value"], bsdf.inputs["Roughness"])
+                links.new(split.outputs["Blue"], bsdf.inputs["Metallic"])
+                links.new(split.outputs["Green"], level.inputs[0])
+                links.new(level.outputs["Value"], bsdf.inputs["Specular IOR Level"])
+            else:  # no packed specular beside the mesh: matte, not metal
+                bsdf.inputs["Roughness"].default_value = 0.75
+                bsdf.inputs["Metallic"].default_value = 0.0
             links.new(bsdf.outputs["BSDF"], out_node.inputs["Surface"])
     scene.render.engine = "BLENDER_EEVEE"
     # The world lights the unit grey and shows magenta to the camera; one sun gives the form.
@@ -151,7 +156,7 @@ scene.view_settings.view_transform = "Standard"
 # Workbench's studio light leaves a unit about 40% darker than its own diffuse map (vanilla's ENG infantry measured 95 unlit,
 # 55 lit; the game shows it near the diffuse map's brightness). One stop and a bit of exposure puts the lit tiles back near the
 # texture (lit 85 against unlit 86 on that unit). The flat-colour diagnostic tiles keep exposure 0 so their colours read as before.
-EXPOSURE = float(request.get("exposure", 1.1))
+EXPOSURE = float(request.get("exposure", 0.0 if PBR else 1.1))
 scene.view_settings.exposure = EXPOSURE
 shading = scene.display.shading
 shading.light = request.get("light", "STUDIO")  # "FLAT" shows the diffuse map alone, unlit (`tripo/colour_compare.py`)
@@ -311,7 +316,14 @@ def paint_diagnostics():
 
 def render_diagnostics(clip, frames, views):
     rows = []
+    # The flat colours need Workbench (EEVEE does not draw vertex colours without a material), on a magenta world.
+    previous_engine, previous_world = scene.render.engine, scene.world
+    scene.render.engine = "BLENDER_WORKBENCH"
+    diagnostic_world = bpy.data.worlds.new("diagnostic")
+    diagnostic_world.color = (1.0, 0.0, 1.0)
+    scene.world = diagnostic_world
     shading.color_type = "VERTEX"
+    shading.light = "STUDIO"
     scene.view_settings.exposure = 0.0
     for frame in frames:
         scene.frame_set(frame)
@@ -325,7 +337,8 @@ def render_diagnostics(clip, frames, views):
             row["tiles"][view] = path.name
         rows.append(row)
     shading.color_type = "TEXTURE"
-    scene.view_settings.exposure = EXPOSURE
+    scene.render.engine, scene.world = previous_engine, previous_world
+    scene.view_settings.exposure = 0.0 if PBR else EXPOSURE
     next(item for item in index["clips"] if item["name"] == clip)["diagnostic_rows"] = rows
 
 

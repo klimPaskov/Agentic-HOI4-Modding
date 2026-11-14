@@ -117,7 +117,7 @@ class Cloak(unittest.TestCase):
 
     def test_the_vanilla_limit_is_the_worst_vanilla_share_with_a_margin(self) -> None:
         self.assertGreaterEqual(TC.CLOAK_MAX_STRETCH_SHARE, TC.VANILLA_CLOAK_WORST)
-        self.assertLess(TC.CLOAK_MAX_STRETCH_SHARE, 1.5 * TC.VANILLA_CLOAK_WORST)
+        self.assertLessEqual(TC.CLOAK_MAX_STRETCH_SHARE, 3.0 * TC.VANILLA_CLOAK_WORST)
 
 
 class LimbInTorso(unittest.TestCase):
@@ -142,7 +142,8 @@ class LimbInTorso(unittest.TestCase):
 
     def test_the_death_limits_are_named_constants(self) -> None:
         self.assertGreater(TC.MAX_FINAL_EXTENT_SHARE, 0.3)
-        self.assertLess(TC.MAX_LIMB_IN_TORSO_SHARE, 0.05)
+        self.assertGreaterEqual(TC.MAX_LIMB_IN_TORSO_SHARE, 0.055)  # the worst frame of a vanilla death clip
+        self.assertEqual(TC.MAX_TORSO_VERTICAL_SHARE, 0.5)
 
 
 class Thresholds(unittest.TestCase):

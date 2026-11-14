@@ -44,11 +44,12 @@ def render(mesh: Path, label: str, light: str, out: Path) -> None:
         "diagnostic_views": [],
         "size": SIZE,
         "light": light,
+        "pbr": light == "PBR",  # the review renderer shades from the packed specular by default; the studio and flat rows are explicit
     }
     if light == "FLAT":
         request["exposure"] = 0.0  # unlit means the diffuse map as it is, with no exposure on top
     if light == "PBR":
-        request.update(pbr=True, light="STUDIO", exposure=0.0, specular=specular_maps(mesh))
+        request.update(light="STUDIO", specular=specular_maps(mesh))
     path = out / f"{label}_{light}_request.json"
     path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
     completed = subprocess.run(

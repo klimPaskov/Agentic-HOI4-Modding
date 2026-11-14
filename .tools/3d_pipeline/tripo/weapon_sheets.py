@@ -31,6 +31,7 @@ from lib import pdx_deform  # noqa: E402
 THREE_QUARTER = {"threequarter": [35, 8]}
 CLOSE_SIZE, CLOSE_SHARE = 512, 1.15
 GAME_SIZE, GAME_HEIGHT_PX = 160, 60
+PBR = True  # shade from the packed specular, as the game does; False is the old Workbench studio light
 LABEL = 20
 
 
@@ -53,6 +54,8 @@ def render_tiles(folder: Path, out: Path, wanted: List[str], count: int, views: 
         "out": str((out / "weapon_tiles").resolve()),
         "mesh": str(mesh_path.resolve()),
         "diffuse": review_unit.diffuse_maps(mesh_path.resolve(), review_unit.gfx_texts(None)),
+        "specular": review_unit.specular_maps(mesh_path.resolve()),
+        "pbr": PBR,
         "clips": clips,
         "views": views,
         "view_angles": angles,

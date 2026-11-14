@@ -11,6 +11,7 @@ sides. Files: `<pose>_<view>.png`. `tripo/hand_sheet.py` joins them into one she
 from __future__ import annotations
 
 import argparse
+import math
 import sys
 from pathlib import Path
 
@@ -40,6 +41,7 @@ def main():
     parser.add_argument("--hand", default="RightHand")
     parser.add_argument("--size", type=int, default=520)
     parser.add_argument("--scale", type=float, default=0.2)
+    parser.add_argument("--studio", action="store_true", help="Workbench studio light instead of the default EEVEE render")
     args = parser.parse_args(argv)
     args.out.mkdir(parents=True, exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -49,12 +51,27 @@ def main():
         if o.type == "MESH" and len(o.vertex_groups) == 0:
             bpy.data.objects.remove(o, do_unlink=True)
     scene = bpy.context.scene
-    scene.render.engine = "BLENDER_WORKBENCH"
-    scene.display.shading.light = "STUDIO"
-    scene.display.shading.color_type = "TEXTURE"
     scene.view_settings.view_transform = "Standard"
-    scene.world = bpy.data.worlds.new("w")
-    scene.world.color = (0.5, 0.5, 0.55)
+    if args.studio:
+        scene.render.engine = "BLENDER_WORKBENCH"
+        scene.display.shading.light = "STUDIO"
+        scene.display.shading.color_type = "TEXTURE"
+        scene.world = bpy.data.worlds.new("w")
+        scene.world.color = (0.5, 0.5, 0.55)
+    else:
+        # The review default: EEVEE with the materials the GLB carries (Tripo's own metal and roughness maps) under a grey world and one sun.
+        scene.render.engine = "BLENDER_EEVEE"
+        world = bpy.data.worlds.new("w")
+        world.use_nodes = True
+        background = world.node_tree.nodes["Background"]
+        background.inputs["Color"].default_value = (0.55, 0.55, 0.57, 1.0)
+        background.inputs["Strength"].default_value = 1.0
+        scene.world = world
+        sun_data = bpy.data.lights.new("sun", "SUN")
+        sun_data.energy = 3.0
+        sun = bpy.data.objects.new("sun", sun_data)
+        sun.rotation_euler = (math.radians(55), 0.0, math.radians(-25))
+        scene.collection.objects.link(sun)
     camera_data = bpy.data.cameras.new("c")
     camera_data.type = "ORTHO"
     camera_data.ortho_scale = args.scale
