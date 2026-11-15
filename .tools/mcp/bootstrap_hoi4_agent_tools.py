@@ -38,8 +38,8 @@ LINUX_PACKAGE_SYMLINKS = {
     "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
     "node_modules/.bin/semver": "../semver/bin/semver.js",
 }
-MACOS_PACKAGE_TREE_SHA256 = "00688f7c5a21640181c01426d1c62931a897f41677192fc4ad048bebd0820c26"
-MACOS_PACKAGE_FILE_COUNT = 5749
+MACOS_PACKAGE_TREE_SHA256 = "5a9ff8793f9bb7c3f1299facd83e84926a758ddfc3c685e3a9d8f1156602aa41"
+MACOS_PACKAGE_FILE_COUNT = 5752
 MACOS_PACKAGE_SYMLINKS = dict(LINUX_PACKAGE_SYMLINKS)
 # macOS has no reviewed system Node.js location, so the bootstrap installs the official Node.js build into the
 # private prefix. Archive and binary SHA-256 come from https://nodejs.org/dist/v24.22.0/SHASUMS256.txt and the
