@@ -59,14 +59,15 @@ KIND_NOTES = {
 
 
 def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[Path]:
-    return review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True)
+    # the disc is the game's ground (a ship's water) at z = 0, where the route puts it
+    return review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0)
 
 
 def render_rest(mesh: Path, out: Path, texts: List[str]) -> dict:
     request = {
         "out": str(out.resolve()), "mesh": str(mesh.resolve()),
         "diffuse": review_unit.diffuse_maps(mesh.resolve(), texts), "specular": review_unit.specular_maps(mesh.resolve()),
-        "pbr": True, "clips": [], "views": ["hoi4", "front"], "diagnostic_views": [], "size": RENDER_SIZE, "ortho_share": SHARE,
+        "pbr": True, "clips": [], "views": ["hoi4", "front"], "diagnostic_views": [], "size": RENDER_SIZE, "ortho_share": SHARE, "ground_z": 0.0,
     }
     out.mkdir(parents=True, exist_ok=True)
     path = out / "request.json"

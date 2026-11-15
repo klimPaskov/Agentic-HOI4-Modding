@@ -185,8 +185,11 @@ rest_low, rest_high = bounds()
 span = max(rest_high.x - rest_low.x, rest_high.y - rest_low.y, rest_high.z - rest_low.z, 1e-3)
 
 disc = bpy.data.meshes.new("ground")
-rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * span * 1.4, rest_low.z) for k in range(48)]
-disc.from_pydata([(0.0, 0.0, rest_low.z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
+# The disc sits at the rest pose's lowest point, or at `ground_z` when the request names it (a ship's waterline is z = 0,
+# with its keel below).
+ground_z = float(request["ground_z"]) if request.get("ground_z") is not None else rest_low.z
+rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * span * 1.4, ground_z) for k in range(48)]
+disc.from_pydata([(0.0, 0.0, ground_z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
 ground_material = bpy.data.materials.new("ground")
 ground_material.diffuse_color = (0.08, 0.16, 0.08, 1.0)
 if PBR:
