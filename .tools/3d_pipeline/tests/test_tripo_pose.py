@@ -250,6 +250,12 @@ class WaistTwist(unittest.TestCase):
         self.assertAlmostEqual(float(twist[0]), 0.0)
         self.assertAlmostEqual(abs(float(twist[1])), 30.0, places=4)
 
+    def test_the_hip_line_runs_between_the_legs_top_joints_even_when_the_finder_took_the_knees(self) -> None:
+        # 0 Hips, 1 LeftUpLeg, 2 LeftLeg, 3 RightUpLeg, 4 RightLeg
+        parents = [-1, 0, 1, 0, 3]
+        self.assertEqual(P.leg_roots(parents, 2, 4), (1, 3))
+        self.assertEqual(P.leg_roots(parents, 1, 3), (1, 3))
+
     def test_only_the_part_past_the_target_is_turned_back(self) -> None:
         np.testing.assert_allclose(P.twist_excess(np.array([10.0, -40.0, 30.0]), 25.0), [0.0, -15.0, 5.0])
 

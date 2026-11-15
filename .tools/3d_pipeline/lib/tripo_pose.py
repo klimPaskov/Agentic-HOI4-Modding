@@ -254,6 +254,26 @@ def shoulder_joints(mesh: pdx_deform.SkinnedMesh) -> Tuple[int, int]:
     return found[0], found[1]
 
 
+def leg_roots(parents: Sequence[int], a: int, b: int) -> Tuple[int, int]:
+    """Each leg's topmost joint: walked up from `a` and `b` to the joint just below the bone both legs hang from. `find_legs` takes the
+    joint two above the ground joint as the hip, which on a hoofed body (the demon stands on its toes) is the knee: its walk swung the
+    knees and read as a 57 degree waist twist."""
+
+    def chain(j: int) -> List[int]:
+        out = [j]
+        while parents[out[-1]] >= 0:
+            out.append(parents[out[-1]])
+        return out
+
+    up_a, up_b = chain(a), chain(b)
+    common = next((j for j in up_a if j in set(up_b)), -1)
+
+    def below(up: List[int]) -> int:
+        return up[up.index(common) - 1] if common in up and up.index(common) > 0 else up[0]
+
+    return below(up_a), below(up_b)
+
+
 def waist_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[np.ndarray]:
     """Per frame, the shoulder line's turn about the up axis (Y) against the hip line's, less the rest pose's (degrees). None without two
     legs and two upper arms."""
@@ -264,7 +284,7 @@ def waist_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Opt
         return None
     rest = pdx_motion.rest_joints(mesh)
     posed = pdx_motion.posed_joints(mesh, anim)
-    hip_a, hip_b = legs.legs[0].hip, legs.legs[1].hip
+    hip_a, hip_b = leg_roots(mesh.parents, legs.legs[0].hip, legs.legs[1].hip)
     # the hip line in the shoulders' left-to-right order
     if (rest[hip_b] - rest[hip_a]) @ (rest[right] - rest[left]) < 0:
         hip_a, hip_b = hip_b, hip_a
