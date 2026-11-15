@@ -36,8 +36,14 @@ Each gate is defined once in the guide:
 - **Route**: choose it before any provider call ([Route selection](references/production-guide.md#route-selection-and-component-completion)).
 - **Unit type and body**: a land unit names one `unit_type`, which sets its body preset, rig and animations; `measure_body.py <job>` checks the generation fits that body before any rig is paid for, and escalates a body no preset fits ([Unit types](references/production-guide.md#unit-types-and-the-unit-route)).
 - **Files**: `check_unit_files.py` checks the exported bytes and the registration; `check_holes.py` renders the unit and fails holes larger than vanilla's own specks (on the provider `.glb` before the rig, and after export); `run_pilot.py --status` names the next step after any failure.
-- **Key and dependencies**: provider work needs a nonblank `MESHY_API_KEY`
-  first, then the reviewed dependency lock, live schemas, Blender bridge and
+- **Generator**: Tripo is the default (`"provider": "tripo"`). It runs in the
+  Tripo web app under the user's own sign-in, never through an API, and follows
+  the route in `docs/3d-units.md`: a 3D-ready picture (neutral pose, empty
+  hands), model, rig, candidate presets, export, clips picked by measurement,
+  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Never type the
+  user's password. Armed and winged Tripo units are not proven yet.
+- **Key and dependencies**: an old Meshy job needs a nonblank `MESHY_API_KEY`
+  first. Every job needs the reviewed dependency lock, Blender bridge and
   pinned io_pdx_mesh export support ([Hard start gates](references/production-guide.md#hard-start-gates)).
 - **Credits**: one `credit_budget` per job, approved by the user once at job
   start; no paid retries ([Credits and attempts](references/production-guide.md#credits-and-attempts)).

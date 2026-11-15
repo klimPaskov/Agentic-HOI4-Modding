@@ -4,33 +4,35 @@ This page is for modders who want their own 3D units on the HOI4 map: soldiers, 
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
+**What is proven.** An unarmed humanoid unit (a zombie soldier) went the whole route below and passed a fresh review in November 2026. Armed units with a separate weapon, winged units and other bodies are in progress. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits on them.
+
 ## How to use it
 
 1. In HOI4 Mod Setup, tick **3D models workflow** (see [Setup](#setup)). Sign in to [Tripo Studio](https://studio.tripo3d.ai) in your browser.
 2. Tell your coding agent: "Make a 3D unit for `<unit>` with the `hoi4-3d-model-pipeline` skill." That skill is the one entry point.
 3. Approve the reference picture and the credit budget when it asks.
 4. Pick how Tripo is driven:
-   - **By hand.** The agent gives you one short card per model. You click through Tripo and save the export into the inbox folder. About five minutes a model.
+   - **By hand.** The agent gives you one short card per model. You click through Tripo and save the export into the inbox folder. About ten minutes a model.
    - **By agent.** The agent drives Tripo in your Chrome through Claude in Chrome, while you stay signed in.
-5. The agent picks the export up, runs the Blender stage and the checks, and shows you renders. Every step prints a one-line verdict: `pass` names the next command, `fail` names the free fix, `escalate` means no script can fix it.
-6. Look at the result in game. If a step fails, see [When something fails](#when-something-fails).
+5. The agent picks the export up, picks the clips by measurement, runs the Blender stage and the checks, and shows you renders. Every step prints a one-line verdict: `pass` names the next command, `fail` names the free fix, `escalate` means no script can fix it.
+6. A reviewer that did not make the unit looks at the renders. The unit is finished when it passes. Then look at it in game. If a step fails, see [When something fails](#when-something-fails).
 
 ## What it is
 
 | Step | Where | Who |
 | --- | --- | --- |
+| A 3D-ready picture from your art (neutral pose, empty hands) | Tripo's free image tool | you, or the agent in Chrome |
 | Picture to textured model | Tripo web app | you, or the agent in Chrome |
-| Split a held weapon off, rig, pick animations, export | Tripo web app | you, or the agent in Chrome |
+| Rig, apply candidate animations, export | Tripo web app | you, or the agent in Chrome |
+| Pick one clip per role by measurement | your PC | the agent |
 | Intake, fit to HOI4, export `.mesh`, `.anim` and textures | Blender, on your PC | the agent |
-| Checks, repairs, independent review | your PC | the agent |
+| Checks, repairs, independent review | your PC | the agent and a fresh reviewer |
 
-Tripo has no key to set up and the kit calls no Tripo API. Everything in Tripo happens in its web app, under your own sign-in. Blender is the one shared stage for every generator, so a model from Tripo, from Meshy or from your own files ends in the same checks and the same review.
-
-A verdict is `pass` (it names the next command), `fail` (it names the free fix to run) or `escalate` (no script can fix it, so the agent looks for another preset or tool). Run the command the verdict names and keep going until the unit passes the review.
+Tripo has no key to set up and the kit calls no Tripo API. Everything in Tripo happens in its web app, under your own sign-in, and models leave Tripo only through its own Export button. Blender is the one shared stage for every generator, so a model from Tripo, from Meshy or from your own files ends in the same checks and the same review.
 
 ### Rigging and animation
 
-Units are rigged with Tripo's auto-rig and animated with its preset library, chosen per unit. Where no preset fits a role, the agent tries Tripo's text-to-motion, then other researched presets. Manual rigging or keyframing in Blender is only for small fixes, or when no tool or preset works, and the agent records the reason in the job.
+Units are rigged with Tripo's auto-rig and animated with its free preset library. The agent applies several candidate presets for each role and keeps the one that measures best (see [Pick the clips by measurement](#pick-the-clips-by-measurement)). Where no preset reads as the role, it makes one text-to-motion clip from a written instruction. Clips you made before stay in your Tripo account and can be applied to a new model for free. Manual rigging or keyframing in Blender is only for small fixes, or when no tool or preset works, and the agent records the reason in the job.
 
 ## Setup
 
@@ -51,17 +53,17 @@ Tripo prices its steps in credits. These were read from the app on a Pro plan in
 
 | Step | Credits |
 | --- | --- |
-| Model from one picture or from four views | 30 |
-| Extra views of your picture (front, left, back, right), T-pose picture | free |
-| Split a held weapon off (Segment) | 40 |
+| 3D-ready picture in Tripo's image tool (Nano Banana 2) | free within the monthly quota (100 on Pro) |
+| Model from one picture | 30 |
 | Auto-rig | 20 |
-| Preset animations (96 in the library) | free |
+| Preset animations (96 in the library), and your own earlier clips applied to a new model | free |
 | Text-to-motion, one clip of up to 5 seconds | 20 |
+| Export | free |
 
 | Unit | Steps | Credits |
 | --- | --- | --- |
-| Unarmed foot unit (beast, brute) | model, rig, six presets | 50 |
-| Armed foot unit (soldier with a weapon in hand) | model, segment, rig, six presets | 90 |
+| Unarmed foot unit where presets fit every role | picture, model, rig, presets | 50 |
+| Unarmed foot unit with one made attack (the zombie) | picture, model, rig, presets, one text-to-motion clip | 70 |
 | Static model (building, landmark, ship hull) | model | 30 |
 
 Every step on your PC is free. Your agent asks you once for a credit budget per unit, notes the balance before and after each Tripo step in the job's ledger, and stops at the budget.
@@ -70,41 +72,60 @@ Every step on your PC is free. Your agent asks you once for a credit budget per 
 
 ## The route step by step
 
-Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget` and `anatomy`.
+Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget`, `anatomy`, and a `tripo` block with the clip for each role.
 
-### 1. Reference picture
+### 1. A 3D-ready picture
 
-One clean picture of the unit on a plain or transparent background, facing the viewer, limbs apart. A weapon may stay in the hand: hold it in a closed fist, upright and clear of the body. Tripo keeps it in the model, and step 4 splits it off so it stays rigid. A rider and its mount are two pictures and two jobs. You look at the picture, approve it, and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
+Tripo copies the picture's pose into the rig, so the picture must be ready for rigging:
+
+- One subject, full body, front view, feet visible, on a plain light background.
+- Arms hang relaxed about 30 degrees away from the body, with background showing between each arm and the torso.
+- Both hands empty, open and relaxed. A held weapon or a clenched fist rigs badly and deforms.
+- Every detail of your art kept: face, clothing, gear on the correct side.
+
+If your art is not like this, the agent redraws it in Tripo's image tool (**Image**, model Nano Banana 2, free within the quota) with an instruction that names every detail to keep and only the pose and hands to change. Name gear by the side of the picture ("on the viewer's left"), because "his left" gets swapped. Check the result against the original before you pay for a model. You approve the picture and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
 
 ### 2. Card and inbox
 
-The agent writes one card per model from `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` and makes the job's inbox folder. The card names the picture, every Tripo setting, the animation presets for each role and the file name to save under. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
+The agent writes one card per model from `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` and makes the job's inbox folder. The card names the picture, every Tripo setting, the candidate presets for each role and the file name to save under. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
 
 ### 3. Model (Tripo, 30 credits)
 
-In Tripo Studio open **Model**, **HD Model**. Add the picture and press **Generate Multi-Views** (free). Tripo draws the left, back and right views. Check them, then generate from the four views with the settings on the card. Look at the result from all sides before you pay for more.
+In Tripo Studio open **Model**, **HD Model**, add the picture and generate with the settings on the card. One good picture is enough. Look at the result from all sides before you pay for the rig.
 
-### 4. Weapon split (Tripo, 40 credits, armed units only)
+### 4. Rig (Tripo, 20 credits)
 
-Open **Segment**, **Custom**, and ask for exactly two parts: the weapon, and everything else including the hand that holds it. Press **Save**. Without this step Tripo's rig bends a long weapon with the leg and the torso. Segment must come before the rig. Tripo does not segment a rigged model.
+Open **Rig**: **Humanoid**, skeleton preset **Mixamo**, **Auto Rig**.
 
-### 5. Rig and animations (Tripo, 20 credits)
+### 5. Candidate animations (Tripo, free)
 
-Open **Rig**: **Humanoid**, skeleton preset **Mixamo**, **Auto Rig**. Then open **Animate** and click the six presets on the card, one per role. Each is applied in a few seconds and costs nothing. Watch each one play.
+Open **Animate**. Apply every candidate preset on the card, using the search box to find each one by name. A good set for a humanoid is `idle`, `walk`, `hit_to_stomach`, `hit_to_body_01`, `flee_01`, `defeat`, `defeat_02`, `fall` and `box_01`. Clips you made earlier are under **AI Animation** and cost nothing to apply again.
+
+If no candidate can read as the attack, write one text-to-motion clip (20 credits). Name the motion, the hand, the height and the stance, for example "lunges one step forward, both arms straight at shoulder height, grabbing, torso upright, feet planted". The clip is named after the instruction text.
 
 ### 6. Export into the inbox
 
-On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on, and tick the six animations. Tripo builds the file in about two minutes. Save it into the job's inbox under the name on the card, `<asset>__rigged.glb`. A static model is exported from the Model page as `<asset>__model.glb`.
+On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on. Under **Number of Animations** press **Select All**. Tripo builds the file in about a minute and saves it as `tripo_convert_<id>.glb`. Move it into the job's inbox as `<asset>__rigged.glb`.
 
-### 7. Intake (free)
+Two preset names change on export: the tile `defeat` exports as `defeat_02`, and the tile `defeat_02` exports as `defeat_03`. Read the clip names from the exported file, not from the tiles.
+
+### 7. Pick the clips (free)
+
+The agent measures every clip in the export and writes the role map into the job's `tripo.roles` (see [Pick the clips by measurement](#pick-the-clips-by-measurement)). A role's value is the clip's exported name, or its first words for a text-to-motion clip.
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset>__rigged.glb --samples all --json <job folder>/evidence/clips.json
+```
+
+### 8. Intake (free)
 
 ```
 py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <your 3d_jobs.json> <unit> --inbox <job folder>/inbox --credits <spent> --credits-note "<steps>"
 ```
 
-The intake records each file's name, size and SHA-256, then prepares it for the shared stage in Blender: it renames Tripo's bones to the kit's names, folds the finger bones into the hands so the unit stays within HOI4's 50 bones, binds the weapon part rigidly to its hand, and writes one file per role.
+The intake records each file's name, size and SHA-256, then prepares it for the shared stage in Blender. It renames Tripo's bones to the kit's names, folds the finger bones into the hands so the unit stays within HOI4's 50 bones, writes one file per role, and applies the [Tripo defaults](#tripo-defaults).
 
-### 8. Blender stage and export (free)
+### 9. Blender stage and export (free)
 
 ```
 py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> <unit>
@@ -112,15 +133,16 @@ py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> <u
 
 Blender scales the unit against vanilla infantry, grounds every clip, and writes the `.mesh`, one `.anim` per role and three DXT5 textures with mip levels, then imports them again to prove they load.
 
-### 9. Checks, repair and review (free)
+### 10. Checks, repair and review (free)
 
 ```
 py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
 py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json
 py -3.13 -B .tools/3d_pipeline/check_holes.py <unit folder> --out <job folder>/evidence/holes
+py -3.13 -B .tools/3d_pipeline/tripo/tripo_checks.py <unit folder> --json <job folder>/evidence/tripo_checks.json
 ```
 
-`measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). `check_unit_files.py` reads the exported files (see [Automatic checks](#automatic-checks)), and `check_holes.py` looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). Each verdict names the repair to run, or escalates.
+`measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). `check_unit_files.py` reads the exported files (see [Automatic checks](#automatic-checks)), and `check_holes.py` looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). `tripo_checks.py` adds the checks for faults Tripo's clips make (see [Tripo checks](#tripo-checks)). Each verdict names the repair to run, or escalates.
 
 `repair_unit.py` fixes the mesh faults the checks name, in Blender, with no credits. The verdict gives the exact command, for example:
 
@@ -138,43 +160,95 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py <unit folder> --out <job folder>/r
 
 Repairs never make new bones, a new weight set or new keyframes. The copy goes to `<job folder>/repair/files`, and `repair_report.json` lists what changed with the check results before and after. Nothing under `gfx/` changes.
 
-`review_unit.py` then renders every clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when that list is empty (see [Independent review](#independent-review)).
+`review_unit.py` then renders every clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when it passes (see [Independent review](#independent-review)). For colour, `tripo/colour_compare.py` renders the unit and a vanilla unit under the same light and prints the brightness and saturation of each.
 
-### 10. Hand-over and in game
+### 11. Hand-over and in game
 
 The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. The newest copy that passed its check is the one you review. Copy it into `gfx/` only after a fresh reviewer passes it. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
 
+## Pick the clips by measurement
+
+The agent picks one clip per role by these rules, and records every candidate's numbers in the job. A small model can follow them as written.
+
+1. Every candidate must pass the stretch, spin and ground checks, and a death must pass limb-in-torso.
+2. **Attack.** The largest forward reach of the hands (wrist ahead of the chest, as a share of the body's height) plus the travel of the pelvis. It must be at least 0.2.
+3. **Death.** It must end lying down, on the front or the back (TRIPO-NOT-DOWN), and must not tumble: the feet never above the head, the pelvis never turned past 120 degrees. Among those, the lowest limb-in-torso wins.
+4. **Defend and retreat.** The lowest stretch among the candidates that pass.
+5. **Idle and move.** `idle` and `walk`, unless they fail a check.
+6. **When no candidate passes a role,** use the fixed default for the body type: idle `idle`, move `walk`, defend `hit_to_stomach`, retreat `flee_01`, death `defeat_03` (the tile labelled `defeat_02`), and attack `box_01` for an unarmed unit. Then make one text-to-motion clip for the role.
+
+Whether an attack reads as an attack stays a judgement. A clip that passes every number can still look like a guard. The fresh reviewer decides. If the review fails the attack, make one text-to-motion clip (20 credits). If that fails too, stop and ask.
+
+## Tripo defaults
+
+The intake and the Blender stage apply these to every Tripo job. None of them is set in the job file. They come from comparing Tripo units with vanilla infantry under the same light.
+
+| Default | What it does | Why |
+| --- | --- | --- |
+| No gamma grade on the colour map (`runtime_diffuse_gamma` 1.0) | Keeps Tripo's colours as made | A brighter grade washed the unit out against vanilla |
+| Gloss mapped onto vanilla's range (`config/vanilla_gloss.json`), specular level 56 | Tripo's gloss is remapped onto the gloss of vanilla infantry | Without it cloth looks wet in game |
+| Maps resized one channel at a time | The packed specular map keeps its channels apart | Resizing them together blended gloss into colour |
+| Snap easing, 14 degrees a frame (`ease_snaps`) | Spreads a joint's sudden turn over the frames around it | Tripo's clips snap a joint in one frame, which reads as a twitch |
+| Arm level for an unarmed attack (`arm_level`, target `arm_level_target` 0.85) | Turns both upper arms by a constant angle so the hands reach forward at about shoulder height | Tripo's text-to-motion attacks hold the hands above the head and hide it. Set `"arm_level": []` to switch it off |
+
+Review sheets render from the packed material the game uses, so what you see on the sheet is what the map shows.
+
+## Tripo checks
+
+`tripo/tripo_checks.py` reads the unit's runtime files and fails what a viewer fails on a Tripo unit. Each limit is measured on vanilla clips or on clips a reviewer failed.
+
+| Rule | Fails when |
+| --- | --- |
+| TRIPO-HANDS-HIGH | In an unarmed unit's attack a hand is above the head in more than 20% of frames, or above the shoulders in more than 80% |
+| TRIPO-NOT-DOWN | A death clip does not end lying down, on the front or the back |
+| TRIPO-LIMB-IN-TORSO | In a death clip an arm or a leg passes deep into the torso (limit set from vanilla's infantry deaths) |
+| TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job whose anatomy has a cape |
+| TRIPO-WEAPON-IN-BODY | A held weapon is inside the body in any frame (armed units) |
+| TRIPO-GRIP-ENCLOSURE, TRIPO-GRIP-THUMB | The hand does not wrap the haft, or the thumb is on the wrong side (armed units) |
+| TRIPO-BLADE-FACING | The weapon's blade is seen edge-on from the front in the idle pose (armed units) |
+
+## Armed units
+
+Tripo's rig bends a weapon modelled into the hand, and Tripo's clips animate an empty-handed body. The kit has a separate-weapon route in progress: the body is modelled with empty hands, the weapon is its own model, and the kit puts the weapon in the hand, closes the fingers around it (`tripo/grip_weapon.py`) and keeps it out of the body by turning the wrist. It was tested on an orc with a long axe in November 2026 and did not pass review yet:
+
+- The rule keeps the weapon out of the body in idle, move, defend and retreat without changing how they read.
+- An attack made for an empty hand does not become a weapon swing. With the weapon cleared from the body it reads as a stiff hold. A weapon attack needs a clip made for the weapon.
+- A long weapon carried down in a death clip passes through the body or the ground.
+- A coarse Tripo hand does not wrap a haft tightly.
+
+Until this passes, keep armed units to weapons held low and short, or plan live work in Blender for the attack and the death.
+
 ## Tripo settings
 
-These gave the best result for the price in the kit's own test (one armed orc, November 2026). They are a starting point, not a law.
+These gave the best result for the price in the kit's own tests (an orc and a zombie, November 2026). They are a starting point, not a law.
 
 | Setting | Value | Why |
 | --- | --- | --- |
 | Tool | Model, HD Model | Comes textured. Smart Mesh sculpts sharper detail but comes untextured, in loose parts, and costs more |
 | AI model | H3.1 | Same price as H3.0 at these settings |
-| Input | Your picture plus Tripo's generated views | The back and sides follow the picture instead of a guess |
+| Input | One 3D-ready picture | It was enough for a clean model. Generated side views did not improve the result |
 | Ultra Mesh Quality | off | It adds 15 credits. The map camera does not show the difference |
 | Texture | on, 2K, Remove Lighting on, PBR on | HOI4 unit textures are 1K to 2K. PBR gives the normal and roughness maps the pipeline packs |
 | Topology | Triangle | HOI4 meshes are triangles |
 | Polycount | 20,000 | The unit profile's working budget |
-| Generate in Parts | off | Use Segment after the model instead, with your own two-part instruction |
+| Generate in Parts | off | One skin rigs and deforms best |
 | Rig | Humanoid, Mixamo skeleton | The intake maps Mixamo's bone names to the kit's |
 | Export | GLB, skeleton on, stay in place on | In-place walks do not slide on the map |
 
-Presets that read well for the six roles of an armed fighter: `idle`, `walk`, `chop` or `slash` (attack), `hit_to_body_01` (defend), `flee_01` (retreat), `fall` (death). Give two units of one type different presets where the library has a second one that fits, so they do not move alike.
+Give two units of one type different presets where the library has a second one that passes, so they do not move alike.
 
 ### By agent: how the agent drives Tripo
 
 The agent works in your Chrome through Claude in Chrome, on the tab where you are signed in to Tripo Studio. It follows the same card as you would.
 
-- It loads `.tools/3d_pipeline/tripo/tripo_studio.js` into the page. The helpers read the credit balance and the price on each button, set the model settings, and refuse to press Generate when the price differs from the card.
+- It loads `.tools/3d_pipeline/tripo/tripo_studio.js` into the page. The helpers read the credit balance and the price on each button and refuse to press Generate when the price differs from the card. On the Animate page it types each preset's name into the search box (`TS.search`) and clicks the tile it finds (`TS.presetPoint`).
 - It uploads the picture with the extension's file upload, never through a file dialog.
 - It presses each paid button once, then waits for the new task. A second press starts a second paid task.
-- It never reloads the Tripo page in the middle of a step.
+- It never reloads the Tripo page in the middle of a paid step.
 - Exports go to your Downloads folder. The agent moves them into the inbox and renames them.
 - It writes the balance before and after each paid step into the job's ledger, and stops at the budget.
 
-The page helpers were checked against Tripo Studio on 2026-11-13. The upload and the unattended download through Chrome are designed but were not yet run end to end. Tripo changes its page from time to time. When a helper stops finding a button, the agent says so and you finish that step by hand from the card.
+This ran end to end on several models in November 2026. Tripo changes its page from time to time. When a helper stops finding a button, the agent says so and you finish that step by hand from the card.
 
 ## Old Meshy jobs
 
@@ -197,7 +271,7 @@ Pick one type per unit in the job's `unit_type`. The type sets the rig, the clip
 | `quadruped_beast` | wolves, war beasts, elephants | quadruped | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
 | `vehicle` | tanks, armoured cars, other wheeled or tracked units | none | live in Blender | idle, drive, fire, brace, reverse, wreck |
 
-Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. A Tripo job names one Tripo preset per role on its card (see [Tripo settings](#tripo-settings)), and the export's stay-in-place option keeps walks from sliding. The clips column above describes the motion each role should read as. For an old Meshy job most roles list two library candidates in `unit_types.json`, so the clip plan can give two units of one type different clips. A `vehicle` has `calibration_group: vehicle`: its checks use vanilla's tanks and trucks as the limit, not its soldiers.
+Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. A Tripo job picks one clip per role from the candidates it exported (see [Pick the clips by measurement](#pick-the-clips-by-measurement)), and the export's stay-in-place option keeps walks from sliding. The clips column above describes the motion each role should read as. For an old Meshy job most roles list two library candidates in `unit_types.json`, so the clip plan can give two units of one type different clips. A `vehicle` has `calibration_group: vehicle`: its checks use vanilla's tanks and trucks as the limit, not its soldiers.
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs, a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
@@ -209,7 +283,7 @@ The anatomy you gave in step 1 tells the check what a measurement cannot see: `"
 
 ## Automatic checks
 
-Run them on a unit's folder at any time with the command in step 7. Without `--verdict` it lists every finding.
+Run them on a unit's folder at any time with the command in step 10. Without `--verdict` it lists every finding.
 
 | Rule | Check | Why |
 | --- | --- | --- |
@@ -221,7 +295,7 @@ Run them on a unit's folder at any time with the command in step 7. Without `--v
 | UNIT-NODE-MISSING, UNIT-NODE-ORIENTATION | A mount has a `Saddle_Node`, exported without rotation | The rider has nothing to sit on, and a turned node tips him over |
 | UNIT-DDS-MIPS, UNIT-DDS-FORMAT | Textures are DXT5 or DXT1 with mip levels | Without mips the zoomed-out map shimmers. Uncompressed textures use four times the memory |
 | UNIT-DDS-EMISSIVE | Normal maps have a black blue channel | The game reads blue in a normal map as glow |
-| UNIT-DDS-SHINY | Specular maps stay about as dull as vanilla's | Shinier maps show as white speckles. The pipeline scales Meshy's metalness and gloss down to vanilla's range |
+| UNIT-DDS-SHINY | Specular maps stay about as dull as vanilla's | Shinier maps show as white speckles. The pipeline scales Meshy's metalness and gloss down to vanilla's range, and maps Tripo's gloss onto vanilla's |
 | UNIT-HOLE | No more open edges, and no larger open loop, than vanilla units | The game hides back faces, so a gap shows the ground through the unit |
 | UNIT-WINDING, UNIT-INSIDE-OUT | No triangles facing the wrong way, and no part turned inside out | The same culling makes them look like holes from one side |
 | UNIT-NORMALS | No larger share of corner normals pointing against their faces than vanilla's worst | They shade as pale flat facets |
@@ -244,7 +318,7 @@ The surface and motion limits are the worst values measured on the game's own un
 
 ### Holes the player sees
 
-A missing face, a face turned the wrong way, or a one-sided sheet seen from behind shows the ground through the unit. An open-edge count cannot tell those from the open edges a model keeps on trims, plates and straps that never show, so the rigged unit profiles judge holes by looking (`"holes": "silhouette"`). The model check in step 3 only records open edges. `check_holes.py` takes a unit folder or a provider `.glb` (steps 4 and 8).
+A missing face, a face turned the wrong way, or a one-sided sheet seen from behind shows the ground through the unit. An open-edge count cannot tell those from the open edges a model keeps on trims, plates and straps that never show, so the rigged unit profiles judge holes by looking (`"holes": "silhouette"`). The model check in step 3 only records open edges. `check_holes.py` takes a unit folder or a provider `.glb` (steps 3 and 10).
 
 It renders the unit in Blender from 17 views (eight around it, low and high, and the map camera), at rest and at several frames of every clip, once with back faces hidden and once with them shown. Pixels that only back faces cover are holes. Vanilla shows a few specks too, such as a sleeve seen edge-on, so the unit passes when its largest patch is no larger than the largest `GER_infantry` and `cavalry_horse` show the same way: 58 pixels in a death clip and 50 in every other clip, at the 256-pixel tile size. Death clips have their own limit, because a body lying down shows larger specks from low views. The 50 comes from the horse's one-sided reins. A `.glb` is checked at rest, before the rig.
 
@@ -334,14 +408,19 @@ Units are the tested route. For other models, only the parts below have been pro
 
 **Textures for any 3D model.** Use DXT5 with a full mip chain. The 2D image tool (`convert_to_dds.py`) writes uncompressed BGRA with one mip level, which suits interface images but not models. Put the `.dds` files in the model's folder and run `check_unit_files.py <folder> --repair-textures`, which rewrites them as DXT5 with mips and clears a normal map's blue channel.
 
+
 ## Known limits
 
+- **Armed units.** The separate-weapon route has not passed review yet (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, and a long weapon carried down in a death clip passes through the body or the ground.
+- **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. It binds a wing membrane to the arms, shoulders and upper spine, so the wings bend and droop whenever the arms move. There is no wing step yet. Plan live work in Blender for a winged unit.
+- **Cloaks.** A long cloak stretches in clips that fold the torso (TRIPO-CLOAK-STRETCH). Weight edits did not fix it. Prefer a shorter garment in the picture.
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
 - **A weapon sinking in a death clip.** No free repair lifts a held prop out of the ground yet. Run `fit_prop.py` again (a higher `--ground-weight`, such as 40 instead of 10, cleared it on one unit), or turn the wrist live in Blender.
 - **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect to look for another preset, and sometimes a small live fix.
 - **Planes** are not covered.
 - **UNIT-PROP-CLIP** reads a point behind an open, one-sided sheet such as a cape as inside the body. Look at the named frames before changing a clip.
 - **Review rounds** converge only with fixed notes and scoped rounds. Without them each fresh reviewer raises new minor items.
+- **Small looks at game size.** At the map camera a unit is a few dozen pixels tall. A pale face or a torn hem is lost there. Judge fidelity on the close sheets and readability on the game-size sheet.
 
 ## When something fails
 
@@ -355,7 +434,11 @@ py -3.13 -B .tools/3d_pipeline/run_pilot.py --jobs-config <your 3d_jobs.json> --
 | --- | --- |
 | Tripo's page looks signed out, or the sign-in code page vanishes | Tripo's service may be down for a few minutes. Wait, then load the page again. Nothing is lost: finished models stay in your Assets |
 | A paid Tripo button was pressed and nothing seems to happen | Do not press it again. Look at the Assets panel and the credit balance first. A new tile or a lower balance means the task started |
-| The weapon bends or shears in an animation | The model was rigged in one piece. Run Segment on the unrigged model (step 4), rig again, export again |
+| Tripo's Export button does nothing (no progress, no file) | It happened after many exports in one session. Do not keep pressing it. Look for a blocked-download icon in Chrome's address bar and for Tripo's export limit on your plan, then try again later. The model and its applied clips stay in your Assets |
+| A clip in the export has a different name from its tile | Tripo renames on export: the tile `defeat` exports as `defeat_02` and `defeat_02` as `defeat_03`. A text-to-motion clip is named after its instruction. Write the exported name, or its first words, into `tripo.roles` |
+| TRIPO-HANDS-HIGH fails | The attack holds the hands above the head. The arm-level default fixes it for an unarmed unit. If it is switched off, switch it on again, or pick another attack |
+| TRIPO-NOT-DOWN or TRIPO-LIMB-IN-TORSO fails | Pick another death clip by the rule in [Pick the clips by measurement](#pick-the-clips-by-measurement). `defeat_03` passed on a humanoid |
+| The weapon bends or shears in an animation | The weapon was modelled into the hand and rigged with the body. Redraw the picture with empty hands and make the weapon its own model (see [Armed units](#armed-units)) |
 | Tripo's rig prompt sends you to a T-pose picture | Tripo prefers a T-pose or A-pose. The rig still works on a relaxed pose with arms away from the body. Use the T Pose picture template only when the rig fails |
 | The rigged export is named `download.glb` | Tripo's server names it. Rename it to the name on the card when you move it into the inbox |
 | The intake says it finds no export | The file name must be `<asset>__rigged.glb`, `<asset>__segmented.glb` or `<asset>__model.glb`, in the inbox folder you passed |

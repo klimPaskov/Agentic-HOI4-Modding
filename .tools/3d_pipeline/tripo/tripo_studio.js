@@ -17,7 +17,7 @@
   const wait = (ms = 500) => new Promise((r) => setTimeout(r, ms));
   const text = (e) => (e && e.innerText ? e.innerText.replace(/\s+/g, " ").trim() : "");
   const TS = {
-    version: "2026-11-14",
+    version: "2026-11-15",
     wait,
     text,
     fire(el) {
@@ -216,6 +216,16 @@
     },
     rigged() {
       return /Rigged models can be used/.test(document.body.innerText);
+    },
+    // Animate page: type a name into the visible search box (Preset or AI Animation tab), so the
+    // matching tile comes first. Then take its point with TS.presetPoint and click it.
+    async search(name) {
+      const input = [...document.querySelectorAll("input")].filter((i) => i.placeholder === "Search" && i.offsetParent)[0];
+      if (!input) return false;
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, name);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      await wait(1500);
+      return true;
     },
     // Animate page: scroll a preset tile into view and return its click point.
     // One real click applies the preset (free). Then await TS.retargeted().
