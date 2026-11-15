@@ -237,7 +237,7 @@ def build_coding_environment_components(components: List[dict]) -> List[dict]:
         component = _base(
             component_id, f"{label} HOI4 MCP configuration",
             "Install the project registration for the verified HOI4 Agent Tools server.",
-            environment, True, ["windows", "linux"],
+            environment, True, ["windows", "macos", "linux"],
             {"kind": "file", "path": f"{CLIENTS}/{path}"}, path, "merged", [base, "mcp.hoi4_agent_tools"],
             f"existing {label} project MCP server id", policy, validation,
             [f"{label} MCP registration", "HOI4 Agent Tools"],

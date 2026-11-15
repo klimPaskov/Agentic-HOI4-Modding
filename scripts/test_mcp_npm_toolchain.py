@@ -37,7 +37,7 @@ class PrivateNpmToolchainTests(unittest.TestCase):
             self.assertTrue(bootstrap.supported_node_version(value), value)
         for value in ["v18.20.0", "v22.9.0", "v22.18.9", "v23.0.0", "v25.0.0", "v26.0.0", "v24.1.0-rc.1", "bad"]:
             self.assertFalse(bootstrap.supported_node_version(value), value)
-        with mock.patch.object(bootstrap, "run", side_effect=["v24.21.0", "arm64"]), self.assertRaisesRegex(bootstrap.BootstrapError, "x64"):
+        with mock.patch.object(bootstrap, "platform_name", return_value="windows"), mock.patch.object(bootstrap, "run", side_effect=["v24.21.0", "arm64"]), self.assertRaisesRegex(bootstrap.BootstrapError, "x64"):
             bootstrap.verify_node_runtime(Path("node"))
 
     def test_node_discovery_cannot_inherit_node_or_npm_overrides(self):

@@ -29,7 +29,7 @@ def main() -> None:
     schema = load_manifest_schema(manifest.get("schema_version"), ROOT)
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(manifest)
-    if not str(manifest.get("schema_version", "")).startswith("6."):
+    if not str(manifest.get("schema_version", "")).startswith("7."):
         raise SystemExit("published manifest has the wrong schema major")
     if manifest.get("image_generation") != build_image_generation_table(ROOT):
         raise SystemExit("published image-generation provider table is stale")

@@ -77,7 +77,7 @@ class ManifestGeneratorTests(unittest.TestCase):
     def test_canonical_manifest_uses_schema_six_and_declares_image_providers(self) -> None:
         manifest_path = SCRIPT.parents[1] / "hoi4-mod-setup.manifest.json"
         manifest = json.loads(manifest_path.read_text(encoding="utf-8-sig"))
-        self.assertEqual(manifest["schema_version"].split(".")[0], "6")
+        self.assertEqual(manifest["schema_version"].split(".")[0], "7")
         self.assertEqual(manifest["image_generation"]["default_provider"], "hoi4_imagegen")
         self.assertEqual(manifest["image_generation"], GENERATOR.build_image_generation_table(manifest_path.parent))
         components = {component["id"]: component for component in manifest["components"]}
@@ -178,7 +178,7 @@ class ManifestGeneratorTests(unittest.TestCase):
                     component["id"],
                 )
 
-    def test_native_mcp_registration_declares_verified_windows_and_linux(self) -> None:
+    def test_native_mcp_registration_declares_verified_windows_macos_and_linux(self) -> None:
         root = SCRIPT.parents[1]
         manifest = json.loads(
             (root / "hoi4-mod-setup.manifest.json").read_text(encoding="utf-8-sig")
@@ -186,7 +186,7 @@ class ManifestGeneratorTests(unittest.TestCase):
         components = {component["id"]: component for component in manifest["components"]}
         for runtime in ("claude", "cursor", "qoder", "copilot", "gemini", "antigravity", "grok", "kilo", "kiro", "qwen"):
             component = components[f"runtime.{runtime}.mcp"]
-            self.assertEqual(component["platforms"], ["windows", "linux"])
+            self.assertEqual(component["platforms"], ["windows", "macos", "linux"])
             self.assertTrue(component["optional"])
             self.assertIn("mcp.hoi4_agent_tools", component["dependencies"])
         # OpenCode reads MCP servers only from opencode.json(c); the retired

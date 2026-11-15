@@ -61,6 +61,8 @@ def list_routes(command: list[str], profiles: str | None, timeout: float = 120.0
 
     with tempfile.TemporaryDirectory() as scratch:
         # The server starts only inside a mod, so the child runs in a scratch mod folder.
+        # macOS keeps temporary folders under the /var -> /private/var link, which the server refuses.
+        scratch = str(Path(scratch).resolve())
         mod = Path(scratch) / "mod"
         mod.mkdir()
         (mod / "descriptor.mod").write_bytes(b'name="route-contract-check"\nversion="1.0"\nsupported_version="1.*"\n')
@@ -120,7 +122,7 @@ def measure(prefix: Path, integrity: str, version: str | None = None, platform: 
         raise ValueError("Select an exact published package version.")
     platform = platform or bootstrap.platform_name()
     platform_pin = bootstrap.platform_evidence(platform)
-    modules = prefix.resolve(strict=True) / ("lib/node_modules" if platform == "linux" else "node_modules")
+    modules = prefix.resolve(strict=True) / ("lib/node_modules" if platform in {"linux", "macos"} else "node_modules")
     package_root = modules / bootstrap.PACKAGE_NAME
     if modules.is_symlink() or package_root.is_symlink():
         raise ValueError("The clean installation must not use linked package directories.")
@@ -160,9 +162,9 @@ def repin(evidence: dict, bootstrap_path: Path = BOOTSTRAP, manifest_path: Path 
         "RUNTIME_ENTRY_SIZE": "runtime_entry_size",
     }
     platform = evidence.get("platform", "windows")
-    if platform == "linux":
-        constants["LINUX_PACKAGE_TREE_SHA256"] = constants.pop("PACKAGE_TREE_SHA256")
-        constants["LINUX_PACKAGE_FILE_COUNT"] = constants.pop("PACKAGE_FILE_COUNT")
+    if platform in {"linux", "macos"}:
+        constants[f"{platform.upper()}_PACKAGE_TREE_SHA256"] = constants.pop("PACKAGE_TREE_SHA256")
+        constants[f"{platform.upper()}_PACKAGE_FILE_COUNT"] = constants.pop("PACKAGE_FILE_COUNT")
     elif platform != "windows":
         raise ValueError("The MCP platform has no reviewed package evidence.")
     for constant, key in constants.items():
@@ -190,12 +192,12 @@ def main() -> None:
     parser.add_argument("--prefix", type=Path, required=True, help="Explicit clean npm global install prefix")
     parser.add_argument("--integrity", required=True, help="Reviewed published npm dist.integrity")
     parser.add_argument("--version", help="Exact reviewed public version; defaults to the current bootstrap pin")
-    parser.add_argument("--platform", choices=("windows", "linux"), help="Measured native installation platform; defaults to the current host")
+    parser.add_argument("--platform", choices=("windows", "linux", "macos"), help="Measured native installation platform; defaults to the current host")
     parser.add_argument("--skip-route-check", action="store_true", help="Skip the live tools/list check (the check needs Node on PATH)")
     args = parser.parse_args()
     evidence = measure(args.prefix, args.integrity, args.version, args.platform)
     if not args.skip_route_check:
-        package = args.prefix.resolve(strict=True) / ("lib/node_modules" if evidence["platform"] == "linux" else "node_modules") / "hoi4-agent-tools"
+        package = args.prefix.resolve(strict=True) / ("lib/node_modules" if evidence["platform"] in {"linux", "macos"} else "node_modules") / "hoi4-agent-tools"
         check_routes(["node", str(package / evidence["runtime_entry"])])
     repin(evidence)
     print(json.dumps(evidence, sort_keys=True))
