@@ -1,3 +1,4 @@
 .tools/tests/fixtures/**/*.dds binary
 .tools/py.sh text eol=lf
 .tools/3d_pipeline/meshy_runtime/** text eol=lf
+.tools/quality_baseline.json text eol=lf

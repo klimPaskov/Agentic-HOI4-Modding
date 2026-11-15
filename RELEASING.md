@@ -47,7 +47,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
 
 These are maintainer actions after local preparation is reviewed:
 
-1. Push `claude-first-workflow` to origin and open a pull request targeting `main`. Review the complete branch diff and require the manifest, bootstrap, runtime, size, and release-link checks to pass.
+1. Push a feature branch (for example `claude/package-2026-11-20`) to origin and open a pull request with `gh pr create --repo klimPaskov/Agentic-HOI4-Modding --base main`. Review the complete branch diff and require the manifest, bootstrap, runtime, size, and release-link checks to pass.
 2. Merge the pull request. The **Publish HOI4 Mod Setup manifest** workflow runs on source changes to `main`, computes exact Git blob evidence for the merged revision, and commits only `hoi4-mod-setup.manifest.json`. It guards against an advancing `main` and avoids a loop for manifest-only commits.
 3. Confirm the bot manifest commit landed and the **Validate HOI4 Mod Setup manifests** workflow passed. If branch protection blocks the bot push, permit the intended workflow through the repository's reviewed protection policy or generate and merge the manifest through a separate reviewed PR. Do not disable protections indiscriminately.
 4. Test HOI4 Mod Setup against the new remote manifest: select Claude Code and each compatibility runtime, inspect the install preview, install into a disposable mod, then check update/repair and both MCP registrations. No setup-app changes are assumed by this package release.
@@ -64,4 +64,4 @@ The README has no video embed or thumbnail; the YouTube badge links the channel.
 
 ## Existing mod checkouts
 
-The older OneDrive mod checkout is stale and must be updated separately after this package is released. Back up and commit local work, then use HOI4 Mod Setup update/repair to migrate from Codex-first instructions and Agent Tools 3.9.0. Preserve custom project rules during instruction merges, generate Claude-based runtime projections, reinstall the manifest-pinned MCPs, and reconnect clients. Keep the preparation worktree and the old mod checkout separate until their local changes are reconciled.
+The older OneDrive mod checkout is stale and must be updated separately after this package is released. Back up and commit local work, then use HOI4 Mod Setup update/repair to migrate from Codex-first instructions and an older Agent Tools pin. Preserve custom project rules during instruction merges, generate Claude-based runtime projections, reinstall the manifest-pinned MCPs, and reconnect clients. Keep the preparation worktree and the old mod checkout separate until their local changes are reconciled.
