@@ -268,6 +268,33 @@ def require_credit_budget(spec: Dict[str, Any]) -> int:
     return budget
 
 
+# A unit's height on the map (its mesh height times the entity scale) as a share of the vanilla reference's.
+# A giant may stand three times as tall as a soldier and a goblin half as tall. Outside that band the job's
+# height is almost always in the wrong unit: `target_height_m` is the mesh height in HOI4 units (vanilla
+# infantry is 7.35), not metres. Three Tripo jobs set 1.8 and came out a quarter of a soldier's height.
+MIN_RUNTIME_SCALE_SHARE = 0.5
+MAX_RUNTIME_SCALE_SHARE = 3.0
+
+
+def check_runtime_scale(spec: Dict[str, Any]) -> None:
+    """Refuse a job whose unit would be far smaller or larger on the map than its vanilla scale reference."""
+
+    reference = spec.get("vanilla_scale_reference") or {}
+    if spec.get("asset_kind") not in {"humanoid", "creature"} or not reference.get("runtime_height"):
+        return
+    height = float(spec.get("blender_target_height_m", spec.get("target_height_m", 0)) or 0)
+    runtime = height * float(spec.get("runtime_entity_scale", reference.get("entity_scale", 1.0)))
+    share = runtime / float(reference["runtime_height"])
+    if MIN_RUNTIME_SCALE_SHARE <= share <= MAX_RUNTIME_SCALE_SHARE:
+        return
+    raise ValueError(
+        f"{spec.get('asset_id', 'job')}: the unit would stand {runtime:.2f} units tall on the map, {share:.2f} times its vanilla "
+        f"reference ({float(reference['runtime_height']):.2f}). `target_height_m` is the mesh height in HOI4 units, not metres: "
+        f"use {float(reference.get('mesh_height', reference['runtime_height'])):.4g} for a unit as tall as the reference soldier, "
+        f"and scale it for a smaller or larger body."
+    )
+
+
 def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[str, Any]:
     """Fill in generation settings, price-table estimates and the job budget before any provider call.
 
@@ -278,6 +305,7 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
     if spec.get("_credits_prepared"):
         return spec
     apply_unit_type(spec)
+    check_runtime_scale(spec)
     generation = resolve_generation(spec, load_profile(spec["profile"]))
     pricing = load_pricing()
     spec["generation"] = generation

@@ -340,6 +340,26 @@ class PartTriangleBudget(unittest.TestCase):
         self.assertEqual(command[command.index("--shape-iou") + 1], "0.95")
 
 
+VANILLA_INFANTRY = {"mesh_height": 7.3518242835, "entity_scale": 0.8, "runtime_height": 5.8814594268}
+
+
+class RuntimeScale(unittest.TestCase):
+    def test_a_height_given_in_metres_is_refused_with_the_mesh_height_to_use(self) -> None:
+        spec = tripo_spec(target_height_m=1.8, runtime_entity_scale=0.8, vanilla_scale_reference=dict(VANILLA_INFANTRY))
+        with self.assertRaises(ValueError) as caught:
+            run_pilot.prepare_spec(spec)
+        self.assertIn("not metres", str(caught.exception))
+        self.assertIn("7.352", str(caught.exception))
+
+    def test_a_soldier_sized_unit_and_a_giant_pass(self) -> None:
+        for height in (7.35, 18.0):
+            spec = tripo_spec(target_height_m=height, runtime_entity_scale=0.8, vanilla_scale_reference=dict(VANILLA_INFANTRY))
+            run_pilot.prepare_spec(spec)
+
+    def test_a_job_without_a_vanilla_reference_is_not_judged(self) -> None:
+        run_pilot.prepare_spec(tripo_spec(target_height_m=1.8))
+
+
 class TripoTextureDefaults(unittest.TestCase):
     def test_a_tripo_job_gets_no_diffuse_grade_and_a_vanilla_range_specular_by_default(self) -> None:
         spec = run_pilot.prepare_spec(tripo_spec())
