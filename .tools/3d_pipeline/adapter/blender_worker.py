@@ -5641,6 +5641,52 @@ def scale_aware_retarget_location_scale(
     return source_uniform_world_scale / target_uniform_world_scale
 
 
+def retarget_location_bones(names: Any, bone_chains: Dict[str, List[str]], target_rig: Any, root_name: str) -> set:
+    """The target bones that keep the location keys of their source bone (the job's weapon bone, which a clip lets go of), never the root."""
+
+    if not names:
+        return set()
+    if not isinstance(names, list) or any(not isinstance(name, str) for name in names):
+        raise ValueError("location_bones must be a list of target bone names.")
+    chosen = {explicit_safe_name(name, "location_bones") for name in names}
+    unknown = sorted(name for name in chosen if name not in bone_chains or name not in target_rig.data.bones or name == root_name)
+    if unknown:
+        raise ValueError("location_bones must be mapped, existing, non-root target bones: " + json.dumps(unknown))
+    return chosen
+
+
+def retarget_bone_location(source_location: Any, source_rig: Any, source_bone: Any, target_rig: Any, target_bone: Any, scale: float) -> Any:
+    """A source bone's location key (in its own rest axes) as the target bone's location key, converted the way the root's motion is: into world
+    axes through the source rig and bone, multiplied by the measured size ratio of the two rigs (`anatomical_scale`), and into the target
+    bone's own axes through the target rig and bone, whose world matrices carry the target's scale."""
+
+    world = (source_rig.matrix_world.to_3x3() @ source_bone.matrix_local.to_3x3() @ source_location) * scale
+    return (target_rig.matrix_world.to_3x3() @ target_bone.matrix_local.to_3x3()).inverted() @ world
+
+
+def same_hemisphere(previous: Any, rotation: Any) -> Any:
+    """`rotation` as the quaternion of the same turn that lies on the same side as `previous` (the key before it), or itself for the first key.
+
+    Blender interpolates a quaternion channel by component, so two neighbouring keys of opposite sign make the frames between them pass through
+    a near-zero quaternion: a keyed frame is right and the frames the exporter samples between keys (30 fps from 24) are not."""
+
+    return rotation.copy() if previous is None or rotation.dot(previous) >= 0.0 else Quaternion((-rotation.w, -rotation.x, -rotation.y, -rotation.z))
+
+
+def retarget_frame_location(name: str, root_name: str, location_bones: set, source_location: Any, root_world_delta: Any, target_basis_to_world: Any,
+                            source_rig: Any, source_bone: Any, target_rig: Any, target_bone: Any, scale: float) -> Any:
+    """The location key of one target bone in one frame: the root takes the vertical part of the source root's world motion, a bone the job
+    named (`location_bones`, the weapon) takes its own source key converted (`retarget_bone_location`), every other bone stays at zero."""
+
+    from retarget_root_motion import vertical_root_basis_location
+
+    if name == root_name:
+        return Vector(vertical_root_basis_location(root_world_delta * scale, (0.0, 0.0, 0.0), target_basis_to_world))
+    if name in location_bones:
+        return retarget_bone_location(source_location, source_rig, source_bone, target_rig, target_bone, scale)
+    return Vector((0.0, 0.0, 0.0))
+
+
 def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
     """Transfer one provider skeletal action onto the approved working rig.
 
@@ -5900,7 +5946,7 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
         raise RuntimeError(
             f"{exc} Source armature: {source_rig.name}; target armature: {target_rig.name}."
         ) from exc
-    from retarget_root_motion import vertical_root_basis_location, conjugate_rotation, angular_motion_retained
+    from retarget_root_motion import conjugate_rotation, angular_motion_retained
     target_roots = [b for b in target_rig.data.bones if b.parent is None and b.name in bone_chains]
     if len(target_roots) != 1:
         raise ValueError("Retarget requires exactly one explicitly mapped target root.")
@@ -6052,7 +6098,8 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
         if target_root_name
         else 0.0
     )
-    root_world_proof = []
+    location_bones = retarget_location_bones(payload.get("location_bones"), bone_chains, target_rig, target_root.name)
+    root_world_proof, last_rotation = [], {}
     target_rest_root_world = (target_rig.matrix_world @ target_root.matrix_local).translation.copy()
     for frame in range(frame_start, frame_end + 1):
         bpy.context.scene.frame_set(frame)
@@ -6060,13 +6107,10 @@ def import_animation_action(req: Dict[str, Any]) -> Dict[str, Any]:
             target_bone = target_rig.pose.bones[target_name]
             source_location, source_rotation = source_pose_cache[frame][target_name]
             target_bone.rotation_mode = "QUATERNION"
-            if target_name == target_root_name:
-                source_world_delta = (root_world_cache[frame] - root_world_cache[frame_start]) * anatomical_scale
-                target_bone.location = Vector(vertical_root_basis_location(
-                    source_world_delta, (0.0, 0.0, 0.0), target_basis_to_world))
-            else:
-                target_bone.location = Vector((0.0, 0.0, 0.0))
-            target_bone.rotation_quaternion = source_rotation
+            target_bone.location = retarget_frame_location(
+                target_name, target_root_name, location_bones, source_location, root_world_cache[frame] - root_world_cache[frame_start],
+                target_basis_to_world, source_rig, source_rig.data.bones[bone_chains[target_name][-1]], target_rig, target_bone.bone, anatomical_scale)
+            target_bone.rotation_quaternion = last_rotation[target_name] = same_hemisphere(last_rotation.get(target_name), source_rotation)
             target_bone.scale = (1.0, 1.0, 1.0)
             target_bone.keyframe_insert(data_path="location", frame=frame, group=target_name)
             target_bone.keyframe_insert(data_path="rotation_quaternion", frame=frame, group=target_name)

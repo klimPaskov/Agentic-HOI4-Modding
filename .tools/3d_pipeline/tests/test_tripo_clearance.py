@@ -11,7 +11,7 @@ import numpy as np
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-from lib import tripo_clearance as C  # noqa: E402
+from lib import tripo_clearance as C
 
 
 def box(lo=-0.5, hi=0.5, subdivide=6):
@@ -150,6 +150,147 @@ class Clip(unittest.TestCase):
         buried = [stick(np.zeros(3), length=0.5, count=60) for _ in range(4)]
         result = C.clear_clip(buried, [np.zeros(3)] * 4, [vertices] * 4, triangles, 1.0)
         self.assertEqual(result["failed"], [0, 1, 2, 3])
+
+
+
+def pelvis_series() -> list:
+    """Standing at 0.5, a crouch that comes back up (frames 8 to 14), a steady fall from frame 30 to a stagger and a rest at 0.05."""
+
+    out = [0.5] * 8 + [0.5 - 0.04 * np.sin(np.pi * k / 6.0) for k in range(7)] + [0.5] * 16
+    out += [0.5 - 0.45 * (k / 20.0) for k in range(21)]
+    out[45] = out[44] + 0.01  # a stagger on the way down
+    return out + [0.05] * 15
+
+
+class Fall(unittest.TestCase):
+    def test_the_fall_starts_where_the_pelvis_starts_its_last_descent_not_at_a_crouch_or_a_stagger(self) -> None:
+        pelvis = pelvis_series()
+        still_hand = [0.8] * len(pelvis)
+        start = C.fall_start_frame(pelvis, still_hand, 1.0)
+        self.assertTrue(29 <= start <= 31, start)
+
+    def test_a_hand_that_drops_before_the_pelvis_starts_the_fall_earlier(self) -> None:
+        pelvis = pelvis_series()
+        hand = [0.8] * 25 + [0.8 - 0.03 * k for k in range(len(pelvis) - 25)]
+        start = C.fall_start_frame(pelvis, hand, 1.0)
+        self.assertEqual(start, 25 + 2)  # 4% of the height is lost at the second step
+
+    def test_a_clip_without_a_descent_has_only_the_hand_and_none_means_the_last_frame(self) -> None:
+        level = [0.5] * 30
+        self.assertEqual(C.fall_start_frame(level, [0.8] * 30, 1.0), 29)
+        self.assertEqual(C.fall_start_frame(level, [0.8] * 10 + [0.7] * 20, 1.0), 10)
+
+
+class Tumble(unittest.TestCase):
+    relative = stick(np.zeros(3), length=1.0, count=30) - np.array([0.4, 0.0, 0.0])
+
+    def test_lying_orientations_put_the_head_level_and_the_thin_axis_up(self) -> None:
+        axes = np.eye(3)
+        for rotation in C.lying_orientations(axes):
+            self.assertAlmostEqual(float((rotation @ axes[:, 0])[2]), 0.0, places=9)
+            self.assertAlmostEqual(abs(float((rotation @ axes[:, 2])[2])), 1.0, places=9)
+            self.assertAlmostEqual(float(np.linalg.det(rotation)), 1.0, places=9)
+
+    def test_the_path_starts_in_the_hand_falls_under_gravity_lands_and_stays_still(self) -> None:
+        start_turn, start_point = np.eye(3), np.array([0.0, 0.0, 0.8])
+        land_turn = np.eye(3)
+        land_point = np.array([0.6, 0.0, 0.1])
+        turns, points = C.tumble_path(start_turn, start_point, land_turn, land_point, self.relative, 0.0, 30, 10)
+        self.assertTrue(np.allclose(turns[0], start_turn) and np.allclose(points[0], start_point))
+        self.assertTrue(np.allclose(turns[10:], land_turn) and np.allclose(points[10:], land_point))
+        drop = points[:11, 2]
+        self.assertTrue(all(drop[k + 1] <= drop[k] + 1e-9 for k in range(10)))
+        self.assertLess(drop[0] - drop[5], 0.5 * (drop[0] - drop[10]))  # slow at first, quick at the end
+
+    def test_the_weapon_never_dips_under_the_ground_on_the_way(self) -> None:
+        start_turn, start_point = C.rotation_matrix(np.array([0.0, 1.0, 0.0]), -np.pi / 2), np.array([0.0, 0.0, 0.6])  # standing upright
+        land_turn = np.eye(3)
+        land_point = np.array([0.6, 0.0, 0.01])
+        turns, points = C.tumble_path(start_turn, start_point, land_turn, land_point, self.relative, 0.0, 30, 10)
+        for turn, point in zip(turns, points):
+            self.assertGreaterEqual(float((self.relative @ turn.T)[:, 2].min() + point[2]), -1e-9)
+
+    def test_the_bone_pose_holds_the_weapon_on_its_world_path_whatever_the_hand_does(self) -> None:
+        rng = np.random.default_rng(3)
+        centre = np.array([0.3, -0.1, 0.9])
+        for _ in range(5):
+            attached = np.eye(4)
+            attached[:3, :3] = C.rotvec_matrix(rng.normal(size=3) * 0.7)
+            attached[:3, 3] = rng.normal(size=3)
+            bone_rest = np.eye(4)
+            bone_rest[:3, :3] = C.rotvec_matrix(rng.normal(size=3))
+            bone_rest[:3, 3] = rng.normal(size=3)
+            turn = C.rotvec_matrix(rng.normal(size=3))
+            point = rng.normal(size=3)
+            basis = C.local_pose(attached, turn, point, centre, bone_rest)
+            skinned = attached @ bone_rest @ basis @ np.linalg.inv(bone_rest)  # what the skin matrix does to a rest point
+            rest = rng.normal(size=(6, 3)) + centre
+            moved = rest @ skinned[:3, :3].T + skinned[:3, 3]
+            self.assertTrue(np.allclose(moved, (rest - centre) @ turn.T + point, atol=1e-9))
+
+
+def falling_body(frames: int = 40, height: float = 1.0):
+    """A box that stands for 10 frames, falls about the y axis over 20 and lies. Returns its posed vertices per frame and its triangles."""
+
+    vertices, triangles = box()
+    vertices = vertices * np.array([0.3, 0.3, height])
+    poses = []
+    for frame in range(frames):
+        s = min(max((frame - 10) / 20.0, 0.0), 1.0)
+        turned = (vertices + [0.0, 0.0, 0.5 * height]) @ C.rotation_matrix(np.array([0.0, 1.0, 0.0]), -s * np.pi / 2).T
+        turned[:, 2] -= turned[:, 2].min()
+        poses.append(turned)
+    return poses, triangles
+
+
+class Drop(unittest.TestCase):
+    def plan(self, release: int = 10):
+        poses, triangles = falling_body()
+        centre = np.array([0.35, 0.0, 0.7])
+        rest = np.array([centre + [0.0, 0.0, -0.5 + 1.06 * k / 59] for k in range(60)])
+        attached = np.tile(np.eye(4), (len(poses), 1, 1))
+        for frame in range(len(poses)):  # the hand falls with the body
+            attached[frame, :3, 3] = [0.0, 0.0, poses[frame][:, 2].max() - 1.0]
+        axes = np.eye(3)[:, [2, 0, 1]]  # head up (z), blade along x, thin axis y
+        return C.plan_drop(rest, centre, axes, attached, poses, triangles, 1.0, 0.0, release, 24.0, candidates=4), poses, rest, centre
+
+    def test_the_weapon_lands_flat_on_the_ground_clear_of_the_body_and_never_goes_under_it(self) -> None:
+        plan, poses, rest, centre = self.plan()
+        relative = rest - centre
+        lying = relative @ plan["land_turn"].T + plan["land_point"]
+        self.assertAlmostEqual(float(lying[:, 2].min()), C.GROUND_LIFT_SHARE, places=6)
+        self.assertLess(float(np.ptp(lying[:, 2])), 0.2)  # level, not leaning
+        self.assertGreaterEqual(plan["clearance_share"], C.LANDING_CLEAR_SHARE - 1e-9)
+        for frame in range(len(plan["turns"])):
+            low = float((relative @ plan["turns"][frame].T)[:, 2].min() + plan["points"][frame][2])
+            self.assertGreaterEqual(low, -1e-9)
+        gap = np.linalg.norm(lying[:, None, :2] - poses[-1][None, ::4, :2], axis=2).min()
+        self.assertGreaterEqual(float(gap), C.LANDING_CLEAR_SHARE - 1e-6)  # clear of the final footprint, seen from above
+        self.assertEqual(plan["in_body_share"], 0.0)
+
+    def test_after_the_tumble_the_planned_weapon_does_not_move(self) -> None:
+        plan, *_ = self.plan()
+        tail = plan["points"][plan["tumble_frames"] :]
+        self.assertTrue(np.allclose(tail, tail[0]))
+        self.assertTrue(np.allclose(plan["turns"][plan["tumble_frames"] :], plan["turns"][-1]))
+
+    def test_the_weapon_is_let_go_where_the_hand_holds_it_at_the_release_frame(self) -> None:
+        plan, _poses, _rest, centre = self.plan(release=12)
+        self.assertEqual(plan["release"], 12)
+        self.assertEqual(len(plan["points"]), 40 - 12)
+        self.assertAlmostEqual(float(plan["points"][0][0]), float(centre[0]), places=9)
+
+    def test_every_resting_place_keeps_the_clearance_from_the_body_seen_from_above(self) -> None:
+        ring = np.array([[np.cos(a), np.sin(a)] for a in np.linspace(0.0, 2 * np.pi, 80, endpoint=False)]) * 0.5
+        relative = stick(np.zeros(3), length=1.0, count=20)
+        orientations = C.lying_orientations(np.eye(3), steps=8)
+        places = C.landing_places(relative, orientations, ring, np.array([2.0, 0.0]), 1.0)
+        self.assertGreater(len(places), 0)
+        self.assertEqual(places, sorted(places, key=lambda row: row["cost"]))
+        for place in places:
+            lying = (relative @ orientations[place["orientation"]].T)[:, :2] + place["xy"]
+            gap = np.linalg.norm(lying[:, None, :] - ring[None, :, :], axis=2).min()
+            self.assertGreaterEqual(float(gap), C.LANDING_CLEAR_SHARE - 0.03)  # one grid cell of rounding
 
 
 if __name__ == "__main__":

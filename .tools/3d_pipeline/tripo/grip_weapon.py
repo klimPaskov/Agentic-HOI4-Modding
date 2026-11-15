@@ -31,16 +31,20 @@ skeleton to 22 bones and merges the fingers into the hand:
    one GLB with every clip, and measure: finger gaps to the haft on sampled frames of every clip, the weapon
    arm against the torso before and after the hold.
 
-5. The death rule (`--release-clips CLIP`, one scripted rule, no per-unit tuning). In a release clip the weapon stays
-   in the hand, held up like in the other clips (the hold fades out as the hand falls), until the frame the hand
-   has dropped `--release-drop` (default 0.04) of the body height below its first-frame height. Then the weapon bone
-   turns about a pivot to a resting place the kit computes: haft level, blade flat, on the ground (lowest point
-   0.3% of the height above the body's lowest vertex), clear of the body by at least 1% of the height, on the
-   side and at the angle whose fall (12, 18 or 26 frames eased, started 0, 4 or 8 frames after the release)
-   stays highest over the ground. A turn is all the kit's animation import keeps of a bone, so the pivot is
-   solved (`lib/tripo_grip.pivot_for_motion`). The job names the clip with `tripo.weapon.release_roles` and
-   check_unit_files.py then excuses a part bound wholly to that weapon bone from the drift test only. If the
-   rule does not pass the checks, leave `release_roles` out: the weapon then stays in the hand through the fall.
+5. The death rule, drop before the fall (`--release-clips CLIP`, one rule for every armed unit, no per-clip numbers). The
+   hand lets go of the weapon at the first frame of the fall: the first frame where the pelvis starts to descend for good,
+   or the hand has dropped `--release-drop` (default 0.04) of the body height, whichever comes first
+   (`lib/tripo_clearance.fall_start_frame`). The arm hold has faded out by then. The weapon falls on its own path, a short
+   fixed-duration tumble under gravity (0.4 s), and lies flat on the ground (haft level, blade flat, lowest point on the
+   ground plane and never under it), at least 4% of the height clear of every point the body occupies from the landing
+   on, on the side away from where the body falls, and stays exactly still to the end of the clip
+   (`lib/tripo_clearance.plan_drop`). The weapon bone is keyed with rotation and location in every frame from the release,
+   the pose that holds the weapon on that path whatever the hand does (the retarget keeps the location keys of the job's weapon bone for
+   its release roles: `location_bones` in run_pilot, `blender_worker.retarget_location_bones`). The pipeline later lifts every frame so the
+   body's lowest point is on the ground, and the weapon with it, so the path is planned in that grounded world (`grounding_lifts`). The job names the clip with
+   `tripo.weapon.release_roles` and check_unit_files.py then excuses a part bound wholly to that weapon bone from the
+   drift test only. The run fails (exit 3, `DROP_FAILED`) when the planned or measured result has the weapon inside the
+   body, under the ground or moving after it landed.
 
 The result has the shape of Tripo's in-hand export, so `prepare_tripo_unit.py --rigid-part tripo_part_1=RightHand`
 takes it unchanged.
@@ -52,7 +56,9 @@ import argparse
 import json
 import math
 import sys
+from functools import partial
 from pathlib import Path
+from types import SimpleNamespace
 
 import bpy
 import numpy as np
@@ -62,11 +68,11 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import tripo_clearance as CL  # noqa: E402
-from lib import tripo_grip as G  # noqa: E402
-from lib.tripo import resolve_clip_name  # noqa: E402
-import assemble_separate as A  # noqa: E402
-import clip_check as cc  # noqa: E402
+from lib import tripo_clearance as CL
+from lib import tripo_grip as G
+from lib.tripo import resolve_clip_name
+import assemble_separate as A
+import clip_check as cc
 
 FINGERS = ("Index", "Middle", "Ring", "Pinky", "Thumb")
 PREFIX = "mixamorig:"
@@ -86,8 +92,8 @@ def parse_args():
     parser.add_argument("--hold-clips", default="")
     parser.add_argument("--hold-fade-clips", default="", help="clips that get the hold at full weight on their first frame, faded out as the arm starts to rise")
     parser.add_argument("--release-clips", default="", help="clips in which the weapon bone lets go of the hand and the weapon falls to the ground")
-    parser.add_argument("--release-drop", type=float, default=0.04, help="a release clip lets go of the weapon when the hand has dropped this share of the body height below its first-frame height")
-    parser.add_argument("--release-ease-frames", type=int, default=18, help="(kept for old commands; the fall length is chosen from 12, 18 and 26 frames)")
+    parser.add_argument("--release-drop", type=float, default=0.04, help="a release clip lets go of the weapon at the first frame of the fall: the pelvis starts to descend for good, or the hand has dropped this share of the body height below its first-frame height, whichever comes first")
+    parser.add_argument("--release-ease-frames", type=int, default=18, help="(kept for old commands, no longer used: the fall is a fixed 0.4 s tumble)")
     parser.add_argument("--dump-grip", type=Path, default=None, help="save the hand geometry the grip search works on (an .npz) for offline work")
     parser.add_argument("--diagonal-min", type=float, default=28.0, help="least angle (degrees) of the haft to the palm closing axis")
     parser.add_argument("--diagonal-max", type=float, default=55.0)
@@ -97,6 +103,7 @@ def parse_args():
     parser.add_argument("--weapon-bone", action="store_true", help="bind the weapon to its own bone (child of the hand) instead of the hand bone")
     parser.add_argument("--hold-hand", default="0.257,0.07,0.61", help="out, forward, up of the grip point, as shares of the body height")
     parser.add_argument("--hold-axis", default="0,0,1")
+    parser.add_argument("--ease-snaps", type=float, default=14.0, help="the degrees per frame above which the unit's intake eases a joint turn (tripo_intake.DEFAULT_EASE_SNAPS, the job's `ease_snaps`): the clips are eased the same way here, so the hand the clearance rule and the drop are judged on is the hand the exported clip has")
     parser.add_argument("--check-frames", type=int, default=6)
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -269,6 +276,12 @@ def step_degrees(a, b):
     return 2.0 * math.degrees(math.acos(min(1.0, abs(a.dot(b)))))
 
 
+def step_rates(values, frames):
+    """Degrees per frame between neighbouring keys."""
+
+    return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
+
+
 def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16):
     """Keep every bone's quaternions on one hemisphere and ease a snap over more frames.
 
@@ -282,10 +295,7 @@ def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, m
     for bone, curves in rotation_curves(action).items():
         quats = key_quaternions(curves)
         frames = [kp.co.x for kp in curves[0].keyframe_points]
-
-        def rates(values):
-            return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
-
+        rates = partial(step_rates, frames=frames)
         flips = 0
         for k in range(1, len(quats)):
             if quats[k].dot(quats[k - 1]) < 0:
@@ -315,192 +325,14 @@ def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, m
     return out
 
 
-def rotation_z(angle):
-    c, sn = math.cos(angle), math.sin(angle)
-    return np.array([[c, -sn, 0.0], [sn, c, 0.0], [0.0, 0.0, 1.0]])
+ARM_SCALES = (0.3, 1.0, 1.0, 1.0)  # how much of the solved rotation each of shoulder, arm, forearm and hand takes
+FOUR = ("Index", "Middle", "Ring", "Pinky")
 
 
-def release_weapon(arm, body, bone, hand, action, placed, centre, head_dir, blade, third, hand_rest, height, ease_frames, release_at=None):
-    """Let the weapon go in `action`: it turns about a pivot in the hand's frame and ends lying flat on the ground.
+def load_body(c):
+    """Import the rigged body, take its measures and put every bone at rest."""
 
-    The kit's animation import drops the location keys of every bone but the root, so the weapon bone can only
-    turn. A turn about a pivot far enough from the weapon carries it a long way, so: the place the weapon should
-    end in (lying flat, haft level, blade flat, beside the body, touching the ground) is searched, the pivot
-    and axis of the turn that carry the weapon from the hand to that place are solved for
-    (`lib.tripo_grip.pivot_for_motion`), the bone is moved to the pivot with its axis along the turn, and the
-    clip keys the turn: nothing until `release_at` (the frame the hand starts to fall), then an eased turn. Of
-    several fall lengths and delays the one whose path stays highest above the ground is kept.
-    """
-
-    scene = bpy.context.scene
-    use_action(arm, action)
-    f0, f1 = int(action.frame_range[0]), int(action.frame_range[1])
-    frames = list(range(f0, f1 + 1))
-    hand_inverse = np.linalg.inv(hand_rest)
-    attached, body_low, body_frames_all = [], [], []
-    for frame in frames:
-        scene.frame_set(frame)
-        attached.append(np.array(arm.matrix_world @ arm.pose.bones[PREFIX + hand].matrix) @ hand_inverse)
-        coords = evaluated_coords(body)
-        body_low.append(float(coords[:, 2].min()))
-        body_frames_all.append(coords)
-        last = coords
-    release = int(release_at) - f0 if release_at is not None else int(0.35 * (len(frames) - 1))
-    release = max(1, min(release, len(frames) - 8))
-    ground = body_low[-1] + 0.003
-    a_end = attached[-1]
-    r_a, t_a = a_end[:3, :3], a_end[:3, 3]
-    r0 = np.stack([head_dir, blade, third], axis=1)  # rest directions of the weapon's head, blade, third axes
-    offsets = placed - centre
-    weapon_sample = offsets[:: max(1, len(offsets) // 150)]
-    path_sample = offsets[:: max(1, len(offsets) // 120)]
-    body_sample = last[:: max(1, len(last) // 1500)]
-    candidates = []
-    # first a place well clear of the body (4% of the height: the body goes on moving after the landing), then, failing that, 1%
-    for clear_by in (0.04, 0.01):
-        for fh in (1.0, -1.0):
-            for b in (1.0, -1.0):
-                for psi in np.linspace(0.0, 2.0 * math.pi, 36, endpoint=False):
-                    basis = rotation_z(psi) @ np.stack([[fh, 0.0, 0.0], [0.0, b, 0.0], [0.0, 0.0, fh * b]], axis=1)
-                    r_w = basis @ r0.T
-                    r_d = r_a.T @ r_w
-                    axis, angle = G.rotation_axis_angle(r_d)
-                    if angle < 0.2:
-                        continue
-                    lying = offsets @ r_w.T
-                    zc = ground - float(lying[:, 2].min())
-                    u = r_a @ axis
-                    norm_xy = float(np.hypot(u[0], u[1]))
-                    if norm_xy < 0.05:
-                        continue
-                    rhs = float(u @ (r_w @ centre + t_a)) - float(u[2]) * zc
-                    base_xy = rhs * u[:2] / norm_xy ** 2
-                    line = np.array([-u[1], u[0]]) / norm_xy
-                    sample_lying = weapon_sample @ r_w.T
-                    found = None
-                    for step_s in np.arange(-1.0, 1.0, 0.02):
-                        cxy = base_xy + step_s * line
-                        points = sample_lying + np.array([cxy[0], cxy[1], zc])
-                        nearest = float(cc.nearest_vertex_distance(points, body_sample).min())
-                        if nearest < clear_by * height:
-                            continue
-                        if found is None or nearest < found[0]:
-                            found = (nearest, np.array([cxy[0], cxy[1], zc]))
-                    if found is not None:
-                        candidates.append((found[0], r_w, axis, angle, found[1], r_d))
-        if candidates:
-            break
-    if not candidates:
-        raise SystemExit("release_weapon: no resting place of the weapon on the ground can be reached by a turn about a pivot")
-    # The body goes on moving after the weapon lands: a resting place the body later sweeps through fails the check for the rest of the clip.
-    # Keep the places the body leaves alone for the frames after the landing (every third frame, about as clear as the clearest).
-    rest_judged = CL.sample_points(offsets[np.linalg.norm(offsets, axis=1) > CL.GRIP_RADIUS_SHARE * height], 100)
-    rest_frames = list(range(release + 6, len(frames), 3))
-    all_triangles = body_triangles(body)
-
-    def rest_penetration(candidate):
-        points = rest_judged @ candidate[1].T + candidate[4]
-        return max((CL.deep_share(points, body_frames_all[i], all_triangles, height) for i in rest_frames), default=0.0)
-
-    ranked = sorted((round(rest_penetration(c), 3), k) for k, c in enumerate(candidates))
-    candidates = [candidates[k] for value, k in ranked if value <= ranked[0][0] + 0.002][:40]
-
-    def path_clearance(axis, angle, pivot, delay, ease):
-        worst = 1e9
-        for index in range(len(frames)):
-            t = min(max((index - release - delay) / ease, 0.0), 1.0)
-            smooth = t * t * (3.0 - 2.0 * t)
-            r_t = G.rodrigues(axis, angle * smooth)
-            moved = ((path_sample + centre - pivot) @ r_t.T + pivot) @ attached[index][:3, :3].T + attached[index][:3, 3]
-            worst = min(worst, float(moved[:, 2].min()) - body_low[index])
-        return worst
-
-    # the resting place and the fall: prefer a path that never goes under the ground, then the place nearest the body
-    scored = []
-    for nearest, r_w, axis, angle, c_final, r_d in candidates:
-        t_d = r_a.T @ (c_final - r_w @ centre - t_a)
-        pivot = G.pivot_for_motion(r_d, t_d, centre)
-        if pivot is None:
-            continue
-        for ease in (12, 18, 26):
-            for delay in (0,):  # the weapon is let go at the release frame: the clearance rule judged the hand only up to it
-                if release + delay + ease > len(frames) - 1:
-                    continue
-                clearance = path_clearance(axis, angle, pivot, delay, ease)
-                scored.append((max(0.0, -0.004 - clearance), nearest, clearance, ease, delay, r_w, axis, angle, c_final, pivot))
-    if not scored:
-        raise SystemExit("release_weapon: no resting place has a pivot")
-    scored.sort(key=lambda row: (round(row[0], 3), row[1]))
-    # The fall must not cut through the body either (TRIPO-WEAPON-IN-BODY judges every frame): of the best options by ground clearance, the one
-    # whose path has the smallest share of weapon points deeper than 1% of the height inside the body.
-    judged = offsets[np.linalg.norm(offsets, axis=1) > CL.GRIP_RADIUS_SHARE * height]
-    judged = CL.sample_points(judged, 120)
-    body_triangles_all = body_triangles(body)
-
-    def path_in_body(row):
-        _p, _n, _c, ease_, delay_, _r, axis_, angle_, _cf, pivot_ = row
-        worst_share = 0.0
-        for index in range(release + delay_, len(frames)):
-            t = min(max((index - release - delay_) / ease_, 0.0), 1.0)
-            smooth_ = t * t * (3.0 - 2.0 * t)
-            r_t = G.rodrigues(axis_, angle_ * smooth_)
-            moved = ((judged + centre - pivot_) @ r_t.T + pivot_) @ attached[index][:3, :3].T + attached[index][:3, 3]
-            worst_share = max(worst_share, CL.deep_share(moved, body_frames_all[index], body_triangles_all, height))
-        return worst_share
-
-    best_row, best_key = scored[0], None
-    # only options about as clear of the ground as the best (a fall that sinks into the floor is not an answer to one that cuts the body)
-    near_best = [row for row in scored if row[0] <= scored[0][0] + 0.02][:60]
-    for rank, row in enumerate(near_best):
-        key = (round(path_in_body(row), 3), rank)
-        if best_key is None or key < best_key:
-            best_key, best_row = key, row
-    _pen, nearest_at_rest, clearance, ease, delay, r_w, axis, angle, c_final, pivot = best_row
-
-    # the bone: head at the pivot, axis along the turn
-    bpy.ops.object.select_all(action="DESELECT")
-    arm.select_set(True)
-    bpy.context.view_layer.objects.active = arm
-    bpy.ops.object.mode_set(mode="EDIT")
-    inverse_arm = np.linalg.inv(np.array(arm.matrix_world))
-    edit_bone = arm.data.edit_bones[bone]
-    edit_bone.head = Vector(inverse_arm[:3, :3] @ pivot + inverse_arm[:3, 3])
-    edit_bone.tail = Vector(inverse_arm[:3, :3] @ (pivot + axis * 0.08 * height) + inverse_arm[:3, 3])
-    edit_bone.roll = 0.0
-    bpy.ops.object.mode_set(mode="OBJECT")
-    pb = arm.pose.bones[bone]
-    pb.rotation_mode = "QUATERNION"
-    bpy.context.view_layer.update()
-    for index, frame in enumerate(frames):
-        if 0 < index < release + delay - 1:
-            continue
-        scene.frame_set(frame)
-        t = min(max((index - release - delay) / ease, 0.0), 1.0)
-        smooth = t * t * (3.0 - 2.0 * t)
-        pb.rotation_quaternion = Quaternion((0.0, 1.0, 0.0), angle * smooth)  # about the bone's own axis, which lies along the turn
-        pb.keyframe_insert("rotation_quaternion", frame=frame)
-    pb.rotation_quaternion = Quaternion((1.0, 0.0, 0.0, 0.0))
-    scene.frame_set(f1)
-    tri = body_triangles(body)
-    final_points = (offsets + centre - pivot) @ G.rodrigues(axis, angle).T + pivot
-    final_points = final_points @ r_a.T + t_a
-    sample = final_points[:: max(1, len(final_points) // 600)]
-    inside = float(np.mean(cc.points_inside_mesh(sample, last[tri])))
-    nearest = float(cc.nearest_vertex_distance(sample, last[:: max(1, len(last) // 3000)]).min())
-    return {
-        "release_frame": frames[release + delay], "fall_frames": ease, "turn_degrees": round(math.degrees(angle), 1),
-        "pivot_in_rest_frame": np.round(pivot, 3).tolist(), "axis": np.round(axis, 3).tolist(),
-        "rest_position_of_grip_point": np.round(c_final, 3).tolist(),
-        "lowest_weapon_point_at_rest_minus_ground": round(float(final_points[:, 2].min()) - body_low[-1], 4),
-        "least_clearance_over_body_lowest_during_fall": round(clearance, 4),
-        "weapon_points_inside_body_at_rest_share": round(inside, 4), "nearest_to_body_at_rest": round(nearest, 4),
-        "body_lowest_first_last": [round(body_low[0], 3), round(body_low[-1], 3)],
-    }
-
-
-def main():
-    args = parse_args()
-    hand = args.hand
+    args, hand = c.args, c.hand
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(args.body))
     armature_objects = [o for o in bpy.data.objects if o.type == "ARMATURE"]
@@ -511,16 +343,14 @@ def main():
     body = skinned[0]
     for obj in [o for o in bpy.data.objects if o.type == "MESH" and o is not body]:
         bpy.data.objects.remove(obj, do_unlink=True)  # the importer's bone-shape sphere
-    scene = bpy.context.scene
-    report = {"tool": "grip_weapon", "body": args.body.name, "weapon": args.weapon.name, "hand": hand}
-
-    rest_coords = world_array(body, mesh_coords(body))
-    height = float(np.ptp(rest_coords[:, 2]))
-    ground = float(rest_coords[:, 2].min())
-    centre_x = float(rest_coords[:, 0].mean())
-    report["body_height"] = round(height, 4)
-    report["finger_rotation_in_clips_degrees"] = finger_activity(arm, hand)
-    report["hand_vs_shoulder_in_clips"] = hand_positions(arm, hand)
+    c.arm, c.body, c.scene = arm, body, bpy.context.scene
+    c.rest_coords = world_array(body, mesh_coords(body))
+    c.height = float(np.ptp(c.rest_coords[:, 2]))
+    c.ground = float(c.rest_coords[:, 2].min())
+    c.centre_x = float(c.rest_coords[:, 0].mean())
+    c.report["body_height"] = round(c.height, 4)
+    c.report["finger_rotation_in_clips_degrees"] = finger_activity(arm, hand)
+    c.report["hand_vs_shoulder_in_clips"] = hand_positions(arm, hand)
     arm.animation_data_create()
     arm.animation_data.action = None
     for pb in arm.pose.bones:
@@ -530,32 +360,38 @@ def main():
         pb.scale = (1, 1, 1)
     bpy.context.view_layer.update()
 
-    # ---- the hand's frame -----------------------------------------------------------------------
-    wrist = rest_head(arm, PREFIX + hand)
-    base = {f: rest_head(arm, finger_names(hand, f)[0]) for f in FINGERS}
-    closing = G.unit(base["Pinky"] - base["Index"])
-    knuckles = np.mean([base[f] for f in ("Index", "Middle", "Ring", "Pinky")], axis=0)
-    forward = G.unit(base["Middle"] - wrist)
-    normal0 = G.unit(np.cross(closing, forward))
-    palm_centre = 0.5 * (knuckles + wrist) * 0.4 + 0.6 * knuckles
-    thumb_side = float((base["Thumb"] - palm_centre) @ normal0)
-    normal = normal0 if thumb_side >= 0 else -normal0
-    report["palm"] = {"closing_index_to_pinky": np.round(closing, 3).tolist(), "fingers_forward": np.round(forward, 3).tolist(),
-                      "normal_to_palm_side": np.round(normal, 3).tolist(), "thumb_offset_along_normal": round(thumb_side, 4)}
 
+def find_hand_frame(c):
+    """The hand's frame: closing axis (index to pinky), forward, palm normal and the palm's surface."""
+
+    arm, body, hand, height, rest_coords = c.arm, c.body, c.hand, c.height, c.rest_coords
+    c.wrist = wrist = rest_head(arm, PREFIX + hand)
+    c.base = base = {f: rest_head(arm, finger_names(hand, f)[0]) for f in FINGERS}
+    c.closing = closing = G.unit(base["Pinky"] - base["Index"])
+    knuckles = np.mean([base[f] for f in FOUR], axis=0)
+    c.forward = forward = G.unit(base["Middle"] - wrist)
+    normal0 = G.unit(np.cross(closing, forward))
+    c.palm_centre = palm_centre = 0.5 * (knuckles + wrist) * 0.4 + 0.6 * knuckles
+    thumb_side = float((base["Thumb"] - palm_centre) @ normal0)
+    c.normal = normal = normal0 if thumb_side >= 0 else -normal0
+    c.report["palm"] = {"closing_index_to_pinky": np.round(closing, 3).tolist(), "fingers_forward": np.round(forward, 3).tolist(),
+                        "normal_to_palm_side": np.round(normal, 3).tolist(), "thumb_offset_along_normal": round(thumb_side, 4)}
     family = [g.name for g in body.vertex_groups if g.name.startswith(PREFIX + hand)]
-    groups = dominant_groups(body)
-    hand_mask = np.isin(groups, family)
-    hand_points = rest_coords[hand_mask]
+    c.groups = groups = dominant_groups(body)
+    c.hand_points = rest_coords[np.isin(groups, family)]
     # the palm itself: the vertices that follow the hand bone and no finger, near the palm (a bracer or a limb
     # that happens to be close would put the surface far out)
     own = rest_coords[groups == PREFIX + hand]
     in_plane = np.linalg.norm((own - palm_centre) - np.outer((own - palm_centre) @ normal, normal), axis=1)
-    near_palm = own[in_plane < 0.06 * height]
-    palm_surface = float(np.percentile((near_palm - palm_centre) @ normal, 90)) if len(near_palm) else 0.0
-    report["palm"]["surface_offset"] = round(palm_surface, 4)
+    c.near_palm = near_palm = own[in_plane < 0.06 * height]
+    c.palm_surface = float(np.percentile((near_palm - palm_centre) @ normal, 90)) if len(near_palm) else 0.0
+    c.report["palm"]["surface_offset"] = round(c.palm_surface, 4)
 
-    # ---- each finger's skin and the bone it follows ---------------------------------------------------
+
+def find_finger_skins(c):
+    """Each finger's skin and the bone it follows."""
+
+    arm, body, hand, height, rest_coords = c.arm, c.body, c.hand, c.height, c.rest_coords
     weights_by_group = {}
     for g in body.vertex_groups:
         if g.name.startswith(PREFIX + hand):
@@ -565,120 +401,141 @@ def main():
                     if item.group == g.index:
                         column[v.index] = item.weight
             weights_by_group[g.name] = column
-    finger_index, finger_level, finger_tip = {}, {}, {}
+    c.finger_index, c.finger_level, c.finger_tip = {}, {}, {}
     for finger in FINGERS:
         names = finger_names(hand, finger)
         stack = np.array([weights_by_group.get(n, np.zeros(len(rest_coords))) for n in names])
-        share = stack.sum(axis=0)
-        index = np.where(share > 0.5)[0]
+        index = np.where(stack.sum(axis=0) > 0.5)[0]
         # only skin near the finger's own bones: a stray vertex weighted to a finger (a bracer edge, a seam) would
         # stop the curl at the first touch and sit far from the haft in every check
         chain = np.array([rest_head(arm, n) for n in names] + [rest_tail(arm, names[3])])
         near = np.linalg.norm(rest_coords[index][:, None, :] - G.segment_points(chain, 8)[None, :, :], axis=2).min(axis=1) < 0.06 * height
-        report.setdefault("finger_skin_dropped_as_stray", {})[finger] = int((~near).sum())
+        c.report.setdefault("finger_skin_dropped_as_stray", {})[finger] = int((~near).sum())
         index = index[near]
-        stack = stack[:, index]
-        finger_index[finger] = index
-        finger_level[finger] = stack.argmax(axis=0)
+        c.finger_index[finger] = index
+        c.finger_level[finger] = stack[:, index].argmax(axis=0)
         base_joint = rest_head(arm, names[0])
-        finger_tip[finger] = int(np.argmax(np.linalg.norm(rest_coords[index] - base_joint, axis=1)))  # index into `index`
+        c.finger_tip[finger] = int(np.argmax(np.linalg.norm(rest_coords[index] - base_joint, axis=1)))  # index into `index`
 
-    # ---- the weapon -------------------------------------------------------------------------------
+
+def load_weapon(c):
+    """Import the weapon, scale it to `--length-ratio` of the body height and measure its haft."""
+
+    args, height = c.args, c.height
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=str(args.weapon))
     weapon_objects = [o for o in bpy.data.objects if o not in before and o.type == "MESH"]
     if len(weapon_objects) != 1:
         raise SystemExit(f"Expected one weapon mesh, found {[o.name for o in weapon_objects]}")
-    weapon = weapon_objects[0]
+    c.weapon = weapon_objects[0]
     for obj in [o for o in bpy.data.objects if o not in before and o.type != "MESH"]:
         bpy.data.objects.remove(obj, do_unlink=True)
-    w_world = world_array(weapon, mesh_coords(weapon))
+    w_world = world_array(c.weapon, mesh_coords(c.weapon))
     axes = A.weapon_axes(w_world, args.grip)
-    scale = args.length_ratio * height / axes["length"]
-    local = scale * ((w_world - axes["grip_point"]) @ axes["axes"])  # (along the haft to the head, blade, third)
-    radius = G.haft_radius(local, np.zeros(3), np.array([1.0, 0.0, 0.0]), 0.0, 0.03 * args.length_ratio * height)
+    c.scale = args.length_ratio * height / axes["length"]
+    c.local = c.scale * ((w_world - axes["grip_point"]) @ axes["axes"])  # (along the haft to the head, blade, third)
+    c.radius = G.haft_radius(c.local, np.zeros(3), np.array([1.0, 0.0, 0.0]), 0.0, 0.03 * args.length_ratio * height)
 
-    # ---- a power grip: the haft lies diagonally across the palm ------------------------------------------
-    # From the base of the little finger to the web between thumb and index finger. The haft is seated into the palm
-    # until the palm pad touches it, all four fingers wrap round it with the curl spread over all three joints,
-    # and the thumb closes from the other side and rests on the fingers. The place of the haft is searched:
-    # where the line starts on the little-finger side, where it ends in the web, and how deep it sits.
-    fingers_forward = G.unit(forward - (forward @ closing) * closing)
-    joints_rest = {f: np.array([rest_head(arm, n) for n in finger_names(hand, f)]) for f in FINGERS}
-    skin_rest = {f: rest_coords[finger_index[f]] for f in FINGERS}
-    tolerance = 0.0015 * height
-    four = ("Index", "Middle", "Ring", "Pinky")
-    palm_skin = near_palm[(near_palm - palm_centre) @ normal > palm_surface - 0.02 * height]
 
+def haft_line(c, l0, mu, delta, back=0.0):
+    """A haft line across the palm: from `l0` along wrist-to-pinky to `mu` along index-to-thumb, seated `delta` off the palm surface."""
+
+    start_point = c.wrist + l0 * (c.base["Pinky"] - c.wrist)
+    web = c.base["Index"] + mu * (c.base["Thumb"] - c.base["Index"]) - back * c.fingers_forward
+    direction = G.unit(web - start_point)
+    direction = G.unit(direction - (direction @ c.normal) * c.normal)
+    middle = 0.5 * (start_point + web)
+    middle = middle - ((middle - c.palm_centre) @ c.normal) * c.normal + c.normal * (c.palm_surface + c.radius + delta)
+    return middle, direction
+
+
+def palm_cost(c, point, direction):
+    gap = G.signed_gaps(c.palm_skin, point, direction, c.radius)
+    return 4.0 * max(float(gap.min()), 0.0) + 20.0 * max(-float(gap.min()) - 0.003 * c.height, 0.0) if len(gap) else 0.0
+
+
+def solve_four(c, point, direction, step):
+    results, total = {}, 0.0
+    for finger in FOUR:
+        results[finger] = G.solve_finger(c.joints_rest[finger], c.skin_rest[finger], c.finger_level[finger], point, direction, c.radius,
+                                         c.closing, c.normal, c.tolerance, step=step)
+        total += results[finger]["cost"]
+    return total + palm_cost(c, point, direction), results
+
+
+def dump_grip(c):
+    """Save the hand geometry the grip search works on (an .npz) for offline work."""
+
+    near = np.linalg.norm(c.rest_coords - c.palm_centre, axis=1) < 0.15 * c.height
+    arrays = {"height": c.height, "radius": c.radius, "palm_surface": c.palm_surface, "palm_centre": c.palm_centre, "normal": c.normal,
+              "closing": c.closing, "forward": c.forward, "wrist": c.wrist, "palm_skin": c.palm_skin, "hand_points": c.hand_points,
+              "near_points": c.rest_coords[near], "near_groups": np.array(c.groups)[near]}
+    for f in FINGERS:
+        arrays[f"joints_{f}"], arrays[f"skin_{f}"], arrays[f"level_{f}"], arrays[f"base_{f}"] = c.joints_rest[f], c.skin_rest[f], c.finger_level[f], c.base[f]
+    np.savez(c.args.dump_grip, **arrays)
+
+
+def search_grip(c):
+    """A power grip: the haft lies diagonally across the palm.
+
+    From the base of the little finger to the web between thumb and index finger. The haft is seated into the palm until the palm pad touches
+    it, all four fingers wrap round it with the curl spread over all three joints, and the thumb closes from the other side and rests on the
+    fingers. The place of the haft is searched: where the line starts on the little-finger side, where it ends in the web, and how deep it sits.
+    """
+
+    args, hand, height = c.args, c.hand, c.height
+    c.fingers_forward = G.unit(c.forward - (c.forward @ c.closing) * c.closing)
+    c.joints_rest = {f: np.array([rest_head(c.arm, n) for n in finger_names(hand, f)]) for f in FINGERS}
+    c.skin_rest = {f: c.rest_coords[c.finger_index[f]] for f in FINGERS}
+    c.tolerance = 0.0015 * height
+    c.palm_skin = c.near_palm[(c.near_palm - c.palm_centre) @ c.normal > c.palm_surface - 0.02 * height]
     if args.dump_grip:
-        arrays = {"height": height, "radius": radius, "palm_surface": palm_surface, "palm_centre": palm_centre, "normal": normal, "closing": closing,
-                  "forward": forward, "wrist": wrist, "palm_skin": palm_skin, "hand_points": hand_points,
-                  "near_points": rest_coords[np.linalg.norm(rest_coords - palm_centre, axis=1) < 0.15 * height],
-                  "near_groups": np.array(groups)[np.linalg.norm(rest_coords - palm_centre, axis=1) < 0.15 * height]}
-        for f in FINGERS:
-            arrays[f"joints_{f}"], arrays[f"skin_{f}"], arrays[f"level_{f}"], arrays[f"base_{f}"] = joints_rest[f], skin_rest[f], finger_level[f], base[f]
-        np.savez(args.dump_grip, **arrays)
-
-    def haft_line(l0, mu, delta, back=0.0):
-        start_point = wrist + l0 * (base["Pinky"] - wrist)
-        web = base["Index"] + mu * (base["Thumb"] - base["Index"]) - back * fingers_forward
-        direction = G.unit(web - start_point)
-        direction = G.unit(direction - (direction @ normal) * normal)
-        middle = 0.5 * (start_point + web)
-        middle = middle - ((middle - palm_centre) @ normal) * normal + normal * (palm_surface + radius + delta)
-        return middle, direction
-
-    def palm_cost(point, direction):
-        gap = G.signed_gaps(palm_skin, point, direction, radius)
-        return 4.0 * max(float(gap.min()), 0.0) + 20.0 * max(-float(gap.min()) - 0.003 * height, 0.0) if len(gap) else 0.0
-
-    def solve_four(point, direction, step):
-        results, total = {}, 0.0
-        for finger in four:
-            results[finger] = G.solve_finger(joints_rest[finger], skin_rest[finger], finger_level[finger], point, direction, radius,
-                                             closing, normal, tolerance, step=step)
-            total += results[finger]["cost"]
-        return total + palm_cost(point, direction), results
-
+        dump_grip(c)
     candidates = []
     for l0 in (0.1, 0.25, 0.4, 0.55):
         for mu in (0.05, 0.2, 0.35, 0.5, 0.7):
             for delta in (-0.008, -0.004, 0.0, 0.004, 0.008):
                 for back in (0.0, 0.01):
-                    point, direction = haft_line(l0, mu, delta * height, back * height)
-                    diagonal = float(np.degrees(np.arccos(min(abs(float(direction @ closing)), 1.0))))
-                    if not (args.diagonal_min <= diagonal <= args.diagonal_max):
-                        continue
-                    total, _r = solve_four(point, direction, 15.0)
-                    candidates.append((total, l0, mu, delta, back))
+                    point, direction = haft_line(c, l0, mu, delta * height, back * height)
+                    diagonal = float(np.degrees(np.arccos(min(abs(float(direction @ c.closing)), 1.0))))
+                    if args.diagonal_min <= diagonal <= args.diagonal_max:
+                        total, _r = solve_four(c, point, direction, 15.0)
+                        candidates.append((total, l0, mu, delta, back))
     if not candidates:
         raise SystemExit("No haft line across the palm lies between the diagonal limits; widen --diagonal-min/--diagonal-max")
     candidates.sort()
-    _total, best_l0, best_mu, best_delta, best_back = candidates[0]
-    haft_centre, axis_direction = haft_line(best_l0, best_mu, best_delta * height, best_back * height)
-    cost, results = solve_four(haft_centre, axis_direction, 10.0)
-    head_dir = axis_direction if args.head_toward == "index" else -axis_direction
-    blade = G.rodrigues(head_dir, np.radians(args.roll)) @ normal
-    third = np.cross(head_dir, blade)
-    placed = haft_centre + local[:, 0:1] * head_dir + local[:, 1:2] * blade + local[:, 2:3] * third
+    c.candidates = candidates
+    _total, c.best_l0, c.best_mu, c.best_delta, c.best_back = candidates[0]
+    c.haft_centre, c.axis_direction = haft_line(c, c.best_l0, c.best_mu, c.best_delta * height, c.best_back * height)
+    c.fit_cost, c.results = solve_four(c, c.haft_centre, c.axis_direction, 10.0)
+    c.head_dir = c.axis_direction if args.head_toward == "index" else -c.axis_direction
+    c.blade = G.rodrigues(c.head_dir, np.radians(args.roll)) @ c.normal
+    c.third = np.cross(c.head_dir, c.blade)
+    c.placed = c.haft_centre + c.local[:, 0:1] * c.head_dir + c.local[:, 1:2] * c.blade + c.local[:, 2:3] * c.third
 
-    # the thumb: closes from the opposite side, round the haft and over the fingers
-    obstacle_points = np.concatenate([results[f]["skin"] for f in four])
+
+def close_thumb(c):
+    """The thumb: closes from the opposite side, round the haft and over the fingers."""
+
+    results, finger_level = c.results, c.finger_level
+    obstacle_points = np.concatenate([results[f]["skin"] for f in FOUR])
     obstacle_points = obstacle_points[:: max(1, len(obstacle_points) // 300)]
-    tip_masks = {f: finger_level[f] == finger_level[f].max() for f in four}
-    fingertip_side = G.unit(np.mean([G.radial_unit(results[f]["skin"][tip_masks[f]].mean(axis=0), haft_centre, axis_direction) for f in four], axis=0))
-    middle_segments_posed = np.concatenate([results[f]["skin"][finger_level[f] == 1] for f in ("Index", "Middle")])
-    results["Thumb"] = G.solve_thumb(joints_rest["Thumb"], skin_rest["Thumb"], finger_level["Thumb"], haft_centre, axis_direction, radius,
-                                     obstacle_points, tolerance=0.003 * height, target_skin=middle_segments_posed, away_from=fingertip_side)
+    tip_masks = {f: finger_level[f] == finger_level[f].max() for f in FOUR}
+    c.fingertip_side = G.unit(np.mean([G.radial_unit(results[f]["skin"][tip_masks[f]].mean(axis=0), c.haft_centre, c.axis_direction) for f in FOUR], axis=0))
+    c.middle_segments_posed = np.concatenate([results[f]["skin"][finger_level[f] == 1] for f in ("Index", "Middle")])
+    results["Thumb"] = G.solve_thumb(c.joints_rest["Thumb"], c.skin_rest["Thumb"], finger_level["Thumb"], c.haft_centre, c.axis_direction, c.radius,
+                                     obstacle_points, tolerance=0.003 * c.height, target_skin=c.middle_segments_posed, away_from=c.fingertip_side)
     for finger in FINGERS:
         results[finger]["why"] = ["fitted"] * 3
 
-    # what the grip looks like, in numbers: for every finger the gap of its tip and its deepest skin to the haft surface
+
+def describe_grip(c):
+    """What the grip looks like, in numbers: for every finger the gap of its tip and its deepest skin to the haft surface."""
+
+    results, finger_level, haft_centre, axis_direction, radius, args = c.results, c.finger_level, c.haft_centre, c.axis_direction, c.radius, c.args
+
     def tip_of(finger):
         return finger_level[finger] == finger_level[finger].max()
-
-    def radial_from_palm(point):
-        return G.radial_angle(point, haft_centre, axis_direction, normal)
 
     grip_numbers = {}
     for finger in FINGERS:
@@ -688,51 +545,49 @@ def main():
         grip_numbers[finger] = {
             "tip_gap_to_haft": round(float(gap[tip_of(finger)].min()) if (tip_of(finger)).any() else float("nan"), 4),
             "deepest_skin_in_haft": round(float(-gap.min()), 4),
-            "angle_around_haft_from_palm_normal_degrees": round(radial_from_palm(tip), 1),
+            "angle_around_haft_from_palm_normal_degrees": round(G.radial_angle(tip, haft_centre, axis_direction, c.normal), 1),
             "tip_along_haft_from_grip_point": round(float((tip - haft_centre) @ axis_direction), 4),
-            "tip_position_in_hand_frame": [round(float((tip - palm_centre) @ v), 4) for v in (fingers_forward, closing, normal)],
+            "tip_position_in_hand_frame": [round(float((tip - c.palm_centre) @ v), 4) for v in (c.fingers_forward, c.closing, c.normal)],
         }
     thumb_tip_pts = results["Thumb"]["skin"][tip_of("Thumb")]
     thumb_tip = thumb_tip_pts.mean(axis=0) if len(thumb_tip_pts) else results["Thumb"]["joints"][3]
-    finger_tips_mean = [np.mean(results[f]["skin"][tip_of(f)], axis=0) for f in four if (tip_of(f)).any()]
+    finger_tips_mean = [np.mean(results[f]["skin"][tip_of(f)], axis=0) for f in FOUR if (tip_of(f)).any()]
     middle_segments = np.concatenate([results[f]["skin"][finger_level[f] == 1] for f in ("Index", "Middle")])
     grip_numbers["thumb_opposition_degrees_from_fingers_side"] = round(G.opposite_sides(finger_tips_mean, thumb_tip, haft_centre, axis_direction), 1)
     grip_numbers["thumb_tip_to_index_middle_middle_segments"] = round(float(np.linalg.norm(thumb_tip_pts[:, None, :] - middle_segments[None, :, :], axis=2).min()), 4) if len(thumb_tip_pts) else None
-    grip_numbers["palm_pad_gap_to_haft"] = round(float(G.signed_gaps(palm_skin, haft_centre, axis_direction, radius).min()), 4) if len(palm_skin) else None
-    report["grip"] = grip_numbers
-    report["weapon_placement"] = {"scale": round(scale, 4), "haft_radius": round(radius, 4), "grip_share": args.grip, "length_ratio": args.length_ratio,
-                                  "haft_centre": np.round(haft_centre, 4).tolist(), "head_direction": np.round(head_dir, 3).tolist(), "roll_degrees": args.roll,
-                                  "diagonal_from_closing_axis_degrees": round(float(np.degrees(np.arccos(abs(float(axis_direction @ closing))))), 1),
-                                  "start_on_little_finger_side": best_l0, "end_in_web": best_mu, "depth_offset": best_delta, "fit_cost": round(cost, 4),
-                                  "search_best_three": [{"cost": round(c, 4), "l0": a, "mu": m, "delta": d, "back": b} for c, a, m, d, b in candidates[:3]]}
-    tip_points, curl = {}, {}
+    grip_numbers["palm_pad_gap_to_haft"] = round(float(G.signed_gaps(c.palm_skin, haft_centre, axis_direction, radius).min()), 4) if len(c.palm_skin) else None
+    c.report["grip"] = grip_numbers
+    c.report["weapon_placement"] = {"scale": round(c.scale, 4), "haft_radius": round(radius, 4), "grip_share": args.grip, "length_ratio": args.length_ratio,
+                                    "haft_centre": np.round(haft_centre, 4).tolist(), "head_direction": np.round(c.head_dir, 3).tolist(), "roll_degrees": args.roll,
+                                    "diagonal_from_closing_axis_degrees": round(float(np.degrees(np.arccos(abs(float(axis_direction @ c.closing))))), 1),
+                                    "start_on_little_finger_side": c.best_l0, "end_in_web": c.best_mu, "depth_offset": c.best_delta, "fit_cost": round(c.fit_cost, 4),
+                                    "search_best_three": [{"cost": round(k, 4), "l0": a, "mu": m, "delta": d, "back": b} for k, a, m, d, b in c.candidates[:3]]}
+
+
+def pose_and_bake_fingers(c):
+    """Close the fingers, bake the fist into the body's rest shape, put the finger bones back to rest and drop their channels from the clips."""
+
+    arm, body, hand = c.arm, c.body, c.hand
+    curl = {}
     for finger in FINGERS:
         names = finger_names(hand, finger)
-        result = results[finger]
+        result = c.results[finger]
         for i in range(3):
             if abs(result["angles"][i]) > 1e-9:
                 set_pose_matrix(arm, names[i], result["axes"][i], result["angles"][i], np.array(arm.matrix_world @ arm.pose.bones[names[i]].head))
         curl[finger] = {"angles_degrees": [round(math.degrees(a), 1) for a in result["angles"]], "stopped_by": result["why"]}
-        tip_points[finger] = None
-    report["curl"] = curl
-
-    # ---- bake the fist into the body's rest shape, finger bones back to rest ------------------------------
+    c.report["curl"] = curl
     posed = evaluated_coords(body)
-    moved = np.linalg.norm(posed - rest_coords, axis=1)
-    report["baked"] = {"vertices_moved": int((moved > 1e-6).sum()), "largest_move": round(float(moved.max()), 4)}
+    moved = np.linalg.norm(posed - c.rest_coords, axis=1)
+    c.report["baked"] = {"vertices_moved": int((moved > 1e-6).sum()), "largest_move": round(float(moved.max()), 4)}
     inverse = np.linalg.inv(np.array(body.matrix_world))
-    local_baked = posed @ inverse[:3, :3].T + inverse[:3, 3]
-    body.data.vertices.foreach_set("co", local_baked.ravel())
+    body.data.vertices.foreach_set("co", (posed @ inverse[:3, :3].T + inverse[:3, 3]).ravel())
     body.data.update()
     for finger in FINGERS:
         for name in finger_names(hand, finger):
-            pb = arm.pose.bones[name]
-            pb.rotation_quaternion = (1, 0, 0, 0)
+            arm.pose.bones[name].rotation_quaternion = (1, 0, 0, 0)
     bpy.context.view_layer.update()
-    again = evaluated_coords(body)
-    report["baked"]["rest_after_reset_matches"] = bool(np.abs(again - posed).max() < 1e-5)
-    fist_world = posed
-
+    c.report["baked"]["rest_after_reset_matches"] = bool(np.abs(evaluated_coords(body) - posed).max() < 1e-5)
     # finger channels leave the clips: the clips pose the fingers, the fist is the rest shape
     dropped = 0
     drop_names = {n for finger in FINGERS for n in finger_names(hand, finger)}
@@ -742,161 +597,218 @@ def main():
             if bone in drop_names:
                 container.remove(fcurve)
                 dropped += 1
-    report["finger_channels_dropped"] = dropped
+    c.report["finger_channels_dropped"] = dropped
 
-    # ---- place the weapon, bind it rigidly to the hand --------------------------------------------
+
+def add_weapon_bone(c, name):
+    """The weapon's own bone, a child of the hand at the grip point, so a clip can let it go."""
+
+    arm = c.arm
+    bpy.ops.object.select_all(action="DESELECT")
+    arm.select_set(True)
+    bpy.context.view_layer.objects.active = arm
+    bpy.ops.object.mode_set(mode="EDIT")
+    edit_bone = arm.data.edit_bones.new(name)
+    inverse_arm = np.linalg.inv(np.array(arm.matrix_world))
+    head_local = inverse_arm[:3, :3] @ c.haft_centre + inverse_arm[:3, 3]
+    tail_local = inverse_arm[:3, :3] @ (c.haft_centre + c.head_dir * 0.08 * c.height) + inverse_arm[:3, 3]
+    edit_bone.head, edit_bone.tail = Vector(head_local), Vector(tail_local)
+    edit_bone.parent = arm.data.edit_bones[PREFIX + c.hand]
+    edit_bone.use_connect = False
+    bpy.ops.object.mode_set(mode="OBJECT")
+    arm.pose.bones[name].rotation_mode = "QUATERNION"
+    bpy.context.view_layer.update()
+
+
+def bind_weapon(c):
+    """Place the weapon in the closed hand and bind it rigidly to the hand (or to its own bone)."""
+
+    arm, body, weapon, hand = c.arm, c.body, c.weapon, c.hand
+    if abs(float(arm.matrix_world.to_scale()[0]) - 1.0) > 1e-4:
+        raise SystemExit("the armature object is scaled; the weapon bone keys assume unit scale")
     inverse_w = np.linalg.inv(np.array(weapon.matrix_world))
-    weapon.data.vertices.foreach_set("co", (placed @ inverse_w[:3, :3].T + inverse_w[:3, 3]).ravel())
+    weapon.data.vertices.foreach_set("co", (c.placed @ inverse_w[:3, :3].T + inverse_w[:3, 3]).ravel())
     weapon.data.update()
     weapon.parent = arm
     weapon.matrix_parent_inverse = arm.matrix_world.inverted()
     bind_bone = PREFIX + hand
-    if args.weapon_bone:
-        # The weapon gets its own bone, a child of the hand at the grip point, so a clip can let it go.
+    if c.args.weapon_bone:
         bind_bone = PREFIX + WEAPON_BONE
-        bpy.ops.object.select_all(action="DESELECT")
-        arm.select_set(True)
-        bpy.context.view_layer.objects.active = arm
-        bpy.ops.object.mode_set(mode="EDIT")
-        edit_bone = arm.data.edit_bones.new(bind_bone)
-        inverse_arm = np.linalg.inv(np.array(arm.matrix_world))
-        head_local = inverse_arm[:3, :3] @ haft_centre + inverse_arm[:3, 3]
-        tail_local = inverse_arm[:3, :3] @ (haft_centre + head_dir * 0.08 * height) + inverse_arm[:3, 3]
-        edit_bone.head, edit_bone.tail = Vector(head_local), Vector(tail_local)
-        edit_bone.parent = arm.data.edit_bones[PREFIX + hand]
-        edit_bone.use_connect = False
-        bpy.ops.object.mode_set(mode="OBJECT")
-        arm.pose.bones[bind_bone].rotation_mode = "QUATERNION"
-        bpy.context.view_layer.update()
+        add_weapon_bone(c, bind_bone)
     hand_group = weapon.vertex_groups.new(name=bind_bone)
     hand_group.add(list(range(len(weapon.data.vertices))), 1.0, "REPLACE")
     modifier = weapon.modifiers.new("Armature", "ARMATURE")
     modifier.object = arm
     weapon.name, weapon.data.name = "tripo_part_1", "tripo_part_1"
     body.name, body.data.name = "tripo_part_0", "tripo_part_0"
-
     # the haft's axis, carried with the hand bone: (point, direction) at rest
-    hand_bone = arm.data.bones[PREFIX + hand]
-    hand_rest = np.array(arm.matrix_world @ hand_bone.matrix_local)
+    c.hand_rest = np.array(arm.matrix_world @ arm.data.bones[PREFIX + hand].matrix_local)
 
-    def haft_now(frame_pose=True):
-        pb = arm.pose.bones[PREFIX + hand]
-        m = np.array(arm.matrix_world @ pb.matrix) @ np.linalg.inv(hand_rest)
-        return m[:3, :3] @ haft_centre + m[:3, 3], m[:3, :3] @ head_dir
 
-    # ---- the arm hold ------------------------------------------------------------------------------
+def hold_fade_frame(c, action, drop):
+    """The frame by which the arm hold has faded out in a clip that fades it.
+
+    A clip that lets go of the weapon (`drop`) fades it by the first frame of the fall (`lib/tripo_clearance.fall_start_frame`: the pelvis
+    starts to descend for good, or the hand has dropped `--release-drop` of the height, whichever comes first), which is also the frame the
+    weapon is let go. A fade clip that only holds the weapon up fades it by the frame the hand starts to rise (5% of the height).
+    """
+
+    arm, scene, hand, height, args = c.arm, c.scene, c.hand, c.height, c.args
+    f0, f1 = int(action.frame_range[0]), int(action.frame_range[1])
+    use_action(arm, action)
+    if drop:
+        pelvis, hand_height = [], []
+        for frame in range(f0, f1 + 1):
+            scene.frame_set(frame)
+            pelvis.append(float((arm.matrix_world @ arm.pose.bones[PREFIX + "Hips"].head).z))
+            hand_height.append(float((arm.matrix_world @ arm.pose.bones[PREFIX + hand].head).z))
+        fall = f0 + CL.fall_start_frame(pelvis, hand_height, height, args.release_drop)
+        scene.frame_set(f0)
+        return min(max(fall, f0 + 6), f1 - 7)
+    scene.frame_set(f0)
+    start_z = float((arm.matrix_world @ arm.pose.bones[PREFIX + hand].head).z)
+    fade_to = f0 + 12
+    for frame in range(f0, f1 + 1):
+        scene.frame_set(frame)
+        if float((arm.matrix_world @ arm.pose.bones[PREFIX + hand].head).z) > start_z + 0.05 * height:
+            fade_to = max(frame, f0 + 6)
+            break
+    scene.frame_set(f0)
+    return fade_to
+
+
+def multiply_hold_into_keys(arm, action, offsets, fade_to):
+    """Multiply each bone's hold offset into every key of its rotation channels, fading it out by `fade_to` when given."""
+
+    f0 = int(action.frame_range[0])
+    for bone, q_off in offsets.items():
+        curves = {}
+        for fcurve, _c in action_fcurves(action):
+            if fcurve.data_path == f'pose.bones["{bone}"].rotation_quaternion':
+                curves[fcurve.array_index] = fcurve
+        if len(curves) != 4:
+            raise SystemExit(f"{action.name}: {bone} has {len(curves)} rotation channels, expected 4")
+        frames = [kp.co.x for kp in curves[0].keyframe_points]
+        previous = None
+        for index, frame in enumerate(frames):
+            q_old = Quaternion([curves[i].keyframe_points[index].co.y for i in range(4)])
+            weight = 1.0
+            if fade_to is not None:
+                t = min(max((frame - f0) / max(fade_to - f0, 1), 0.0), 1.0)
+                weight = 1.0 - t * t * (3.0 - 2.0 * t)
+            q_new = q_old @ (Quaternion().slerp(q_off, weight) if weight < 1.0 else q_off)
+            if previous is not None and q_new.dot(previous) < 0:
+                q_new.negate()
+            previous = q_new
+            for i in range(4):
+                curves[i].keyframe_points[index].co.y = q_new[i]
+                curves[i].keyframe_points[index].handle_left.y = q_new[i]
+                curves[i].keyframe_points[index].handle_right.y = q_new[i]
+        for fcurve in curves.values():
+            fcurve.update()
+
+
+def haft_now(c):
+    """The haft's grip point and direction now: carried by the hand bone from rest."""
+
+    pb = c.arm.pose.bones[PREFIX + c.hand]
+    m = np.array(c.arm.matrix_world @ pb.matrix) @ np.linalg.inv(c.hand_rest)
+    return m[:3, :3] @ c.haft_centre + m[:3, 3], m[:3, :3] @ c.head_dir
+
+
+def solve_clip_hold(c, name, fade_clips, drop_clips):
+    """Find the constant offsets of the weapon arm that hold the haft up in clip `name`, and multiply them into its keys."""
+
+    arm, scene, height = c.arm, c.scene, c.height
+    action = bpy.data.actions[name]
+    use_action(arm, action)
+    f0 = int(action.frame_range[0])
+    scene.frame_set(f0)
+    arm_bones = c.arm_bones
+    base_q = {b: Quaternion(arm.pose.bones[b].rotation_quaternion) for b in arm_bones}
+    fade_to = None
+    if name in fade_clips or name in drop_clips:
+        fade_to = hold_fade_frame(c, action, name in drop_clips)
+    before_point, before_dir = haft_now(c)
+    arm_inside_before = torso_inside_share(c.body, c.groups, c.arm_family, evaluated_coords(c.body))
+
+    def forward_kinematics(params):
+        for k, bone in enumerate(arm_bones):
+            rv = params[3 * k : 3 * k + 3] * ARM_SCALES[k]
+            angle = float(np.linalg.norm(rv))
+            q_off = Quaternion(Vector(rv / angle), angle) if angle > 1e-9 else Quaternion()
+            arm.pose.bones[bone].rotation_quaternion = base_q[bone] @ q_off
+        bpy.context.view_layer.update()
+        return haft_now(c)
+
+    starts = [np.zeros(12)]
+    for roll in (np.pi / 2, np.pi, -np.pi / 2):
+        guess = np.zeros(12)
+        guess[7] = roll  # the forearm's own axis (bone Y)
+        starts.append(guess)
+    solved = G.solve_hold(forward_kinematics, starts, c.hold_target, c.hold_axis, scale=height, ridge=0.01)
+    params = solved["params"]
+    offsets = {}
+    for k, bone in enumerate(arm_bones):
+        rv = params[3 * k : 3 * k + 3] * ARM_SCALES[k]
+        angle = float(np.linalg.norm(rv))
+        offsets[bone] = Quaternion(Vector(rv / angle), angle) if angle > 1e-9 else Quaternion()
+    multiply_hold_into_keys(arm, action, offsets, fade_to)
+    use_action(arm, action)
+    scene.frame_set(f0)
+    after_point, after_dir = haft_now(c)
+    arm_inside_after = torso_inside_share(c.body, c.groups, c.arm_family, evaluated_coords(c.body))
+    target_axis = c.hold_axis
+    return {
+        "grip_point_before": np.round(before_point, 3).tolist(), "grip_point_after": np.round(after_point, 3).tolist(),
+        "haft_up_before_degrees": round(float(np.degrees(np.arccos(np.clip(G.unit(before_dir) @ target_axis, -1, 1)))), 1),
+        "haft_up_after_degrees": round(float(np.degrees(np.arccos(np.clip(G.unit(after_dir) @ target_axis, -1, 1)))), 1),
+        "position_error": round(float(np.linalg.norm(after_point - c.hold_target)), 4),
+        "offsets_degrees": {b.replace(PREFIX, ""): round(math.degrees(q.angle), 1) for b, q in offsets.items()},
+        "arm_inside_torso_share_before": round(arm_inside_before, 4), "arm_inside_torso_share_after": round(arm_inside_after, 4),
+        "faded_out_by_frame": fade_to,
+    }
+
+
+def hold_arm(c):
+    """The arm hold: in the clips named in `--hold-clips` the weapon arm gets a constant rotation that puts the grip point at `--hold-hand`."""
+
+    args, arm, hand, height = c.args, c.arm, c.hand, c.height
     action_names = [a.name for a in bpy.data.actions]
-    fade_clips = [resolve_clip_name(n, action_names) for n in args.hold_fade_clips.split(",") if n]
-    drop_clips = [resolve_clip_name(n, action_names) for n in args.release_clips.split(",") if n]
-    hold_clips = [resolve_clip_name(n, action_names) for n in args.hold_clips.split(",") if n] + fade_clips + drop_clips
+    c.action_names = action_names
+    c.fade_clips = [resolve_clip_name(n, action_names) for n in args.hold_fade_clips.split(",") if n]
+    c.drop_clips = [resolve_clip_name(n, action_names) for n in args.release_clips.split(",") if n]
+    hold_clips = [resolve_clip_name(n, action_names) for n in args.hold_clips.split(",") if n] + c.fade_clips + c.drop_clips
     out_f, fwd_f, up_f = (float(v) for v in args.hold_hand.split(","))
     side = -1.0 if "Right" in hand else 1.0
-    target = np.array([centre_x + side * out_f * height, float(wrist[1]) * 0 + (float(rest_head(arm, PREFIX + "Hips")[1]) - fwd_f * height), ground + up_f * height])
-    target_axis = np.array([float(v) for v in args.hold_axis.split(",")])
-    arm_bones = [PREFIX + hand.replace("Hand", "Shoulder"), PREFIX + hand.replace("Hand", "Arm"), PREFIX + hand.replace("Hand", "ForeArm"), PREFIX + hand]
-    arm_scales = (0.3, 1.0, 1.0, 1.0)
+    hips_y = float(rest_head(arm, PREFIX + "Hips")[1])
+    c.hold_target = np.array([c.centre_x + side * out_f * height, hips_y - fwd_f * height, c.ground + up_f * height])
+    c.hold_axis = np.array([float(v) for v in args.hold_axis.split(",")])
+    c.arm_bones = [PREFIX + hand.replace("Hand", part) for part in ("Shoulder", "Arm", "ForeArm")] + [PREFIX + hand]
     arm_groups = [PREFIX + hand.replace("Hand", "Arm"), PREFIX + hand.replace("Hand", "ForeArm"), PREFIX + hand]
-    arm_family = [n for n in {g for g in groups} if n in arm_groups or n.startswith(PREFIX + hand)]
-    hold = {"target_position": np.round(target, 3).tolist(), "target_axis": target_axis.tolist(), "clips": {}}
+    c.arm_family = [n for n in {g for g in c.groups} if n in arm_groups or n.startswith(PREFIX + hand)]
+    hold = {"target_position": np.round(c.hold_target, 3).tolist(), "target_axis": c.hold_axis.tolist(), "clips": {}}
     for name in hold_clips:
-        action = bpy.data.actions[name]
-        use_action(arm, action)
-        f0 = int(action.frame_range[0])
-        scene.frame_set(f0)
-        base_q = {b: Quaternion(arm.pose.bones[b].rotation_quaternion) for b in arm_bones}
-        fade_to = None
-        if name in fade_clips or name in drop_clips:
-            # full weight on the first frame, none by the time the hand starts to rise (a clip that lets go of the
-            # weapon: to fall, 4% of the height), which is also the frame the weapon is let go
-            f1_clip = int(action.frame_range[1])
-            start_z = float((arm.matrix_world @ arm.pose.bones[PREFIX + hand].head).z)
-            fade_to = f0 + 12
-            for frame in range(f0, f1_clip + 1):
-                scene.frame_set(frame)
-                z_now = float((arm.matrix_world @ arm.pose.bones[PREFIX + hand].head).z)
-                if (name in drop_clips and z_now < start_z - args.release_drop * height) or (name not in drop_clips and z_now > start_z + 0.05 * height):
-                    fade_to = max(frame, f0 + 6)
-                    break
-            scene.frame_set(f0)
-        before_point, before_dir = haft_now()
-        arm_inside_before = torso_inside_share(body, groups, arm_family, evaluated_coords(body))
+        hold["clips"][name] = solve_clip_hold(c, name, c.fade_clips, c.drop_clips)
+    c.report["hold"] = hold
+    c.hold = hold
 
-        def forward_kinematics(params):
-            for k, bone in enumerate(arm_bones):
-                rv = params[3 * k : 3 * k + 3] * arm_scales[k]
-                angle = float(np.linalg.norm(rv))
-                q_off = Quaternion(Vector(rv / angle), angle) if angle > 1e-9 else Quaternion()
-                arm.pose.bones[bone].rotation_quaternion = base_q[bone] @ q_off
-            bpy.context.view_layer.update()
-            point, direction = haft_now()
-            return point, direction
 
-        starts = [np.zeros(12)]
-        for roll in (np.pi / 2, np.pi, -np.pi / 2):
-            guess = np.zeros(12)
-            guess[7] = roll  # the forearm's own axis (bone Y)
-            starts.append(guess)
-        solved = G.solve_hold(forward_kinematics, starts, target, target_axis, scale=height, ridge=0.01)
-        params = solved["params"]
-        offsets = {}
-        for k, bone in enumerate(arm_bones):
-            rv = params[3 * k : 3 * k + 3] * arm_scales[k]
-            angle = float(np.linalg.norm(rv))
-            offsets[bone] = Quaternion(Vector(rv / angle), angle) if angle > 1e-9 else Quaternion()
-        # multiply the offsets into every key of the four bones
-        for bone, q_off in offsets.items():
-            curves = {}
-            for fcurve, _c in action_fcurves(action):
-                if fcurve.data_path == f'pose.bones["{bone}"].rotation_quaternion':
-                    curves[fcurve.array_index] = fcurve
-            if len(curves) != 4:
-                raise SystemExit(f"{name}: {bone} has {len(curves)} rotation channels, expected 4")
-            frames = [kp.co.x for kp in curves[0].keyframe_points]
-            previous = None
-            for index, frame in enumerate(frames):
-                q_old = Quaternion([curves[i].keyframe_points[index].co.y for i in range(4)])
-                weight = 1.0
-                if fade_to is not None:
-                    t = min(max((frame - f0) / max(fade_to - f0, 1), 0.0), 1.0)
-                    weight = 1.0 - t * t * (3.0 - 2.0 * t)
-                q_new = q_old @ (Quaternion().slerp(q_off, weight) if weight < 1.0 else q_off)
-                if previous is not None and q_new.dot(previous) < 0:
-                    q_new.negate()
-                previous = q_new
-                for i in range(4):
-                    curves[i].keyframe_points[index].co.y = q_new[i]
-                    curves[i].keyframe_points[index].handle_left.y = q_new[i]
-                    curves[i].keyframe_points[index].handle_right.y = q_new[i]
-            for fcurve in curves.values():
-                fcurve.update()
-        use_action(arm, action)
-        scene.frame_set(f0)
-        after_point, after_dir = haft_now()
-        arm_inside_after = torso_inside_share(body, groups, arm_family, evaluated_coords(body))
-        hold["clips"][name] = {
-            "grip_point_before": np.round(before_point, 3).tolist(), "grip_point_after": np.round(after_point, 3).tolist(),
-            "haft_up_before_degrees": round(float(np.degrees(np.arccos(np.clip(G.unit(before_dir) @ target_axis, -1, 1)))), 1),
-            "haft_up_after_degrees": round(float(np.degrees(np.arccos(np.clip(G.unit(after_dir) @ target_axis, -1, 1)))), 1),
-            "position_error": round(float(np.linalg.norm(after_point - target)), 4),
-            "offsets_degrees": {b.replace(PREFIX, ""): round(math.degrees(q.angle), 1) for b, q in offsets.items()},
-            "arm_inside_torso_share_before": round(arm_inside_before, 4), "arm_inside_torso_share_after": round(arm_inside_after, 4),
-            "faded_out_by_frame": fade_to,
-        }
-    report["hold"] = hold
+def clear_weapon_from_body(c):
+    """The clearance rule: turn the hand about the wrist, frame by frame, until the weapon leaves the body (lib/tripo_clearance.py).
 
-    # ---- quaternion keys (before the fall of the weapon, which is keyed against the final motion of the hand): one hemisphere per bone (a flip makes Blender turn the long way), and the biggest steps ----
-    report["rotation_keys"] = {action.name: normalise_rotation_keys(action) for action in bpy.data.actions}
+    A general rule for every armed unit: a frame in which more than 0.25% of the weapon's free points are deeper than 1% of the height inside
+    the body gets the smallest rotation of the hand about the wrist joint (cap 60 degrees) that clears it, smoothed over time. Frames from
+    the release of a release clip on are left to the fall. A frame that cannot be cleared inside the cap is reported and the run exits 3 after
+    writing its files (--clearance-allow-fail to go on): the clip then fails TRIPO-WEAPON-IN-BODY, loudly.
+    """
 
-    # ---- clearance: turn the hand about the wrist, frame by frame, until the weapon leaves the body ----------------
-    # A general rule for every armed unit (lib/tripo_clearance.py): a frame in which more than 0.25% of the weapon's free points are deeper than
-    # 1% of the height inside the body gets the smallest rotation of the hand about the wrist joint (cap 50 degrees) that clears it, smoothed over
-    # time. Frames from the release of a release clip on are left to the fall. A frame that cannot be cleared inside the cap is reported and the
-    # run exits 3 after writing its files (--clearance-allow-fail to go on): the clip then fails TRIPO-WEAPON-IN-BODY, loudly.
+    args, arm, scene, height, weapon, body = c.args, c.arm, c.scene, c.height, c.weapon, c.body
     clearance = {}
-    hand_name = PREFIX + hand
+    hand_name = PREFIX + c.hand
     triangles = body_triangles(body)
     if not args.no_clearance:
-        wanted = [resolve_clip_name(n, action_names) for n in args.clearance_clips.split(",") if n]
+        wanted = [resolve_clip_name(n, c.action_names) for n in args.clearance_clips.split(",") if n]
         for action in [a for a in bpy.data.actions if not wanted or a.name in wanted]:
             use_action(arm, action)
             first, last = int(action.frame_range[0]), int(action.frame_range[1])
@@ -908,9 +820,9 @@ def main():
                 weapon_frames.append(evaluated_coords(weapon))
                 pivots.append(np.array(arm.matrix_world @ arm.pose.bones[hand_name].head))
             skip = None
-            if action.name in drop_clips:
-                skip = int(hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
-            result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, skip_from=skip, rest_weapon=placed, rest_grip=haft_centre)
+            if action.name in c.drop_clips:
+                skip = int(c.hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
+            result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre)
             for index, frame in enumerate(frames_list):
                 vector = result["rotvecs"][index]
                 angle = float(np.linalg.norm(vector))
@@ -924,49 +836,235 @@ def main():
                 "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
                 "failed_frames": [frames_list[i] for i in result["failed"]], "released_from_frame": None if skip is None else first + skip,
             }
-    report["clearance"] = clearance
-    clearance_failed = {name: row["failed_frames"] for name, row in clearance.items() if row["failed_frames"]}
+    c.report["clearance"] = clearance
+    c.clearance_failed = {name: row["failed_frames"] for name, row in clearance.items() if row["failed_frames"]}
 
-    # ---- the weapon lets go: the fall of the weapon bone in the release clips -------------------------------
+
+def attached_and_body(c, action):
+    """Per frame of `action`: the hand's motion (the matrix that carries a rest point to where the hand holds it) and the body's posed vertices."""
+
+    arm, scene, body = c.arm, c.scene, c.body
+    use_action(arm, action)
+    f0, f1 = int(action.frame_range[0]), int(action.frame_range[1])
+    inverse = np.linalg.inv(c.hand_rest)
+    attached, body_frames = [], []
+    for frame in range(f0, f1 + 1):
+        scene.frame_set(frame)
+        attached.append(np.array(arm.matrix_world @ arm.pose.bones[PREFIX + c.hand].matrix) @ inverse)
+        body_frames.append(evaluated_coords(body))
+    return f0, f1, np.array(attached), body_frames
+
+
+SUBFRAMES = 4  # keys per frame from the release on: the export samples at 30 fps between 24 fps keys, and the hand turns fast in a fall
+
+
+def ease_clip(c, action):
+    """Ease a clip's fast turns the way the unit's intake does (`prepare_tripo_unit`, `--ease-snaps`), so the pose judged here is the exported one."""
+
+    return normalise_rotation_keys(action, trigger_degrees=c.args.ease_snaps, target_degrees=0.75 * c.args.ease_snaps)
+
+
+def smooth_rotation_keys(action):
+    """Rotation keys of the clip interpolate as the retarget's keys do (Bezier with automatic clamped handles), not linearly as the glTF import
+    leaves them, so the hand the weapon is planned against is the hand the exported clip has between keys."""
+
+    for fcurve, _container in action_fcurves(action):
+        if fcurve.data_path.endswith(".rotation_quaternion"):
+            for point in fcurve.keyframe_points:
+                point.interpolation = "BEZIER"
+                point.handle_left_type = point.handle_right_type = "AUTO_CLAMPED"
+            fcurve.update()
+
+
+def hand_motion_at(c, frame, subframe):
+    """The hand's motion (the matrix that carries a rest point to where the hand holds it) at a frame and a fraction of the next."""
+
+    c.scene.frame_set(frame, subframe=subframe)
+    return np.array(c.arm.matrix_world @ c.arm.pose.bones[PREFIX + c.hand].matrix) @ np.linalg.inv(c.hand_rest)
+
+
+def plan_pose_at(plan, step, fraction):
+    """The planned weapon rotation (3x3) and grip-centre position between planned frames `step` and `step + 1`."""
+
+    last = len(plan["turns"]) - 1
+    if fraction == 0.0 or step >= last:
+        return plan["turns"][min(step, last)], plan["points"][min(step, last)]
+    a, b = Matrix(plan["turns"][step].tolist()).to_quaternion(), Matrix(plan["turns"][step + 1].tolist()).to_quaternion()
+    turn = np.array(a.slerp(b, fraction).to_matrix())
+    return turn, plan["points"][step] * (1.0 - fraction) + plan["points"][step + 1] * fraction
+
+
+def key_weapon_pose(c, action, f0, plan, lifts):
+    """Key the weapon bone from the release on, `SUBFRAMES` times a frame: the pose that holds the weapon on its world path while the hand
+    moves on (the hand's motion lifted by the grounding step, the planned path interpolated between planned frames)."""
+
+    arm = c.arm
+    bone = PREFIX + WEAPON_BONE
+    bone_rest = np.array(arm.matrix_world @ arm.data.bones[bone].matrix_local)
+    pb = arm.pose.bones[bone]
+    pb.rotation_mode = "QUATERNION"
+    release, count = plan["release"], len(lifts)
+    moments = [(0, 0.0)] + [(index, k / SUBFRAMES) for index in range(max(release - 1, 0), count) for k in range(SUBFRAMES) if index < count - 1 or k == 0]
+    previous = None
+    for index, fraction in dict.fromkeys(moments):
+        if index < release:
+            quaternion, location = Quaternion(), Vector((0.0, 0.0, 0.0))
+        else:
+            hand = hand_motion_at(c, f0 + index, fraction)
+            hand[2, 3] += lifts[index] * (1.0 - fraction) + lifts[min(index + 1, count - 1)] * fraction
+            turn, point = plan_pose_at(plan, index - release, fraction)
+            basis = CL.local_pose(hand, turn, point, c.haft_centre, bone_rest)
+            quaternion, location = Matrix(basis[:3, :3].tolist()).to_quaternion(), Vector(basis[:3, 3].tolist())
+        if previous is not None and quaternion.dot(previous) < 0:
+            quaternion.negate()
+        previous = quaternion
+        pb.rotation_quaternion, pb.location = quaternion, location
+        pb.keyframe_insert("rotation_quaternion", frame=f0 + index + fraction)
+        pb.keyframe_insert("location", frame=f0 + index + fraction)
+    pb.rotation_quaternion, pb.location = Quaternion(), Vector((0.0, 0.0, 0.0))
+    use_action(arm, action)
+
+
+def steady_weapon(c, action, f0, release, tumble, lifts):
+    """After the intake-style easing of the turns, put the weapon back where the plan has it: from the landing on, its centre goes back to where
+    it landed, and in every frame from the release its lowest point goes up to the ground if it is under it. Only location keys move (the intake
+    does not ease those). Returns the largest correction made, a share of the height."""
+
+    arm, scene, weapon, height = c.arm, c.scene, c.weapon, c.height
+    use_action(arm, action)
+    pb = arm.pose.bones[PREFIX + WEAPON_BONE]
+    bone_rest = np.array(arm.matrix_world @ arm.data.bones[PREFIX + WEAPON_BONE].matrix_local)[:3, :3]
+    count, largest, landed_centre = len(lifts), 0.0, None
+    for index in range(release, count):
+        for fraction in ((k / SUBFRAMES for k in range(SUBFRAMES)) if index < count - 1 else (0.0,)):
+            scene.frame_set(f0 + index, subframe=fraction)
+            lift = lifts[index] * (1.0 - fraction) + lifts[min(index + 1, count - 1)] * fraction
+            points = evaluated_coords(weapon) + np.array([0.0, 0.0, lift])
+            shift = np.zeros(3)
+            if index >= release + tumble:
+                centre = points.mean(axis=0)
+                landed_centre = centre if landed_centre is None else landed_centre
+                shift = landed_centre - centre
+            low = float(points[:, 2].min()) + shift[2]
+            if low < 0.0:
+                shift[2] -= low - 0.0005 * height
+            if float(np.linalg.norm(shift)) <= 0.0005 * height:
+                continue
+            hand = hand_motion_at(c, f0 + index, fraction)[:3, :3]
+            pb.location = Vector(pb.location) + Vector((np.linalg.inv(hand @ bone_rest) @ shift).tolist())
+            pb.keyframe_insert("location", frame=f0 + index + fraction)
+            largest = max(largest, float(np.linalg.norm(shift)) / height)
+    pb.location = Vector((0.0, 0.0, 0.0))
+    use_action(arm, action)
+    return round(largest, 4)
+
+
+def measure_drop(c, action, f0, release, tumble, lifts):
+    """The weapon as the exported frames put it, after the grounding lift of each frame: its lowest point over the ground and how far it moves
+    after it has landed (shares of the height)."""
+
+    arm, scene, weapon, height = c.arm, c.scene, c.weapon, c.height
+    use_action(arm, action)
+    f1 = int(action.frame_range[1])
+    low, resting = np.inf, []
+    for frame in range(f0 + release, f1 + 1):
+        scene.frame_set(frame)
+        points = evaluated_coords(weapon) + np.array([0.0, 0.0, lifts[frame - f0]])
+        low = min(low, float(points[:, 2].min()))
+        if frame >= f0 + release + tumble:
+            resting.append(points[:: max(1, len(points) // 400)])
+    moved = max((float(np.linalg.norm(p - resting[0], axis=1).max()) for p in resting), default=0.0)
+    scene.frame_set(f0)
+    return {"lowest_point_over_ground_share": round(low / height, 4), "moved_after_landing_share": round(moved / height, 4)}
+
+
+def grounding_lifts(body_frames):
+    """How far the pipeline's grounding step lifts the unit in each frame: it moves the root so the body's lowest point is on the ground (z = 0),
+    weapon left out, in every frame (adapter/blender_worker.correct_action_grounding). The weapon bone is planned in that grounded world."""
+
+    return np.array([-float(frame[:, 2].min()) for frame in body_frames])
+
+
+def drop_weapon(c, action):
+    """Let the weapon go in `action`: the hand drops it at the first frame of the fall and it lands flat on the ground clear of the body.
+
+    The rule is in `lib/tripo_clearance.plan_drop`: the resting place is chosen from the body's final pose and everything the body occupies
+    after the landing, the weapon tumbles to it in `TUMBLE_SECONDS` under gravity and then stays exactly where it is while the hand and the
+    body fall on. The weapon bone is keyed with rotation and location in every frame from the release. The pipeline lifts each frame so the
+    body's lowest point is on the ground (`grounding_lifts`), and lifts the weapon with it: the plan is made in that grounded world, so the
+    weapon ends on the ground there and not on the body's own, lower, ground.
+    """
+
+    fps = c.scene.render.fps / c.scene.render.fps_base
+    smooth_rotation_keys(action)
+    f0, f1, attached, body_frames = attached_and_body(c, action)
+    lifts = grounding_lifts(body_frames)
+    attached = attached.copy()
+    attached[:, 2, 3] += lifts
+    grounded = [frame + np.array([0.0, 0.0, lift]) for frame, lift in zip(body_frames, lifts)]
+    release = int(c.hold["clips"][action.name]["faded_out_by_frame"]) - f0
+    axes = np.stack([c.head_dir, c.blade, c.third], axis=1)
+    plan = CL.plan_drop(c.placed, c.haft_centre, axes, attached, grounded, body_triangles(c.body), c.height, 0.0, release, fps)
+    key_weapon_pose(c, action, f0, plan, lifts)
+    c.report.setdefault("drop_ease", {})[action.name] = ease_clip(c, action)  # the intake eases the weapon's turns too
+    lifted = steady_weapon(c, action, f0, release, plan["tumble_frames"], lifts)
+    measured = measure_drop(c, action, f0, release, plan["tumble_frames"], lifts)
+    return {
+        "release_frame": f0 + release, "tumble_frames": plan["tumble_frames"], "landing_grip_point": np.round(plan["land_point"], 3).tolist(),
+        "landing_clearance_from_body_share": round(plan["clearance_share"], 4), "planned_weapon_inside_body_share": round(plan["in_body_share"], 4),
+        "planned_weapon_inside_body_frame": f0 + plan["in_body_frame"], "planned_lowest_point_over_ground_share": round(plan["lowest_over_ground_share"], 4),
+        "grounding_lift_share_first_last": [round(float(lifts[0]) / c.height, 4), round(float(lifts[-1]) / c.height, 4)],
+        "measured": measured, "largest_correction_after_easing_share": lifted, "frames": f1 - f0 + 1,
+    }
+
+
+def release_clips(c):
+    """The weapon lets go: the fall of the weapon bone in the release clips."""
+
     release = {}
-    for name in [resolve_clip_name(n, action_names) for n in args.release_clips.split(",") if n]:
-        if not args.weapon_bone:
+    for name in c.drop_clips:
+        if not c.args.weapon_bone:
             raise SystemExit("--release-clips needs --weapon-bone")
-        release[name] = release_weapon(arm, body, bind_bone, hand, bpy.data.actions[name], placed, haft_centre, head_dir, blade, third,
-                                       np.array(arm.matrix_world @ hand_bone.matrix_local), height, args.release_ease_frames,
-                                       release_at=hold["clips"].get(name, {}).get("faded_out_by_frame"))
-    report["release"] = release
+        release[name] = drop_weapon(c, bpy.data.actions[name])
+    c.release = release
+    c.report["release"] = release
 
-    # ---- the checks: fingers on the haft, on sampled frames of every clip -----------------------------
-    zone = 4.0 * radius
+
+def check_fingers(c):
+    """The checks: fingers on the haft, on sampled frames of every clip that keeps the weapon in the hand."""
+
+    arm, scene, body = c.arm, c.scene, c.body
+    zone = 4.0 * c.radius
     gaps = {}
     for action in bpy.data.actions:
-        if action.name in release:
+        if action.name in c.release:
             continue  # the weapon has let go of the hand
         use_action(arm, action)
         f0, f1 = int(action.frame_range[0]), int(action.frame_range[1])
         worst = {f: {"deepest": 1.0, "tip_gap": 0.0} for f in FINGERS}
-        for frame in np.linspace(f0, f1, args.check_frames).round().astype(int):
+        for frame in np.linspace(f0, f1, c.args.check_frames).round().astype(int):
             scene.frame_set(int(frame))
             coords = evaluated_coords(body)
-            point, direction = haft_now()
-            hand_pb = arm.pose.bones[PREFIX + hand]
-            m = np.array(arm.matrix_world @ hand_pb.matrix) @ np.linalg.inv(hand_rest)
-            per_finger = G.finger_gaps({f: coords[finger_index[f]] for f in FINGERS},
-                                       {f: coords[finger_index[f][finger_tip[f]]] for f in FINGERS}, point, direction, radius, zone)
+            point, direction = haft_now(c)
+            per_finger = G.finger_gaps({f: coords[c.finger_index[f]] for f in FINGERS},
+                                       {f: coords[c.finger_index[f][c.finger_tip[f]]] for f in FINGERS}, point, direction, c.radius, zone)
             for f, row in per_finger.items():
                 if row["deepest"] is not None:
                     worst[f]["deepest"] = min(worst[f]["deepest"], row["deepest"])
                     worst[f]["tip_gap"] = max(worst[f]["tip_gap"], row["tip_gap"])
         gaps[action.name] = {f: {k: (round(v, 4) if v is not None else None) for k, v in row.items()} for f, row in worst.items()}
-    report["fingers_on_haft"] = {"zone": round(zone, 4), "haft_radius": round(radius, 4), "per_clip_worst": gaps}
+    c.report["fingers_on_haft"] = {"zone": round(zone, 4), "haft_radius": round(c.radius, 4), "per_clip_worst": gaps}
 
-    # ---- export ----------------------------------------------------------------------------------
+
+def export_glb(c):
+    """Write the GLB with every clip and the report."""
+
+    args, arm = c.args, c.arm
     for action in bpy.data.actions:
         action.use_fake_user = True
     use_action(arm, bpy.data.actions[0])
     bpy.ops.object.select_all(action="DESELECT")
-    for obj in (arm, body, weapon):
+    for obj in (arm, c.body, c.weapon):
         obj.select_set(True)
     bpy.context.view_layer.objects.active = arm
     args.out.parent.mkdir(parents=True, exist_ok=True)
@@ -974,13 +1072,57 @@ def main():
     options = {"filepath": str(args.out), "export_format": "GLB", "use_selection": True, "export_skins": True, "export_animations": True,
                "export_animation_mode": "ACTIONS", "export_image_format": "AUTO"}
     bpy.ops.export_scene.gltf(**{k: v for k, v in options.items() if k in properties})
-    report["exported_clips"] = sorted(a.name for a in bpy.data.actions)
-    text = json.dumps(report, sort_keys=True)
-    print(text)
+    c.report["exported_clips"] = sorted(a.name for a in bpy.data.actions)
+    print(json.dumps(c.report, sort_keys=True))
     if args.report:
-        args.report.write_text(json.dumps(report, indent=1, sort_keys=True) + "\n", encoding="utf-8")
-    if clearance_failed and not args.clearance_allow_fail:
-        print("CLEARANCE_FAILED " + json.dumps(clearance_failed), file=sys.stderr)
+        args.report.write_text(json.dumps(c.report, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def drop_failures(c):
+    """Release clips whose plan or measured result breaks a rule: the weapon inside the body, under the ground, or moving after it landed."""
+
+    failures = {}
+    for name, row in c.release.items():
+        problems = []
+        if row["planned_weapon_inside_body_share"] > CL.LIMIT:
+            problems.append(f"weapon inside the body in frame {row['planned_weapon_inside_body_frame']} ({row['planned_weapon_inside_body_share']:.1%} of its points)")
+        if row["measured"]["lowest_point_over_ground_share"] < -0.002:
+            problems.append(f"weapon {-row['measured']['lowest_point_over_ground_share']:.1%} of the height under the ground")
+        if row["measured"]["moved_after_landing_share"] > 0.01:
+            problems.append(f"weapon moves {row['measured']['moved_after_landing_share']:.1%} of the height after landing")
+        if problems:
+            failures[name] = problems
+    return failures
+
+
+def main():
+    args = parse_args()
+    c = SimpleNamespace(args=args, hand=args.hand, report={"tool": "grip_weapon", "body": args.body.name, "weapon": args.weapon.name, "hand": args.hand})
+    load_body(c)
+    find_hand_frame(c)
+    find_finger_skins(c)
+    load_weapon(c)
+    search_grip(c)
+    close_thumb(c)
+    describe_grip(c)
+    pose_and_bake_fingers(c)
+    bind_weapon(c)
+    hold_arm(c)
+    # quaternion keys (before the fall of the weapon, which is keyed against the final motion of the hand): one hemisphere per bone
+    # (a flip makes Blender turn the long way), and the biggest steps
+    c.report["rotation_keys"] = {action.name: ease_clip(c, action) for action in bpy.data.actions}
+    clear_weapon_from_body(c)
+    c.report["rotation_keys_after_clearance"] = {action.name: ease_clip(c, action) for action in bpy.data.actions}  # its hand turns are eased too
+    release_clips(c)
+    check_fingers(c)
+    export_glb(c)
+    failed = c.clearance_failed
+    dropped = drop_failures(c)
+    if (failed or dropped) and not args.clearance_allow_fail:
+        if failed:
+            print("CLEARANCE_FAILED " + json.dumps(failed), file=sys.stderr)
+        if dropped:
+            print("DROP_FAILED " + json.dumps(dropped), file=sys.stderr)
         raise SystemExit(3)
 
 

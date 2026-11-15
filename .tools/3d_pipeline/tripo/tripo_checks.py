@@ -8,7 +8,13 @@ The unit folder holds the runtime `.mesh` and `.anim` files. `--gripped` is the 
 bones and the clips); the weapon checks need it, and `--weapon-bone` names the weapon's bone in the unit's mesh. A unit
 without a weapon gets the cloak check only. Findings (exit code 1 when there is one):
 
-- TRIPO-WEAPON-IN-BODY: in EVERY frame of a clip (24 fps, not 24 samples), more than `MAX_IN_BODY_SHARE` of the weapon's
+- TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND are judged on the exported `.mesh` and `.anim` (what the game loads), every frame of each clip
+  (`weapon_runtime_findings`), and TRIPO-GRIP-ENCLOSURE on the exported mesh's rest pose. The grip stage's GLB (`--gripped`) is kept as a
+  diagnostic of that stage: its weapon numbers are in the report, and only its thumb check (it needs the finger bones) can fail the unit.
+- TRIPO-GRIP-ENCLOSURE is advisory when the job says `tripo.weapon.grip_check: "advisory"` (or with `--grip-advisory`): it is reported under
+  "advisory" and not counted as a failure, because the unit keeps Tripo's own closed hand, judged by a reviewer at the zoom players see (D-70).
+  TRIPO-GRIP-THUMB is never advisory.
+- Rule of the GLB version, which the runtime one repeats frame by frame: in EVERY frame of a clip (24 fps, not 24 samples), more than `MAX_IN_BODY_SHARE` of the weapon's
   points (outside the grip zone) are deeper than `PENETRATION_MARGIN_SHARE` of the height inside the body. 1% of the height
   (1.8 cm) is the lowest margin at which idle, walk and the retreat still pass (0 to 0.7% of points) while the orc's attack
   (6 to 13% from frame 28 of 24 fps, 35 of 30) and death (2 to 5% from frame 45 of 24 fps) fail, as a viewer saw them.
@@ -26,9 +32,15 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on).
 - TRIPO-WING-STRETCH: as TRIPO-CLOAK-STRETCH, for the wing region (`lib/tripo_chains.wing_masks`), with the same limit.
-- TRIPO-CHAIN-IN-BODY, TRIPO-CHAIN-GROUND: cloak or wing points deeper than `CHAIN_IN_BODY_MARGIN_SHARE` of the height inside the rest
-  of the body, or vertices more than `CHAIN_GROUND_MARGIN_SHARE` under the ground, in more than 1% of them in some frame. They run
-  for a cape (`--cape`) and for wings (`--wings`, or a job whose anatomy has wings or whose `tripo.chains` names wings).
+- TRIPO-CHAIN-IN-BODY, TRIPO-CHAIN-GROUND: cloak or wing points that go deeper than `CHAIN_IN_BODY_MARGIN_SHARE` of the height inside the
+  rest of the body (points modelled that deep at rest are left out) in more than `MAX_CHAIN_IN_BODY_SHARE` of them, or vertices more than
+  `CHAIN_GROUND_MARGIN_SHARE` under the ground in more than 1% of them, in some frame. They run for a cape (`--cape`) and for wings
+  (`--wings`, or a job whose anatomy has wings or whose `tripo.chains` names wings).
+- TRIPO-WING-FRONT: in a clip, the wings hide more than `MAX_WING_COVER_SHARE` of the torso and head in the front view or the map view
+  (`lib/tripo_chains.front_cover_share`: a wing point in a screen cell of the torso, nearer the camera than its front surface). A death
+  is judged in the map view only: from a low front camera a body lying face down has its wings ahead of its back by construction.
+- TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
+  the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
 """
 
 from __future__ import annotations
@@ -62,7 +74,16 @@ CLOAK_BONES = ("Hips", "Spine", "Spine01", "Spine02", "Hip", "back_mid", "LeftUp
 # region's vertices more than 1% of the height under the rest pose's ground, at most 1% of them.
 MAX_WING_STRETCH_SHARE = CLOAK_MAX_STRETCH_SHARE
 CHAIN_IN_BODY_MARGIN_SHARE = 0.01
-MAX_CHAIN_IN_BODY_SHARE = 0.01
+# Calibrated on vanilla clothing (2026-11-15): the clothing region of the cloak calibration (vertices weighted mostly to the torso, hips or
+# thighs, a quarter to 0.85 of the height) of GER_infantry over 16 of its own clips puts at most 5.0% of its points that deep inside the
+# rest of its body (aim_exercise_mg), ENG_infantry 3.0%. Cloth pressed by a moving limb sinks in; a rigid weapon does not, hence its 1%.
+MAX_CHAIN_IN_BODY_SHARE = 0.05
+# Wings may hide at most a twentieth of the torso and head in the front or map view (judgement: Tripo's own wings, bound to the arms,
+# hide up to 1.2% in the demon's defend; the review cameras are review_unit's front (0, 8) and hoi4 (25, 55) azimuth and elevation).
+MAX_WING_COVER_SHARE = 0.05
+COVER_VIEWS = {"front": (0.0, 8.0), "map": (25.0, 55.0)}
+# An armour plate is rigid: it may stretch no more than vanilla's tailored clothing does at its worst.
+MAX_PLATE_STRETCH_SHARE = VANILLA_CLOAK_WORST
 CHAIN_GROUND_MARGIN_SHARE = 0.01
 MAX_CHAIN_BELOW_GROUND_SHARE = 0.01
 ENCLOSURE_HALF_LENGTH_SHARE = 0.03
@@ -154,7 +175,32 @@ def chain_regions(mesh, wings: bool, cloak: bool) -> Dict[str, np.ndarray]:
     return regions
 
 
-def chain_clip_numbers(mesh, anim, regions, body, step: int) -> dict:
+def view_direction(front: np.ndarray, azimuth: float, elevation: float) -> np.ndarray:
+    """The direction from the unit to a review camera at (azimuth, elevation) degrees, azimuth 0 in front, y up."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    lateral = np.cross(up, front)
+    a, e = np.radians(azimuth), np.radians(elevation)
+    return T.unit(np.cos(e) * (np.cos(a) * front + np.sin(a) * lateral) + np.sin(e) * up)
+
+
+def wing_cover(mesh, frames, wings: np.ndarray, death: bool) -> Dict[str, float]:
+    """The worst share of the torso and head each review view loses behind the wings over the frames (a death: the map view only)."""
+
+    names = np.array(mesh.bones)
+    dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
+    torso = np.isin(dominant, list(TORSO_BONES)) & ~wings
+    front = front_direction(mesh)
+    out = {}
+    for view, (azimuth, elevation) in COVER_VIEWS.items():
+        if death and view == "front":
+            continue
+        direction = view_direction(front, azimuth, elevation)
+        out[view] = round(max(tripo_chains.front_cover_share(posed, torso, wings, direction, np.array([0.0, 1.0, 0.0]), mesh.height) for posed in frames), 4)
+    return out
+
+
+def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False) -> dict:
     """One clip's worst in-body share and below-ground share per region, and the wing region's worst stretch."""
 
     frames = posed_frames(mesh, anim, step)
@@ -162,13 +208,13 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int) -> dict:
     ground = float(mesh.positions[:, 1].min())
     out = {}
     for name, mask in regions.items():
-        inside = tripo_chains.inside_share_series(frames, mesh.triangles, body, mask, mesh.height, CHAIN_IN_BODY_MARGIN_SHARE)
+        inside = tripo_chains.inside_share_series(frames, mesh.triangles, body, mask, mesh.height, CHAIN_IN_BODY_MARGIN_SHARE, rest=mesh.positions)
         below = tripo_chains.below_ground_series(frames, mask, ground, mesh.height, CHAIN_GROUND_MARGIN_SHARE)
         row = {"in_body_worst_share": round(max(inside), 4), "in_body_frame": int(np.argmax(inside)) * step,
                "below_ground_worst_share": round(max(below), 4), "below_ground_frame": int(np.argmax(below)) * step}
         if name == "wings":
             share, frame = T.region_stretch_share(mesh.positions, frames, edges, mask, mesh.height)
-            row.update(stretch_worst_share=round(share, 4), stretch_frame=frame * step)
+            row.update(stretch_worst_share=round(share, 4), stretch_frame=frame * step, cover=wing_cover(mesh, frames, mask, death))
         out[name] = row
     return out
 
@@ -177,8 +223,11 @@ def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
     out = []
     if row.get("stretch_worst_share", 0.0) > MAX_WING_STRETCH_SHARE:
         out.append(finding("TRIPO-WING-STRETCH", clip, f"{row['stretch_worst_share']:.1%} of the wing region's edges are stretched or squashed in frame {row['stretch_frame']}; the limit is {MAX_WING_STRETCH_SHARE:.0%}", share=row["stretch_worst_share"]))
+    for view, share in (row.get("cover") or {}).items():
+        if share > MAX_WING_COVER_SHARE:
+            out.append(finding("TRIPO-WING-FRONT", clip, f"the wings hide {share:.1%} of the torso and head in the {view} view; the limit is {MAX_WING_COVER_SHARE:.0%}", view=view, share=share))
     if row["in_body_worst_share"] > MAX_CHAIN_IN_BODY_SHARE:
-        out.append(finding("TRIPO-CHAIN-IN-BODY", clip, f"{row['in_body_worst_share']:.1%} of the {name} points are more than {CHAIN_IN_BODY_MARGIN_SHARE:.0%} of the height inside the body in frame {row['in_body_frame']} (limit {MAX_CHAIN_IN_BODY_SHARE:.0%})", region=name, share=row["in_body_worst_share"]))
+        out.append(finding("TRIPO-CHAIN-IN-BODY", clip, f"{row['in_body_worst_share']:.1%} of the {name} points go more than {CHAIN_IN_BODY_MARGIN_SHARE:.0%} of the height inside the body in frame {row['in_body_frame']} (limit {MAX_CHAIN_IN_BODY_SHARE:.0%}, vanilla clothing's worst)", region=name, share=row["in_body_worst_share"]))
     if row["below_ground_worst_share"] > MAX_CHAIN_BELOW_GROUND_SHARE:
         out.append(finding("TRIPO-CHAIN-GROUND", clip, f"{row['below_ground_worst_share']:.1%} of the {name} vertices are more than {CHAIN_GROUND_MARGIN_SHARE:.0%} of the height below the ground in frame {row['below_ground_frame']} (limit {MAX_CHAIN_BELOW_GROUND_SHARE:.0%})", region=name, share=row["below_ground_worst_share"]))
     return out
@@ -194,7 +243,7 @@ def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, ste
     body = ~np.any(np.stack(list(regions.values())), axis=0) & ~weapon
     out, numbers = [], {"region_vertices": {name: int(mask.sum()) for name, mask in regions.items()}, "clips": {}}
     for clip, anim in anims.items():
-        rows = chain_clip_numbers(mesh, anim, regions, body, step)
+        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"))
         numbers["clips"][clip] = rows
         for name, row in rows.items():
             out += chain_row_findings(clip, name, row)
@@ -256,10 +305,16 @@ def limb_torso_series(mesh, anim, step: int = 2, margin_share: float = LIMB_MARG
 
 
 def final_extent_share(mesh, anim) -> float:
-    """The body height at the end of the clip as a share of its standing height (the selection box of a vanilla mesh is left out)."""
+    """The body height at the end of the clip as a share of its standing height. The selection box of a vanilla mesh is left out, and so
+    are the cloak and wings a chain stage moves (vertices weighted mostly to a `Cloak` or `Wing` bone): the rule asks whether the body lies
+    down, and cloth lying on its back is not the body. Vanilla meshes have no such bones, so the vanilla deaths it was set on (0.19 to
+    0.23 on GER_infantry and ENG_infantry) measure as before."""
 
     last = pdx_deform.skin(mesh, pdx_deform.skinning_matrices(mesh, anim)[-1])
     keep = ~mesh.collision if len(mesh.collision) == len(last) else np.ones(len(last), bool)
+    names = np.array(mesh.bones)
+    dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
+    keep = keep & ~np.isin(dominant, tripo_chains.chain_bones(mesh.bones))
     standing = mesh.positions[keep][:, 1]
     return float(np.ptp(last[keep][:, 1]) / max(float(np.ptp(standing)), 1e-9))
 
@@ -370,6 +425,117 @@ def grip_findings(gripped: Path, hand: str = "mixamorig:RightHand") -> (List[dic
     return out, numbers
 
 
+# ---- the weapon on the runtime files (what the game loads) ---------------------------------------------------------------------
+#
+# The weapon checks judge the exported `.mesh` and `.anim`, not the grip stage's GLB: the kit's retarget between the two drops the location
+# keys of every bone but the root, so a GLB can look right where the unit does not. The judged points and the margins are the GLB check's
+# own (up to `WEAPON_MAX_POINTS` evenly spaced weapon vertices, those outside the grip zone around the weapon bone's rest joint for the
+# body test, all of them for the ground test; one frame per frame of the clip).
+
+WEAPON_MAX_POINTS = 600
+WEAPON_GRIP_ZONE_SHARE = 0.12
+WEAPON_GROUND_TOLERANCE_SHARE = 0.02
+MAX_WEAPON_BELOW_GROUND_SHARE = 0.02
+
+
+def weapon_vertices(mesh, weapon_bone: str) -> np.ndarray:
+    """Boolean mask of the vertices that belong to the weapon: dominated by its bone and weighted to it almost wholly."""
+
+    bone = mesh.bones.index(weapon_bone)
+    return (pdx_deform.dominant_bones(mesh) == bone) & (mesh.weights.max(axis=1) > 0.99)
+
+
+def weapon_split(mesh, weapon_bone: str):
+    """(weapon mask, the body's triangles renumbered over the body's own vertices, the sampled weapon vertex indices, which of them are free)."""
+
+    from lib import tripo_clearance as C
+
+    weapon = weapon_vertices(mesh, weapon_bone)
+    keep = ~weapon[mesh.triangles].any(axis=1)
+    remap = np.cumsum(~weapon) - 1
+    body_triangles = remap[mesh.triangles[keep]]
+    indices = np.nonzero(weapon)[0]
+    indices = indices[np.linspace(0, len(indices) - 1, min(WEAPON_MAX_POINTS, len(indices))).astype(int)]
+    joint = pdx_motion.rest_joints(mesh)[mesh.bones.index(weapon_bone)]
+    free = np.linalg.norm(mesh.positions[indices] - joint, axis=1) > WEAPON_GRIP_ZONE_SHARE * mesh.height
+    return weapon, body_triangles, indices, free, C
+
+
+def weapon_frame_numbers(mesh, anim, weapon_bone: str) -> dict:
+    """Per frame of one clip: the share of the weapon's free points deeper than the margin inside the body, the share of all its sampled points
+    under the body's lowest vertex of that frame, and where its centre is (all as shares of the height)."""
+
+    weapon, body_triangles, indices, free, C = weapon_split(mesh, weapon_bone)
+    height = mesh.height
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    deep, below, centres = [], [], []
+    for frame in range(matrices.shape[0]):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        body = posed[~weapon]
+        points = posed[indices]
+        deep.append(C.deep_share(points[free], body, body_triangles, height, PENETRATION_MARGIN_SHARE))
+        below.append(float((points[:, 1] < body[:, 1].min() - WEAPON_GROUND_TOLERANCE_SHARE * height).mean()))
+        centres.append(points.mean(axis=0))
+    return {"deep": deep, "below": below, "centres": np.array(centres) / max(height, 1e-9)}
+
+
+def weapon_runtime_findings(mesh, anims: Dict[str, object], weapon_bone: str, roles: Sequence[str] = ()) -> (List[dict], dict):
+    """TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND per clip of the unit, measured on the runtime files.
+
+    `roles` limits the clips to those whose name ends with one of them (default all). The numbers also say how far the weapon's centre moves
+    in the last half of the clip (the largest distance from its final place, a share of the height), which a dropped weapon should not."""
+
+    if weapon_bone not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
+        return [], {}
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if roles and not any(clip.endswith("_" + role) for role in roles):
+            continue
+        row = weapon_frame_numbers(mesh, anim, weapon_bone)
+        deep, below, centres = row["deep"], row["below"], row["centres"]
+        bad = [i for i, value in enumerate(deep) if value > MAX_IN_BODY_SHARE]
+        low = [i for i, value in enumerate(below) if value > MAX_WEAPON_BELOW_GROUND_SHARE]
+        half = len(centres) // 2
+        numbers[clip] = {
+            "frames": len(deep), "worst_in_body_pct": round(100 * max(deep), 2), "worst_frame": int(np.argmax(deep)), "frames_over": len(bad),
+            "worst_below_ground_pct": round(100 * max(below), 2), "frames_below_ground": len(low),
+            "moved_in_last_half_share": round(float(np.linalg.norm(centres[half:] - centres[-1], axis=1).max()), 4),
+        }
+        if bad:
+            out.append(finding("TRIPO-WEAPON-IN-BODY", clip,
+                               f"the weapon is more than {PENETRATION_MARGIN_SHARE:.0%} of the height inside the body in {len(bad)} of {len(deep)} frames of the exported clip (frames {bad[0]} to {bad[-1]}), up to {100 * max(deep):.1f}% of its points (limit {100 * MAX_IN_BODY_SHARE:.1f}%)",
+                               frames=bad[:40], worst_pct=round(100 * max(deep), 2)))
+        if low:
+            out.append(finding("TRIPO-WEAPON-BELOW-GROUND", clip,
+                               f"more than {MAX_WEAPON_BELOW_GROUND_SHARE:.0%} of the weapon's points are under the body's lowest point in {len(low)} of {len(below)} frames of the exported clip, up to {100 * max(below):.1f}%",
+                               frames=low[:40], worst_pct=round(100 * max(below), 2)))
+    return out, numbers
+
+
+def grip_runtime_findings(mesh, weapon_bone: str, hand: str = "RightHand") -> (List[dict], dict):
+    """TRIPO-GRIP-ENCLOSURE on the exported mesh's rest pose: the hand's skin (the fingers are merged into the hand bone) round the weapon's haft.
+
+    The thumb check needs the finger bones, which the unit no longer has: it stays on the grip stage's GLB."""
+
+    if weapon_bone not in mesh.bones or hand not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
+        return [], {}
+    weapon = mesh.positions[weapon_vertices(mesh, weapon_bone)]
+    hand_bone = mesh.bones.index(hand)
+    on_hand = sum(mesh.weights[:, k] * (mesh.joints[:, k] == hand_bone) for k in range(mesh.joints.shape[1]))
+    skin = mesh.positions[on_hand > 0.5]
+    height = mesh.height
+    centre, axes, _values = T.principal_axes(weapon)
+    palm = pdx_motion.rest_joints(mesh)[hand_bone]
+    haft = axes[0]
+    point = centre + float((palm - centre) @ haft) * haft
+    radius = G.haft_radius(weapon, point, haft, 0.0, 0.05 * height)
+    coverage = T.enclosure_share(point, haft, radius, skin, ENCLOSURE_TOLERANCE_SHARE * height, ENCLOSURE_HALF_LENGTH_SHARE * height)
+    numbers = {"enclosure_share": round(coverage, 3), "haft_radius": round(radius, 4), "skin_points": int(len(skin))}
+    if coverage < MIN_ENCLOSURE_SHARE:
+        return [finding("TRIPO-GRIP-ENCLOSURE", "grip", f"hand skin covers {coverage:.0%} of the haft's circumference at the grip of the exported mesh (limit {MIN_ENCLOSURE_SHARE:.0%}): the fingers do not wrap it", share=round(coverage, 3))], numbers
+    return [], numbers
+
+
 def load_unit(folder: Path):
     mesh_path = sorted(folder.glob("*.mesh"))[0]
     mesh = pdx_deform.load_mesh(mesh_path)
@@ -377,16 +543,82 @@ def load_unit(folder: Path):
     return mesh, anims
 
 
-def job_regions(args) -> (bool, bool):
-    """(cape, wings) from the flags, or from the job: `cape: true`, `anatomy.wings`, or the regions its `tripo.chains` names."""
+def advisory_rules(args) -> set:
+    """The rules the job (or `--grip-advisory`) makes advisory: `tripo.weapon.grip_check: "advisory"` reports TRIPO-GRIP-ENCLOSURE without counting it
+    as a failure (the closed hand is Tripo's own and is judged by eye at the zoom a player sees). TRIPO-GRIP-THUMB is never advisory."""
 
-    cape, wings = args.cape, args.wings
+    advisory = args.grip_advisory
+    if args.jobs_config and args.slug:
+        job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+        advisory = advisory or ((job.get("tripo") or {}).get("weapon") or {}).get("grip_check") == "advisory"
+    return {"TRIPO-GRIP-ENCLOSURE"} if advisory else set()
+
+
+def split_advisory(findings: List[dict], rules: set) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the ones only reported)."""
+
+    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules]
+
+
+def job_regions(args) -> (bool, bool, bool):
+    """(cape, wings, plates) from the flags, or from the job: `cape: true`, `anatomy.wings`, or the regions its `tripo.chains` names."""
+
+    cape, wings, plates = args.cape, args.wings, args.plates
     if args.jobs_config and args.slug:
         job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
         chains = {item["region"] if isinstance(item, dict) else str(item) for item in (job.get("tripo") or {}).get("chains") or []}
         cape = cape or bool(job.get("cape")) or "cloak" in chains
         wings = wings or bool((job.get("anatomy") or {}).get("wings")) or "wings" in chains
-    return cape, wings
+        plates = plates or "plates" in chains
+    return cape, wings, plates
+
+
+def plate_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict], dict):
+    """TRIPO-PLATE-STRETCH per clip and plate (the plates found by the same rule the chain stage binds them by)."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    needed = ("Hips", "Spine01", "Spine02", "neck", "LeftArm", "RightArm", "LeftShoulder", "RightShoulder", "LeftForeArm", "RightForeArm")
+    if not all(name in index for name in needed):
+        return [], {"skipped": "the rig lacks the kit's shoulder, spine or neck bones"}
+    joints = pdx_motion.rest_joints(mesh)
+    heads = {name: joints[i] for name, i in index.items()}
+    names = np.array(mesh.bones)
+    dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
+    torso = np.isin(dominant, ["Hips", "Spine", "Spine01", "Spine02"])
+    radius = tripo_chains.capsule_radius(mesh.positions[torso], heads["Hips"], heads["neck"])
+    masks = tripo_chains.plate_masks(mesh.positions, heads, front_direction(mesh), np.array([0.0, 1.0, 0.0]), radius)
+    edges = pdx_deform.mesh_edges(mesh)
+    out, numbers = [], {"plate_vertices": {name: int(mask.sum()) for name, mask in masks.items()}, "clips": {}}
+    for clip, anim in anims.items():
+        frames = posed_frames(mesh, anim, step)
+        numbers["clips"][clip] = {}
+        for name, mask in masks.items():
+            share, frame = T.region_stretch_share(mesh.positions, frames, edges, mask, mesh.height)
+            numbers["clips"][clip][name] = round(share, 4)
+            if share > MAX_PLATE_STRETCH_SHARE:
+                out.append(finding("TRIPO-PLATE-STRETCH", clip, f"{share:.1%} of the {name.replace('_', ' ')}'s edges are stretched or squashed in frame {frame * step}; an armour plate may stretch no more than vanilla clothing at its worst, {MAX_PLATE_STRETCH_SHARE:.1%}", plate=name, share=round(share, 4)))
+    return out, numbers
+
+
+def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
+    """The weapon and grip checks of a run: on the runtime files when the unit has a weapon bone, and the grip stage's GLB as a diagnostic.
+
+    The GLB's numbers are kept and its weapon findings only printed (they do not fail the unit); its thumb check needs the finger bones the
+    unit no longer has, so it stays a finding."""
+
+    findings = []
+    if args.weapon_bone:
+        found, numbers["weapon_runtime"] = weapon_runtime_findings(mesh, anims, args.weapon_bone, args.roles)
+        findings += found
+        found, numbers["grip_runtime"] = grip_runtime_findings(mesh, args.weapon_bone)
+        findings += found
+    if args.gripped:
+        found, numbers["weapon_in_body_glb"] = weapon_in_body_findings(args.gripped, args.clips, args.weapon_joint)
+        for item in found:
+            print(f"diagnostic (grip stage GLB): {item['rule']} [{item['subject']}] {item['message']}")
+        found, numbers["grip_glb"] = grip_findings(args.gripped)
+        findings += [item for item in found if item["rule"] == "TRIPO-GRIP-THUMB"]
+    return findings
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -396,15 +628,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--weapon-bone", default="", help="the weapon's bone in the unit's mesh (blade facing)")
     parser.add_argument("--weapon-joint", default="mixamorig:Weapon", help="the weapon's joint in the gripped GLB")
     parser.add_argument("--clips", nargs="*", default=[], help="clips of the gripped GLB to check for the weapon in the body (default all)")
+    parser.add_argument("--roles", nargs="*", default=[], help="roles (idle, move, attack, defend, retreat, death) whose exported clips get the weapon checks (default all)")
+    parser.add_argument("--grip-advisory", action="store_true", help="report TRIPO-GRIP-ENCLOSURE without failing the unit (the job's `tripo.weapon.grip_check: \"advisory\"` does the same)")
     parser.add_argument("--cape", action="store_true", help="the unit has a cloak or cape: run the cloak check (the job's `cape: true` does the same with --jobs-config and --slug)")
     parser.add_argument("--wings", action="store_true", help="the unit has wings: run the wing stretch, in-body and ground checks")
+    parser.add_argument("--plates", action="store_true", help="the unit wears armour plates: run the plate stretch check")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--slug")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
-    cape, wings = job_regions(args)
+    cape, wings, plates = job_regions(args)
     if cape:
         found, numbers["cloak"] = cloak_findings(mesh, anims)
         findings += found
@@ -412,6 +647,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         numbers["cloak"] = "not run: the job's anatomy has no cape"
     found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
     findings += found
+    if plates:
+        found, numbers["plates"] = plate_findings(mesh, anims)
+        findings += found
     found, numbers["death"] = death_findings(mesh, anims)
     findings += found
     if not args.weapon_bone:
@@ -420,17 +658,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)
         findings += found
-    if args.gripped:
-        found, numbers["weapon_in_body"] = weapon_in_body_findings(args.gripped, args.clips, args.weapon_joint)
-        findings += found
-        found, numbers["grip"] = grip_findings(args.gripped)
-        findings += found
-    report = {"findings": findings, "numbers": numbers}
+    findings += weapon_stage_findings(args, mesh, anims, numbers)
+    findings, advisory = split_advisory(findings, advisory_rules(args))
+    report = {"findings": findings, "advisory": advisory, "numbers": numbers}
     if args.json:
         args.json.write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     for item in findings:
         print(f"{item['rule']} [{item['subject']}] {item['message']}")
-    print(f"{len(findings)} finding(s)")
+    for item in advisory:
+        print(f"advisory (not a failure): {item['rule']} [{item['subject']}] {item['message']}")
+    print(f"{len(findings)} finding(s), {len(advisory)} advisory")
     return 1 if findings else 0
 
 

@@ -518,6 +518,7 @@ class BlenderAdapterClient:
         promote_audited_target: bool = False,
         source_armature_name: str = "",
         root_scale_reference: Optional[Dict[str, list[str]]] = None,
+        location_bones: Optional[list[str]] = None,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_import_animation_action",
@@ -536,6 +537,7 @@ class BlenderAdapterClient:
                 "source_sha256": source_sha256,
                 "bone_chains": bone_chains or {},
                 "root_scale_reference": root_scale_reference,
+                "location_bones": location_bones,
                 "promote_audited_target": promote_audited_target,
             },
         )

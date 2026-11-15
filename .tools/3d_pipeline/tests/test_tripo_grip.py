@@ -9,9 +9,9 @@ from pathlib import Path
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from lib import tripo_grip as G  # noqa: E402
+from lib import tripo_grip as G
 
 Z = np.array([0.0, 0.0, 1.0])
 Y = np.array([0.0, 1.0, 0.0])
@@ -214,6 +214,13 @@ class PivotTurn(unittest.TestCase):
             self.assertAlmostEqual(found_angle, angle, places=4)
             self.assertAlmostEqual(abs(float(found_axis @ axis)), 1.0, places=4)
         self.assertEqual(G.rotation_axis_angle(np.eye(3))[1], 0.0)
+
+    def test_an_exact_half_turn_has_its_own_axis(self) -> None:
+        axis = G.unit(np.array([1.0, 2.0, -0.5]))
+        found_axis, found_angle = G.rotation_axis_angle(G.rodrigues(axis, np.pi))
+        self.assertAlmostEqual(found_angle, np.pi, places=6)
+        self.assertAlmostEqual(abs(float(found_axis @ axis)), 1.0, places=6)
+        self.assertTrue(np.allclose(G.rodrigues(found_axis, found_angle), G.rodrigues(axis, np.pi), atol=1e-6))
 
     def test_a_turn_about_a_pivot_is_found_and_reproduces_the_motion(self) -> None:
         pivot = np.array([0.4, -0.2, 0.7])

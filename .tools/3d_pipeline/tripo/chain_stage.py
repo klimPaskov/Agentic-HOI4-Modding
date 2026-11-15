@@ -15,14 +15,21 @@ import numpy as np
 from lib import tripo_chains as C
 
 # Body capsules the cloth is kept out of: (name, from bone head, to bone head). The torso capsule runs from the hips to the neck.
+# Body capsules the chains are kept out of: (name, from bone head, to bone head). The torso runs from the hips to the neck, the head from
+# the neck to the head's joint (its radius, from the head's own skin, covers the face). The arms were added after the orc's cloak went
+# into a swinging upper arm in the attack and into the forearm and hand in the death.
 CAPSULES = (
     ("LeftThigh", "LeftUpLeg", "LeftLeg"), ("LeftShin", "LeftLeg", "LeftFoot"),
     ("RightThigh", "RightUpLeg", "RightLeg"), ("RightShin", "RightLeg", "RightFoot"),
-    ("Torso", "Hips", "neck"),
+    ("Torso", "Hips", "neck"), ("Head", "neck", "Head"),
+    ("LeftUpperArm", "LeftArm", "LeftForeArm"), ("LeftForeArm", "LeftForeArm", "LeftHand"),
+    ("RightUpperArm", "RightArm", "RightForeArm"), ("RightForeArm", "RightForeArm", "RightHand"),
 )
 CAPSULE_BONES = {
     "LeftThigh": ("LeftUpLeg",), "LeftShin": ("LeftLeg",), "RightThigh": ("RightUpLeg",), "RightShin": ("RightLeg",),
-    "Torso": ("Hips", "Spine", "Spine01", "Spine02"),
+    "Torso": ("Hips", "Spine", "Spine01", "Spine02"), "Head": ("Head", "neck"),
+    "LeftUpperArm": ("LeftArm",), "LeftForeArm": ("LeftForeArm", "LeftHand"),
+    "RightUpperArm": ("RightArm",), "RightForeArm": ("RightForeArm", "RightHand"),
 }
 
 
@@ -144,7 +151,7 @@ def plan_wings(ctx):
     joints, stations = C.sheet_layout(points, u, s, chain_u, bones)
     joints[:, 0] = root  # every finger chain starts at the wing root
     right_joints = np.stack([C.mirror_points(chain, centre, lateral) for chain in joints])
-    common = {"chain_u": chain_u, "stations": stations, "layout": layout, "root": root, "plane": plane,
+    common = {"chain_u": chain_u, "stations": stations, "layout": layout, "root": root, "plane": plane, "front": front,
               "shape_inputs": {"length": round(length, 4), "width": round(width, 4), "segment": round(ctx["segment"], 4), "budget": ctx["budget"]}}
     return [
         dict(common, region="wings", side="L", mask=left, joints=joints, coords=lambda pts: _fan_coordinates(pts, root, plane)),
@@ -215,9 +222,10 @@ def add_bones(armature, sheets, front) -> None:
                 armature.pose.bones[name].rotation_mode = "QUATERNION"
 
 
-def rebind(body, rows, positions, edges, sheets) -> Dict[str, int]:
+def chain_rows(rows, positions, edges, sheets, dominant):
     """Give each sheet's region its chains' weights whole, blended into the body's over one chain bone outward from the region's border
-    (`lib.tripo_chains.blend_alpha`), at most 4 influences."""
+    (`lib.tripo_chains.blend_alpha`) but never into a forearm, hand, shin or foot (`lib.tripo_chains.is_limb_end`), at most 4
+    influences. Returns the new rows and how many vertices changed."""
 
     changed = 0
     new_rows = list(rows)
@@ -225,7 +233,7 @@ def rebind(body, rows, positions, edges, sheets) -> Dict[str, int]:
         names = [name for chain in bone_names(sheet) for name in chain]
         joints = sheet["joints"]
         blend = C.blend_length_for(joints, positions, edges, sheet["mask"])
-        alpha = C.blend_alpha(positions, edges, sheet["mask"], blend)
+        alpha = C.blend_alpha(positions, edges, sheet["mask"], blend, np.array([C.is_limb_end(name) for name in dominant]))
         sheet["blend_length"] = blend
         bound = np.where(alpha > 0)[0]
         u, s = sheet["coords"](positions[bound])
@@ -235,6 +243,12 @@ def rebind(body, rows, positions, edges, sheets) -> Dict[str, int]:
             named = {names[index]: weight for index, weight in chain_row.items()}
             new_rows[vertex] = C.mix_weights(new_rows[vertex], named, float(alpha[vertex]))
             changed += 1
+    return new_rows, changed
+
+
+def write_groups(body, new_rows, changed: int) -> Dict[str, int]:
+    """Replace the mesh's vertex groups with `new_rows`."""
+
     groups = sorted({name for row in new_rows for name in row} | {g.name for g in body.vertex_groups})
     for group in list(body.vertex_groups):
         body.vertex_groups.remove(group)
@@ -261,6 +275,23 @@ def capsule_radii(positions, dominant, heads, sheets):
     return radii
 
 
+def wing_limits(sheet, heads, radii, up) -> Dict[str, float]:
+    """The wing's pose room by rule (lib/tripo_chains.py): back swing, forward wrap, down-stroke and death sag, from the torso's radius
+    and the wing's own chains."""
+
+    plane, joints, chain_u = sheet["plane"], sheet["joints"], np.asarray(sheet["chain_u"])
+    lateral = C.unit(np.cross(up, sheet["front"]))
+    first = C.unit(joints[:, 1] - joints[:, 0])
+    root_offset = abs(float((sheet["root"] - heads["Hips"]) @ lateral))
+    return {
+        "u_min": float(np.min(chain_u)), "normal": C.unit(np.cross(plane[0], plane[1])),
+        "sweep": C.wing_sweep_degrees(float(sheet["shape_inputs"]["length"]), radii["Torso"]),
+        "wrap": C.wing_wrap_degrees(root_offset, radii["Torso"]),
+        "down": C.wing_down_degrees(first[int(np.argmin(chain_u))], -up),
+        "droop": C.wing_droop_degrees(first[int(np.argmax(chain_u))], up),
+    }
+
+
 def chain_plan(armature, sheets, heads, radii, height, up) -> List[dict]:
     """Per chain: its bones, rest matrices, spring rates, collision radii and the bones each tail follows (the cloak rule)."""
 
@@ -280,9 +311,7 @@ def chain_plan(armature, sheets, heads, radii, height, up) -> List[dict]:
             follow = C.torso_follow_weights(joints[1:], heads[C.CHAIN_PARENT], heads["Hips"], up) if sheet["region"] == "cloak" else []
             wing = None
             if sheet["region"] == "wings":
-                plane = sheet["plane"]
-                wing = {"u_min": float(np.min(sheet["chain_u"])), "normal": C.unit(np.cross(plane[0], plane[1])),
-                        "sweep": C.wing_sweep_degrees(float(sheet["shape_inputs"]["length"]), radii["Torso"])}
+                wing = wing_limits(sheet, heads, radii, up)
             plans.append({
                 "region": sheet["region"], "side": sheet["side"], "chain": c, "bones": chain, "lengths": lengths,
                 "rest_relative": np.stack(relative), "omegas": C.pendulum_omegas(lengths, height), "rest_joints": joints,
@@ -291,6 +320,19 @@ def chain_plan(armature, sheets, heads, radii, height, up) -> List[dict]:
                 "rest_directions": C.unit(np.diff(joints, axis=0)), "parent_rest": parent,
             })
     return plans
+
+
+def bone_parents(armature) -> Dict[str, str]:
+    return {bone.name: (bone.parent.name if bone.parent else None) for bone in armature.data.bones}
+
+
+def apply_plates(armature, rows, positions, edges, heads, dominant, up, front):
+    """The `plates` region: each armour plate bound rigidly to its bone (`lib.tripo_chains.rigid_plates`). Returns the new rows and a report."""
+
+    torso = np.isin(dominant, CAPSULE_BONES["Torso"])
+    radius = C.capsule_radius(positions[torso], heads["Hips"], heads["neck"])
+    masks = C.plate_masks(positions, heads, front, up, radius)
+    return C.rigid_plates(rows, positions, edges, masks, C.bone_depths(bone_parents(armature)))
 
 
 def add_chains(armature, body, regions: List[str]) -> dict:
@@ -313,16 +355,22 @@ def add_chains(armature, body, regions: List[str]) -> dict:
            "height": height, "segment": segment, "budget": budget}
     sheets = []
     for region in regions:
-        sheets += (plan_cloak if region == "cloak" else plan_wings)(ctx)
+        if region != "plates":
+            sheets += (plan_cloak if region == "cloak" else plan_wings)(ctx)
     add_bones(armature, sheets, front)
-    weights = rebind(body, rows, positions, edges, sheets)
+    new_rows, changed = chain_rows(rows, positions, edges, sheets, dominant)
+    plates = {}
+    if "plates" in regions:
+        # after the chains, so a chain's blend ring never reaches into a plate: the plate stays rigid
+        new_rows, plates = apply_plates(armature, new_rows, positions, edges, heads, dominant, up, front)
+    weights = write_groups(body, new_rows, changed)
     heads = rest_heads(armature)
     radii = capsule_radii(positions, dominant, heads, sheets)
     plans = chain_plan(armature, sheets, heads, radii, height, up)
     ground = float((positions @ up).min()) + C.GROUND_MARGIN_SHARE * height
     report = {
         "regions": regions, "bones_after": len(armature.data.bones), "segment": round(segment, 4), "budget_per_side": budget,
-        "weights": weights, "capsule_radii": {k: round(v, 4) for k, v in radii.items()},
+        "weights": weights, "capsule_radii": {k: round(v, 4) for k, v in radii.items()}, "plates": plates,
         "sheets": [{"region": s["region"], "side": s["side"], "vertices": int(s["mask"].sum()), "chains": int(s["joints"].shape[0]),
                     "bones_per_chain": int(s["joints"].shape[1] - 1), "layout": s["layout"], "check_vertices": s.get("check_vertices"), "shape_inputs": s["shape_inputs"],
                     "blend_length": round(s.get("blend_length", 0.0), 4), "bound_vertices": s.get("bound_vertices")} for s in sheets],
@@ -421,7 +469,7 @@ def bake_chains(armature, action, stage: dict, role: str) -> dict:
     baked = dict(zip((id(plan) for plan in cloak), bake_cloak(cloak, body, stage, dt, looping))) if cloak else {}
     for plan in stage["plans"]:
         if plan["region"] == "wings":
-            quaternions = C.wing_quaternions(plan, body["parents"], role, stage)
+            quaternions = C.wing_quaternions(plan, body["parents"], role, stage, body["axes"])
         else:
             quaternions = baked[id(plan)]
         if looping:
@@ -436,5 +484,6 @@ def bake_chains(armature, action, stage: dict, role: str) -> dict:
 def plan_summary(stage: dict) -> dict:
     out = dict(stage["report"])
     out["chains"] = [{"bones": p["bones"], "omegas": [round(float(v), 2) for v in p["omegas"]],
+                      "wing": {k: round(float(v), 2) for k, v in (p.get("wing") or {}).items() if k != "normal"},
                       "follow": [{k: round(v, 3) for k, v in row.items()} for row in p.get("follow", [])]} for p in stage["plans"]]
     return out

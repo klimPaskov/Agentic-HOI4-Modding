@@ -121,6 +121,16 @@ class Blending(unittest.TestCase):
         self.assertTrue(np.all(alpha[:10] == 0.0))
         self.assertTrue(0.0 < float(alpha[15]) < 1.0)
 
+    def test_a_limb_end_gets_no_chain_weight_and_the_share_fades_to_it(self) -> None:
+        positions, edges = self.strip()
+        region = np.arange(40) >= 20
+        hand = np.arange(40) == 25
+        alpha = C.blend_alpha(positions, edges, region, 0.05, hand)
+        self.assertEqual(float(alpha[25]), 0.0)
+        self.assertTrue(0.0 < float(alpha[23]) < 1.0)
+        self.assertEqual(float(alpha[35]), 1.0)
+        self.assertTrue(C.is_limb_end("LeftHand") and C.is_limb_end("RightLeg") and not C.is_limb_end("LeftUpLeg"))
+
     def test_mix_keeps_the_four_largest_weights_normalised(self) -> None:
         mixed = C.mix_weights({"A": 0.5, "B": 0.3, "C": 0.2}, {"X": 0.6, "Y": 0.4}, 0.5)
         self.assertEqual(len(mixed), 4)
@@ -320,23 +330,64 @@ class Regions(unittest.TestCase):
         lateral = np.cross(UP, FRONT)  # the unit's left
         return np.array([C.unit(lateral + 0.3 * UP), C.unit(lateral), C.unit(lateral - 0.5 * UP)]), lateral
 
+    WING = {"u_min": 0.0, "normal": np.array([0.0, -1.0, 0.0]), "sweep": 80.0, "wrap": 70.0, "down": 60.0, "droop": 20.0}
+
+    def pose(self, fold=0.0, wrap=0.0, sweep=1.0, droop=0.0):
+        return {"fold": fold, "wrap": wrap, "sweep": sweep, "droop": droop}
+
     def test_a_spread_still_wing_keeps_its_rest_directions(self) -> None:
         rest, _lateral = self.wing_chain()
-        posed = C.wing_pose_directions(rest, 0.5, 0.0, np.array([0.0, -1.0, 0.0]), UP, FRONT, 0.0, 0.0, np.zeros(3), 80.0)
+        posed = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(), np.zeros(3))
         np.testing.assert_allclose(posed, rest, atol=1e-9)
 
     def test_a_folded_wing_lies_behind_the_body(self) -> None:
         rest, lateral = self.wing_chain()
-        posed = C.wing_pose_directions(rest, 0.5, 0.0, np.array([0.0, -1.0, 0.0]), UP, FRONT, 1.0, 0.0, np.zeros(3), 80.0)
+        posed = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(fold=1.0), np.zeros(3))
         self.assertTrue(np.all(posed @ -FRONT > 0.5))
         self.assertTrue(np.all(posed @ lateral < 0.5))
 
     def test_a_wrapped_wing_comes_forward_and_a_flap_raises_it(self) -> None:
         rest, _lateral = self.wing_chain()
-        wrapped = C.wing_pose_directions(rest, 0.5, 0.0, np.array([0.0, -1.0, 0.0]), UP, FRONT, 0.0, 1.0, np.zeros(3), 80.0)
+        wrapped = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(wrap=1.0), np.zeros(3))
         self.assertTrue(np.all(wrapped @ FRONT > 0.5))
-        raised = C.wing_pose_directions(rest, 0.5, 0.0, np.array([0.0, -1.0, 0.0]), UP, FRONT, 0.0, 0.0, np.array([20.0, 0.0, 0.0]), 80.0)
+        raised = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(), np.array([20.0, 0.0, 0.0]))
         self.assertTrue(np.all(raised @ UP > rest @ UP))
+
+    def test_a_down_stroke_stops_at_the_wings_down_room(self) -> None:
+        rest, _lateral = self.wing_chain()
+        deep = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(), np.array([-200.0, 0.0, 0.0]))
+        capped = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(), np.array([-60.0, 0.0, 0.0]))
+        np.testing.assert_allclose(deep, capped, atol=1e-9)
+
+    def test_the_wing_limits_follow_the_body(self) -> None:
+        self.assertAlmostEqual(C.wing_wrap_degrees(1.0, 0.0), 90.0)
+        self.assertLess(C.wing_wrap_degrees(0.2, 0.05), 90.0)
+        self.assertAlmostEqual(C.wing_down_degrees(np.array([1.0, 0.0, 0.0]), -UP), 90.0)
+        self.assertAlmostEqual(C.wing_droop_degrees(C.unit(np.array([1.0, 0.0, 1.0])), UP), 45.0)
+        self.assertEqual(C.wing_droop_degrees(np.array([1.0, 0.0, -1.0]), UP), 0.0)
+
+    def test_a_dying_wing_sags_level_in_its_own_plane(self) -> None:
+        rest, _lateral = self.wing_chain()
+        sagged = C.wing_pose_directions(rest, 0.5, dict(self.WING, droop=C.wing_droop_degrees(rest[0], UP)), UP, FRONT, self.pose(sweep=0.0, droop=1.0), np.zeros(3))
+        self.assertAlmostEqual(float(sagged[0] @ UP), 0.0, places=9)
+        np.testing.assert_allclose(sagged @ FRONT, 0.0, atol=1e-9)  # it stays in the wing's own plane
+
+    def test_a_dying_wing_folds_back_while_the_torso_stands(self) -> None:
+        rest, lateral = self.wing_chain()
+        lengths = np.array([0.1, 0.1, 0.1])
+        relative = chain_rest(lengths, start=(0.1, 0.0, 1.4), direction=rest[0])
+        plan = {"lengths": lengths, "wing": dict(self.WING, droop=0.0), "side": "L", "rest_directions": np.array([rest[0]] * 3),
+                "parent_rest": np.eye(4), "chain_u": 0.5, "rest_relative": relative}
+        stage = {"up": UP, "front": FRONT, "ground": -10.0}
+        frames = 60
+        standing = C.wing_quaternions(plan, np.stack([np.eye(4)] * frames), "death", stage)
+        lying = np.eye(4)
+        lying[:3, :3] = C.axis_angle_matrix(lateral, math.radians(90.0))  # the torso pitched flat
+        fallen = C.wing_quaternions(plan, np.stack([lying] * frames), "death", stage)
+        swung = C.quaternion_step_degrees(standing[-1, 0], np.array([1.0, 0, 0, 0]))
+        flat = C.quaternion_step_degrees(fallen[-1, 0], np.array([1.0, 0, 0, 0]))
+        self.assertGreater(swung, 45.0)  # standing: folded back along the back
+        self.assertLess(flat, swung)  # lying: it stays in the body's back plane, flat
 
     def test_looping_wing_roles_end_as_they_start(self) -> None:
         for role in C.LOOPING_ROLES:
@@ -349,8 +400,85 @@ class Regions(unittest.TestCase):
         pose = C.wing_role_pose("death", 100)
         self.assertEqual(float(pose["fold"][0]), 0.0)
         self.assertAlmostEqual(float(pose["fold"][-1]), 1.0)
+        self.assertAlmostEqual(float(pose["droop"][-1]), 1.0)
         self.assertAlmostEqual(C.wing_sweep_degrees(1.0, 0.0), 90.0)
         self.assertLess(C.wing_sweep_degrees(0.4, 0.05), 90.0)
+
+    def test_the_front_cover_counts_torso_cells_a_wing_hides(self) -> None:
+        grid = np.array([[x, y, 0.0] for x in np.linspace(-0.1, 0.1, 11) for y in np.linspace(0.5, 0.9, 21)])  # a flat torso facing +z
+        wing_behind = grid[:50] + np.array([0.0, 0.0, -0.2])
+        wing_front = grid[:50] + np.array([0.0, 0.0, 0.2])
+        torso = np.r_[np.ones(len(grid), bool), np.zeros(50, bool)]
+        wings = ~torso
+        front = np.array([0.0, 0.0, 1.0])
+        up = np.array([0.0, 1.0, 0.0])
+        self.assertEqual(C.front_cover_share(np.vstack([grid, wing_behind]), torso, wings, front, up, 1.0), 0.0)
+        hidden = C.front_cover_share(np.vstack([grid, wing_front]), torso, wings, front, up, 1.0)
+        self.assertGreater(hidden, 0.1)
+        self.assertLess(hidden, 0.5)
+
+    def test_points_inside_at_rest_are_not_counted(self) -> None:
+        # a closed box body and two cloth points: one modelled inside it, one that moves in
+        corners = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)], float)
+        faces = np.array([[0, 1, 3], [0, 3, 2], [4, 6, 7], [4, 7, 5], [0, 4, 5], [0, 5, 1], [2, 3, 7], [2, 7, 6], [0, 2, 6], [0, 6, 4], [1, 5, 7], [1, 7, 3]])
+        rest = np.vstack([corners, [[0.0, 0.0, 0.0], [0.0, 0.0, 3.0]]])
+        moved = rest.copy()
+        moved[9] = [0.0, 0.2, 0.1]
+        body = np.r_[np.ones(8, bool), False, False]
+        cloth = ~body
+        self.assertEqual(C.inside_share_series([moved], faces, body, cloth, 2.0, 0.01)[0], 1.0)
+        self.assertEqual(C.inside_share_series([moved], faces, body, cloth, 2.0, 0.01, rest=rest)[0], 1.0)
+        self.assertEqual(C.inside_share_series([rest], faces, body, cloth, 2.0, 0.01, rest=rest)[0], 0.0)
+
+    def test_plates_ride_the_bone_nearest_the_root_and_go_rigid(self) -> None:
+        depth = C.bone_depths({"Hips": None, "Spine02": "Hips", "LeftShoulder": "Spine02", "LeftArm": "LeftShoulder"})
+        rows = [{"LeftArm": 0.6, "LeftShoulder": 0.4}, {"LeftArm": 0.7, "LeftShoulder": 0.3}, {"LeftArm": 1.0}]
+        mask = np.array([True, True, False])
+        self.assertEqual(C.plate_bone(rows, mask, depth), "LeftShoulder")
+        positions = np.array([[0.0, 0.0, 0.0], [0.01, 0.0, 0.0], [1.0, 0.0, 0.0]])
+        edges = np.array([[0, 1], [1, 2]])
+        new, report = C.rigid_plates(rows, positions, edges, {"left_pauldron": mask}, depth)
+        self.assertEqual(new[0], {"LeftShoulder": 1.0})
+        self.assertEqual(new[1], {"LeftShoulder": 1.0})
+        self.assertEqual(new[2], {"LeftArm": 1.0})  # beyond the ring
+        self.assertEqual(report["left_pauldron"]["bone"], "LeftShoulder")
+
+    def test_a_plates_ring_stops_before_another_plate(self) -> None:
+        depth = C.bone_depths({"Hips": None, "Spine02": "Hips", "LeftShoulder": "Spine02", "LeftArm": "LeftShoulder"})
+        positions = np.stack([np.arange(12) * 0.01, np.zeros(12), np.zeros(12)], axis=1)
+        edges = np.stack([np.arange(11), np.arange(1, 12)], axis=1)
+        rows = [{"Spine02": 0.6, "LeftShoulder": 0.4}] * 4 + [{"LeftShoulder": 0.5, "LeftArm": 0.5}] * 8
+        chest = np.arange(12) < 4
+        pauldron = (np.arange(12) >= 5) & (np.arange(12) < 9)
+        new, _report = C.rigid_plates(rows, positions, edges, {"chest_plate": chest, "left_pauldron": pauldron}, depth)
+        for index in np.where(pauldron)[0]:
+            self.assertEqual(new[index], {"LeftShoulder": 1.0})  # the chest plate's ring does not bend the pauldron
+        for index in np.where(chest)[0]:
+            self.assertEqual(new[index], {"Spine02": 1.0})
+
+    def test_touching_plates_ride_one_bone(self) -> None:
+        depth = C.bone_depths({"Hips": None, "Spine02": "Hips", "LeftShoulder": "Spine02", "LeftArm": "LeftShoulder"})
+        positions = np.stack([np.arange(8) * 0.01, np.zeros(8), np.zeros(8)], axis=1)
+        edges = np.stack([np.arange(7), np.arange(1, 8)], axis=1)
+        rows = [{"Spine02": 0.6, "LeftShoulder": 0.4}] * 4 + [{"LeftShoulder": 0.5, "LeftArm": 0.5}] * 4
+        masks = {"chest_plate": np.arange(8) < 4, "left_pauldron": np.arange(8) >= 4}
+        self.assertEqual(C.plate_assemblies(masks, edges), [["chest_plate", "left_pauldron"]])
+        new, report = C.rigid_plates(rows, positions, edges, masks, depth)
+        self.assertEqual({row_name for row in new for row_name in row}, {"Spine02"})  # no seam between them to tear
+        self.assertEqual(report["left_pauldron"]["bone"], "Spine02")
+
+    def test_plate_masks_find_the_shoulders_and_the_chest(self) -> None:
+        heads = {"Hips": np.array([0.0, 1.0, 0.0]), "Spine01": np.array([0.0, 1.2, 0.0]), "Spine02": np.array([0.0, 1.3, 0.0]),
+                 "neck": np.array([0.0, 1.5, 0.0]), "LeftShoulder": np.array([0.05, 1.45, 0.0]), "LeftArm": np.array([0.2, 1.45, 0.0]),
+                 "LeftForeArm": np.array([0.2, 1.15, 0.0]), "RightShoulder": np.array([-0.05, 1.45, 0.0]), "RightArm": np.array([-0.2, 1.45, 0.0]),
+                 "RightForeArm": np.array([-0.2, 1.15, 0.0])}
+        up, front = np.array([0.0, 1.0, 0.0]), np.array([0.0, 0.0, 1.0])  # these joints stand with y up and face +z; +x is their left
+        points = np.array([[0.25, 1.5, 0.0], [-0.25, 1.5, 0.0], [0.0, 1.35, -0.15], [0.0, 1.35, 0.15], [0.2, 1.0, 0.0]])
+        masks = C.plate_masks(points, heads, front, up, 0.15)
+        np.testing.assert_array_equal(masks["left_pauldron"], [True, False, False, False, False])
+        np.testing.assert_array_equal(masks["right_pauldron"], [False, True, False, False, False])
+        np.testing.assert_array_equal(masks["chest_plate"], [False, False, False, True, False])
+        self.assertFalse(any(m[4] for m in masks.values()))
 
     def test_flap_is_delayed_down_the_chain(self) -> None:
         phase = np.linspace(0.0, 2.0 * math.pi, 101)

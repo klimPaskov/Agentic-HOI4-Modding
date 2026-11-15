@@ -570,9 +570,8 @@ def rotation_axis_angle(matrix: np.ndarray) -> Tuple[np.ndarray, float]:
     if angle < 1e-9:
         return np.array([0.0, 0.0, 1.0]), 0.0
     if angle > np.pi - 1e-6:
-        values, vectors = np.linalg.eigh((matrix + matrix.T) / 2.0 - np.eye(3) * (cosine))
-        axis = vectors[:, int(np.argmin(np.abs(values)))]
-        return unit(axis), angle
+        values, vectors = np.linalg.eigh((matrix + matrix.T) / 2.0 + np.eye(3))  # a half turn is 2 n nT - I: R + I is 2 n nT
+        return unit(vectors[:, int(np.argmax(values))]), angle
     axis = np.array([matrix[2, 1] - matrix[1, 2], matrix[0, 2] - matrix[2, 0], matrix[1, 0] - matrix[0, 1]])
     return unit(axis), angle
 

@@ -83,9 +83,14 @@ COLLISION_MARGIN_SHARE = 0.01  # chain joints keep this share of the height clea
 CAPSULE_PERCENTILE = 60  # a capsule's radius is this percentile of its own vertices' distance to the bone (clothes and fur stay compressible)
 GROUND_MARGIN_SHARE = 0.005
 
+# The front-view cover test (TRIPO-WING-FRONT): screen cells this share of the height wide, and a wing point hides the torso there when it is
+# this share of the height nearer the camera than the torso's front surface.
+COVER_CELL_SHARE = 0.02
+COVER_MARGIN_SHARE = 0.01
 # Prefix of the bones each region adds; the checks find a region's vertices by them too.
 REGION_PREFIX = {"cloak": "Cloak", "wings": "Wing"}
-REGIONS = tuple(REGION_PREFIX)
+# `plates` adds no bones: it binds each armour plate rigidly to one bone (`rigid_plates`).
+REGIONS = tuple(REGION_PREFIX) + ("plates",)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -269,6 +274,15 @@ def blend_length_for(joints: np.ndarray, positions: np.ndarray, edges: np.ndarra
     return max(bone, BLEND_MIN_RINGS * ring)
 
 
+def is_limb_end(name: str) -> bool:
+    """A forearm, hand, shin or foot: skin that moves on its own and that a chain's blend ring never reaches. On the orc the cloak's ring
+    reached the right hand that rests against it, and the released axe then measured 22.6% of the height off that hand in the death
+    (UNIT-LOOSE-PART), against 15.2% before."""
+
+    name = str(name)
+    return name.endswith(("ForeArm", "Hand", "Foot", "ToeBase")) or name in ("LeftLeg", "RightLeg")
+
+
 def is_arm_bone(name: str) -> bool:
     return any(str(name).endswith(ending) for ending in ARM_BONE_ENDINGS)
 
@@ -293,7 +307,9 @@ def wing_masks(positions: np.ndarray, dominant: Sequence[str], centre: np.ndarra
 
 
 def side_count(region: str) -> int:
-    return 2 if region == "wings" else 1
+    """Chain sides a region needs bones for: two wings, one cloak, no plates."""
+
+    return {"wings": 2, "cloak": 1}.get(region, 0)
 
 
 def bone_budget(bones_in_rig: int, regions: Sequence[str], max_bones: int = MAX_BONES) -> int:
@@ -537,7 +553,7 @@ def surface_distance(positions: np.ndarray, edges: np.ndarray, seeds: np.ndarray
     return distance
 
 
-def blend_alpha(positions: np.ndarray, edges: np.ndarray, region: np.ndarray, blend_length: float) -> np.ndarray:
+def blend_alpha(positions: np.ndarray, edges: np.ndarray, region: np.ndarray, blend_length: float, blocked: Optional[np.ndarray] = None) -> np.ndarray:
     """Per vertex, the chains' share of its weight: 1 in the whole region, falling smoothly to 0 over `blend_length` of surface distance
     outward from the region's border, into the skin the region is joined to.
 
@@ -548,7 +564,12 @@ def blend_alpha(positions: np.ndarray, edges: np.ndarray, region: np.ndarray, bl
     region = np.asarray(region, bool)
     distance = surface_distance(positions, edges, region, blend_length)
     outside = np.where(np.isfinite(distance), 1.0 - smoothstep(distance / max(blend_length, 1e-12)), 0.0)
-    return np.where(region, 1.0, outside)
+    alpha = np.where(region, 1.0, outside)
+    if blocked is not None and np.any(blocked):
+        # skin that must keep its own motion (`is_limb_end`) gets no chain weight, and the share fades to it over the same length
+        near = surface_distance(positions, edges, np.asarray(blocked, bool), blend_length)
+        alpha = alpha * np.where(np.isfinite(near), smoothstep(near / max(blend_length, 1e-12)), 1.0)
+    return alpha
 
 
 def mix_weights(body: Dict[str, float], chains: Dict[str, float], alpha: float, keep: int = MAX_INFLUENCES) -> Dict[str, float]:
@@ -951,29 +972,35 @@ def clearance_radii(joints: np.ndarray, capsules: Sequence[Tuple[np.ndarray, np.
 
 # Per role: `fold` 0 spread as at rest, 1 folded against the back; `fold_end` the fold at the clip's end when it changes (death); `flap`
 # the flap amplitude in degrees at the chain roots; `beats` the flap cycles in the clip (a whole number, so a looping clip loops); `beat`
-# a single strong beat over the clip (attack). Defend wraps the wings forward (`wrap`, a share of the fold's back swing, turned forward).
-# Rules: idle half folded with one slow breath per loop; move folded with small quick beats; attack spread with one strong beat at the
-# strike; defend wrapped forward round the body; retreat half spread, flapping hard; death closes the fan without swinging back (`sweep`
-# 0: a body that ends face down would hold swept-back wings up in the air) and lets the whole wing sag about the shoulder's front axis
-# (`droop`, degrees), rigidly, so the membrane keeps its shape and the wings lie flat when the body does.
+# a single strong beat over the clip (attack). Defend wraps the wings forward (`wrap`, a share of the wing's forward room,
+# `wing_wrap_degrees`). Rules: idle half folded with one slow breath per loop; move folded with small quick beats; attack spread with one
+# strong beat at the strike; defend wrapped forward beside the body; retreat half spread, flapping hard; death closes the fan without
+# swinging back (`sweep` 0: a body that ends face down would hold swept-back wings up in the air), folds them back only while the torso still
+# stands (`upright_sweep`: the back swing is the share the torso is upright, so a kneeling body does not wrap its wings round its legs), and
+# sags the whole wing in its own plane
+# until its highest chain lies level (`droop`, a share of `wing_droop_degrees`), rigidly, so the membrane keeps its shape and the wings lie
+# flat beside the body when it falls. Every pose is capped by the body: a down-stroke stops when the lowest chain hangs straight down
+# (`wing_down_degrees`) and the bones are pushed out of the body's capsules.
 WING_ROLES: Dict[str, Dict[str, float]] = {
     "idle": {"fold": 0.5, "flap": 6.0, "beats": 1},
     "move": {"fold": 0.8, "flap": 8.0, "beats": 2},
     "attack": {"fold": 0.0, "flap": 30.0, "beats": 0, "beat": 1.0},
     "defend": {"fold": 0.3, "flap": 4.0, "beats": 1, "wrap": 0.6},
     "retreat": {"fold": 0.3, "flap": 25.0, "beats": 3},
-    "death": {"fold": 0.0, "fold_end": 1.0, "flap": 0.0, "beats": 0, "sweep": 0.0, "droop": 30.0},
+    "death": {"fold": 0.0, "fold_end": 1.0, "flap": 0.0, "beats": 0, "sweep": 0.0, "droop": 1.0, "upright_sweep": 1.0},
 }
 WING_DEFAULT_ROLE = "idle"
 # A folded fan keeps 70% of its spread: the membrane between two chains never narrows past the kit's squash limit (two thirds).
 FAN_CLOSE_SHARE = 0.3
 FLAP_DELAY = 0.15  # each bone down a chain lags its parent by this share of a flap cycle (the wave runs out to the tip)
-FLAP_FALLOFF = 0.6  # each bone down a chain flaps this share of its parent's amplitude... on top of what the parent carries
+# Each bone down a chain flaps this share of its parent's amplitude on top of what the parent carries, so the tip turns at most 1.4 times
+# the root's angle. At 0.6 (1.96 times) the tips curled into thin spikes in the demon's attack and retreat.
+FLAP_FALLOFF = 0.3
 
 
 def wing_role_pose(role: str, frames: int) -> Dict[str, np.ndarray]:
     """Per frame: the fold (0..1), the wrap (0..1), the flap phase (radians) and amplitude (degrees) of the chain roots, the share of the
-    back swing a fold makes (`sweep`) and the whole wing's sag in degrees (`droop`)."""
+    back swing a fold makes (`sweep`) and the share of the wing's droop room it sags by (`droop`)."""
 
     rule = WING_ROLES.get(role, WING_ROLES[WING_DEFAULT_ROLE])
     t = np.linspace(0.0, 1.0, frames) if frames > 1 else np.zeros(1)
@@ -991,7 +1018,7 @@ def wing_role_pose(role: str, frames: int) -> Dict[str, np.ndarray]:
         amplitude = amplitude * np.sin(math.pi * t)
     else:
         phase = 2.0 * math.pi * beats * t
-    droop = rule.get("droop", 0.0) * smoothstep(t / 0.8)
+    droop = rule.get("droop", 0.0) * smoothstep(t / 0.8)  # a share of the wing's own droop room
     return {"fold": fold, "wrap": wrap, "phase": phase, "amplitude": amplitude, "sweep": np.full(frames, rule.get("sweep", 1.0)), "droop": droop}
 
 
@@ -1012,22 +1039,44 @@ def wing_sweep_degrees(reach: float, torso_radius: float) -> float:
     return 90.0 - math.degrees(math.asin(min(1.0, torso_radius / max(reach, 1e-9))))
 
 
-def wing_pose_directions(rest_directions: np.ndarray, chain_u: float, u_min: float, normal: np.ndarray, up: np.ndarray, front: np.ndarray,
-                         fold: float, wrap: float, flaps: np.ndarray, sweep_degrees: float, sweep_share: float = 1.0) -> np.ndarray:
+def wing_wrap_degrees(root_offset: float, torso_radius: float) -> float:
+    """How far a wing may swing forward about the upper spine: until it points straight ahead, less the angle the torso's radius takes at
+    the root's distance from the mid-plane, so its inner edge stays beside the torso and never crosses in front of it."""
+
+    return 90.0 - math.degrees(math.asin(min(1.0, torso_radius / max(root_offset, 1e-9))))
+
+
+def wing_down_degrees(lowest_direction: np.ndarray, down: np.ndarray) -> float:
+    """How far a down-stroke may turn a wing: until its lowest chain hangs straight down (further, the wing tucks under and in front of
+    the body)."""
+
+    return math.degrees(math.acos(float(np.clip(unit(lowest_direction) @ unit(down), -1.0, 1.0))))
+
+
+def wing_droop_degrees(highest_direction: np.ndarray, up: np.ndarray) -> float:
+    """How far a dying wing sags in its own plane: until its highest chain lies level (no wing corner then stands above the shoulders, or
+    ahead of the head when the body ends face down)."""
+
+    return max(0.0, math.degrees(math.asin(float(np.clip(unit(highest_direction) @ unit(up), -1.0, 1.0)))))
+
+
+def wing_pose_directions(rest_directions: np.ndarray, chain_u: float, wing: Dict[str, float], up: np.ndarray, front: np.ndarray,
+                         pose: Dict[str, float], flaps: np.ndarray) -> np.ndarray:
     """A left wing chain's bone directions (bones, 3) in one frame's pose, in the rest pose's space.
 
-    Fold closes the fan by `FAN_CLOSE_SHARE` (each chain turns in the wing's plane, about `normal`, toward the lowest chain's angle
-    `u_min`) and swings the wing
-    back about `up` by `sweep_degrees`; wrap swings it forward instead. The flap turns bone k about the body's front axis by the sum of
-    the flap angles of bone 0 to k (a positive angle raises a left wing)."""
+    Fold closes the fan by `FAN_CLOSE_SHARE` (each chain turns in the wing's plane, about `wing["normal"]`, toward the lowest chain's angle
+    `wing["u_min"]`) and swings the wing back about `up` by `wing["sweep"]` degrees (times `pose["sweep"]`); wrap swings it forward by its
+    share of `wing["wrap"]`. Droop sags the whole wing in its plane by its share of `wing["droop"]`. The flap turns bone k about the body's
+    front axis by the sum of the flap angles of bone 0 to k (a positive angle raises a left wing), never further down than `wing["down"]`."""
 
     up, front = unit(up), unit(front)
-    close = axis_angle_matrix(normal, fold * FAN_CLOSE_SHARE * (u_min - chain_u))
-    swing = axis_angle_matrix(up, math.radians(sweep_degrees) * (sweep_share * fold - wrap))
+    fold = float(pose["fold"])
+    close = axis_angle_matrix(wing["normal"], fold * FAN_CLOSE_SHARE * (wing["u_min"] - chain_u))
+    swing = axis_angle_matrix(up, math.radians(wing["sweep"] * float(pose["sweep"]) * fold - wing["wrap"] * float(pose["wrap"])))
     out = np.zeros_like(np.asarray(rest_directions, float))
     for k, direction in enumerate(np.asarray(rest_directions, float)):
-        flap = axis_angle_matrix(front, math.radians(float(np.sum(flaps[: k + 1]))))
-        out[k] = unit(swing @ flap @ close @ direction)
+        turn = max(float(np.sum(flaps[: k + 1])) - wing["droop"] * float(pose["droop"]), -wing["down"])
+        out[k] = unit(swing @ axis_angle_matrix(front, math.radians(turn)) @ close @ direction)
     return out
 
 
@@ -1037,14 +1086,14 @@ def mirror_directions(directions: np.ndarray, lateral: np.ndarray) -> np.ndarray
     return directions - 2.0 * np.outer(directions @ lateral, lateral)
 
 
-def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict) -> np.ndarray:
+def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, capsule_axes: Optional[np.ndarray] = None) -> np.ndarray:
     """(frames, bones, 4) local quaternions of one wing chain for a role clip: the role's fold, wrap and flap (`WING_ROLES`) carried by
-    the upper spine, each bone kept above the ground."""
+    the upper spine, each bone pushed out of the body's capsules (`capsule_axes` (frames, capsules, 2, 3) with the plan's `radii`) along
+    the wing's outward side, and kept above the ground."""
 
     frames, bones = parents.shape[0], len(plan["lengths"])
     pose = wing_role_pose(role, frames)
     flaps = flap_angles(pose["phase"], pose["amplitude"], bones)
-    flaps[:, 0] -= pose["droop"]  # the root's turn carries the whole wing (the flap angles add up down the chain)
     wing = plan["wing"]
     lateral = unit(np.cross(stage["up"], stage["front"]))
     rest = np.asarray(plan["rest_directions"], float)
@@ -1052,21 +1101,164 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict) ->
     parent_rest = np.asarray(plan["parent_rest"], float)
     out = np.zeros((frames, bones, 4))
     for f in range(frames):
-        posed = wing_pose_directions(left_rest, plan["chain_u"], wing["u_min"], wing["normal"], stage["up"], stage["front"],
-                                     float(pose["fold"][f]), float(pose["wrap"][f]), flaps[f], wing["sweep"], float(pose["sweep"][f]))
+        carry = parents[f][:3, :3] @ parent_rest[:3, :3].T
+        now = {key: value[f] for key, value in pose.items()}
+        if "upright_sweep" in WING_ROLES.get(role, {}):
+            # a dying wing folds back along the back while the torso stands, and lies flat as it falls
+            now["sweep"] = float(np.clip(unit(carry @ unit(stage["up"])) @ unit(stage["up"]), 0.0, 1.0))
+        posed = wing_pose_directions(left_rest, plan["chain_u"], wing, stage["up"], stage["front"], now, flaps[f])
         if plan["side"] == "R":
             posed = mirror_directions(posed, lateral)
-        carry = parents[f][:3, :3] @ parent_rest[:3, :3].T
+        outward = unit(carry @ (lateral if plan["side"] == "L" else -lateral))
         current = parents[f]
         for k in range(bones):
             unposed = current @ plan["rest_relative"][k]
             head, rigid = unposed[:3, 3], unit(unposed[:3, 1])
-            direction = onto_ground(head, unit(carry @ posed[k]), float(plan["lengths"][k]), stage["ground"], stage["up"], -stage["front"])
+            capsules = [] if capsule_axes is None else [(axis[0], axis[1], float(plan["radii"][k, c])) for c, axis in enumerate(capsule_axes[f])]
+            direction = collide_direction(head, unit(carry @ posed[k]), float(plan["lengths"][k]), capsules, stage["ground"], stage["up"], outward, along=True)
             turn = shortest_arc(rigid, direction)
             out[f, k] = quaternion_from_matrix(unposed[:3, :3].T @ turn @ unposed[:3, :3])
             current = unposed.copy()
             current[:3, :3] = turn @ unposed[:3, :3]
     return continuous_quaternions(out)
+
+
+# ---------------------------------------------------------------------------------------------
+# Plates: rigid armour over a joint
+# ---------------------------------------------------------------------------------------------
+
+# A shoulder plate (pauldron) covers the shoulder joint out to this share of the upper arm's length, and reaches down the arm this share of
+# it below the joint. On the orc that is 0.09 and 0.03 of the height, the plates' visible extent.
+PLATE_REACH_SHARE = 0.6
+PLATE_DROP_SHARE = 0.2
+# A chest plate lies ahead of the upper spine's joint by more than this share of the torso's radius, between the middle spine's and the
+# neck's heights, and within this share of half the shoulders' width of the mid-line.
+CHEST_AHEAD_SHARE = 0.35
+CHEST_WIDTH_SHARE = 0.6
+# A plate's rigid weight blends into the body over the plate's own largest extent (a narrower ring took the strain the plate no longer
+# takes into too few edges: on the orc four rings gave 1495 stretched edges in the attack against vanilla's 1300, the plate's own extent
+# 1075 with the cloak's chains).
+PLATE_BAND_SHARE = 1.0
+# A bone holds a plate when it carries at least this share of the plate's total weight.
+PLATE_HOLD_SHARE = 0.1
+
+
+def plate_masks(positions: np.ndarray, heads: Dict[str, np.ndarray], front: np.ndarray, up: np.ndarray, torso_radius: float) -> Dict[str, np.ndarray]:
+    """The armour plates over the shoulder joints and on the chest, by rule from the rig's joints (heads in the same space as positions).
+
+    Pauldron: within `PLATE_REACH_SHARE` of the upper arm's length of the upper arm's joint, no lower than `PLATE_DROP_SHARE` of that
+    length under it, outside the shoulder joint. Chest plate: ahead of the upper spine's joint by `CHEST_AHEAD_SHARE` of the torso's
+    radius, between the middle spine's and the neck's heights, within `CHEST_WIDTH_SHARE` of half the shoulders' width of the mid-line."""
+
+    positions = np.asarray(positions, float)
+    up, front = unit(up), unit(front)
+    lateral = unit(np.cross(up, front))
+    out = {}
+    for side in ("Left", "Right"):
+        arm, shoulder = heads[f"{side}Arm"], heads[f"{side}Shoulder"]
+        length = float(np.linalg.norm(heads[f"{side}ForeArm"] - arm))
+        outward = 1.0 if float((arm - heads["Hips"]) @ lateral) >= 0 else -1.0
+        near = np.linalg.norm(positions - arm, axis=1) < PLATE_REACH_SHARE * length
+        high = positions @ up > float(arm @ up) - PLATE_DROP_SHARE * length
+        outside = ((positions - shoulder) @ lateral) * outward > 0
+        out[f"{side.lower()}_pauldron"] = near & high & outside
+    half = 0.5 * abs(float((heads["LeftArm"] - heads["RightArm"]) @ lateral))
+    ahead = (positions - heads[CHAIN_PARENT]) @ front > CHEST_AHEAD_SHARE * torso_radius
+    band = (positions @ up > float(heads["Spine01"] @ up)) & (positions @ up < float(heads["neck"] @ up))
+    middle = np.abs((positions - heads["Hips"]) @ lateral) < CHEST_WIDTH_SHARE * half
+    out["chest_plate"] = ahead & band & middle
+    return out
+
+
+def plate_bone(rows: Sequence[Dict[str, float]], mask: np.ndarray, depth: Dict[str, int]) -> str:
+    """The bone a plate rides: of the bones that hold at least `PLATE_HOLD_SHARE` of its weight, the one nearest the root (fewest parent
+    steps). A plate over a joint is strapped to the body side of it: a pauldron to the shoulder, a chest plate to the upper spine."""
+
+    totals: Dict[str, float] = {}
+    for index in np.where(np.asarray(mask, bool))[0]:
+        for name, weight in rows[index].items():
+            totals[name] = totals.get(name, 0.0) + weight
+    whole = sum(totals.values()) or 1.0
+    holding = [name for name, weight in totals.items() if weight / whole >= PLATE_HOLD_SHARE and name in depth]
+    if not holding:
+        return max(totals, key=totals.get)
+    return min(holding, key=lambda name: (depth[name], -totals[name]))
+
+
+def bone_depths(parents: Dict[str, Optional[str]]) -> Dict[str, int]:
+    """Parent steps from the root for each bone (`parents` maps a bone to its parent's name, None for the root)."""
+
+    out: Dict[str, int] = {}
+    for name in parents:
+        steps, current = 0, parents[name]
+        while current is not None and steps < 256:
+            steps, current = steps + 1, parents.get(current)
+        out[name] = steps
+    return out
+
+
+def plate_band(positions: np.ndarray, edges: np.ndarray, mask: np.ndarray) -> float:
+    """The width of the ring a plate's rigid weight blends over into the body: `PLATE_BAND_SHARE` of the plate's largest extent, and at
+    least `BLEND_MIN_RINGS` of its median edge length."""
+
+    mask = np.asarray(mask, bool)
+    inside = mask[edges].all(axis=1)
+    lengths = np.linalg.norm(positions[edges[inside, 0]] - positions[edges[inside, 1]], axis=1)
+    lengths = lengths[lengths > 0]
+    rings = BLEND_MIN_RINGS * (float(np.median(lengths)) if len(lengths) else 0.0)
+    extent = float(np.ptp(positions[mask], axis=0).max()) if mask.any() else 0.0
+    return max(rings, PLATE_BAND_SHARE * extent)
+
+
+def plate_assemblies(masks: Dict[str, np.ndarray], edges: np.ndarray) -> List[List[str]]:
+    """Plates that touch (an edge joins them, or they share vertices) grouped into assemblies: armour strapped together moves as one."""
+
+    names = [name for name, mask in masks.items() if np.any(mask)]
+    parent = {name: name for name in names}
+
+    def find(name):
+        while parent[name] != name:
+            name = parent[name]
+        return name
+
+    edges = np.asarray(edges, int)
+    for i, first in enumerate(names):
+        for second in names[i + 1:]:
+            a, b = np.asarray(masks[first], bool), np.asarray(masks[second], bool)
+            if np.any(a & b) or np.any((a[edges[:, 0]] & b[edges[:, 1]]) | (b[edges[:, 0]] & a[edges[:, 1]])):
+                parent[find(first)] = find(second)
+    groups: Dict[str, List[str]] = {}
+    for name in names:
+        groups.setdefault(find(name), []).append(name)
+    return list(groups.values())
+
+
+def rigid_plates(rows: Sequence[Dict[str, float]], positions: np.ndarray, edges: np.ndarray, masks: Dict[str, np.ndarray], depth: Dict[str, int]) -> Tuple[List[Dict[str, float]], Dict[str, dict]]:
+    """Each plate bound wholly to one bone, blended into the body over a ring (`plate_band` of the whole assembly). Plates that touch form one assembly
+    (`plate_assemblies`) that rides one bone, `plate_bone` of the whole assembly: on the orc, pauldrons on the shoulder bones and a chest
+    plate on the spine tore their shared seam (180 more stretched edges in the attack). An assembly's ring fades out before every other
+    assembly, so no ring bends another plate. Returns the new rows and per plate its bone,
+    vertex count and the vertices the blend touched."""
+
+    out = list(rows)
+    report = {}
+    for group in plate_assemblies(masks, edges):
+        union = np.zeros(len(positions), bool)
+        for name in group:
+            union |= np.asarray(masks[name], bool)
+        bone = plate_bone(rows, union, depth)
+        others = np.zeros(len(positions), bool)
+        for name, mask in masks.items():
+            if name not in group:
+                others |= np.asarray(mask, bool)
+        alpha = blend_alpha(positions, edges, union, plate_band(positions, edges, union), others & ~union)
+        alpha[union] = 1.0  # an assembly stays whole even where another plate is near
+        touched = np.where(alpha > 0)[0]
+        for index in touched:
+            out[index] = mix_weights(out[index], {bone: 1.0}, float(alpha[index]))
+        for name in group:
+            report[name] = {"bone": bone, "vertices": int(np.sum(masks[name])), "blended": int(len(touched)), "assembly": sorted(group)}
+    return out, report
 
 
 # ---------------------------------------------------------------------------------------------
@@ -1079,11 +1271,32 @@ def chain_bones(names: Iterable[str], region: Optional[str] = None) -> List[str]
     return [name for name in names if any(str(name).startswith(prefix) for prefix in prefixes)]
 
 
-def inside_share_series(frames: Sequence[np.ndarray], triangles: np.ndarray, body: np.ndarray, region: np.ndarray, height: float, margin_share: float, max_points: int = 400) -> List[float]:
-    """Per frame: the share of region points (at most `max_points`, evenly spaced) deeper than `margin_share` of the height inside the
-    rest of the body (the triangles whose three vertices are all in `body`). Uses the kit's ray-parity inside test (tripo/clip_check.py)."""
+def deep_inside(posed: np.ndarray, index: np.ndarray, body_triangles: np.ndarray, body_index: np.ndarray, height: float, margin_share: float) -> np.ndarray:
+    """Mask over `index`: the points of `posed` deeper than `margin_share` of the height inside the body triangles."""
 
     import clip_check as cc
+
+    points = posed[index]
+    lo, hi = posed[body_index].min(axis=0), posed[body_index].max(axis=0)
+    near = np.all((points >= lo) & (points <= hi), axis=1)
+    inside = np.zeros(len(points), dtype=bool)
+    if near.any():
+        inside[near] = cc.points_inside_mesh(points[near], posed[body_triangles])
+    deep = np.zeros(len(points), dtype=bool)
+    if inside.any():
+        depth = cc.nearest_vertex_distance(points[inside], posed[body_index]) / height
+        deep[np.where(inside)[0][depth > margin_share]] = True
+    return deep
+
+
+def inside_share_series(frames: Sequence[np.ndarray], triangles: np.ndarray, body: np.ndarray, region: np.ndarray, height: float, margin_share: float,
+                        max_points: int = 400, rest: Optional[np.ndarray] = None) -> List[float]:
+    """Per frame: the share of region points (at most `max_points`, evenly spaced) deeper than `margin_share` of the height inside the
+    rest of the body (the triangles whose three vertices are all in `body`). Uses the kit's ray-parity inside test (tripo/clip_check.py).
+
+    With `rest` (the rest pose's positions), the points already that deep inside at rest are left out: a single Tripo skin models some
+    cloth inside the arm or the thigh where they meet, and a clip cannot be blamed for those (on the orc 0.75% of the cloak points sit
+    inside at rest and stay there in every clip)."""
 
     body_triangles = triangles[np.asarray(body, bool)[triangles].all(axis=1)]
     index = np.where(region)[0]
@@ -1091,20 +1304,41 @@ def inside_share_series(frames: Sequence[np.ndarray], triangles: np.ndarray, bod
         return [0.0 for _ in frames]
     index = index[np.linspace(0, len(index) - 1, min(max_points, len(index))).astype(int)]
     body_index = np.unique(body_triangles)
-    out = []
-    for posed in frames:
-        points = posed[index]
-        lo, hi = posed[body_index].min(axis=0), posed[body_index].max(axis=0)
-        near = np.all((points >= lo) & (points <= hi), axis=1)
-        inside = np.zeros(len(points), dtype=bool)
-        if near.any():
-            inside[near] = cc.points_inside_mesh(points[near], posed[body_triangles])
-        deep = 0
-        if inside.any():
-            depth = cc.nearest_vertex_distance(points[inside], posed[body_index]) / height
-            deep = int((depth > margin_share).sum())
-        out.append(deep / len(points))
-    return out
+    if rest is not None:
+        index = index[~deep_inside(np.asarray(rest, float), index, body_triangles, body_index, height, margin_share)]
+        if not len(index):
+            return [0.0 for _ in frames]
+    return [float(deep_inside(posed, index, body_triangles, body_index, height, margin_share).mean()) for posed in frames]
+
+
+def front_cover_share(posed: np.ndarray, torso: np.ndarray, region: np.ndarray, front: np.ndarray, up: np.ndarray, height: float,
+                      cell_share: float = COVER_CELL_SHARE, margin_share: float = COVER_MARGIN_SHARE) -> float:
+    """The share of the torso and head's front-view footprint that the region (the wings) hides: seen from the front (looking along
+    -`front`), the screen is cut into square cells `cell_share` of the height wide. A torso cell is hidden when a region point lies in it
+    nearer the camera than the torso's front surface there by more than `margin_share` of the height."""
+
+    posed = np.asarray(posed, float)
+    up, front = unit(up), unit(front)
+    lateral = unit(np.cross(up, front))
+    cell = max(cell_share * height, 1e-12)
+    screen = np.stack([posed @ lateral, posed @ up], axis=1)
+    keys = np.floor(screen / cell).astype(np.int64)
+    depth = posed @ front
+    torso_index = np.where(np.asarray(torso, bool))[0]
+    region_index = np.where(np.asarray(region, bool))[0]
+    if not len(torso_index):
+        return 0.0
+    surface: Dict[Tuple[int, int], float] = {}
+    for i in torso_index:
+        key = (int(keys[i, 0]), int(keys[i, 1]))
+        surface[key] = max(surface.get(key, -np.inf), float(depth[i]))
+    hidden = set()
+    margin = margin_share * height
+    for i in region_index:
+        key = (int(keys[i, 0]), int(keys[i, 1]))
+        if key in surface and depth[i] > surface[key] + margin:
+            hidden.add(key)
+    return len(hidden) / len(surface)
 
 
 def below_ground_series(frames: Sequence[np.ndarray], region: np.ndarray, ground: float, height: float, margin_share: float, up_axis: int = 1) -> List[float]:

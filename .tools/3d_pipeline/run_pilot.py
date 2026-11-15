@@ -3797,9 +3797,12 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         )
         target = f"{stem}_{role}"
         imported_rel = f"blender/checkpoints/unit_{role}.blend"
+        released = ((spec.get("tripo") or {}).get("weapon") or {}) if tripo else {}
+        location_bones = [released["bone"]] if released.get("bone") and role in (released.get("release_roles") or []) else None
         imported = blender.import_animation_action(
             slug, chain, source_rel, receipt_rel, imported_rel, scene_name, armature, target,
             animation_source_kind(spec), str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
+            location_bones=location_bones,
         )
         chain = imported_rel
         if unit.get("seated"):

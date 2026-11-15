@@ -239,7 +239,21 @@ Three checks cover the regions. TRIPO-WING-STRETCH is TRIPO-CLOAK-STRETCH for wi
 
 For a winged unit, set `target_height_m` so that the body without the wings is a soldier's height.
 
-Tested in November 2026: on an orc the cloak stretch passed in every clip (the attack fell from 13.8% to 2.9%), but some cloak points still pass into the body in the attack, retreat and death. On a demon the wings no longer follow the arms, but a reviewer still saw the membrane cross in front of the body in some clips, which no check measures yet.
+**Armour plates.** Add `{"region": "plates"}` to `chains` when the unit wears plates over its shoulders and chest. Tripo splits a plate's weight across the joint it covers, so a pauldron bends whenever the arm lifts. The stage finds the plates by rule from the rig's joints. A pauldron is the surface within 60% of the upper arm's length of the shoulder joint, outside it, and no lower than 20% of that length under it. A chest plate is the surface ahead of the upper spine, between the middle spine and the neck, inside the shoulders. Plates that touch form one assembly, so no seam between them tears. Each assembly is bound wholly to the bone nearest the root of those that hold at least a tenth of its weight. The weight blends back into the body over a ring as wide as the assembly, and the ring stops before any other plate. Plates take no bones. They are bound after the chains, so a chain's blend never reaches into a plate. TRIPO-PLATE-STRETCH fails a plate that stretches more than vanilla clothing does at its worst, 2%.
+
+**What the chains keep clear of.** The chains are kept out of capsules round the legs, the torso, the head and the arms. A chain's blend never reaches a forearm, hand, shin or foot: the share fades out before them over one chain bone.
+
+**Wing room.** A wing's poses are capped by the body:
+
+- A fold swings it back until it lies along the back.
+- A wrap swings it forward at most until it points straight ahead, less the angle the torso takes at the root, so it stays beside the torso.
+- A down-stroke stops when the lowest chain hangs straight down.
+- A death closes the fan, folds the wing back only while the torso still stands, and sags the whole wing in its own plane until its highest chain lies level, so the wings lie flat beside a fallen body.
+- Each bone adds 0.3 of its parent's flap, so the tips do not curl into spikes.
+
+**Chain checks.** TRIPO-CHAIN-IN-BODY allows 5% of the cloak or wing points inside the body, the worst vanilla clothing reaches on GER infantry with its own clips. Points modelled inside at rest are left out. TRIPO-WING-FRONT fails a clip in which the wings hide more than 5% of the torso and head in the front view or the map view. A death is judged from the map view only. TRIPO-NOT-DOWN leaves out cloth and wings carried by chains, because it asks whether the body lies down.
+
+Tested in November 2026: on an orc the plates stopped bending (0% stretch) and the cloak stretch passed in every clip (the attack fell from 13.8% to 2.7%), but cloak points still enter the body in the attack (10.2%). On a demon the wings cover none of the body in the front and map views, but a reviewer still saw a wing overlap the shoulder in side views and curl in front of the legs during the death.
 
 ## Tripo checks
 
@@ -251,7 +265,9 @@ Tested in November 2026: on an orc the cloak stretch passed in every clip (the a
 | TRIPO-NOT-DOWN | A death clip does not end lying down, on the front or the back |
 | TRIPO-LIMB-IN-TORSO | In a death clip an arm or a leg passes deep into the torso (limit set from vanilla's infantry deaths) |
 | TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job with `"cape": true` (read through `--jobs-config` and `--slug`), or with `--cape` |
-| TRIPO-WEAPON-IN-BODY | A held weapon is inside the body in any frame (armed units) |
+| TRIPO-WEAPON-IN-BODY, TRIPO-WEAPON-BELOW-GROUND | A held or dropped weapon is inside the body or under the ground in any frame of the exported clips (armed units) |
+| TRIPO-PLATE-STRETCH | An armour plate bound by the plates rule stretches more than 2% |
+| TRIPO-WING-FRONT | The wings hide more than 5% of the torso and head in the front or map view |
 | TRIPO-GRIP-ENCLOSURE, TRIPO-GRIP-THUMB | The hand does not wrap the haft, or the thumb is on the wrong side (armed units) |
 | TRIPO-BLADE-FACING | The weapon's blade is seen edge-on from the front in the idle pose (armed units) |
 
@@ -264,7 +280,9 @@ Tripo's rig bends a weapon modelled into the hand, and Tripo's clips animate an 
 - A long weapon carried down in a death clip passes through the body or the ground.
 - A coarse Tripo hand does not wrap a haft tightly.
 
-Until this passes, keep armed units to weapons held low and short, or plan live work in Blender for the attack and the death.
+The weapon checks judge the exported `.mesh` and `.anim` files, the ones the game loads. TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND are measured there, frame by frame. The grip stage's own GLB is only a diagnostic. In a death clip the weapon is dropped before the body falls: the hand lets go at the start of the fall, and the weapon tumbles to the ground on its own path, flat and clear of where the body will lie. The retarget keeps the weapon bone's location for this. A coarse Tripo hand cannot wrap a haft tightly. A job may set `tripo.weapon.grip_check` to `"advisory"`, so TRIPO-GRIP-ENCLOSURE is reported but does not fail the unit, and a reviewer judges the hand at game zoom. TRIPO-GRIP-THUMB still counts.
+
+Until an armed unit passes a fresh review, keep armed units to weapons held low and short, or plan live work in Blender for the attack.
 
 ## Tripo settings
 

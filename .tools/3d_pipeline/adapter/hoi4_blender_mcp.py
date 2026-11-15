@@ -728,6 +728,7 @@ def hoi4_blender_import_animation_action(
     promote_audited_target: bool = False,
     source_armature_name: str = "",
     root_scale_reference: Dict[str, list[str]] | None = None,
+    location_bones: list[str] | None = None,
 ) -> Dict[str, Any]:
     """Transfer one receipt-verified provider/professional skeletal action by its exact source id.
 
@@ -752,6 +753,7 @@ def hoi4_blender_import_animation_action(
             "source_sha256": source_sha256,
             "bone_chains": bone_chains or {},
             "root_scale_reference": root_scale_reference,
+            "location_bones": location_bones or [],
             "promote_audited_target": promote_audited_target,
         },
     )
