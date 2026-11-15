@@ -198,6 +198,9 @@ if PBR:
     emission.inputs["Color"].default_value = (0.08, 0.16, 0.08, 1.0)
     gt_out = gt.nodes.new("ShaderNodeOutputMaterial")
     gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
+# The disc faces up, so with back faces culled the `below` view looks up through it. The PBR material needs this
+# set as well, or the disc hides the whole unit from below.
+ground_material.use_backface_culling = True
 disc.materials.append(ground_material)
 scene.collection.objects.link(bpy.data.objects.new("ground", disc))
 
