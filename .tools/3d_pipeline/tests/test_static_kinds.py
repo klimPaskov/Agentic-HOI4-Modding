@@ -11,10 +11,10 @@ from pathlib import Path
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from lib import pdx_deform  # noqa: E402
-from lib import static_kinds as sk  # noqa: E402
+from lib import pdx_deform
+from lib import static_kinds as sk
 
 GAME = Path(r"C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV")
 

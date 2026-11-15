@@ -41,10 +41,10 @@ from PIL import Image
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import model_dds, pdx_deform  # noqa: E402
-from lib import static_kinds as sk  # noqa: E402
-from lib.texture_lineage import embedded_images  # noqa: E402
-from pack_pdx_material import remap_gloss_table  # noqa: E402
+from lib import model_dds, pdx_deform
+from lib import static_kinds as sk
+from lib.texture_lineage import embedded_images
+from pack_pdx_material import remap_gloss_table
 
 BLENDER_SCRIPT = Path(__file__).resolve().parent / "static_model_blender.py"
 FOLDERS = {"vehicle": "gfx/models/units/tanks", "plane": "gfx/models/units/planes", "ship": "gfx/models/units/ships",

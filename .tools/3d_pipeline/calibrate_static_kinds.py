@@ -33,8 +33,8 @@ import numpy as np
 PIPELINE = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE))
 
-from lib import model_dds, pdx_binary, pdx_deform  # noqa: E402
-from lib import static_kinds as sk  # noqa: E402
+from lib import model_dds, pdx_binary, pdx_deform
+from lib import static_kinds as sk
 
 UNITS = "gfx/models/units"
 # The vanilla models each kind is measured on. Destroyed variants, jets, trains and the one-section wall are left out:
@@ -202,6 +202,10 @@ def clip_entry(game: Path, mesh_rel: str, anim_rel: str) -> dict:
     return {"mesh": mesh_rel, "anim": anim_rel, "fps": round(anim.fps, 4), "frames": anim.frames, "seconds": round((anim.frames - 1) / anim.fps, 3)}
 
 
+def _width(points: np.ndarray, chosen: np.ndarray) -> float:
+    return float(np.percentile(points[chosen, 0], 99) - np.percentile(points[chosen, 0], 1))
+
+
 def vehicle_rules(game: Path, measured: List[dict]) -> dict:
     """The turret and barrel split thresholds, from vanilla's skinning: which vertices follow the turret, the barrel, the hull."""
 
@@ -228,9 +232,8 @@ def vehicle_rules(game: Path, measured: List[dict]) -> dict:
         turret_shares.append(float(np.median(areas[mostly]) / np.median(band[band > 0])))
         bottom_shares.append(float((np.percentile(points[turret, 2], 2) - points[:, 2].min()) / height))
         turret_heights.append(float((np.percentile(points[turret, 2], 98) - np.percentile(points[turret, 2], 2)) / height))
-        width = lambda m: float(np.percentile(points[m, 0], 99) - np.percentile(points[m, 0], 1))
         if barrel.sum() >= 50:
-            barrel_shares.append(width(barrel) / width(turret))
+            barrel_shares.append(_width(points, barrel) / _width(points, turret))
             barrel_lengths.append(float(np.ptp(points[barrel, 1]) / np.ptp(points[turret, 1])))
         sources.append(entry["rel"])
         labelled.append((entry["rel"], points, labels))
@@ -324,6 +327,54 @@ def ship_rules(game: Path, measured: List[dict]) -> dict:
             "source": "beam at the waterline over the widest beam, and the keel's depth over the length, medians over " + ", ".join(e["rel"] for e in measured)}
 
 
+def budget_models(game: Path, kind: str) -> List[dict]:
+    """Every vanilla model of the kind (`BUDGET_GLOBS`) with a surface, for the triangle budget and texture size."""
+
+    found = [measure_mesh(game, path.relative_to(game).as_posix()) for pattern in BUDGET_GLOBS[kind] for path in sorted(game.glob(pattern))
+             if not any(skip in path.name for skip in BUDGET_SKIP)]
+    return [e for e in found if e["triangles"] >= 200]
+
+
+def _span(entry: dict) -> np.ndarray:
+    return np.maximum(entry["high"] - entry["low"], 1e-9)
+
+
+def collision_entry(measured: List[dict]) -> Optional[dict]:
+    """The `Collision` box as shares of the visible box (medians), when most of the set carries one."""
+
+    collisions = [e for e in measured if e["collision"]]
+    if len(collisions) * 2 <= len(measured):
+        return None
+    shares = np.median([(e["collision"]["high"] - e["collision"]["low"]) / _span(e) for e in collisions], axis=0)
+    centres = np.median([((e["collision"]["high"] + e["collision"]["low"]) / 2 - e["low"]) / _span(e) for e in collisions], axis=0)
+    bottoms = np.median([(e["collision"]["low"][2] - e["low"][2]) / _span(e)[2] for e in collisions])
+    names = [e["collision"]["name"] for e in collisions]
+    return {"name": max(set(names), key=names.count), "size_share": [round(float(v), 4) for v in shares],
+            "centre_share": [round(float(v), 4) for v in centres], "bottom_share": round(float(bottoms), 4),
+            "source": f"Collision boxes of {len(collisions)} of {len(measured)} models, as shares of their visible box (medians)"}
+
+
+def skeleton_entry(kind: str, measured: List[dict], ref_entry: dict) -> tuple:
+    """The kind's bones (rest places as shares of the visible box, medians) and the reference's locators on them."""
+
+    bones = SKELETON[kind]
+    if bones is None:
+        counts: Dict[int, int] = {}
+        for e in measured:
+            counts[len(e["bones"])] = counts.get(len(e["bones"]), 0) + 1
+        common = max(counts, key=lambda n: (counts[n], -n))
+        bones = ["root"] if common == 1 else []
+    skeleton = []
+    for bone in bones:
+        holders = [e for e in measured if bone in e["heads"]] or ([ref_entry] if bone in ref_entry["heads"] else [])
+        share = [round(float(v), 4) for v in np.median([share_in_box(e["heads"][bone], e["low"], e["high"]) for e in holders], axis=0)] if holders else [0.5, 0.5, 0.0]
+        parent = ref_entry["parents"].get(bone) if bone in ref_entry["parents"] else (skeleton[-1]["name"] if skeleton else None)
+        skeleton.append({"name": bone, "parent": parent, "head_share": share})
+    locators = [{"name": loc["name"], "parent": loc["parent"], "share": share_in_box(loc["world"], ref_entry["low"], ref_entry["high"])}
+                for loc in ref_entry["locators"] if not (loc["parent"] and loc["parent"] not in bones)]
+    return skeleton, locators
+
+
 def calibrate(game: Path) -> dict:
     definitions = sk.scan_definitions(game)
     turn_limit = json.loads((PIPELINE / "config" / "deformation_calibration.json").read_text(encoding="utf-8"))["groups"]["air_naval"]["turn_per_frame"]["value"]
@@ -350,43 +401,10 @@ def calibrate(game: Path) -> dict:
         for e in measured:
             for shader, tris in e["shaders"].items():
                 shaders[shader] = shaders.get(shader, 0) + tris
-        budget_set = [measure_mesh(game, path.relative_to(game).as_posix()) for pattern in BUDGET_GLOBS[kind] for path in sorted(game.glob(pattern))
-                      if not any(skip in path.name for skip in BUDGET_SKIP)]
-        budget_set = [e for e in budget_set if e["triangles"] >= 200]
+        budget_set = budget_models(game, kind)
         budget = max(budget_set, key=lambda e: e["triangles"])
-        collisions = [e for e in measured if e["collision"]]
-        collision = None
-        if len(collisions) * 2 > len(measured):
-            span = lambda e: np.maximum(e["high"] - e["low"], 1e-9)
-            shares = np.median([(e["collision"]["high"] - e["collision"]["low"]) / span(e) for e in collisions], axis=0)
-            centres = np.median([((e["collision"]["high"] + e["collision"]["low"]) / 2 - e["low"]) / span(e) for e in collisions], axis=0)
-            bottoms = np.median([(e["collision"]["low"][2] - e["low"][2]) / span(e)[2] for e in collisions])
-            names = [e["collision"]["name"] for e in collisions]
-            collision = {"name": max(set(names), key=names.count), "size_share": [round(float(v), 4) for v in shares],
-                         "centre_share": [round(float(v), 4) for v in centres], "bottom_share": round(float(bottoms), 4),
-                         "source": f"Collision boxes of {len(collisions)} of {len(measured)} models, as shares of their visible box (medians)"}
-        bones = SKELETON[kind]
-        if bones is None:
-            counts: Dict[int, int] = {}
-            for e in measured:
-                counts[len(e["bones"])] = counts.get(len(e["bones"]), 0) + 1
-            common = max(counts, key=lambda n: (counts[n], -n))
-            bones = ["root"] if common == 1 else []
-        skeleton = []
-        for bone in bones:
-            holders = [e for e in measured if bone in e["heads"]] or ([ref_entry] if bone in ref_entry["heads"] else [])
-            if not holders:
-                holders = [e for e in measured if e["bones"]]
-                share = [0.5, 0.5, 0.0]
-            else:
-                share = [round(float(v), 4) for v in np.median([share_in_box(e["heads"][bone], e["low"], e["high"]) for e in holders], axis=0)]
-            parent = ref_entry["parents"].get(bone) if bone in ref_entry["parents"] else (skeleton[-1]["name"] if skeleton else None)
-            skeleton.append({"name": bone, "parent": parent, "head_share": share})
-        locators = []
-        for loc in ref_entry["locators"]:
-            if loc["parent"] and loc["parent"] not in bones:
-                continue
-            locators.append({"name": loc["name"], "parent": loc["parent"], "share": share_in_box(loc["world"], ref_entry["low"], ref_entry["high"])})
+        collision = collision_entry(measured)
+        skeleton, locators = skeleton_entry(kind, measured, ref_entry)
         stats = texture_stats(game, measured)
         stats["texture_size"] = texture_stats(game, budget_set)["texture_size"]
         if stats["gloss_quantiles"] is None and kind == "building":
@@ -415,9 +433,9 @@ def calibrate(game: Path) -> dict:
             "skeleton": {"bones": skeleton, "source": "rest places as shares of the visible box, medians over the models that have the bone"},
             "locators": locators,
             "clips": {role: clip_entry(game, *pair) for role, pair in CLIPS[kind].items()},
-            "parts": PARTS[kind] if bones else {},
+            "parts": PARTS[kind] if skeleton else {},
             "mounts": MOUNTS.get(kind, {}),
-            "rigid": {"max_gap_share": GAP_SHARE, "source": "kit rule: half a pixel at game size"} if bones else None,
+            "rigid": {"max_gap_share": GAP_SHARE, "source": "kit rule: half a pixel at game size"} if skeleton else None,
         }
         if kind == "vehicle":
             contract["rules"] = vehicle_rules(game, measured)

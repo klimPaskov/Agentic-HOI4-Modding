@@ -40,8 +40,8 @@ from mathutils import Matrix, Quaternion, Vector
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import static_kinds as sk  # noqa: E402
-from lib import tripo_shape  # noqa: E402
+from lib import static_kinds as sk
+from lib import tripo_shape
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 contract = request["contract"]

@@ -714,6 +714,31 @@ def check_registration(folder: Path, mod_root: Path, unit_type: Optional[dict]) 
     return findings
 
 
+def model_kind_type(kind: str) -> dict:
+    """The unit-type stand-in for a static or rigid-part model kind: its clips are its roles, its group sets the limits."""
+
+    from lib import static_kinds
+
+    contract = static_kinds.kind_contract(kind)
+    return {"roles": {role: {} for role in contract["clips"]}, "calibration_group": MODEL_KIND_GROUP[kind], "entity_states": {}}
+
+
+def model_kind_findings(folder: Path, kind: str, stem: Optional[str] = None) -> List[Finding]:
+    """The STATIC-* rules of `lib/static_kinds.kind_findings` on each mesh of the folder."""
+
+    from lib import static_kinds
+
+    contract = static_kinds.kind_contract(kind)
+    findings = []
+    for mesh_path in sorted(folder.glob("*.mesh")):
+        if stem and mesh_path.stem != stem:
+            continue
+        anims = [path for path in sorted(folder.glob("*.anim")) if path.stem.startswith(mesh_path.stem + "_")]
+        for rule, severity, message in static_kinds.kind_findings(mesh_path, contract, anims):
+            findings.append(Finding(rule, severity, mesh_path.as_posix(), message))
+    return findings
+
+
 def repair_textures(folder: Path) -> List[str]:
     """Rewrite single-level or uncompressed DDS files as DXT5 with mips; clear normal-map blue.
 
@@ -818,25 +843,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     folder = args.folder.resolve()
     if not folder.is_dir():
         raise SystemExit(f"Not a folder: {folder}")
-    contract = None
     if args.model_kind:
-        from lib import static_kinds
-
-        contract = static_kinds.kind_contract(args.model_kind)
-        unit_type = {"roles": {role: {} for role in contract["clips"]},
-                     "calibration_group": MODEL_KIND_GROUP[args.model_kind], "entity_states": {}}
+        unit_type = model_kind_type(args.model_kind)
     if args.fps:
         unit_type = dict(unit_type or {}, fps=args.fps)
     findings, facts = check_files(folder, unit_type, profile, args.stem, weapon_bones=args.weapon_bone)
-    if contract is not None:
-        from lib import static_kinds
-
-        for mesh_path in sorted(folder.glob("*.mesh")):
-            if args.stem and mesh_path.stem != args.stem:
-                continue
-            anims = [path for path in sorted(folder.glob("*.anim")) if path.stem.startswith(mesh_path.stem + "_")]
-            for rule, severity, message in static_kinds.kind_findings(mesh_path, contract, anims):
-                findings.append(Finding(rule, severity, mesh_path.as_posix(), message))
+    if args.model_kind:
+        findings.extend(model_kind_findings(folder, args.model_kind, args.stem))
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
     units_root = args.compare_units or (args.mod_root / "gfx" / "models" / "units" if args.mod_root else None)

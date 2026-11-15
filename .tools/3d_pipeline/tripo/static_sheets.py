@@ -31,8 +31,8 @@ from PIL import Image, ImageDraw, ImageFont
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-import review_unit  # noqa: E402
-from lib import static_kinds as sk  # noqa: E402
+import review_unit
+from lib import static_kinds as sk
 
 # The pixels a metre of runtime size gets at game size: a vanilla soldier (humanoid_unit's source height 7.351824 at
 # entity scale 0.8, config/asset_profiles.json) is 60 px tall on the map camera (weapon_sheets.GAME_HEIGHT_PX).
