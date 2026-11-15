@@ -3974,9 +3974,9 @@ def default_repairs(spec: Dict[str, Any]) -> List[str]:
     """The `repair_unit.py` repairs the unit route runs on its own export: Tripo's three, none for Meshy."""
 
     if tripo_quadruped(spec):
-        # Tripo makes a quadruped and what it carries as one skin: a hanging tail fused to a hind leg and a load fused to the neck
-        # are cut apart and capped (UNIT-BRIDGE), or the gait tears them.
-        return ["winding", "bridges", "holes", "normals"]
+        # Tripo makes a quadruped and what it carries as one skin: a part fused to another that moves apart is cut and capped,
+        # and a join inside one skin (a hanging tail grown into a hind leg, a leg into the belly) gets blended weights (UNIT-BRIDGE).
+        return ["winding", "bridges", "holes", "weights", "normals"]
     return list(TRIPO_DEFAULT_REPAIRS) if uses_tripo(spec) else []
 
 
@@ -4034,7 +4034,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         if (spec.get("tripo") or {}).get("smooth_weights", True) is not False:
             # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
-            load_bones = ["Spine"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
+            load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
             records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones)
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # Then the mesh the game loads decides where the ground is.

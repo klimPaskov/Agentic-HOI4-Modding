@@ -23,6 +23,7 @@ import numpy as np
 LEGS = (("Front", "Left"), ("Front", "Right"), ("Rear", "Left"), ("Rear", "Right"))
 LEG_SEGMENTS = ("Upper", "Lower", "Cannon", "Hoof")
 SADDLE_NODE = "Saddle_Node"
+LOAD_BONE = "Load"
 X_AXIS = (1.0, 0.0, 0.0)
 Y_AXIS = (0.0, 1.0, 0.0)
 Z_AXIS = (0.0, 0.0, 1.0)
@@ -280,7 +281,13 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
     # An attach node points along +Y with no roll, so io_pdx_mesh exports it with an identity
     # rotation, as vanilla cavalry_horse.mesh stores its Saddle_Node; a node pointing up exports
     # turned 90 degrees and the engine would tip the attached rider over.
-    add(Bone(SADDLE_NODE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), "Spine", deform=False))
+    carrier = "Spine"
+    if landmarks.get("load"):
+        # A carried load has its own bone, a child of the Spine that never turns: the load rides it rigidly, and the weight
+        # smoothing locks it without locking the torso.
+        add(Bone(LOAD_BONE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), "Spine"))
+        carrier = LOAD_BONE
+    add(Bone(SADDLE_NODE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), carrier, deform=False))
     return layout
 
 
@@ -540,7 +547,9 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         if has_tail:
             pose["Tail_01"] = [(X_AXIS, 20.0 * rise)]
     elif style == "quadruped_collapse":
-        _collapse(pose, t, has_tail, float(load.get("roll_limit", COLLAPSE_ROLL)) if load else COLLAPSE_ROLL)
+        death = layout.landmarks.get("death") or {}
+        roll = float(death.get("roll", load.get("roll_limit", COLLAPSE_ROLL) if load else COLLAPSE_ROLL))
+        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)))
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
     return _held_back({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, load)
@@ -552,8 +561,11 @@ def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict
     return {name: rows for name, rows in pose.items() if not (load and name in LOADED_STILL)}
 
 
-def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float) -> None:
-    """The death: the legs buckle and the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit)."""
+def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float, neck_lift: float = 0.0) -> None:
+    """The death: the legs buckle and the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit).
+
+    `neck_lift` turns the neck back against the roll as the body settles, so the head lies no lower than the torso
+    (quadruped_rig.tune_collapse picks it and the roll on the final pose)."""
 
     buckle = _smooth(min(1.0, t / 0.3))
     fall = _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
@@ -564,7 +576,7 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
         pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold)]
         pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.6 * settle))]
     pose["__root_roll__"] = [(Y_AXIS, roll * fall)]
-    pose["Neck_01"] = [(X_AXIS, 25.0 * buckle - 30.0 * settle)]
+    pose["Neck_01"] = [(X_AXIS, 25.0 * buckle - 30.0 * settle), (Y_AXIS, -neck_lift * fall)]
     pose["Neck_02"] = [(Z_AXIS, 20.0 * settle)]
     pose["Head"] = [(X_AXIS, -10.0 * settle)]
     if has_tail:

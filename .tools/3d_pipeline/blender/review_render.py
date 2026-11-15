@@ -61,7 +61,15 @@ rider_rig = None
 _empty_armature = bpy.data.armatures.new("review_empty")
 if ATTACH:
     before = set(scene.objects)
-    bpy.ops.io_pdx_mesh.import_mesh(filepath=ATTACH["mesh"], chk_locs=True)
+    # The importer looks for an existing armature by bone name too, so the mount's is hidden while the rider comes in.
+    mount_data = rig.data if rig is not None else None
+    if rig is not None:
+        rig.data = _empty_armature
+    try:
+        bpy.ops.io_pdx_mesh.import_mesh(filepath=ATTACH["mesh"], chk_locs=True)
+    finally:
+        if rig is not None:
+            rig.data = mount_data
     added = [o for o in scene.objects if o not in before]
     rider_rig = next((o for o in added if o.type == "ARMATURE"), None)
     for o in added:
@@ -71,15 +79,20 @@ if ATTACH:
             else:
                 o["hoi4_rider"] = True
                 meshes.append(o)
-    if rig is not None and rider_rig is not None and ATTACH.get("node") in rig.data.bones:
-        node = rig.data.bones[ATTACH["node"]]
-        original = rider_rig.matrix_world.copy()
-        rider_rig.parent = rig
-        rider_rig.parent_type = "BONE"
-        rider_rig.parent_bone = node.name
-        rider_rig.matrix_parent_inverse.identity()
-        # A bone child sits at the bone's tail; one bone length back along the bone puts it on the node's head.
-        rider_rig.matrix_basis = Matrix.Translation((0.0, -node.length, 0.0)) @ Matrix.Diagonal((ATTACH["scale"],) * 3 + (1.0,)) @ original
+    if rig is not None and rider_rig is not None:
+        RIDER_REST = rider_rig.matrix_world.copy()
+        print("REVIEW_RIDER", rider_rig.name, "node found:", ATTACH.get("node") in rig.data.bones)
+
+
+def place_rider():
+    """Put the rider entity on the mount's node in the current frame: the node's posed matrix, then the rider's entity scale."""
+
+    if rider_rig is None or rig is None or ATTACH.get("node") not in rig.pose.bones:
+        return
+    bpy.context.view_layer.update()
+    node = rig.pose.bones[ATTACH["node"]]
+    rider_rig.matrix_world = rig.matrix_world @ node.matrix @ Matrix.Diagonal((ATTACH["scale"],) * 3 + (1.0,)) @ RIDER_REST
+    bpy.context.view_layer.update()
 
 
 def import_clip(target, path):
@@ -228,6 +241,7 @@ def bounds():
     return low, high
 
 
+place_rider()
 rest_low, rest_high = bounds()
 span = max(rest_high.x - rest_low.x, rest_high.y - rest_low.y, rest_high.z - rest_low.z, 1e-3)
 
@@ -279,6 +293,7 @@ def render(clip, frames):
     rows = []
     for frame in frames:
         scene.frame_set(frame)
+        place_rider()
         row = {"frame": frame, "tiles": {}}
         for view in request["views"]:
             aim(view)
@@ -377,6 +392,7 @@ def render_diagnostics(clip, frames, views):
     scene.view_settings.exposure = 0.0
     for frame in frames:
         scene.frame_set(frame)
+        place_rider()
         worst = paint_diagnostics()
         row = {"frame": frame, "tiles": {}, "worst_share": round(worst, 4)}
         for view in views:

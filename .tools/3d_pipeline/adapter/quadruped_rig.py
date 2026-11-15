@@ -99,7 +99,7 @@ def _landmarks_from_payload(points: np.ndarray, payload: Dict[str, Any], back_z:
 
 def _jsonable(value: Any) -> Any:
     if isinstance(value, np.ndarray):
-        return [round(float(item), 6) for item in value.tolist()]
+        return round(float(value), 6) if value.ndim == 0 else [round(float(item), 6) for item in value.tolist()]
     if isinstance(value, dict):
         return {key: _jsonable(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -280,6 +280,68 @@ def _rotation(rows: List[ql.Rotation]) -> Quaternion:
     return result
 
 
+TORSO = ("Pelvis", "Spine", "Chest")
+DOWN_TOLERANCE = 0.01  # of the body's height
+
+
+def _dominant_groups(meshes: List[bpy.types.Object]) -> List[np.ndarray]:
+    """Per mesh, each vertex's strongest vertex group name ("" for none)."""
+
+    out = []
+    for obj in meshes:
+        names = {group.index: group.name for group in obj.vertex_groups}
+        out.append(np.array([names.get(max(v.groups, key=lambda g: g.weight).group, "") if len(v.groups) else "" for v in obj.data.vertices]))
+    return out
+
+
+def _lowest_by_group(meshes: List[bpy.types.Object], dominant: List[np.ndarray]) -> Dict[str, float]:
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    lowest: Dict[str, float] = {}
+    for obj, names in zip(meshes, dominant):
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        try:
+            local = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
+            mesh.vertices.foreach_get("co", local)
+            matrix = np.array(evaluated.matrix_world, dtype=np.float64)
+            z = local.reshape(-1, 3).astype(np.float64) @ matrix[2, :3] + matrix[2, 3]
+            for name in set(names.tolist()):
+                lowest[name] = min(lowest.get(name, math.inf), float(z[names == name].min()))
+        finally:
+            evaluated.to_mesh_clear()
+    return lowest
+
+
+def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground: float) -> Dict[str, Any]:
+    """Pick the death's roll and neck lift on its final pose, so the body ends lying on its torso.
+
+    The largest roll (down from the layout's, in 6-degree steps) and the smallest neck lift (up to 60 degrees either way, in steps of 10)
+    whose final pose has no part lower than the torso by more than 1% of the body's height: neither a dropped head nor a
+    load on the back may hold the dead body off the ground. Without one, the pair whose torso ends nearest the lowest point."""
+
+    load = layout.landmarks.get("load") or {}
+    start = float(load.get("roll_limit", ql.COLLAPSE_ROLL)) if load else ql.COLLAPSE_ROLL
+    dominant = _dominant_groups(meshes)
+    height = float(layout.landmarks["height"])
+    best = None
+    tried = []
+    for roll in np.arange(start, -0.1, -6.0):
+        for lift in (0, 10, -10, 20, -20, 30, -30, 40, -40, 50, -50, 60, -60):
+            layout.landmarks["death"] = {"roll": float(roll), "neck_lift": float(lift)}
+            pose_frame(last, 0.0)
+            lowest = _lowest_by_group(meshes, dominant)
+            torso = min(lowest.get(name, math.inf) for name in TORSO)
+            gap = (torso - min(lowest.values())) / height
+            tried.append({"roll": round(float(roll), 1), "neck_lift": lift, "torso_gap": round(gap, 4)})
+            if best is None or gap < best[0] - 1e-9:
+                best = (gap, float(roll), float(lift))
+            if gap <= DOWN_TOLERANCE:
+                layout.landmarks["death"] = {"roll": float(roll), "neck_lift": float(lift)}
+                return {"roll": float(roll), "neck_lift": float(lift), "torso_gap": round(gap, 4), "tried": len(tried)}
+    layout.landmarks["death"] = {"roll": best[1], "neck_lift": best[2]}
+    return {"roll": best[1], "neck_lift": best[2], "torso_gap": round(best[0], 4), "tried": len(tried), "note": "no pair put the torso lowest"}
+
+
 def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -339,8 +401,8 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         rig.pose.bones["Root"].matrix = Matrix.Translation((0.0, 0.0, lift)) @ body @ root_rest
         bpy.context.view_layer.update()
 
-    contact_before = []
-    contact_after = []
+    tuned = tune_collapse(rig, meshes, layout, last, pose_frame, ground) if style == "quadruped_collapse" else None
+    contact_before, contact_after = [], []
     for frame in range(0, last + 1):
         scene.frame_set(frame)
         pose_frame(frame, 0.0)
@@ -374,4 +436,5 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "ground_contact_before": {"min": min(contact_before), "max": max(contact_before)},
         "ground_contact_after": {"min": min(contact_after), "max": max(contact_after)},
         "ground_tolerance": GROUND_TOLERANCE * float(landmarks["height"]),
+        "collapse": tuned,
     }

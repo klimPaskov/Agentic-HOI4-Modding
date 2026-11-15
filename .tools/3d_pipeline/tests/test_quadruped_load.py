@@ -106,11 +106,11 @@ class Binding(unittest.TestCase):
     def test_the_load_rides_one_bone_and_fades_into_the_body(self) -> None:
         points, triangles = war_elephant().arrays()
         load = qload.find_load(points, triangles)
-        names = ["Root", "Pelvis", "Spine", "Chest"]
+        names = ["Root", "Pelvis", "Spine", "Chest", "Load"]
         indices = np.tile(np.array([1, 3, 0, 0]), (len(points), 1))
         weights = np.tile(np.array([0.6, 0.4, 0.0, 0.0]), (len(points), 1))
         out_i, out_w, report = qload.bind_load(points, load.mask, indices, weights, names, ring=0.2)
-        spine = names.index("Spine")
+        spine = names.index("Load")
         self.assertTrue(np.all(out_i[load.mask, 0] == spine) and np.allclose(out_w[load.mask, 0], 1.0))
         self.assertTrue(np.allclose(out_w.sum(axis=1), 1.0))
         near = (~load.mask) & (qload.nearest_distance(points, points[load.mask]) < 0.19)
@@ -133,6 +133,9 @@ class LoadedPoses(unittest.TestCase):
         free = ql.build_layout(dict(self.landmarks))
         loaded = ql.build_layout({**self.landmarks, "load": {"roll_limit": 30.0, "bone": "Spine"}})
         self.assertIn("Spine", ql.pose_at("quadruped_trot", 5, free))
+        self.assertNotIn(ql.LOAD_BONE, free.names())
+        self.assertEqual(loaded.bone(ql.SADDLE_NODE).parent, ql.LOAD_BONE)
+        self.assertEqual(loaded.bone(ql.LOAD_BONE).parent, "Spine")
         for frame in range(0, 20, 3):
             pose = ql.pose_at("quadruped_trot", frame, loaded)
             self.assertFalse(set(ql.LOADED_STILL) & set(pose))

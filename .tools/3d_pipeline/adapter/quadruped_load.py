@@ -244,7 +244,7 @@ def roll_limit(points: np.ndarray, mask: np.ndarray, torso: np.ndarray, axis: np
     return sign * best
 
 
-LOAD_BONE = "Spine"
+LOAD_BONE = "Load"  # quadruped_layout.LOAD_BONE: a child of the Spine that never turns
 RING_SHARE = 0.06  # the load's weight fades into the body over this share of the body's height
 
 
@@ -263,11 +263,11 @@ def nearest_distance(points: np.ndarray, targets: np.ndarray, chunk: int = 256) 
 
 
 def bind_load(points: np.ndarray, mask: np.ndarray, indices: np.ndarray, weights: np.ndarray, names: List[str], ring: float) -> Tuple[np.ndarray, np.ndarray, Dict[str, int]]:
-    """Bind the load wholly to the Spine and fade that into the body's own weights over `ring` from the load.
+    """Bind the load wholly to its own bone and fade that into the body's own weights over `ring` from the load.
 
     The load is one rigid part (rigid_plates in lib/tripo_chains.py binds a plate the same way): every load vertex has
     weight 1 on one bone. A body vertex `d` from the nearest load vertex keeps `d / ring` of its own weights and takes
-    the rest on the Spine, eased, so the skin under the load follows it with no seam. Rows keep at most as many
+    the rest on the load bone, eased, so the skin under the load follows it with no seam. Rows keep at most as many
     influences as before and sum to 1.
     """
 

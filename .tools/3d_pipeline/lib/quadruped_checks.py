@@ -31,7 +31,7 @@ def _finding(rule: str, subject: str, message: str, **numbers) -> dict:
 HOOF_SUFFIX = "_Hoof"
 LEG_PREFIXES = ("Front_", "Rear_")
 TORSO = ("Pelvis", "Spine", "Chest")
-LOAD_BONE = "Spine"
+LOAD_BONE = "Load"
 DOWN_BELLY_SHARE = 0.05
 LOAD_SINK_LIMIT = 0.01
 LOAD_STRETCH_LIMIT = 0.005
