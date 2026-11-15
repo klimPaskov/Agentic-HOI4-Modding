@@ -15,7 +15,7 @@ sys.path.insert(0, str(PIPELINE))
 
 import quadruped_layout as ql
 import quadruped_load as qload
-from lib import mount_size
+from lib import mount_size, unit_registration
 
 BOX_FACES = np.array([[0, 2, 1], [0, 3, 2], [4, 5, 6], [4, 6, 7], [0, 1, 5], [0, 5, 4], [1, 2, 6], [1, 6, 5], [2, 3, 7], [2, 7, 6], [3, 0, 4], [3, 4, 7]])
 
@@ -164,6 +164,23 @@ class MountSize(unittest.TestCase):
         self.assertAlmostEqual(size["back_share"], 1.0 / 1.62, delta=0.015)
         self.assertAlmostEqual(size["rider_entity_scale"] * 0.8, 0.52, places=3)
         self.assertAlmostEqual(size["rider_height_in_mount_mesh"] * 0.8, 3.823, places=2)
+
+
+
+class RiderRegistration(unittest.TestCase):
+    def test_the_rider_plays_its_mapped_clips_under_names_of_its_own(self) -> None:
+        rider = {"stem": "zombie", "model_folder": "gfx/models/units/zombie", "shapes": ["body"], "roles": ["attack", "death", "idle", "move"],
+                 "role_map": {"move": "idle", "death": "idle"}, "scale": 0.65, "mesh_name": "elephant_rider_mesh", "entity": "elephant_rider_entity"}
+        text = unit_registration.registration_text(unit_entity="elephant_entity", model_folder="gfx/models/units/elephant", stem="elephant",
+                                                   shapes=["body"], roles=["idle", "move", "attack", "death"], scale=0.8, template="mount",
+                                                   rider=rider, state_set="infantry")
+        self.assertIn('Saddle_Node = "elephant_rider_entity"', text)
+        self.assertIn('name = "elephant_rider_mesh"', text)
+        self.assertIn('animation = { id = "move" type = "zombie_idle_animation" }', text)
+        self.assertIn('animation = { id = "death" type = "zombie_idle_animation" }', text)
+        self.assertIn('animation = { id = "attack" type = "zombie_attack_animation" }', text)
+        self.assertIn('pdxmesh = "elephant_rider_mesh"', text)
+        self.assertIn("scale = 0.65", text)
 
 
 if __name__ == "__main__":
