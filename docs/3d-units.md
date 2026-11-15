@@ -4,7 +4,7 @@ This page is for modders who want their own 3D units on the HOI4 map: soldiers, 
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
-**What is proven.** An unarmed humanoid unit (a zombie soldier) went the whole route below and passed a fresh review in November 2026. Armed units with a separate weapon, winged units and other bodies are in progress. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits on them.
+**What is proven.** An unarmed humanoid unit (a zombie soldier) went the whole route below and passed a fresh review in November 2026. That run used a wrong size (see Size in [The route step by step](#the-route-step-by-step)), so its size on the map is checked again after a rerun. Armed units with a separate weapon, winged units and other bodies are in progress. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits on them.
 
 ## How to use it
 
@@ -72,7 +72,9 @@ Every step on your PC is free. Your agent asks you once for a credit budget per 
 
 ## The route step by step
 
-Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget`, `anatomy`, and a `tripo` block with the clip for each role.
+Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget`, `anatomy`, its size, and a `tripo` block with the clip for each role.
+
+**Size.** `target_height_m` is the unit's mesh height in HOI4 units, not metres, and `runtime_entity_scale` is its entity scale. Vanilla infantry is 7.35 tall at scale 0.8. Give a soldier-sized unit 7.35, and scale that for a smaller or larger body. `run_pilot.py` refuses a job whose unit would stand under half or over three times the height of its vanilla scale reference on the map. Review sheets frame every unit to fit, so they never show a wrong size.
 
 ### 1. A 3D-ready picture
 
@@ -111,7 +113,7 @@ Two preset names change on export: the tile `defeat` exports as `defeat_02`, and
 
 ### 7. Pick the clips (free)
 
-The agent measures every clip in the export and writes the role map into the job's `tripo.roles` (see [Pick the clips by measurement](#pick-the-clips-by-measurement)). A role's value is the clip's exported name, or its first words for a text-to-motion clip.
+The agent measures every clip in the export and writes the role map into the job's `tripo.roles` (see [Pick the clips by measurement](#pick-the-clips-by-measurement)). `clip_check.py` gives each clip's stretch and ground numbers. A role's value is the clip's exported name, or its first words for a text-to-motion clip.
 
 ```
 py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset>__rigged.glb --samples all --json <job folder>/evidence/clips.json
@@ -139,7 +141,7 @@ Blender scales the unit against vanilla infantry, grounds every clip, and writes
 py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
 py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json
 py -3.13 -B .tools/3d_pipeline/check_holes.py <unit folder> --out <job folder>/evidence/holes
-py -3.13 -B .tools/3d_pipeline/tripo/tripo_checks.py <unit folder> --json <job folder>/evidence/tripo_checks.json
+py -3.13 -B .tools/3d_pipeline/tripo/tripo_checks.py <unit folder> --jobs-config <your 3d_jobs.json> --slug <unit> --json <job folder>/evidence/tripo_checks.json
 ```
 
 `measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). `check_unit_files.py` reads the exported files (see [Automatic checks](#automatic-checks)), and `check_holes.py` looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). `tripo_checks.py` adds the checks for faults Tripo's clips make (see [Tripo checks](#tripo-checks)). Each verdict names the repair to run, or escalates.
@@ -164,27 +166,27 @@ Repairs never make new bones, a new weight set or new keyframes. The copy goes t
 
 ### 11. Hand-over and in game
 
-The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. The newest copy that passed its check is the one you review. Copy it into `gfx/` only after a fresh reviewer passes it. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
+The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text. The newest copy that passed its check is the one you review. Put it into the mod only after a fresh reviewer passes it, with step 12. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
 
 ### 12. Wire the unit into the mod (free)
 
-`wire_unit.py` puts the job's registration into your mod and says what the mod still lacks:
+Run this only after the fresh review passes. `wire_unit.py` puts the job's registration into your mod and says what the mod still lacks:
 
 ```
-py -3.13 -B .tools/3d_pipeline/wire_unit.py <job folder or unit> --mod-root <mod> [--dry-run] [--json]
+py -3.13 -B .tools/3d_pipeline/wire_unit.py <job folder or unit slug> --mod-root <mod> [--dry-run] [--json]
 ```
 
-It writes the `pdxmesh`, animation and entity blocks, each between `# wire_unit begin <stem> <kind>` and `# wire_unit end <stem> <kind>` comments. A rerun replaces only the lines between its own markers, and nothing else in a file is touched. It copies the mesh, animations and textures into the model folder that `registration.md` names, and skips a file whose SHA-256 already matches. The `.gfx` and entity `.asset` go to `gfx/entities/<prefix>_units.gfx` and `.asset`, or to the file that already holds the markers. `--gfx-file` and `--entity-file` choose other files. If the mod already defines one of the names outside the markers, it stops and writes nothing.
+It writes the `pdxmesh`, animation and entity blocks, each between `# wire_unit begin <stem> <kind>` and `# wire_unit end <stem> <kind>` comments. A rerun replaces only the lines between its own markers, and nothing else in a file is touched. It copies the mesh, animations and textures into the model folder that `registration.md` names, and skips a file whose SHA-256 already matches. The `.gfx` and entity `.asset` go to `gfx/entities/<prefix>_units.gfx` and `.asset`, or to the file that already holds the markers. `--gfx-file` and `--entity-file` choose other files, and `--prefix` sets the prefix. If the mod already defines one of the names outside the markers, it stops and writes nothing.
 
 It never writes sub-units or localisation. It checks that a sub-unit has `sprite = <stem>` and that the keys `<id>` and `<id>_desc` exist, and lists what is missing. It lists the counter sprites `GFX_unit_<sprite>_icon_medium` and `_medium_white` and whether the mod or only the game defines each.
 
-Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <frame> sound = { soundeffect = "..." } }` into the entity state for that role. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
+Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <frame> sound = { soundeffect = "..." } }` into the entity state for that role. Whether the game reads `time` as frames or seconds is not verified yet, so check the sound in game. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
 
-After writing, it runs `check_unit_files.py --mod-root` and the static wiring audit and prints one verdict, PASS or FAIL with the list. Only audit errors about this unit count, and `--strict-audit` counts every error in the mod. `--dry-run` prints the plan and changes nothing. The exit code is 1 on FAIL.
+After writing, it runs `check_unit_files.py --mod-root` and the static wiring audit and prints one verdict, PASS or FAIL with the list. A missing sprite or localisation key is a FAIL but does not stop the write. Only audit errors about this unit count, and `--strict-audit` counts every error in the mod. `--dry-run` prints the plan, changes nothing, and ends `DRY-RUN` or `DRY-RUN-FAIL`. The exit code is 1 on any FAIL and 2 on unreadable input.
 
 ## Pick the clips by measurement
 
-The agent picks one clip per role by these rules, and records every candidate's numbers in the job. A small model can follow them as written.
+The agent picks one clip per role by these rules, and records every candidate's numbers in the job. `clip_check.py` gives stretch and ground. Spin, hand reach, pelvis travel and the tumble test are read from the clip's joint positions in the exported GLB. The kit has no single command for them yet, so the agent computes them and records how. `TRIPO-NOT-DOWN` and limb-in-torso run in `tripo_checks.py` on the exported unit, so a death candidate is confirmed there after the run.
 
 1. Every candidate must pass the stretch, spin and ground checks, and a death must pass limb-in-torso.
 2. **Attack.** The largest forward reach of the hands (wrist ahead of the chest, as a share of the body's height) plus the travel of the pelvis. It must be at least 0.2.
@@ -197,15 +199,15 @@ Whether an attack reads as an attack stays a judgement. A clip that passes every
 
 ## Tripo defaults
 
-The intake and the Blender stage apply these to every Tripo job. None of them is set in the job file. They come from comparing Tripo units with vanilla infantry under the same light.
+The intake and the Blender stage apply these to every Tripo job without a setting. The last two can be changed in the job's `tripo` block. They come from comparing Tripo units with vanilla infantry under the same light.
 
 | Default | What it does | Why |
 | --- | --- | --- |
 | No gamma grade on the colour map (`runtime_diffuse_gamma` 1.0) | Keeps Tripo's colours as made | A brighter grade washed the unit out against vanilla |
 | Gloss mapped onto vanilla's range (`config/vanilla_gloss.json`), specular level 56 | Tripo's gloss is remapped onto the gloss of vanilla infantry | Without it cloth looks wet in game |
 | Maps resized one channel at a time | The packed specular map keeps its channels apart | Resizing them together blended gloss into colour |
-| Snap easing, 14 degrees a frame (`ease_snaps`) | Spreads a joint's sudden turn over the frames around it | Tripo's clips snap a joint in one frame, which reads as a twitch |
-| Arm level for an unarmed attack (`arm_level`, target `arm_level_target` 0.85) | Turns both upper arms by a constant angle so the hands reach forward at about shoulder height | Tripo's text-to-motion attacks hold the hands above the head and hide it. Set `"arm_level": []` to switch it off |
+| Snap easing, 14 degrees a frame (`tripo.ease_snaps`, `false` to switch it off) | Spreads a joint's sudden turn over the frames around it | Tripo's clips snap a joint in one frame, which reads as a twitch |
+| Arm level for an unarmed attack (`tripo.arm_level`, target `tripo.arm_level_target` 0.85) | Turns both upper arms by a constant angle so the hands reach forward at about shoulder height | Tripo's text-to-motion attacks hold the hands above the head and hide it. Set `"arm_level": []` to switch it off |
 
 Review sheets render from the packed material the game uses, so what you see on the sheet is what the map shows.
 
@@ -218,7 +220,7 @@ Review sheets render from the packed material the game uses, so what you see on 
 | TRIPO-HANDS-HIGH | In an unarmed unit's attack a hand is above the head in more than 20% of frames, or above the shoulders in more than 80% |
 | TRIPO-NOT-DOWN | A death clip does not end lying down, on the front or the back |
 | TRIPO-LIMB-IN-TORSO | In a death clip an arm or a leg passes deep into the torso (limit set from vanilla's infantry deaths) |
-| TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job whose anatomy has a cape |
+| TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job with `"cape": true` (read through `--jobs-config` and `--slug`), or with `--cape` |
 | TRIPO-WEAPON-IN-BODY | A held weapon is inside the body in any frame (armed units) |
 | TRIPO-GRIP-ENCLOSURE, TRIPO-GRIP-THUMB | The hand does not wrap the haft, or the thumb is on the wrong side (armed units) |
 | TRIPO-BLADE-FACING | The weapon's blade is seen edge-on from the front in the idle pose (armed units) |
