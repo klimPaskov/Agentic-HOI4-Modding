@@ -166,6 +166,22 @@ Repairs never make new bones, a new weight set or new keyframes. The copy goes t
 
 The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text to paste. The newest copy that passed its check is the one you review. Copy it into `gfx/` only after a fresh reviewer passes it. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
 
+### 12. Wire the unit into the mod (free)
+
+`wire_unit.py` puts the job's registration into your mod and says what the mod still lacks:
+
+```
+py -3.13 -B .tools/3d_pipeline/wire_unit.py <job folder or unit> --mod-root <mod> [--dry-run] [--json]
+```
+
+It writes the `pdxmesh`, animation and entity blocks, each between `# wire_unit begin <stem> <kind>` and `# wire_unit end <stem> <kind>` comments. A rerun replaces only the lines between its own markers, and nothing else in a file is touched. It copies the mesh, animations and textures into the model folder that `registration.md` names, and skips a file whose SHA-256 already matches. The `.gfx` and entity `.asset` go to `gfx/entities/<prefix>_units.gfx` and `.asset`, or to the file that already holds the markers. `--gfx-file` and `--entity-file` choose other files. If the mod already defines one of the names outside the markers, it stops and writes nothing.
+
+It never writes sub-units or localisation. It checks that a sub-unit has `sprite = <stem>` and that the keys `<id>` and `<id>_desc` exist, and lists what is missing. It lists the counter sprites `GFX_unit_<sprite>_icon_medium` and `_medium_white` and whether the mod or only the game defines each.
+
+Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <frame> sound = { soundeffect = "..." } }` into the entity state for that role. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
+
+After writing, it runs `check_unit_files.py --mod-root` and the static wiring audit and prints one verdict, PASS or FAIL with the list. Only audit errors about this unit count, and `--strict-audit` counts every error in the mod. `--dry-run` prints the plan and changes nothing. The exit code is 1 on FAIL.
+
 ## Pick the clips by measurement
 
 The agent picks one clip per role by these rules, and records every candidate's numbers in the job. A small model can follow them as written.
