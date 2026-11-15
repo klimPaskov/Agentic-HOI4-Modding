@@ -89,7 +89,9 @@ def parse_args():
     parser.add_argument("--arm-level", nargs="*", default=[], metavar="ROLE",
                         help="in these role clips bring the hands to chest height with one constant rotation of both upper arms (lib/tripo_arms.py): "
                         "Tripo's text-to-motion attacks keep the hands over the head and hide it")
-    parser.add_argument("--arm-level-target", type=float, default=0.0, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
+    # Default 0.85: chest height (0) read as dangling arms on the zombie; 0.85 of the way from chest to shoulder gives the arms straight forward
+    # at shoulder height, the classic zombie reach.
+    parser.add_argument("--arm-level-target", type=float, default=0.85, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
     parser.add_argument("--report", type=Path)
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)

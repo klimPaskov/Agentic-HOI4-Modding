@@ -126,7 +126,8 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     levelled = config.get("arm_level", [] if config.get("weapon") else ["attack"])
     if levelled:
         command += ["--arm-level"] + list(levelled)
-        if config.get("arm_level_target"):
+        # The target height defaults to 0.85 in prepare_tripo_unit.py (arms straight forward at shoulder height); a job may name another.
+        if config.get("arm_level_target") is not None:
             command += ["--arm-level-target", str(float(config["arm_level_target"]))]
     value = config.get("ease_snaps", DEFAULT_EASE_SNAPS)
     if value:
