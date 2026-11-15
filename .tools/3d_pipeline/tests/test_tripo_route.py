@@ -429,6 +429,28 @@ class EaseSnaps(unittest.TestCase):
         self.assertEqual(command[command.index("--ease-snaps") + 1], "18.0")
 
 
+class ArmLevelDefault(unittest.TestCase):
+    def command(self, **tripo):
+        spec = run_pilot.prepare_spec(tripo_spec())
+        spec["tripo"].update(tripo)
+        return tripo_intake.prepare_command(Path("blender.exe"), spec, {"rigged": Path("r.glb")}, Path("out"), Path("report.json"))
+
+    def test_an_armed_unit_gets_no_arm_level_and_an_unarmed_unit_gets_it_on_its_attack(self) -> None:
+        self.assertNotIn("--arm-level", self.command())
+        unarmed = self.command(weapon=None)
+        self.assertEqual(unarmed[unarmed.index("--arm-level") + 1], "attack")
+
+    def test_a_job_can_set_the_target_height(self) -> None:
+        command = self.command(weapon=None, arm_level_target=0.85)
+        self.assertEqual(command[command.index("--arm-level-target") + 1], "0.85")
+        self.assertNotIn("--arm-level-target", self.command(weapon=None))
+
+    def test_a_job_can_name_other_roles_or_switch_it_off(self) -> None:
+        roles = self.command(weapon=None, arm_level=["attack", "defend"])
+        self.assertEqual(roles[roles.index("--arm-level") + 1 : roles.index("--arm-level") + 3], ["attack", "defend"])
+        self.assertNotIn("--arm-level", self.command(weapon=None, arm_level=False))
+
+
 class DefaultRepairs(unittest.TestCase):
     def test_tripo_unit_jobs_repair_winding_holes_and_normals_and_meshy_jobs_none(self) -> None:
         self.assertEqual(run_pilot.default_repairs(tripo_spec()), ["winding", "holes", "normals"])

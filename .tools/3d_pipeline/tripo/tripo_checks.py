@@ -17,6 +17,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-CLOAK-STRETCH: in a clip, more than `CLOAK_MAX_STRETCH_SHARE` of the edges of the cloak region (vertices behind
   the body, weighted to the torso, hips or thighs) are stretched past 1.5x or squashed under 0.5x. The limit is the worst
   vanilla clothing stretch with a margin (see `CLOAK_MAX_STRETCH_SHARE`).
+- TRIPO-HANDS-HIGH: in the attack clip of an unarmed unit a hand is above the head in more than 20% of the frames, or the hands are above the shoulders in
+  more than 80% (lib/tripo_arms.py; Tripo's text-to-motion attacks do this and hide the head). `--arm-level attack` in the intake fixes it.
 - TRIPO-LIMB-IN-TORSO: in a death clip, limb skin (arms, legs) is deeper than `LIMB_MARGIN_SHARE` of the height inside the torso in some frame, in more
   than `MAX_LIMB_IN_TORSO_SHARE` of the limb points: an arm or a leg through the body.
 - TRIPO-NOT-DOWN: a death clip must end lying down, prone or supine: the body's extent at the end at most `MAX_FINAL_EXTENT_SHARE` of its
@@ -39,7 +41,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, tripo_checks as T, tripo_grip as G  # noqa: E402
+from lib import pdx_deform, pdx_motion, tripo_arms, tripo_checks as T, tripo_grip as G  # noqa: E402
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -209,6 +211,27 @@ def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
     return out, numbers
 
 
+def hands_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
+    """TRIPO-HANDS-HIGH for the attack clip of an unarmed unit (run only when the job names no weapon)."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    needed = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head")
+    if not all(name in index for name in needed):
+        return [], {}
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if not clip.endswith("attack"):
+            continue
+        joints = pdx_motion.posed_joints(mesh, anim)
+        track = {name: joints[:, index[name]] for name in needed}
+        levels = tripo_arms.hand_levels(track["LeftHand"], track["RightHand"], track["LeftArm"], track["RightArm"], track["Head"])
+        numbers[clip] = {k: round(v, 3) for k, v in levels.items()}
+        reason = tripo_arms.hands_high(levels)
+        if reason:
+            out.append(finding("TRIPO-HANDS-HIGH", clip, reason, **numbers[clip]))
+    return out, numbers
+
+
 def weapon_in_body_findings(gripped: Path, clips: Sequence[str], weapon_joint: str) -> (List[dict], dict):
     import clip_check as cc
 
@@ -295,6 +318,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         numbers["cloak"] = "not run: the job's anatomy has no cape"
     found, numbers["death"] = death_findings(mesh, anims)
     findings += found
+    if not args.weapon_bone:
+        found, numbers["hands"] = hands_findings(mesh, anims)
+        findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)
         findings += found

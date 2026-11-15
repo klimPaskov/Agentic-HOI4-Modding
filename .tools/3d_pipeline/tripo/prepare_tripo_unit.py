@@ -46,7 +46,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images  # noqa: E402
-from lib import tripo_shape  # noqa: E402
+from lib import tripo_arms, tripo_shape  # noqa: E402
 from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name  # noqa: E402
 
 MAX_BONES = 50
@@ -86,6 +86,10 @@ def parse_args():
     parser.add_argument("--shape-iou", type=float, default=tripo_shape.MIN_IOU,
                         help="the least silhouette agreement (front, side, top; intersection over union) a reduced part must keep")
     parser.add_argument("--ease-snaps", nargs="?", type=float, const=20.0, default=None, metavar="DEGREES", help="ease a joint turn faster than DEGREES per frame (default 20) over more frames, to three quarters of that, in every role clip, and keep each bone's quaternions on one hemisphere, so the kit's UNIT-ANIM-SPIN check does not fail a clip for one fast frame (the kit retimes 24 fps clips to 30 and a step can double)")
+    parser.add_argument("--arm-level", nargs="*", default=[], metavar="ROLE",
+                        help="in these role clips bring the hands to chest height with one constant rotation of both upper arms (lib/tripo_arms.py): "
+                        "Tripo's text-to-motion attacks keep the hands over the head and hide it")
+    parser.add_argument("--arm-level-target", type=float, default=0.0, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
     parser.add_argument("--report", type=Path)
     argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -739,6 +743,108 @@ def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, m
     return out
 
 
+def level_arms(armature, action, up=2, target_share=0.0):
+    """Solve and apply the arm-level rotation to the role clip `action` (see lib/tripo_arms.py). Returns what was done.
+
+    Both upper arms (LeftArm, RightArm) get the same constant additive rotation, about the bone-local axis that moves the hands up
+    and down most (the sign per arm so a positive angle raises that hand), multiplied into every key: q_new = q_clip @ q_offset. The
+    angle is solved so that the mean hand height over the reach phase equals chest height, halfway between the shoulders and the hips.
+    """
+
+    scene = bpy.context.scene
+    armature.animation_data_create()
+    armature.animation_data.action = action
+    slots = getattr(action, "slots", None)
+    if slots is not None and len(slots):
+        armature.animation_data.action_slot = slots[0]
+    start, end = int(action.frame_range[0]), int(action.frame_range[1])
+    frames = list(range(start, end + 1))
+    arms = ("LeftArm", "RightArm")
+    bones = armature.pose.bones
+
+    def heads(name):
+        return np.array(armature.matrix_world @ bones[name].head)
+
+    tracks = {name: [] for name in ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")}
+    arm_quaternions = {name: [] for name in arms}
+    for frame in frames:
+        scene.frame_set(frame)
+        for name in tracks:
+            tracks[name].append(heads(name))
+        for name in arms:
+            arm_quaternions[name].append(Quaternion(bones[name].rotation_quaternion))
+    track = {name: np.array(values) for name, values in tracks.items()}
+    scene.frame_set(start)
+    rest_foot = np.array(armature.matrix_world @ armature.data.bones["LeftFoot"].head_local)
+    rest_toe = np.array(armature.matrix_world @ armature.data.bones["LeftToeBase"].head_local)
+    front = rest_toe - rest_foot
+    front[up] = 0.0
+    front = front / max(float(np.linalg.norm(front)), 1e-9)
+    standing = float(track["Head"][0, up])
+    hand_mid = 0.5 * (track["LeftHand"] + track["RightHand"])
+    shoulder_mid = 0.5 * (track["LeftArm"] + track["RightArm"])
+    reach = tripo_arms.reach_frames(hand_mid, track["Hips"], front)
+    chest = tripo_arms.chest_height(shoulder_mid, track["Hips"], up, target_share)
+
+    def measure():
+        now = {name: [] for name in ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")}
+        for frame in frames:
+            scene.frame_set(frame)
+            for name in now:
+                now[name].append(heads(name))
+        now = {name: np.array(values) for name, values in now.items()}
+        levels = tripo_arms.hand_levels(now["LeftHand"], now["RightHand"], now["LeftArm"], now["RightArm"], now["Head"], up)
+        mid = 0.5 * (now["LeftHand"] + now["RightHand"])
+        levels["mean_error_in_reach"] = float(np.mean(mid[reach, up] - tripo_arms.chest_height(0.5 * (now["LeftArm"] + now["RightArm"]), now["Hips"], up, target_share)[reach]))
+        levels["forward_in_reach"] = float(np.mean((mid[reach] - now["Hips"][reach]) @ front)) / max(standing, 1e-9)
+        return levels
+
+    before = measure()
+    axes = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
+    sample = reach[:: max(1, len(reach) // 12)]
+
+    def hand_heights(angles, axis):
+        """Mean over the sampled reach frames of each hand's height minus the chest's, with arm k turned by angles[k] about `axis`."""
+
+        out = np.zeros(2)
+        for frame in sample:
+            scene.frame_set(int(frames[frame]))
+            for k, name in enumerate(arms):
+                bones[name].rotation_quaternion = arm_quaternions[name][frame] @ Quaternion(axis, angles[k])
+            bpy.context.view_layer.update()
+            for k, hand in enumerate(("LeftHand", "RightHand")):
+                out[k] += heads(hand)[up] - chest[frame]
+        return out / len(sample)
+
+    slopes = []
+    for axis in axes:
+        high = hand_heights((0.15, 0.15), axis)
+        low = hand_heights((-0.15, -0.15), axis)
+        slopes.append((high - low) / 0.3)
+    slope_sum = [float(np.sum(np.abs(v))) for v in slopes]
+    axis_index = int(np.argmax(slope_sum))
+    axis = axes[axis_index]
+    signs = np.where(slopes[axis_index] >= 0, 1.0, -1.0)
+
+    def error(angle):
+        return float(np.mean(hand_heights(tuple(signs * angle), axis)))
+
+    angle, left = tripo_arms.solve_arm_offset(error, tolerance=0.002 * max(standing, 1e-9))
+    for k, name in enumerate(arms):
+        curves = rotation_curves(action).get(name)
+        if curves is None:
+            continue
+        offset = Quaternion(axis, float(signs[k] * angle))
+        write_quaternions(curves, [q @ offset for q in key_quaternions(curves)])
+    scene.frame_set(start)
+    after = measure()
+    return {
+        "axis": axis_index, "signs": [float(v) for v in signs], "degrees": round(math.degrees(angle), 1), "error_left": round(left, 4),
+        "reach_frames": [int(frames[i]) for i in (reach[0], reach[-1])], "before": {k: round(v, 3) for k, v in before.items()},
+        "after": {k: round(v, 3) for k, v in after.items()},
+    }
+
+
 def main():
     args = parse_args()
     roles = dict(split_pair(item, "--roles item") for item in args.roles)
@@ -870,10 +976,13 @@ def main():
     clips = {}
     trims = dict(split_pair(item, "--trim") for item in args.trim)
     eased = {}
+    leveled = {}
     for role, clip in roles.items():
         action, trimmed = bpy.data.actions[clip], None
         if role in trims:
             action, trimmed = trimmed_copy(action, int(trims[role]))
+        if role in args.arm_level:
+            leveled[role] = level_arms(armature, action, target_share=args.arm_level_target)
         if args.ease_snaps:
             eased[role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
         armature.animation_data_create()
@@ -905,6 +1014,7 @@ def main():
         "clips_in_file": sorted(clip_names),
         "bones_before": bones_before,
         "ease_snaps": eased,
+        "arm_level": leveled,
         "bones_after": len(bone_names),
         "bone_names": bone_names,
         "dropped_bones": len(dropped),

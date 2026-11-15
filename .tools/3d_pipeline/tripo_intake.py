@@ -121,6 +121,13 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
     for role, frames in (config.get("trim") or {}).items():
         command += ["--trim", f"{role}={int(frames)}"]
+    # An unarmed unit's attack clip gets the arm-level rule (lib/tripo_arms.py): Tripo's text-to-motion attacks hold the hands over the head and
+    # hide it. `arm_level` lists the roles ([] or false to switch it off); the default is the attack of a job with no weapon.
+    levelled = config.get("arm_level", [] if config.get("weapon") else ["attack"])
+    if levelled:
+        command += ["--arm-level"] + list(levelled)
+        if config.get("arm_level_target"):
+            command += ["--arm-level-target", str(float(config["arm_level_target"]))]
     value = config.get("ease_snaps", DEFAULT_EASE_SNAPS)
     if value:
         command += ["--ease-snaps"] + ([] if value is True else [str(float(value))])
