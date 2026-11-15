@@ -630,19 +630,20 @@ class BlenderAdapterClient:
         weight_mode: str = "semantic",
         rig_name: str = "",
         creature_rig_family: str = "elephant",
+        rig_options: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        return self.call(
-            "hoi4_blender_author_creature_rig",
-            {
-                "job_id": job_id,
-                "blend_rel": blend_rel,
-                "checkpoint_rel": checkpoint_rel,
-                "rider_component_names": rider_component_names or [],
-                "weight_mode": weight_mode,
-                "rig_name": rig_name,
-                "creature_rig_family": creature_rig_family,
-            },
-        )
+        arguments = {
+            "job_id": job_id,
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "rider_component_names": rider_component_names or [],
+            "weight_mode": weight_mode,
+            "rig_name": rig_name,
+            "creature_rig_family": creature_rig_family,
+        }
+        if rig_options:
+            arguments["rig_options"] = dict(rig_options)
+        return self.call("hoi4_blender_author_creature_rig", arguments)
 
     def author_creature_action(
         self,

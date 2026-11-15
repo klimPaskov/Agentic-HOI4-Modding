@@ -255,7 +255,10 @@ class ProviderSwitch(unittest.TestCase):
         with self.assertRaises(ValueError):
             provider_name({"provider": "blender"})
         with self.assertRaisesRegex(RuntimeError, "Tripo jobs cover"):
-            run_pilot.vet_spec(tripo_spec(unit_type="mount"))
+            run_pilot.vet_spec(tripo_spec(unit_type=None, asset_kind="creature", profile="nonhumanoid_creature"))
+        # A quadruped unit type is a Tripo job: its plain model is rigged and animated by the kit's quadruped rules.
+        self.assertTrue(run_pilot.tripo_quadruped(tripo_spec(unit_type="mount")))
+        self.assertFalse(run_pilot.tripo_quadruped(tripo_spec()))
 
 
 class AnimationReceipt(unittest.TestCase):

@@ -1085,8 +1085,12 @@ def hoi4_blender_author_creature_rig(
     weight_mode: str = "semantic",
     rig_name: str = "",
     creature_rig_family: str = "elephant",
+    rig_options: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
-    """Create and checkpoint a bounded custom rig for a nonhumanoid creature candidate."""
+    """Create and checkpoint a bounded custom rig for a nonhumanoid creature candidate.
+
+    `rig_options` (quadruped family): `load` true finds a carried load by rule and binds it rigidly, `rider_height` (model units)
+    sizes the rider column that places the Saddle_Node on the load's floor."""
 
     return _run(
         job_id,
@@ -1098,6 +1102,7 @@ def hoi4_blender_author_creature_rig(
             "weight_mode": weight_mode,
             "rig_name": rig_name,
             "creature_rig_family": creature_rig_family,
+            "rig_options": dict(rig_options or {}),
         },
     )
 

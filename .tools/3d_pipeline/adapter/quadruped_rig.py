@@ -19,6 +19,7 @@ import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 
 import quadruped_layout as ql
+import quadruped_load as qload
 
 FAMILY = "quadruped"
 FPS = 24
@@ -57,10 +58,33 @@ def _evaluated_min_z(objects: List[bpy.types.Object]) -> float:
     return lowest
 
 
-def _landmarks_from_payload(points: np.ndarray, payload: Dict[str, Any]) -> Dict[str, Any]:
+def _mesh_triangles(owners: List[Tuple[bpy.types.Object, int]]) -> np.ndarray:
+    rows = []
+    offset = 0
+    for obj, count in owners:
+        mesh = obj.data
+        mesh.calc_loop_triangles()
+        flat = np.empty(len(mesh.loop_triangles) * 3, dtype=np.int64)
+        mesh.loop_triangles.foreach_get("vertices", flat)
+        rows.append(flat.reshape(-1, 3) + offset)
+        offset += count
+    return np.concatenate(rows) if rows else np.zeros((0, 3), dtype=np.int64)
+
+
+def _turn_quarter(meshes: List[bpy.types.Object], points: np.ndarray) -> None:
+    """Turn the meshes a quarter turn about the vertical through their centre, so their length lies along Y."""
+
+    centre = Vector(((points[:, 0].min() + points[:, 0].max()) / 2, (points[:, 1].min() + points[:, 1].max()) / 2, 0.0))
+    turn = Matrix.Translation(centre) @ Matrix.Rotation(math.pi / 2, 4, "Z") @ Matrix.Translation(-centre)
+    for obj in meshes:
+        obj.data.transform(obj.matrix_world.inverted() @ turn @ obj.matrix_world)
+        obj.data.update()
+
+
+def _landmarks_from_payload(points: np.ndarray, payload: Dict[str, Any], back_z: Any = None) -> Dict[str, Any]:
     measured = payload.get("landmarks")
     if not measured:
-        return ql.detect_landmarks(points)
+        return ql.detect_landmarks(points, back_z=back_z)
     landmarks = dict(measured)
     for key in ("muzzle", "poll", "saddle"):
         landmarks[key] = np.asarray(landmarks[key], dtype=float)
@@ -133,6 +157,47 @@ def _bind(
     return per_bone, unweighted
 
 
+def _orient(meshes: List[bpy.types.Object], payload: Dict[str, Any], options: Dict[str, Any]):
+    """Turn the meshes so the animal lies along Y facing -Y, and find its load (quadruped_load.py) when the job says it carries one.
+
+    The animal's length is its longest horizontal extent, so a model that lies along X is turned a quarter first. The load is found
+    again in the turned frame (the vertex order is the same). Returns (points, owners, triangles, load or None, turned, quarter)."""
+
+    points, owners = _mesh_points(meshes)
+    triangles = _mesh_triangles(owners)
+    load = qload.find_load(points, triangles) if options.get("load") else None
+    turned = quarter = False
+    if not payload.get("landmarks"):
+        body = points[~load.mask] if load is not None else points
+        if float(np.ptp(body[:, 0])) > float(np.ptp(body[:, 1])):
+            _turn_quarter(meshes, points)
+            points, owners = _mesh_points(meshes)
+            body = points[~load.mask] if load is not None else points
+            quarter = True
+        if ql.faces_plus_y(body):
+            _turn_half(meshes, points)
+            points, owners = _mesh_points(meshes)
+            turned = True
+    if load is not None:
+        load = qload.find_load(points, triangles)
+    return points, owners, triangles, load, turned, quarter
+
+
+def _seat_on_load(points: np.ndarray, triangles: np.ndarray, load: Any, landmarks: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
+    """Place the Saddle_Node on the load's clearest floor and cap the death's roll; record both in `landmarks` and return the report."""
+
+    rider_height = float(options.get("rider_height") or 0.0)
+    if rider_height <= 0:
+        raise RuntimeError("A loaded mount needs rig_options.rider_height (the rider's height in this model's units) to place its Saddle_Node.")
+    ground = float(points[:, 2].min())
+    seat = qload.place_saddle(points, triangles, load, rider_height)
+    landmarks["saddle"] = np.asarray(seat["point"], dtype=float) - np.array([0.0, 0.0, ground])
+    torso = points[:, 2] - ground > float(landmarks["belly_z"])
+    roll = qload.roll_limit(points, load.mask, torso, np.array([0.0, 1.0, 0.0]), ql.COLLAPSE_ROLL)
+    landmarks["load"] = {"roll_limit": roll, "bone": qload.LOAD_BONE}
+    return {**load.summary(float(np.ptp(points[:, 2]))), "saddle": _jsonable(seat), "roll_limit": roll, "bone": qload.LOAD_BONE}
+
+
 def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -145,13 +210,12 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         raise RuntimeError("Quadruped rigging found no working meshes.")
     for existing in h["armatures"]():
         bpy.data.objects.remove(existing, do_unlink=True)
-    points, owners = _mesh_points(meshes)
-    turned = False
-    if not payload.get("landmarks") and ql.faces_plus_y(points):
-        _turn_half(meshes, points)
-        points, owners = _mesh_points(meshes)
-        turned = True
-    landmarks = _landmarks_from_payload(points, payload)
+    options = dict(payload.get("rig_options") or {})
+    points, owners, triangles, load, turned, quarter = _orient(meshes, payload, options)
+    body = points[~load.mask] if load is not None else points
+    ground = float(points[:, 2].min())
+    landmarks = _landmarks_from_payload(body, payload, back_z=(load.cut_z - ground) if load is not None else None)
+    load_report = _seat_on_load(points, triangles, load, landmarks, options) if load is not None else {}
     layout = ql.build_layout(landmarks)
     if len(layout.bones) > 50:
         raise RuntimeError(f"The quadruped rig has {len(layout.bones)} bones; the engine skins at most 50.")
@@ -182,6 +246,9 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     rig.show_in_front = True
 
     indices, weights = ql.skin_weights(points, layout)
+    if load is not None:
+        indices, weights, bound = qload.bind_load(points, load.mask, indices, weights, layout.names(), qload.RING_SHARE * float(landmarks["height"]))
+        load_report.update(bound)
     per_bone, unweighted = _bind(owners, layout, indices, weights, rig)
     if unweighted:
         raise RuntimeError(f"{unweighted} vertices received no bone weight.")
@@ -199,7 +266,10 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "max_influences": int(indices.shape[1]),
         "unweighted_vertices": unweighted,
         "turned_to_face_minus_y": turned,
-        "weighting": "region-limited inverse fourth power of the distance to each bone segment",
+        "turned_quarter_to_lie_along_y": quarter,
+        "load": load_report or None,
+        "weighting": "region-limited inverse fourth power of the distance to each bone segment"
+        + ("; the load bound wholly to the Spine, fading into the body over a ring" if load is not None else ""),
     }
 
 

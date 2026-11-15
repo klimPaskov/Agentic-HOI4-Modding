@@ -1554,6 +1554,7 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
     generation_stage = generation_stage_for(spec)
     if uses_tripo(spec):
         generation_id, generation_glb = tripo_generation(job, spec)
+        tripo_mount_size(job, spec)
     else:
         generation_id, generation_glb = meshy_generation(spec, job, MeshyClient(REPO_ROOT, job), generation_stage)
     return prepare_generation_candidate(spec, slug, job, blender, vanilla_reference, generation_id, generation_glb)
@@ -1643,7 +1644,8 @@ def prepare_generation_candidate(
 
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
     footprint_config = profile.get("footprint", {})
-    max_runtime_footprint_m = footprint_config.get("max_runtime_footprint_m")
+    # The footprint budget is a map building's; a quadruped unit is sized by its back (tripo_mount_size).
+    max_runtime_footprint_m = None if tripo_quadruped(spec) else footprint_config.get("max_runtime_footprint_m")
     runtime_footprint_policy = spec.get("runtime_footprint_policy", "reject")
     texture_sources = (
         prepare_pilot_texture_sources(
@@ -1807,6 +1809,11 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         component_prefix=f"{spec['runtime_stem']}_component",
     )
     rig_checkpoint = "blender/checkpoints/creature_rig_approved.blend"
+    rig_options: Dict[str, Any] = {}
+    size = tripo_mount_size(job, spec)
+    if size and (spec.get("tripo") or {}).get("load"):
+        # The load is found and bound by rule; the rider's height in this model's units places the Saddle_Node on its floor.
+        rig_options = {"load": True, "rider_height": size["rider_height_in_mount_mesh"]}
     rig = blender.author_creature_rig(
         slug,
         component_checkpoint,
@@ -1814,6 +1821,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         creature_rig_family=str(spec["creature_rig_family"]),
         weight_mode="semantic",
         rig_name=f"{spec['runtime_stem']}_armature",
+        rig_options=rig_options or None,
     )
     current_checkpoint = rig_checkpoint
     action_reports: Dict[str, Dict[str, Any]] = {}
@@ -3112,6 +3120,42 @@ def load_job_configs(config_path: Path) -> Dict[str, Dict[str, Any]]:
     return jobs
 
 
+def tripo_quadruped(spec: Dict[str, Any]) -> bool:
+    """A Tripo job on a quadruped unit type (`mount`, `quadruped_beast`): Tripo's plain model, rigged and animated by the kit's quadruped rules."""
+
+    name = spec.get("unit_type")
+    return uses_tripo(spec) and bool(name) and load_unit_types().get(name, {}).get("rig") == "blender_quadruped"
+
+
+def tripo_mount_size(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Size a Tripo quadruped by the measured rule of `lib/mount_size.py` and set its `blender_target_height_m`.
+
+    The job states `size_vs_horse` (the species' withers height over a horse's, with its source in `size_vs_horse_reason`) and, for a
+    mount that carries a tower or howdah, `tripo.load: true`. A job's own `blender_target_height_m` wins. The rider is vanilla's rider
+    size on the map; `rider.mesh_height` names the rider's mesh height when it is not vanilla infantry's."""
+
+    if not tripo_quadruped(spec):
+        return None
+    from lib import mount_size
+
+    manifest = job / "provider" / "downloads" / f"{generation_download_name(spec, 'glb')}.manifest.json"
+    if not manifest.is_file():
+        return None
+    glb = job / read_json(manifest)["file"]["relative_path"]
+    config = spec.get("tripo") or {}
+    rider = spec.get("rider") or {}
+    size = mount_size.mount_size(glb, float(spec.get("runtime_entity_scale", 0.8)), float(spec.get("size_vs_horse", 1.0)),
+                                 bool(config.get("load")), rider.get("mesh_height"))
+    size["size_vs_horse_reason"] = spec.get("size_vs_horse_reason", "")
+    if spec.get("_explicit_target_height"):
+        size["overridden_by_job"] = spec["blender_target_height_m"]
+    else:
+        spec["blender_target_height_m"] = size["target_height_m"]
+    check_runtime_scale(spec)
+    write_json(job / "blender" / "reports" / "mount_size.json", size)
+    return size
+
+
 def require_reference_approval(spec: Dict[str, Any]) -> None:
     """Block paid generation until the parent has accepted the exact provider image."""
 
@@ -3171,8 +3215,8 @@ def vet_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
     require_route_ready(spec)
     require_reference_approval(spec)
     prepared = prepare_spec(spec)
-    if uses_tripo(spec) and spec["asset_kind"] not in STATIC_ASSET_KINDS | {"humanoid"}:
-        raise RuntimeError(f"{spec['asset_id']}: Tripo jobs cover units on a humanoid unit_type and static models, not {spec['asset_kind']}.")
+    if uses_tripo(spec) and spec["asset_kind"] not in STATIC_ASSET_KINDS | {"humanoid"} and not tripo_quadruped(spec):
+        raise RuntimeError(f"{spec['asset_id']}: Tripo jobs cover units on a humanoid or quadruped unit_type and static models, not {spec['asset_kind']}.")
     if uses_tripo(spec) and spec["asset_kind"] == "humanoid" and not spec.get("unit_type"):
         raise RuntimeError(f"{spec['asset_id']}: a Tripo unit job needs a unit_type.")
     return prepared
@@ -3468,11 +3512,13 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
         # Meshy's a-pose and t-pose are for humanoids only; a four-legged generation is sent without one.
         spec["meshy_pose_mode"] = None
         spec.setdefault("creature_rig_family", "quadruped")
-        # The raw generation is hundreds of loose pieces; the rig needs one closed surface.
-        spec.setdefault("creature_remesh", True)
+        # The raw Meshy generation is hundreds of loose pieces; the rig needs one closed surface. Tripo's model is one skin.
+        spec.setdefault("creature_remesh", not uses_tripo(spec))
         spec.setdefault("creature_remesh_polycount", 30000)
         # Vanilla cavalry_horse.mesh is 15.64 units to the head under pdxmesh scale 0.45 and entity
         # scale 0.65, so 4.57 on the map, smaller than vanilla infantry (5.89). A mount matches it.
+        # A Tripo quadruped is sized by its back instead (tripo_mount_size, lib/mount_size.py).
+        spec.setdefault("_explicit_target_height", "blender_target_height_m" in spec)
         spec.setdefault("blender_target_height_m", round(4.57 / float(spec.get("runtime_entity_scale", 0.8)), 4))
     else:
         spec.setdefault("asset_kind", "humanoid")
@@ -3650,7 +3696,7 @@ def write_animation_receipt(
     return receipt_rel
 
 
-def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, Any]) -> Dict[str, Any]:
+def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, Any], humanoid: bool = True) -> Dict[str, Any]:
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
     weapon the unit has let go of never deciding where it is. A death whose boots hang above the ground has its knees straightened first."""
@@ -3659,7 +3705,7 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, An
 
     released = weapon.get("bone") if weapon.get("bone") and role in (weapon.get("release_roles") or []) else None
     record: Dict[str, Any] = {}
-    if role == "death":
+    if role == "death" and humanoid:
         legs = tripo_pose.settle_death_legs(mesh, anim, anim)
         record["legs"] = {"changed": legs.changed, "knee_share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
                           "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
@@ -3668,7 +3714,7 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, An
     return record
 
 
-def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str, Any]) -> Dict[str, Any]:
+def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str, Any], locked: Sequence[str] = ()) -> Dict[str, Any]:
     """The Tripo route's weight rule on the staged mesh (lib/stretch_smooth.py): smooth the weights where the unit's own clips stretch or
     squash edges, at the strength that lowers that most without making any clip worse. A held weapon's bone is locked, so it stays rigid,
     and so are the chain stage's cloak and wing bones, whose weights that stage sets by its own rule."""
@@ -3677,7 +3723,7 @@ def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: 
 
     mesh = staged / f"{stem}.mesh"
     result = stretch_smooth.smooth(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
-                                   locked_bones=[weapon["bone"]] if weapon.get("bone") else [],
+                                   locked_bones=([weapon["bone"]] if weapon.get("bone") else []) + list(locked),
                                    locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()))
     totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
     return {"changed": result.changed, "passes": result.passes, "seed_vertices": result.seeds, "region_vertices": result.region,
@@ -3927,6 +3973,10 @@ TRIPO_DEFAULT_REPAIRS = ("winding", "holes", "normals")
 def default_repairs(spec: Dict[str, Any]) -> List[str]:
     """The `repair_unit.py` repairs the unit route runs on its own export: Tripo's three, none for Meshy."""
 
+    if tripo_quadruped(spec):
+        # Tripo makes a quadruped and what it carries as one skin: a hanging tail fused to a hind leg and a load fused to the neck
+        # are cut apart and capped (UNIT-BRIDGE), or the gait tears them.
+        return ["winding", "bridges", "holes", "normals"]
     return list(TRIPO_DEFAULT_REPAIRS) if uses_tripo(spec) else []
 
 
@@ -3983,17 +4033,21 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         if (spec.get("tripo") or {}).get("smooth_weights", True) is not False:
-            records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg)
+            # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
+            load_bones = ["Spine"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
+            records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones)
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # Then the mesh the game loads decides where the ground is.
         for role in sorted(exports["animations"]):
-            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg)
+            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
+                                                                                humanoid=not tripo_quadruped(spec))
             records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
     findings, facts = check_unit_files.check_files(staged, unit, profile, weapon_bones=weapon_bones)
     errors = [item.__dict__ for item in findings if item.severity == "error"]
     shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []
     roles = sorted(exports["animations"])
     folder = spec.get("runtime_model_folder") or f"gfx/models/units/{stem}"
+    rider = mount_rider_registration(job, spec) if (unit or {}).get("entity_template") == "mount" else None
     text = registration_text(
         unit_entity=f"{stem}_entity",
         model_folder=folder,
@@ -4003,6 +4057,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         scale=float(spec.get("runtime_entity_scale", 1.0)),
         template=(unit or {}).get("entity_template", "infantry"),
         state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
+        rider=rider,
     )
     (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
     report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
@@ -4010,6 +4065,33 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
     if errors:
         raise RuntimeError(f"The staged runtime files fail {len(errors)} check(s); see runtime/files.json: {errors[:3]}")
     return report
+
+
+def mount_rider_registration(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """The rider a mount job names (`rider`: the folder of an exported unit, its stem, a role map), for the registration.
+
+    Its entity scale is the one that makes it vanilla's rider size on the map (lib/mount_size.py), and its mesh and entity get names of
+    their own, so a foot unit's files can ride without clashing with that unit's own registration."""
+
+    rider = spec.get("rider") or {}
+    if not rider.get("folder"):
+        return None
+    from lib import pdx_binary
+
+    folder = Path(rider["folder"])
+    stem = str(rider.get("stem") or next(folder.glob("*.mesh")).stem)
+    size = read_json(job / "blender" / "reports" / "mount_size.json") if (job / "blender" / "reports" / "mount_size.json").is_file() else {}
+    summary = pdx_binary.summarize_mesh(pdx_binary.read(folder / f"{stem}.mesh"))
+    return {
+        "stem": stem,
+        "model_folder": str(rider.get("model_folder") or f"gfx/models/units/{stem}"),
+        "shapes": list(summary.shapes),
+        "roles": sorted(path.stem[len(stem) + 1:] for path in folder.glob(f"{stem}_*.anim")),
+        "role_map": dict(rider.get("roles") or {}),
+        "scale": float(rider.get("scale") or size.get("rider_entity_scale") or 1.0),
+        "mesh_name": f"{spec['runtime_stem']}_rider_mesh",
+        "entity": f"{spec['runtime_stem']}_rider_entity",
+    }
 
 
 def print_credits_report(location: str) -> int:

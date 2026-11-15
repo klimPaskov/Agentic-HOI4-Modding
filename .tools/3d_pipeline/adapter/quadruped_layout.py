@@ -85,8 +85,48 @@ def faces_plus_y(points: np.ndarray) -> bool:
     return top_plus > top_minus
 
 
-def detect_landmarks(points: np.ndarray) -> Dict[str, object]:
-    """Find the hooves, belly, back, head, tail and saddle of a standing quadruped."""
+def _hoof_centres(hooves: np.ndarray, split_y: float, cx: float) -> Dict[str, np.ndarray]:
+    """The centre of each leg's ground contact: front and rear split at the largest gap along Y, left and right at the mid-plane."""
+
+    centres: Dict[str, np.ndarray] = {}
+    for end, side in LEGS:
+        mask = (hooves[:, 1] < split_y) if end == "Front" else (hooves[:, 1] >= split_y)
+        mask &= (hooves[:, 0] >= cx) if side == "Left" else (hooves[:, 0] < cx)
+        if not mask.any():
+            raise LandmarkError(f"no ground contact for the {end.lower()} {side.lower()} leg")
+        centres[f"{end}_{side}"] = hooves[mask].mean(axis=0)
+    return centres
+
+
+def _belly_span(hooves: np.ndarray, split_y: float, front_y: float, rear_y: float) -> Tuple[float, float]:
+    """Where the belly column runs along Y: behind the hindmost ground point of the front legs and before the foremost of the
+    rear legs, so pillar legs in a long stride (an elephant's) stay out of it, and never nearer the hooves' centres than 15% of
+    the span."""
+
+    span = rear_y - front_y
+    front_back = float(hooves[hooves[:, 1] < split_y][:, 1].max())
+    rear_front = float(hooves[hooves[:, 1] >= split_y][:, 1].min())
+    start, stop = max(front_y + 0.15 * span, front_back + 0.05 * span), min(rear_y - 0.15 * span, rear_front - 0.05 * span)
+    return (start, stop) if stop > start else (front_y + 0.15 * span, rear_y - 0.15 * span)
+
+
+def _leg_radius(leg_points: np.ndarray, joints: Dict[str, np.ndarray], height: float, width: float) -> float:
+    """The median over the leg's three joint bands of its own points' horizontal distance from the band's centre."""
+
+    radii = []
+    for joint in ("upper", "middle", "lower"):
+        band = leg_points[np.abs(leg_points[:, 2] - joints[joint][2]) < 0.05 * height]
+        if len(band) >= 3:
+            radii.append(float(np.median(np.linalg.norm(band[:, :2] - joints[joint][:2], axis=1))))
+    return float(np.median(radii)) if radii else 0.1 * width
+
+
+def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict[str, object]:
+    """Find the hooves, belly, back, head, tail and saddle of a standing quadruped.
+
+    `back_z` (above the ground) replaces the measured back: a load's cut when the points are the body without the load
+    it carries, because the back under the load was cut away with it.
+    """
 
     if points.ndim != 2 or points.shape[1] != 3 or len(points) < 50:
         raise LandmarkError("need at least 50 vertices as an (N, 3) array")
@@ -103,23 +143,18 @@ def detect_landmarks(points: np.ndarray) -> Dict[str, object]:
     if len(hooves) < 8:
         raise LandmarkError("fewer than 8 vertices near the ground; the legs may not reach it")
     split_y = _largest_gap_split(hooves[:, 1])
-    hoof_centres: Dict[str, np.ndarray] = {}
-    for end, side in LEGS:
-        mask = (hooves[:, 1] < split_y) if end == "Front" else (hooves[:, 1] >= split_y)
-        mask &= (hooves[:, 0] >= cx) if side == "Left" else (hooves[:, 0] < cx)
-        if not mask.any():
-            raise LandmarkError(f"no ground contact for the {end.lower()} {side.lower()} leg")
-        hoof_centres[f"{end}_{side}"] = hooves[mask].mean(axis=0)
+    hoof_centres = _hoof_centres(hooves, split_y, cx)
     front_y = float((hoof_centres["Front_Left"][1] + hoof_centres["Front_Right"][1]) / 2)
     rear_y = float((hoof_centres["Rear_Left"][1] + hoof_centres["Rear_Right"][1]) / 2)
     if front_y >= rear_y:
         raise LandmarkError("the front legs are not in front (toward -Y) of the rear legs")
     span = rear_y - front_y
-    column = p[(np.abs(p[:, 0] - cx) < 0.12 * width) & (p[:, 1] > front_y + 0.15 * span) & (p[:, 1] < rear_y - 0.15 * span)]
+    start, stop = _belly_span(hooves, split_y, front_y, rear_y)
+    column = p[(np.abs(p[:, 0] - cx) < 0.12 * width) & (p[:, 1] > start) & (p[:, 1] < stop)]
     if len(column) < 10:
         raise LandmarkError("no body between the front and rear legs")
     belly_z = float(np.percentile(column[:, 2], 2))
-    back_z = float(np.percentile(column[:, 2], 98))
+    back_z = float(np.percentile(column[:, 2], 98)) if back_z is None else float(back_z)
     if belly_z < 0.1 * height:
         raise LandmarkError("the belly reaches the ground; the legs are not separate")
     mid_y = (front_y + rear_y) / 2
@@ -178,6 +213,7 @@ def detect_landmarks(points: np.ndarray) -> Dict[str, object]:
             joints[joint] = np.array([centre[0], centre[1], z])
         joints["ground"] = np.array([hoof[0], hoof[1] - 0.03 * length, 0.0])
         joints["top"] = np.array([joints["upper"][0], joints["upper"][1] + (0.02 * length if end == "Rear" else 0.0), (belly_z + back_z) / 2])
+        joints["radius"] = np.asarray(_leg_radius(leg_points, joints, height, width))
         legs[key] = joints
 
     return {
@@ -276,6 +312,40 @@ def _hanging_tail_only(allowed, q, distance, bones, behind_y: float, min_z: floa
     allowed[np.ix_(hanging, tail_bones)] = True
 
 
+def _claim_leftovers(allowed, leg_base: Dict[int, np.ndarray], q, distance, bones, behind_y: float, min_z: float) -> None:
+    """Skin no region claimed goes to its nearest leg when it is low enough for one, a hanging tail to the tail alone, and the
+    rest to the torso bones."""
+
+    unclaimed = ~allowed.any(axis=1)
+    for index, base in leg_base.items():
+        allowed[:, index] |= base & unclaimed
+    _hanging_tail_only(allowed, q, distance, bones, behind_y, min_z)
+    orphans = ~allowed.any(axis=1)
+    if orphans.any():
+        for index, bone in enumerate(bones):
+            if bone.deform and bone.name in {"Pelvis", "Spine", "Chest"}:
+                allowed[orphans, index] = True
+
+
+def _near_legs(q: np.ndarray, legs: Dict[str, Dict[str, np.ndarray]], leg_keys: List[str], length: float) -> np.ndarray:
+    """(N, 4): whether each point lies within LEG_REACH of a leg's radii of that leg's own line.
+
+    A leg's bones take that skin, so a trunk hanging beside a front leg (an elephant's) or straps under the belly never follow a
+    leg. On the elephant the leg skin lies within 2 radii and the nearest other skin beyond 2.5. Skin farther out that no other
+    region claims (a hoof's spur) still goes to its nearest leg (`skin_weights`)."""
+
+    near = np.ones((len(q), len(leg_keys)), dtype=bool)
+    for column, key in enumerate(leg_keys):
+        joints = legs[key]
+        if "radius" not in joints:
+            continue
+        hoof = np.asarray(joints["ground"], dtype=float) + np.array([0.0, 0.03 * length, 0.0])  # the hoof's centre, not its toe
+        chain = [np.asarray(joints[name], dtype=float) for name in ("top", "upper", "middle", "lower")] + [hoof]
+        reach = np.min([_segment_distance(q, chain[i], chain[i + 1]) for i in range(4)], axis=0)
+        near[:, column] = reach < LEG_REACH * float(joints["radius"])
+    return near
+
+
 def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) -> Tuple[np.ndarray, np.ndarray]:
     """Return (bone indices, weights) per vertex, each row normalized, at most `max_influences` bones.
 
@@ -306,6 +376,8 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
     nearest_leg = np.argmin(np.linalg.norm(q[:, None, :2] - columns[None, :, :], axis=2), axis=1)
     in_leg = q[:, 2] < belly_z + 0.02 * h
     in_body = q[:, 2] > belly_z - 0.06 * h
+    near_leg = _near_legs(q, legs, leg_keys, length)
+    leg_base: Dict[int, np.ndarray] = {}
     for index, bone in enumerate(bones):
         if not bone.deform:
             continue
@@ -315,7 +387,8 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             mask = in_leg & (nearest_leg == leg_keys.index(key))
             if not name.endswith("_Upper"):
                 mask &= q[:, 2] < belly_z
-            allowed[:, index] = mask
+            leg_base[index] = mask
+            allowed[:, index] = mask & near_leg[:, leg_keys.index(key)]
         elif name.startswith("Tail_"):
             tail_root_y = float(np.asarray(lm["tail"][0])[1]) if lm.get("tail") else rear_y
             allowed[:, index] = (q[:, 1] > tail_root_y - 0.02 * length) & in_body
@@ -327,12 +400,7 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             allowed[:, index] = in_body & (q[:, 1] < mid_y + 0.12 * length)
         elif name == "Spine":
             allowed[:, index] = in_body
-    _hanging_tail_only(allowed, q, distance, bones, rear_y + 0.06 * length, 0.2 * h)
-    orphans = ~allowed.any(axis=1)
-    if orphans.any():
-        for index, bone in enumerate(bones):
-            if bone.deform and bone.name in {"Pelvis", "Spine", "Chest"}:
-                allowed[orphans, index] = True
+    _claim_leftovers(allowed, leg_base, q, distance, bones, rear_y + 0.06 * length, 0.2 * h)
     falloff = 0.02 * h
     raw = np.where(allowed, 1.0 / np.power(distance + falloff, 4), 0.0)
     order = np.argsort(-raw, axis=1)[:, :max_influences]
@@ -368,6 +436,9 @@ DEFAULT_STYLE = {
     "death": "quadruped_collapse",
 }
 LOOPING = {"quadruped_idle", "quadruped_walk", "quadruped_trot", "quadruped_gallop"}
+LEG_REACH = 2.2
+COLLAPSE_ROLL = 82.0
+LOADED_STILL = ("Pelvis", "Spine", "Chest")
 
 Rotation = Tuple[Tuple[float, float, float], float]
 
@@ -414,6 +485,7 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
     """
 
     names = set(layout.names())
+    load = layout.landmarks.get("load") or {}
     total = frame_count(style)
     t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
     pose: Dict[str, List[Rotation]] = {}
@@ -443,7 +515,8 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
             pose[leg_name(end, side, "Upper")] = [(X_AXIS, shift if end == "Front" else -shift)]
     elif style == "quadruped_charge":
         gallop = GAITS["quadruped_gallop"]
-        cycle = (t * 2.5) % 1.0
+        # Two whole strides, so the clip ends in its first pose: the game loops an attack (TRIPO-LOOP-POP).
+        cycle = (t * 2.0) % 1.0
         for end, side in LEGS:
             pose.update(_leg_rotations(gallop, cycle, end, side))
         lunge = math.sin(math.pi * t)
@@ -467,20 +540,32 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         if has_tail:
             pose["Tail_01"] = [(X_AXIS, 20.0 * rise)]
     elif style == "quadruped_collapse":
-        buckle = _smooth(min(1.0, t / 0.3))
-        fall = _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
-        settle = _smooth(max(0.0, (t - 0.65) / 0.35))
-        for end, side in LEGS:
-            fold = 1.0 if end == "Front" else 0.7
-            pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold)]
-            pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold)]
-            pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.6 * settle))]
-        pose["__root_roll__"] = [(Y_AXIS, 82.0 * fall)]
-        pose["Neck_01"] = [(X_AXIS, 25.0 * buckle - 30.0 * settle)]
-        pose["Neck_02"] = [(Z_AXIS, 20.0 * settle)]
-        pose["Head"] = [(X_AXIS, -10.0 * settle)]
-        if has_tail:
-            pose["Tail_01"] = [(X_AXIS, 25.0 * settle)]
+        _collapse(pose, t, has_tail, float(load.get("roll_limit", COLLAPSE_ROLL)) if load else COLLAPSE_ROLL)
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
-    return {name: rows for name, rows in pose.items() if name in names or name.startswith("__")}
+    return _held_back({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, load)
+
+
+def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict[str, List[Rotation]]:
+    """A back strapped under a rigid load does not bend: the load rides the Spine, and Pelvis, Spine and Chest move as one."""
+
+    return {name: rows for name, rows in pose.items() if not (load and name in LOADED_STILL)}
+
+
+def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float) -> None:
+    """The death: the legs buckle and the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit)."""
+
+    buckle = _smooth(min(1.0, t / 0.3))
+    fall = _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
+    settle = _smooth(max(0.0, (t - 0.65) / 0.35))
+    for end, side in LEGS:
+        fold = 1.0 if end == "Front" else 0.7
+        pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold)]
+        pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold)]
+        pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.6 * settle))]
+    pose["__root_roll__"] = [(Y_AXIS, roll * fall)]
+    pose["Neck_01"] = [(X_AXIS, 25.0 * buckle - 30.0 * settle)]
+    pose["Neck_02"] = [(Z_AXIS, 20.0 * settle)]
+    pose["Head"] = [(X_AXIS, -10.0 * settle)]
+    if has_tail:
+        pose["Tail_01"] = [(X_AXIS, 25.0 * settle)]
