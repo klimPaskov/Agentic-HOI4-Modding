@@ -198,7 +198,10 @@ def plan_cloak(ctx):
     check = C.cloak_mask(positions, ctx["dominant"], heads["Hips"], front, up, ctx["height"])
     grown = C.cloak_rebind_mask(check, positions, ctx["edges"], ctx["dominant"], heads["Hips"], front, up, ctx["height"], limb_capsules(ctx, check))
     collar = C.collar_zone(positions, up, float(min(heads["LeftArm"] @ up, heads["RightArm"] @ up)))
-    mask = grown & ~ctx["keep_clear"] & ~collar
+    # The cloak does not carve out the arms' swing room (`keep_clear`, kept for wings): on the round 4 orc the carved skin kept Tripo's
+    # thigh weights beside skin on the chains, which bridged the cloak to the legs (UNIT-BRIDGE, 28 edges) and stretched the attack's
+    # right thigh from 169 to 456 edges. The arms are capsules the cloak's chains collide with instead (`CAPSULES`).
+    mask = grown & ~collar
     points = positions[mask]
     u, s, radius = C.cloak_coordinates(points, heads["Hips"], front, up)
     low, high = np.percentile(u, [2.0, 98.0])
@@ -209,7 +212,7 @@ def plan_cloak(ctx):
     return [{
         "region": "cloak", "side": "", "mask": mask, "chain_u": chain_u, "joints": joints, "stations": stations,
         "coords": cloak_coords(heads["Hips"], front, up, float((points @ up).max())),
-        "layout": "fan", "check_vertices": int(check.sum()), "kept_clear": int((grown & (ctx["keep_clear"] | collar)).sum()), "blocked": collar,
+        "layout": "fan", "check_vertices": int(check.sum()), "kept_clear": int((grown & collar).sum()), "blocked": collar,
         "shape_inputs": {"length": round(length, 4), "width": round(width, 4), "segment": round(ctx["segment"], 4), "budget": ctx["budget"]},
     }]
 
@@ -281,10 +284,11 @@ def bone_names(sheet) -> List[List[str]]:
     return [[f"{prefix}{c + 1}_{b + 1}" for b in range(bones)] for c in range(chains)]
 
 
-def chain_rows(rows, positions, edges, sheets, blocked):
+def chain_rows(rows, positions, edges, sheets, limb_ends, arm_room):
     """Give each sheet's region its chains' weights whole, blended into the body's over one chain bone outward from the region's border
-    (`lib.tripo_chains.blend_alpha`) but never into `blocked` skin (a forearm, hand, shin or foot, `lib.tripo_chains.is_limb_end`, the room
-    an arm swings through, `lib.tripo_chains.arm_room`, and the sheet's own `blocked`: a cloak's collar, the far side of a wing's mid-plane),
+    (`lib.tripo_chains.blend_alpha`) but never into blocked skin (a forearm, hand, shin or foot, `limb_ends` from
+    `lib.tripo_chains.is_limb_end`; for wings also `arm_room`, the room an arm swings through, `lib.tripo_chains.arm_room`; and the sheet's
+    own `blocked`: a cloak's collar, the far side of a wing's mid-plane),
     at most 4 influences. The region and its blend first give their limb weights to the torso by the chains' share
     (`lib.tripo_chains.loosen_row`). Returns the new rows and how many vertices changed."""
 
@@ -297,6 +301,7 @@ def chain_rows(rows, positions, edges, sheets, blocked):
         # the chains fade out over a few rings before a limb end or an arm's room, and over the whole blend before the sheet's own stop
         stop_length = C.BLEND_MIN_RINGS * C.ring_length(positions, edges, sheet["mask"])
         own = C.fade_from(positions, edges, sheet["blocked"], blend) if sheet.get("blocked") is not None and np.any(sheet["blocked"]) else 1.0
+        blocked = limb_ends | arm_room if sheet["region"] == "wings" else limb_ends
         alpha = C.blend_alpha(positions, edges, sheet["mask"], blend, blocked, stop_length) * own
         # skin the chains move loses its limb weights to the torso by the chains' own share (lib/tripo_chains.loosen_row). Never beyond the
         # blend: a ring loosened there carried no chain weight, so thigh and arm skin stayed with the torso while the limb swung (the round 4
@@ -391,8 +396,8 @@ def plan_stage(inputs: dict, regions: Sequence[str], swing: Optional[Dict[str, n
     for region in regions:
         if region != "plates":
             sheets += (plan_cloak if region == "cloak" else plan_wings)(ctx)
-    blocked = np.array([C.is_limb_end(name) for name in dominant]) | ctx["keep_clear"]
-    new_rows, changed = chain_rows(rows, positions, edges, sheets, blocked)
+    limb_ends = np.array([C.is_limb_end(name) for name in dominant])
+    new_rows, changed = chain_rows(rows, positions, edges, sheets, limb_ends, ctx["keep_clear"])
     plates = {}
     if "plates" in regions:
         # after the chains, so a chain's blend ring never reaches into a plate: the plate stays rigid

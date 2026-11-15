@@ -646,10 +646,10 @@ class WingChecks(unittest.TestCase):
 class RoundFourRules(unittest.TestCase):
     """The rules added in round 4: limb weights given to the torso, the arm's room, the collar, the lying share and the wing's leading edge."""
 
-    def test_loosening_moves_a_limbs_share_to_its_torso_bone_and_keeps_the_sum(self) -> None:
+    def test_loosening_moves_an_arms_share_to_the_chain_parent_keeps_legs_and_the_sum(self) -> None:
         row = C.loosen_row({"RightUpLeg": 0.6, "LeftForeArm": 0.2, "Spine": 0.2}, 0.5)
-        self.assertAlmostEqual(row["RightUpLeg"], 0.3)
-        self.assertAlmostEqual(row["Hips"], 0.3)
+        self.assertAlmostEqual(row["RightUpLeg"], 0.6, msg="leg weights stay (a loosened thigh bridged the orc's cloak to the legs)")
+        self.assertNotIn("Hips", row)
         self.assertAlmostEqual(row["LeftForeArm"], 0.1)
         self.assertAlmostEqual(row[C.CHAIN_PARENT], 0.1)
         self.assertAlmostEqual(sum(row.values()), 1.0)

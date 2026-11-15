@@ -106,6 +106,13 @@ FOLD_CLOSE_STEP = 0.025
 FOLD_SWEEP_STEP = 5.0
 # The torso lies (`lying_share`) once its hips-to-upper-spine axis is less than LIE_UPRIGHT vertical, fully once under LIE_FLAT.
 LIE_UPRIGHT, LIE_FLAT = 0.7, 0.35
+# The drape of a lying body turns each cloak bone's goal toward straight down by DRAPE_MAX_SHARE of the lying share. From
+# DRAPE_COLLIDE_SHARE of drape on, a bone would leave a capsule by the shortest way instead of being pushed along the back direction;
+# above 1 it never does. Measured on the orc's death by `tripo/chain_replay.py` (the replay matched the Blender run within a point):
+# that collision stretched 15.7% of the cloak (limit 5%), a full downward goal without it 9.9%, a goal capped at 0.6 of it 3.7%, the same
+# as no drape, and 0.7 already 4.2%.
+DRAPE_MAX_SHARE = 0.6
+DRAPE_COLLIDE_SHARE = 1.01
 # Prefix of the bones each region adds; the checks find a region's vertices by them too.
 REGION_PREFIX = {"cloak": "Cloak", "wings": "Wing"}
 # `plates` adds no bones: it binds each armour plate rigidly to one bone (`rigid_plates`).
@@ -693,14 +700,13 @@ def fade_from(positions: np.ndarray, edges: np.ndarray, blocked: np.ndarray, len
 
 
 def limb_root(name: str) -> Optional[str]:
-    """The torso bone a limb bone's weight moves to when skin it carries is loose from it (`loosen_row`): an arm's to the chain parent, a
-    leg's to the hips. None for any other bone."""
+    """The torso bone an arm bone's weight moves to when skin it carries is loose from it (`loosen_row`): the chain parent. None for any
+    other bone. Leg weights stay: a cloak's blend over the thighs that gave its thigh weight to the hips left too little of it beside the
+    thigh skin, and the orc's cloak bridged to the legs (UNIT-BRIDGE, replayed offline: 11 edges with legs loosened, 6 without, limit 12)."""
 
     name = str(name)
     if name.endswith(("Arm", "ForeArm", "ForeArmRoll", "Hand")) and name.startswith(("Left", "Right")):
         return CHAIN_PARENT
-    if name.endswith(("UpLeg", "Leg", "Foot", "ToeBase")) and name.startswith(("Left", "Right")):
-        return "Hips"
     return None
 
 
@@ -989,7 +995,7 @@ def simulate_sheet(parents: np.ndarray, chains: Sequence[dict], dt: float, capsu
     (frames, bones, 4). With `passes` > 1 the clip runs that many times and the last run is kept (a looping clip settles).
 
     `lying` (per frame, 0 to 1, `lying_share`) drapes the cloth once the torso lies down: each bone's goal turns toward straight down by
-    that share, and from half of it on a bone leaves a capsule by the shortest way, so the cloth falls onto the body's surface and off
+    `DRAPE_MAX_SHARE` of that share (and from `DRAPE_COLLIDE_SHARE` of drape on a bone would leave a capsule by the shortest way), so the cloth falls onto the body's surface and off
     its sides instead of keeping the standing cloak's shape (the round 3 orc's cloak lay on its fallen body as a rigid dome, one flap
     standing up from it)."""
 
@@ -1004,7 +1010,7 @@ def simulate_sheet(parents: np.ndarray, chains: Sequence[dict], dt: float, capsu
         for f in range(frames):
             current = [parents[f]] * count
             direction = unit(np.asarray(away[f] if np.ndim(away) == 2 else away, float))
-            drape = float(lying[f]) if lying is not None else 0.0
+            drape = DRAPE_MAX_SHARE * float(lying[f]) if lying is not None else 0.0
             for k in range(bones):
                 unposed = [current[c] @ chains[c]["rest_relative"][k] for c in range(count)]
                 heads = np.array([m[:3, 3] for m in unposed])
@@ -1019,7 +1025,7 @@ def simulate_sheet(parents: np.ndarray, chains: Sequence[dict], dt: float, capsu
                         state_d[c, k], state_v[c, k] = goal, np.zeros(3)
                     else:
                         state_d[c, k], state_v[c, k] = spring_step(state_d[c, k], state_v[c, k], goal, float(chain["omegas"][k]), dt)
-                if capsule_axes is not None and drape >= 0.5:
+                if capsule_axes is not None and drape >= DRAPE_COLLIDE_SHARE:
                     for c, chain in enumerate(chains):
                         capsules = [(axis[0], axis[1], float(chain["radii"][k, i])) for i, axis in enumerate(capsule_axes[f])]
                         state_d[c, k], state_v[c, k] = collide_step(heads[c], state_d[c, k], state_v[c, k], float(chain["lengths"][k]), capsules, ground, up, direction)
