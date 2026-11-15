@@ -62,6 +62,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from lib import tripo_clearance as CL  # noqa: E402
 from lib import tripo_grip as G  # noqa: E402
 from lib.tripo import resolve_clip_name  # noqa: E402
 import assemble_separate as A  # noqa: E402
@@ -90,6 +91,9 @@ def parse_args():
     parser.add_argument("--dump-grip", type=Path, default=None, help="save the hand geometry the grip search works on (an .npz) for offline work")
     parser.add_argument("--diagonal-min", type=float, default=28.0, help="least angle (degrees) of the haft to the palm closing axis")
     parser.add_argument("--diagonal-max", type=float, default=55.0)
+    parser.add_argument("--clearance-clips", default="", help="the clips the clearance rule works on (names or starts of names, comma separated); default every clip. Name the clips the unit uses: each frame that fails costs seconds")
+    parser.add_argument("--no-clearance", action="store_true", help="skip the clearance rule (see lib/tripo_clearance.py): by default every clip is checked per frame and the hand is turned about the wrist until the weapon leaves the body")
+    parser.add_argument("--clearance-allow-fail", action="store_true", help="exit 0 even when a frame cannot be cleared within the cap (the report and TRIPO-WEAPON-IN-BODY still say so)")
     parser.add_argument("--weapon-bone", action="store_true", help="bind the weapon to its own bone (child of the hand) instead of the hand bone")
     parser.add_argument("--hold-hand", default="0.257,0.07,0.61", help="out, forward, up of the grip point, as shares of the body height")
     parser.add_argument("--hold-axis", default="0,0,1")
@@ -333,12 +337,13 @@ def release_weapon(arm, body, bone, hand, action, placed, centre, head_dir, blad
     f0, f1 = int(action.frame_range[0]), int(action.frame_range[1])
     frames = list(range(f0, f1 + 1))
     hand_inverse = np.linalg.inv(hand_rest)
-    attached, body_low = [], []
+    attached, body_low, body_frames_all = [], [], []
     for frame in frames:
         scene.frame_set(frame)
         attached.append(np.array(arm.matrix_world @ arm.pose.bones[PREFIX + hand].matrix) @ hand_inverse)
         coords = evaluated_coords(body)
         body_low.append(float(coords[:, 2].min()))
+        body_frames_all.append(coords)
         last = coords
     release = int(release_at) - f0 if release_at is not None else int(0.35 * (len(frames) - 1))
     release = max(1, min(release, len(frames) - 8))
@@ -351,38 +356,54 @@ def release_weapon(arm, body, bone, hand, action, placed, centre, head_dir, blad
     path_sample = offsets[:: max(1, len(offsets) // 120)]
     body_sample = last[:: max(1, len(last) // 1500)]
     candidates = []
-    for fh in (1.0, -1.0):
-        for b in (1.0, -1.0):
-            for psi in np.linspace(0.0, 2.0 * math.pi, 36, endpoint=False):
-                basis = rotation_z(psi) @ np.stack([[fh, 0.0, 0.0], [0.0, b, 0.0], [0.0, 0.0, fh * b]], axis=1)
-                r_w = basis @ r0.T
-                r_d = r_a.T @ r_w
-                axis, angle = G.rotation_axis_angle(r_d)
-                if angle < 0.2:
-                    continue
-                lying = offsets @ r_w.T
-                zc = ground - float(lying[:, 2].min())
-                u = r_a @ axis
-                norm_xy = float(np.hypot(u[0], u[1]))
-                if norm_xy < 0.05:
-                    continue
-                rhs = float(u @ (r_w @ centre + t_a)) - float(u[2]) * zc
-                base_xy = rhs * u[:2] / norm_xy ** 2
-                line = np.array([-u[1], u[0]]) / norm_xy
-                sample_lying = weapon_sample @ r_w.T
-                found = None
-                for step_s in np.arange(-1.0, 1.0, 0.02):
-                    cxy = base_xy + step_s * line
-                    points = sample_lying + np.array([cxy[0], cxy[1], zc])
-                    nearest = float(cc.nearest_vertex_distance(points, body_sample).min())
-                    if nearest < 0.01 * height:
+    # first a place well clear of the body (4% of the height: the body goes on moving after the landing), then, failing that, 1%
+    for clear_by in (0.04, 0.01):
+        for fh in (1.0, -1.0):
+            for b in (1.0, -1.0):
+                for psi in np.linspace(0.0, 2.0 * math.pi, 36, endpoint=False):
+                    basis = rotation_z(psi) @ np.stack([[fh, 0.0, 0.0], [0.0, b, 0.0], [0.0, 0.0, fh * b]], axis=1)
+                    r_w = basis @ r0.T
+                    r_d = r_a.T @ r_w
+                    axis, angle = G.rotation_axis_angle(r_d)
+                    if angle < 0.2:
                         continue
-                    if found is None or nearest < found[0]:
-                        found = (nearest, np.array([cxy[0], cxy[1], zc]))
-                if found is not None:
-                    candidates.append((found[0], r_w, axis, angle, found[1], r_d))
+                    lying = offsets @ r_w.T
+                    zc = ground - float(lying[:, 2].min())
+                    u = r_a @ axis
+                    norm_xy = float(np.hypot(u[0], u[1]))
+                    if norm_xy < 0.05:
+                        continue
+                    rhs = float(u @ (r_w @ centre + t_a)) - float(u[2]) * zc
+                    base_xy = rhs * u[:2] / norm_xy ** 2
+                    line = np.array([-u[1], u[0]]) / norm_xy
+                    sample_lying = weapon_sample @ r_w.T
+                    found = None
+                    for step_s in np.arange(-1.0, 1.0, 0.02):
+                        cxy = base_xy + step_s * line
+                        points = sample_lying + np.array([cxy[0], cxy[1], zc])
+                        nearest = float(cc.nearest_vertex_distance(points, body_sample).min())
+                        if nearest < clear_by * height:
+                            continue
+                        if found is None or nearest < found[0]:
+                            found = (nearest, np.array([cxy[0], cxy[1], zc]))
+                    if found is not None:
+                        candidates.append((found[0], r_w, axis, angle, found[1], r_d))
+        if candidates:
+            break
     if not candidates:
         raise SystemExit("release_weapon: no resting place of the weapon on the ground can be reached by a turn about a pivot")
+    # The body goes on moving after the weapon lands: a resting place the body later sweeps through fails the check for the rest of the clip.
+    # Keep the places the body leaves alone for the frames after the landing (every third frame, about as clear as the clearest).
+    rest_judged = CL.sample_points(offsets[np.linalg.norm(offsets, axis=1) > CL.GRIP_RADIUS_SHARE * height], 100)
+    rest_frames = list(range(release + 6, len(frames), 3))
+    all_triangles = body_triangles(body)
+
+    def rest_penetration(candidate):
+        points = rest_judged @ candidate[1].T + candidate[4]
+        return max((CL.deep_share(points, body_frames_all[i], all_triangles, height) for i in rest_frames), default=0.0)
+
+    ranked = sorted((round(rest_penetration(c), 3), k) for k, c in enumerate(candidates))
+    candidates = [candidates[k] for value, k in ranked if value <= ranked[0][0] + 0.002][:40]
 
     def path_clearance(axis, angle, pivot, delay, ease):
         worst = 1e9
@@ -402,7 +423,7 @@ def release_weapon(arm, body, bone, hand, action, placed, centre, head_dir, blad
         if pivot is None:
             continue
         for ease in (12, 18, 26):
-            for delay in (0, 4, 8):
+            for delay in (0,):  # the weapon is let go at the release frame: the clearance rule judged the hand only up to it
                 if release + delay + ease > len(frames) - 1:
                     continue
                 clearance = path_clearance(axis, angle, pivot, delay, ease)
@@ -410,7 +431,31 @@ def release_weapon(arm, body, bone, hand, action, placed, centre, head_dir, blad
     if not scored:
         raise SystemExit("release_weapon: no resting place has a pivot")
     scored.sort(key=lambda row: (round(row[0], 3), row[1]))
-    _pen, nearest_at_rest, clearance, ease, delay, r_w, axis, angle, c_final, pivot = scored[0]
+    # The fall must not cut through the body either (TRIPO-WEAPON-IN-BODY judges every frame): of the best options by ground clearance, the one
+    # whose path has the smallest share of weapon points deeper than 1% of the height inside the body.
+    judged = offsets[np.linalg.norm(offsets, axis=1) > CL.GRIP_RADIUS_SHARE * height]
+    judged = CL.sample_points(judged, 120)
+    body_triangles_all = body_triangles(body)
+
+    def path_in_body(row):
+        _p, _n, _c, ease_, delay_, _r, axis_, angle_, _cf, pivot_ = row
+        worst_share = 0.0
+        for index in range(release + delay_, len(frames)):
+            t = min(max((index - release - delay_) / ease_, 0.0), 1.0)
+            smooth_ = t * t * (3.0 - 2.0 * t)
+            r_t = G.rodrigues(axis_, angle_ * smooth_)
+            moved = ((judged + centre - pivot_) @ r_t.T + pivot_) @ attached[index][:3, :3].T + attached[index][:3, 3]
+            worst_share = max(worst_share, CL.deep_share(moved, body_frames_all[index], body_triangles_all, height))
+        return worst_share
+
+    best_row, best_key = scored[0], None
+    # only options about as clear of the ground as the best (a fall that sinks into the floor is not an answer to one that cuts the body)
+    near_best = [row for row in scored if row[0] <= scored[0][0] + 0.02][:60]
+    for rank, row in enumerate(near_best):
+        key = (round(path_in_body(row), 3), rank)
+        if best_key is None or key < best_key:
+            best_key, best_row = key, row
+    _pen, nearest_at_rest, clearance, ease, delay, r_w, axis, angle, c_final, pivot = best_row
 
     # the bone: head at the pivot, axis along the turn
     bpy.ops.object.select_all(action="DESELECT")
@@ -842,6 +887,46 @@ def main():
     # ---- quaternion keys (before the fall of the weapon, which is keyed against the final motion of the hand): one hemisphere per bone (a flip makes Blender turn the long way), and the biggest steps ----
     report["rotation_keys"] = {action.name: normalise_rotation_keys(action) for action in bpy.data.actions}
 
+    # ---- clearance: turn the hand about the wrist, frame by frame, until the weapon leaves the body ----------------
+    # A general rule for every armed unit (lib/tripo_clearance.py): a frame in which more than 0.25% of the weapon's free points are deeper than
+    # 1% of the height inside the body gets the smallest rotation of the hand about the wrist joint (cap 50 degrees) that clears it, smoothed over
+    # time. Frames from the release of a release clip on are left to the fall. A frame that cannot be cleared inside the cap is reported and the
+    # run exits 3 after writing its files (--clearance-allow-fail to go on): the clip then fails TRIPO-WEAPON-IN-BODY, loudly.
+    clearance = {}
+    hand_name = PREFIX + hand
+    triangles = body_triangles(body)
+    if not args.no_clearance:
+        wanted = [resolve_clip_name(n, action_names) for n in args.clearance_clips.split(",") if n]
+        for action in [a for a in bpy.data.actions if not wanted or a.name in wanted]:
+            use_action(arm, action)
+            first, last = int(action.frame_range[0]), int(action.frame_range[1])
+            frames_list = list(range(first, last + 1))
+            body_frames, weapon_frames, pivots = [], [], []
+            for frame in frames_list:
+                scene.frame_set(frame)
+                body_frames.append(evaluated_coords(body))
+                weapon_frames.append(evaluated_coords(weapon))
+                pivots.append(np.array(arm.matrix_world @ arm.pose.bones[hand_name].head))
+            skip = None
+            if action.name in drop_clips:
+                skip = int(hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
+            result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, skip_from=skip, rest_weapon=placed, rest_grip=haft_centre)
+            for index, frame in enumerate(frames_list):
+                vector = result["rotvecs"][index]
+                angle = float(np.linalg.norm(vector))
+                if angle < 1e-6:
+                    continue
+                scene.frame_set(frame)
+                set_pose_matrix(arm, hand_name, vector / angle, angle, pivots[index])
+                arm.pose.bones[hand_name].keyframe_insert("rotation_quaternion", frame=frame)
+            clearance[action.name] = {
+                "frames": len(frames_list), "frames_changed": result["frames_changed"], "max_degrees": round(result["max_degrees"], 1),
+                "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
+                "failed_frames": [frames_list[i] for i in result["failed"]], "released_from_frame": None if skip is None else first + skip,
+            }
+    report["clearance"] = clearance
+    clearance_failed = {name: row["failed_frames"] for name, row in clearance.items() if row["failed_frames"]}
+
     # ---- the weapon lets go: the fall of the weapon bone in the release clips -------------------------------
     release = {}
     for name in [resolve_clip_name(n, action_names) for n in args.release_clips.split(",") if n]:
@@ -894,6 +979,9 @@ def main():
     print(text)
     if args.report:
         args.report.write_text(json.dumps(report, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    if clearance_failed and not args.clearance_allow_fail:
+        print("CLEARANCE_FAILED " + json.dumps(clearance_failed), file=sys.stderr)
+        raise SystemExit(3)
 
 
 try:
