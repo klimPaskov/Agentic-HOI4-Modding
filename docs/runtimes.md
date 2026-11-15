@@ -156,7 +156,7 @@ Do not copy one runtime's approval, sandbox, absolute-path, environment, or tool
 | Aider | None | Aider has no MCP client. |
 | DSH | `$DSH_HOME/profiles/<profile>/cordis.patch.yml` | A loader patch row inserting `@deepseek-ai/dsh-mcp-client`, one row per server. |
 
-On Windows every project-scoped file above points at the `hoi4-agent-tools.cmd` wrapper that npm installs globally; HOI4 Mod Setup and `.tools/mcp/bootstrap_hoi4_agent_tools.py` install the release recorded in `hoi4-mod-setup.manifest.json`.
+On Windows every project-scoped file above points at the `hoi4-agent-tools.cmd` wrapper that npm installs globally; HOI4 Mod Setup and `.tools/mcp/bootstrap_hoi4_agent_tools.py` install the release recorded in `hoi4-mod-setup.manifest.json`. Every registration the kit ships sets `HOI4_AGENT_TOOLS_PROFILES=all` in the server's environment. A stdio server lists only its 13 core tools without it, so keep that variable when you write a registration by hand.
 
 On native Linux, HOI4 Mod Setup adapts the registrations for every selected coding client to the verified absolute Node executable and package entry. The current-user npm prefix is `$XDG_DATA_HOME/hoi4-mod-setup/npm`, or `~/.local/share/hoi4-mod-setup/npm` when XDG_DATA_HOME is unset. The native `bin/hoi4-agent-tools` locator points to the reviewed entry; setup verifies it and launches the entry directly. Shared skill and agent projections remain identical across platforms. The source package's raw MCP examples use Windows commands, so manual Linux setup must adapt them as described in [the Linux guide](linux.md).
 

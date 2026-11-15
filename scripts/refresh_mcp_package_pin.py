@@ -19,7 +19,7 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 BOOTSTRAP = ROOT / ".tools/mcp/bootstrap_hoi4_agent_tools.py"
 MANIFEST = ROOT / "hoi4-mod-setup.manifest.json"
-# Reviewed 39-route contract of 4.13.0: the 34 routes of 4.11.0 and 4.12.0 plus
+# Reviewed 39-route contract of 4.13.0 to 4.18.0: the 34 routes of 4.11.0 and 4.12.0 plus
 # hoi4.explain_error, hoi4.mod_health, hoi4.script_guard, hoi4.localisation_write and
 # hoi4.compat_check. The server lists it when HOI4_AGENT_TOOLS_PROFILES=all.
 ROUTE_CONTRACT = tuple(sorted((

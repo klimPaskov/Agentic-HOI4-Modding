@@ -4,7 +4,7 @@ HOI4 Mod Setup supports native Linux alongside Windows and macOS. This package r
 
 ## Prerequisites and files
 
-Install Git, Python 3.10 or newer, and native x64 [Node.js](https://nodejs.org/en/download) 22.19+ within major 22, or Node.js 24 LTS, with npm. The Linux bootstrap does not install system dependencies or invoke sudo. Imported Windows Node/npm paths in WSL do not satisfy this prerequisite. `node --version`, `npm --version` and `python3 --version` should resolve native executables. Setup uses trusted system executables; its Linux launch environment uses `/usr/bin:/bin`.
+Install Git, Python 3.10 or newer, and native x64 [Node.js](https://nodejs.org/en/download) 22.19+ within major 22, or Node.js 24 LTS, with npm. The Linux bootstrap does not install system dependencies or invoke sudo. Imported Windows Node/npm paths in WSL do not satisfy this prerequisite. Ubuntu 22.04 ships Node 12, so install Node 22 from a package repository such as NodeSource's `node_22.x`. Setup accepts only a Node that a package owns at `/usr/bin/node`, so nvm or a tarball install does not count and the Node check blocks readiness. `node --version`, `npm --version` and `python3 --version` should resolve native executables. Setup uses trusted system executables; its Linux launch environment uses `/usr/bin:/bin`.
 
 Use the setup app for a new or existing mod, or copy the canonical files following the README's manual steps. Set the game and Workshop placeholders to the installed native Steam library. Common game locations include `~/.local/share/Steam/steamapps/common/Hearts of Iron IV` and `~/.steam/steam/steamapps/common/Hearts of Iron IV`; select the actual library instead of assuming either path. The usual mod folder is `~/.local/share/Paradox Interactive/Hearts of Iron IV/mod`.
 
@@ -24,7 +24,7 @@ system npm executable or configuration.
 
 ## Manual client registration
 
-The source archive's raw MCP examples use `hoi4-agent-tools.cmd`. The app adapts them automatically on Linux. For manual setup, use the verified absolute native Node path as `command` and `<prefix>/lib/node_modules/hoi4-agent-tools/dist/bin/stdio.js` as its sole argument. Replace `<prefix>` with the actual absolute current-user prefix and retain each client's mod working-directory setting. Start clients from the mod root when that client has no project working-directory field. No shell wrapper or global PATH amendment is needed.
+The source archive's raw MCP examples use `hoi4-agent-tools.cmd`. The app adapts them automatically on Linux. For manual setup, use the verified absolute native Node path as `command` and `<prefix>/lib/node_modules/hoi4-agent-tools/dist/bin/stdio.js` as its sole argument. Replace `<prefix>` with the actual absolute current-user prefix and retain each client's mod working-directory setting. Also set the environment variable `HOI4_AGENT_TOOLS_PROFILES=all` in every registration (the client's `env` or `environment` field). Without it a stdio server lists only its 13 core tools, and your agent does not see the map, advanced and newer routes. Start clients from the mod root when that client has no project working-directory field. No shell wrapper or global PATH amendment is needed.
 
 | Client | File | Native registration shape |
 | --- | --- | --- |
@@ -70,4 +70,4 @@ Windows still connects through WSL and macOS through SSH to Linux. HOI4 Live Too
 
 ## Manifest compatibility
 
-The single canonical manifest uses schema 5 because Linux platform declarations and exact native integrity evidence are incompatible with the closed schema 4 contract. Older setup apps must upgrade before consuming this manifest. Each health pin records the platform's complete tree, file count, entry identity and explicit link map; the shared npm package version and SHA-512 remain unchanged.
+The single canonical manifest uses schema 6 (schema 5 added the Linux platform declarations) because Linux platform declarations and exact native integrity evidence are incompatible with the closed schema 4 contract. Older setup apps must upgrade before consuming this manifest. Each health pin records the platform's complete tree, file count, entry identity and explicit link map; the shared npm package version and SHA-512 remain unchanged.

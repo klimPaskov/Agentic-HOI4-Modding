@@ -21,7 +21,7 @@ class LiveTestingContractTests(unittest.TestCase):
         self.assertIn("1.19.2", cw["supported_game_version"])
         self.assertTrue(any("Linux game and server are ready" in x for x in cw["guidance"]))
         self.assertEqual(rows["hoi4_live_tools"]["supported_platforms"], ["windows", "macos"])
-        self.assertEqual(rows["hoi4_live_tools"]["route"]["source_revision"], "v1.4.1")
+        self.assertEqual(rows["hoi4_live_tools"]["route"]["source_revision"], "v1.4.2")
         self.assertTrue(rows["hoi4_live_tools"]["experimental"])
         self.assertEqual(rows["none"]["display_name"], "None")
         self.assertIsNone(rows["none"]["route"]["server_id"])

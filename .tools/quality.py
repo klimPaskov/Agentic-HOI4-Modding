@@ -155,6 +155,12 @@ def evaluate(rows: List[Dict[str, Any]], baseline: Dict[str, Dict[str, int]]) ->
 	return findings, measured
 
 
+def write_baseline(entries: Dict[str, Dict[str, int]]) -> None:
+	"""Write the baseline with LF endings on every platform; `write_text` would write CRLF on Windows."""
+	text = json.dumps({"ruff": RUFF, "entries": entries}, indent=1, sort_keys=True) + "\n"
+	BASELINE.write_bytes(text.encode("utf-8"))
+
+
 def recordable(measured: Dict[str, Dict[str, int]]) -> Dict[str, Dict[str, int]]:
 	"""Keep the baseline entries a file may carry: everything for ordinary files, ratchet codes for strict files."""
 	return {path: {k: v for k, v in sorted(entries.items()) if not is_strict(path) or k.split(" ", 1)[0] in RATCHET_CODES}
@@ -173,8 +179,7 @@ def adopt(findings: List[Finding], measured: Dict[str, Dict[str, int]], baseline
 		return 1
 	added = recordable({path: measured[path] for path in new})
 	merged = {**baseline, **added}
-	BASELINE.write_text(json.dumps({"ruff": RUFF, "entries": dict(sorted(merged.items()))}, indent=1, sort_keys=True) + "\n",
-		encoding="utf-8")
+	write_baseline(dict(sorted(merged.items())))
 	print(f"{CHECK}: adopted {sum(len(v) for v in added.values())} entries from {len(added)} file(s) into {relative(BASELINE)}")
 	return 0
 
@@ -213,7 +218,7 @@ def main() -> int:
 			print(f"{CHECK}: baseline not written; fix the errors above first")
 			return 1
 		recorded = recordable(measured)
-		BASELINE.write_text(json.dumps({"ruff": RUFF, "entries": recorded}, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+		write_baseline(recorded)
 		print(f"{CHECK}: wrote {relative(BASELINE)} with {sum(len(v) for v in recorded.values())} entries")
 		return 0
 	print_findings(CHECK, findings)
