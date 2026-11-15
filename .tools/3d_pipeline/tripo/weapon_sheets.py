@@ -140,7 +140,8 @@ def close_sheet(folder: Path, out: Path) -> Path:
 
 
 def game_sheet(folder: Path, out: Path) -> Path:
-    index = render_tiles(folder, out, ["idle", "move"], 4, ["hoi4", "front"], {}, GAME_SIZE, 1.45)
+    # Every role at the size a player sees it: a reviewer judges the attack, death and the rest there too, not only the idle and the walk.
+    index = render_tiles(folder, out, [], 4, ["hoi4", "front"], {}, GAME_SIZE, 1.45)
     tiles = out / "weapon_tiles"
     names = [c["name"] for c in index["clips"] if c["name"] != "rest"]
     # Scale every tile by one factor so the unit in the front view is GAME_HEIGHT_PX tall.

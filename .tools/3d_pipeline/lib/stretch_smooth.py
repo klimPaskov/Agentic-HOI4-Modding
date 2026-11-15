@@ -37,6 +37,10 @@ LAMBDA = 0.5
 PASS_STEPS = (2, 4, 8, 16)
 MAX_INFLUENCES = 4
 WORSEN_SHARE = 0.02
+# A vertex is locked when this share of its weight is on one prefix's chain bones (any other prefix: any weight). A cloak stays locked
+# whole (smoothing its blend let the orc's dying cloak sink into the body); a wing's blend into the back may smooth, which cut the
+# demon's root-zone stretch by about a fifth (attack 9.3% to 8.0%, idle 4.1% to 3.3%).
+PREFIX_LOCK_SHARES = {"Wing": 0.5}
 
 
 @dataclass
@@ -339,11 +343,16 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
 
 def locked_vertices(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.ndarray, locked_bones: Sequence[str],
                     locked_prefixes: Sequence[str]) -> np.ndarray:
-    """Vertices with any weight on a locked bone; a welded point is locked when any of its copies is."""
+    """Vertices with any weight on a locked bone, or with weight on a locked prefix's bones (at least `PREFIX_LOCK_SHARES[prefix]` of it);
+    a welded point is locked when any of its copies is."""
 
     names = set(locked_bones)
-    index = [i for i, name in enumerate(mesh.bones) if name in names or (locked_prefixes and name.startswith(tuple(locked_prefixes)))]
+    index = [i for i, name in enumerate(mesh.bones) if name in names]
     locked = dense[:, index].sum(axis=1) > 0 if index else np.zeros(len(dense), bool)
+    for prefix in locked_prefixes:
+        prefixed = [i for i, name in enumerate(mesh.bones) if name.startswith(prefix)]
+        if prefixed:
+            locked = locked | (dense[:, prefixed].sum(axis=1) >= PREFIX_LOCK_SHARES.get(prefix, 1e-9))
     np.logical_or.at(locked, canon, locked.copy())
     return locked[canon]
 
