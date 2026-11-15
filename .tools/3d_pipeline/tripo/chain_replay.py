@@ -120,7 +120,8 @@ def replay(folder: Path, regions: Optional[Sequence[str]] = None) -> dict:
     mask = T.cloak_region(positions, dominant, inputs["heads"]["Hips"], planned["front"], planned["height"],
                           CLOAK_BONES + tuple(C.chain_bones(rest, "cloak")), up_axis=int(np.argmax(np.abs(up))))
     edges = np.asarray(inputs["edges"])
-    report = {"regions": regions, "cloak_region_vertices": int(mask.sum()), "clips": {}}
+    root = root_zone(rows, edges, rest)
+    report = {"regions": regions, "cloak_region_vertices": int(mask.sum()), "root_zone_vertices": int(root.sum()), "clips": {}}
     for role, data in roles.items():
         worlds = data["worlds"]
         body = S.body_from_worlds(worlds, rest, S.body_bones(stage))
@@ -131,8 +132,24 @@ def replay(folder: Path, regions: Optional[Sequence[str]] = None) -> dict:
         frames = len(next(iter(worlds.values())))
         posed = [skin(positions, rows, skinning, f) for f in range(0, frames, CLIP_STEP)]
         share, frame = T.region_stretch_share(positions, posed, edges, mask, planned["height"])
-        report["clips"][role] = {"cloak_stretch_share": round(share, 4), "frame": frame * CLIP_STEP}
+        root_share, root_frame = T.region_stretch_share(positions, posed, edges, root, planned["height"])
+        report["clips"][role] = {"cloak_stretch_share": round(share, 4), "frame": frame * CLIP_STEP,
+                                 "root_stretch_share": round(root_share, 4), "root_frame": root_frame * CLIP_STEP}
     return report
+
+
+def root_zone(rows: Sequence[Dict[str, float]], edges: np.ndarray, bones: Sequence[str], rings: int = 2) -> np.ndarray:
+    """Where the chains blend into the body: vertices with between 1% and 99.9% of their weight on chain bones, grown `rings` edge
+    rings. A fresh review of the round 4 demon saw both wing roots stretch at the shoulders in every clip while the wing check, which
+    reads the far membrane only, measured none."""
+
+    chain = set(C.chain_bones(bones))
+    share = np.array([sum(w for name, w in row.items() if name in chain) for row in rows])
+    zone = (share > 0.01) & (share < 0.999)
+    for _ in range(rings):
+        reached = zone[edges].any(axis=1)
+        zone[edges[reached].ravel()] = True
+    return zone
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:

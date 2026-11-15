@@ -45,6 +45,11 @@ CAPSULE_BONES = {
 # The bones whose swing over the clips the regions keep clear of (lib/tripo_chains.swing_zone): each arm's upper arm, forearm and hand.
 SWING_BONES = tuple(f"{side}{part}" for side in ("Left", "Right") for part in ("Arm", "ForeArm", "Hand"))
 SWING_FRAME_STEP = 2  # every second frame of every clip is enough: an arm moves less than its radius in two frames
+# The regions that carve the arms' swing room (`keep_clear`) out of their skin and fade their chains before it. None does: on the orc the
+# carved cloak bridged to the legs (UNIT-BRIDGE), and on the demon, replayed offline (tripo/chain_replay.py, root zone of the wings at each
+# clip's worst frame), dropping it took the stretched root edges from 196 to 104 in the retreat, 119 to 37 in the walk, 184 to 133 in the
+# death and 199 to 184 in the attack. The arms are capsules the chains collide with instead.
+ARM_ROOM_REGIONS: tuple = ()
 
 
 # ---------------------------------------------------------------------------------------------
@@ -231,8 +236,9 @@ def plan_wings(ctx):
     shoulders = 0.5 * (heads["LeftArm"] + heads["RightArm"])
     grown = C.wing_rebind_mask(far, positions, ctx["edges"], ctx["dominant"], shoulders, front, [limb for limb in limbs] + [torso, head])
     side = (positions - centre) @ lateral
-    left = grown & (side > 0) & ~ctx["keep_clear"]
-    right = grown & (side < 0) & ~ctx["keep_clear"]
+    room = ctx["keep_clear"] if "wings" in ARM_ROOM_REGIONS else np.zeros(len(positions), bool)
+    left = grown & (side > 0) & ~room
+    right = grown & (side < 0) & ~room
     points = positions[left]
     root = C.wing_root(points, heads[C.CHAIN_PARENT])
     u, s, plane = C.wing_coordinates(points, root, front, up)
@@ -301,7 +307,7 @@ def chain_rows(rows, positions, edges, sheets, limb_ends, arm_room):
         # the chains fade out over a few rings before a limb end or an arm's room, and over the whole blend before the sheet's own stop
         stop_length = C.BLEND_MIN_RINGS * C.ring_length(positions, edges, sheet["mask"])
         own = C.fade_from(positions, edges, sheet["blocked"], blend) if sheet.get("blocked") is not None and np.any(sheet["blocked"]) else 1.0
-        blocked = limb_ends | arm_room if sheet["region"] == "wings" else limb_ends
+        blocked = limb_ends | arm_room if sheet["region"] in ARM_ROOM_REGIONS else limb_ends
         alpha = C.blend_alpha(positions, edges, sheet["mask"], blend, blocked, stop_length) * own
         # skin the chains move loses its limb weights to the torso by the chains' own share (lib/tripo_chains.loosen_row). Never beyond the
         # blend: a ring loosened there carried no chain weight, so thigh and arm skin stayed with the torso while the limb swung (the round 4
