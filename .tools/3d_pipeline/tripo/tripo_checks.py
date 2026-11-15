@@ -36,9 +36,13 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   rest of the body (points modelled that deep at rest are left out) in more than `MAX_CHAIN_IN_BODY_SHARE` of them, or vertices more than
   `CHAIN_GROUND_MARGIN_SHARE` under the ground in more than 1% of them, in some frame. They run for a cape (`--cape`) and for wings
   (`--wings`, or a job whose anatomy has wings or whose `tripo.chains` names wings).
-- TRIPO-WING-FRONT: in a clip, the wings hide more than `MAX_WING_COVER_SHARE` of the torso and head in the front view or the map view
-  (`lib/tripo_chains.front_cover_share`: a wing point in a screen cell of the torso, nearer the camera than its front surface). A death
-  is judged in the map view only: from a low front camera a body lying face down has its wings ahead of its back by construction.
+- TRIPO-WING-FRONT: in a clip, the wings hide more than `MAX_WING_COVER_SHARE` of the body in the front view or the map view, or more than
+  `MAX_WING_SIDE_COVER` of the arms, legs and head a viewer sees in a side view (`lib/tripo_chains.front_cover_share`: a wing point in a
+  screen cell of the body, nearer the camera than its surface). A death skips the front view (from a low front camera a body lying face
+  down has its wings ahead of its back by construction), and the side views while the torso lies.
+- TRIPO-WING-EDGE-ON: in a clip whose wings beat hard (the attack and the retreat), a wing's median face share in a side or the map view is
+  under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
+- TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
 - TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
   the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
 """
@@ -74,14 +78,38 @@ CLOAK_BONES = ("Hips", "Spine", "Spine01", "Spine02", "Hip", "back_mid", "LeftUp
 # region's vertices more than 1% of the height under the rest pose's ground, at most 1% of them.
 MAX_WING_STRETCH_SHARE = CLOAK_MAX_STRETCH_SHARE
 CHAIN_IN_BODY_MARGIN_SHARE = 0.01
-# Calibrated on vanilla clothing (2026-11-15): the clothing region of the cloak calibration (vertices weighted mostly to the torso, hips or
-# thighs, a quarter to 0.85 of the height) of GER_infantry over 16 of its own clips puts at most 5.0% of its points that deep inside the
-# rest of its body (aim_exercise_mg), ENG_infantry 3.0%. Cloth pressed by a moving limb sinks in; a rigid weapon does not, hence its 1%.
-MAX_CHAIN_IN_BODY_SHARE = 0.05
-# Wings may hide at most a twentieth of the torso and head in the front or map view (judgement: Tripo's own wings, bound to the arms,
-# hide up to 1.2% in the demon's defend; the review cameras are review_unit's front (0, 8) and hoi4 (25, 55) azimuth and elevation).
+# Calibrated on vanilla clothing: the clothing region of the cloak calibration (vertices weighted mostly to the torso, hips or thighs, a
+# quarter to 0.85 of the height) of GER_infantry over 16 of its own clips. With the inside test that also asks for a winding number above
+# one half (lib/tripo_chains.deep_inside, 2026-11-15, round 3) it puts at most 4.25% of its points that deep inside the rest of its body
+# (death_rifle), ENG_infantry 3.0%; the old ray-vote test read 5.0%. The limit is that worst rounded up to the next half percent. Cloth
+# pressed by a moving limb sinks in; a rigid weapon does not, hence its 1%.
+MAX_CHAIN_IN_BODY_SHARE = 0.045
+# Wings may hide at most a twentieth of the body (all of it but the wings) in the front or map view (judgement: Tripo's own wings, bound to
+# the arms, hide up to 1.2% in the demon's defend). The review cameras are blender/review_render.py's (lib/tripo_chains.REVIEW_VIEWS).
 MAX_WING_COVER_SHARE = 0.05
-COVER_VIEWS = {"front": (0.0, 8.0), "map": (25.0, 55.0)}
+COVER_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("front", "map")}
+# Side views (left and right) judge the arms, legs and head a viewer sees (`SIDE_PARTS`, cells whose nearest body point is one of them):
+# a wing grows from the upper back, which the rig gives to the spine and the shoulder (clavicle) bones, so from the side its root always
+# covers some of the back (6% of the demon's body even swept fully back), and a far arm the torso already hides is not the wing's doing.
+# Calibrated on a fresh review of the round 2 demon (2026-11-15): the side views it accepted hide at most 5.3% (retreat, right view),
+# those it failed for a wing over the shoulder and arm at least 17.5% (defend, left view; the attack 20.9%). The limit lies between.
+MAX_WING_SIDE_COVER = 0.10
+SIDE_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("left", "right")}
+SIDE_PARTS = ("Arm", "Hand", "Leg", "Foot", "Toe", "Head", "head", "neck")
+# A death is judged from the side only while the torso stands (hips to head more than half vertical): wings lying flat beside a fallen
+# body are in front of it from a low side camera by construction.
+UPRIGHT_SHARE = 0.5
+# TRIPO-WING-EDGE-ON: in a clip whose wings beat hard (flap of at least `EDGE_ON_FLAP` degrees, lib/tripo_chains.WING_ROLES: the attack and
+# the retreat), each wing's silhouette in a side or the map view, as a share of its silhouette seen square-on, has a median under
+# `MIN_WING_FACE_SHARE` over the clip. Calibrated on the same review: the round 2 retreat it read as a spike measured 0.26 to 0.38, the
+# idle it accepted 0.47 to 0.55.
+EDGE_ON_FLAP = 20.0
+MIN_WING_FACE_SHARE = 0.4
+# TRIPO-WING-IDLE-MOVE: at map size the move's wings must move clearly more than the idle's: the range of the wings' map-view silhouette
+# over the clip, as a share of its median, at least `MIN_MOVE_IDLE_MOTION_RATIO` times the idle's. The round 2 pair the review found
+# almost alike measured 1.6 (idle 0.13, move 0.21); the limit is judgement, about twice that.
+MIN_MOVE_IDLE_MOTION_RATIO = 3.0
+SILHOUETTE_CELL_SHARE = 0.02
 # An armour plate is rigid: it may stretch no more than vanilla's tailored clothing does at its worst.
 MAX_PLATE_STRETCH_SHARE = VANILLA_CLOAK_WORST
 CHAIN_GROUND_MARGIN_SHARE = 0.01
@@ -157,6 +185,17 @@ def cloak_bones(mesh) -> tuple:
     return CLOAK_BONES + tuple(tripo_chains.chain_bones(mesh.bones, "cloak"))
 
 
+def wing_sides(mesh) -> (np.ndarray, np.ndarray):
+    """(left, right) wing masks by the chain stage's rule (`lib/tripo_chains.wing_masks`)."""
+
+    names = np.array(mesh.bones)
+    dominant = pdx_deform.dominant_bones(mesh)
+    dominant_names = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    hips = pdx_motion.rest_joints(mesh)[index["Hips"]] if "Hips" in index else mesh.positions.mean(axis=0)
+    return tripo_chains.wing_masks(mesh.positions, dominant_names, hips, front_direction(mesh), np.array([0.0, 1.0, 0.0]))
+
+
 def chain_regions(mesh, wings: bool, cloak: bool) -> Dict[str, np.ndarray]:
     """Vertex masks of the regions a chain stage moves, by the same rules that stage selects them with."""
 
@@ -170,7 +209,7 @@ def chain_regions(mesh, wings: bool, cloak: bool) -> Dict[str, np.ndarray]:
     if cloak:
         regions["cloak"] = T.cloak_region(mesh.positions, dominant_names, hips, front, mesh.height, cloak_bones(mesh))
     if wings:
-        left, right = tripo_chains.wing_masks(mesh.positions, dominant_names, hips, front, np.array([0.0, 1.0, 0.0]))
+        left, right = wing_sides(mesh)
         regions["wings"] = left | right
     return regions
 
@@ -178,30 +217,103 @@ def chain_regions(mesh, wings: bool, cloak: bool) -> Dict[str, np.ndarray]:
 def view_direction(front: np.ndarray, azimuth: float, elevation: float) -> np.ndarray:
     """The direction from the unit to a review camera at (azimuth, elevation) degrees, azimuth 0 in front, y up."""
 
-    up = np.array([0.0, 1.0, 0.0])
-    lateral = np.cross(up, front)
-    a, e = np.radians(azimuth), np.radians(elevation)
-    return T.unit(np.cos(e) * (np.cos(a) * front + np.sin(a) * lateral) + np.sin(e) * up)
+    return tripo_chains.review_view(front, np.array([0.0, 1.0, 0.0]), azimuth, elevation)
 
 
-def wing_cover(mesh, frames, wings: np.ndarray, death: bool) -> Dict[str, float]:
-    """The worst share of the torso and head each review view loses behind the wings over the frames (a death: the map view only)."""
+def side_parts(mesh, wings: np.ndarray) -> np.ndarray:
+    """The vertices the side views judge: dominated by an arm, shoulder, leg or the head (`SIDE_PARTS`), not the wings."""
 
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
-    torso = np.isin(dominant, list(TORSO_BONES)) & ~wings
+    return np.array([any(part in str(name) for part in SIDE_PARTS) for name in dominant], dtype=bool) & ~wings
+
+
+def upright_series(mesh, anim, step: int) -> np.ndarray:
+    """Per judged frame, how vertical the torso is (hips to head, 1 upright, 0 lying); ones when the rig lacks those bones."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    hips = next((index[n] for n in ("Hips", "Hip") if n in index), None)
+    head = next((index[n] for n in ("Head", "head") if n in index), None)
+    joints = pdx_motion.posed_joints(mesh, anim)[::step]
+    if hips is None or head is None:
+        return np.ones(len(joints))
+    axis = joints[:, head] - joints[:, hips]
+    return np.abs(axis[:, 1]) / np.maximum(np.linalg.norm(axis, axis=1), 1e-9)
+
+
+def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[np.ndarray] = None) -> Dict[str, float]:
+    """The worst share of the body each review view loses behind the wings over the frames: the front and map views judge all of the body
+    but the wings and the weapon, the side views the limbs and the head (`side_parts`). A death skips the front view, and the side views
+    while the torso lies (`UPRIGHT_SHARE`)."""
+
+    names = np.array(mesh.bones)
+    dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
+    body = ~wings & (dominant != "Weapon")
+    limbs = side_parts(mesh, wings)
     front = front_direction(mesh)
+    up = np.array([0.0, 1.0, 0.0])
+    upright = np.ones(len(frames)) if upright is None else np.asarray(upright, float)
     out = {}
-    for view, (azimuth, elevation) in COVER_VIEWS.items():
+    for view, (azimuth, elevation) in {**COVER_VIEWS, **SIDE_VIEWS}.items():
         if death and view == "front":
             continue
+        side = view in SIDE_VIEWS
+        judged = [posed for posed, standing in zip(frames, upright) if not (death and side) or standing > UPRIGHT_SHARE]
+        if not judged:
+            continue
         direction = view_direction(front, azimuth, elevation)
-        out[view] = round(max(tripo_chains.front_cover_share(posed, torso, wings, direction, np.array([0.0, 1.0, 0.0]), mesh.height) for posed in frames), 4)
+        out[view] = round(max(tripo_chains.front_cover_share(posed, body, wings, direction, up, mesh.height, judged=limbs if side else None) for posed in judged), 4)
     return out
 
 
-def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False) -> dict:
-    """One clip's worst in-body share and below-ground share per region, and the wing region's worst stretch."""
+def silhouette_cells(points: np.ndarray, first: np.ndarray, second: np.ndarray, cell: float) -> int:
+    return len(set(map(tuple, np.floor(np.stack([points @ first, points @ second], axis=1) / cell).astype(np.int64))))
+
+
+def wing_face_shares(mesh, frames, sides) -> Dict[str, float]:
+    """Per side view and the map view, the lower of the two wings' median face share over the frames: the screen cells
+    (`SILHOUETTE_CELL_SHARE` of the height) a wing's vertices fill in that view over those they fill on the wing's own principal plane
+    (1 face on, about 0.2 edge-on for a ragged membrane)."""
+
+    front = front_direction(mesh)
+    up = np.array([0.0, 1.0, 0.0])
+    cell = SILHOUETTE_CELL_SHARE * mesh.height
+    out = {}
+    for view in ("left", "right", "map"):
+        direction = view_direction(front, *tripo_chains.REVIEW_VIEWS[view])
+        first = tripo_chains.unit(np.cross(up, direction))
+        second = np.cross(direction, first)
+        medians = []
+        for mask in sides:
+            shares = []
+            for posed in frames:
+                points = posed[mask]
+                _centre, axes, _values = T.principal_axes(points)
+                shares.append(silhouette_cells(points, first, second, cell) / max(silhouette_cells(points, axes[0], axes[1], cell), 1))
+            medians.append(float(np.median(shares)))
+        out[view] = round(min(medians), 3)
+    return out
+
+
+def wing_map_motion(mesh, frames, wings: np.ndarray) -> float:
+    """The range of the wings' map-view silhouette (screen cells) over the frames, as a share of its median: how much the wings move at
+    map size."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    direction = view_direction(front_direction(mesh), *tripo_chains.REVIEW_VIEWS["map"])
+    first = tripo_chains.unit(np.cross(up, direction))
+    second = np.cross(direction, first)
+    cells = np.array([silhouette_cells(posed[wings], first, second, SILHOUETTE_CELL_SHARE * mesh.height) for posed in frames], float)
+    return round(float(np.ptp(cells) / max(float(np.median(cells)), 1.0)), 3)
+
+
+def clip_role(clip: str) -> str:
+    return clip.rsplit("_", 1)[-1]
+
+
+def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False, sides=None) -> dict:
+    """One clip's worst in-body share and below-ground share per region; for the wings also the worst stretch, the cover per review view,
+    the face shares (with `sides`, the left and right wing masks) and the map-view motion."""
 
     frames = posed_frames(mesh, anim, step)
     edges = pdx_deform.mesh_edges(mesh)
@@ -214,7 +326,11 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False
                "below_ground_worst_share": round(max(below), 4), "below_ground_frame": int(np.argmax(below)) * step}
         if name == "wings":
             share, frame = T.region_stretch_share(mesh.positions, frames, edges, mask, mesh.height)
-            row.update(stretch_worst_share=round(share, 4), stretch_frame=frame * step, cover=wing_cover(mesh, frames, mask, death))
+            row.update(stretch_worst_share=round(share, 4), stretch_frame=frame * step,
+                       cover=wing_cover(mesh, frames, mask, death, upright_series(mesh, anim, step) if death else None),
+                       map_motion=wing_map_motion(mesh, frames, mask))
+            if sides is not None:
+                row["face"] = wing_face_shares(mesh, frames[::2], sides)
         out[name] = row
     return out
 
@@ -224,29 +340,54 @@ def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
     if row.get("stretch_worst_share", 0.0) > MAX_WING_STRETCH_SHARE:
         out.append(finding("TRIPO-WING-STRETCH", clip, f"{row['stretch_worst_share']:.1%} of the wing region's edges are stretched or squashed in frame {row['stretch_frame']}; the limit is {MAX_WING_STRETCH_SHARE:.0%}", share=row["stretch_worst_share"]))
     for view, share in (row.get("cover") or {}).items():
-        if share > MAX_WING_COVER_SHARE:
-            out.append(finding("TRIPO-WING-FRONT", clip, f"the wings hide {share:.1%} of the torso and head in the {view} view; the limit is {MAX_WING_COVER_SHARE:.0%}", view=view, share=share))
+        side = view in SIDE_VIEWS
+        limit = MAX_WING_SIDE_COVER if side else MAX_WING_COVER_SHARE
+        if share > limit:
+            what = "the limbs and head" if side else "the body"
+            out.append(finding("TRIPO-WING-FRONT", clip, f"the wings hide {share:.1%} of {what} in the {view} view; the limit is {limit:.0%}", view=view, share=share))
+    rule = tripo_chains.WING_ROLES.get(clip_role(clip), {})
+    if row.get("face") and rule.get("flap", 0.0) >= EDGE_ON_FLAP:
+        for view, share in row["face"].items():
+            if share < MIN_WING_FACE_SHARE:
+                out.append(finding("TRIPO-WING-EDGE-ON", clip, f"a beating wing shows {share:.0%} of its face in the {view} view (median over the clip; limit {MIN_WING_FACE_SHARE:.0%}): seen edge-on it reads as a spike", view=view, share=share))
     if row["in_body_worst_share"] > MAX_CHAIN_IN_BODY_SHARE:
-        out.append(finding("TRIPO-CHAIN-IN-BODY", clip, f"{row['in_body_worst_share']:.1%} of the {name} points go more than {CHAIN_IN_BODY_MARGIN_SHARE:.0%} of the height inside the body in frame {row['in_body_frame']} (limit {MAX_CHAIN_IN_BODY_SHARE:.0%}, vanilla clothing's worst)", region=name, share=row["in_body_worst_share"]))
+        out.append(finding("TRIPO-CHAIN-IN-BODY", clip, f"{row['in_body_worst_share']:.1%} of the {name} points go more than {CHAIN_IN_BODY_MARGIN_SHARE:.0%} of the height inside the body in frame {row['in_body_frame']} (limit {MAX_CHAIN_IN_BODY_SHARE:.1%}, vanilla clothing's worst)", region=name, share=row["in_body_worst_share"]))
     if row["below_ground_worst_share"] > MAX_CHAIN_BELOW_GROUND_SHARE:
         out.append(finding("TRIPO-CHAIN-GROUND", clip, f"{row['below_ground_worst_share']:.1%} of the {name} vertices are more than {CHAIN_GROUND_MARGIN_SHARE:.0%} of the height below the ground in frame {row['below_ground_frame']} (limit {MAX_CHAIN_BELOW_GROUND_SHARE:.0%})", region=name, share=row["below_ground_worst_share"]))
     return out
 
 
+def idle_move_findings(rows: Dict[str, dict]) -> List[dict]:
+    """TRIPO-WING-IDLE-MOVE: the move's wings move at map size at least `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's."""
+
+    idle = next((row["wings"] for clip, row in rows.items() if clip_role(clip) == "idle" and "wings" in row), None)
+    move_clip, move = next(((clip, row["wings"]) for clip, row in rows.items() if clip_role(clip) == "move" and "wings" in row), (None, None))
+    if idle is None or move is None:
+        return []
+    ratio = move["map_motion"] / max(idle["map_motion"], 1e-3)
+    if ratio < MIN_MOVE_IDLE_MOTION_RATIO:
+        return [finding("TRIPO-WING-IDLE-MOVE", move_clip, f"at map size the move's wings move {ratio:.1f} times as much as the idle's (silhouette range {move['map_motion']:.0%} against {idle['map_motion']:.0%}; at least {MIN_MOVE_IDLE_MOTION_RATIO:.0f} times): idle and move look alike", ratio=round(ratio, 2))]
+    return []
+
+
 def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, step: int = 2) -> (List[dict], dict):
-    """TRIPO-WING-STRETCH, TRIPO-CHAIN-IN-BODY and TRIPO-CHAIN-GROUND per clip, for the cloak and wing regions."""
+    """TRIPO-WING-STRETCH, TRIPO-WING-FRONT, TRIPO-WING-EDGE-ON, TRIPO-WING-IDLE-MOVE, TRIPO-CHAIN-IN-BODY and TRIPO-CHAIN-GROUND per clip,
+    for the cloak and wing regions."""
 
     regions = chain_regions(mesh, wings, cloak)
     if not regions:
         return [], {}
+    sides = wing_sides(mesh) if wings else None
     weapon = np.isin(np.array(mesh.bones)[np.clip(pdx_deform.dominant_bones(mesh), 0, None)], ["Weapon"])
     body = ~np.any(np.stack(list(regions.values())), axis=0) & ~weapon
     out, numbers = [], {"region_vertices": {name: int(mask.sum()) for name, mask in regions.items()}, "clips": {}}
     for clip, anim in anims.items():
-        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"))
+        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"), sides=sides)
         numbers["clips"][clip] = rows
         for name, row in rows.items():
             out += chain_row_findings(clip, name, row)
+    if wings:
+        out += idle_move_findings(numbers["clips"])
     return out, numbers
 
 

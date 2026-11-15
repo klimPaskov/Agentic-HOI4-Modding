@@ -9,8 +9,12 @@ from __future__ import annotations
 
 from typing import Dict, List
 
-import bpy
 import numpy as np
+
+try:  # the planning functions are plain numpy, so tests and offline replays import this module without Blender
+    import bpy
+except ImportError:  # pragma: no cover - outside Blender
+    bpy = None
 
 from lib import tripo_chains as C
 
@@ -152,6 +156,7 @@ def plan_wings(ctx):
     joints[:, 0] = root  # every finger chain starts at the wing root
     right_joints = np.stack([C.mirror_points(chain, centre, lateral) for chain in joints])
     common = {"chain_u": chain_u, "stations": stations, "layout": layout, "root": root, "plane": plane, "front": front,
+              "points": points, "body_points": positions[~(left | right)], "height": ctx["height"],
               "shape_inputs": {"length": round(length, 4), "width": round(width, 4), "segment": round(ctx["segment"], 4), "budget": ctx["budget"]}}
     return [
         dict(common, region="wings", side="L", mask=left, joints=joints, coords=lambda pts: _fan_coordinates(pts, root, plane)),
@@ -276,17 +281,27 @@ def capsule_radii(positions, dominant, heads, sheets):
 
 
 def wing_limits(sheet, heads, radii, up) -> Dict[str, float]:
-    """The wing's pose room by rule (lib/tripo_chains.py): back swing, forward wrap, down-stroke and death sag, from the torso's radius
-    and the wing's own chains."""
+    """The wing's pose room by rule (lib/tripo_chains.py): back swing, the side floor (the least back swing that keeps the wing off the
+    body in the side views), the face turn of a retreat, down-stroke and death sag, from the torso's radius, the body and the wing's own
+    chains. Computed once from the left wing (the right one is its mirror)."""
 
     plane, joints, chain_u = sheet["plane"], sheet["joints"], np.asarray(sheet["chain_u"])
-    lateral = C.unit(np.cross(up, sheet["front"]))
     first = C.unit(joints[:, 1] - joints[:, 0])
-    root_offset = abs(float((sheet["root"] - heads["Hips"]) @ lateral))
+    normal = C.unit(np.cross(plane[0], plane[1]))
+    sweep = C.wing_sweep_degrees(float(sheet["shape_inputs"]["length"]), radii["Torso"])
+    points, body, root, front, height = sheet["points"], sheet["body_points"], sheet["root"], sheet["front"], sheet["height"]
+    side, _ceiling = C.wing_side_floor(points, body, root, front, up, height, sweep)
+    # the face turn keeps the floor's swing and only tilts: a retreat swung further back (72 and 82 degrees on the demon) squashed its
+    # beating membrane past UNIT-ANIM-STRETCH in the clip's first beats
+    face_sweep, face_tilt = C.face_turn(normal, front, up, side, side)
+    low = int(np.argmin(chain_u))
+    low_rest = C.unit(np.diff(joints[low], axis=0))
+    if sheet["side"] == "R":  # the pose rules work on the left wing; the right one is its mirror
+        low_rest = C.mirror_directions(low_rest, C.unit(np.cross(up, front)))
     return {
-        "u_min": float(np.min(chain_u)), "normal": C.unit(np.cross(plane[0], plane[1])),
-        "sweep": C.wing_sweep_degrees(float(sheet["shape_inputs"]["length"]), radii["Torso"]),
-        "wrap": C.wing_wrap_degrees(root_offset, radii["Torso"]),
+        "low_rest": low_rest, "low_lengths": np.linalg.norm(np.diff(joints[low], axis=0), axis=1), "low_u": float(chain_u[low]),
+        "root": np.asarray(joints[low, 0], float),
+        "u_min": float(np.min(chain_u)), "normal": normal, "sweep": sweep, "side": side, "face_sweep": face_sweep, "face_tilt": face_tilt,
         "down": C.wing_down_degrees(first[int(np.argmin(chain_u))], -up),
         "droop": C.wing_droop_degrees(first[int(np.argmax(chain_u))], up),
     }
@@ -416,6 +431,16 @@ def sample_body(armature, frames, skinned) -> Dict[str, np.ndarray]:
     return {"parents": parents, "axes": axes, "skinning": skinning}
 
 
+def body_track(body: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+    """Per frame, the world positions of the hips, the feet and the two knees (frames, 2, 3), read off the capsule axes (the wing rule
+    times a death's fold by the hips, keeps a dying wing above the knees and times a move's beats by the feet)."""
+
+    names = [name for name, _start, _end in CAPSULES]
+    return {"Hips": body["axes"][:, names.index("Torso"), 0], "LeftFoot": body["axes"][:, names.index("LeftShin"), 1],
+            "RightFoot": body["axes"][:, names.index("RightShin"), 1],
+            "knees": np.stack([body["axes"][:, names.index("LeftShin"), 0], body["axes"][:, names.index("RightShin"), 0]], axis=1)}
+
+
 def back_directions(body: Dict[str, np.ndarray], front: np.ndarray) -> np.ndarray:
     """Per frame, the rest pose's backward direction carried by the hips: the way a collision pushes cloth off the legs and body."""
 
@@ -466,10 +491,11 @@ def bake_chains(armature, action, stage: dict, role: str) -> dict:
     body = sample_body(armature, frames, skinned)
     report = {"frames": len(frames), "fps": round(fps, 3), "looping": looping, "chains": {}}
     cloak = [plan for plan in stage["plans"] if plan["region"] == "cloak"]
+    track = body_track(body)
     baked = dict(zip((id(plan) for plan in cloak), bake_cloak(cloak, body, stage, dt, looping))) if cloak else {}
     for plan in stage["plans"]:
         if plan["region"] == "wings":
-            quaternions = C.wing_quaternions(plan, body["parents"], role, stage, body["axes"])
+            quaternions = C.wing_quaternions(plan, body["parents"], role, stage, body["axes"], track)
         else:
             quaternions = baked[id(plan)]
         if looping:
@@ -484,6 +510,6 @@ def bake_chains(armature, action, stage: dict, role: str) -> dict:
 def plan_summary(stage: dict) -> dict:
     out = dict(stage["report"])
     out["chains"] = [{"bones": p["bones"], "omegas": [round(float(v), 2) for v in p["omegas"]],
-                      "wing": {k: round(float(v), 2) for k, v in (p.get("wing") or {}).items() if k != "normal"},
+                      "wing": {k: round(float(v), 2) for k, v in (p.get("wing") or {}).items() if np.ndim(v) == 0},
                       "follow": [{k: round(v, 3) for k, v in row.items()} for row in p.get("follow", [])]} for p in stage["plans"]]
     return out

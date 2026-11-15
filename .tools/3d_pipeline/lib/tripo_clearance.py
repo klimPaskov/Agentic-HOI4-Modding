@@ -31,6 +31,7 @@ MAX_ANGLE_DEGREES = 60.0
 ANGLES_DEGREES = (4.0, 8.0, 12.0, 17.0, 23.0, 30.0, 38.0, 46.0, 53.0, 60.0)
 HOLD_FRAMES = 4  # a solved frame's rotation fades out over this many frames either side, so smoothing does not dilute it
 MAX_POINTS = 600
+SOFT_SHARE = 0.04  # a weapon keeps this far (share of the height) from cloth that a later stage swings (the cloak's chains), see `deep_share`
 
 
 def _clip_check():
@@ -71,22 +72,28 @@ def sample_points(points: np.ndarray, count: int = MAX_POINTS) -> np.ndarray:
     return points[np.linspace(0, len(points) - 1, count).astype(int)]
 
 
-def deep_share(points: np.ndarray, body_positions: np.ndarray, body_triangles: np.ndarray, height: float, margin: float = MARGIN_SHARE) -> float:
-    """Share of `points` inside the body (ray parity) and deeper than `margin` of `height` from its nearest vertex."""
+def deep_share(points: np.ndarray, body_positions: np.ndarray, body_triangles: np.ndarray, height: float, margin: float = MARGIN_SHARE,
+               soft: Optional[np.ndarray] = None, soft_share: float = 0.0) -> float:
+    """Share of `points` inside the body (ray parity) and deeper than `margin` of `height` from its nearest vertex.
+
+    `soft` (a mask over `body_positions`) names cloth that a later stage swings (a cloak given its own bone chains moves a few percent of
+    the height off the pose this stage sees, and may then sweep into a weapon that only just cleared it). A point within `soft_share` of
+    the height of a soft vertex counts too, so the weapon is cleared of the cloth by its swing and not by the margin of the rigid pose."""
 
     if not len(points):
         return 0.0
     cc = _clip_check()
+    bad = np.zeros(len(points), dtype=bool)
     low, high = body_positions.min(axis=0), body_positions.max(axis=0)
     near = np.all((points >= low) & (points <= high), axis=1)
-    if not near.any():
-        return 0.0
-    inside = np.zeros(len(points), dtype=bool)
-    inside[near] = cc.points_inside_mesh(points[near], body_positions[body_triangles])
-    if not inside.any():
-        return 0.0
-    depth = cc.nearest_vertex_distance(points[inside], body_positions) / height
-    return float((depth > margin).sum()) / len(points)
+    if near.any():
+        inside = np.zeros(len(points), dtype=bool)
+        inside[near] = cc.points_inside_mesh(points[near], body_positions[body_triangles])
+        if inside.any():
+            bad[inside] = cc.nearest_vertex_distance(points[inside], body_positions) / height > margin
+    if soft is not None and soft_share > 0 and np.any(soft):
+        bad |= cc.nearest_vertex_distance(points, body_positions[soft]) / height < soft_share
+    return float(bad.sum()) / len(points)
 
 
 def free_points(weapon_points: np.ndarray, hand_joint: np.ndarray, height: float) -> np.ndarray:
@@ -105,6 +112,8 @@ def solve_frame(
     target: float = TARGET,
     max_angle: float = MAX_ANGLE_DEGREES,
     axes: Optional[np.ndarray] = None,
+    soft: Optional[np.ndarray] = None,
+    soft_share: float = 0.0,
 ) -> Tuple[np.ndarray, float]:
     """The smallest rotation about `pivot` (a rotation vector, radians) that brings the weapon's deep share to `target` or less, and the share left.
 
@@ -113,7 +122,7 @@ def solve_frame(
     """
 
     axes = fibonacci_axes() if axes is None else axes
-    start = deep_share(weapon_points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE)
+    start = deep_share(weapon_points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share)
     if start <= target:
         return np.zeros(3), start
     best = (start, np.zeros(3))
@@ -125,7 +134,7 @@ def solve_frame(
         found = None
         for axis in axes:
             moved = offsets @ rotation_matrix(axis, angle).T + pivot
-            share = deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE)
+            share = deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share)
             if share < best[0]:
                 best = (share, axis * angle)
             if share <= target and (found is None or share < found[0]):
@@ -172,7 +181,7 @@ def _hold_neighbours(raw, last):
     return held
 
 
-def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, last):
+def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, last, soft=None, soft_share=0.0):
     """The deep share per frame with each frame's rotation applied; frames from `last` on (the weapon let go) count 0."""
 
     out = []
@@ -181,7 +190,7 @@ def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, las
             out.append(0.0)
             continue
         moved = (free[i] - pivots[i]) @ rotvec_matrix(vectors[i]).T + pivots[i]
-        out.append(deep_share(moved, body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE))
+        out.append(deep_share(moved, body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share))
     return out
 
 
@@ -198,10 +207,13 @@ def clear_clip(
     rounds: int = 4,
     rest_weapon: Optional[np.ndarray] = None,
     rest_grip: Optional[np.ndarray] = None,
+    soft: Optional[np.ndarray] = None,
+    soft_share: float = 0.0,
 ) -> Dict[str, object]:
     """Solve a whole clip. Per frame i: `weapon_frames[i]` (all weapon points), `pivots[i]` (the wrist joint), `body_frames[i]` (the body's posed vertices).
 
-    Frames from `skip_from` on (the weapon has been let go) are left alone. Returns the rotation vector per frame ("rotvecs"), the deep share
+    Frames from `skip_from` on (the weapon has been let go) are left alone. `soft` and `soft_share` (see `deep_share`) keep the weapon clear of
+    swinging cloth: the solve aims at them, but only the hard test (the check's own) decides which frames "failed". Returns the rotation vector per frame ("rotvecs"), the deep share
     per frame before and after, the frames still over `limit` ("failed") and the largest angle used in degrees.
     """
 
@@ -209,10 +221,11 @@ def clear_clip(
     last = count if skip_from is None else min(skip_from, count)
     free = _clip_free_points(weapon_frames, pivots, height, rest_weapon, rest_grip)
     before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE) if i < last else 0.0 for i in range(count)]
+    wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share) if i < last else 0.0 for i in range(count)]
     raw = np.zeros((count, 3))
     for i in range(last):
-        if before[i] > target:
-            raw[i], _left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle)
+        if wanted[i] > target:
+            raw[i], _left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share)
     rotvecs = smooth_rotations(_hold_neighbours(raw, last), radius=1)
     # from the release on the weapon is free: the hand's rotation fades out over the next frames, so it does not snap back
     if skip_from is not None and 0 < last < count:
@@ -220,7 +233,7 @@ def clear_clip(
             rotvecs[last + k] = rotvecs[last - 1] * max(0.0, 1.0 - (k + 1) / 5.0)
     else:
         rotvecs[last:] = 0.0
-    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last)
+    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share)
     cap = np.radians(max_angle)
     for _ in range(rounds):
         over = [i for i in range(last) if after[i] > limit]
@@ -233,15 +246,16 @@ def clear_clip(
             if size > cap:
                 rotvecs[i] *= cap / size
         rotvecs = smooth_rotations(rotvecs, radius=1)
-        after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last)
+        after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share)
     # What smoothing could not keep: a frame takes its own solved rotation (frames are independent, so it passes if its own solve did).
     for i in [i for i in range(last) if after[i] > limit]:
         if np.linalg.norm(raw[i]) > 0:
             rotvecs[i] = raw[i]
-    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last)
+    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last)  # the check's own test, soft cloth left out
     failed = [i for i in range(last) if after[i] > limit]
+    soft_after = after if soft is None else _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share)
     return {
-        "rotvecs": rotvecs, "before": before, "after": after, "failed": failed,
+        "rotvecs": rotvecs, "before": before, "after": after, "failed": failed, "soft_after": soft_after,
         "max_degrees": float(np.degrees(np.linalg.norm(rotvecs, axis=1).max())) if count else 0.0,
         "frames_changed": int((np.linalg.norm(rotvecs, axis=1) > 1e-6).sum()),
     }
@@ -449,6 +463,30 @@ def _drop_row(place: Dict[str, object], orientations: Sequence[np.ndarray], star
         "lowest_over_ground_share": (low - ground) / height, "in_body_share": max(shares), "in_body_frame": release + int(np.argmax(shares)),
         "cost": place["cost"], "release": release, "tumble_frames": tumble,
     }
+
+
+GROUND_FAIL_SHARE = 0.002  # a dropped weapon this far under the ground fails the stage
+GLB_MOVE_SHARE = 0.01  # a dropped weapon that moves this far after landing, in the stage's own GLB, is only a diagnostic
+
+
+def drop_problems(row: Dict[str, object]) -> Tuple[List[str], List[str]]:
+    """(problems that fail the grip stage, diagnostics) for one release clip's report row.
+
+    The weapon inside the body or under the ground fails: both are the plan's own geometry and the exported files agree with it. How far it moves
+    after landing does not. The stage measures the GLB with the lifts of its own body frames, and the exported unit differs (retarget, easing,
+    the pipeline's grounding of each frame): the GLB said 11.9% of the height where the exported death held the weapon still but for three
+    frames. The check on the exported files is the judge of stillness, so here it is a diagnostic."""
+
+    problems, diagnostics = [], []
+    if row["planned_weapon_inside_body_share"] > LIMIT:
+        problems.append(f"weapon inside the body in frame {row['planned_weapon_inside_body_frame']} ({row['planned_weapon_inside_body_share']:.1%} of its points)")
+    low = row["measured"]["lowest_point_over_ground_share"]
+    if low < -GROUND_FAIL_SHARE:
+        problems.append(f"weapon {-low:.1%} of the height under the ground")
+    moved = row["measured"]["moved_after_landing_share"]
+    if moved > GLB_MOVE_SHARE:
+        diagnostics.append(f"on the GLB the weapon moves {moved:.1%} of the height after landing (not a failure here: the exported files are judged)")
+    return problems, diagnostics
 
 
 def plan_drop(

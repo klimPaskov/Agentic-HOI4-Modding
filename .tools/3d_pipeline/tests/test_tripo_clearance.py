@@ -162,6 +162,60 @@ def pelvis_series() -> list:
     return out + [0.05] * 15
 
 
+class SoftCloth(unittest.TestCase):
+    """Cloth that a later stage swings: the weapon is kept clear of it by its swing, not only by the rigid pose's margin."""
+
+    def setUp(self) -> None:
+        self.vertices, self.triangles = box(subdivide=20)
+        self.soft = self.vertices[:, 0] > 0.4  # the cloth is the +x face
+        # a stick along y that lies outside the box, 2% of the height off the cloth
+        self.points = np.array([[0.52, -0.3 + 0.6 * k / 39.0, 0.0] for k in range(40)])
+
+    def test_a_weapon_outside_the_body_but_within_the_swing_of_the_cloth_counts(self) -> None:
+        hard = C.deep_share(self.points, self.vertices, self.triangles, 1.0, C.CLEAR_MARGIN_SHARE)
+        soft = C.deep_share(self.points, self.vertices, self.triangles, 1.0, C.CLEAR_MARGIN_SHARE, self.soft, C.SOFT_SHARE)
+        self.assertEqual(hard, 0.0)
+        self.assertGreater(soft, 0.9)
+        self.assertEqual(C.deep_share(self.points, self.vertices, self.triangles, 1.0, C.CLEAR_MARGIN_SHARE, self.soft, 0.0), 0.0)
+
+    def test_the_solve_turns_the_weapon_away_from_the_cloth_and_not_only_out_of_the_body(self) -> None:
+        pivot = np.array([0.52, -0.3, 0.0])
+        free = self.points[8:]  # outside the grip zone round the pivot
+        rotation, left = C.solve_frame(free, pivot, self.vertices, self.triangles, 1.0, soft=self.soft, soft_share=C.SOFT_SHARE)
+        self.assertGreater(float(np.linalg.norm(rotation)), 0.0)
+        self.assertLessEqual(left, C.TARGET)
+        none, _ = C.solve_frame(free, pivot, self.vertices, self.triangles, 1.0)
+        self.assertEqual(float(np.linalg.norm(none)), 0.0)
+
+    def test_a_clip_is_cleared_of_the_cloth_while_failure_is_still_the_checks_own_test(self) -> None:
+        pivot = np.array([0.52, -0.3, 0.0])
+        result = C.clear_clip([self.points] * 4, [pivot] * 4, [self.vertices] * 4, self.triangles, 1.0, soft=self.soft, soft_share=C.SOFT_SHARE)
+        self.assertGreater(result["frames_changed"], 0)
+        self.assertEqual(result["failed"], [])
+        self.assertLessEqual(max(result["soft_after"]), C.LIMIT)
+        plain = C.clear_clip([self.points] * 4, [pivot] * 4, [self.vertices] * 4, self.triangles, 1.0)
+        self.assertEqual(plain["frames_changed"], 0)
+        # a weapon buried in cloth the swing cannot clear fails by the hard test only when it is truly inside the body
+        outside = C.clear_clip([self.points] * 2, [pivot] * 2, [self.vertices] * 2, self.triangles, 1.0, soft=self.soft, soft_share=0.9)
+        self.assertEqual(outside["failed"], [])
+
+
+class DropRules(unittest.TestCase):
+    def row(self, inside=0.0, low=0.0005, moved=0.119) -> dict:
+        return {"planned_weapon_inside_body_share": inside, "planned_weapon_inside_body_frame": 40, "measured": {"lowest_point_over_ground_share": low, "moved_after_landing_share": moved}}
+
+    def test_a_weapon_that_moves_on_the_glb_is_a_diagnostic_and_does_not_fail_the_stage(self) -> None:
+        problems, diagnostics = C.drop_problems(self.row())
+        self.assertEqual(problems, [])
+        self.assertEqual(len(diagnostics), 1)
+        self.assertIn("11.9%", diagnostics[0])
+
+    def test_a_weapon_in_the_body_or_under_the_ground_fails(self) -> None:
+        self.assertEqual(len(C.drop_problems(self.row(inside=0.05))[0]), 1)
+        self.assertEqual(len(C.drop_problems(self.row(low=-0.01))[0]), 1)
+        self.assertEqual(C.drop_problems(self.row(moved=0.0)), ([], []))
+
+
 class Fall(unittest.TestCase):
     def test_the_fall_starts_where_the_pelvis_starts_its_last_descent_not_at_a_crouch_or_a_stagger(self) -> None:
         pelvis = pelvis_series()

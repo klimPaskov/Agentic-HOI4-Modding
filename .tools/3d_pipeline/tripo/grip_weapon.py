@@ -44,7 +44,7 @@ skeleton to 22 bones and merges the fingers into the hand:
    body's lowest point is on the ground, and the weapon with it, so the path is planned in that grounded world (`grounding_lifts`). The job names the clip with
    `tripo.weapon.release_roles` and check_unit_files.py then excuses a part bound wholly to that weapon bone from the
    drift test only. The run fails (exit 3, `DROP_FAILED`) when the planned or measured result has the weapon inside the
-   body, under the ground or moving after it landed.
+   body or under the ground. Its stillness after the landing is judged on the exported files (the GLB's measure is a diagnostic).
 
 The result has the shape of Tripo's in-hand export, so `prepare_tripo_unit.py --rigid-part tripo_part_1=RightHand`
 takes it unchanged.
@@ -98,6 +98,7 @@ def parse_args():
     parser.add_argument("--diagonal-min", type=float, default=28.0, help="least angle (degrees) of the haft to the palm closing axis")
     parser.add_argument("--diagonal-max", type=float, default=55.0)
     parser.add_argument("--clearance-clips", default="", help="the clips the clearance rule works on (names or starts of names, comma separated); default every clip. Name the clips the unit uses: each frame that fails costs seconds")
+    parser.add_argument("--soft-share", type=float, default=CL.SOFT_SHARE, help="cloth that a later stage swings (a cloak) is kept this share of the body height clear of the weapon, because the chain stage moves it off the pose judged here (0 switches it off)")
     parser.add_argument("--no-clearance", action="store_true", help="skip the clearance rule (see lib/tripo_clearance.py): by default every clip is checked per frame and the hand is turned about the wrist until the weapon leaves the body")
     parser.add_argument("--clearance-allow-fail", action="store_true", help="exit 0 even when a frame cannot be cleared within the cap (the report and TRIPO-WEAPON-IN-BODY still say so)")
     parser.add_argument("--weapon-bone", action="store_true", help="bind the weapon to its own bone (child of the hand) instead of the hand bone")
@@ -794,6 +795,26 @@ def hold_arm(c):
     c.hold = hold
 
 
+def soft_cloth_mask(c):
+    """The vertices of the body that hang as a cloak (the region TRIPO-CLOAK-STRETCH measures), or None when the body has none.
+
+    The unit's chain stage later gives the cloak its own bones, and the cloak then swings a few percent of the height off the rigid pose the
+    clearance sees. Judged on the rigid pose alone the weapon clears the cloak by the margin only and the swing carries cloth through it
+    (TRIPO-WEAPON-IN-BODY on the exported retreat). The same rule applies to every body, caped or not: a body with no such region has no mask."""
+
+    from lib import tripo_chains
+
+    if c.args.soft_share <= 0:
+        return None
+    arm, names = c.arm, [name[len(PREFIX):] if name.startswith(PREFIX) else name for name in dominant_groups(c.body)]
+    heads = {n: rest_head(arm, PREFIX + n) for n in ("Hips", "LeftFoot", "RightFoot", "LeftToeBase", "RightToeBase")}
+    front = (heads["LeftToeBase"] - heads["LeftFoot"]) + (heads["RightToeBase"] - heads["RightFoot"])
+    front[2] = 0.0
+    mask = tripo_chains.cloak_mask(c.rest_coords, names, heads["Hips"], front, np.array([0.0, 0.0, 1.0]), c.height)
+    c.report["soft_cloth"] = {"vertices": int(mask.sum()), "share_of_height": c.args.soft_share}
+    return mask if mask.sum() >= 50 else None
+
+
 def clear_weapon_from_body(c):
     """The clearance rule: turn the hand about the wrist, frame by frame, until the weapon leaves the body (lib/tripo_clearance.py).
 
@@ -807,6 +828,7 @@ def clear_weapon_from_body(c):
     clearance = {}
     hand_name = PREFIX + c.hand
     triangles = body_triangles(body)
+    soft = None if args.no_clearance else soft_cloth_mask(c)
     if not args.no_clearance:
         wanted = [resolve_clip_name(n, c.action_names) for n in args.clearance_clips.split(",") if n]
         for action in [a for a in bpy.data.actions if not wanted or a.name in wanted]:
@@ -822,7 +844,8 @@ def clear_weapon_from_body(c):
             skip = None
             if action.name in c.drop_clips:
                 skip = int(c.hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
-            result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre)
+            result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre,
+                                soft=soft, soft_share=args.soft_share)
             for index, frame in enumerate(frames_list):
                 vector = result["rotvecs"][index]
                 angle = float(np.linalg.norm(vector))
@@ -834,6 +857,7 @@ def clear_weapon_from_body(c):
             clearance[action.name] = {
                 "frames": len(frames_list), "frames_changed": result["frames_changed"], "max_degrees": round(result["max_degrees"], 1),
                 "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
+                "worst_share_with_soft_cloth_after": round(max(result["soft_after"]), 4),
                 "failed_frames": [frames_list[i] for i in result["failed"]], "released_from_frame": None if skip is None else first + skip,
             }
     c.report["clearance"] = clearance
@@ -1079,17 +1103,19 @@ def export_glb(c):
 
 
 def drop_failures(c):
-    """Release clips whose plan or measured result breaks a rule: the weapon inside the body, under the ground, or moving after it landed."""
+    """Release clips whose plan or measured result breaks a rule: the weapon inside the body or under the ground.
+
+    How far the weapon moves after it landed is only a diagnostic here (`report["release"][clip]["diagnostics"]`). This stage measures the GLB
+    with the lifts of the grip stage's own body frames, and the unit's export measures differently (the retarget, the easing and the pipeline's
+    grounding of each frame): the GLB said 11.9% while the exported death moved under 1% outside a few frames of the body settling. The
+    judge of a dropped weapon's stillness is the check on the exported files (`tripo_checks.py` reports `moved_in_last_half_share`)."""
 
     failures = {}
     for name, row in c.release.items():
-        problems = []
-        if row["planned_weapon_inside_body_share"] > CL.LIMIT:
-            problems.append(f"weapon inside the body in frame {row['planned_weapon_inside_body_frame']} ({row['planned_weapon_inside_body_share']:.1%} of its points)")
-        if row["measured"]["lowest_point_over_ground_share"] < -0.002:
-            problems.append(f"weapon {-row['measured']['lowest_point_over_ground_share']:.1%} of the height under the ground")
-        if row["measured"]["moved_after_landing_share"] > 0.01:
-            problems.append(f"weapon moves {row['measured']['moved_after_landing_share']:.1%} of the height after landing")
+        problems, diagnostics = CL.drop_problems(row)
+        for text in diagnostics:
+            row.setdefault("diagnostics", []).append(text)
+            print(f"diagnostic (grip stage GLB): {name}: {text}")
         if problems:
             failures[name] = problems
     return failures
@@ -1115,9 +1141,9 @@ def main():
     c.report["rotation_keys_after_clearance"] = {action.name: ease_clip(c, action) for action in bpy.data.actions}  # its hand turns are eased too
     release_clips(c)
     check_fingers(c)
+    dropped = drop_failures(c)
     export_glb(c)
     failed = c.clearance_failed
-    dropped = drop_failures(c)
     if (failed or dropped) and not args.clearance_allow_fail:
         if failed:
             print("CLEARANCE_FAILED " + json.dumps(failed), file=sys.stderr)

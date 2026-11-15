@@ -83,6 +83,9 @@ def parse_args():
     parser.add_argument("--rigid-from-twin", nargs=2, metavar=("GLB", "PART=BONE"))
     parser.add_argument("--trim", action="append", default=[], metavar="ROLE=MAX_FRAMES",
                         help="cut a long clip to at most MAX_FRAMES frames, ending on the frame whose pose is closest to frame 0")
+    parser.add_argument("--trim-end", action="append", default=[], metavar="ROLE=FRAMES",
+                        help="cut a clip to exactly FRAMES frames (no loop point is searched): the end of a clip that goes still, "
+                        "found by lib/tripo_trim.py")
     parser.add_argument("--part-triangles", action="append", default=[], metavar="PART=N|auto",
                         help="reduce a part to about N triangles (weld, then Blender Decimate, UVs kept) before it is bound; "
                         "auto tries 1500, 2500, 4000 and keeps the first that passes the shape check")
@@ -638,9 +641,9 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
     return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "map_sizes": map_sizes, "neutral_specular": neutral_specular, "neutral_map_parts": neutral_parts, "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
 
 
-def trimmed_copy(action, cap: int):
+def trimmed_copy(action, cap: int, exact: bool = False):
     """A copy of `action` cut to at most `cap` frames. It ends on the frame in [cap/2, cap] whose pose is
-    closest to frame 0 (the best loop point); keys after it are dropped, none are added or moved."""
+    closest to frame 0 (the best loop point), or on frame `cap` itself when `exact`; keys after it are dropped, none are added or moved."""
 
     curves = [fcurve for fcurve, _container in action_fcurves(action)]
     first = int(action.frame_range[0])
@@ -648,7 +651,7 @@ def trimmed_copy(action, cap: int):
         return action, None
     start = [fcurve.evaluate(first) for fcurve in curves]
     best, best_error = cap, None
-    for frame in range(max(cap // 2, 1), cap + 1):
+    for frame in range(cap if exact else max(cap // 2, 1), cap + 1):
         error = sum((fcurve.evaluate(first + frame) - value) ** 2 for fcurve, value in zip(curves, start))
         if best_error is None or error < best_error:
             best, best_error = frame, error
@@ -763,7 +766,9 @@ def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, m
                 flips += 1
         before = max(turn_rates(quats, frames), default=0.0)
         eased = []
-        k = 1
+        # The grip stage eases the weapon bone itself and keys a counter-turn against the hand. Easing it again
+        # here breaks that counter-turn, and a dropped weapon bounced for three frames after landing.
+        k = len(quats) if bone.replace(PREFIX, "") in OPTIONAL_BONES else 1
         while k < len(quats):
             if turn_rates(quats, frames)[k - 1] > trigger_degrees:
                 for window in range(2, max_window + 1):
@@ -1057,13 +1062,15 @@ def export_base(armature, body, args, atlas):
     return textures, base_path
 
 
-def export_role(armature, body, args, role, clip, trims, stage, extras):
+def export_role(armature, body, args, role, clip, trims, stage, extras, trims_end=None):
     """One GLB for a role: the mesh, the shared armature and exactly one clip, after the trim, the arm level, the chains and the snap
     easing. What each step did goes into `extras` (keyed by step, then role). Returns the clip's record."""
 
-    action, trimmed = bpy.data.actions[clip], None
+    action, trimmed, trims_end = bpy.data.actions[clip], None, trims_end or {}
     if role in trims:
         action, trimmed = trimmed_copy(action, int(trims[role]))
+    elif role in trims_end:
+        action, trimmed = trimmed_copy(action, int(trims_end[role]), exact=True)
     if role in args.arm_level:
         extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target)
     if stage is not None:
@@ -1113,7 +1120,8 @@ def main():
 
     trims = dict(split_pair(item, "--trim") for item in args.trim)
     extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}}
-    clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras) for role, clip in roles.items()}
+    trims_end = dict(split_pair(item, "--trim-end") for item in args.trim_end)
+    clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras, trims_end) for role, clip in roles.items()}
 
     report = {
         "tool": "prepare_tripo_unit",

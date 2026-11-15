@@ -27,6 +27,8 @@ separate weapon gets from `tripo/grip_weapon.py --weapon-bone`; `weapon.release_
 roles in which the unit lets go of it: the kit grounds those clips by the body alone and the loose-part check does not
 judge that bone's part for drifting. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
+A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
+5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
 it per role by fixed rules (`tripo/chain_stage.py`, `lib/tripo_chains.py`), so a cloak no longer follows the thighs and wings no longer follow the arms.
@@ -56,6 +58,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import run_pilot
+from lib import tripo_trim
 from lib.credits import append_entry, read_ledger
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
 from lib.tripo import inbox_file, uses_tripo
@@ -121,8 +124,16 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--part-triangles", f"{part}={budget if budget == 'auto' else int(budget)}"]
     if config.get("part_shape_iou") is not None:
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
-    for role, frames in (config.get("trim") or {}).items():
+    explicit = config.get("trim") or {}
+    for role, frames in explicit.items():
         command += ["--trim", f"{role}={int(frames)}"]
+    # The rule for a clip that ends still (lib/tripo_trim.py): an attack, defend or retreat clip drops its trailing still part. A job's own trim wins.
+    auto = config.get("auto_trim", list(tripo_trim.DEFAULT_ROLES))
+    if auto:
+        for role, found in tripo_trim.auto_trims(files["rigged"], roles, explicit=set(explicit), apply_to=[role for role in tripo_trim.DEFAULT_ROLES if role in wanted and (auto is True or role in auto)]).items():
+            command += ["--trim-end", f"{role}={found['keep_frames']}"]
+            print(f"auto trim: {role} ({found['clip'][:40]}) {found['from_frames']} -> {found['keep_frames']} frames, still from frame {found['still_from_frame']} "
+                  f"(floor {found['floor_degrees']} degrees a frame, 5% of its peak {found['peak_degrees']})", file=sys.stderr)
     # An unarmed unit's attack clip gets the arm-level rule (lib/tripo_arms.py): Tripo's text-to-motion attacks hold the hands over the head and
     # hide it. `arm_level` lists the roles ([] or false to switch it off); the default is the attack of a job with no weapon.
     levelled = config.get("arm_level", [] if config.get("weapon") else ["attack"])

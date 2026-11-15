@@ -346,12 +346,101 @@ class Regions(unittest.TestCase):
         self.assertTrue(np.all(posed @ -FRONT > 0.5))
         self.assertTrue(np.all(posed @ lateral < 0.5))
 
-    def test_a_wrapped_wing_comes_forward_and_a_flap_raises_it(self) -> None:
+    def test_a_flap_or_a_raise_lifts_the_wing(self) -> None:
         rest, _lateral = self.wing_chain()
-        wrapped = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(wrap=1.0), np.zeros(3))
-        self.assertTrue(np.all(wrapped @ FRONT > 0.5))
         raised = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, self.pose(), np.array([20.0, 0.0, 0.0]))
         self.assertTrue(np.all(raised @ UP > rest @ UP))
+        lifted = C.wing_pose_directions(rest, 0.5, self.WING, UP, FRONT, dict(self.pose(), **{"raise": 20.0}), np.zeros(3))
+        self.assertTrue(np.all(lifted @ UP > rest @ UP))
+
+    def test_every_pose_keeps_the_side_floor_and_a_turned_torso_adds_to_it(self) -> None:
+        rest, lateral = self.wing_chain()
+        wing = dict(self.WING, side=30.0)
+        spread = C.wing_pose_directions(rest, 0.5, wing, UP, FRONT, self.pose(), np.zeros(3))
+        swung = rest @ C.axis_angle_matrix(UP, math.radians(30.0)).T
+        np.testing.assert_allclose(spread, swung, atol=1e-9)  # an unfolded wing still swings back by the floor
+        twisted = C.wing_pose_directions(rest, 0.5, wing, UP, FRONT, dict(self.pose(), twist=30.0), np.zeros(3))
+        self.assertLess(float(twisted[1] @ FRONT), float(spread[1] @ FRONT))  # further back
+        capped = C.wing_pose_directions(rest, 0.5, wing, UP, FRONT, dict(self.pose(), twist=500.0), np.zeros(3))
+        full = C.wing_pose_directions(rest, 0.5, dict(wing, side=self.WING["sweep"]), UP, FRONT, self.pose(), np.zeros(3))
+        np.testing.assert_allclose(capped, full, atol=1e-9)  # never past the full swing
+        # the torso turning its front toward the unit's left brings the right wing forward, not the left one
+        carry = C.axis_angle_matrix(UP, math.radians(25.0))
+        self.assertAlmostEqual(C.side_twist(carry, UP, FRONT, "R"), 25.0, places=6)
+        self.assertEqual(C.side_twist(carry, UP, FRONT, "L"), 0.0)
+        del lateral
+
+    def test_the_side_floor_is_where_swinging_back_stops_paying(self) -> None:
+        # a flat body facing -y, and a wing sheet beside its back that hides it from the left side until it swings back
+        body = np.array([[x, y, z] for x in np.linspace(-0.15, 0.15, 7) for y in np.linspace(-0.1, 0.1, 9) for z in np.linspace(0.5, 1.5, 26)])
+        root = np.array([0.15, 0.05, 1.3])  # inside the body's depth seen from the side, outside it seen from behind
+        wing = np.array([[0.15 + r, 0.05, 1.3 + h] for r in np.linspace(0.0, 0.6, 25) for h in np.linspace(-0.6, 0.3, 19)])
+        most = 80.0
+        floor, ceiling = C.wing_side_floor(wing, body, root, FRONT, UP, 2.0, most)
+        self.assertGreater(floor, 0.0)
+        self.assertLess(floor, most)
+        self.assertLessEqual(C.wing_side_cover(wing, body, root, FRONT, UP, 2.0, floor), ceiling)
+        self.assertGreater(C.wing_side_cover(wing, body, root, FRONT, UP, 2.0, 0.0), ceiling)
+
+    def test_the_face_turn_shows_the_face_to_the_side_and_the_map(self) -> None:
+        normal = FRONT  # a wing spread in the frontal plane: edge-on from the side
+        self.assertAlmostEqual(C.face_shares(normal, FRONT, UP)["side"], 0.0)
+        sweep, tilt = C.face_turn(normal, FRONT, UP, 0.0, 80.0)
+        shares = C.face_shares(C.turned_normal(normal, FRONT, UP, sweep, tilt), FRONT, UP)
+        self.assertGreater(min(shares.values()), 0.5)
+        self.assertGreater(tilt, 0.0)
+        # a turn the side-view rule refuses is never taken; with none left it falls back to the floor
+        self.assertEqual(C.face_turn(normal, FRONT, UP, 20.0, 80.0, fits=lambda s, t: False), (20.0, 0.0))
+        sweep, tilt = C.face_turn(normal, FRONT, UP, 0.0, 80.0, fits=lambda s, t: t == 0.0)
+        self.assertEqual(tilt, 0.0)
+
+    def test_the_death_folds_before_the_fall_and_sags_after_it(self) -> None:
+        hips = np.r_[np.full(40, 1.0), np.linspace(1.0, 0.4, 30), np.full(30, 0.4)]
+        fall = C.fall_frame(hips, 2.0)
+        self.assertEqual(fall, 40 + int(np.ceil(C.FALL_DROP_SHARE * 2.0 / (0.6 / 29))))
+        self.assertIsNone(C.fall_frame(np.full(50, 1.0), 2.0))
+        pose = C.wing_role_pose("death", 100, {"fall": fall})
+        end = int(C.FOLD_SHARE * 99) + 1
+        self.assertAlmostEqual(float(pose["fold"][end]), 1.0, places=6)  # folded before the knees bend
+        self.assertEqual(float(pose["droop"][fall - 1]), 0.0)  # and it sags only once the body falls
+        self.assertAlmostEqual(float(pose["droop"][-1]), 1.0)
+
+    def test_the_move_beats_in_step_with_the_walk(self) -> None:
+        frames = 61
+        t = np.linspace(0.0, 1.0, frames)
+        stride = 0.3 * np.cos(2.0 * math.pi * 2 * t + 0.4)  # two strides: four steps
+        left = np.outer(stride, FRONT) / 2.0
+        right = -left
+        beats, phase = C.walk_beats(left, right, FRONT)
+        self.assertEqual(beats, 4)
+        pose = C.wing_role_pose("move", frames, {"beats": beats, "beat_phase": phase})
+        flap = np.sin(pose["phase"])
+        strikes = [int(i) for i in range(1, frames - 1) if abs(stride[i]) >= abs(stride[i - 1]) and abs(stride[i]) >= abs(stride[i + 1])]
+        for i in strikes:
+            self.assertLess(flap[i], -0.9)  # a down-stroke as a foot strikes
+        self.assertAlmostEqual(float(flap[0]), float(flap[-1]), places=9)  # it still loops
+        self.assertIsNone(C.walk_beats(np.zeros((frames, 3)), np.zeros((frames, 3)), FRONT))
+
+    def test_idle_is_folded_and_still_and_move_is_half_spread_and_beating(self) -> None:
+        idle, move = C.WING_ROLES["idle"], C.WING_ROLES["move"]
+        self.assertGreater(idle["fold"], move["fold"])
+        self.assertGreater(move["flap"], 3 * idle["flap"])
+        self.assertTrue(move.get("steps"))
+
+    def test_a_dying_wing_is_lifted_above_the_knees(self) -> None:
+        rest, lateral = self.wing_chain()
+        low = np.array([C.unit(lateral - 1.5 * UP)] * 3)  # a lowest chain that hangs steeply down
+        wing = dict(self.WING, low_rest=low, low_lengths=np.array([0.3, 0.3, 0.3]), low_u=0.0)
+        stage = {"up": UP, "front": FRONT}
+        root = np.array([0.1, 0.0, 1.4])
+        pose = self.pose()
+        lift = C.knee_raise(wing, pose, np.zeros(3), np.eye(3), root, "L", stage, 0.9)
+        self.assertGreater(lift, 0.0)
+        directions = C.wing_pose_directions(low, 0.0, wing, UP, FRONT, dict(pose, **{"raise": lift}), np.zeros(3))
+        joints = root + np.cumsum(directions * 0.3, axis=0)
+        self.assertGreaterEqual(float((joints @ UP).min()), 0.9 - 1e-9)
+        self.assertEqual(C.knee_raise(wing, pose, np.zeros(3), np.eye(3), root, "L", stage, 0.0), 0.0)
+        del rest
 
     def test_a_down_stroke_stops_at_the_wings_down_room(self) -> None:
         rest, _lateral = self.wing_chain()
@@ -360,8 +449,6 @@ class Regions(unittest.TestCase):
         np.testing.assert_allclose(deep, capped, atol=1e-9)
 
     def test_the_wing_limits_follow_the_body(self) -> None:
-        self.assertAlmostEqual(C.wing_wrap_degrees(1.0, 0.0), 90.0)
-        self.assertLess(C.wing_wrap_degrees(0.2, 0.05), 90.0)
         self.assertAlmostEqual(C.wing_down_degrees(np.array([1.0, 0.0, 0.0]), -UP), 90.0)
         self.assertAlmostEqual(C.wing_droop_degrees(C.unit(np.array([1.0, 0.0, 1.0])), UP), 45.0)
         self.assertEqual(C.wing_droop_degrees(np.array([1.0, 0.0, -1.0]), UP), 0.0)
@@ -417,6 +504,18 @@ class Regions(unittest.TestCase):
         self.assertGreater(hidden, 0.1)
         self.assertLess(hidden, 0.5)
 
+    def test_the_side_views_count_only_the_parts_a_viewer_sees(self) -> None:
+        # seen from +z: a torso plate in front, an arm plate behind it, and a wing nearer the camera than both over half of them
+        torso = np.array([[x, y, 0.0] for x in np.linspace(-0.1, 0.1, 11) for y in np.linspace(0.5, 0.9, 21)])
+        arm = torso + np.array([0.0, 0.0, -0.1])
+        wing = torso[:110] + np.array([0.0, 0.0, 0.2])
+        posed = np.vstack([torso, arm, wing])
+        body = np.r_[np.ones(len(torso) + len(arm), bool), np.zeros(len(wing), bool)]
+        limbs = np.r_[np.zeros(len(torso), bool), np.ones(len(arm), bool), np.zeros(len(wing), bool)]
+        front, up = np.array([0.0, 0.0, 1.0]), np.array([0.0, 1.0, 0.0])
+        self.assertGreater(C.front_cover_share(posed, body, ~body, front, up, 1.0), 0.3)
+        self.assertEqual(C.front_cover_share(posed, body, ~body, front, up, 1.0, judged=limbs), 0.0)  # the torso already hides the arm
+
     def test_points_inside_at_rest_are_not_counted(self) -> None:
         # a closed box body and two cloth points: one modelled inside it, one that moves in
         corners = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)], float)
@@ -429,6 +528,22 @@ class Regions(unittest.TestCase):
         self.assertEqual(C.inside_share_series([moved], faces, body, cloth, 2.0, 0.01)[0], 1.0)
         self.assertEqual(C.inside_share_series([moved], faces, body, cloth, 2.0, 0.01, rest=rest)[0], 1.0)
         self.assertEqual(C.inside_share_series([rest], faces, body, cloth, 2.0, 0.01, rest=rest)[0], 0.0)
+
+    def test_turning_an_open_body_does_not_put_cloth_inside_it(self) -> None:
+        # a box with its back face cut out (where a region was cut from a single skin), and cloth points on that opening; the ray
+        # votes run along fixed world directions, the winding number does not care how the body is turned
+        corners = np.array([[x, y, z] for x in (-1, 1) for y in (-1, 1) for z in (-1, 1)], float)
+        faces = np.array([[0, 1, 3], [0, 3, 2], [4, 6, 7], [4, 7, 5], [0, 4, 5], [0, 5, 1], [2, 3, 7], [2, 7, 6], [1, 5, 7], [1, 7, 3]])
+        cloth = np.array([[x, y, -1.05] for x in (-0.5, 0.0, 0.5) for y in (-0.5, 0.0, 0.5)])  # just outside the open face z = -1
+        rest = np.vstack([corners, cloth])
+        body = np.r_[np.ones(8, bool), np.zeros(len(cloth), bool)]
+        winding = C.winding_numbers(cloth, corners[faces])
+        self.assertTrue(np.all(winding < C.WINDING_INSIDE))
+        for axis in (np.array([1.0, 0.0, 0.0]), np.array([0.0, 1.0, 0.0]), C.unit(np.array([1.0, 1.0, 0.3]))):
+            for degrees in (30.0, 60.0, 90.0, 135.0):
+                turned = rest @ C.axis_angle_matrix(axis, math.radians(degrees)).T
+                self.assertEqual(C.inside_share_series([turned], faces, body, ~body, 2.0, 0.01, rest=rest)[0], 0.0)
+        self.assertGreater(float(C.winding_numbers(np.zeros((1, 3)), corners[faces])[0]), C.WINDING_INSIDE)  # deep in, it is inside
 
     def test_plates_ride_the_bone_nearest_the_root_and_go_rigid(self) -> None:
         depth = C.bone_depths({"Hips": None, "Spine02": "Hips", "LeftShoulder": "Spine02", "LeftArm": "LeftShoulder"})
@@ -486,6 +601,46 @@ class Regions(unittest.TestCase):
         self.assertAlmostEqual(float(angles[:, 0].max()), 10.0, places=1)
         peaks = [int(np.argmax(angles[:, k])) for k in range(3)]
         self.assertTrue(peaks[0] < peaks[1] < peaks[2])
+
+
+class WingChecks(unittest.TestCase):
+    """The wing parts of tripo/tripo_checks.py: per-view limits, the edge-on rule and the idle and move rule."""
+
+    @staticmethod
+    def row(cover=None, face=None, motion=0.1):
+        return {"in_body_worst_share": 0.0, "in_body_frame": 0, "below_ground_worst_share": 0.0, "below_ground_frame": 0,
+                "stretch_worst_share": 0.0, "stretch_frame": 0, "cover": cover or {}, "face": face or {}, "map_motion": motion}
+
+    def rules(self, clip, row):
+        import tripo_checks as TC
+
+        return [(item["rule"], item.get("view")) for item in TC.chain_row_findings(clip, "wings", row)]
+
+    def test_side_views_judge_the_limbs_against_their_own_limit(self) -> None:
+        import tripo_checks as TC
+
+        self.assertEqual(self.rules("u_attack", self.row({"left": TC.MAX_WING_SIDE_COVER - 0.01, "front": 0.0})), [])
+        self.assertEqual(self.rules("u_attack", self.row({"right": TC.MAX_WING_SIDE_COVER + 0.01})), [("TRIPO-WING-FRONT", "right")])
+        self.assertEqual(self.rules("u_idle", self.row({"map": TC.MAX_WING_COVER_SHARE + 0.01})), [("TRIPO-WING-FRONT", "map")])
+        self.assertGreater(TC.MAX_WING_SIDE_COVER, 0.053)  # the side views a fresh review accepted (round 2 retreat)
+        self.assertLess(TC.MAX_WING_SIDE_COVER, 0.175)  # and the least it failed (round 2 defend)
+
+    def test_only_a_beating_wing_is_failed_for_showing_its_edge(self) -> None:
+        import tripo_checks as TC
+
+        edge = {"left": TC.MIN_WING_FACE_SHARE - 0.1, "right": 0.6, "map": 0.6}
+        self.assertEqual(self.rules("u_retreat", self.row(face=edge)), [("TRIPO-WING-EDGE-ON", "left")])
+        self.assertEqual(self.rules("u_idle", self.row(face=edge)), [])  # folded and still: an edge is fine
+        self.assertEqual(self.rules("u_death", self.row(face=edge)), [])
+
+    def test_idle_and_move_must_differ_at_map_size(self) -> None:
+        import tripo_checks as TC
+
+        alike = {"u_idle": {"wings": self.row(motion=0.13)}, "u_move": {"wings": self.row(motion=0.21)}}  # the round 2 demon
+        self.assertEqual([item["rule"] for item in TC.idle_move_findings(alike)], ["TRIPO-WING-IDLE-MOVE"])
+        apart = {"u_idle": {"wings": self.row(motion=0.06)}, "u_move": {"wings": self.row(motion=0.42)}}
+        self.assertEqual(TC.idle_move_findings(apart), [])
+        self.assertEqual(TC.idle_move_findings({"u_idle": {"wings": self.row()}}), [])
 
 
 if __name__ == "__main__":
