@@ -251,6 +251,23 @@ class ContractTests(unittest.TestCase):
             judged = upper | (labels == "chassie")
             self.assertGreater(float(((points[:, 2] >= cut) == upper)[judged].mean()), 0.9, rel)
 
+    @unittest.skipUnless((GAME / "gfx/models/units/tanks").is_dir(), "the game is not installed here")
+    def test_role_clips_from_vanilla(self):
+        sys.path.insert(0, str(PIPELINE / "tripo"))
+        import static_model
+
+        tank, barrel = static_model.clip_motion(GAME, sk.kind_contract("vehicle"))
+        self.assertEqual(set(tank), {"idle", "move", "attack", "death"})
+        self.assertGreater(barrel, 0)
+        turn = tank["attack"]["extras"]["turret"][0]["degrees"]
+        self.assertAlmostEqual(max(turn), sk.kind_contract("vehicle")["attack_turn"]["degrees"], places=3)
+        self.assertEqual(len(turn), tank["attack"]["frames"])
+        plane, _ = static_model.clip_motion(GAME, sk.kind_contract("plane"))
+        spin = plane["idle"]["extras"]["propeller"][0]["degrees_per_frame"]
+        self.assertEqual(((plane["idle"]["frames"] - 1) * spin) % 360.0, 0.0)  # the loop closes a whole turn
+        ship, _ = static_model.clip_motion(GAME, sk.kind_contract("ship"))
+        self.assertIn("ship", ship["death"]["bones"])
+
     @unittest.skipUnless((GAME / "gfx/entities").is_dir(), "the game is not installed here")
     def test_every_kind_gets_a_parsable_entity_from_vanilla(self):
         definitions = sk.scan_definitions(GAME, ("gfx/entities",))
