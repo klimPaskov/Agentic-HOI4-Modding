@@ -12956,7 +12956,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.13.0",
+          "version": "4.18.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -12975,8 +12975,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.13.0",
-            "package_integrity": "sha512-4vLnvqWmam34NdOpVlkgKLlCEih2tb1ND1S7uHHJWnorKen18yWhtf/scp9imx8V7j7ZBNcW6yDVvzyEV9kB8Q==",
+            "package_version": "4.18.0",
+            "package_integrity": "sha512-pNWpHKqKH7PP75ACNZwt2n6kVp/w+ciYJ6JAzcQsT15DjX5+AgUQcLFeBsmtkBsA3FX2IBsluHKsdoTubL7o3w==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
             "runtime_entry_size": 4587,
@@ -12999,23 +12999,23 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "a52cb5011b07b2e0251c2758116d56d10dbefc7fadeaf42c0bd2fc64b6376e98",
-            "package_file_count": 5896,
+            "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
+            "package_file_count": 5899,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools"
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "a52cb5011b07b2e0251c2758116d56d10dbefc7fadeaf42c0bd2fc64b6376e98",
-                "package_file_count": 5896,
+                "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
+                "package_file_count": 5899,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "9f4e9dea93a51e041aa779ea0244d4ad388ef6634c44dd54370ca9d07b02c898",
-                "package_file_count": 5760,
+                "package_tree_sha256": "7a3960150dedae3c00dbd5357fc104261449701a3be922adc241bd9c60a10765",
+                "package_file_count": 5763,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
@@ -16113,10 +16113,10 @@
               "--register",
               "none"
             ],
-            "release_version": "1.4.0",
-            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.0/hoi4-live-tools-1.4.0.zip",
-            "release_sha256": "dc253264dd52ee703477ee5844491b9a99bce3eec326a3408b1f772867e1926c",
-            "release_size": 2249530,
+            "release_version": "1.4.2",
+            "release_url": "https://github.com/klimPaskov/HOI4-Live-Tools/releases/download/v1.4.2/hoi4-live-tools-1.4.2.zip",
+            "release_sha256": "a4592cd524e771404e1319137a16e0b323e912766b7514d3155e9cb5e3f698d6",
+            "release_size": 2985023,
             "network_access": "Required to download the pinned HOI4 Live Tools release archive from https://github.com (checked against the pinned SHA-256 and size) and its Python dependencies (numpy, Pillow, opencv-python-headless) from https://pypi.org.",
             "expected_writes": [
               "%LOCALAPPDATA%/hoi4-live-tools/**"
@@ -39160,7 +39160,7 @@
           "server_id": "hoi4-live",
           "component_id": "workflow.live_tools",
           "source_repository": "klimPaskov/HOI4-Live-Tools",
-          "source_revision": "v1.4.0"
+          "source_revision": "v1.4.2"
         },
         "guidance": [
           "Use the connected hoi4-live server and its advertised tools with qualified tool names.",
@@ -39173,7 +39173,7 @@
           "author": "klimPaskov",
           "url": "https://github.com/klimPaskov/HOI4-Live-Tools",
           "license": "Apache-2.0",
-          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.4.0/LICENSE"
+          "license_url": "https://github.com/klimPaskov/HOI4-Live-Tools/blob/v1.4.2/LICENSE"
         }
       },
       {
