@@ -358,11 +358,11 @@
    "parts": {
     "body": "chassie",
     "turret": "turret",
-    "barrel": "barrel_tip"
+    "barrel": "barrel_base"
    },
    "mounts": {
     "turret": "chassie",
-    "barrel_tip": "turret"
+    "barrel_base": "turret"
    },
    "rigid": {
     "max_gap_share": 0.01,

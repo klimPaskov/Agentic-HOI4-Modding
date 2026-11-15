@@ -96,13 +96,15 @@ SKELETON = {
 }
 # Bones a rigid part of the model follows wholly, and the part each is mounted on (STATIC-PART-GAP).
 PARTS = {
-    "vehicle": {"body": "chassie", "turret": "turret", "barrel": "barrel_tip"},
+    # A Tripo barrel is one tube: it follows vanilla's barrel_base, the outer tube. Vanilla's barrel_tip is an inner tube
+    # that slides back into it on the shot (most of the barrel's length), so a one-piece barrel on it all but vanishes.
+    "vehicle": {"body": "chassie", "turret": "turret", "barrel": "barrel_base"},
     "plane": {"body": "root", "propeller": "propeller"},
     "ship": {"body": "ship"},
     "landmark": {"body": "root"},
     "building": {},
 }
-MOUNTS = {"vehicle": {"turret": "chassie", "barrel_tip": "turret"}, "plane": {"propeller": "root"}}
+MOUNTS = {"vehicle": {"turret": "chassie", "barrel_base": "turret"}, "plane": {"propeller": "root"}}
 # Kit rules that vanilla cannot measure, each with its reason:
 # - a rigid part may lift off its mount by 1 % of the main measure in a clip (half a pixel at game size);
 # - a plane's propeller is looked for in the front fifth of the fuselage and ends where the disc narrows to 60 % of
