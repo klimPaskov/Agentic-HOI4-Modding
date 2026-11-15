@@ -324,7 +324,8 @@ def placement(points: np.ndarray, kind: str, contract: dict) -> Tuple[float, np.
 
     The main measure becomes the contract's `size.source`. Across, the model is centred where vanilla's are
     (`size.centre_share`, a share of the main measure). Up, the lowest point goes to vanilla's ground (`size.ground_share`),
-    except a ship, whose waterline (`waterline.width_share`) goes to z = 0.
+    except a ship, whose waterline (`waterline.width_share`) goes to z = 0, and a building or landmark on a plinth, which
+    sinks at most half the plinth (`plinth_height`), so the ground does not show through it.
     """
 
     size = contract["size"]
@@ -338,8 +339,29 @@ def placement(points: np.ndarray, kind: str, contract: dict) -> Tuple[float, np.
     if kind == "ship":
         offset[2] = -waterline_height(scaled, contract["waterline"]["width_share"])
     else:
-        offset[2] = size["ground_share"] * size["source"] - low[2]
+        ground = size["ground_share"] * size["source"]
+        if kind in ("building", "landmark") and ground < 0:
+            # vanilla sinks its foundations; a generated model often stands on a thin plinth, which sinks at most halfway
+            ground = max(ground, -0.5 * plinth_height(scaled))
+        offset[2] = ground - low[2]
     return float(scale), offset
+
+
+def plinth_height(points: np.ndarray, share: float = 0.9) -> float:
+    """How tall the base a model stands on is: from its lowest point up to where its footprint first narrows below
+    `share` of the bottom's (a plinth wider than the building on it); the whole height when it never narrows."""
+
+    z0, height = points[:, 2].min(), float(np.ptp(points[:, 2]))
+    edges = np.linspace(z0, z0 + height, 81)
+    widths = _slice_widths(points, 2, 0, edges) * _slice_widths(points, 2, 1, edges)
+    filled = np.nonzero(widths > 0)[0]
+    if not len(filled):
+        return height
+    bottom = widths[filled[0]]
+    for k in filled[1:]:
+        if widths[k] < share * bottom:
+            return float(edges[k] - z0)
+    return height
 
 
 def slice_areas(points: np.ndarray, edges: np.ndarray, cell: float) -> np.ndarray:
@@ -405,7 +427,7 @@ def barrel_cut(points: np.ndarray, cut_z: float, rule: dict) -> dict:
     body = float(np.percentile(widths[widths > 0], 75))
     body_height = float(np.percentile(heights[heights > 0], 75))
     filled = np.nonzero(widths > 0)[0]
-    if len(filled) < 3 or filled[0] > 2:
+    if len(filled) < 3:
         raise ValueError("no barrel found: nothing reaches forward from the turret")
     muzzle_width = float(np.median(widths[filled[:3]]))
     muzzle_height = float(np.median(heights[filled[:3]]))
@@ -634,10 +656,12 @@ _NODE = re.compile(r'node\s*=\s*"?([A-Za-z0-9_]+)"?')
 _ANIMATION = re.compile(r'animation\s*=\s*"?([A-Za-z0-9_]+)"?')
 
 
-def entity_text(reference_text: str, name: str, pdxmesh: str, nodes: Sequence[str], animations: Sequence[str], scale: Optional[float]) -> str:
+def entity_text(reference_text: str, name: str, pdxmesh: str, nodes: Sequence[str], animations: Sequence[str], scale: Optional[float],
+                aliases: Optional[Dict[str, str]] = None) -> str:
     """Vanilla's entity for the kind, renamed onto the model: its states and events stay; an event at a node the
-    model lacks is dropped, a state playing an animation the model lacks plays `idle` (or is dropped when there is
-    none), and the scale is the one the model was sized for."""
+    model lacks is dropped, a state playing a role the kind folds into another (`aliases`, the contract's
+    `role_aliases`) plays that one, a state playing an animation the model lacks plays `idle` (or is dropped when there
+    is none), and the scale is the one the model was sized for."""
 
     nodes, animations = set(nodes), list(animations)
     # The entity's own name is the block's first `name =` (vanilla writes it first; states come after).
@@ -653,6 +677,9 @@ def entity_text(reference_text: str, name: str, pdxmesh: str, nodes: Sequence[st
         if node and node.group(1) not in nodes and line.count("{") == line.count("}"):
             continue
         played = _ANIMATION.search(line)
+        if played and "state" in line and played.group(1) in (aliases or {}):
+            line = line.replace(played.group(0), f'animation = "{aliases[played.group(1)]}"', 1)
+            played = _ANIMATION.search(line)
         if played and "state" in line and played.group(1) not in animations:
             if not animations:
                 continue
@@ -729,12 +756,15 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
             findings.append(("STATIC-RIGID", "error", f"{partial} vertices are shared between bones; every part of a {kind} is rigid (weight 1.0 on one bone), or it bends"))
     low = float(points[:, 2].min())
     if kind == "ship":
-        draft = contract["waterline"]["draft_share"] * target
-        if low < -draft * 1.05 - 1e-4:
+        # the route cuts a hull at vanilla's draft when its keel goes deeper than the draft and 1 % of the length
+        draft = contract["waterline"]["draft_share"] * target + 0.01 * target
+        if low < -draft - 1e-4:
             findings.append(("STATIC-GROUND", "error", f"the keel is {-low:.3f} below the waterline; vanilla ships draw at most {draft:.3f}"))
     else:
         expected = contract["size"]["ground_share"] * target
-        if abs(low - expected) > 0.01 * target:
+        # a building or landmark on a thin plinth sinks less than vanilla's foundations (placement), never above ground
+        sunk_less = kind in ("building", "landmark") and expected - 0.01 * target <= low <= 0.01 * target
+        if abs(low - expected) > 0.01 * target and not sunk_less:
             findings.append(("STATIC-GROUND", "error", f"the lowest point is at {low:.3f}; vanilla {kind}s sit at {expected:.3f}"))
     if contract.get("rigid") and mesh.skinned and anims:
         findings += _part_gaps(mesh, visible, anims, contract, measure)

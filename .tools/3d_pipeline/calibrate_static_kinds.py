@@ -377,6 +377,39 @@ def skeleton_entry(kind: str, measured: List[dict], ref_entry: dict) -> tuple:
     return skeleton, locators
 
 
+def role_aliases(game: Path, clips: dict, bones: List[str]) -> dict:
+    """Roles whose vanilla clips move the kind's own bones the same way (UNIT-ANIM-SAME's measure on the reference,
+    with only the surface those bones carry): the later role is dropped, and the entity plays the earlier one for it.
+
+    The destroyer's attack and defend differ only in a gun turret's turn; on a hull that is one rigid part they are one clip.
+    """
+
+    from lib import pdx_motion
+
+    aliases: Dict[str, str] = {}
+    roles = list(clips)
+    for index, role in enumerate(roles):
+        for earlier in roles[:index]:
+            if earlier in aliases or role in aliases or clips[role]["mesh"] != clips[earlier]["mesh"]:
+                continue
+            mesh = pdx_deform.load_mesh(game / clips[role]["mesh"])
+            dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+            keep = np.isin(dominant, [i for i, name in enumerate(mesh.bones) if name in bones]) & ~mesh.collision
+            if keep.sum() < 3:
+                continue
+            index_of = -np.ones(len(keep), dtype=np.int64)
+            index_of[keep] = np.arange(int(keep.sum()))
+            triangles = index_of[mesh.triangles[keep[mesh.triangles].all(axis=1)]]
+            part = pdx_deform.SkinnedMesh(positions=mesh.positions[keep], triangles=triangles, joints=mesh.joints[keep], weights=mesh.weights[keep],
+                                          bones=mesh.bones, parents=mesh.parents, inverse_bind=mesh.inverse_bind, skinned=mesh.skinned,
+                                          collision=mesh.collision[keep], shape=mesh.shape[keep], normals=mesh.normals[keep])
+            first, second = (pdx_deform.load_anim(game / clips[name]["anim"]) for name in (earlier, role))
+            larger = max(pdx_motion.motion_amount(part, first), pdx_motion.motion_amount(part, second))
+            if larger > 0 and pdx_motion.clip_distance(part, first, second) < pdx_motion.SAME_RATIO * larger:
+                aliases[role] = earlier
+    return aliases
+
+
 def calibrate(game: Path) -> dict:
     definitions = sk.scan_definitions(game)
     turn_limit = json.loads((PIPELINE / "config" / "deformation_calibration.json").read_text(encoding="utf-8"))["groups"]["air_naval"]["turn_per_frame"]["value"]
@@ -407,6 +440,9 @@ def calibrate(game: Path) -> dict:
         budget = max(budget_set, key=lambda e: e["triangles"])
         collision = collision_entry(measured)
         skeleton, locators = skeleton_entry(kind, measured, ref_entry)
+        clips = {role: clip_entry(game, *pair) for role, pair in CLIPS[kind].items()}
+        aliases = role_aliases(game, clips, [bone["name"] for bone in skeleton])
+        clips = {role: clip for role, clip in clips.items() if role not in aliases}
         stats = texture_stats(game, measured)
         stats["texture_size"] = texture_stats(game, budget_set)["texture_size"]
         if stats["gloss_quantiles"] is None and kind == "building":
@@ -434,7 +470,8 @@ def calibrate(game: Path) -> dict:
             "collision": collision,
             "skeleton": {"bones": skeleton, "source": "rest places as shares of the visible box, medians over the models that have the bone"},
             "locators": locators,
-            "clips": {role: clip_entry(game, *pair) for role, pair in CLIPS[kind].items()},
+            "clips": clips,
+            "role_aliases": aliases,
             "parts": PARTS[kind] if skeleton else {},
             "mounts": MOUNTS.get(kind, {}),
             "rigid": {"max_gap_share": GAP_SHARE, "source": "kit rule: half a pixel at game size"} if skeleton else None,

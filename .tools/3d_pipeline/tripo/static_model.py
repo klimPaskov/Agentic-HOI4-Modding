@@ -169,7 +169,7 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
              "}", ""]
     for role, animation in animations.items():
         parts += [sk.animation_text(animation, f"{folder}/{name}/{name}_{role}.anim"), ""]
-    parts.append(sk.entity_text(reference, name, f"{name}_mesh", nodes, roles, entity.get("entity_scale", entity["scale"])))
+    parts.append(sk.entity_text(reference, name, f"{name}_mesh", nodes, roles, entity.get("entity_scale", entity["scale"]), contract.get("role_aliases")))
     return "\n".join(parts) + "\n"
 
 

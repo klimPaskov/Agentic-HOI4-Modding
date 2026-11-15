@@ -232,7 +232,8 @@ class ContractTests(unittest.TestCase):
             if contract["skeleton"]["bones"]:
                 self.assertEqual(contract["skeleton"]["bones"][0]["name"], "root", kind)
         self.assertEqual(set(kinds["vehicle"]["clips"]), {"idle", "move", "attack", "death"})
-        self.assertEqual(set(kinds["ship"]["clips"]), {"idle", "attack", "defend", "death"})
+        self.assertEqual(set(kinds["ship"]["clips"]), {"idle", "attack", "death"})
+        self.assertEqual(kinds["ship"]["role_aliases"], {"defend": "attack"})  # one rigid hull: the two clips are one
         self.assertTrue(kinds["building"]["collision"] and kinds["landmark"]["collision"])
         self.assertLess(kinds["plane"]["spin"]["degrees_per_frame"], 45.0)
 

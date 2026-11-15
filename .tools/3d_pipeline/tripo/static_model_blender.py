@@ -115,8 +115,10 @@ model.data.transform(Matrix.Translation(Vector(offset)) @ Matrix.Scale(scale, 4)
 report["placement"] = {"quarter_turns": turns, "front_from_job": bool(request.get("front")), "scale": round(scale, 6), "offset": [round(float(v), 4) for v in offset]}
 
 measure = contract["size"]["source"]
-if kind == "ship":
-    draft = contract["waterline"]["draft_share"] * measure
+draft = contract["waterline"]["draft_share"] * measure if kind == "ship" else 0.0
+# A hull is cut at vanilla's draft only when its keel goes deeper by more than 1 % of the length: a cut along the keel
+# itself leaves slivers and nothing a player sees.
+if kind == "ship" and float(arrays(model)[0][:, 2].min()) < -draft - 0.01 * measure:
     bm = bmesh.new()
     bm.from_mesh(model.data)
     bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=(0, 0, -draft), plane_no=(0, 0, 1), clear_inner=True)
@@ -128,6 +130,8 @@ if kind == "ship":
 
 # ---- 2. weld and decimate to vanilla's budget ----
 original = arrays(model)
+# The cut planes are found on the full model, before the reduction thins its small parts (a barrel, a blade).
+cut_samples = sk.surface_samples(*original)
 bm = bmesh.new()
 bm.from_mesh(model.data)
 size = float(np.ptp(original[0], axis=0).max())
@@ -155,10 +159,9 @@ report["reduction"] = {"welded_vertices": welded, "from": len(original[1]), "to"
 
 # ---- 3. rigid parts ----
 positions, triangles = arrays(model)
-samples = sk.surface_samples(positions, triangles)
+samples = cut_samples
 low, high = positions.min(axis=0), positions.max(axis=0)
 parts_report = {}
-labels = None  # face index -> part name
 pivots = {}
 cuts = []  # (plane point, plane normal) of each cut, for the caps
 
@@ -215,6 +218,15 @@ if cuts:
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 bm.to_mesh(model.data)
 bm.free()
+# The caps can take the model past the budget: reduce once more (the parts are separate pieces now, so they stay apart).
+if triangle_count(model) > budget:
+    decimate = model.modifiers.new("decimate", "DECIMATE")
+    decimate.decimate_type = "COLLAPSE"
+    decimate.ratio = budget / triangle_count(model) * 0.995
+    decimate.use_collapse_triangulate = True
+    bpy.context.view_layer.objects.active = model
+    bpy.ops.object.modifier_apply(modifier=decimate.name)
+    parts_report["second_reduction"] = triangle_count(model)
 # The parts on the final faces. A face off the cut planes belongs to the region its centre lies in. The parts were
 # split apart, so each is its own set of vertex-connected pieces: a cap (a face on a cut plane) and any piece take the
 # part most of their piece's other faces have, so a cap closes the part it is joined to whichever way it faces.
@@ -283,6 +295,19 @@ while len(model.data.uv_layers) > 1:
 bpy.context.view_layer.objects.active = model
 model.select_set(True)
 bpy.ops.object.shade_smooth_by_angle(angle=math.radians(40))
+# A corner whose shading normal points against its own face shades as a pale facet (UNIT-NORMALS): it takes the
+# face's normal. Folded or very thin parts of a generated mesh leave a few.
+mesh = model.data
+corner = [Vector(c.vector) for c in mesh.corner_normals]
+flipped = 0
+for polygon in mesh.polygons:
+    for index in polygon.loop_indices:
+        if corner[index].dot(polygon.normal) <= 0.0:
+            corner[index] = polygon.normal.copy()
+            flipped += 1
+if flipped:
+    mesh.normals_split_custom_set(corner)
+report["normals_set_to_face"] = flipped
 
 bone_specs = list(contract["skeleton"]["bones"]) + [{"name": b, "parent": "root", "head_share": None} for b in contract.get("extra_bones", [])]
 rig = None
