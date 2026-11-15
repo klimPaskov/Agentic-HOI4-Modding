@@ -361,6 +361,35 @@ Every type gets the six land-unit roles: idle, move, attack, defend, retreat and
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs, a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
+### Tripo quadrupeds and mounts
+
+Tripo's rig is for humanoids. For a `mount` or `quadruped_beast`, export Tripo's plain textured model (not rigged) into the inbox as `<asset>__model.glb`. The intake records it, and `run_pilot.py` rigs and animates it with the kit's quadruped rules (`adapter/quadruped_layout.py`), with no Tripo rig or clips and no credits after the model. The job adds:
+
+```
+"unit_type": "mount", "provider": "tripo", "size_vs_horse": 1.7, "size_vs_horse_reason": "...",
+"tripo": {"load": true},
+"rider": {"folder": "<exported rider unit>", "stem": "<its stem>", "roles": {"move": "idle", "retreat": "idle", "death": "idle"}}
+```
+
+Every number comes from a rule:
+
+| Step | Rule |
+| --- | --- |
+| Size | The mount's back stands `size_vs_horse` times vanilla's horse on the map (the horse's `Saddle_Node` is 3.68 units up there). `size_vs_horse` is the species' withers height over a horse's, stated with its source. The back is measured on the model, so the mesh height follows (`lib/mount_size.py`, report `blender/reports/mount_size.json`) |
+| Rider size | An attached entity's scale multiplies its parent's: vanilla's rifle is 0.73 of the soldier's height on the map only that way. So the rider entity gets the scale that makes it vanilla's rider size, 3.82 units on the map |
+| Facing | The animal's length is its longest horizontal extent, and the end with the higher head faces forward |
+| Legs | A leg's bones take only the skin within 2.2 of the leg's radii of its own line, so a trunk or straps beside a leg never follow it |
+| Load | With `tripo.load`, the load is found by rule (`adapter/quadruped_load.py`). Its deck is the lowest height band with at least half of the most upward-facing flat surface. Its cut is the deck's own underside. The load is everything above the cut joined to the deck's footprint, and outside the footprint only what rises above the deck. It is bound wholly to the Spine and fades into the body over 6% of the body's height |
+| Back | Under a load the back does not bend: Pelvis, Spine and Chest keep still and the legs, neck, head and tail move |
+| Saddle_Node | On the floor of the load (the deck or an upper storey) where a standing rider's column holds the fewest load vertices. The column is the rider's height with a fifth of it as radius. Ties go to the lower floor, then to the floor's centre |
+| Death | The body rolls onto its side only until the load reaches lower than the torso, so a tower never lifts the dead body off the ground |
+| Loops | The charge runs two whole strides, so the attack ends in its first pose |
+| Repairs | `winding`, `bridges`, `holes` and `normals`. Tripo's one skin fuses a hanging tail to a hind leg and the load to the neck, and `bridges` cuts them apart |
+
+The Tripo route's other rules apply as for a humanoid: grounding of every exported frame, the weight smoothing (with the load bone locked) and the stretch checks. `tripo_checks.py` runs quadruped rules instead of the humanoid ones: TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND for the hooves, TRIPO-NOT-DOWN (the torso ends within 5% of the height of the ground), TRIPO-LOAD-BELOW-GROUND and TRIPO-LOAD-STRETCH (more than 0.5% of the load's edges stretch: a plank never bends).
+
+Review a mount with its rider on the node. `review_unit.py` and `tripo/weapon_sheets.py` take `--rider <folder> --rider-stem <stem> --rider-scale <scale> --rider-roles move=idle retreat=idle death=idle` and draw the rider entity on the `Saddle_Node`, playing its mapped clip in each of the mount's clips. The registration names the rider's mesh and entity after the mount, so a foot unit's files can ride without clashing with that unit's own blocks.
+
 ### Check the body before you rig it
 
 The body column names a body preset in `.tools/3d_pipeline/config/body_presets.json`. `measure_body.py` counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It measures the body only, not separate plates, a quiver or a weapon. It fails a model with pieces floating apart from the body, so you drop them before paying for the rig. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles, which is rigged and animated live in Blender. It reads files only.

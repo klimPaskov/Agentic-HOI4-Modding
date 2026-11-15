@@ -26,7 +26,7 @@ from pathlib import Path
 import addon_utils
 import bpy
 import numpy as np
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 out = Path(request["out"])
@@ -53,13 +53,58 @@ for o in scene.objects:
     if o.type == "MESH" and o not in meshes:
         o.hide_render = True
 
+# A mount's rider (`attach`): the rider entity's mesh, drawn on the mount's node at the rider entity's scale, playing its own clip per
+# mount clip. io_pdx_mesh finds the armature to animate by bone name, and the two rigs can share names (Spine, Head), so while one rig's
+# clip is imported the other rig's armature data is swapped for an empty one.
+ATTACH = request.get("attach") or {}
+rider_rig = None
+_empty_armature = bpy.data.armatures.new("review_empty")
+if ATTACH:
+    before = set(scene.objects)
+    bpy.ops.io_pdx_mesh.import_mesh(filepath=ATTACH["mesh"], chk_locs=True)
+    added = [o for o in scene.objects if o not in before]
+    rider_rig = next((o for o in added if o.type == "ARMATURE"), None)
+    for o in added:
+        if o.type == "MESH":
+            if is_collision(o):
+                o.hide_render = True
+            else:
+                o["hoi4_rider"] = True
+                meshes.append(o)
+    if rig is not None and rider_rig is not None and ATTACH.get("node") in rig.data.bones:
+        node = rig.data.bones[ATTACH["node"]]
+        original = rider_rig.matrix_world.copy()
+        rider_rig.parent = rig
+        rider_rig.parent_type = "BONE"
+        rider_rig.parent_bone = node.name
+        rider_rig.matrix_parent_inverse.identity()
+        # A bone child sits at the bone's tail; one bone length back along the bone puts it on the node's head.
+        rider_rig.matrix_basis = Matrix.Translation((0.0, -node.length, 0.0)) @ Matrix.Diagonal((ATTACH["scale"],) * 3 + (1.0,)) @ original
+
+
+def import_clip(target, path):
+    """Import one .anim onto `target` (the mount's or the rider's rig), the other rig hidden from io_pdx_mesh's bone-name lookup."""
+
+    other = rider_rig if target is rig else rig
+    saved = other.data if other is not None else None
+    if other is not None:
+        other.data = _empty_armature
+    try:
+        target.animation_data_create()
+        target.animation_data.action = bpy.data.actions.new(Path(path).stem)
+        bpy.ops.io_pdx_mesh.import_anim(filepath=path, int_start=1)
+    finally:
+        if other is not None:
+            other.data = saved
+
 # A `.mesh` usually names no texture: the `.gfx` meshsettings do. Give each shape its diffuse map
 # as the active image node, which Workbench's texture colour mode draws.
 images = {}
 for o in meshes:
     # Imported objects are named after their shape, with a ".001"-style or "-001" suffix when repeated.
-    shapes = [shape for shape in request["diffuse"] if shape != "*" and o.name.startswith(shape)]
-    path = request["diffuse"][max(shapes, key=len)] if shapes else request["diffuse"].get("*")
+    maps = ATTACH["diffuse"] if o.get("hoi4_rider") else request["diffuse"]
+    shapes = [shape for shape in maps if shape != "*" and o.name.startswith(shape)]
+    path = maps[max(shapes, key=len)] if shapes else maps.get("*")
     if not path:
         continue
     if path not in images:
@@ -79,10 +124,12 @@ if PBR:
     # (roughness = 1 - glossiness). Workbench cannot read a texture for these, so this mode renders with EEVEE.
     spec_images = {}
     for o in meshes:
-        shapes = [shape for shape in request["diffuse"] if shape != "*" and o.name.startswith(shape)]
+        maps = ATTACH["diffuse"] if o.get("hoi4_rider") else request["diffuse"]
+        speculars = ATTACH.get("specular", {}) if o.get("hoi4_rider") else request.get("specular", {})
+        shapes = [shape for shape in maps if shape != "*" and o.name.startswith(shape)]
         key = max(shapes, key=len) if shapes else "*"
-        spec_path = request.get("specular", {}).get(key) or request.get("specular", {}).get("*")
-        diffuse_path = request["diffuse"].get(key) or request["diffuse"].get("*")
+        spec_path = speculars.get(key) or speculars.get("*")
+        diffuse_path = maps.get(key) or maps.get("*")
         if not diffuse_path:
             continue
         if spec_path and spec_path not in spec_images:
@@ -353,8 +400,9 @@ if request.get("diagnostic_views"):
 for clip in request["clips"]:
     if rig is None:
         break
-    rig.animation_data.action = bpy.data.actions.new(clip["name"])
-    bpy.ops.io_pdx_mesh.import_anim(filepath=clip["path"], int_start=1)
+    import_clip(rig, clip["path"])
+    if rider_rig is not None and ATTACH.get("clips", {}).get(clip["name"]):
+        import_clip(rider_rig, ATTACH["clips"][clip["name"]])
     # `.anim` sample k plays at Blender frame k + 1.
     render(clip["name"], [frame + 1 for frame in clip["frames"]])
     if request.get("diagnostic_views") and clip.get("diagnostic_frames"):
