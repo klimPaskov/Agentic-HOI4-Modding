@@ -215,26 +215,50 @@ if cuts:
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 bm.to_mesh(model.data)
 bm.free()
-# Recompute parts on the final faces: a face's part is the one of the region its centre lies in.
+# The parts on the final faces. A face off the cut planes belongs to the region its centre lies in. The parts were
+# split apart, so each is its own set of vertex-connected pieces: a cap (a face on a cut plane) and any piece take the
+# part most of their piece's other faces have, so a cap closes the part it is joined to whichever way it faces.
 bm = bmesh.new()
 bm.from_mesh(model.data)
+
+
+def region(c):
+    if kind == "vehicle":
+        if c.z <= parts_report["turret_cut"]["cut_z"]:
+            return "body"
+        return "barrel" if c.y < parts_report["barrel_cut"]["cut_y"] else "turret"
+    if kind == "plane":
+        return "propeller" if c.y < parts_report["propeller_cut"]["cut_y"] else "body"
+    return "body"
+
+
+def on_cut_plane(face):
+    c = centre(face)
+    return any(abs((c - co).dot(no)) < 1e-4 * size and abs(face.normal.dot(no)) > 0.99 for co, no in cuts)
+
+
+parent = list(range(len(bm.verts)))
+
+
+def find(i):
+    while parent[i] != i:
+        parent[i] = parent[parent[i]]
+        i = parent[i]
+    return i
+
+
+for face in bm.faces:
+    first = face.verts[0].index
+    for v in face.verts[1:]:
+        parent[find(v.index)] = find(first)
+votes = {}
+for face in bm.faces:
+    if not on_cut_plane(face):
+        votes.setdefault(find(face.verts[0].index), []).append(region(centre(face)))
 face_part = []
 for face in bm.faces:
-    c = centre(face)
-    if kind == "vehicle":
-        part = "body" if c.z <= parts_report["turret_cut"]["cut_z"] + 1e-6 * size else ("barrel" if c.y < parts_report["barrel_cut"]["cut_y"] - 1e-6 * size else "turret")
-        # a cap lies on its cut plane: it belongs to the part on its outward side's opposite (the part it closes)
-        if abs(c.z - parts_report["turret_cut"]["cut_z"]) < 1e-4 * size:
-            part = "body" if face.normal.z > 0 else "turret"
-        elif abs(c.y - parts_report["barrel_cut"]["cut_y"]) < 1e-4 * size and c.z > parts_report["turret_cut"]["cut_z"]:
-            part = "turret" if face.normal.y < 0 else "barrel"
-    elif kind == "plane":
-        part = "propeller" if c.y < parts_report["propeller_cut"]["cut_y"] - 1e-6 * size else "body"
-        if abs(c.y - parts_report["propeller_cut"]["cut_y"]) < 1e-4 * size:
-            part = "body" if face.normal.y < 0 else "propeller"
-    else:
-        part = "body"
-    face_part.append(part)
+    piece = votes.get(find(face.verts[0].index))
+    face_part.append(max(set(piece), key=piece.count) if piece else region(centre(face)))
 vertex_part = {}
 for face, part in zip(bm.faces, face_part):
     for v in face.verts:

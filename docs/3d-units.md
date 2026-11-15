@@ -472,9 +472,51 @@ The kit's helpers in `.tools/3d_pipeline/authoring/live_helpers.py` turn, place,
 
 The agent's guide is the skill's [live authoring reference](../.claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md), including vehicles (wheel pivots, fused rigid parts, turret traverse). The result goes through the same checks and the same review as any other unit.
 
+## Static and rigid-part models
+
+Buildings, landmarks, ships, tanks and planes have their own route. Tripo makes a plain textured model (no rig and no clips, 30 credits: HD Model, PBR on, 20,000 triangles, Generate in Parts off). One free script turns it into HOI4 files, and a second renders the review sheets:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/static_model.py <inbox>/<name>.json --out <job folder>
+py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <job folder>/mod/gfx/models/<folder>/<name> --model-kind <kind> --out <job folder>/review
+```
+
+The job file holds `name` and `model_kind`: `building`, `landmark`, `ship`, `vehicle` (a tank) or `plane`. The GLB is `<name>.glb` next to it. Add `--plan` to see what the stage would do, without Blender. The script writes a small mod tree under `<job folder>/mod`: the `.mesh`, one `.anim` per role and the three DXT5 textures under `gfx/models/<folder>/<name>/`, and `gfx/entities/<name>.asset` with the `pdxmesh`, the `animation` blocks and the entity. Then it runs the checks below and prints a verdict.
+
+Every number comes from vanilla files. `calibrate_static_kinds.py` measures them and writes `config/static_kinds.json`, each with the files it came from. Run it again after a game update. The role clips are read from the installed game when a model is made.
+
+| Kind | Size | Parts and bones | Clips |
+| --- | --- | --- | --- |
+| `building` | the footprint of vanilla's four facilities, entity scale 0.6 | one static shape, no bones, a `Collision` box, the `lamp` locator | none |
+| `landmark` | the largest side of 19 vanilla landmarks | all on `root`, a `Collision` box | none |
+| `ship` | a destroyer's length, the waterline at zero, the hull cut at vanilla's draft | vanilla's two-bone contract: all on `ship` under `root`, the destroyer's locators | the destroyer's idle, attack, defend and death |
+| `vehicle` | the length of nine vanilla light tanks | hull on `chassie`, turret on `turret`, barrel on `barrel_tip`, vanilla's bone names, a `Collision` box, the `barrel`, `exhaust` and track locators | a light tank's idle, move and attack, a heavy tank's death |
+| `plane` | the wingspan of twelve vanilla light planes | body on `root`, propeller on `propeller` | the fighter idle, with the propeller spinning |
+
+What the stage does, in order:
+
+- **Facing.** The model is turned so its front faces -y, as vanilla's do. A tank's front is where its turret reaches further (the barrel), a ship's bow is its narrower end, a plane's nose is the end nearer the wing. Set `front` in the job file when a rule gets it wrong.
+- **Size and place.** Scaled to the kind's vanilla size at the reference entity's scale, centred and grounded where vanilla's are. A ship's waterline is where its hull reaches 95 % of its beam, as on vanilla hulls.
+- **Triangles and textures.** Reduced to the triangle budget and texture size of the most detailed vanilla model of the kind. The silhouettes are compared before and after, and a reduction that changes the outline fails the stage (STATIC-SHAPE). The maps are packed for `PdxMeshAdvanced`: the normal map as RRxG, the gloss remapped onto the distribution of the kind's vanilla specular maps, the specular level vanilla's.
+- **Rigid parts.** A tank's turret starts above the largest step in the plan area of its height slices, where the slices above are turret-sized. On vanilla's own light tanks this rule puts 92 to 100 % of the surface where their skinning does. The barrel is the thin run in front of the turret. A plane's propeller is the blade disc at the nose. Each part is split off with its own vertices, and each cut is closed with a cap in the colours around it, so a turning turret shows no hole.
+- **Clips.** Each role plays vanilla's clip of the kind, moved onto the model's own pivots and scaled to its size: the barrel recoils by the share of its own length vanilla's does. A tank's turret also turns 21.7 degrees (vanilla's idle traverse) before the shot and back after it. A propeller turns 36 degrees a frame over whole turns, so the loop does not jump.
+- **Mod text.** The entity is vanilla's entity for the kind, renamed. An event at a node the model lacks is dropped, and a state playing an animation the model lacks plays `idle`.
+
+The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rules with the kind's roles and its group's limits (`vehicle` for tanks, buildings and landmarks, `air_naval` for ships and planes), plus these:
+
+| Rule | Check |
+| --- | --- |
+| STATIC-SIZE, STATIC-GROUND | The size and the ground (a ship's waterline and draft) are vanilla's |
+| STATIC-TRIANGLES, STATIC-SHADER | Within the kind's budget, with its shader |
+| STATIC-BONES, STATIC-LOCATORS, STATIC-COLLISION | The bones, locators and 8-vertex `Collision` box vanilla's entity and clips use |
+| STATIC-RIGID | Every rendered vertex follows one bone wholly, so no part bends |
+| STATIC-PART-GAP | No part lifts off the part it is mounted on in any frame, deaths excepted |
+
+`static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), and a game-size sheet: the model and the vanilla model it is sized after, side by side, at the pixels a metre a vanilla soldier gets on the map. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
+
 ## Other model kinds
 
-Units are the tested route. For other models, only the parts below have been proven, each on one model, outside the unit scripts.
+The notes below come from models made by hand before the [static route](#static-and-rigid-part-models). They still hold for a model made outside it.
 
 **Buildings and landmarks (proven on one model).**
 
@@ -491,8 +533,6 @@ Units are the tested route. For other models, only the parts below have been pro
 - Bake ambient occlusion with 128 samples. 16 leaves speckles along thin painted bands.
 - A sail can be a thin closed loft with its emblem drawn in the material from the object's coordinates. It bakes crisp at 1024 with no hand UV and shows from both sides without relying on culling.
 
-**Planes.** Not yet covered.
-
 **Textures for any 3D model.** Use DXT5 with a full mip chain. The 2D image tool (`convert_to_dds.py`) writes uncompressed BGRA with one mip level, which suits interface images but not models. Put the `.dds` files in the model's folder and run `check_unit_files.py <folder> --repair-textures`, which rewrites them as DXT5 with mips and clears a normal map's blue channel.
 
 
@@ -504,7 +544,7 @@ Units are the tested route. For other models, only the parts below have been pro
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
 - **A weapon sinking in a death clip.** No free repair lifts a held prop out of the ground yet. Run `fit_prop.py` again (a higher `--ground-weight`, such as 40 instead of 10, cleared it on one unit), or turn the wrist live in Blender.
 - **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect to look for another preset, and sometimes a small live fix.
-- **Planes** are not covered.
+- **Tank tracks and wheels** do not move: a Tripo tank is one piece, and the route splits off only the turret and the barrel. Vanilla scrolls its track texture and turns its wheels.
 - **UNIT-PROP-CLIP** reads a point behind an open, one-sided sheet such as a cape as inside the body. Look at the named frames before changing a clip.
 - **Review rounds** converge only with fixed notes and scoped rounds. Without them each fresh reviewer raises new minor items.
 - **Small looks at game size.** At the map camera a unit is a few dozen pixels tall. A pale face or a torn hem is lost there. Judge fidelity on the close sheets and readability on the game-size sheet.

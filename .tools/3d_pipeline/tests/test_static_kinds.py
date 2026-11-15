@@ -251,6 +251,22 @@ class ContractTests(unittest.TestCase):
             judged = upper | (labels == "chassie")
             self.assertGreater(float(((points[:, 2] >= cut) == upper)[judged].mean()), 0.9, rel)
 
+    @unittest.skipUnless((GAME / "gfx/entities").is_dir(), "the game is not installed here")
+    def test_every_kind_gets_a_parsable_entity_from_vanilla(self):
+        definitions = sk.scan_definitions(GAME, ("gfx/entities",))
+        for kind, contract in sk.load_kinds().items():
+            reference = definitions["entity"][contract["entity"]["reference"]]["text"]
+            nodes = [loc["name"] for loc in contract["locators"]] + [bone["name"] for bone in contract["skeleton"]["bones"]]
+            text = sk.entity_text(reference, "x", "x_mesh", nodes, list(contract["clips"]), contract["entity"]["entity_scale"])
+            items = sk.parse_script(text)
+            self.assertEqual(items[0][0], "entity", kind)
+            self.assertEqual(sk.scalar(items[0][1], "name"), "x_entity", kind)
+            self.assertEqual(text.count("{"), text.count("}"), kind)
+            for name, value, _span in items[0][1]:
+                if name == "state":
+                    played = sk.scalar(value, "animation")
+                    self.assertTrue(played is None or played in contract["clips"], (kind, played))
+
     @unittest.skipUnless((GAME / "gfx/models/units/tanks").is_dir(), "the game is not installed here")
     def test_kind_rules_fire_on_an_unscaled_vanilla_tank(self):
         findings = sk.kind_findings(GAME / "gfx/models/units/tanks/GER_tank_light.mesh", sk.kind_contract("vehicle"))
