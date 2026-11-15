@@ -714,7 +714,7 @@ def verify_installation(prefix: Path) -> Path:
     tree_digest, file_count = package_tree_sha256(package_root)
     evidence = platform_evidence()
     if tree_digest != evidence["package_tree_sha256"] or file_count != evidence["package_file_count"]:
-        raise BootstrapError("The installed MCP package tree does not match the reviewed release.")
+        raise BootstrapError(f"The installed MCP package tree does not match the reviewed release. DEBUG measured {tree_digest} {file_count} expected {evidence['package_tree_sha256']} {evidence['package_file_count']}")
     entry = package_root / RUNTIME_ENTRY
     if not entry.is_file() or entry.stat().st_size != RUNTIME_ENTRY_SIZE:
         raise BootstrapError("The installed MCP runtime entry has the wrong size.")
