@@ -24,6 +24,9 @@ Repairs:
   skin, which `bridges` keeps) and each leg seam (a crotch whose vertices follow one thigh each,
   UNIT-SEAM) over a few edge rings, then keep at most four influences per vertex and normalize.
   No weight is created for a bone a vertex was not already near.
+- `stretch`: smooth the weights where the unit's own clips stretch or squash edges (`lib/stretch_smooth.py`),
+  at the strength that lowers that most without making any clip worse. Runs without Blender, before
+  `ground`. `--locked-bones` keeps a held weapon rigid.
 
 The report `<out>/repair_report.json` lists what each repair changed and the rules before and after.
 """
@@ -37,13 +40,14 @@ import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import List, Optional
+from dataclasses import asdict
+from typing import List, Optional, Sequence
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import check_unit_files
-from lib import pdx_deform, pdx_ground, pdx_motion, stage_verdict
+from lib import pdx_deform, pdx_ground, pdx_motion, stage_verdict, stretch_smooth
 from review_unit import find_blender
 
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
@@ -51,7 +55,7 @@ BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
 SEAM_RINGS = 3
 SEAM_PASSES = 4
 MESH_REPAIRS = ("winding", "bridges", "holes", "weights", "normals")
-REPAIRS = MESH_REPAIRS + ("ground",)
+REPAIRS = MESH_REPAIRS + ("stretch", "ground")
 
 
 def ordered(repairs: List[str]) -> List[str]:
@@ -90,7 +94,8 @@ def leg_seam_pairs(mesh: Path) -> List[List[str]]:
     return [pair.split("-", 1) for pair in report.pairs]
 
 
-def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max_hole_edges: int, unit_type: Optional[dict]) -> dict:
+def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max_hole_edges: int, unit_type: Optional[dict],
+           locked_bones: Sequence[str] = ()) -> dict:
     meshes = sorted(folder.glob("*.mesh"))
     mesh = next((m for m in meshes if m.stem == stem), meshes[0] if meshes else None)
     if mesh is None:
@@ -127,11 +132,16 @@ def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max
         if "REPAIR_DONE" not in completed.stdout:
             raise SystemExit(f"Blender did not finish the repair; see {out / 'blender.log'}")
         blender_report = json.loads((out / "blender_report.json").read_text(encoding="utf-8"))
+    stretch = {}
+    if "stretch" in repairs:
+        clips = [anim for anim in sorted(files.glob("*.anim")) if anim.stem.startswith(mesh.stem + "_")]
+        stretch = asdict(stretch_smooth.smooth(files / mesh.name, clips, files / mesh.name, locked_bones=locked_bones))
     grounding = ground_clips(files, files / mesh.name, stem, [m.stem for m in meshes]) if "ground" in repairs else {}
     report = {
         "unit": mesh.stem,
         "repairs": repairs,
         "blender": blender_report,
+        "stretch": stretch,
         "ground": grounding,
         "rules_before": rule_counts(folder, stem, unit_type),
         "rules_after": rule_counts(files, stem, unit_type),
@@ -148,10 +158,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--stem", help="repair only <stem>.mesh in a folder shared with another unit")
     parser.add_argument("--unit-type", help="a type from config/unit_types.json, for the checks' group and rider rule")
     parser.add_argument("--max-hole-edges", type=int, default=16)
+    parser.add_argument("--locked-bones", nargs="*", default=[], help="bones the `stretch` repair never smooths into or out of (a held weapon)")
     args = parser.parse_args(argv)
     unit_type = check_unit_files.load_unit_types().get(args.unit_type) if args.unit_type else None
     args.out.mkdir(parents=True, exist_ok=True)
-    report = repair(args.folder, args.out, args.repairs, args.stem, args.max_hole_edges, unit_type)
+    report = repair(args.folder, args.out, args.repairs, args.stem, args.max_hole_edges, unit_type, args.locked_bones)
     after = set(report["rules_after"])
     files = (args.out / "files").as_posix()
     out = args.out.as_posix()

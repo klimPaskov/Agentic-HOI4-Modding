@@ -11,6 +11,12 @@ rest, holding its last pose. In the game that reads as a unit that chops and the
 - It applies to the roles of `DEFAULT_ROLES` (attack, defend, retreat). Never to idle, move or death: an idle or a walk is a loop and a death
   holds its lying pose on purpose. A job's own `tripo.trim` entry for a role wins (`tripo_intake.prepare_command`).
 
+A trimmed or not, an action clip is looped by the game, so it must also END in its first frame's pose (`settle_frames`): after the trim,
+`prepare_tripo_unit.py` appends frames that blend every bone from the last pose back to frame 1. Their number comes from the clip's own motion:
+the largest bone turn between the two poses, spread so that no bone turns faster than the clip's own fast motion (its `PEAK_PERCENTILE`th
+percentile of the fastest bone's turn per frame) and never faster than `SETTLE_MAX_RATE`, with the smoothstep's peak speed 1.5 times its mean.
+A clip that already ends within `SETTLE_TOLERANCE_DEGREES` of its start gets no frames. `TRIPO-LOOP-POP` (lib/tripo_pose.py) checks the result.
+
 `tripo_intake.py` calls `auto_trims` on the rigged export and passes the result to `prepare_tripo_unit.py --trim-end`.
 """
 
@@ -30,6 +36,13 @@ FLOOR_SHARE = 0.05
 SETTLE_SECONDS = 0.5
 MIN_SAVED_SHARE = 0.2
 MIN_KEEP_SECONDS = 1.0
+# The settle back to frame 1 (see the module text). Roles are the action clips; idle and move are loops by their own cycle, death ends lying.
+SETTLE_ROLES = ("attack", "defend", "retreat")
+SETTLE_TOLERANCE_DEGREES = 1.0
+SETTLE_MAX_RATE = 10.5  # degrees a source frame: 0.75 of the 14 degree easing trigger, far under the kit's 37 degrees at 30 fps
+SETTLE_PEAK_SMOOTHSTEP = 1.5
+SETTLE_MIN_FRAMES = 4
+SETTLE_MAX_FRAMES = 48
 
 
 def smooth(values: np.ndarray, width: int = SMOOTH_FRAMES) -> np.ndarray:
@@ -132,3 +145,30 @@ def auto_trims(glb: Path, roles: Dict[str, str], explicit: Sequence[str] = (), a
         if result:
             out[role] = {**result, "clip": name}
     return out
+
+
+def settle_rate(motion: Sequence[float]) -> float:
+    """The fastest a bone may turn in the settle (degrees a frame): the clip's own fast motion, never above `SETTLE_MAX_RATE`.
+
+    `motion` is the fastest single bone's turn at each frame step of the clip (a bone, not the sum over bones)."""
+
+    motion = np.asarray(motion, float)
+    own = float(np.percentile(smooth(motion), PEAK_PERCENTILE)) if len(motion) else 0.0
+    return float(min(SETTLE_MAX_RATE, max(own, 1.0)))
+
+
+def settle_frames(max_turn_degrees: float, rate: float = SETTLE_MAX_RATE) -> int:
+    """How many frames carry the last pose back to the first: 0 when they already match, else enough that the smoothstep's
+    fastest step (1.5 times the mean) stays within `rate`."""
+
+    if max_turn_degrees <= SETTLE_TOLERANCE_DEGREES:
+        return 0
+    frames = int(np.ceil(SETTLE_PEAK_SMOOTHSTEP * max_turn_degrees / max(rate, 1e-6)))
+    return int(min(SETTLE_MAX_FRAMES, max(SETTLE_MIN_FRAMES, frames)))
+
+
+def settle_weights(frames: int) -> np.ndarray:
+    """Blend weights toward frame 1 for the `frames` appended frames: smoothstep, ending at exactly 1."""
+
+    t = np.arange(1, frames + 1) / max(frames, 1)
+    return t * t * (3.0 - 2.0 * t)

@@ -208,6 +208,10 @@ The intake and the Blender stage apply these to every Tripo job without a settin
 | Maps resized one channel at a time | The packed specular map keeps its channels apart | Resizing them together blended gloss into colour |
 | Snap easing, 14 degrees a frame (`tripo.ease_snaps`, `false` to switch it off) | Spreads a joint's sudden turn over the frames around it | Tripo's clips snap a joint in one frame, which reads as a twitch |
 | Arm level for an unarmed attack (`tripo.arm_level`, target `tripo.arm_level_target` 0.85) | Turns both upper arms by a constant angle so the hands reach forward at about shoulder height | Tripo's text-to-motion attacks hold the hands above the head and hide it. Set `"arm_level": []` to switch it off |
+| Settle to the first pose for attack, defend and retreat (`tripo.settle`, `false` or a shorter list to limit it) | Appends frames that blend every bone from the clip's last pose back to frame 1, over a length its own motion sets (no bone turns faster than the clip's fast motion, at most 10.5 degrees a frame) | The game loops these clips. An attack that ended with the axe low across the hips began upright beside the body and popped back by 119 degrees |
+| Per-frame grounding of the exported clips (every Tripo job) | After the mesh repairs, puts the lowest point of every frame on the ground (a death is only lifted), the weapon the unit let go of never deciding where it is | Blender grounds the clips at 24 frames a second and the export resamples at 30, so a toe dipped under the ground between keys (the orc's move 0.17%, its retreat 0.55%) |
+| Legs of a death (every Tripo job) | When the boots hang above the ground at the end of a death, straightens both knees toward the rest pose by the smallest share that brings the boots to the ground, ramped in once the body has come down | The orc lay with both lower legs bent up and the boots 5.6% of its height in the air. Vanilla's boots stay on the ground |
+| Weights smoothed where the clips stretch (every Tripo job, `tripo.smooth_weights` `false` to switch it off) | On the exported mesh, finds the edges every clip stretches or squashes by the kit's own measure, smooths the weights of their vertices and two rings around them, and keeps the strength that lowers the deformed edges most while no clip gets worse. A held weapon and the cloak and wing chains are locked | Tripo's weights have hard borders. The zombie's armpits and back swelled and its waist stretched, and the leg-seam repair changed nothing. The rule cut the zombie's deformed edges by 18% and the orc's by 22% |
 
 Review sheets render from the packed material the game uses, so what you see on the sheet is what the map shows.
 
@@ -265,6 +269,9 @@ Tested in November 2026: on an orc the plates stopped bending (0% stretch) and t
 | Rule | Fails when |
 | --- | --- |
 | TRIPO-HANDS-HIGH | In an unarmed unit's attack a hand is above the head in more than 20% of frames, or above the shoulders in more than 80% |
+| TRIPO-LOOP-POP | The last frame of an idle, move, attack, defend or retreat clip is more than 8 degrees from its first at some joint. Vanilla's role clips measure 0.0 to 6.3, the orc's attack measured 119 |
+| TRIPO-FOOT-BELOW-GROUND | A foot or toe sinks more than 0.1% of the height under the ground in a clip that is not a death. `UNIT-ANIM-GROUND` reads the toes too, but its limit is vanilla's worst clip of all (4.2%, a push-up), and vanilla's own role clips sink at most 0.9% |
+| TRIPO-DEATH-FEET | In the last 15 frames of a death the boots hang more than 1% of the height above the ground. Vanilla's deaths end within 0.6% |
 | TRIPO-NOT-DOWN | A death clip does not end lying down, on the front or the back |
 | TRIPO-LIMB-IN-TORSO | In a death clip an arm or a leg passes deep into the torso (limit set from vanilla's infantry deaths) |
 | TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job with `"cape": true` (read through `--jobs-config` and `--slug`), or with `--cape` |
@@ -448,6 +455,7 @@ The checks pass anything within vanilla's limits, so a reviewer can still see de
 | --- | --- |
 | A hole (magenta, red on `holes_worst.png`, or a cyan rim on the diagnostics sheet) | `repair_unit.py ... --repairs winding holes --max-hole-edges 32`, then check the copy. Holes left after that need faces rebuilt in Blender, or a new model |
 | Surface that tears or smears where two body parts meet, red on the diagnostics sheet in every clip | `repair_unit.py ... --repairs bridges weights` |
+| Skin that swells or stretches at a joint in the clips, red on the diagnostics sheet around armpits, waist or hips | `repair_unit.py ... --repairs stretch` (add `--locked-bones <weapon bone>` for a held weapon) |
 | A foot above or below the ground | `repair_unit.py ... --repairs ground` |
 | The weapon through the head or body | `fit_prop.py` again on the same copy, first with a shorter `--length` such as 0.4, then another `--grip` between 0.1 and 0.3. A two-handed hold is made live |
 | A part that tears or crushes only in some clips (a death or an attack that twists the torso hard), or a clip that does not read as its role | No script fixes the motion itself. Find another preset or tool for those clips, or ask before paying for others. Keying them by hand in Blender is the last resort, with the reason recorded |

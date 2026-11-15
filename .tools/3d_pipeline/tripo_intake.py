@@ -29,6 +29,7 @@ judge that bone's part for drifting. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
+`settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
 it per role by fixed rules (`tripo/chain_stage.py`, `lib/tripo_chains.py`), so a cloak no longer follows the thighs and wings no longer follow the arms.
@@ -134,6 +135,11 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
             command += ["--trim-end", f"{role}={found['keep_frames']}"]
             print(f"auto trim: {role} ({found['clip'][:40]}) {found['from_frames']} -> {found['keep_frames']} frames, still from frame {found['still_from_frame']} "
                   f"(floor {found['floor_degrees']} degrees a frame, 5% of its peak {found['peak_degrees']})", file=sys.stderr)
+    # The game loops an action clip, so it must end in its first frame's pose (lib/tripo_trim.settle_frames): `settle` lists the roles ([] or false to switch it off).
+    settled = config.get("settle", list(tripo_trim.SETTLE_ROLES))
+    settled = [role for role in tripo_trim.SETTLE_ROLES if role in wanted and settled and (settled is True or role in settled)]
+    if settled:
+        command += ["--settle", *settled]
     # An unarmed unit's attack clip gets the arm-level rule (lib/tripo_arms.py): Tripo's text-to-motion attacks hold the hands over the head and
     # hide it. `arm_level` lists the roles ([] or false to switch it off); the default is the attack of a job with no weapon.
     levelled = config.get("arm_level", [] if config.get("weapon") else ["attack"])

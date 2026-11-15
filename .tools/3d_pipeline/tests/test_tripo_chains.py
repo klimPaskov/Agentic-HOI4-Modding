@@ -643,5 +643,49 @@ class WingChecks(unittest.TestCase):
         self.assertEqual(TC.idle_move_findings({"u_idle": {"wings": self.row()}}), [])
 
 
+class RoundFourRules(unittest.TestCase):
+    """The rules added in round 4: limb weights given to the torso, the arm's room, the collar, the lying share and the wing's leading edge."""
+
+    def test_loosening_moves_a_limbs_share_to_its_torso_bone_and_keeps_the_sum(self) -> None:
+        row = C.loosen_row({"RightUpLeg": 0.6, "LeftForeArm": 0.2, "Spine": 0.2}, 0.5)
+        self.assertAlmostEqual(row["RightUpLeg"], 0.3)
+        self.assertAlmostEqual(row["Hips"], 0.3)
+        self.assertAlmostEqual(row["LeftForeArm"], 0.1)
+        self.assertAlmostEqual(row[C.CHAIN_PARENT], 0.1)
+        self.assertAlmostEqual(sum(row.values()), 1.0)
+        self.assertEqual(C.loosen_row({"RightUpLeg": 1.0}, 0.0), {"RightUpLeg": 1.0})
+
+    def test_an_arms_room_holds_every_point_near_any_pose_it_takes(self) -> None:
+        points = np.array([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [3.0, 3.0, 3.0]])
+        segments = np.array([[[0.0, 0.0, 0.1], [1.0, 0.0, 0.1]], [[0.0, 0.0, 0.1], [0.0, 1.0, 0.1]]])
+        room = C.arm_room(points, [(segments, 0.1)])
+        self.assertEqual(room.tolist(), [True, True, True, False])
+
+    def test_the_collar_is_what_lies_above_the_lower_shoulder(self) -> None:
+        points = np.array([[0.0, 0.0, 1.4], [0.0, 0.0, 1.6]])
+        self.assertEqual(C.collar_zone(points, UP, 1.5).tolist(), [False, True])
+
+    def test_the_lying_share_runs_from_upright_to_flat(self) -> None:
+        hips = np.zeros((3, 3))
+        spine = np.array([[0.0, 0.0, 1.0], [0.0, 0.866, 0.5], [0.0, 1.0, 0.0]])  # upright, 60 degrees down, flat
+        share = C.lying_share(hips, spine, UP)
+        self.assertAlmostEqual(float(share[0]), 0.0)
+        self.assertAlmostEqual(float(share[2]), 1.0)
+        self.assertTrue(0.0 < float(share[1]) < 1.0)
+
+    def test_the_wing_arm_chain_sits_on_the_leading_edge_and_takes_its_band_whole(self) -> None:
+        u = np.linspace(0.0, 1.0, 101)
+        s = np.ones_like(u)
+        chain_u, lead = C.leading_edge_angles(u, s, np.array([0.1, 0.4, 0.7]))
+        self.assertEqual(lead, 2)
+        self.assertGreater(chain_u[lead], 0.7)
+        band = C.ridge_band(u, chain_u, lead)
+        self.assertAlmostEqual(band, C.RIDGE_BAND_SHARE * (chain_u[lead] - 0.4))
+        stations = np.array([[0.0, 0.5, 1.0]] * 3)
+        rows = C.sheet_weights(np.array([chain_u[lead] - 0.5 * band]), np.array([0.5]), chain_u, stations, ridge=lead, ridge_halfwidth=band)
+        weight = sum(w for index, w in rows[0].items() if index // 2 == lead)
+        self.assertAlmostEqual(weight, 1.0)
+
+
 if __name__ == "__main__":
     unittest.main()

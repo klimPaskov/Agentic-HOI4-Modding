@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Dict, List
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
@@ -33,6 +33,7 @@ CLOSE_SIZE, CLOSE_SHARE = 512, 1.15
 GAME_SIZE, GAME_HEIGHT_PX = 160, 60
 PBR = True  # shade from the packed specular, as the game does; False is the old Workbench studio light
 LABEL = 20
+CAPTION_BREAK = "|"  # a caption's lines are split here
 
 
 def evenly(frames: int, count: int) -> List[int]:
@@ -87,30 +88,51 @@ def unit_pixels(tile: Image.Image) -> tuple:
 
 
 def sheet(index: dict, tiles: Path, views: List[str], clip_names: List[str], title_of, scale=None) -> Image.Image:
+    """One row per clip: a band with the clip's name, then the tiles, each with a caption under it (frame, then view) in a cell as wide as
+    the tile or its caption, whichever is wider, so no caption runs into its neighbour at any tile size."""
+
     rows = []
     for name in clip_names:
         clip = next(c for c in index["clips"] if c["name"] == name)
         rows.append((name, clip["rows"]))
-    first = Image.open(tiles / rows[0][1][0]["tiles"][views[0]])
-    width, height = first.size
-    per_row = max(len(r[1]) * len(views) for r in rows)
-    image = Image.new("RGB", (width * per_row, (height + LABEL) * len(rows)), (30, 30, 30))
-    draw = ImageDraw.Draw(image)
-    for r, (name, frames) in enumerate(rows):
-        c = 0
+    font = ImageFont.load_default()
+    probe = ImageDraw.Draw(Image.new("RGB", (8, 8)))
+    cells = []  # per row: [(tile image, caption lines)]
+    for name, frames in rows:
+        row = []
         for entry in frames:
             for view in views:
                 tile = Image.open(tiles / entry["tiles"][view]).convert("RGB")
-                image.paste(tile, (c * width, r * (height + LABEL) + LABEL))
-                draw.text((c * width + 4, r * (height + LABEL) + 4), title_of(name, entry["frame"], view), fill=(255, 255, 255))
-                c += 1
+                row.append((tile, title_of(name, entry["frame"], view).split(CAPTION_BREAK)))
+        cells.append(row)
+    pad = 6
+    tile_width = max(tile.width for row in cells for tile, _ in row)
+    tile_height = max(tile.height for row in cells for tile, _ in row)
+    caption_width = max(int(probe.textlength(line, font=font)) for row in cells for _, lines in row for line in lines)
+    cell = max(tile_width, caption_width) + pad
+    lines_per = max(len(lines) for row in cells for _, lines in row)
+    caption_height = lines_per * (LABEL // 2 + 1) + 6
+    band = LABEL
+    row_height = band + tile_height + caption_height
+    per_row = max(len(row) for row in cells)
+    image = Image.new("RGB", (max(cell * per_row, int(probe.textlength(max((n for n, _ in rows), key=len), font=font)) + 2 * pad), row_height * len(rows)), (30, 30, 30))
+    draw = ImageDraw.Draw(image)
+    for r, ((name, _frames), row) in enumerate(zip(rows, cells)):
+        top = r * row_height
+        draw.text((pad, top + 5), name.split("_", 1)[-1] if "_" in name else name, fill=(255, 220, 120), font=font)
+        for c, (tile, lines) in enumerate(row):
+            left = c * cell + (cell - tile.width) // 2
+            image.paste(tile, (left, top + band))
+            for k, line in enumerate(lines):
+                width = int(probe.textlength(line, font=font))
+                draw.text((c * cell + (cell - width) // 2, top + band + tile_height + 2 + k * (LABEL // 2 + 1)), line, fill=(255, 255, 255), font=font)
     return image
 
 
 def close_sheet(folder: Path, out: Path) -> Path:
     index = render_tiles(folder, out, [], 3, ["threequarter"], THREE_QUARTER, CLOSE_SIZE, CLOSE_SHARE)
     names = [c["name"] for c in index["clips"] if c["name"] != "rest"]
-    image = sheet(index, out / "weapon_tiles", ["threequarter"], names, lambda n, f, v: f"{n.split('_', 1)[-1] if '_' in n else n} frame {f}")
+    image = sheet(index, out / "weapon_tiles", ["threequarter"], names, lambda n, f, v: f"frame {f}")
     target = out / "sheets" / "weapon_frames.png"
     target.parent.mkdir(parents=True, exist_ok=True)
     image.save(target)
@@ -131,7 +153,7 @@ def game_sheet(folder: Path, out: Path) -> Path:
             for name in row["tiles"].values():
                 path = tiles / name
                 Image.open(path).convert("RGB").resize((small, small), Image.Resampling.LANCZOS).save(path)
-    image = sheet(index, tiles, ["hoi4", "front"], names, lambda n, f, v: f"{n.split('_', 1)[-1]} {f} {v}")
+    image = sheet(index, tiles, ["hoi4", "front"], names, lambda n, f, v: f"f{f}{CAPTION_BREAK}{v}")
     target = out / "sheets" / "game_size.png"
     target.parent.mkdir(parents=True, exist_ok=True)
     image.save(target)

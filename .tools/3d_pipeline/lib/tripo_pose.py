@@ -1,0 +1,272 @@
+"""Pose checks and one settle for a Tripo unit's exported clips: the loop seam, the feet on the ground, the legs of a death.
+
+No Blender: everything reads the exported `.mesh` and `.anim` with `pdx_deform`, as the game does.
+
+Rules and where each number comes from (vanilla measured on GER infantry, whose clips every western infantry mesh plays, on GER_infantry_alt_0,
+ENG_infantry and GER_infantry_snow, 2026-11-15):
+
+- Loop seam (`loop_seam`, TRIPO-LOOP-POP). HOI4 plays idle, move, attack, defend and retreat in a loop, so the last frame must continue into the
+  first. The seam is the largest turn any skinning joint makes between the first and the last frame. Vanilla's role clips (idle_rifle and _mg,
+  moving, march, charge, attack_stand, retreat) measure 0.0 to 6.3 degrees (idle_rifle 6.3, charge 3.6, attack_stand 3.2, retreat 1.8, march 0.0). The
+  limit is that worst with a quarter added, `LOOP_POSE_LIMIT_DEGREES`. A death is not a loop. The orc's attack measured 118.7 degrees.
+- Feet on the ground (`foot_heights`, TRIPO-FOOT-BELOW-GROUND). `UNIT-ANIM-GROUND` reads every vertex, the toes included, but its sink limit is
+  vanilla's worst over every clip (4.2%, a push-up). Vanilla's own role clips sink at most 0.9% (move 0.66%, charge 0.86%), and the kit grounds
+  Tripo clips per frame to zero, so a Tripo clip is held to `FOOT_SINK_LIMIT`, a tenth of a percent of the height, after the export too. Blender's
+  grounding sees the clip at 24 fps and the export resamples it at 30, so a foot dips between keys: the orc's move sank 0.17% and its retreat 0.55%.
+  `run_pilot.ground_exported_clips` grounds the exported clips per frame by `pdx_ground` with `GROUND_TOLERANCE`, under the check's limit.
+- Death feet (`death_feet_height`, TRIPO-DEATH-FEET). In the last `DEATH_FINAL_FRAMES` frames of vanilla's deaths (death_rifle, death_mg) the lowest foot
+  vertex sits -0.6% to +0.6% of the height above the rest ground (the body sinks into it, the boots stay on it). The limit is 1%. The orc's boots hung
+  5.6% up with both lower legs bent. `settle_death_legs` straightens the knees toward the rest pose, by the smallest share that brings the boots to
+  the ground, ramped in from the moment the body lies down, so no joint turns faster than `lib/tripo_trim.SETTLE_MAX_RATE`.
+"""
+
+from __future__ import annotations
+
+import struct
+from dataclasses import dataclass
+from pathlib import Path
+from typing import List, Optional, Sequence, Tuple
+
+import numpy as np
+
+from . import pdx_deform, pdx_motion, tripo_trim
+from .pdx_binary import PdxFormatError, read
+
+LOOP_ROLES = ("idle", "move", "attack", "defend", "retreat")
+VANILLA_LOOP_WORST_DEGREES = 6.3
+LOOP_POSE_LIMIT_DEGREES = 8.0
+FOOT_SINK_LIMIT = 0.001
+GROUND_TOLERANCE = 0.0005
+DEATH_FINAL_FRAMES = 15
+DEATH_FEET_LIMIT = 0.01
+DEATH_FEET_TARGET = 0.004
+LYING_HIPS_SETTLE = 0.02
+LEG_SETTLE_MIN_FRAMES = 12  # a lying body takes its legs down over at least 0.4 s
+FOOT_WORDS = ("foot", "toe")
+
+
+def skinning_joints(mesh: pdx_deform.SkinnedMesh) -> set:
+    return {mesh.bones[index] for index in np.unique(mesh.joints[mesh.weights > 0]) if 0 <= index < len(mesh.bones)}
+
+
+def quaternion_turn(a: np.ndarray, b: np.ndarray) -> float:
+    a = a / max(float(np.linalg.norm(a)), 1e-12)
+    b = b / max(float(np.linalg.norm(b)), 1e-12)
+    return float(np.degrees(2.0 * np.arccos(min(1.0, abs(float(a @ b))))))
+
+
+def loop_seam(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Tuple[float, str]:
+    """The largest turn (degrees) of a skinning joint between the first and the last frame, and the joint."""
+
+    skinning = skinning_joints(mesh)
+    best, where = 0.0, ""
+    if anim.frames < 2:
+        return best, where
+    for joint, channel in anim.channels.items():
+        if joint in skinning:
+            turn = quaternion_turn(channel["q"][0], channel["q"][-1])
+            if turn > best:
+                best, where = turn, joint
+    return best, where
+
+
+def foot_mask(mesh: pdx_deform.SkinnedMesh) -> np.ndarray:
+    """Vertices whose strongest bone is a foot or toe bone (any rig: the names carry `foot` or `toe`)."""
+
+    dominant = pdx_deform.dominant_bones(mesh)
+    return np.array([index >= 0 and any(word in mesh.bones[index].lower() for word in FOOT_WORDS) for index in dominant], bool)
+
+
+def foot_heights(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, frames: Optional[Sequence[int]] = None) -> np.ndarray:
+    """Per frame, the lowest foot vertex above the rest pose's ground as a share of the height (negative: under it). NaN without foot vertices."""
+
+    mask = foot_mask(mesh)
+    height = max(mesh.height, 1e-6)
+    ground = float(mesh.positions[:, 1].min())
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    indices = range(matrices.shape[0]) if frames is None else frames
+    if not mask.any():
+        return np.full(len(list(indices)), np.nan)
+    return np.array([(float(pdx_deform.skin(mesh, matrices[i])[mask, 1].min()) - ground) / height for i in indices])
+
+
+def death_feet_height(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, final: int = DEATH_FINAL_FRAMES) -> float:
+    """The highest the lowest foot vertex sits above the ground over the last `final` frames of a death (share of height)."""
+
+    first = max(anim.frames - final, 0)
+    heights = foot_heights(mesh, anim, range(first, anim.frames))
+    return float(np.nanmax(heights)) if len(heights) and not np.all(np.isnan(heights)) else 0.0
+
+
+# ---- the death's legs --------------------------------------------------------------------------------------------------
+
+def _quaternion_from_matrix(m: np.ndarray) -> np.ndarray:
+    """x, y, z, w of a rotation matrix (the PDX order)."""
+
+    m = np.asarray(m, float)[:3, :3]
+    scale = np.cbrt(max(abs(np.linalg.det(m)), 1e-12))
+    m = m / scale
+    t = m[0, 0] + m[1, 1] + m[2, 2]
+    if t > 0:
+        s = np.sqrt(t + 1.0) * 2.0
+        q = [(m[2, 1] - m[1, 2]) / s, (m[0, 2] - m[2, 0]) / s, (m[1, 0] - m[0, 1]) / s, 0.25 * s]
+    elif m[0, 0] > m[1, 1] and m[0, 0] > m[2, 2]:
+        s = np.sqrt(1.0 + m[0, 0] - m[1, 1] - m[2, 2]) * 2.0
+        q = [0.25 * s, (m[0, 1] + m[1, 0]) / s, (m[0, 2] + m[2, 0]) / s, (m[2, 1] - m[1, 2]) / s]
+    elif m[1, 1] > m[2, 2]:
+        s = np.sqrt(1.0 + m[1, 1] - m[0, 0] - m[2, 2]) * 2.0
+        q = [(m[0, 1] + m[1, 0]) / s, 0.25 * s, (m[1, 2] + m[2, 1]) / s, (m[0, 2] - m[2, 0]) / s]
+    else:
+        s = np.sqrt(1.0 + m[2, 2] - m[0, 0] - m[1, 1]) * 2.0
+        q = [(m[0, 2] + m[2, 0]) / s, (m[1, 2] + m[2, 1]) / s, 0.25 * s, (m[1, 0] - m[0, 1]) / s]
+    q = np.asarray(q, float)
+    return q / max(float(np.linalg.norm(q)), 1e-12)
+
+
+def slerp(a: np.ndarray, b: np.ndarray, t: float) -> np.ndarray:
+    a = a / np.linalg.norm(a)
+    b = b / np.linalg.norm(b)
+    dot = float(a @ b)
+    if dot < 0:
+        b, dot = -b, -dot
+    if dot > 0.9995:
+        out = a + t * (b - a)
+        return out / np.linalg.norm(out)
+    theta = np.arccos(min(dot, 1.0))
+    return (np.sin((1 - t) * theta) * a + np.sin(t * theta) * b) / np.sin(theta)
+
+
+def _samples_offset(data: bytes, kind: bytes) -> int:
+    start = data.find(b"[samples\0")
+    if start < 0:
+        raise PdxFormatError("the file has no samples block")
+    marker = data.find(b"!\x01" + kind + b"f", start)
+    if marker < 0:
+        raise PdxFormatError("the samples block has no such channel")
+    return marker + 8
+
+
+@dataclass
+class LegSettle:
+    changed: bool
+    share: float = 0.0
+    from_frame: int = 0
+    frames: int = 0
+    height_before: float = 0.0
+    height_after: float = 0.0
+    note: str = ""
+
+
+def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvis: int) -> int:
+    """The first frame from which the hips stay within `LYING_HIPS_SETTLE` of the height of where they end: the body has come down, so the legs
+    settle onto the ground instead of through it while it is still falling."""
+
+    posed = pdx_motion.posed_joints(mesh, anim)
+    ground = float(mesh.positions[:, 1].min())
+    share = (posed[:, pelvis, 1] - ground) / max(mesh.height, 1e-6)
+    off = np.nonzero(np.abs(share - share[-1]) > LYING_HIPS_SETTLE)[0]
+    return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
+
+
+def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: float = DEATH_FEET_LIMIT, target: float = DEATH_FEET_TARGET) -> LegSettle:
+    """Write `out_path`: `anim_path` with the knees straightened toward the rest pose when the boots hang above the ground at the end of a death.
+
+    One share s in [0, 1] for both knees, the smallest that brings the boots under `target` (or, if none does, the one that brings them lowest),
+    ramped in with a smoothstep from the frame the hips come down to the ground and held to the end. Only the knee joints' rotation samples change."""
+
+    data = bytearray(Path(anim_path).read_bytes())
+    mesh = pdx_deform.load_mesh(mesh_path)
+    anim = pdx_deform.load_anim(anim_path)
+    legs = pdx_motion.find_legs(mesh)
+    before = death_feet_height(mesh, anim)
+    if not legs.legs or legs.pelvis < 0 or before <= limit:
+        Path(out_path).write_bytes(bytes(data))
+        return LegSettle(False, height_before=before, height_after=before, note="the boots are on the ground" if before <= limit else "no legs found")
+    info = read(anim_path).child("info")
+    keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
+    knees = [mesh.bones[leg.knee] for leg in legs.legs if mesh.bones[leg.knee] in keyed]
+    bind = pdx_deform._bind_locals(mesh)
+    rest = {mesh.bones[i]: _quaternion_from_matrix(bind[i]) for i in range(len(mesh.bones))}
+    onset = _lying_frame(mesh, anim, legs.pelvis)
+
+    def settled(share: float, weights: np.ndarray) -> pdx_deform.Animation:
+        channels = {name: dict(channel) for name, channel in anim.channels.items()}
+        for knee in knees:
+            q = anim.channels[knee]["q"].copy()
+            for frame in range(anim.frames):
+                if weights[frame] > 0:
+                    q[frame] = slerp(q[frame], rest[knee], share * weights[frame])
+            channels[knee]["q"] = q
+        return pdx_deform.Animation(anim.fps, anim.frames, channels)
+
+    def full_ramp(length: int) -> np.ndarray:
+        weights = np.zeros(anim.frames)
+        end = min(onset + length, anim.frames - 1)
+        for frame in range(onset, anim.frames):
+            weights[frame] = 1.0 if frame >= end else float(tripo_trim.settle_weights(length)[frame - onset])
+        return weights
+
+    best_share, best_height = 0.0, before
+    for share in np.linspace(0.05, 1.0, 20):
+        height = death_feet_height(mesh, settled(float(share), np.ones(anim.frames)))
+        if height < best_height - 1e-6:
+            best_share, best_height = float(share), height
+        if height <= target:
+            break
+    if best_share == 0.0:
+        Path(out_path).write_bytes(bytes(data))
+        return LegSettle(False, height_before=before, height_after=before, note="straightening the knees does not lower the boots")
+    turn = max(quaternion_turn(q, slerp(q, rest[knee], best_share)) for knee in knees for q in anim.channels[knee]["q"][onset:])
+    length = int(min(max(tripo_trim.settle_frames(turn), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
+    weights = full_ramp(length)
+    result = settled(best_share, weights)
+    offset = _samples_offset(bytes(data), b"q")
+    for knee in knees:
+        slot = keyed.index(knee)
+        for frame in range(anim.frames):
+            if weights[frame] > 0:
+                position = offset + 4 * (4 * (frame * len(keyed) + slot))
+                struct.pack_into("<4f", data, position, *[float(v) for v in result.channels[knee]["q"][frame]])
+    Path(out_path).write_bytes(bytes(data))
+    after = death_feet_height(mesh, result)
+    return LegSettle(True, best_share, onset, length, before, after)
+
+
+# ---- the checks --------------------------------------------------------------------------------------------------------
+
+def _finding(rule: str, subject: str, message: str, **numbers) -> dict:
+    return {"rule": rule, "subject": subject, "message": message, **numbers}
+
+
+def role_of(clip: str) -> str:
+    return clip.rsplit("_", 1)[-1]
+
+
+def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> Tuple[List[dict], dict]:
+    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND and TRIPO-DEATH-FEET over a unit's clips (`anims`: clip stem to Animation)."""
+
+    out: List[dict] = []
+    numbers: dict = {}
+    for clip, anim in anims.items():
+        role = role_of(clip)
+        row: dict = {}
+        if role in LOOP_ROLES:
+            turn, joint = loop_seam(mesh, anim)
+            row["loop_seam_degrees"] = round(turn, 1)
+            if turn > LOOP_POSE_LIMIT_DEGREES:
+                out.append(_finding("TRIPO-LOOP-POP", clip, f"the last frame is {turn:.0f} degrees from the first at {joint} (limit {LOOP_POSE_LIMIT_DEGREES:g}, vanilla's worst role clip {VANILLA_LOOP_WORST_DEGREES:g}): the looped {role} pops back to its start", degrees=round(turn, 1)))
+        if role == "death":
+            height = death_feet_height(mesh, anim)
+            row["final_feet_height_share"] = round(height, 4)
+            if height > DEATH_FEET_LIMIT:
+                out.append(_finding("TRIPO-DEATH-FEET", clip, f"in the last {DEATH_FINAL_FRAMES} frames the boots hang {height:.1%} of the height above the ground (limit {DEATH_FEET_LIMIT:.0%}, vanilla's deaths end within 0.6%)", share=round(height, 4)))
+        else:
+            heights = foot_heights(mesh, anim)
+            lowest = float(np.nanmin(heights)) if len(heights) and not np.all(np.isnan(heights)) else 0.0
+            row["lowest_foot_share"] = round(lowest, 4)
+            if lowest < -FOOT_SINK_LIMIT:
+                frame = int(np.nanargmin(heights))
+                out.append(_finding("TRIPO-FOOT-BELOW-GROUND", clip, f"a foot or toe sinks {-lowest:.2%} of the height under the ground in frame {frame} (limit {FOOT_SINK_LIMIT:.1%})", share=round(-lowest, 4), frame=frame))
+        if row:
+            numbers[clip] = row
+    return out, numbers

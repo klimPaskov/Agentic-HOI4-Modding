@@ -51,8 +51,10 @@ def _root(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, keyed: List[
     return None
 
 
-def ground(mesh_path: Path, anim_path: Path, out_path: Path, death: bool = False, tolerance: float = 0.002) -> GroundCorrection:
-    """Write `out_path`: `anim_path` with its root translation shifted so the lowest point meets the ground."""
+def ground(mesh_path: Path, anim_path: Path, out_path: Path, death: bool = False, tolerance: float = 0.002, exclude_bones=()) -> GroundCorrection:
+    """Write `out_path`: `anim_path` with its root translation shifted so the lowest point meets the ground.
+
+    `exclude_bones`: vertices whose strongest bone is one of these never decide where the ground is (a weapon the unit has let go of)."""
 
     data = bytearray(Path(anim_path).read_bytes())
     mesh = pdx_deform.load_mesh(mesh_path)
@@ -67,8 +69,14 @@ def ground(mesh_path: Path, anim_path: Path, out_path: Path, death: bool = False
     floor = float(mesh.positions[:, 1].min())
     matrices = pdx_deform.skinning_matrices(mesh, anim)
     shifts = np.zeros(anim.frames)
+    contact = np.ones(len(mesh.positions), bool)
+    if exclude_bones:
+        dominant = pdx_deform.dominant_bones(mesh)
+        contact = np.array([index < 0 or mesh.bones[index] not in exclude_bones for index in dominant], bool)
+        if not contact.any():
+            contact[:] = True
     for frame in range(anim.frames):
-        lowest = float(pdx_deform.skin(mesh, matrices[frame])[:, 1].min())
+        lowest = float(pdx_deform.skin(mesh, matrices[frame])[contact, 1].min())
         gap = floor - lowest  # positive: below the ground
         if death:
             shifts[frame] = gap if gap > tolerance * height else 0.0

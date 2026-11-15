@@ -62,12 +62,18 @@ WING_LATERAL_SHARE = 0.18
 CLOAK_LOW_SHARE, CLOAK_HIGH_SHARE = 0.25, 0.85
 # Loose cloth lies farther from a limb's axis than this many times the limb's own radius (the 60th percentile of its skin's distance).
 LOOSE_FACTOR = 1.25
+# The chains keep off the room an arm swings through: nearer to the arm in some frame of the clips than this many times its radius.
+ARM_CLEAR_FACTOR = 1.5
 # The chain weights blend into the body's over one chain bone, and over at least this many edge rings on a coarse mesh.
 BLEND_MIN_RINGS = 4
 MIN_BONES_PER_CHAIN, MAX_BONES_PER_CHAIN = 2, 4
 MIN_CHAINS, MAX_CHAINS = 2, 6
 # A wing ridge (a finger) stands this share of the wing's largest reach above the angles beside it; smaller bumps are a ragged edge.
 RIDGE_PROMINENCE = 0.05
+# A wing's arm (its leading edge) is the top of its outer half: this percentile of the angles there. RIDGE_BAND_SHARE of the gap to the next
+# chain either side of it takes the arm's chain whole.
+LEADING_EDGE_PERCENTILE = 90.0
+RIDGE_BAND_SHARE = 0.25
 WAVE_BONES = 3  # a flap wave or a cloth curl needs three bones; the budget trims chains before going below it
 # Idle and move loop in vanilla; every other role plays once.
 LOOPING_ROLES = ("idle", "move")
@@ -87,6 +93,19 @@ GROUND_MARGIN_SHARE = 0.005
 # this share of the height nearer the camera than the torso's front surface.
 COVER_CELL_SHARE = 0.02
 COVER_MARGIN_SHARE = 0.01
+# A fold is limited by what it does to the skin, with the body at rest (`fold_room`). Its back swing may stretch or squash no more than
+# FOLD_ROOT_LIMIT of the wing root's edges (where the chains blend into the back and shoulder) by UNIT-ANIM-STRETCH's measure, and its fan's
+# close may change no more than FOLD_DEFORM_LIMIT of all the edges the chains move by FOLD_DEFORM_RATIO (the review sheets' yellow, 1.3
+# times, by 0.5% of the height). Judged on the demon: the round 3 fold (83 degrees back, the fan closed by 30%) changed 12% of the moved
+# edges and the review saw the membrane crumpled and the roots stretched. With the wing grown to the back, 80 degrees stretched 5% of the
+# root's edges and the clips showed a red band over both shoulders; 50 degrees, 0.3%.
+FOLD_ROOT_LIMIT = 0.01
+FOLD_DEFORM_RATIO = 1.3
+FOLD_DEFORM_LIMIT = 0.01
+FOLD_CLOSE_STEP = 0.025
+FOLD_SWEEP_STEP = 5.0
+# The torso lies (`lying_share`) once its hips-to-upper-spine axis is less than LIE_UPRIGHT vertical, fully once under LIE_FLAT.
+LIE_UPRIGHT, LIE_FLAT = 0.7, 0.35
 # Prefix of the bones each region adds; the checks find a region's vertices by them too.
 REGION_PREFIX = {"cloak": "Cloak", "wings": "Wing"}
 # `plates` adds no bones: it binds each armour plate rigidly to one bone (`rigid_plates`).
@@ -251,6 +270,54 @@ def cloak_rebind_mask(check: np.ndarray, positions: np.ndarray, edges: np.ndarra
     return grow_region(check, edges, allowed)
 
 
+def arm_room(positions: np.ndarray, parts: Sequence[Tuple[np.ndarray, float]], factor: Optional[float] = None) -> np.ndarray:
+    """The vertices an arm passes through or lies against in some frame: nearer than `factor` (`ARM_CLEAR_FACTOR`) times the part's radius
+    to any of its segments. `parts` holds per arm part (upper arm, forearm, hand) its segments (N, 2, 3), every pose it takes in the clips
+    carried back into the rest pose by the upper spine, and its radius."""
+
+    factor = ARM_CLEAR_FACTOR if factor is None else factor
+    positions = np.asarray(positions, float)
+    out = np.zeros(len(positions), bool)
+    for segments, radius in parts:
+        if radius <= 0 or not len(segments):
+            continue
+        limit = factor * radius
+        # poses closer than half the limit to one already kept add nothing a vertex could notice
+        keys = np.unique(np.floor(np.asarray(segments, float).reshape(len(segments), 6) / (0.5 * limit)).astype(np.int64), axis=0, return_index=True)[1]
+        for a, b in np.asarray(segments, float)[np.sort(keys)]:
+            lo, hi = np.minimum(a, b) - limit, np.maximum(a, b) + limit
+            near = np.all((positions >= lo) & (positions <= hi), axis=1) & ~out
+            if near.any():
+                index = np.where(near)[0]
+                out[index[segment_distance(positions[index], a, b) < limit]] = True
+    return out
+
+
+def collar_zone(positions: np.ndarray, up: np.ndarray, shoulder_line: float) -> np.ndarray:
+    """The collar: everything above the lower of the two shoulder joints. A cloak's chains hang from below it, so the collar follows the
+    neck and shoulders (or a plate) and a head that bows forward does not sink into a collar the chains hold back."""
+
+    return np.asarray(positions, float) @ unit(up) > shoulder_line
+
+
+def wing_rebind_mask(far: np.ndarray, positions: np.ndarray, edges: np.ndarray, dominant: Sequence[str], shoulders: np.ndarray, front: np.ndarray,
+                     capsules: Sequence[Tuple[np.ndarray, np.ndarray, float]]) -> np.ndarray:
+    """The wing the chains take: the far region (`wing_masks`) grown along the mesh into the inner wing that joins it to the back, every
+    connected vertex behind the shoulders' frontal plane that is loose from the body (farther from every capsule's axis than
+    `LOOSE_FACTOR` times its radius: the torso, the head and each limb) and not a limb end. Tripo binds a wing's inner arm to the upper
+    arm or the shoulder; left out of the region it stayed rigid with the body, a rod from the shoulder to where the chains began, and the
+    chains turned about a root a third of the height out from the spine."""
+
+    positions = np.asarray(positions, float)
+    behind = (positions - np.asarray(shoulders, float)) @ unit(front) < 0
+    loose = np.ones(len(positions), bool)
+    for a, b, radius in capsules:
+        if radius > 0:
+            loose &= segment_distance(positions, a, b) > LOOSE_FACTOR * radius
+    ends = np.array([is_limb_end(name) for name in dominant], dtype=bool)
+    return grow_region(far, edges, behind & loose & ~ends)
+
+
 def with_seams(positions: np.ndarray, edges: np.ndarray, height: float) -> np.ndarray:
     """`edges` plus a zero-length edge from each vertex to the first vertex at its position. A UV seam splits one surface point into
     several vertices with no edge between them; without these the region growth and the border blend stop at the seam, and the kit's
@@ -267,11 +334,16 @@ def blend_length_for(joints: np.ndarray, positions: np.ndarray, edges: np.ndarra
     """The border blend runs over one chain bone's length, and over at least `BLEND_MIN_RINGS` of the region's median edge length."""
 
     bone = float(np.mean(np.linalg.norm(np.diff(joints, axis=-2), axis=-1)))
+    return max(bone, BLEND_MIN_RINGS * ring_length(positions, edges, region))
+
+
+def ring_length(positions: np.ndarray, edges: np.ndarray, region: np.ndarray) -> float:
+    """The median length of the region's edges (one ring of the mesh there)."""
+
     inside = np.asarray(region, bool)[edges].all(axis=1)
     lengths = np.linalg.norm(positions[edges[inside, 0]] - positions[edges[inside, 1]], axis=1)
     lengths = lengths[lengths > 0]  # the seam joins have no length
-    ring = float(np.median(lengths)) if len(lengths) else 0.0
-    return max(bone, BLEND_MIN_RINGS * ring)
+    return float(np.median(lengths)) if len(lengths) else 0.0
 
 
 def is_limb_end(name: str) -> bool:
@@ -462,14 +534,33 @@ def band_halfwidths(chain_u: np.ndarray, u: np.ndarray) -> np.ndarray:
     return np.maximum(np.maximum(left, right), 1e-6)
 
 
-def sheet_layout(points: np.ndarray, u: np.ndarray, s: np.ndarray, chain_u: np.ndarray, bones: int) -> Tuple[np.ndarray, np.ndarray]:
+def leading_edge_angles(u: np.ndarray, s: np.ndarray, chain_u: np.ndarray) -> Tuple[np.ndarray, int]:
+    """(chain angles, the leading chain's index): the chain with the largest angle (the wing's top, its arm) is moved onto the leading
+    edge's ridge, `LEADING_EDGE_PERCENTILE` of the angles of the wing's outer half, so the wing's arm is one chain's and stays straight."""
+
+    u, s = np.asarray(u, float), np.asarray(s, float)
+    out = np.array(chain_u, float)
+    outer = s >= np.median(s)
+    lead = int(np.argmax(out))
+    edge = float(np.percentile(u[outer], LEADING_EDGE_PERCENTILE))
+    if len(out) > 1:
+        edge = max(edge, float(np.sort(out)[-2]) + 0.25 * float(np.min(np.diff(np.sort(out)))))
+    out[lead] = edge
+    return out, lead
+
+
+def sheet_layout(points: np.ndarray, u: np.ndarray, s: np.ndarray, chain_u: np.ndarray, bones: int, ridge: Optional[int] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Joint positions (chains, bones + 1, 3) and their s values (chains, bones + 1).
 
     A chain runs from the 1st to the 99th percentile of s in its band of u; joint k sits at the median of the band's points within half a
-    bone of its s (the nearest band points by s when none are)."""
+    bone of its s (the nearest band points by s when none are). The `ridge` chain (a wing's arm) reads a band half as wide, so its joints
+    sit on the ridge itself and not on the membrane beside it."""
 
     points, u, s = np.asarray(points, float), np.asarray(u, float), np.asarray(s, float)
     half = band_halfwidths(chain_u, u)
+    if ridge is not None:
+        half = half.copy()
+        half[ridge] *= 0.5
     joints = np.zeros((len(chain_u), bones + 1, 3))
     stations = np.zeros((len(chain_u), bones + 1))
     for c, centre in enumerate(chain_u):
@@ -500,11 +591,31 @@ def mirror_points(points: np.ndarray, centre: np.ndarray, lateral: np.ndarray) -
 # ---------------------------------------------------------------------------------------------
 
 
-def sheet_weights(u: np.ndarray, s: np.ndarray, chain_u: np.ndarray, stations: np.ndarray) -> List[Dict[int, float]]:
-    """Per vertex {bone index: weight}, bone index = chain * bones + bone. Two chains (linear in u) times two bones (linear in s between
-    the bones' middles): at most 4 influences, summing to 1."""
+def ridge_band(u: np.ndarray, chain_u: np.ndarray, ridge: Optional[int]) -> float:
+    """The angle either side of the ridge chain (a wing's arm) inside which the surface takes that chain whole: a quarter of the gap to
+    its neighbour, so the arm's skin bends only at the chain's joints and the membrane beside it blends."""
 
-    chain_u = np.asarray(chain_u, float)
+    if ridge is None or len(chain_u) < 2:
+        return 0.0
+    ordered = np.sort(np.asarray(chain_u, float))
+    position = int(np.searchsorted(ordered, float(chain_u[ridge])))
+    gaps = [abs(float(ordered[k]) - float(chain_u[ridge])) for k in (position - 1, position + 1) if 0 <= k < len(ordered)]
+    return RIDGE_BAND_SHARE * min(gaps)
+
+
+def sheet_weights(u: np.ndarray, s: np.ndarray, chain_u: np.ndarray, stations: np.ndarray, ridge: Optional[int] = None,
+                  ridge_halfwidth: float = 0.0) -> List[Dict[int, float]]:
+    """Per vertex {bone index: weight}, bone index = chain * bones + bone. Two chains (linear in u) times two bones (linear in s between
+    the bones' middles): at most 4 influences, summing to 1. The `ridge` chain, the first or the last (a wing's arm), takes the surface
+    within `ridge_halfwidth` of its angle whole (`ridge_band`), and the blend to its neighbour starts at that band's edge, so the weights
+    stay continuous and the arm's skin bends only at its joints."""
+
+    chain_u = np.asarray(chain_u, float).copy()
+    if ridge is not None and ridge_halfwidth > 0 and len(chain_u) > 1:
+        if ridge == len(chain_u) - 1:
+            chain_u[ridge] -= ridge_halfwidth
+        elif ridge == 0:
+            chain_u[ridge] += ridge_halfwidth
     chains, bones = stations.shape[0], stations.shape[1] - 1
     rows: List[Dict[int, float]] = []
     for value_u, value_s in zip(np.asarray(u, float), np.asarray(s, float)):
@@ -553,7 +664,8 @@ def surface_distance(positions: np.ndarray, edges: np.ndarray, seeds: np.ndarray
     return distance
 
 
-def blend_alpha(positions: np.ndarray, edges: np.ndarray, region: np.ndarray, blend_length: float, blocked: Optional[np.ndarray] = None) -> np.ndarray:
+def blend_alpha(positions: np.ndarray, edges: np.ndarray, region: np.ndarray, blend_length: float, blocked: Optional[np.ndarray] = None,
+                stop_length: Optional[float] = None) -> np.ndarray:
     """Per vertex, the chains' share of its weight: 1 in the whole region, falling smoothly to 0 over `blend_length` of surface distance
     outward from the region's border, into the skin the region is joined to.
 
@@ -566,10 +678,48 @@ def blend_alpha(positions: np.ndarray, edges: np.ndarray, region: np.ndarray, bl
     outside = np.where(np.isfinite(distance), 1.0 - smoothstep(distance / max(blend_length, 1e-12)), 0.0)
     alpha = np.where(region, 1.0, outside)
     if blocked is not None and np.any(blocked):
-        # skin that must keep its own motion (`is_limb_end`) gets no chain weight, and the share fades to it over the same length
-        near = surface_distance(positions, edges, np.asarray(blocked, bool), blend_length)
-        alpha = alpha * np.where(np.isfinite(near), smoothstep(near / max(blend_length, 1e-12)), 1.0)
+        # skin that must keep its own motion (`is_limb_end`, an arm's room) gets no chain weight, and the share fades to it over
+        # `stop_length` (the blend length by default). A wing's whole inner arm lay within one chain bone of its arm's room on the demon,
+        # and a fade that long left it half on the chains, stretched at every turn; the stage fades over a few rings instead.
+        alpha = alpha * fade_from(positions, edges, blocked, blend_length if stop_length is None else stop_length)
     return alpha
+
+
+def fade_from(positions: np.ndarray, edges: np.ndarray, blocked: np.ndarray, length: float) -> np.ndarray:
+    """Per vertex, 0 on `blocked`, rising smoothly to 1 over `length` of surface distance from it."""
+
+    near = surface_distance(positions, edges, np.asarray(blocked, bool), length)
+    return np.where(np.isfinite(near), smoothstep(near / max(length, 1e-12)), 1.0)
+
+
+def limb_root(name: str) -> Optional[str]:
+    """The torso bone a limb bone's weight moves to when skin it carries is loose from it (`loosen_row`): an arm's to the chain parent, a
+    leg's to the hips. None for any other bone."""
+
+    name = str(name)
+    if name.endswith(("Arm", "ForeArm", "ForeArmRoll", "Hand")) and name.startswith(("Left", "Right")):
+        return CHAIN_PARENT
+    if name.endswith(("UpLeg", "Leg", "Foot", "ToeBase")) and name.startswith(("Left", "Right")):
+        return "Hips"
+    return None
+
+
+def loosen_row(row: Dict[str, float], share: float) -> Dict[str, float]:
+    """`row` with `share` of each limb bone's weight moved to that limb's torso bone (`limb_root`). Tripo binds a wing or a cloak to a limb
+    whole, and the chains' blend into such skin kept the limb's weight: the orc's cloak rose with the axe arm and slid round the forearm, the
+    demon's wing root stretched whenever the arm it was bound to swung."""
+
+    if share <= 0:
+        return dict(row)
+    out: Dict[str, float] = {}
+    for name, weight in row.items():
+        root = limb_root(name)
+        if root is None:
+            out[name] = out.get(name, 0.0) + weight
+            continue
+        out[name] = out.get(name, 0.0) + (1.0 - share) * weight
+        out[root] = out.get(root, 0.0) + share * weight
+    return {name: weight for name, weight in out.items() if weight > 1e-9}
 
 
 def mix_weights(body: Dict[str, float], chains: Dict[str, float], alpha: float, keep: int = MAX_INFLUENCES) -> Dict[str, float]:
@@ -831,12 +981,17 @@ def spread_pushes(pushes: np.ndarray, spread: float = SHEET_SPREAD) -> np.ndarra
 
 
 def simulate_sheet(parents: np.ndarray, chains: Sequence[dict], dt: float, capsule_axes: Optional[np.ndarray], ground: float, up: np.ndarray,
-                   away: np.ndarray, passes: int = 1) -> List[np.ndarray]:
+                   away: np.ndarray, passes: int = 1, lying: Optional[np.ndarray] = None) -> List[np.ndarray]:
     """The cloak rule for all its chains at once. Per frame and per bone index, every chain's bone springs toward the point the body's
     skinning carries its tail to (`follow_points`), then the chains are pushed out of the capsules along the body's back direction
     (`away`, one per frame) by the spread pushes (`spread_pushes`), never aimed above the horizontal, and kept above the ground. Each chain dict holds `rest_relative`,
     `lengths`, `omegas`, `follow_points` (frames, bones, 3) and `radii` (bones, capsules). Returns each chain's local quaternions
-    (frames, bones, 4). With `passes` > 1 the clip runs that many times and the last run is kept (a looping clip settles)."""
+    (frames, bones, 4). With `passes` > 1 the clip runs that many times and the last run is kept (a looping clip settles).
+
+    `lying` (per frame, 0 to 1, `lying_share`) drapes the cloth once the torso lies down: each bone's goal turns toward straight down by
+    that share, and from half of it on a bone leaves a capsule by the shortest way, so the cloth falls onto the body's surface and off
+    its sides instead of keeping the standing cloak's shape (the round 3 orc's cloak lay on its fallen body as a rigid dome, one flap
+    standing up from it)."""
 
     frames = parents.shape[0]
     bones = len(chains[0]["lengths"])
@@ -849,18 +1004,26 @@ def simulate_sheet(parents: np.ndarray, chains: Sequence[dict], dt: float, capsu
         for f in range(frames):
             current = [parents[f]] * count
             direction = unit(np.asarray(away[f] if np.ndim(away) == 2 else away, float))
+            drape = float(lying[f]) if lying is not None else 0.0
             for k in range(bones):
                 unposed = [current[c] @ chains[c]["rest_relative"][k] for c in range(count)]
                 heads = np.array([m[:3, 3] for m in unposed])
                 rigids = np.array([unit(m[:3, 1]) for m in unposed])
                 for c, chain in enumerate(chains):
                     goal = chain["follow_points"][f, k] - heads[c]
-                    goal = hang_below_horizon(unit(goal) if np.linalg.norm(goal) > 1e-9 else rigids[c], up)
+                    goal = unit(goal) if np.linalg.norm(goal) > 1e-9 else rigids[c]
+                    if drape > 0:
+                        goal = unit((1.0 - drape) * goal - drape * up) if np.linalg.norm((1.0 - drape) * goal - drape * up) > 1e-9 else -up
+                    goal = hang_below_horizon(goal, up)
                     if run == 0 and f == 0:
                         state_d[c, k], state_v[c, k] = goal, np.zeros(3)
                     else:
                         state_d[c, k], state_v[c, k] = spring_step(state_d[c, k], state_v[c, k], goal, float(chain["omegas"][k]), dt)
-                if capsule_axes is not None:
+                if capsule_axes is not None and drape >= 0.5:
+                    for c, chain in enumerate(chains):
+                        capsules = [(axis[0], axis[1], float(chain["radii"][k, i])) for i, axis in enumerate(capsule_axes[f])]
+                        state_d[c, k], state_v[c, k] = collide_step(heads[c], state_d[c, k], state_v[c, k], float(chain["lengths"][k]), capsules, ground, up, direction)
+                elif capsule_axes is not None:
                     tails = heads + state_d[:, k] * np.array([chain["lengths"][k] for chain in chains])[:, None]
                     pushes = np.array([exit_distance(tails[c], [(axis[0], axis[1], float(chains[c]["radii"][k, i])) for i, axis in enumerate(capsule_axes[f])], direction)
                                        for c in range(count)])
@@ -1223,7 +1386,7 @@ def wing_pose_directions(rest_directions: np.ndarray, chain_u: float, wing: Dict
     lateral = unit(np.cross(up, front))
     fold = float(pose["fold"])
     face = float(pose.get("face", 0.0))
-    close = axis_angle_matrix(wing["normal"], fold * FAN_CLOSE_SHARE * (wing["u_min"] - chain_u))
+    close = axis_angle_matrix(wing["normal"], fold * float(wing.get("close", FAN_CLOSE_SHARE)) * (wing["u_min"] - chain_u))
     floor = min(wing.get("side", 0.0) + float(pose.get("twist", 0.0)), wing["sweep"])
     back = max(wing["sweep"] * fold, floor, face * wing.get("face_sweep", 0.0)) * float(pose["sweep"])
     swing = axis_angle_matrix(up, math.radians(back)) @ axis_angle_matrix(lateral, -math.radians(face * wing.get("face_tilt", 0.0)))
@@ -1339,6 +1502,107 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             current = unposed.copy()
             current[:3, :3] = turn @ unposed[:3, :3]
     return continuous_quaternions(out)
+
+
+def chain_skinning(parent: np.ndarray, rest: Sequence[np.ndarray], directions: np.ndarray) -> List[np.ndarray]:
+    """Per bone of one chain hanging from `parent` (a 4x4 world matrix) with world rest matrices `rest`, its skinning matrix (posed world
+    times inverse rest) when its bones point along `directions`."""
+
+    relative, previous = [], np.asarray(parent, float)
+    for own in rest:
+        relative.append(np.linalg.inv(previous) @ own)
+        previous = own
+    _q, _heads, posed = chain_forward(parent, np.stack(relative), directions)
+    return [posed[k] @ np.linalg.inv(rest[k]) for k in range(len(rest))]
+
+
+def skin_rows(positions: np.ndarray, rows: Sequence[Dict[str, float]], index: np.ndarray, skinning: Dict[str, np.ndarray]) -> np.ndarray:
+    """The vertices `index` skinned by `rows`; a bone missing from `skinning` stays at rest."""
+
+    out = np.zeros((len(index), 3))
+    for j, vertex in enumerate(index):
+        point = np.r_[positions[vertex], 1.0]
+        for name, weight in rows[vertex].items():
+            matrix = skinning.get(name)
+            out[j] += weight * ((matrix @ point)[:3] if matrix is not None else point[:3])
+    return out
+
+
+def deform_share(rest: np.ndarray, posed: np.ndarray, edges: np.ndarray, height: float, ratio: float = FOLD_DEFORM_RATIO) -> float:
+    """The share of `edges` (indices into `rest` and `posed`) longer than `ratio` times or shorter than 1 / `ratio` of their rest length by
+    more than 0.5% of the height."""
+
+    from lib import pdx_deform
+
+    rest_length = np.linalg.norm(rest[edges[:, 0]] - rest[edges[:, 1]], axis=1)
+    length = np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1)
+    usable = rest_length > 1e-12
+    change = np.abs(length - rest_length) > pdx_deform.SIGNIFICANT_SHARE * height
+    bad = usable & change & ((length * ratio < rest_length) | (length > ratio * rest_length))
+    return float(bad.mean()) if len(edges) else 0.0
+
+
+def fold_room(chains: Sequence[dict], wing: dict, rows: Sequence[Dict[str, float]], positions: np.ndarray, edges: np.ndarray,
+              parent: np.ndarray, up: np.ndarray, front: np.ndarray, height: float) -> Dict[str, float]:
+    """How far a fold may swing the left wing back and close its fan, limited by what it does to the skin, with the body at rest:
+
+    - the back swing (from `wing["sweep"]` down to the side floor `wing["side"]`, in `FOLD_SWEEP_STEP`): the largest at which no more than
+      `FOLD_ROOT_LIMIT` of the root's edges (those touching a vertex partly on the chains: the blend into the back and shoulder) stretch
+      or squash by UNIT-ANIM-STRETCH's measure;
+    - then the fan's close (from `FAN_CLOSE_SHARE` down in `FOLD_CLOSE_STEP`): the largest at which no more than `FOLD_DEFORM_LIMIT` of all
+      the edges the chains move change by `FOLD_DEFORM_RATIO` (`deform_share`), and the root still keeps its limit.
+
+    The vertices are skinned by `rows` through the chains (`chains`: per chain its `bones`, world `rest` matrices, `rest_directions` and
+    `chain_u`). Returns {"sweep", "close", "share", "root_share"}."""
+
+    from lib import pdx_deform
+
+    names = {name for chain in chains for name in chain["bones"]}
+    on_chains = np.array([sum(weight for name, weight in row.items() if name in names) for row in rows])
+    moved = on_chains > 0
+    partial = moved & (on_chains < 1.0 - 1e-3)
+    edges = np.asarray(edges, int)
+    inside = edges[moved[edges[:, 0]] | moved[edges[:, 1]]]
+    index = np.unique(inside)
+    if not len(index):
+        return {"sweep": float(wing["sweep"]), "close": FAN_CLOSE_SHARE, "share": 0.0, "root_share": 0.0}
+    local = np.searchsorted(index, inside)
+    root = local[partial[inside[:, 0]] | partial[inside[:, 1]]]
+    rest_points = np.asarray(positions, float)[index]
+    pose = {"fold": 1.0, "sweep": 1.0, "droop": 0.0}
+
+    def shares(sweep: float, close: float) -> Tuple[float, float]:
+        trial = dict(wing, sweep=float(sweep), close=float(close))
+        skinning = {}
+        for chain in chains:
+            directions = wing_pose_directions(chain["rest_directions"], chain["chain_u"], trial, up, front, pose, np.zeros(len(chain["bones"])))
+            for name, matrix in zip(chain["bones"], chain_skinning(parent, chain["rest"], directions)):
+                skinning[name] = matrix
+        posed = skin_rows(positions, rows, index, skinning)
+        return (deform_share(rest_points, posed, local, height),
+                deform_share(rest_points, posed, root, height, pdx_deform.STRETCH_RATIO) if len(root) else 0.0)
+
+    floor = float(min(wing.get("side", 0.0), wing["sweep"]))
+    sweep = floor
+    for candidate in np.arange(float(wing["sweep"]), floor - 1e-9, -FOLD_SWEEP_STEP):
+        if shares(candidate, 0.0)[1] <= FOLD_ROOT_LIMIT:
+            sweep = float(candidate)
+            break
+    for close in np.arange(FAN_CLOSE_SHARE, -1e-9, -FOLD_CLOSE_STEP):
+        whole, at_root = shares(sweep, close)
+        if whole <= FOLD_DEFORM_LIMIT and at_root <= FOLD_ROOT_LIMIT:
+            return {"sweep": sweep, "close": float(max(close, 0.0)), "share": whole, "root_share": at_root}
+    whole, at_root = shares(sweep, 0.0)
+    return {"sweep": sweep, "close": 0.0, "share": whole, "root_share": at_root}
+
+
+def lying_share(hips: np.ndarray, spine: np.ndarray, up: np.ndarray) -> np.ndarray:
+    """Per frame, how far the torso lies down (0 standing, 1 lying): the hips-to-upper-spine axis's vertical share, from `LIE_UPRIGHT` (0)
+    to `LIE_FLAT` (1)."""
+
+    axis = np.asarray(spine, float) - np.asarray(hips, float)
+    vertical = np.abs(axis @ unit(up)) / np.maximum(np.linalg.norm(axis, axis=1), 1e-12)
+    return smoothstep((LIE_UPRIGHT - vertical) / (LIE_UPRIGHT - LIE_FLAT))
 
 
 # ---------------------------------------------------------------------------------------------

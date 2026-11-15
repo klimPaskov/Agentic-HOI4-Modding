@@ -48,7 +48,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images
-from lib import tripo_arms, tripo_shape
+from lib import tripo_arms, tripo_shape, tripo_trim
 from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name
 from tripo import chain_stage
 
@@ -100,6 +100,8 @@ def parse_args():
     parser.add_argument("--arm-level-target", type=float, default=0.85, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
     parser.add_argument("--chains", nargs="*", default=[], metavar="REGION",
                         help="add bone chains to these regions (cloak, wings), rebind them and key them per role by rule (tripo/chain_stage.py, lib/tripo_chains.py)")
+    parser.add_argument("--settle", nargs="*", default=[], metavar="ROLE",
+                        help="in these roles, append frames that blend every bone from the last pose back to frame 1, so the looped clip does not pop (lib/tripo_trim.py)")
     parser.add_argument("--report", type=Path)
     argv =sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -790,6 +792,51 @@ def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, m
     return out
 
 
+def settle_to_first(action):
+    """Append frames that blend every bone from the last pose back to frame 1 (rule and numbers: lib/tripo_trim.py).
+
+    Rotation keys slerp, location keys blend linearly, both with a smoothstep. The rate and the length come from the clip's own motion. Returns the
+    record, or None when the clip already ends in its first pose."""
+
+    curves = rotation_curves(action)
+    if not curves:
+        return None
+    first = int(round(action.frame_range[0]))
+    last = int(round(action.frame_range[1]))
+    steps = np.zeros(max(last - first, 0))
+    worst_turn, worst_bone = 0.0, ""
+    for bone, c in curves.items():
+        q = [Quaternion([c[i].evaluate(first + k) for i in range(4)]).normalized() for k in range(last - first + 1)]
+        for k in range(1, len(q)):
+            steps[k - 1] = max(steps[k - 1], step_degrees(q[k - 1], q[k]))
+        turn = step_degrees(q[0], q[-1])
+        if turn > worst_turn:
+            worst_turn, worst_bone = turn, bone
+    count = tripo_trim.settle_frames(worst_turn, tripo_trim.settle_rate(steps))
+    if count == 0:
+        return {"frames_added": 0, "turn_degrees": round(worst_turn, 1)}
+    weights = tripo_trim.settle_weights(count)
+    for c in curves.values():
+        start = Quaternion([c[i].evaluate(first) for i in range(4)]).normalized()
+        end = Quaternion([c[i].evaluate(last) for i in range(4)]).normalized()
+        if start.dot(end) < 0:
+            start.negate()
+        for k, w in enumerate(weights, start=1):
+            q = end.slerp(start, float(w))
+            for i in range(4):
+                point = c[i].keyframe_points.insert(last + k, q[i], options={"FAST"})
+                point.interpolation = "LINEAR"
+    for fcurve, _container in action_fcurves(action):
+        if fcurve.data_path.endswith(".location"):
+            start, end = fcurve.evaluate(first), fcurve.evaluate(last)
+            for k, w in enumerate(weights, start=1):
+                point = fcurve.keyframe_points.insert(last + k, end + (start - end) * float(w), options={"FAST"})
+                point.interpolation = "LINEAR"
+    for fcurve, _container in action_fcurves(action):
+        fcurve.update()
+    return {"frames_added": count, "turn_degrees": round(worst_turn, 1), "worst_bone": worst_bone, "rate_degrees_per_frame": round(tripo_trim.settle_rate(steps), 2)}
+
+
 ARM_BONES = ("LeftArm", "RightArm")
 TRACKED_JOINTS = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")
 
@@ -1073,9 +1120,15 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
         action, trimmed = trimmed_copy(action, int(trims_end[role]), exact=True)
     if role in args.arm_level:
         extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target)
+    if role in args.settle:
+        # After the arm level, before the chains: the cloth follows the settled body.
+        extras["settle"][role] = settle_to_first(action)
     if stage is not None:
         # Before the easing, so a chain bone pushed fast by a collision is eased like any other joint.
         extras["chains"][role] = chain_stage.bake_chains(armature, action, stage, role)
+        if role in args.settle:
+            # The cloth lags the settled body, so it may end away from its first pose: a short second settle for what is left (none when it does not).
+            extras["settle_chains"][role] = settle_to_first(action)
     if args.ease_snaps:
         extras["ease_snaps"][role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
     assign_action(armature, action)
@@ -1114,12 +1167,14 @@ def main():
     separated = separate_coincident_weapon_vertices(meshes, rigid_for) if rigid_for else 0
     body, atlas = join_parts(meshes, args)
     materials = [slot.material.name for slot in body.material_slots if slot.material]
-    # Secondary chains (lib/tripo_chains.py): new bones and weights for a cloak or wings, keyed per role below.
-    stage = chain_stage.add_chains(armature, body, list(args.chains)) if args.chains else None
+    # Secondary chains (lib/tripo_chains.py): new bones and weights for a cloak or wings, keyed per role below. The role clips tell the
+    # stage the room the arms swing through, which the chains keep clear of.
+    role_clips = [bpy.data.actions[clip] for clip in dict.fromkeys(roles.values())]
+    stage = chain_stage.add_chains(armature, body, list(args.chains), role_clips) if args.chains else None
     textures, base_path = export_base(armature, body, args, atlas)
 
     trims = dict(split_pair(item, "--trim") for item in args.trim)
-    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}}
+    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_chains": {}}
     trims_end = dict(split_pair(item, "--trim-end") for item in args.trim_end)
     clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras, trims_end) for role, clip in roles.items()}
 
@@ -1132,6 +1187,8 @@ def main():
         "bones_before": bones_before,
         "ease_snaps": extras["ease_snaps"],
         "arm_level": extras["arm_level"],
+        "settle": extras["settle"],
+        "settle_chains": extras["settle_chains"],
         "bones_after": len(armature.data.bones),
         "bone_names": [b.name for b in armature.data.bones],
         "dropped_bones": len(dropped),

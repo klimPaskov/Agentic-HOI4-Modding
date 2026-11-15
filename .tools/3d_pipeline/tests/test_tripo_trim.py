@@ -96,6 +96,38 @@ class Rule(unittest.TestCase):
         self.assertGreaterEqual(result["still_from_frame"], 90)
 
 
+class Settle(unittest.TestCase):
+    """An action clip is looped by the game, so it ends in its first pose over a length its own motion sets."""
+
+    def test_a_clip_that_already_ends_in_its_first_pose_gets_no_frames(self) -> None:
+        self.assertEqual(T.settle_frames(0.0), 0)
+        self.assertEqual(T.settle_frames(T.SETTLE_TOLERANCE_DEGREES), 0)
+
+    def test_no_bone_turns_faster_than_the_rate_in_the_settle(self) -> None:
+        for turn in (5.0, 40.0, 118.7, 180.0):
+            for rate in (4.0, 10.5):
+                frames = T.settle_frames(turn, rate)
+                steps = np.diff(np.concatenate([[0.0], T.settle_weights(frames)])) * turn
+                if frames < T.SETTLE_MAX_FRAMES:
+                    self.assertLessEqual(float(steps.max()), rate + 1e-6, (turn, rate, frames))
+                self.assertGreaterEqual(frames, T.SETTLE_MIN_FRAMES)
+
+    def test_a_bigger_turn_takes_more_frames_and_the_length_is_capped(self) -> None:
+        self.assertLess(T.settle_frames(20.0), T.settle_frames(100.0))
+        self.assertEqual(T.settle_frames(10000.0), T.SETTLE_MAX_FRAMES)
+
+    def test_the_weights_end_exactly_on_the_first_pose_and_never_go_back(self) -> None:
+        weights = T.settle_weights(12)
+        self.assertEqual(len(weights), 12)
+        self.assertAlmostEqual(float(weights[-1]), 1.0)
+        self.assertTrue(np.all(np.diff(weights) >= 0))
+
+    def test_the_rate_is_the_clips_own_fast_motion_but_never_above_the_cap(self) -> None:
+        self.assertAlmostEqual(T.settle_rate(np.full(60, 3.0)), 3.0, places=1)
+        self.assertEqual(T.settle_rate(np.full(60, 40.0)), T.SETTLE_MAX_RATE)
+        self.assertEqual(T.settle_rate(np.zeros(60)), 1.0)
+
+
 class FromAGlb(unittest.TestCase):
     def setUp(self) -> None:
         temp = tempfile.TemporaryDirectory()
@@ -157,6 +189,16 @@ class Intake(unittest.TestCase):
         self.assertTrue(ends[0].startswith("attack="), ends)
         self.assertLess(int(ends[0].split("=")[1]), 120)
         self.assertNotIn("--trim", command)
+
+    def test_the_action_roles_settle_back_to_their_first_pose_and_the_job_can_limit_it(self) -> None:
+        command = self.command()
+        self.assertEqual(command[command.index("--settle") + 1:command.index("--settle") + 4], ["attack", "defend", "retreat"])
+        self.spec["tripo"]["settle"] = ["attack"]
+        command = self.command()
+        self.assertEqual(command[command.index("--settle") + 1], "attack")
+        self.assertNotIn("defend", command[command.index("--settle"):command.index("--settle") + 3])
+        self.spec["tripo"]["settle"] = False
+        self.assertNotIn("--settle", self.command())
 
     def test_the_jobs_own_trim_wins_and_the_rule_can_be_switched_off(self) -> None:
         self.spec["tripo"]["trim"] = {"attack": 100, "idle": 120}

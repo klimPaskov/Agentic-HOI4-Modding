@@ -3650,6 +3650,41 @@ def write_animation_receipt(
     return receipt_rel
 
 
+def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, Any]) -> Dict[str, Any]:
+    """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
+    second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
+    weapon the unit has let go of never deciding where it is. A death whose boots hang above the ground has its knees straightened first."""
+
+    from lib import pdx_ground, tripo_pose
+
+    released = weapon.get("bone") if weapon.get("bone") and role in (weapon.get("release_roles") or []) else None
+    record: Dict[str, Any] = {}
+    if role == "death":
+        legs = tripo_pose.settle_death_legs(mesh, anim, anim)
+        record["legs"] = {"changed": legs.changed, "knee_share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
+                          "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
+    fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=[released] if released else ())
+    record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
+    return record
+
+
+def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str, Any]) -> Dict[str, Any]:
+    """The Tripo route's weight rule on the staged mesh (lib/stretch_smooth.py): smooth the weights where the unit's own clips stretch or
+    squash edges, at the strength that lowers that most without making any clip worse. A held weapon's bone is locked, so it stays rigid,
+    and so are the chain stage's cloak and wing bones, whose weights that stage sets by its own rule."""
+
+    from lib import stretch_smooth, tripo_chains
+
+    mesh = staged / f"{stem}.mesh"
+    result = stretch_smooth.smooth(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
+                                   locked_bones=[weapon["bone"]] if weapon.get("bone") else [],
+                                   locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()))
+    totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
+    return {"changed": result.changed, "passes": result.passes, "seed_vertices": result.seeds, "region_vertices": result.region,
+            "vertices_changed": result.vertices_changed, "deformed_edges_before": totals["before"], "deformed_edges_after": totals["after"],
+            "per_clip_after": result.after, "trials": result.trials, "note": result.note}
+
+
 def export_unit_roles(
     job: Path,
     spec: Dict[str, Any],
@@ -3944,6 +3979,16 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         records[f"{stem}.mesh"]["repairs"] = repaired["repairs"]
     weapon_cfg = ((spec.get("tripo") or {}).get("weapon") or {}) if uses_tripo(spec) else {}
     weapon_bones = [weapon_cfg["bone"]] if weapon_cfg.get("release_roles") and weapon_cfg.get("bone") else []
+    if uses_tripo(spec):
+        # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
+        # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
+        if (spec.get("tripo") or {}).get("smooth_weights", True) is not False:
+            records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg)
+            records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        # Then the mesh the game loads decides where the ground is.
+        for role in sorted(exports["animations"]):
+            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg)
+            records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
     findings, facts = check_unit_files.check_files(staged, unit, profile, weapon_bones=weapon_bones)
     errors = [item.__dict__ for item in findings if item.severity == "error"]
     shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []

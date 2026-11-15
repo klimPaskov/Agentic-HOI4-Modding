@@ -57,6 +57,18 @@ class Grounding(unittest.TestCase):
         self.assertAlmostEqual(report.lowest, 0.0, places=4)
         self.assertGreater(report.highest_lowest, 2.0, "the raised frame keeps its height")
 
+    def test_a_bone_the_unit_has_let_go_of_never_decides_where_the_ground_is(self) -> None:
+        positions, triangles, bones = two_arm_strip()
+        positions[0] = (positions[0][0], 0.5, 0.0)  # the left hand (bone HandL) hangs far below the rest of the strip
+        with tempfile.TemporaryDirectory() as folder:
+            mesh, anim = Path(folder) / "u.mesh", Path(folder) / "u_idle.anim"
+            write_mesh(mesh, positions, triangles, bones)
+            write_anim(anim, 3, root_moves([1.0, 1.0, 1.0]))
+            held = pdx_ground.ground(mesh, anim, Path(folder) / "held.anim", exclude_bones=())
+            free = pdx_ground.ground(mesh, anim, Path(folder) / "free.anim", exclude_bones=("HandL",))
+        self.assertFalse(held.corrected, "the hand is the lowest point and rests on the ground")
+        self.assertTrue(free.corrected, "without the hand the rest of the strip hovers and is brought down")
+
     def test_a_grounded_clip_is_left_alone(self) -> None:
         correction, _report, _size = self.run_clip([1.0, 1.0, 1.0])
         self.assertFalse(correction.corrected)
