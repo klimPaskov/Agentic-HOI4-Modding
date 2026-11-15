@@ -200,6 +200,13 @@ class Intake(unittest.TestCase):
         self.spec["tripo"]["settle"] = False
         self.assertNotIn("--settle", self.command())
 
+    def test_every_role_is_untwisted_by_default_and_the_job_can_switch_it_off(self) -> None:
+        command = self.command()
+        self.assertIn("--untwist", command)
+        self.assertIn("retreat", command[command.index("--untwist"):])
+        self.spec["tripo"]["untwist"] = False
+        self.assertNotIn("--untwist", self.command())
+
     def test_the_jobs_own_trim_wins_and_the_rule_can_be_switched_off(self) -> None:
         self.spec["tripo"]["trim"] = {"attack": 100, "idle": 120}
         command = self.command()

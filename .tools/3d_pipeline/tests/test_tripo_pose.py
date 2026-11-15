@@ -240,5 +240,23 @@ class GameSizeSheet(unittest.TestCase):
             self.assertGreater(band.shape[0], 14, "the second caption line is cut off")
 
 
+class WaistTwist(unittest.TestCase):
+    def test_the_twist_is_the_shoulder_lines_turn_against_the_hip_lines_about_the_up_axis(self) -> None:
+        angle = math.radians(30.0)
+        shoulders_left = np.array([[-1.0, 1.0, 0.0], [-math.cos(angle), 1.0, -math.sin(angle)]])
+        shoulders_right = -shoulders_left * np.array([1.0, -1.0, 1.0])
+        hips_left, hips_right = np.array([[-1.0, 0.0, 0.0]] * 2), np.array([[1.0, 0.0, 0.0]] * 2)
+        twist = P.line_twist(shoulders_left, shoulders_right, hips_left, hips_right, 1)
+        self.assertAlmostEqual(float(twist[0]), 0.0)
+        self.assertAlmostEqual(abs(float(twist[1])), 30.0, places=4)
+
+    def test_only_the_part_past_the_target_is_turned_back(self) -> None:
+        np.testing.assert_allclose(P.twist_excess(np.array([10.0, -40.0, 30.0]), 25.0), [0.0, -15.0, 5.0])
+
+    def test_each_role_has_a_limit_a_quarter_over_vanillas_worst(self) -> None:
+        self.assertEqual(set(P.WAIST_TWIST_LIMITS), {"idle", "move", "attack", "defend", "retreat", "death"})
+        self.assertAlmostEqual(P.WAIST_TWIST_LIMITS["retreat"], 29.0)
+
+
 if __name__ == "__main__":
     unittest.main()

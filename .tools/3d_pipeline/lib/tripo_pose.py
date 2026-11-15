@@ -18,6 +18,11 @@ ENG_infantry and GER_infantry_snow, 2026-11-15):
   vertex sits -0.6% to +0.6% of the height above the rest ground (the body sinks into it, the boots stay on it). The limit is 1%. The orc's boots hung
   5.6% up with both lower legs bent. `settle_death_legs` straightens the knees toward the rest pose, by the smallest share that brings the boots to
   the ground, ramped in from the moment the body lies down, so no joint turns faster than `lib/tripo_trim.SETTLE_MAX_RATE`.
+- Waist twist (`waist_twist`, TRIPO-WAIST-TWIST). The turn about the up axis between the shoulder line (the two upper arms' joints) and the
+  hip line (the two thighs' joints), against the rest pose's. Vanilla's GER infantry clips on GER_infantry.mesh, worst per role:
+  retreat 23.2 (retreat_mg), move 25.1 (march, moving), idle 39.7 (long_idle01), attack 51.2 (charge_mg_shoot), death 40.7 (death_rifle).
+  Vanilla has no defend clip, so defend takes the attack's. The limit is the role's worst with a quarter added (`WAIST_TWIST_LIMITS`).
+  The zombie's retreat (Tripo's flee_01) twisted 43 degrees and a reviewer saw the waist wrung.
 """
 
 from __future__ import annotations
@@ -42,6 +47,8 @@ DEATH_FEET_LIMIT = 0.01
 DEATH_FEET_TARGET = 0.004
 LYING_HIPS_SETTLE = 0.02
 LEG_SETTLE_MIN_FRAMES = 12  # a lying body takes its legs down over at least 0.4 s
+VANILLA_WAIST_TWIST_DEGREES = {"retreat": 23.2, "move": 25.1, "idle": 39.7, "attack": 51.2, "defend": 51.2, "death": 40.7}
+WAIST_TWIST_LIMITS = {role: round(1.25 * value, 1) for role, value in VANILLA_WAIST_TWIST_DEGREES.items()}
 FOOT_WORDS = ("foot", "toe")
 
 
@@ -238,12 +245,59 @@ def _finding(rule: str, subject: str, message: str, **numbers) -> dict:
     return {"rule": rule, "subject": subject, "message": message, **numbers}
 
 
+def shoulder_joints(mesh: pdx_deform.SkinnedMesh) -> Tuple[int, int]:
+    """(left, right) upper-arm joints: the first bone named with the side and `arm` but not `fore` (Tripo's LeftArm, vanilla's too)."""
+
+    found = []
+    for side in ("left", "right"):
+        found.append(next((i for i, name in enumerate(mesh.bones) if side in name.lower() and "arm" in name.lower() and "fore" not in name.lower()), -1))
+    return found[0], found[1]
+
+
+def waist_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[np.ndarray]:
+    """Per frame, the shoulder line's turn about the up axis (Y) against the hip line's, less the rest pose's (degrees). None without two
+    legs and two upper arms."""
+
+    legs = pdx_motion.find_legs(mesh)
+    left, right = shoulder_joints(mesh)
+    if len(legs.legs) != 2 or left < 0 or right < 0:
+        return None
+    rest = pdx_motion.rest_joints(mesh)
+    posed = pdx_motion.posed_joints(mesh, anim)
+    hip_a, hip_b = legs.legs[0].hip, legs.legs[1].hip
+    # the hip line in the shoulders' left-to-right order
+    if (rest[hip_b] - rest[hip_a]) @ (rest[right] - rest[left]) < 0:
+        hip_a, hip_b = hip_b, hip_a
+    rest_turn = line_twist(rest[left], rest[right], rest[hip_a], rest[hip_b], 1)
+    turn = line_twist(posed[:, left], posed[:, right], posed[:, hip_a], posed[:, hip_b], 1) - rest_turn
+    return (turn + 180.0) % 360.0 - 180.0
+
+
+def twist_excess(twist: np.ndarray, target: float) -> np.ndarray:
+    """Per frame, how far the twist goes past `target` (degrees, signed as the twist): what the untwist turns back."""
+
+    twist = np.asarray(twist, float)
+    return np.sign(twist) * np.maximum(np.abs(twist) - float(target), 0.0)
+
+
+def line_twist(left: np.ndarray, right: np.ndarray, hip_left: np.ndarray, hip_right: np.ndarray, up: int) -> np.ndarray:
+    """Per frame, the shoulder line's turn about the `up` axis against the hip line's (degrees, wrapped), for (frames, 3) joint tracks."""
+
+    a, b = [k for k in range(3) if k != up]
+
+    def yaw(v):
+        return np.degrees(np.arctan2(v[..., b], v[..., a]))
+
+    turn = yaw(np.asarray(right) - np.asarray(left)) - yaw(np.asarray(hip_right) - np.asarray(hip_left))
+    return (turn + 180.0) % 360.0 - 180.0
+
+
 def role_of(clip: str) -> str:
     return clip.rsplit("_", 1)[-1]
 
 
 def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> Tuple[List[dict], dict]:
-    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND and TRIPO-DEATH-FEET over a unit's clips (`anims`: clip stem to Animation)."""
+    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND, TRIPO-DEATH-FEET and TRIPO-WAIST-TWIST over a unit's clips (`anims`: clip stem to Animation)."""
 
     out: List[dict] = []
     numbers: dict = {}
@@ -267,6 +321,21 @@ def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> Tuple[List[dict]
             if lowest < -FOOT_SINK_LIMIT:
                 frame = int(np.nanargmin(heights))
                 out.append(_finding("TRIPO-FOOT-BELOW-GROUND", clip, f"a foot or toe sinks {-lowest:.2%} of the height under the ground in frame {frame} (limit {FOOT_SINK_LIMIT:.1%})", share=round(-lowest, 4), frame=frame))
+        out += _twist_findings(mesh, anim, clip, role, row)
         if row:
             numbers[clip] = row
     return out, numbers
+
+
+def _twist_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, clip: str, role: str, row: dict) -> List[dict]:
+    """TRIPO-WAIST-TWIST for one clip (records the clip's largest twist in `row`)."""
+
+    limit = WAIST_TWIST_LIMITS.get(role)
+    twist = waist_twist(mesh, anim) if limit is not None else None
+    if twist is None or not len(twist):
+        return []
+    frame = int(np.argmax(np.abs(twist)))
+    row["waist_twist_degrees"] = round(float(abs(twist[frame])), 1)
+    if abs(twist[frame]) <= limit:
+        return []
+    return [_finding("TRIPO-WAIST-TWIST", clip, f"the shoulders turn {abs(twist[frame]):.0f} degrees against the hips in frame {frame} (limit {limit:g}, vanilla's worst {role} {VANILLA_WAIST_TWIST_DEGREES[role]:g}): the waist is wrung", degrees=round(float(abs(twist[frame])), 1), frame=frame)]

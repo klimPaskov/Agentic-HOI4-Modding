@@ -30,6 +30,7 @@ long clip to at most that many frames, ending on the frame closest to frame 0 so
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
+`untwist` (default every role, `false` or a shorter list to limit it) turns the spine back where the shoulders twist against the hips past vanilla's worst for the role (`lib/tripo_pose.py`).
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
 it per role by fixed rules (`tripo/chain_stage.py`, `lib/tripo_chains.py`), so a cloak no longer follows the thighs and wings no longer follow the arms.
@@ -59,7 +60,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import run_pilot
-from lib import tripo_trim
+from lib import tripo_pose, tripo_trim
 from lib.credits import append_entry, read_ledger
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
 from lib.tripo import inbox_file, uses_tripo
@@ -140,6 +141,12 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     settled = [role for role in tripo_trim.SETTLE_ROLES if role in wanted and settled and (settled is True or role in settled)]
     if settled:
         command += ["--settle", *settled]
+    # Shoulders twisted against the hips past vanilla's worst for the role are turned back at the spine (lib/tripo_pose.py, TRIPO-WAIST-TWIST):
+    # `untwist` lists the roles ([] or false to switch it off); the default is every role.
+    untwisted = config.get("untwist", list(tripo_pose.VANILLA_WAIST_TWIST_DEGREES))
+    untwisted = [role for role in tripo_pose.VANILLA_WAIST_TWIST_DEGREES if role in wanted and untwisted and (untwisted is True or role in untwisted)]
+    if untwisted:
+        command += ["--untwist", *untwisted]
     # An unarmed unit's attack clip gets the arm-level rule (lib/tripo_arms.py): Tripo's text-to-motion attacks hold the hands over the head and
     # hide it. `arm_level` lists the roles ([] or false to switch it off); the default is the attack of a job with no weapon.
     levelled = config.get("arm_level", [] if config.get("weapon") else ["attack"])

@@ -48,7 +48,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images
-from lib import tripo_arms, tripo_shape, tripo_trim
+from lib import tripo_arms, tripo_pose, tripo_shape, tripo_trim
 from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name
 from tripo import chain_stage
 
@@ -102,6 +102,8 @@ def parse_args():
                         help="add bone chains to these regions (cloak, wings), rebind them and key them per role by rule (tripo/chain_stage.py, lib/tripo_chains.py)")
     parser.add_argument("--settle", nargs="*", default=[], metavar="ROLE",
                         help="in these roles, append frames that blend every bone from the last pose back to frame 1, so the looped clip does not pop (lib/tripo_trim.py)")
+    parser.add_argument("--untwist", nargs="*", default=[], metavar="ROLE",
+                        help="in these roles, turn the spine back where the shoulders twist against the hips past vanilla's worst for the role (lib/tripo_pose.py)")
     parser.add_argument("--report", type=Path)
     argv =sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
@@ -950,6 +952,56 @@ def level_arms(armature, action, up=2, target_share=0.0):
     }
 
 
+SPINE_BONES = ("Spine", "Spine01", "Spine02")
+TWIST_JOINTS = ("LeftArm", "RightArm", "LeftUpLeg", "RightUpLeg")
+
+
+def untwist_waist(armature, action, role, up=2):
+    """Turn the spine back about the world up axis wherever the shoulders twist against the hips further than vanilla's worst for the
+    role (lib/tripo_pose.VANILLA_WAIST_TWIST_DEGREES, TRIPO-WAIST-TWIST). Per frame the excess is split evenly over `SPINE_BONES`; each
+    bone's turn is about the up axis carried into its own pose space, so the turns add up and nothing below the waist moves.
+    Returns the record, or None when no frame goes past the target."""
+
+    target = tripo_pose.VANILLA_WAIST_TWIST_DEGREES.get(role)
+    curves_of = rotation_curves(action)
+    spine = [name for name in SPINE_BONES if name in curves_of]
+    if target is None or not spine:
+        return None
+    scene = bpy.context.scene
+    assign_action(armature, action)
+    bones = armature.pose.bones
+    keyed = [int(round(p.co.x)) for p in curves_of[spine[0]][0].keyframe_points]
+    tracks = {name: [] for name in TWIST_JOINTS}
+    for frame in keyed:
+        scene.frame_set(frame)
+        for name in TWIST_JOINTS:
+            tracks[name].append(joint_head(armature, name))
+    rest = {name: np.array(armature.matrix_world @ armature.data.bones[name].head_local) for name in TWIST_JOINTS}
+    rest_turn = float(tripo_pose.line_twist(rest["LeftArm"], rest["RightArm"], rest["LeftUpLeg"], rest["RightUpLeg"], up))
+    twist = tripo_pose.line_twist(*(np.array(tracks[name]) for name in TWIST_JOINTS), up) - rest_turn
+    twist = (twist + 180.0) % 360.0 - 180.0
+    excess = tripo_pose.twist_excess(twist, target)
+    if not np.any(excess):
+        scene.frame_set(keyed[0])
+        return {"target_degrees": target, "worst_before": round(float(np.abs(twist).max()), 1), "frames_changed": 0}
+    world_up = Vector((0.0, 0.0, 1.0))
+    to_armature = armature.matrix_world.to_3x3().inverted()
+    for name in spine:
+        bone = bones[name]
+        new = []
+        for frame in (int(round(p.co.x)) for p in curves_of[name][0].keyframe_points):
+            scene.frame_set(frame)
+            # the bone's pose-space frame without its own key: armature-space rotation times the inverse of the key's rotation
+            carrier = bone.matrix.to_3x3() @ bone.rotation_quaternion.to_matrix().inverted()
+            axis = (carrier.inverted() @ (to_armature @ world_up)).normalized()
+            angle = -math.radians(float(np.interp(frame, keyed, excess))) / len(spine)
+            new.append(Quaternion(axis, angle) @ Quaternion(bone.rotation_quaternion))
+        write_quaternions(curves_of[name], new)
+    scene.frame_set(keyed[0])
+    return {"target_degrees": target, "worst_before": round(float(np.abs(twist).max()), 1), "frames_changed": int(np.count_nonzero(excess)),
+            "largest_turn_back": round(float(np.abs(excess).max()), 1)}
+
+
 def read_inputs(args):
     """The roles, the rigid parts and the twin from the command line, with the weapon bones checked against the kit's names."""
 
@@ -1120,6 +1172,9 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
         action, trimmed = trimmed_copy(action, int(trims_end[role]), exact=True)
     if role in args.arm_level:
         extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target)
+    if role in args.untwist:
+        # Before the settle, so the clip settles back to its untwisted first pose.
+        extras["untwist"][role] = untwist_waist(armature, action, role)
     if role in args.settle:
         # After the arm level, before the chains: the cloth follows the settled body.
         extras["settle"][role] = settle_to_first(action)
@@ -1174,7 +1229,7 @@ def main():
     textures, base_path = export_base(armature, body, args, atlas)
 
     trims = dict(split_pair(item, "--trim") for item in args.trim)
-    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_chains": {}}
+    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_chains": {}, "untwist": {}}
     trims_end = dict(split_pair(item, "--trim-end") for item in args.trim_end)
     clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras, trims_end) for role, clip in roles.items()}
 
@@ -1189,6 +1244,7 @@ def main():
         "arm_level": extras["arm_level"],
         "settle": extras["settle"],
         "settle_chains": extras["settle_chains"],
+        "untwist": extras["untwist"],
         "bones_after": len(armature.data.bones),
         "bone_names": [b.name for b in armature.data.bones],
         "dropped_bones": len(dropped),
