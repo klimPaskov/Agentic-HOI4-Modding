@@ -12,8 +12,8 @@ PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 sys.path.insert(0, str(PIPELINE / "tripo"))
 
-import tripo_checks as TC  # noqa: E402
-from lib import tripo_checks as T  # noqa: E402
+import tripo_checks as TC
+from lib import tripo_checks as T
 
 RADIUS = 0.019
 AXIS = np.array([0.0, 0.0, 1.0])

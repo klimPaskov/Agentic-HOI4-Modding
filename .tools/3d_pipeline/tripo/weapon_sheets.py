@@ -25,8 +25,8 @@ from PIL import Image, ImageDraw
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-import review_unit  # noqa: E402
-from lib import pdx_deform  # noqa: E402
+import review_unit
+from lib import pdx_deform
 
 THREE_QUARTER = {"threequarter": [35, 8]}
 CLOSE_SIZE, CLOSE_SHARE = 512, 1.15
@@ -128,7 +128,7 @@ def game_sheet(folder: Path, out: Path) -> Path:
     small = max(1, round(GAME_SIZE * factor))
     for clip in index["clips"]:
         for row in clip["rows"]:
-            for view, name in row["tiles"].items():
+            for name in row["tiles"].values():
                 path = tiles / name
                 Image.open(path).convert("RGB").resize((small, small), Image.Resampling.LANCZOS).save(path)
     image = sheet(index, tiles, ["hoi4", "front"], names, lambda n, f, v: f"{n.split('_', 1)[-1]} {f} {v}")

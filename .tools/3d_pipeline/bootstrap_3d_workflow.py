@@ -24,7 +24,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from pathlib import Path, PurePosixPath
-from typing import Optional
+from typing import Optional, Tuple
 
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
@@ -1596,34 +1596,84 @@ def write_dependency_record(root: Path, payload: dict) -> Path:
     return lock_path.resolve()
 
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--quiet", action="store_true")
+    parser.add_argument("--project-root", type=Path)
+    parser.add_argument("--trusted-launcher", type=Path)
+    parser.add_argument(
+        "--verify-reviewed-config",
+        action="store_true",
+        help="Validate the transaction-reviewed MCP routes instead of rewriting Codex config.",
+    )
+    parser.add_argument(
+        "--without-meshy",
+        action="store_true",
+        help="Set up only the Blender stage (the Tripo route): skip the Meshy key, balance check and runtime. "
+        "Chosen automatically when MESHY_API_KEY is not set. The lock records that Meshy was not verified.",
+    )
+    return parser
+
+
+def check_meshy_setup(args: argparse.Namespace) -> bool:
+    """Decide whether Meshy is skipped (`--without-meshy` or no key) and verify the key when it is not. Returns True when skipped."""
+
+    without_meshy = args.without_meshy or not os.environ.get("MESHY_API_KEY", "").strip()
+    if without_meshy:
+        # Never let a child process inherit the key, even when the Meshy checks are skipped.
+        os.environ.pop("MESHY_API_KEY", None)
+        if not args.quiet:
+            print("No Meshy setup: preparing the Blender stage only (Tripo route). Run again with MESHY_API_KEY set for Meshy jobs.")
+    else:
+        meshy_key = require_meshy_key()
+        verify_meshy_key(meshy_key)
+        del meshy_key
+    return without_meshy
+
+
+def prepare_meshy_runtime(without_meshy: bool, pipeline_root: Path, npx_executable: Optional[Path]) -> Tuple[dict, dict]:
+    """The Meshy runtime record and its tool contract, or the "not verified" records when Meshy is skipped."""
+
+    if without_meshy:
+        # A later Meshy job refuses until a full bootstrap replaces this record (run_pilot.require_meshy_bootstrap).
+        meshy = {"verified": False, "reason": "bootstrapped without MESHY_API_KEY: Meshy runtime and balance not verified"}
+        meshy_tool_contract = {"verified": False, "reason": meshy["reason"]}
+    else:
+        meshy = ensure_meshy_runtime(pipeline_root, npx_executable)
+        meshy_contract_path = pipeline_root / "config/meshy_tool_contract.json"
+        if not meshy_contract_path.is_file():
+            raise SetupError(f"Meshy tool contract is missing: {meshy_contract_path}")
+        meshy_tool_contract = {
+            "path": meshy_contract_path.resolve().as_posix(),
+            "sha256": sha256_path(meshy_contract_path),
+            "contract": json.loads(meshy_contract_path.read_text(encoding="utf-8")),
+            "live_schema_verification_required_before_provider_calls": True,
+        }
+    return meshy, meshy_tool_contract
+
+
+def write_config_texts(pipeline_root: Path, blender_mcp_project: Path, uv_executable: Path, blender_bridge: dict) -> None:
+    """The one-line config files other tools read: the Blender MCP project, uv, and the bridge host and port."""
+
+    (pipeline_root / "config/blender_mcp_project.txt").write_text(
+        f"{blender_mcp_project.as_posix()}\n", encoding="utf-8"
+    )
+    (pipeline_root / "config/uv_executable.txt").write_text(
+        f"{uv_executable.as_posix()}\n", encoding="utf-8"
+    )
+    (pipeline_root / "config/blender_mcp_host.txt").write_text(
+        f"{blender_bridge['host']}\n", encoding="utf-8"
+    )
+    (pipeline_root / "config/blender_mcp_port.txt").write_text(
+        f"{blender_bridge['port']}\n", encoding="utf-8"
+    )
+
+
 def main() -> int:
     try:
-        parser = argparse.ArgumentParser(description=__doc__)
-        parser.add_argument("--quiet", action="store_true")
-        parser.add_argument("--project-root", type=Path)
-        parser.add_argument("--trusted-launcher", type=Path)
-        parser.add_argument(
-            "--verify-reviewed-config",
-            action="store_true",
-            help="Validate the transaction-reviewed MCP routes instead of rewriting Codex config.",
-        )
-        parser.add_argument(
-            "--without-meshy",
-            action="store_true",
-            help="Set up only the Blender stage (the Tripo route): skip the Meshy key, balance check and runtime. "
-            "Chosen automatically when MESHY_API_KEY is not set. The lock records that Meshy was not verified.",
-        )
+        parser = build_parser()
         args = parser.parse_args()
-        without_meshy = args.without_meshy or not os.environ.get("MESHY_API_KEY", "").strip()
-        if without_meshy:
-            # Never let a child process inherit the key, even when the Meshy checks are skipped.
-            os.environ.pop("MESHY_API_KEY", None)
-            if not args.quiet:
-                print("No Meshy setup: preparing the Blender stage only (Tripo route). Run again with MESHY_API_KEY set for Meshy jobs.")
-        else:
-            meshy_key = require_meshy_key()
-            verify_meshy_key(meshy_key)
-            del meshy_key
+        without_meshy = check_meshy_setup(args)
         root = (args.project_root or repository_root()).resolve()
         pipeline_root = root / ".tools/3d_pipeline"
         if not (pipeline_root / "bootstrap_3d_workflow.py").is_file():
@@ -1633,21 +1683,7 @@ def main() -> int:
         npx_executable = None if without_meshy else ensure_npx()
         blender_executable, blender_shortcut, blender_version = find_blender(pipeline_root)
         uv_executable = ensure_uv()
-        if without_meshy:
-            # A later Meshy job refuses until a full bootstrap replaces this record (run_pilot.require_meshy_bootstrap).
-            meshy = {"verified": False, "reason": "bootstrapped without MESHY_API_KEY: Meshy runtime and balance not verified"}
-            meshy_tool_contract = {"verified": False, "reason": meshy["reason"]}
-        else:
-            meshy = ensure_meshy_runtime(pipeline_root, npx_executable)
-            meshy_contract_path = pipeline_root / "config/meshy_tool_contract.json"
-            if not meshy_contract_path.is_file():
-                raise SetupError(f"Meshy tool contract is missing: {meshy_contract_path}")
-            meshy_tool_contract = {
-                "path": meshy_contract_path.resolve().as_posix(),
-                "sha256": sha256_path(meshy_contract_path),
-                "contract": json.loads(meshy_contract_path.read_text(encoding="utf-8")),
-                "live_schema_verification_required_before_provider_calls": True,
-            }
+        meshy, meshy_tool_contract = prepare_meshy_runtime(without_meshy, pipeline_root, npx_executable)
         verify_generation_profiles(pipeline_root)
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
@@ -1708,18 +1744,7 @@ def main() -> int:
         }
         runtime_path = pipeline_root / "config/runtime.json"
         write_json(runtime_path, runtime)
-        (pipeline_root / "config/blender_mcp_project.txt").write_text(
-            f"{blender_mcp_project.as_posix()}\n", encoding="utf-8"
-        )
-        (pipeline_root / "config/uv_executable.txt").write_text(
-            f"{uv_executable.as_posix()}\n", encoding="utf-8"
-        )
-        (pipeline_root / "config/blender_mcp_host.txt").write_text(
-            f"{blender_bridge['host']}\n", encoding="utf-8"
-        )
-        (pipeline_root / "config/blender_mcp_port.txt").write_text(
-            f"{blender_bridge['port']}\n", encoding="utf-8"
-        )
+        write_config_texts(pipeline_root, blender_mcp_project, uv_executable, blender_bridge)
         if not args.quiet:
             print(json.dumps(runtime, indent=2))
         return 0

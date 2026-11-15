@@ -349,6 +349,313 @@ class SoundPlan(unittest.TestCase):
         self.assertEqual(result.split("\n")[-3:], ['\t\tevent = { time = 3 sound = { soundeffect = "b" } }', "\t}", "}"])
 
 
+class Fixture(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+        self.job = make_job(self.root)
+        self.mod = make_mod(self.root)
+        self.addCleanup(self.tmp.cleanup)
+
+
+class NoDuplicateBlocks(Fixture):
+    def test_a_rerun_with_another_gfx_file_is_refused_and_writes_nothing(self) -> None:
+        run(self.job, self.mod)
+        before = snapshot(self.mod)
+        code, result = run(self.job, self.mod, "--gfx-file", "gfx/other.gfx")
+        self.assertEqual(code, 1)
+        self.assertTrue(any("already in gfx/entities/ab_units.gfx" in line for line in result["errors"]), result["errors"])
+        self.assertEqual(snapshot(self.mod), before)
+        self.assertFalse((self.mod / "gfx/other.gfx").exists())
+
+    def test_a_rerun_with_another_entity_file_is_refused_and_writes_nothing(self) -> None:
+        run(self.job, self.mod)
+        before = snapshot(self.mod)
+        code, result = run(self.job, self.mod, "--entity-file", "gfx/entities/other.asset")
+        self.assertEqual(code, 1)
+        self.assertTrue(any("already in gfx/entities/ab_units.asset" in line for line in result["errors"]), result["errors"])
+        self.assertEqual(snapshot(self.mod), before)
+
+    def test_naming_the_file_that_already_holds_the_block_is_fine(self) -> None:
+        run(self.job, self.mod)
+        before = snapshot(self.mod)
+        code, result = run(self.job, self.mod, "--gfx-file", "gfx\\entities\\ab_units.gfx", "--entity-file", "gfx/entities/ab_units.asset")
+        self.assertEqual(code, 0, result["errors"])
+        self.assertEqual(snapshot(self.mod), before)
+
+    def test_an_animations_block_marked_in_a_file_the_registration_does_not_name_is_refused(self) -> None:
+        write(self.mod / "gfx/entities/stray.asset", f"# wire_unit begin {STEM} animations\n# wire_unit end {STEM} animations\n")
+        before = snapshot(self.mod)
+        code, result = run(self.job, self.mod)
+        self.assertEqual(code, 1)
+        self.assertTrue(any("animations block" in line and "stray.asset" in line for line in result["errors"]), result["errors"])
+        self.assertEqual(snapshot(self.mod), before)
+
+    def test_the_animations_marker_carries_the_job_stem_not_the_asset_file_stem(self) -> None:
+        registration = self.job / "runtime" / "registration.md"
+        registration.write_text(registration.read_text(encoding="utf-8").replace(f"{FOLDER}/{STEM}.asset", f"{FOLDER}/other_name.asset"), encoding="utf-8")
+        code, result = run(self.job, self.mod)
+        self.assertEqual(code, 0, result["errors"])
+        asset = (self.mod / FOLDER / "other_name.asset").read_text(encoding="utf-8")
+        self.assertIn(f"# wire_unit begin {STEM} animations", asset)
+        self.assertNotIn("# wire_unit begin other_name animations", asset)
+        first = snapshot(self.mod)
+        run(self.job, self.mod)
+        self.assertEqual(snapshot(self.mod), first)
+
+
+class StaysInsideTheMod(Fixture):
+    def assert_refused(self, *extra: str) -> None:
+        before = snapshot(self.mod)
+        outside = {path.name for path in self.root.iterdir()}
+        code, result = run(self.job, self.mod, *extra)
+        self.assertEqual(code, 1)
+        self.assertTrue(any("inside the mod" in line or "leaves the mod" in line for line in result["errors"]), result["errors"])
+        self.assertEqual(snapshot(self.mod), before)
+        self.assertEqual({path.name for path in self.root.iterdir()}, outside)
+
+    def test_a_backslash_traversal_in_gfx_file_is_refused(self) -> None:
+        self.assert_refused("--gfx-file", "..\\evil.gfx")
+
+    def test_a_backslash_traversal_in_entity_file_is_refused(self) -> None:
+        self.assert_refused("--entity-file", "gfx\\..\\..\\evil.asset")
+
+    def test_an_absolute_or_drive_path_is_refused(self) -> None:
+        self.assert_refused("--gfx-file", "C:\\evil.gfx")
+        self.assert_refused("--entity-file", "/evil.asset")
+
+    def test_a_model_folder_that_climbs_out_of_the_mod_is_refused(self) -> None:
+        registration = self.job / "runtime" / "registration.md"
+        registration.write_text(registration.read_text(encoding="utf-8").replace(FOLDER, "..\\evil"), encoding="utf-8")
+        self.assert_refused()
+        self.assertFalse((self.root / "evil").exists())
+
+    def test_a_symlinked_folder_that_leaves_the_mod_is_refused(self) -> None:
+        elsewhere = self.root / "elsewhere"
+        elsewhere.mkdir()
+        link = self.mod / "gfx" / "linked"
+        link.parent.mkdir(parents=True)
+        try:
+            link.symlink_to(elsewhere, target_is_directory=True)
+        except OSError as error:
+            self.skipTest(f"no symlinks here: {error}")
+        self.assert_refused("--gfx-file", "gfx/linked/evil.gfx")
+        self.assertEqual(list(elsewhere.iterdir()), [])
+
+    def test_safe_destination_accepts_a_normal_path_and_normalises_backslashes(self) -> None:
+        self.assertEqual(wiring.safe_destination(self.mod, "gfx\\entities\\x.gfx"), "gfx/entities/x.gfx")
+
+
+class LineEndings(Fixture):
+    MIXED = b"\xef\xbb\xbf# top\r\nobjectTypes = {\r\n\tspriteType = { name = \"GFX_a\" }\n\tspriteType = { name = \"GFX_b\" }\r\n\r# lone\r}\r\n# tail\n"
+
+    def test_every_untouched_byte_survives_a_mixed_file(self) -> None:
+        path = self.mod / "gfx/entities/ab_units.gfx"
+        write(path, self.MIXED)
+        code, result = run(self.job, self.mod)
+        self.assertEqual(code, 0, result["errors"])
+        data = path.read_bytes()
+        suffix = b"}\r\n# tail\n"
+        prefix = self.MIXED[: -len(suffix)]
+        self.assertTrue(data.startswith(prefix))
+        self.assertTrue(data.endswith(suffix))
+        added = data[len(prefix) : -len(suffix)]
+        self.assertIn(b"# wire_unit begin ab_ghoul pdxmesh", added)
+        # the file is mostly CRLF, so the new lines are CRLF
+        self.assertEqual(added.count(b"\n"), added.count(b"\r\n"))
+        first = snapshot(self.mod)
+        run(self.job, self.mod)
+        self.assertEqual(snapshot(self.mod), first)
+
+    def test_a_block_replaced_in_a_mixed_file_keeps_the_lines_around_it(self) -> None:
+        path = self.mod / "gfx/entities/ab_units.asset"
+        write(path, b"a = 1\n# b\r\nc = 3\r\n")
+        run(self.job, self.mod)
+        first = path.read_bytes()
+        self.assertTrue(first.startswith(b"a = 1\n# b\r\nc = 3\r\n"))
+        registration = self.job / "runtime" / "registration.md"
+        registration.write_text(registration.read_text(encoding="utf-8").replace("scale = 0.8", "scale = 0.9"), encoding="utf-8")
+        run(self.job, self.mod)
+        second = path.read_bytes()
+        self.assertTrue(second.startswith(b"a = 1\n# b\r\nc = 3\r\n"))
+        self.assertIn(b"scale = 0.9", second)
+
+    def test_a_file_without_a_final_newline_gets_one_before_the_block(self) -> None:
+        file = wiring.TextFile.read(self.write_temp(b"a = 1\n# b\n c = 3"))
+        out = wiring.upsert_block(file, stem="s", kind="entity", block="x = 1", wrapper="", where="f")
+        self.assertEqual(out.encode(), b"a = 1\n# b\n c = 3\n\n# wire_unit begin s entity\nx = 1\n# wire_unit end s entity\n")
+
+    def test_a_lone_cr_is_kept_as_a_line_end(self) -> None:
+        file = wiring.TextFile.read(self.write_temp(b"a = 1\rb = 2\r\n"))
+        self.assertEqual(file.encode(), b"a = 1\rb = 2\r\n")
+        out = wiring.upsert_block(file, stem="s", kind="entity", block="x = 1", wrapper="", where="f")
+        self.assertTrue(out.encode().startswith(b"a = 1\rb = 2\r\n"))
+
+    def write_temp(self, data: bytes) -> Path:
+        path = self.root / "scratch.txt"
+        write(path, data)
+        return path
+
+
+class PdxmeshPlacement(Fixture):
+    def test_the_block_goes_inside_objecttypes_not_before_a_later_top_level_brace(self) -> None:
+        path = self.mod / "gfx/entities/ab_units.gfx"
+        write(path, 'objectTypes = {\n\t# } in a comment\n\tspriteType = { name = "GFX_a" text = "}" }\n}\nother = {\n\tx = 1\n}\n')
+        code, result = run(self.job, self.mod)
+        self.assertEqual(code, 0, result["errors"])
+        text = path.read_text(encoding="utf-8")
+        self.assertTrue(text.endswith(f"# wire_unit end {STEM} pdxmesh\n}}\nother = {{\n\tx = 1\n}}\n"), text)
+        self.assertLess(text.index("# wire_unit begin"), text.index("}\nother"))
+
+    def test_a_gfx_file_without_objecttypes_is_an_error(self) -> None:
+        write(self.mod / "gfx/entities/ab_units.gfx", "other = {\n}\n")
+        code, result = run(self.job, self.mod)
+        self.assertEqual(code, 1)
+        self.assertTrue(any("objectTypes" in line for line in result["errors"]), result["errors"])
+
+
+class DryRunErrors(Fixture):
+    def test_a_dry_run_with_a_missing_sub_unit_fails_with_exit_1(self) -> None:
+        mod = make_mod(self.root / "second", subunit=False)
+        code, result = run(self.job, mod, "--dry-run")
+        self.assertEqual((code, result["verdict"]), (1, "DRY-RUN-FAIL"))
+
+    def test_a_dry_run_with_missing_localisation_fails_with_exit_1(self) -> None:
+        mod = make_mod(self.root / "second", localisation=False)
+        code, result = run(self.job, mod, "--dry-run")
+        self.assertEqual((code, result["verdict"]), (1, "DRY-RUN-FAIL"))
+
+    def test_a_clean_dry_run_still_exits_0(self) -> None:
+        code, result = run(self.job, self.mod, "--dry-run")
+        self.assertEqual((code, result["verdict"]), (0, "DRY-RUN"))
+
+
+class BadInputIsNotAFailVerdict(Fixture):
+    def exit_code(self) -> tuple:
+        err = io.StringIO()
+        with redirect_stderr(err), redirect_stdout(io.StringIO()):
+            code = wire_unit.main([str(self.job), "--mod-root", str(self.mod)])
+        return code, err.getvalue()
+
+    def test_an_invalid_job_yaml_exits_2(self) -> None:
+        write(self.job / "job.yaml", "{ this is: [not valid")
+        code, message = self.exit_code()
+        self.assertEqual(code, 2, message)
+        self.assertIn("job.yaml", message)
+
+    def test_a_job_yaml_that_is_not_a_mapping_exits_2(self) -> None:
+        write(self.job / "job.yaml", "[1, 2]")
+        self.assertEqual(self.exit_code()[0], 2)
+
+    def test_invalid_files_json_exits_2(self) -> None:
+        write(self.job / "runtime" / "files.json", "{nope")
+        code, message = self.exit_code()
+        self.assertEqual(code, 2, message)
+        self.assertIn("files.json", message)
+
+    def test_a_registration_that_is_not_utf8_exits_2(self) -> None:
+        write(self.job / "runtime" / "registration.md", b"# Registration for x_entity\n\xff\xfe\n")
+        code, message = self.exit_code()
+        self.assertEqual(code, 2, message)
+        self.assertIn("registration.md", message)
+
+    def test_a_failed_import_of_the_kits_checks_exits_2(self) -> None:
+        with mock.patch.object(wire_unit, "load_audit_module", side_effect=wiring.WiringError("cannot load the kit's checks")):
+            err = io.StringIO()
+            with redirect_stderr(err), redirect_stdout(io.StringIO()):
+                code = wire_unit.main([str(self.job), "--mod-root", str(self.mod)])
+        self.assertEqual(code, 2)
+
+    def test_the_real_loader_turns_an_import_error_into_a_wiring_error(self) -> None:
+        import check_unit_files
+
+        with mock.patch.object(check_unit_files, "_registration_audit", side_effect=ImportError("gone")):
+            with self.assertRaises(wiring.WiringError):
+                wire_unit.load_audit_module()
+
+    def test_nothing_is_written_when_the_input_is_bad(self) -> None:
+        write(self.job / "runtime" / "files.json", "{nope")
+        before = snapshot(self.mod)
+        self.exit_code()
+        self.assertEqual(snapshot(self.mod), before)
+
+
+class AtomicOrderedWrites(Fixture):
+    def test_runtime_files_are_copied_before_any_block_is_written(self) -> None:
+        order = []
+        real = wiring._write_atomically
+
+        def spy(dest: Path, data: bytes) -> None:
+            order.append(dest.suffix)
+            real(dest, data)
+
+        with mock.patch.object(wiring, "_write_atomically", spy):
+            code, _result = run(self.job, self.mod)
+        self.assertEqual(code, 0)
+        blocks = [index for index, suffix in enumerate(order) if suffix in (".gfx", ".asset")]
+        files = [index for index, suffix in enumerate(order) if suffix not in (".gfx", ".asset")]
+        self.assertTrue(files and blocks)
+        self.assertLess(max(files), min(blocks))
+        self.assertEqual(order[-1], ".asset")  # the entity is the last write
+
+    def test_a_failure_while_writing_blocks_leaves_files_but_no_registration(self) -> None:
+        real = wiring._write_atomically
+
+        def failing(dest: Path, data: bytes) -> None:
+            if dest.suffix == ".gfx":
+                raise OSError("disk full")
+            real(dest, data)
+
+        err = io.StringIO()
+        with mock.patch.object(wiring, "_write_atomically", failing), redirect_stderr(err), redirect_stdout(io.StringIO()):
+            code = wire_unit.main([str(self.job), "--mod-root", str(self.mod)])
+        self.assertEqual(code, 2)
+        self.assertIn("disk full", err.getvalue())
+        self.assertTrue((self.mod / FOLDER / f"{STEM}.mesh").is_file())
+        self.assertFalse((self.mod / "gfx/entities/ab_units.asset").exists())
+
+    def test_a_failed_replace_keeps_the_old_file_and_leaves_no_temporary_file(self) -> None:
+        target = self.mod / "gfx" / "x.gfx"
+        write(target, b"old")
+        with mock.patch.object(wiring.os, "replace", side_effect=OSError("locked")):
+            with self.assertRaises(OSError):
+                wiring._write_atomically(target, b"new")
+        self.assertEqual(target.read_bytes(), b"old")
+        self.assertEqual([path.name for path in target.parent.iterdir()], ["x.gfx"])
+
+    def test_a_write_replaces_the_file_in_one_step(self) -> None:
+        target = self.mod / "gfx" / "y.gfx"
+        wiring._write_atomically(target, b"first")
+        wiring._write_atomically(target, b"second")
+        self.assertEqual(target.read_bytes(), b"second")
+        self.assertEqual([path.name for path in target.parent.iterdir()], ["y.gfx"])
+
+
+class ModelFolder(unittest.TestCase):
+    def test_a_mesh_path_without_a_folder_gives_an_empty_folder(self) -> None:
+        registration = wiring.Registration("x_entity", "x", 'pdxmesh = {\n\tname = "x_mesh"\n\tfile = "x.mesh"\n}', (("x.asset", "animation = {}"),), "entity = {}")
+        self.assertEqual(wiring.model_folder(registration), "")
+
+    def test_a_mesh_path_with_a_folder_gives_that_folder(self) -> None:
+        registration = wiring.Registration("x_entity", "x", 'pdxmesh = {\n\tfile = "a\\b/x.mesh"\n}', (("a/b/x.asset", "animation = {}"),), "entity = {}")
+        self.assertEqual(wiring.model_folder(registration), "a/b")
+
+
+class SoundEventText(unittest.TestCase):
+    def test_quotes_in_a_soundeffect_name_are_escaped(self) -> None:
+        entity = 'entity = {\n\tstate = { name = "move" animation = "move" }\n}'
+        out = wiring.apply_sound_events(entity, [wiring.SoundEvent("move", 'say "hi"', 3)])
+        self.assertIn('soundeffect = "say \\"hi\\""', out)
+
+    def test_a_sound_plan_warns_that_the_time_unit_is_unverified(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            job, mod = make_job(root, sound_plan=[{"role": "move", "soundeffect": "ghoul_step", "frame": 12}]), make_mod(root)
+            _code, result = run(job, mod)
+            self.assertTrue(any("unverified" in line and "time" in line for line in result["warnings"]), result["warnings"])
+            self.assertIn('event = { time = 12 sound = { soundeffect = "ghoul_step" } }', (mod / "gfx/entities/ab_units.asset").read_text(encoding="utf-8"))
+
+
 class RealChecks(unittest.TestCase):
     """The two real subprocess checks, on a fixture whose mesh is not a mesh: the verdict must be FAIL and the exit code 1."""
 

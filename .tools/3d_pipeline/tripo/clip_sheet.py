@@ -22,7 +22,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import weapon_sheets  # noqa: E402
+import weapon_sheets
 
 
 def compose(index: dict, tiles: Path, views, names, stem: str, labels: dict) -> Image.Image:

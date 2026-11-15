@@ -26,7 +26,7 @@ from PIL import Image, ImageDraw
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-import review_unit  # noqa: E402
+import review_unit
 
 VIEWS = ["front", "hoi4"]
 SIZE = 512

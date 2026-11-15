@@ -11,7 +11,7 @@ import numpy as np
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE / "tripo"))
 
-import clip_check  # noqa: E402
+import clip_check
 
 
 def box(lo=(-1.0, -1.0, -1.0), hi=(1.0, 1.0, 1.0)) -> np.ndarray:

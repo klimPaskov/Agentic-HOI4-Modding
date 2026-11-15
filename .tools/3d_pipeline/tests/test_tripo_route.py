@@ -14,10 +14,10 @@ from unittest import mock
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-import run_pilot  # noqa: E402
-import tripo_intake  # noqa: E402
-from lib import credits  # noqa: E402
-from lib.tripo import animation_source_kind, inbox_file, provider_name, uses_tripo  # noqa: E402
+import run_pilot
+import tripo_intake
+from lib import credits
+from lib.tripo import animation_source_kind, inbox_file, provider_name, uses_tripo
 
 ROLES = {"idle": "idle", "move": "walk", "attack": "chop", "defend": "hit_to_body_01", "retreat": "flee_01", "death": "fall"}
 

@@ -9,9 +9,9 @@ from pathlib import Path
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-import numpy as np  # noqa: E402
+import numpy as np
 
-from lib import tripo_shape as shape  # noqa: E402
+from lib import tripo_shape as shape
 
 
 def plate(x0, x1, z0, z1, offset=0, split=False):

@@ -18,9 +18,9 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from blender_client import BlenderAdapterClient  # noqa: E402
-from lib.mcp_stdio import MCPRouteError  # noqa: E402
-from lib.paths import (  # noqa: E402
+from blender_client import BlenderAdapterClient
+from lib.mcp_stdio import MCPRouteError
+from lib.paths import (
     append_history,
     dds_converter,
     ensure_job_layout,
@@ -69,7 +69,7 @@ from lib.texture_lineage import (
     provider_texture_rels,
     verify_texture_lineage,
 )
-from lib.tripo import animation_source_kind, provider_name, uses_tripo  # noqa: E402
+from lib.tripo import animation_source_kind, provider_name, uses_tripo
 from lib.reuse import (
     block_message,
     copy_artifacts,
@@ -79,7 +79,7 @@ from lib.reuse import (
     reconcile_submission,
     unreconciled_submissions,
 )
-from meshy_client import (  # noqa: E402
+from meshy_client import (
     REQUIRED_KEY_MESSAGE,
     MeshyClient,
     MeshyTaskFailed,
@@ -93,7 +93,7 @@ from meshy_client import (  # noqa: E402
     status_from,
     task_id_from,
 )
-from pack_pdx_material import (  # noqa: E402
+from pack_pdx_material import (
     pack_pdx_normal_map,
     pack_pdx_specular_map,
     prepare_texture_source_rels,
@@ -3997,7 +3997,7 @@ def run_file_only_command(args: argparse.Namespace, parser: argparse.ArgumentPar
     return 0
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs-config", type=Path, help="repository-owned job registry (required for provider work)")
     parser.add_argument(
@@ -4023,6 +4023,11 @@ def main() -> int:
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
     parser.add_argument("assets", nargs="*")
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
     args = parser.parse_args()
     handled = run_file_only_command(args, parser)
     if handled is not None:

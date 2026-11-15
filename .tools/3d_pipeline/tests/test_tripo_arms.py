@@ -11,7 +11,7 @@ import numpy as np
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-from lib import tripo_arms as A  # noqa: E402
+from lib import tripo_arms as A
 
 
 def frames(count, hand_y, shoulder_y=1.4, head_y=1.6, hips_y=1.0, forward=0.3):

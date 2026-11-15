@@ -12,8 +12,8 @@ import numpy as np
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE / "tripo"))
 
-import assemble_separate as asm  # noqa: E402
-import clip_check as cc  # noqa: E402
+import assemble_separate as asm
+import clip_check as cc
 
 HAND = np.array([0.8, 0.5, 0.0])
 JOINT_NAMES = ["mixamorig:Hips", "mixamorig:RightHand", "mixamorig:RightHandIndex1", "mixamorig:RightHandMiddle1", "mixamorig:RightHandRing1"]

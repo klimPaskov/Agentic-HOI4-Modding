@@ -36,17 +36,21 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 PIPELINE = Path(__file__).resolve().parent
 KIT_ROOT = PIPELINE.parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-from lib.paths import load_unit_types, read_job_document, resolve_job_root  # noqa: E402
-from lib import unit_wiring as wiring  # noqa: E402
+from lib.paths import load_unit_types, read_job_document, resolve_job_root
+from lib import unit_wiring as wiring
 
 JOB_ID_PREFIX = "hoi4_3d_model_jobs_"
 CHECK_TIMEOUT_SECONDS = 900
+SOUND_TIME_WARNING = (
+    "sound events: the unit of `time` in an entity event is unverified (vanilla uses values like 0.1 and 14, see .tools/wiki/kit/entity_modding.md); "
+    "the tool writes the plan's frame number as it is, so check the timing in the game"
+)
 
 
 def resolve_job(value: str) -> Path:
@@ -56,7 +60,7 @@ def resolve_job(value: str) -> Path:
     slug = value[len(JOB_ID_PREFIX) :] if value.startswith(JOB_ID_PREFIX) else value
     try:
         root = resolve_job_root(slug)
-    except Exception as error:  # noqa: BLE001 - any refusal means this is not a job
+    except Exception as error:  # any refusal means this is not a job
         raise wiring.WiringError(f"{value} is neither a folder nor a job id ({error})") from error
     if not root.is_dir():
         raise wiring.WiringError(f"no job folder at {root}")
@@ -77,9 +81,12 @@ def game_dir() -> Optional[Path]:
 
 
 def load_audit_module() -> Optional[object]:
-    import check_unit_files
+    try:
+        import check_unit_files
 
-    audit, _reason = check_unit_files._registration_audit()
+        audit, _reason = check_unit_files._registration_audit()
+    except Exception as error:  # the import runs the kit's audit module, which can fail in many ways
+        raise wiring.WiringError(f"cannot load the kit's checks (check_unit_files.py): {error}") from error
     return audit
 
 
@@ -116,64 +123,78 @@ def relevant(finding: Dict[str, Any], stem: str, written: Sequence[str]) -> bool
     return stem in str(finding.get("message", "")) or stem in path or path in written
 
 
-def collect(args: argparse.Namespace) -> Dict[str, Any]:
-    job = resolve_job(args.job)
-    mod_root = args.mod_root.resolve()
-    if not mod_root.is_dir():
-        raise wiring.WiringError(f"--mod-root {mod_root} is not a folder")
+def read_input_text(path: Path) -> str:
+    """A job file's text; a file that cannot be read as UTF-8 is a bad input (exit 2), not a crash."""
+
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise wiring.WiringError(f"cannot read {path}: {error}") from error
+
+
+def load_registration(job: Path) -> wiring.Registration:
     registration_path = job / "runtime" / "registration.md"
     if not registration_path.is_file():
         raise wiring.WiringError(f"{registration_path} does not exist; the job has not finished its runtime stage")
-    registration = wiring.parse_registration(registration_path.read_text(encoding="utf-8"))
-    stem = registration.stem
-    spec: Dict[str, Any] = read_job_document(job / "job.yaml") if (job / "job.yaml").is_file() else {}
-    spec_stem = ((spec.get("blender_plan") or {}).get("runtime_stem")) or spec.get("runtime_stem")
-    errors: List[str] = []
-    warnings: List[str] = []
-    if spec_stem and spec_stem != stem:
-        errors.append(f"job.yaml's runtime stem {spec_stem} differs from the registration's {stem}")
+    return wiring.parse_registration(read_input_text(registration_path))
 
-    clip_samples: Dict[str, int] = {}
-    files_json = job / "runtime" / "files.json"
-    if files_json.is_file():
-        for name, facts in ((json.loads(files_json.read_text(encoding="utf-8")).get("facts") or {}).get("animations") or {}).items():
-            if isinstance(facts, dict) and isinstance(facts.get("samples"), int):
-                clip_samples[name] = facts["samples"]
 
-    entity_block = registration.entity_block
-    sound: Dict[str, Any] = {"plan": False, "events": [], "problems": []}
+def load_spec(job: Path) -> Dict[str, Any]:
+    """The job's `job.yaml` as a mapping ({} when the job has none)."""
+
+    path = job / "job.yaml"
+    if not path.is_file():
+        return {}
     try:
-        events = wiring.parse_sound_plan(spec.get("sound_plan") or (spec.get("blender_plan") or {}).get("sound_plan"))
-        if events:
-            sound["plan"] = True
-            entity_block = wiring.apply_sound_events(registration.entity_block, events, clip_samples, stem)
-            sound["events"] = [{"role": e.role, "soundeffect": e.soundeffect, "frame": e.frame} for e in events]
-        else:
+        return read_job_document(path)
+    except Exception as error:  # the reader raises JSON, YAML, decoding and missing-package errors alike
+        raise wiring.WiringError(f"cannot read {path}: {error}") from error
+
+
+def plan_section(spec: Dict[str, Any]) -> Dict[str, Any]:
+    section = spec.get("blender_plan")
+    return section if isinstance(section, dict) else {}
+
+
+def load_clip_samples(job: Path) -> Dict[str, int]:
+    """clip file name -> sample count, from the job's `runtime/files.json` (empty when the job has none)."""
+
+    path = job / "runtime" / "files.json"
+    if not path.is_file():
+        return {}
+    try:
+        document = json.loads(read_input_text(path))
+    except json.JSONDecodeError as error:
+        raise wiring.WiringError(f"{path} is not valid JSON: {error}") from error
+    facts = document.get("facts") if isinstance(document, dict) else None
+    animations = facts.get("animations") if isinstance(facts, dict) else None
+    if not isinstance(animations, dict):
+        return {}
+    return {name: item["samples"] for name, item in animations.items() if isinstance(item, dict) and isinstance(item.get("samples"), int)}
+
+
+def plan_sound(spec: Dict[str, Any], registration: wiring.Registration, clip_samples: Dict[str, int], errors: List[str], warnings: List[str]) -> Tuple[str, Dict[str, Any]]:
+    """The entity block with the job's sound events written in, and what the sound plan said."""
+
+    sound: Dict[str, Any] = {"plan": False, "events": [], "problems": []}
+    entity_block = registration.entity_block
+    try:
+        events = wiring.parse_sound_plan(spec.get("sound_plan") or plan_section(spec).get("sound_plan"))
+        if not events:
             warnings.append("no sound plan: the unit's entity has no sound events (sounds are never generated; add a sound_plan to job.yaml or write them by hand)")
+            return entity_block, sound
+        sound["plan"] = True
+        entity_block = wiring.apply_sound_events(entity_block, events, clip_samples, registration.stem)
+        sound["events"] = [{"role": e.role, "soundeffect": e.soundeffect, "frame": e.frame} for e in events]
+        warnings.append(SOUND_TIME_WARNING)
     except wiring.WiringError as error:
         errors.append(f"sound plan: {error}")
         sound["problems"].append(str(error))
+    return entity_block, sound
 
-    plan = wiring.build_plan(
-        mod_root=mod_root,
-        registration=registration,
-        entity_block=entity_block,
-        runtime_files=job / "runtime" / "files",
-        gfx_file=args.gfx_file,
-        entity_file=args.entity_file,
-        prefix=args.prefix,
-    )
-    errors += plan.errors
-    blocking = list(errors)  # errors found before any write: the job, the sound plan and the plan itself
-    result: Dict[str, Any] = {
-        "job": str(job),
-        "stem": stem,
-        "mod_root": str(mod_root),
-        "dry_run": bool(args.dry_run),
-        "plan": [item.as_dict() for item in plan.items],
-        "sound": sound,
-    }
-    folder_rel = wiring.mesh_file(registration).rsplit("/", 1)[0]
+
+def check_subunits(mod_root: Path, registration: wiring.Registration, errors: List[str], warnings: List[str]) -> Dict[str, Any]:
+    """The sub-unit and localisation report; adds what is missing to `errors`."""
 
     audit = load_audit_module()
     sprite = wiring.sprite_token(registration)
@@ -182,14 +203,14 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
         warnings.append("the kit's registration audit could not be imported, so the sub-unit sprite was not checked")
     else:
         subunits = wiring.find_subunits(mod_root, sprite, audit)
-    sub_info: Dict[str, Any] = {"sprite": sprite, "subunits": [{"id": unit, "file": file} for unit, file in subunits], "missing_localisation": []}
+    missing_loc = wiring.missing_localisation(mod_root, [unit for unit, _file in subunits])
     if audit is not None and not subunits:
         errors.append(f"no sub-unit in common/units has sprite = {sprite}, so the entity is never used (write the sub-unit in the mod)")
-    missing_loc = wiring.missing_localisation(mod_root, [unit for unit, _file in subunits])
-    sub_info["missing_localisation"] = missing_loc
     errors += [f"localisation key {key} is not defined (write it in the mod's localisation)" for key in missing_loc]
-    result["subunit"] = sub_info
+    return {"sprite": sprite, "subunits": [{"id": unit, "file": file} for unit, file in subunits], "missing_localisation": missing_loc}
 
+
+def report_counters_and_sounds(mod_root: Path, sprite: str, sound: Dict[str, Any], result: Dict[str, Any], warnings: List[str]) -> None:
     game = game_dir()
     counters = wiring.counter_tokens(mod_root, game, sprite)
     result["counters"] = [{"token": c.token, "role": c.role, "status": c.status, "detail": c.detail} for c in counters]
@@ -200,35 +221,78 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
         if not wiring.soundeffect_defined(mod_root, game, event["soundeffect"]):
             warnings.append(f"soundeffect {event['soundeffect']} is defined in no sound .asset file of the mod or the game")
 
-    result["checks"] = {}
+
+def run_written_checks(args: argparse.Namespace, mod_root: Path, registration: wiring.Registration, spec: Dict[str, Any], plan: wiring.Plan, result: Dict[str, Any], errors: List[str], warnings: List[str]) -> None:
+    """Write the plan, then run check_unit_files and the static audit on the mod."""
+
+    stem = registration.stem
+    wiring.apply_plan(mod_root, plan)
+    written = [item.path for item in plan.items if item.status != "unchanged"]
+    unit_type = spec.get("unit_type") if spec.get("unit_type") in load_unit_types() else None
+    files_check = run_check_unit_files(mod_root, mod_root / wiring.model_folder(registration), unit_type)
+    result["checks"]["check_unit_files"] = {"exit": files_check["exit"], "errors": files_check["errors"], "warnings": files_check["warnings"]}
+    errors += [f"check_unit_files: {line}" for line in files_check["errors"]]
+    warnings += [f"check_unit_files: {line}" for line in files_check["warnings"]]
+    audited = run_audit(mod_root)
+    if audited.get("unavailable"):
+        errors.append(f"audit: {audited['unavailable']}")
+        result["checks"]["audit"] = {"exit": audited["exit"], "unavailable": audited["unavailable"]}
+        return
+    all_errors = [f for f in audited["findings"] if f.get("level") == "error"]
+    counted = all_errors if args.strict_audit else [f for f in all_errors if relevant(f, stem, written)]
+    other = len(all_errors) - len(counted)
+    result["checks"]["audit"] = {"exit": audited["exit"], "errors": len(counted), "other_errors_in_mod": other}
+    errors += [f"audit {f['rule']} {f['path']}: {f['message']}" for f in counted]
+    if other:
+        warnings.append(f"audit: {other} error(s) in the mod are not about this unit (rerun with --strict-audit to count them)")
+
+
+def collect(args: argparse.Namespace) -> Dict[str, Any]:
+    job = resolve_job(args.job)
+    mod_root = args.mod_root.resolve()
+    if not mod_root.is_dir():
+        raise wiring.WiringError(f"--mod-root {mod_root} is not a folder")
+    registration = load_registration(job)
+    stem = registration.stem
+    spec = load_spec(job)
+    spec_stem = plan_section(spec).get("runtime_stem") or spec.get("runtime_stem")
+    errors: List[str] = []
+    warnings: List[str] = []
+    if spec_stem and spec_stem != stem:
+        errors.append(f"job.yaml's runtime stem {spec_stem} differs from the registration's {stem}")
+    entity_block, sound = plan_sound(spec, registration, load_clip_samples(job), errors, warnings)
+    plan = wiring.build_plan(
+        mod_root=mod_root,
+        registration=registration,
+        entity_block=entity_block,
+        runtime_files=job / "runtime" / "files",
+        gfx_file=args.gfx_file,
+        entity_file=args.entity_file,
+        prefix=args.prefix,
+    )
+    errors += plan.errors
+    blocking = bool(errors)  # errors found before any write: the job, the sound plan and the plan itself
+    result: Dict[str, Any] = {
+        "job": str(job),
+        "stem": stem,
+        "mod_root": str(mod_root),
+        "dry_run": bool(args.dry_run),
+        "plan": [item.as_dict() for item in plan.items],
+        "sound": sound,
+        "checks": {},
+    }
+    result["subunit"] = check_subunits(mod_root, registration, errors, warnings)
+    report_counters_and_sounds(mod_root, result["subunit"]["sprite"], sound, result, warnings)
     if blocking:
         warnings.append("checks not run: the job or plan has errors, so nothing was written")
     elif args.dry_run:
         warnings.append("dry run: nothing was written and check_unit_files and the audit were not run")
     else:
-        wiring.apply_plan(mod_root, plan)
-        written = [item.path for item in plan.items if item.status != "unchanged"]
-        unit_type = spec.get("unit_type") if spec.get("unit_type") in load_unit_types() else None
-        files_check = run_check_unit_files(mod_root, mod_root / folder_rel, unit_type)
-        result["checks"]["check_unit_files"] = {"exit": files_check["exit"], "errors": files_check["errors"], "warnings": files_check["warnings"]}
-        errors += [f"check_unit_files: {line}" for line in files_check["errors"]]
-        warnings += [f"check_unit_files: {line}" for line in files_check["warnings"]]
-        audited = run_audit(mod_root)
-        if audited.get("unavailable"):
-            errors.append(f"audit: {audited['unavailable']}")
-            result["checks"]["audit"] = {"exit": audited["exit"], "unavailable": audited["unavailable"]}
-        else:
-            all_errors = [f for f in audited["findings"] if f.get("level") == "error"]
-            counted = all_errors if args.strict_audit else [f for f in all_errors if relevant(f, stem, written)]
-            other = len(all_errors) - len(counted)
-            result["checks"]["audit"] = {"exit": audited["exit"], "errors": len(counted), "other_errors_in_mod": other}
-            errors += [f"audit {f['rule']} {f['path']}: {f['message']}" for f in counted]
-            if other:
-                warnings.append(f"audit: {other} error(s) in the mod are not about this unit (rerun with --strict-audit to count them)")
+        run_written_checks(args, mod_root, registration, spec, plan, result, errors, warnings)
     result["errors"] = errors
     result["warnings"] = warnings
     if args.dry_run:
-        result["verdict"] = "DRY-RUN-FAIL" if blocking else "DRY-RUN"
+        result["verdict"] = "DRY-RUN-FAIL" if errors else "DRY-RUN"
     else:
         result["verdict"] = "FAIL" if errors else "PASS"
     return result

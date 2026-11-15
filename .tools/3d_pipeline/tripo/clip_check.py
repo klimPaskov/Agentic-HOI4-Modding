@@ -44,7 +44,7 @@ import argparse
 import json
 import re
 import struct
-import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -86,6 +86,30 @@ def _basis(direction: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     return u, v
 
 
+def _bin_triangles(t2: np.ndarray, grid: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Cells of a `grid` x `grid` lattice over the projected triangles (T, 3, 2).
+
+    Returns the cell keys and the triangle of each (pairs sorted by key), the lattice origin and cell size,
+    and the upper corner of the projected bounds.
+    """
+
+    lo, hi = t2.min(axis=1), t2.max(axis=1)
+    origin = lo.min(axis=0)
+    cell = np.maximum((hi.max(axis=0) - origin) / grid, 1e-12)
+    i0 = np.clip(np.floor((lo - origin) / cell).astype(np.int64), 0, grid - 1)
+    i1 = np.clip(np.floor((hi - origin) / cell).astype(np.int64), 0, grid - 1)
+    nx, ny = i1[:, 0] - i0[:, 0] + 1, i1[:, 1] - i0[:, 1] + 1
+    counts = nx * ny
+    total = int(counts.sum())
+    tri = np.repeat(np.arange(len(t2)), counts)
+    local = np.arange(total) - np.repeat(np.cumsum(counts) - counts, counts)
+    cx = i0[tri, 0] + local % nx[tri]
+    cy = i0[tri, 1] + local // nx[tri]
+    key = cx * grid + cy
+    order = np.argsort(key, kind="stable")
+    return key[order], tri[order], origin, cell, hi.max(axis=0)
+
+
 def _inside_along(points: np.ndarray, triangles: np.ndarray, direction: np.ndarray, grid: int) -> np.ndarray:
     """True where a ray from the point along `direction` crosses the triangles an odd number of times."""
 
@@ -95,24 +119,10 @@ def _inside_along(points: np.ndarray, triangles: np.ndarray, direction: np.ndarr
     pd = points @ direction
     t2 = triangles @ plane  # (T, 3, 2)
     td = triangles @ direction  # (T, 3)
-    lo, hi = t2.min(axis=1), t2.max(axis=1)
-    origin = lo.min(axis=0)
-    cell = np.maximum((hi.max(axis=0) - origin) / grid, 1e-12)
-    i0 = np.clip(np.floor((lo - origin) / cell).astype(np.int64), 0, grid - 1)
-    i1 = np.clip(np.floor((hi - origin) / cell).astype(np.int64), 0, grid - 1)
-    nx, ny = i1[:, 0] - i0[:, 0] + 1, i1[:, 1] - i0[:, 1] + 1
-    counts = nx * ny
-    total = int(counts.sum())
-    tri = np.repeat(np.arange(len(triangles)), counts)
-    local = np.arange(total) - np.repeat(np.cumsum(counts) - counts, counts)
-    cx = i0[tri, 0] + local % nx[tri]
-    cy = i0[tri, 1] + local // nx[tri]
-    key = cx * grid + cy
-    order = np.argsort(key, kind="stable")
-    key, tri = key[order], tri[order]
+    key, tri, origin, cell, upper = _bin_triangles(t2, grid)
     # Points outside the projected bounds cannot be crossed by any triangle.
     q = np.floor((p2 - origin) / cell).astype(np.int64)
-    inside_bounds = np.all((q >= 0) & (q < grid), axis=1) & np.all(p2 >= origin, axis=1) & np.all(p2 <= hi.max(axis=0), axis=1)
+    inside_bounds = np.all((q >= 0) & (q < grid), axis=1) & np.all(p2 >= origin, axis=1) & np.all(p2 <= upper, axis=1)
     result = np.zeros(len(points), dtype=bool)
     candidates = np.nonzero(inside_bounds)[0]
     if not len(candidates):
@@ -414,6 +424,102 @@ def resolve_weapon_joint(names: Sequence[str], weapon_rest: np.ndarray, joint_re
 # ---------------------------------------------------------------------------------------------
 
 
+@dataclass
+class _CheckContext:
+    """What every clip of one `check` call shares: the rig, the body's rest edges and the weapon's points."""
+
+    rig: "Rig"
+    tri: np.ndarray
+    edges: np.ndarray
+    rest_len: np.ndarray
+    keep: np.ndarray
+    height: float
+    ground: float
+    joint: int
+    all_points: np.ndarray  # (N, 4) every weapon point, homogeneous
+    free_points: np.ndarray  # (M, 4) the weapon points outside the grip zone
+    margin_share: float
+    per_frame_ground: bool
+
+
+def _penetration(ctx: _CheckContext, hand: np.ndarray, now: np.ndarray) -> Tuple[float, float, float]:
+    """For one frame: the share of free weapon points inside the body, the share deeper than the margin, and the deepest depth (share of height)."""
+
+    if not len(ctx.free_points):
+        return 0.0, 0.0, 0.0
+    world_free = (ctx.free_points @ hand.T)[:, :3]
+    lo, hi = now.min(axis=0), now.max(axis=0)
+    near = np.all((world_free >= lo) & (world_free <= hi), axis=1)
+    inside = np.zeros(len(world_free), dtype=bool)
+    if near.any():
+        inside[near] = points_inside_mesh(world_free[near], now[ctx.tri])
+    share = float(inside.mean())
+    if not inside.any():
+        return share, 0.0, 0.0
+    depths = nearest_vertex_distance(world_free[inside], now) / ctx.height
+    return share, float((depths > ctx.margin_share).sum()) / len(world_free), float(depths.max())
+
+
+def _check_clip(ctx: _CheckContext, tracks: dict, end: float, count: int, tolerance: float, keep_series: bool) -> dict:
+    """Pose the body at `count` times of one clip and measure stretch, the weapon in the body and the weapon below the ground."""
+
+    rig, height = ctx.rig, ctx.height
+    deep_series, in_series = [], []
+    worst_stretch = {"stretched": 0.0, "squashed": 0.0, "frame": 0}
+    growth = 0.0
+    worst_in, worst_in_frame, deepest, deepest_frame, worst_ground = 0.0, 0, 0.0, 0, 0.0
+    worst_deep, worst_deep_frame, lowest_body, worst_rest_ground = 0.0, 0, 0.0, 0.0
+    for step in range(count):
+        t = end * step / max(count - 1, 1)
+        worlds = rig.joint_worlds(rig.pose_for(tracks, t))
+        mats = rig.skin_mats(worlds)
+        now = rig.skin(rig.body, mats)
+        length = np.linalg.norm(now[ctx.edges[:, 0]] - now[ctx.edges[:, 1]], axis=1)
+        ratio = length[ctx.keep] / ctx.rest_len[ctx.keep]
+        stretched = float((ratio > STRETCH_LONG).mean())
+        if stretched > worst_stretch["stretched"]:
+            worst_stretch.update(stretched=stretched, squashed=float((ratio < STRETCH_SHORT).mean()), frame=step)
+        growth = max(growth, float((length - ctx.rest_len).max() / height))
+        # The weapon rides the hand joint rigidly.
+        lowest_body = max(lowest_body, float((ctx.ground + GROUND_TOLERANCE_SHARE * height - now[:, 1].min()) / height))
+        hand = mats[ctx.joint]
+        world_all = (ctx.all_points @ hand.T)[:, :3]
+        frame_ground = float(now[:, 1].min()) - tolerance * height if ctx.per_frame_ground else ctx.ground
+        worst_ground = max(worst_ground, float((world_all[:, 1] < frame_ground).mean()))
+        worst_rest_ground = max(worst_rest_ground, float((world_all[:, 1] < ctx.ground).mean()))
+        share, deep, depth = _penetration(ctx, hand, now)
+        in_series.append(share)
+        deep_series.append(deep)
+        if share > worst_in:
+            worst_in, worst_in_frame = share, step
+        if depth > deepest:
+            deepest, deepest_frame = depth, step
+        if deep > worst_deep:
+            worst_deep, worst_deep_frame = deep, step
+    entry = {
+        "seconds": round(end, 2),
+        "stretched_pct": round(100 * worst_stretch["stretched"], 2),
+        "squashed_pct": round(100 * worst_stretch["squashed"], 2),
+        "worst_growth_pct_of_height": round(100 * growth, 1),
+        "worst_stretch_sample": worst_stretch["frame"],
+        "weapon_in_body_pct": round(100 * worst_in, 2),
+        "weapon_in_body_worst_sample": worst_in_frame,
+        "weapon_deep_in_body_pct": round(100 * worst_deep, 2),
+        "weapon_deep_in_body_worst_sample": worst_deep_frame,
+        "deepest_penetration_pct_of_height": round(100 * deepest, 2),
+        "deepest_penetration_sample": deepest_frame,
+        "weapon_below_ground_pct": round(100 * worst_ground, 2),
+        "weapon_below_rest_ground_pct": round(100 * worst_rest_ground, 2),
+        "body_lowest_below_rest_ground_pct_of_height": round(100 * max(lowest_body, 0.0), 1),
+        **clip_verdict(worst_deep, worst_ground, 100 * worst_stretch["stretched"]),
+    }
+    if keep_series:
+        entry["frames"] = count
+        entry["weapon_deep_in_body_pct_by_frame"] = [round(100 * v, 2) for v in deep_series]
+        entry["weapon_in_body_pct_by_frame"] = [round(100 * v, 2) for v in in_series]
+    return entry
+
+
 def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", samples=24, grip_radius=GRIP_RADIUS_SHARE, per_frame_ground=False, only: Optional[Sequence[str]] = None, ground_tolerance_by_clip: Optional[Dict[str, float]] = None, frame_rate: float = 24.0, margin_share: float = PENETRATION_MARGIN_SHARE) -> dict:
     rig = Rig(path, body, weapon)
     body_part, weapon_part = rig.body, rig.weapon
@@ -437,6 +543,7 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
     free_points = np.concatenate([points[free], np.ones((int(free.sum()), 1))], axis=1)
     all_points = np.concatenate([points, np.ones((len(points), 1))], axis=1)
 
+    ctx = _CheckContext(rig, tri, edges, rest_len, keep, height, ground, joint, all_points, free_points, margin_share, per_frame_ground)
     report = {}
     for name, tracks, end in rig.clips():
         if only is not None and name not in only:
@@ -444,74 +551,7 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
         tolerance = (ground_tolerance_by_clip or {}).get(name, FRAME_GROUND_TOLERANCE_SHARE)
         # samples == "all": every frame of the clip at `frame_rate`, and the per-frame series is kept in the report
         count = int(round(end * frame_rate)) + 1 if samples == "all" else int(samples)
-        deep_series, in_series = [], []
-        worst_stretch = {"stretched": 0.0, "squashed": 0.0, "frame": 0}
-        growth = 0.0
-        worst_in, worst_in_frame, deepest, deepest_frame, worst_ground = 0.0, 0, 0.0, 0, 0.0
-        worst_deep, worst_deep_frame, lowest_body, worst_rest_ground = 0.0, 0, 0.0, 0.0
-        for step in range(count):
-            t = end * step / max(count - 1, 1)
-            worlds = rig.joint_worlds(rig.pose_for(tracks, t))
-            mats = rig.skin_mats(worlds)
-            now = rig.skin(body_part, mats)
-            length = np.linalg.norm(now[edges[:, 0]] - now[edges[:, 1]], axis=1)
-            ratio = length[keep] / rest_len[keep]
-            stretched = float((ratio > STRETCH_LONG).mean())
-            if stretched > worst_stretch["stretched"]:
-                worst_stretch.update(stretched=stretched, squashed=float((ratio < STRETCH_SHORT).mean()), frame=step)
-            growth = max(growth, float((length - rest_len).max() / height))
-            # The weapon rides the hand joint rigidly.
-            lowest_body = max(lowest_body, float((ground + GROUND_TOLERANCE_SHARE * height - now[:, 1].min()) / height))
-            hand = mats[joint]
-            world_all = (all_points @ hand.T)[:, :3]
-            frame_ground = float(now[:, 1].min()) - tolerance * height if per_frame_ground else ground
-            worst_ground = max(worst_ground, float((world_all[:, 1] < frame_ground).mean()))
-            worst_rest_ground = max(worst_rest_ground, float((world_all[:, 1] < ground).mean()))
-            if not len(free_points):
-                deep_series.append(0.0)
-                in_series.append(0.0)
-                continue
-            world_free = (free_points @ hand.T)[:, :3]
-            lo, hi = now.min(axis=0), now.max(axis=0)
-            near = np.all((world_free >= lo) & (world_free <= hi), axis=1)
-            inside = np.zeros(len(world_free), dtype=bool)
-            if near.any():
-                inside[near] = points_inside_mesh(world_free[near], now[tri])
-            share = float(inside.mean())
-            in_series.append(share)
-            deep_series.append(0.0)
-            if share > worst_in:
-                worst_in, worst_in_frame = share, step
-            if inside.any():
-                depths = nearest_vertex_distance(world_free[inside], now) / height
-                if float(depths.max()) > deepest:
-                    deepest, deepest_frame = float(depths.max()), step
-                deep = float((depths > margin_share).sum()) / len(world_free)
-                deep_series[-1] = deep
-                if deep > worst_deep:
-                    worst_deep, worst_deep_frame = deep, step
-        verdict = clip_verdict(worst_deep, worst_ground, 100 * worst_stretch["stretched"])
-        report[name] = {
-            "seconds": round(end, 2),
-            "stretched_pct": round(100 * worst_stretch["stretched"], 2),
-            "squashed_pct": round(100 * worst_stretch["squashed"], 2),
-            "worst_growth_pct_of_height": round(100 * growth, 1),
-            "worst_stretch_sample": worst_stretch["frame"],
-            "weapon_in_body_pct": round(100 * worst_in, 2),
-            "weapon_in_body_worst_sample": worst_in_frame,
-            "weapon_deep_in_body_pct": round(100 * worst_deep, 2),
-            "weapon_deep_in_body_worst_sample": worst_deep_frame,
-            "deepest_penetration_pct_of_height": round(100 * deepest, 2),
-            "deepest_penetration_sample": deepest_frame,
-            "weapon_below_ground_pct": round(100 * worst_ground, 2),
-            "weapon_below_rest_ground_pct": round(100 * worst_rest_ground, 2),
-            "body_lowest_below_rest_ground_pct_of_height": round(100 * max(lowest_body, 0.0), 1),
-            **verdict,
-        }
-        if samples == "all":
-            report[name]["frames"] = count
-            report[name]["weapon_deep_in_body_pct_by_frame"] = [round(100 * v, 2) for v in deep_series]
-            report[name]["weapon_in_body_pct_by_frame"] = [round(100 * v, 2) for v in in_series]
+        report[name] = _check_clip(ctx, tracks, end, count, tolerance, keep_series=samples == "all")
     return {
         "file": "<bytes>" if isinstance(path, (bytes, bytearray)) else str(path),
         "body": body,

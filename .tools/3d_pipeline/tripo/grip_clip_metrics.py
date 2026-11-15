@@ -25,7 +25,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import clip_check as cc  # noqa: E402
+import clip_check as cc
 
 PATH_SAMPLES = 60
 

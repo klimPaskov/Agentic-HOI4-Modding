@@ -48,19 +48,21 @@ from __future__ import annotations
 
 import argparse
 import copy
+import itertools
 import json
 import math
 import struct
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-import clip_check as cc  # noqa: E402
+import clip_check as cc
 
 BODY_NODE = "tripo_part_0"
 WEAPON_NODE = "tripo_part_1"
@@ -206,6 +208,35 @@ def compare_rigs(ref: Tuple[dict, bytes], other: Tuple[dict, bytes], label: str)
     return worst
 
 
+def _append_clips(glb: Glb, other_doc: dict, other_bin: bytes, label: str, index_of: Dict[str, int], seen: Dict[str, str]) -> None:
+    """Copy every animation of one clip file into `glb`, re-pointing its channels at the first file's nodes by name."""
+
+    doc = glb.doc
+    cache: Dict[int, int] = {}
+
+    def copy_accessor(index: int) -> int:
+        if index not in cache:
+            acc = other_doc["accessors"][index]
+            comp = acc["componentType"]
+            array = cc.read_accessor(other_doc, other_bin, index)
+            if acc.get("normalized"):
+                raise AssembleError(f"{label}: normalised animation accessors are not supported")
+            cache[index] = glb.add_accessor(array, acc["type"], comp, None, bounds="min" in acc)
+        return cache[index]
+
+    other_names = _node_names(other_doc)
+    for anim in other_doc.get("animations", []):
+        if anim["name"] in seen:
+            raise AssembleError(f"animation {anim['name']!r} of {label} is already in {seen[anim['name']]}")
+        seen[anim["name"]] = label
+        samplers = [{"input": copy_accessor(s["input"]), "output": copy_accessor(s["output"]), "interpolation": s.get("interpolation", "LINEAR")} for s in anim["samplers"]]
+        channels = []
+        for channel in anim["channels"]:
+            target = other_names[channel["target"]["node"]]
+            channels.append({"sampler": channel["sampler"], "target": {"node": index_of[target], "path": channel["target"]["path"]}})
+        doc.setdefault("animations", []).append({"name": anim["name"], "samplers": samplers, "channels": channels})
+
+
 def merge_body_clips(paths: Sequence[Path]) -> Tuple[Glb, dict]:
     """One GLB from per-clip body files: mesh and skin of the first, every file's animation. Returns it and a report."""
 
@@ -234,29 +265,7 @@ def merge_body_clips(paths: Sequence[Path]) -> Tuple[Glb, dict]:
             report["rest_differences"][key] = max(report["rest_differences"].get(key, 0.0), value)
         if _image_blobs(other_doc, other_bin) != ref_images:
             report["images_identical"] = False
-        cache: Dict[int, int] = {}
-
-        def copy_accessor(index: int) -> int:
-            if index not in cache:
-                acc = other_doc["accessors"][index]
-                comp = acc["componentType"]
-                array = cc.read_accessor(other_doc, other_bin, index)
-                if acc.get("normalized"):
-                    raise AssembleError(f"{label}: normalised animation accessors are not supported")
-                cache[index] = glb.add_accessor(array, acc["type"], comp, None, bounds="min" in acc)
-            return cache[index]
-
-        other_names = _node_names(other_doc)
-        for anim in other_doc.get("animations", []):
-            if anim["name"] in seen:
-                raise AssembleError(f"animation {anim['name']!r} of {label} is already in {seen[anim['name']]}")
-            seen[anim["name"]] = label
-            samplers = [{"input": copy_accessor(s["input"]), "output": copy_accessor(s["output"]), "interpolation": s.get("interpolation", "LINEAR")} for s in anim["samplers"]]
-            channels = []
-            for channel in anim["channels"]:
-                target = other_names[channel["target"]["node"]]
-                channels.append({"sampler": channel["sampler"], "target": {"node": index_of[target], "path": channel["target"]["path"]}})
-            doc.setdefault("animations", []).append({"name": anim["name"], "samplers": samplers, "channels": channels})
+        _append_clips(glb, other_doc, other_bin, label, index_of, seen)
     report["clips"] = [a["name"] for a in doc["animations"]]
     return glb, report
 
@@ -378,6 +387,44 @@ def pose_matrices(directions: np.ndarray, rolls_deg: np.ndarray) -> np.ndarray:
     return np.stack([d, r, np.cross(d, r)], axis=2)
 
 
+def _copy_weapon_material(glb: Glb, weapon: dict) -> int:
+    """Copy the weapon's material, with its sampler and textures, into `glb`. Returns the new material index."""
+
+    doc = glb.doc
+    material = copy.deepcopy(weapon["material"])
+    src = weapon["doc"]
+    material.pop("extensions", None)
+    sampler_index = None
+    if src.get("samplers"):
+        doc.setdefault("samplers", []).append(copy.deepcopy(src["samplers"][0]))
+        sampler_index = len(doc["samplers"]) - 1
+    new_texture: Dict[int, int] = {}
+
+    def remap(slot: dict) -> None:
+        old = slot["index"]
+        if old not in new_texture:
+            texture = src["textures"][old]
+            image = copy.deepcopy(src["images"][texture["source"]])
+            if "bufferView" in image:
+                view = src["bufferViews"][image["bufferView"]]
+                start = view.get("byteOffset", 0)
+                image["bufferView"] = glb.add_view(bytes(weapon["binary"][start : start + view["byteLength"]]))
+            doc.setdefault("images", []).append(image)
+            entry = {"source": len(doc["images"]) - 1}
+            if sampler_index is not None:
+                entry["sampler"] = sampler_index
+            doc.setdefault("textures", []).append(entry)
+            new_texture[old] = len(doc["textures"]) - 1
+        slot["index"] = new_texture[old]
+
+    for holder in (material, material.get("pbrMetallicRoughness", {})):
+        for slot in list(holder.values()):
+            if isinstance(slot, dict) and isinstance(slot.get("index"), int):
+                remap(slot)
+    doc.setdefault("materials", []).append(material)
+    return len(doc["materials"]) - 1
+
+
 def add_weapon(glb: Glb, weapon: dict, world_positions: np.ndarray, world_normals: Optional[np.ndarray], joint_slot: int) -> int:
     """Append the weapon as mesh node `tripo_part_1` under the skin, every vertex weighted 1.0 to skin joint `joint_slot`."""
 
@@ -398,39 +445,8 @@ def add_weapon(glb: Glb, weapon: dict, world_positions: np.ndarray, world_normal
     indices = glb.add_accessor(flat, "SCALAR", USHORT if count < 65535 else UINT, ELEMENT_ARRAY_BUFFER)
     primitive = {"attributes": attributes, "indices": indices, "mode": 4}
 
-    material = copy.deepcopy(weapon["material"]) if weapon["material"] is not None else None
-    if material is not None:
-        src = weapon["doc"]
-        material.pop("extensions", None)
-        sampler_index = None
-        if src.get("samplers"):
-            doc.setdefault("samplers", []).append(copy.deepcopy(src["samplers"][0]))
-            sampler_index = len(doc["samplers"]) - 1
-        new_texture: Dict[int, int] = {}
-
-        def remap(slot: dict) -> None:
-            old = slot["index"]
-            if old not in new_texture:
-                texture = src["textures"][old]
-                image = copy.deepcopy(src["images"][texture["source"]])
-                if "bufferView" in image:
-                    view = src["bufferViews"][image["bufferView"]]
-                    start = view.get("byteOffset", 0)
-                    image["bufferView"] = glb.add_view(bytes(weapon["binary"][start : start + view["byteLength"]]))
-                doc.setdefault("images", []).append(image)
-                entry = {"source": len(doc["images"]) - 1}
-                if sampler_index is not None:
-                    entry["sampler"] = sampler_index
-                doc.setdefault("textures", []).append(entry)
-                new_texture[old] = len(doc["textures"]) - 1
-            slot["index"] = new_texture[old]
-
-        for holder in (material, material.get("pbrMetallicRoughness", {})):
-            for key, slot in list(holder.items()):
-                if isinstance(slot, dict) and isinstance(slot.get("index"), int):
-                    remap(slot)
-        doc.setdefault("materials", []).append(material)
-        primitive["material"] = len(doc["materials"]) - 1
+    if weapon["material"] is not None:
+        primitive["material"] = _copy_weapon_material(glb, weapon)
 
     doc.setdefault("meshes", []).append({"name": "tripo_mesh_weapon", "primitives": [primitive]})
     doc["nodes"].append({"name": WEAPON_NODE, "mesh": len(doc["meshes"]) - 1, "skin": 0})
@@ -620,13 +636,13 @@ def resolve_clip(wanted: str, names: Sequence[str]) -> Optional[str]:
     names = sorted(set(names))
     try:
         sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-        from lib.tripo import resolve_clip_name  # noqa: PLC0415
+        from lib.tripo import resolve_clip_name
 
         try:
             return resolve_clip_name(wanted, names)
         except ValueError as problem:
             if "several" in str(problem):
-                raise AssembleError(str(problem))
+                raise AssembleError(str(problem)) from problem
             return None
     except ImportError:
         pass
@@ -705,7 +721,7 @@ def fist_hole_axis(names: Sequence[str], hand_name: str, joint_pos: np.ndarray) 
     normals = [n if float(n @ reference) >= 0 else -n for n in normals]
     flexion = _unit(np.mean(normals, axis=0)) if normals else None
     axis = _unit(reference + (flexion if flexion is not None else 0.0)) if knuckle is not None and flexion is not None else _unit(reference)
-    ang = lambda a, b: float(np.degrees(np.arccos(min(1.0, abs(float(a @ b))))))  # noqa: E731
+    ang = lambda a, b: float(np.degrees(np.arccos(min(1.0, abs(float(a @ b))))))
     details = {
         "knuckle_vs_flexion_deg": None if knuckle is None or flexion is None else ang(knuckle, flexion),
         "flexion_normals_spread_deg": None if flexion is None else max(ang(n, flexion) for n in normals),
@@ -736,6 +752,15 @@ def fist_geometry(rig: "cc.Rig", hand: int, rest_body: np.ndarray, rest_worlds: 
     return {"mask": mask, "centroid": centroid, "radius": radius, "axis": axis, "details": details, "vertices": int(mask.sum()), "hand_name": names[hand]}
 
 
+REFINE_STEPS = [(6.0, 0.03), (3.0, 0.015), (1.5, 0.0075)]  # (degrees, grip share) of the pattern search, coarse to fine
+
+
+def _distinct_poses(a: dict, b: dict) -> bool:
+    """True when two candidate poses differ enough to both be kept (haft angle, grip share or roll)."""
+
+    return np.degrees(np.arccos(np.clip(a["direction"] @ b["direction"], -1, 1))) > 8 or abs(a["grip"] - b["grip"]) > 0.05 or abs(((a["roll_deg"] - b["roll_deg"]) + 180) % 360 - 180) > 60
+
+
 class Fit:
     """Scores weapon poses against the posed body of many frames.
 
@@ -749,41 +774,61 @@ class Fit:
 
     def __init__(self, rig, hand: int, geometry: dict, fist: dict, local_points: np.ndarray, length: float, grip_ref: float, role_map: Dict[str, str], frames: int, voxel_share: float, tilt_from: str = "idle", grip_radius: float = cc.GRIP_RADIUS_SHARE, log=print):
         rest_worlds = rig.joint_worlds({})
-        rest_mats = rig.skin_mats(rest_worlds)
-        rest_body = rig.skin(rig.body, rest_mats)
+        rest_body = rig.skin(rig.body, rig.skin_mats(rest_worlds))
         self.height = float(rest_body[:, 1].max() - rest_body[:, 1].min())
         self.palm = geometry["palm"]
         self.hand_rest = rest_worlds[hand][:3, 3]
         self.free_radius = grip_radius * self.height
         self.length, self.grip_ref, self.tilt_from = length, grip_ref, tilt_from
         self.fist = fist
+        self._pick_points(local_points)
+        voxel = voxel_share * self.height
+        self.available = [name for name, _t, _e in rig.clips()]
+        self._map_roles(role_map, log)
+        self.roles = role_groups(self.role_map)
+        tilt_clip = resolve_clip(tilt_from, self.available) if tilt_from else None
+        wanted = list(self.role_map) + ([tilt_clip] if tilt_clip and tilt_clip not in self.role_map else [])
+        started = time.time()
+        fist_c, fist_h = self._voxelise_frames(rig, hand, wanted, frames, voxel)
+        self.clips = list(dict.fromkeys(self.frame_clip))
+        self._set_tilt_reference(tilt_clip, rest_body, fist_c, fist_h, log)
+        self._sample_head_paths(rig, hand, wanted)
+        self.falls = {c: self.extent.get(c, 1.0) < FALLEN_MAX_EXTENT for c, r in self.role_map.items() if r == "death"}
+        self.ground_tolerance = {c: DEATH_GROUND_TOLERANCE_SHARE for c, ok in self.falls.items() if ok}
+        log(f"  voxelised {len(self.grids)} frames of {len(self.clips)} clips in {time.time() - started:.0f} s, voxel {voxel:.4f}")
+
+    def _pick_points(self, local_points: np.ndarray) -> None:
+        """The weapon points the score uses: an even pick along the cloud plus its two extremes."""
+
         pick = np.linspace(0, len(local_points) - 1, min(cc.MAX_WEAPON_POINTS, len(local_points))).astype(int)
         extremes = [int(np.argmin(local_points[:, 0])), int(np.argmax(local_points[:, 0]))]
         self.points = local_points[np.unique(np.concatenate([pick, extremes]))]
         self.tip_local = local_points[int(np.argmax(local_points[:, 0]))].copy()
-        voxel = voxel_share * self.height
-        available = [name for name, _t, _e in rig.clips()]
-        self.available = available
+
+    def _map_roles(self, role_map: Dict[str, str], log) -> None:
+        """`self.role_map`: the role map with each clip name resolved against the file's clips."""
+
         self.role_map = {}
         for clip, role in role_map.items():
-            found = resolve_clip(clip, available)
+            found = resolve_clip(clip, self.available)
             if found is None:
                 log(f"  clip {clip!r} of the role map is not in the file, skipped")
             else:
                 self.role_map[found] = role
         if not self.role_map:
-            raise AssembleError(f"none of the role map clips {list(role_map)} is in the file; the clips are {available}")
-        self.roles = role_groups(self.role_map)
-        tilt_clip = resolve_clip(tilt_from, available) if tilt_from else None
-        wanted = list(self.role_map) + ([tilt_clip] if tilt_clip and tilt_clip not in self.role_map else [])
+            raise AssembleError(f"none of the role map clips {list(role_map)} is in the file; the clips are {self.available}")
+
+    def _voxelise_frames(self, rig, hand: int, wanted: Sequence[str], frames: int, voxel: float) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+        """Pose the body at `frames` steps of each wanted clip and voxelise it. Returns the fist centroid and hole axis per frame."""
+
         self.grids: List[FrameGrid] = []
         self.mats: List[np.ndarray] = []
         self.frame_clip: List[str] = []
         fist_c: List[np.ndarray] = []
         fist_h: List[np.ndarray] = []
         self.extent: Dict[str, float] = {}
-        started = time.time()
         tri = rig.body["triangles"]
+        fist = self.fist
         for name, tracks, end in rig.clips():
             if name not in wanted:
                 continue
@@ -801,29 +846,34 @@ class Fit:
                 fist_c.append((inv @ np.append(body[fist["mask"]].mean(axis=0), 1.0))[:3])
                 axis, _ = fist_hole_axis(rig.joint_names, fist["hand_name"], worlds[:, :3, 3])
                 fist_h.append(_unit(np.linalg.inv(mats[hand][:3, :3]) @ axis) if axis is not None else fist["axis"])
-        self.clips = list(dict.fromkeys(self.frame_clip))
+        return fist_c, fist_h
+
+    def _set_tilt_reference(self, tilt_clip: Optional[str], rest_body: np.ndarray, fist_c: Sequence[np.ndarray], fist_h: Sequence[np.ndarray], log) -> None:
+        """The frames the tilt rules measure against (the tilt clip, else the rest pose) and the fist measures taken on them."""
+
+        fist = self.fist
         ref = [i for i, c in enumerate(self.frame_clip) if c == tilt_clip]
         if ref:
             self.ref_mats = [self.mats[i] for i in ref]
             self.ref_lowest = [self.grids[i].lowest for i in ref]
             self.ref_name = tilt_clip
         else:
-            log(f"  tilt clip {tilt_from!r} is not in the file: the rest pose is used")
+            log(f"  tilt clip {self.tilt_from!r} is not in the file: the rest pose is used")
             self.ref_mats, self.ref_lowest, self.ref_name = [np.eye(4)], [float(rest_body[:, 1].min())], "rest pose"
         # The fist measures: the rest pose first, then the tilt clip's frames, all in the hand's rest frame.
         self.fist_c = np.array([fist["centroid"]] + [fist_c[i] for i in ref])
         self.fist_h = np.array([fist["axis"]] + [fist_h[i] for i in ref])
         self.fist_labels = ["rest"] + [f"{self.ref_name} frame {k}" for k in range(len(ref))]
-        # Weapon head path: hand matrices of dense frames per clip.
+
+    def _sample_head_paths(self, rig, hand: int, wanted: Sequence[str]) -> None:
+        """Weapon head path: hand matrices of dense frames per clip."""
+
         self.path: Dict[str, Tuple[np.ndarray, np.ndarray]] = {}
         for name, tracks, end in rig.clips():
             if name not in wanted:
                 continue
             times = end * np.arange(PATH_SAMPLES) / (PATH_SAMPLES - 1)
             self.path[name] = (times, np.array([rig.skin_mats(rig.joint_worlds(rig.pose_for(tracks, t)))[hand] for t in times]))
-        self.falls = {c: self.extent.get(c, 1.0) < FALLEN_MAX_EXTENT for c, r in self.role_map.items() if r == "death"}
-        self.ground_tolerance = {c: DEATH_GROUND_TOLERANCE_SHARE for c, ok in self.falls.items() if ok}
-        log(f"  voxelised {len(self.grids)} frames of {len(self.clips)} clips in {time.time() - started:.0f} s, voxel {voxel:.4f}")
 
     # -- measures of one pose -------------------------------------------------------------------
 
@@ -948,8 +998,8 @@ class Fit:
         d = np.mean([m[:3, :3].T @ up for m in self.ref_mats], axis=0)
         return d / np.linalg.norm(d)
 
-    def search(self, max_tilt: float, grip_range: Tuple[float, float], directions: int = 120, rolls: int = 8, keep: int = 6, log=print) -> List[dict]:
-        """Local optima of the proxy score, best first. Raises AssembleError when the hard rules cannot be met."""
+    def _search_grid(self, max_tilt: float, grip_range: Tuple[float, float], directions: int, rolls: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """The coarse grid of poses: every direction of the cone, every roll, every grip."""
 
         lo, hi = grip_range
         d0 = self.up_in_rest()
@@ -961,6 +1011,34 @@ class Fit:
         D = np.repeat(cone, rolls * len(grips), axis=0)
         R = np.tile(np.repeat(roll_set, len(grips)), len(cone))
         G = np.tile(grips, len(cone) * rolls)
+        return D, R, G
+
+    def _refine_seed(self, seed: dict, max_tilt: float, grip_range: Tuple[float, float]) -> dict:
+        """Pattern search around one seed with shrinking steps; stops a step size as soon as no neighbour is better."""
+
+        lo, hi = grip_range
+        d, roll, grip, score = seed["direction"], seed["roll_deg"], seed["grip"], seed["score"]
+        for angle_step, grip_step in REFINE_STEPS:
+            for _ in range(6):
+                pu, pv = _perpendicular_basis(d[None])
+                cd, cr, cg = [], [], []
+                for a, b, c, e in itertools.product((-1, 0, 1), repeat=4):
+                    nd = d + math.tan(math.radians(angle_step)) * (a * pu[0] + b * pv[0])
+                    cd.append(nd / np.linalg.norm(nd))
+                    cr.append(roll + c * angle_step)
+                    cg.append(min(max(grip + e * grip_step, lo), hi))
+                res = self.evaluate(np.array(cd), np.array(cr), np.array(cg), max_tilt)
+                k = int(np.argmin(res["score"]))
+                if res["score"][k] >= score - 1e-9:
+                    break
+                d, roll, grip, score = cd[k], cr[k], cg[k], float(res["score"][k])
+        return {"direction": d, "roll_deg": roll % 360.0, "grip": grip, "score": score}
+
+    def search(self, max_tilt: float, grip_range: Tuple[float, float], directions: int = 120, rolls: int = 8, keep: int = 6, log=print) -> List[dict]:
+        """Local optima of the proxy score, best first. Raises AssembleError when the hard rules cannot be met."""
+
+        lo, hi = grip_range
+        D, R, G = self._search_grid(max_tilt, grip_range, directions, rolls)
         started = time.time()
         coarse = self.evaluate(D, R, G, max_tilt)
         order = np.argsort(coarse["score"])
@@ -972,44 +1050,20 @@ class Fit:
                 f"the closest has tilt {coarse['tilt'][i]:.1f}, its lowest point {coarse['margin'][i] * 100:.1f} cm from the ground "
                 f"and the axis {coarse['fist_dist'][i] * 100:.1f} cm from the finger centroid"
             )
-
-        def distinct(a: dict, b: dict) -> bool:
-            return np.degrees(np.arccos(np.clip(a["direction"] @ b["direction"], -1, 1))) > 8 or abs(a["grip"] - b["grip"]) > 0.05 or abs(((a["roll_deg"] - b["roll_deg"]) + 180) % 360 - 180) > 60
-
         seeds: List[dict] = []
         for i in order:
             if coarse["violation"][i] > 0:
                 break
             cand = {"direction": D[i], "roll_deg": float(R[i]), "grip": float(G[i]), "score": float(coarse["score"][i])}
-            if all(distinct(cand, s) for s in seeds):
+            if all(_distinct_poses(cand, s) for s in seeds):
                 seeds.append(cand)
             if len(seeds) >= keep:
                 break
         log(f"  coarse search of {len(D)} poses in {time.time() - started:.0f} s, best proxy score {coarse['score'][order[0]]:.4f}")
         refined: List[dict] = []
-        steps = [(6.0, 0.03), (3.0, 0.015), (1.5, 0.0075)]
         for seed in seeds:
-            d, roll, grip, score = seed["direction"], seed["roll_deg"], seed["grip"], seed["score"]
-            for angle_step, grip_step in steps:
-                for _ in range(6):
-                    pu, pv = _perpendicular_basis(d[None])
-                    cd, cr, cg = [], [], []
-                    for a in (-1, 0, 1):
-                        for b in (-1, 0, 1):
-                            for c in (-1, 0, 1):
-                                for e in (-1, 0, 1):
-                                    nd = d + math.tan(math.radians(angle_step)) * (a * pu[0] + b * pv[0])
-                                    cd.append(nd / np.linalg.norm(nd))
-                                    cr.append(roll + c * angle_step)
-                                    cg.append(min(max(grip + e * grip_step, lo), hi))
-                    res = self.evaluate(np.array(cd), np.array(cr), np.array(cg), max_tilt)
-                    k = int(np.argmin(res["score"]))
-                    if res["score"][k] < score - 1e-9:
-                        d, roll, grip, score = cd[k], cr[k], cg[k], float(res["score"][k])
-                    else:
-                        break
-            cand = {"direction": d, "roll_deg": roll % 360.0, "grip": grip, "score": score}
-            if all(distinct(cand, s) for s in refined):
+            cand = self._refine_seed(seed, max_tilt, grip_range)
+            if all(_distinct_poses(cand, s) for s in refined):
                 refined.append(cand)
         refined.sort(key=lambda c: c["score"])
         log(f"  refined {len(refined)} candidates, best proxy score {refined[0]['score']:.4f}, search {time.time() - started:.0f} s")
@@ -1064,6 +1118,208 @@ def parse_roles(text: str) -> Dict[str, str]:
     return out
 
 
+def _select_role_map(roles: Optional[Dict[str, str]], fit_clips: Optional[Sequence[str]], clip_names: Sequence[str]) -> Dict[str, str]:
+    """The role map the fit scores: `roles` (else the default), cut down to `fit_clips` when given."""
+
+    role_map = dict(ROLE_MAP if roles is None else roles)
+    if fit_clips:
+        keep = {resolve_clip(c, clip_names) for c in fit_clips}
+        if None in keep:
+            raise AssembleError(f"--fit-clips names no clip: {list(fit_clips)}; the clips are {list(clip_names)}")
+        role_map = {c: r for c, r in role_map.items() if resolve_clip(c, clip_names) in keep}
+    return role_map
+
+
+@dataclass
+class _Run:
+    """What the steps of one `assemble` call share: the merged body, the weapon, its fit and the search options."""
+
+    merged: Glb
+    weapon: dict
+    axes: dict
+    scale: float
+    geometry: dict
+    hand_slot: int
+    hand: str
+    grip: float
+    fit: "Fit"
+    grip_range: Tuple[float, float]
+    directions: int
+    rolls: int
+    candidates: int
+    selection_samples: int
+    verify: bool
+    log: Callable[[str], None]
+
+    @property
+    def check_clips(self) -> List[str]:
+        return list(self.fit.role_map)
+
+    def to_bytes(self, pose: dict) -> bytes:
+        return build_output(self.merged, self.weapon, self.axes, self.scale, self.geometry["palm"], pose, self.hand_slot, self.grip)
+
+    def _clip_roles(self, pose: dict, elig: Dict[str, Tuple[bool, str]]) -> dict:
+        fit = self.fit
+        clip_roles = {}
+        for clip, role in fit.role_map.items():
+            entry = {"role": role}
+            if role == "attack":
+                entry.update({k: round(v, 3) for k, v in fit.head_motion(pose["direction"], pose["grip"], pose["roll_deg"], clip).items()})
+                entry["eligible"] = elig[clip][0]
+            elif role == "death":
+                entry["last_frame_extent_pct_of_standing_height"] = round(100 * fit.extent.get(clip, 1.0), 1)
+                entry["eligible"] = elig[clip][0]
+                entry["ground_tolerance_pct"] = 100 * fit.ground_tolerance.get(clip, cc.FRAME_GROUND_TOLERANCE_SHARE)
+            clip_roles[clip] = entry
+        if fit.ref_name in fit.path:
+            baseline = fit.head_motion(pose["direction"], pose["grip"], pose["roll_deg"], fit.ref_name)
+            clip_roles["_" + fit.ref_name + "_baseline"] = {k: round(v, 3) for k, v in baseline.items() if k.startswith("head_")}
+        return clip_roles
+
+    def describe(self, pose: dict, result: dict) -> dict:
+        fit = self.fit
+        elig = fit.eligibility(pose["direction"], pose["grip"], pose["roll_deg"])
+        cost, summary = role_summary(result["clips"], fit.role_map, elig)
+        tilt, margin = fit.tilt_and_margin(pose["direction"], pose["grip"], pose["roll_deg"])
+        ref = fit.ref_name.replace(" ", "_")
+        return {
+            "haft_direction_butt_to_head_rest_world": pose["direction"].round(4).tolist(),
+            "roll_deg": round(pose["roll_deg"], 2),
+            "grip": round(pose["grip"], 4),
+            "tilt_from_up_deg_in_" + ref: round(tilt, 2),
+            "lowest_weapon_point_above_ground_cm_in_" + ref: round(margin * 100, 2),
+            "fist": fit.fist_numbers(pose["direction"]),
+            "role_cost": round(cost, 3),
+            "roles": summary,
+            "clip_roles": self._clip_roles(pose, elig),
+            "deep_total_pct": round(sum(result["clips"][c]["weapon_deep_in_body_pct"] for c in self.check_clips), 2),
+        }
+
+    def best_for(self, tilt: float) -> Tuple[dict, dict]:
+        fit = self.fit
+        self.log(f"fit at max tilt {tilt:g}")
+        found = fit.search(tilt, self.grip_range, self.directions, self.rolls, log=self.log)
+        if not self.verify:
+            return found[0], {}
+        scored = []
+        for cand in found[: self.candidates]:
+            res = cc.check(self.to_bytes(cand), BODY_NODE, WEAPON_NODE, self.hand, self.selection_samples, per_frame_ground=True, only=self.check_clips, ground_tolerance_by_clip=fit.ground_tolerance)
+            cost, _ = role_summary(res["clips"], fit.role_map, fit.eligibility(cand["direction"], cand["grip"], cand["roll_deg"]))
+            deep = sum(res["clips"][c]["weapon_deep_in_body_pct"] for c in self.check_clips)
+            fist_angle = fit.fist_numbers(cand["direction"])["rest"]["angle_deg"]
+            scored.append(((round(cost, 6), round(deep * 2) / 2, fist_angle, abs(cand["grip"] - self.grip)), cand, res))
+        scored.sort(key=lambda s: s[0])
+        self.log(f"  checked {len(scored)} candidates with clip_check: role costs {[s[0][0] for s in scored]}")
+        return scored[0][1], scored[0][2]
+
+    def search_tilts(self, trade_tilts: Sequence[float], max_tilt: float) -> Tuple[Dict[float, Tuple[dict, dict]], Dict[float, str]]:
+        """The best pose at every max tilt asked for. Only the main `max_tilt` may fail the run; the others are reported infeasible."""
+
+        found_by_tilt: Dict[float, Tuple[dict, dict]] = {}
+        infeasible: Dict[float, str] = {}
+        for t in sorted(set(float(t) for t in trade_tilts) | {float(max_tilt)}):
+            try:
+                found_by_tilt[t] = self.best_for(t)
+            except AssembleError as problem:
+                if t == float(max_tilt):
+                    raise
+                infeasible[t] = str(problem)
+                self.log(f"  max tilt {t:g}: {problem}")
+        return found_by_tilt, infeasible
+
+    def naive_report(self, naive: dict) -> dict:
+        fit = self.fit
+        n_tilt, n_margin = fit.tilt_and_margin(naive["direction"], self.grip, 0.0)
+        return {
+            "haft_direction_butt_to_head_rest_world": naive["direction"].round(4).tolist(),
+            "roll_deg": 0.0,
+            "grip": self.grip,
+            "tilt_from_up_deg": round(n_tilt, 2),
+            "lowest_weapon_point_above_ground_cm_in_" + fit.ref_name.replace(" ", "_"): round(n_margin * 100, 2),
+            "fist": fit.fist_numbers(naive["direction"]),
+        }
+
+    def trade_table(self, found_by_tilt: Dict[float, Tuple[dict, dict]], infeasible: Dict[float, str]) -> dict:
+        trade = {}
+        for t, (pose, res) in found_by_tilt.items():
+            entry = self.describe(pose, res)
+            entry["clips_passing_of_fit_clips"] = [c for c in self.check_clips if res["clips"][c]["verdict"] == "pass"]
+            entry["samples"] = self.selection_samples
+            trade["max_tilt_%g" % t] = entry
+        for t, why in infeasible.items():
+            trade["max_tilt_%g" % t] = {"feasible": False, "reason": why}
+        return dict(sorted(trade.items(), key=lambda kv: float(kv[0].split("_")[-1])))
+
+    def verified_report(self, out: Path, best: dict, naive: dict, samples: int, found_by_tilt: Dict[float, Tuple[dict, dict]], infeasible: Dict[float, str]) -> dict:
+        """Check the chosen and the naive pose at full sampling and describe both, with the trade table."""
+
+        fit = self.fit
+        self.log("verifying the chosen pose with clip_check at full sampling")
+        fitted = cc.check(out, BODY_NODE, WEAPON_NODE, self.hand, samples, per_frame_ground=True, ground_tolerance_by_clip=fit.ground_tolerance)
+        naive_path = out.with_name(out.stem + "._naive_tmp.glb")
+        try:
+            naive_path.write_bytes(self.to_bytes(naive))
+            naive_check = cc.check(naive_path, BODY_NODE, WEAPON_NODE, self.hand, samples, per_frame_ground=True, ground_tolerance_by_clip=fit.ground_tolerance)
+        finally:
+            naive_path.unlink(missing_ok=True)
+        clip_check = {"ground": "per-frame", "samples": samples, "thresholds": fitted["thresholds"], "fitted": clip_table(fitted), "naive": clip_table(naive_check)}
+        clip_check["fitted_passes"] = [n for n, c in fitted["clips"].items() if c["verdict"] == "pass"]
+        clip_check["naive_passes"] = [n for n, c in naive_check["clips"].items() if c["verdict"] == "pass"]
+        return {
+            "pose": self.describe(best, fitted),
+            "naive_pose": self.naive_report(naive),
+            "clip_check": clip_check,
+            "trade": self.trade_table(found_by_tilt, infeasible),
+        }
+
+
+def _weapon_report(weapon: dict, axes: dict, scale: float, height: float, length_ratio: float, grip: float, weapon_triangles: Optional[int], bound_to: str) -> dict:
+    triangles = int(len(weapon["triangles"]))
+    return {
+        "triangles": triangles,
+        "vertices": int(len(weapon["positions"])),
+        "file_length": round(axes["length"], 5),
+        "length_ratio": length_ratio,
+        "scaled_length": round(length_ratio * height, 5),
+        "scale": round(scale, 5),
+        "recorded_grip_share": grip,
+        "head_spread_vs_butt_spread": [round(axes["head_spread"], 5), round(axes["butt_spread"], 5)],
+        "head_was_at_negative_end_of_pca_axis": axes["head_was_at_negative_end"],
+        "above_triangle_target": None if weapon_triangles is None else triangles > weapon_triangles,
+        "triangle_target": weapon_triangles,
+        "bound_to": bound_to,
+    }
+
+
+def _grip_geometry_report(geometry: dict, fist: dict) -> dict:
+    return {
+        "palm_rest_world": geometry["palm"].round(5).tolist(),
+        "hand_vertices": geometry["hand_vertices"],
+        "finger_vertices": fist["vertices"],
+        "finger_centroid_rest_world": fist["centroid"].round(5).tolist(),
+        "fist_radius_cm": round(100 * fist["radius"], 2),
+        "fist_hole_axis_rest_world": fist["axis"].round(4).tolist(),
+        "fist_hole_axis_reliability": {k: (None if v is None else round(v, 1) if isinstance(v, float) else v) for k, v in fist["details"].items()},
+    }
+
+
+def _fit_report(fit: "Fit", clip_names: Sequence[str], max_tilt: float, grip_range: Tuple[float, float], voxel: float) -> dict:
+    return {
+        "frames": len(fit.grids),
+        "clips": fit.clips,
+        "role_map": fit.role_map,
+        "role_weights": ROLE_WEIGHTS,
+        "tilt_clip": fit.ref_name,
+        "max_tilt_deg": max_tilt,
+        "grip_range": list(grip_range),
+        "voxel": round(voxel, 5),
+        "attack_min_head_travel_body_heights": ATTACK_MIN_HEAD_TRAVEL,
+        "fallen_max_extent": FALLEN_MAX_EXTENT,
+        "death_ground_tolerance_share": DEATH_GROUND_TOLERANCE_SHARE,
+        "excluded_from_fit_but_checked": [name for name in clip_names if name not in fit.clips],
+    }
+
+
 def assemble(
     body_files: Sequence[Path],
     weapon_file: Path,
@@ -1103,167 +1359,32 @@ def assemble(
 
     axes = weapon_axes(weapon["positions"], grip)
     scale = length_ratio * height / axes["length"]
-    local = weapon_local(weapon["positions"], axes, scale)
     geometry = grip_geometry(rig, hand_slot, rest_body, rest_worlds)
     fist = fist_geometry(rig, hand_slot, rest_body, rest_worlds)
     geometry["fist_axis"] = fist["axis"]
     log(f"weapon file length {axes['length']:.4f} -> {length_ratio * height:.4f} (scale {scale:.4f}), head spread {axes['head_spread']:.4f} vs butt {axes['butt_spread']:.4f}")
-    role_map = dict(ROLE_MAP if roles is None else roles)
-    if fit_clips:
-        keep = {resolve_clip(c, clip_names) for c in fit_clips}
-        if None in keep:
-            raise AssembleError(f"--fit-clips names no clip: {list(fit_clips)}; the clips are {clip_names}")
-        role_map = {c: r for c, r in role_map.items() if resolve_clip(c, clip_names) in keep}
-    lo, hi = grip_range
-    if not lo <= hi:
-        raise AssembleError(f"--grip-range {lo},{hi} is empty")
-    fit = Fit(rig, hand_slot, geometry, fist, local, axes["length"] * scale, grip, role_map, fit_frames, voxel_share, tilt_from, log=log)
-    fit_role_map = fit.role_map
-    check_clips = list(fit_role_map)
-
-    def to_bytes(pose: dict) -> bytes:
-        return build_output(merged, weapon, axes, scale, geometry["palm"], pose, hand_slot, grip)
-
-    def describe(pose: dict, result: dict) -> dict:
-        elig = fit.eligibility(pose["direction"], pose["grip"], pose["roll_deg"])
-        cost, summary = role_summary(result["clips"], fit_role_map, elig)
-        tilt, margin = fit.tilt_and_margin(pose["direction"], pose["grip"], pose["roll_deg"])
-        ref = fit.ref_name.replace(" ", "_")
-        clip_roles = {}
-        for clip, role in fit_role_map.items():
-            entry = {"role": role}
-            if role == "attack":
-                entry.update({k: round(v, 3) for k, v in fit.head_motion(pose["direction"], pose["grip"], pose["roll_deg"], clip).items()})
-                entry["eligible"] = elig[clip][0]
-            elif role == "death":
-                entry["last_frame_extent_pct_of_standing_height"] = round(100 * fit.extent.get(clip, 1.0), 1)
-                entry["eligible"] = elig[clip][0]
-                entry["ground_tolerance_pct"] = 100 * fit.ground_tolerance.get(clip, cc.FRAME_GROUND_TOLERANCE_SHARE)
-            clip_roles[clip] = entry
-        if fit.ref_name in fit.path:
-            baseline = fit.head_motion(pose["direction"], pose["grip"], pose["roll_deg"], fit.ref_name)
-            clip_roles["_" + fit.ref_name + "_baseline"] = {k: round(v, 3) for k, v in baseline.items() if k.startswith("head_")}
-        return {
-            "haft_direction_butt_to_head_rest_world": pose["direction"].round(4).tolist(),
-            "roll_deg": round(pose["roll_deg"], 2),
-            "grip": round(pose["grip"], 4),
-            "tilt_from_up_deg_in_" + ref: round(tilt, 2),
-            "lowest_weapon_point_above_ground_cm_in_" + ref: round(margin * 100, 2),
-            "fist": fit.fist_numbers(pose["direction"]),
-            "role_cost": round(cost, 3),
-            "roles": summary,
-            "clip_roles": clip_roles,
-            "deep_total_pct": round(sum(result["clips"][c]["weapon_deep_in_body_pct"] for c in check_clips), 2),
-        }
-
-    def best_for(tilt: float) -> Tuple[dict, dict]:
-        log(f"fit at max tilt {tilt:g}")
-        found = fit.search(tilt, (lo, hi), directions, rolls, log=log)
-        if not verify:
-            return found[0], {}
-        scored = []
-        for cand in found[:candidates]:
-            res = cc.check(to_bytes(cand), BODY_NODE, WEAPON_NODE, hand, selection_samples, per_frame_ground=True, only=check_clips, ground_tolerance_by_clip=fit.ground_tolerance)
-            cost, _ = role_summary(res["clips"], fit_role_map, fit.eligibility(cand["direction"], cand["grip"], cand["roll_deg"]))
-            deep = sum(res["clips"][c]["weapon_deep_in_body_pct"] for c in check_clips)
-            fist_angle = fit.fist_numbers(cand["direction"])["rest"]["angle_deg"]
-            scored.append(((round(cost, 6), round(deep * 2) / 2, fist_angle, abs(cand["grip"] - grip)), cand, res))
-        scored.sort(key=lambda s: s[0])
-        log(f"  checked {len(scored)} candidates with clip_check: role costs {[s[0][0] for s in scored]}")
-        return scored[0][1], scored[0][2]
-
-    tilts = sorted(set(float(t) for t in trade_tilts) | {float(max_tilt)})
-    found_by_tilt: Dict[float, Tuple[dict, dict]] = {}
-    infeasible: Dict[float, str] = {}
-    for t in tilts:
-        try:
-            found_by_tilt[t] = best_for(t)
-        except AssembleError as problem:
-            if t == float(max_tilt):
-                raise
-            infeasible[t] = str(problem)
-            log(f"  max tilt {t:g}: {problem}")
+    role_map = _select_role_map(roles, fit_clips, clip_names)
+    if not grip_range[0] <= grip_range[1]:
+        raise AssembleError(f"--grip-range {grip_range[0]},{grip_range[1]} is empty")
+    fit = Fit(rig, hand_slot, geometry, fist, weapon_local(weapon["positions"], axes, scale), axes["length"] * scale, grip, role_map, fit_frames, voxel_share, tilt_from, log=log)
+    run = _Run(merged, weapon, axes, scale, geometry, hand_slot, hand, grip, fit, grip_range, directions, rolls, candidates, selection_samples, verify, log)
+    found_by_tilt, infeasible = run.search_tilts(trade_tilts, max_tilt)
     best, _ = found_by_tilt[float(max_tilt)]
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_bytes(to_bytes(best))
-    naive = fit.naive_pose()
-    triangles = int(len(weapon["triangles"]))
+    out.write_bytes(run.to_bytes(best))
     report = {
         "output": str(out),
         "clips_in_body": clip_names,
         "inputs": {"body_files": merge_report["files"], "weapon": weapon["name"]},
         "merge": merge_report,
         "body": {"height": round(height, 5), "triangles": int(len(rig.body["triangles"])), "vertices": int(len(rig.body["positions"])), "joints": len(rig.joint_names)},
-        "weapon": {
-            "triangles": triangles,
-            "vertices": int(len(weapon["positions"])),
-            "file_length": round(axes["length"], 5),
-            "length_ratio": length_ratio,
-            "scaled_length": round(length_ratio * height, 5),
-            "scale": round(scale, 5),
-            "recorded_grip_share": grip,
-            "head_spread_vs_butt_spread": [round(axes["head_spread"], 5), round(axes["butt_spread"], 5)],
-            "head_was_at_negative_end_of_pca_axis": axes["head_was_at_negative_end"],
-            "above_triangle_target": None if weapon_triangles is None else triangles > weapon_triangles,
-            "triangle_target": weapon_triangles,
-            "bound_to": rig.joint_names[hand_slot],
-        },
-        "grip_geometry": {
-            "palm_rest_world": geometry["palm"].round(5).tolist(),
-            "hand_vertices": geometry["hand_vertices"],
-            "finger_vertices": fist["vertices"],
-            "finger_centroid_rest_world": fist["centroid"].round(5).tolist(),
-            "fist_radius_cm": round(100 * fist["radius"], 2),
-            "fist_hole_axis_rest_world": fist["axis"].round(4).tolist(),
-            "fist_hole_axis_reliability": {k: (None if v is None else round(v, 1) if isinstance(v, float) else v) for k, v in fist["details"].items()},
-        },
-        "fit": {
-            "frames": len(fit.grids),
-            "clips": fit.clips,
-            "role_map": fit_role_map,
-            "role_weights": ROLE_WEIGHTS,
-            "tilt_clip": fit.ref_name,
-            "max_tilt_deg": max_tilt,
-            "grip_range": [lo, hi],
-            "voxel": round(voxel_share * height, 5),
-            "attack_min_head_travel_body_heights": ATTACK_MIN_HEAD_TRAVEL,
-            "fallen_max_extent": FALLEN_MAX_EXTENT,
-            "death_ground_tolerance_share": DEATH_GROUND_TOLERANCE_SHARE,
-            "excluded_from_fit_but_checked": [name for name in clip_names if name not in fit.clips],
-        },
+        "weapon": _weapon_report(weapon, axes, scale, height, length_ratio, grip, weapon_triangles, rig.joint_names[hand_slot]),
+        "grip_geometry": _grip_geometry_report(geometry, fist),
+        "fit": _fit_report(fit, clip_names, max_tilt, grip_range, voxel_share * height),
     }
     if verify:
-        log("verifying the chosen pose with clip_check at full sampling")
-        fitted = cc.check(out, BODY_NODE, WEAPON_NODE, hand, samples, per_frame_ground=True, ground_tolerance_by_clip=fit.ground_tolerance)
-        naive_path = out.with_name(out.stem + "._naive_tmp.glb")
-        try:
-            naive_path.write_bytes(to_bytes(naive))
-            naive_check = cc.check(naive_path, BODY_NODE, WEAPON_NODE, hand, samples, per_frame_ground=True, ground_tolerance_by_clip=fit.ground_tolerance)
-        finally:
-            naive_path.unlink(missing_ok=True)
-        report["pose"] = describe(best, fitted)
-        n_tilt, n_margin = fit.tilt_and_margin(naive["direction"], grip, 0.0)
-        report["naive_pose"] = {
-            "haft_direction_butt_to_head_rest_world": naive["direction"].round(4).tolist(),
-            "roll_deg": 0.0,
-            "grip": grip,
-            "tilt_from_up_deg": round(n_tilt, 2),
-            "lowest_weapon_point_above_ground_cm_in_" + fit.ref_name.replace(" ", "_"): round(n_margin * 100, 2),
-            "fist": fit.fist_numbers(naive["direction"]),
-        }
-        report["clip_check"] = {"ground": "per-frame", "samples": samples, "thresholds": fitted["thresholds"], "fitted": clip_table(fitted), "naive": clip_table(naive_check)}
-        report["clip_check"]["fitted_passes"] = [n for n, c in fitted["clips"].items() if c["verdict"] == "pass"]
-        report["clip_check"]["naive_passes"] = [n for n, c in naive_check["clips"].items() if c["verdict"] == "pass"]
-        trade = {}
-        for t, (pose, res) in found_by_tilt.items():
-            entry = describe(pose, res)
-            entry["clips_passing_of_fit_clips"] = [c for c in check_clips if res["clips"][c]["verdict"] == "pass"]
-            entry["samples"] = selection_samples
-            trade["max_tilt_%g" % t] = entry
-        for t, why in infeasible.items():
-            trade["max_tilt_%g" % t] = {"feasible": False, "reason": why}
-        report["trade"] = dict(sorted(trade.items(), key=lambda kv: float(kv[0].split("_")[-1])))
+        report.update(run.verified_report(out, best, fit.naive_pose(), samples, found_by_tilt, infeasible))
     else:
         report["pose"] = {"haft_direction_butt_to_head_rest_world": best["direction"].round(4).tolist(), "roll_deg": round(best["roll_deg"], 2), "grip": round(best["grip"], 4)}
     report["seconds"] = round(time.time() - started, 1)
