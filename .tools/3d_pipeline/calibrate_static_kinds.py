@@ -377,6 +377,23 @@ def skeleton_entry(kind: str, measured: List[dict], ref_entry: dict) -> tuple:
     return skeleton, locators
 
 
+def contract_role_aliases(game: Path, definitions: dict, clips: dict) -> dict:
+    """A ship keeps only the roles vanilla's ships with the same two-bone contract play (`WATERLINE_REFERENCES` whose
+    skeleton is `root` and `ship`: the support ship and the freighter play idle and death). The destroyer's attack and
+    defend differ from its idle only by a gun turret's traverse, which a one-piece hull has not got, so a reviewer saw
+    an attack that looks like idle. The entity plays idle for them, and its muzzle and water events show the shot."""
+
+    played = set()
+    for rel in WATERLINE_REFERENCES:
+        mesh = pdx_deform.load_mesh(game / rel)
+        if sorted(mesh.bones) != ["root", "ship"]:
+            continue
+        for entry in definitions["pdxmesh"].values():
+            if entry.get("file", "").lower() == rel.lower():
+                played.update(entry["animations"])
+    return {role: "idle" for role in clips if played and role not in played}
+
+
 def role_aliases(game: Path, clips: dict, bones: List[str]) -> dict:
     """Roles whose vanilla clips move the kind's own bones the same way (UNIT-ANIM-SAME's measure on the reference,
     with only the surface those bones carry): the later role is dropped, and the entity plays the earlier one for it.
@@ -442,6 +459,8 @@ def calibrate(game: Path) -> dict:
         skeleton, locators = skeleton_entry(kind, measured, ref_entry)
         clips = {role: clip_entry(game, *pair) for role, pair in CLIPS[kind].items()}
         aliases = role_aliases(game, clips, [bone["name"] for bone in skeleton])
+        if kind == "ship":
+            aliases.update(contract_role_aliases(game, definitions, clips))
         clips = {role: clip for role, clip in clips.items() if role not in aliases}
         stats = texture_stats(game, measured)
         stats["texture_size"] = texture_stats(game, budget_set)["texture_size"]

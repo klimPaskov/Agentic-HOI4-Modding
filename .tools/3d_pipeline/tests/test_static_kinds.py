@@ -232,8 +232,8 @@ class ContractTests(unittest.TestCase):
             if contract["skeleton"]["bones"]:
                 self.assertEqual(contract["skeleton"]["bones"][0]["name"], "root", kind)
         self.assertEqual(set(kinds["vehicle"]["clips"]), {"idle", "move", "attack", "death"})
-        self.assertEqual(set(kinds["ship"]["clips"]), {"idle", "attack", "death"})
-        self.assertEqual(kinds["ship"]["role_aliases"], {"defend": "attack"})  # one rigid hull: the two clips are one
+        self.assertEqual(set(kinds["ship"]["clips"]), {"idle", "death"})  # what vanilla's two-bone ships play
+        self.assertEqual(kinds["ship"]["role_aliases"], {"defend": "idle", "attack": "idle"})
         self.assertTrue(kinds["building"]["collision"] and kinds["landmark"]["collision"])
         self.assertLess(kinds["plane"]["spin"]["degrees_per_frame"], 45.0)
 
@@ -268,6 +268,7 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(((plane["idle"]["frames"] - 1) * spin) % 360.0, 0.0)  # the loop closes a whole turn
         ship, _ = static_model.clip_motion(GAME, sk.kind_contract("ship"))
         self.assertIn("ship", ship["death"]["bones"])
+        self.assertNotIn("attack", ship)
 
     @unittest.skipUnless((GAME / "gfx/entities").is_dir(), "the game is not installed here")
     def test_every_kind_gets_a_parsable_entity_from_vanilla(self):

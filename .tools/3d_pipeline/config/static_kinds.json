@@ -1006,13 +1006,6 @@
      "frames": 41,
      "seconds": 2.602
     },
-    "attack": {
-     "mesh": "gfx/models/units/ships/generic_destroyer.mesh",
-     "anim": "gfx/models/units/ships/generic_destroyer_attack.anim",
-     "fps": 15.5,
-     "frames": 31,
-     "seconds": 1.935
-    },
     "death": {
      "mesh": "gfx/models/units/ships/generic_destroyer.mesh",
      "anim": "gfx/models/units/ships/generic_destroyer_death.anim",
@@ -1022,7 +1015,8 @@
     }
    },
    "role_aliases": {
-    "defend": "attack"
+    "defend": "idle",
+    "attack": "idle"
    },
    "parts": {
     "body": "ship"

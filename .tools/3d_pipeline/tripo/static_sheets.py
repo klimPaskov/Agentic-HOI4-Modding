@@ -39,6 +39,10 @@ from lib import static_kinds as sk
 SOLDIER_RUNTIME_HEIGHT = 7.351824 * 0.8
 PX_PER_METRE = 60 / SOLDIER_RUNTIME_HEIGHT
 RENDER_SIZE, SHARE = 256, 1.45
+# The close-up of the rest pose: two three-quarter views from the front and the back, framed tight, at 1024 px, so a
+# long thin model (a ship, a plane) shows its small parts (a mast, gun stubs) larger than on the six-view sheets.
+CLOSE_ANGLES = {"front_quarter": [35, 20], "back_quarter": [215, 20]}
+CLOSE_SIZE, CLOSE_SHARE = 1024, 1.05
 KIND_NOTES = {
     "vehicle": [
         "This is a WW2 light tank, a vehicle made of rigid parts (hull, turret, gun). It has no feet: for item 5, its tracks rest on the green disc.",
@@ -46,12 +50,14 @@ KIND_NOTES = {
         "In the death clip the turret is blown off the hull and lands beside it, as vanilla tanks' death does: a turret leaving the hull there is the intended look.",
     ],
     "plane": [
-        "This is a WW2 single-engine fighter. In game it flies; it is rendered just above the green disc. It has no feet, so item 5 does not apply.",
+        "This is a WW2 single-engine fighter. In game it flies. It is rendered just above the green disc. It has no feet, so item 5 does not apply.",
         "The propeller spins by design: between frames the blades are at different angles.",
     ],
     "ship": [
         "This is a WW2 warship. The green disc is the water surface: the hull below it is under water in game and hidden there.",
-        "The ship rocks on the water in its clips, and in the death clip it rolls and sinks under the water, as vanilla ships do.",
+        "It is sized to the length of vanilla's destroyer. Its beam, superstructure and colours are its own design.",
+        "The ship rocks on the water in idle. Like vanilla's support ship and freighter it has no attack clip: in game the shot shows as muzzle and water effects.",
+        "In the death clip the ship tips up steeply and sinks, as vanilla's destroyer does. The water disc hides whatever is below it, so only the parts still above the water show. The below view shows the whole ship.",
     ],
     "building": ["This is a static map building with no animation: the rest pose is its only clip. It stands on the green disc. It has no feet, so item 5 means its base meets the ground."],
     "landmark": ["This is a static landmark (a monument) with no animation: the rest pose is its only clip. It stands on the green disc. It has no feet, so item 5 means its base meets the ground."],
@@ -60,14 +66,27 @@ KIND_NOTES = {
 
 def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[Path]:
     # the disc is the game's ground (a ship's water) at z = 0, where the route puts it
-    return review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0)
+    sheets = review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0)
+    mesh = sorted(folder.glob("*.mesh"))[0]
+    index = render_rest(mesh, out / "closeup_tiles", [], views=tuple(CLOSE_ANGLES), size=CLOSE_SIZE, share=CLOSE_SHARE)
+    row = index["clips"][0]["rows"][0]["tiles"]
+    tiles = [Image.open(out / "closeup_tiles" / row[view]).convert("RGB") for view in CLOSE_ANGLES]
+    image = Image.new("RGB", (sum(t.width for t in tiles), tiles[0].height + 20), (30, 30, 30))
+    draw = ImageDraw.Draw(image)
+    for k, (tile, view) in enumerate(zip(tiles, CLOSE_ANGLES)):
+        image.paste(tile, (k * tile.width, 20))
+        draw.text((k * tile.width + 4, 4), f"rest close-up {view}", fill=(230, 230, 230), font=ImageFont.load_default())
+    target = out / "sheets" / "rest_closeup.png"
+    image.save(target)
+    return sheets + [target]
 
 
-def render_rest(mesh: Path, out: Path, texts: List[str]) -> dict:
+def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front"), size: int = RENDER_SIZE, share: float = SHARE) -> dict:
     request = {
         "out": str(out.resolve()), "mesh": str(mesh.resolve()),
         "diffuse": review_unit.diffuse_maps(mesh.resolve(), texts), "specular": review_unit.specular_maps(mesh.resolve()),
-        "pbr": True, "clips": [], "views": ["hoi4", "front"], "diagnostic_views": [], "size": RENDER_SIZE, "ortho_share": SHARE, "ground_z": 0.0,
+        "pbr": True, "clips": [], "views": list(views), "view_angles": CLOSE_ANGLES, "diagnostic_views": [], "size": size, "ortho_share": share,
+        "ground_z": 0.0,
     }
     out.mkdir(parents=True, exist_ok=True)
     path = out / "request.json"
@@ -126,8 +145,9 @@ def add_game_sheet(out: Path) -> None:
         return
     text = request.read_text(encoding="utf-8")
     marker = "Single tiles, if a sheet"
-    extra = ("Game-size sheet (the model above, the vanilla model of the same kind below, both at the size the map shows them; "
-             f"`game_size_x3.png` is the same sheet enlarged three times): `{(out / 'sheets' / 'game_size.png').resolve()}` and "
+    closeup = out / "sheets" / "rest_closeup.png"
+    extra = (f"Close-up of the rest pose (the same model, larger): `{closeup.resolve()}`.\n\n" if closeup.is_file() else "") + ("Game-size sheet (the model above, the vanilla model of the same kind below, both at the size the map shows them. "
+             f"`game_size_x3.png` is the same sheet enlarged three times.): `{(out / 'sheets' / 'game_size.png').resolve()}` and "
              f"`{(out / 'sheets' / 'game_size_x3.png').resolve()}`. Judge on it whether the model reads as what it is at game size "
              "and is about as large as the vanilla one.\n\n")
     if "Game-size sheet" not in text and marker in text:

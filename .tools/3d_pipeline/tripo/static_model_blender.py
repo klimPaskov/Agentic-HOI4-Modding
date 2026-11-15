@@ -44,6 +44,10 @@ from lib import static_kinds as sk
 from lib import tripo_shape
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
+# Faces within this angle of each other count as one flat plate in the first reduction step (kit rule: a degree or two
+# of a generated plate's waviness, well under the 40-degree crease the shading keeps sharp).
+PLANAR_DEGREES = 3.0
+SMALL_HOLE_EDGES = 32
 contract = request["contract"]
 kind = contract["kind"]
 name = request["name"]
@@ -145,6 +149,24 @@ budget = contract["triangle_budget"]["value"]
 # The cuts and caps add triangles, so the mesh is reduced to 94 % of the budget first.
 target = int(budget * 0.94)
 current = triangle_count(model)
+planar = None
+if current > target:
+    # First merge the faces that lie flat together (within PLANAR_DEGREES), keeping UV island borders, then collapse
+    # what is left. Collapsing a generated hard-surface mesh straight to a vanilla budget crumples flat plates into
+    # folds and smears the texture across them; flat plates cost almost nothing once merged.
+    decimate = model.modifiers.new("planar", "DECIMATE")
+    decimate.decimate_type = "DISSOLVE"
+    decimate.angle_limit = math.radians(PLANAR_DEGREES)
+    decimate.delimit = {"UV"}
+    bpy.context.view_layer.objects.active = model
+    bpy.ops.object.modifier_apply(modifier=decimate.name)
+    bm = bmesh.new()
+    bm.from_mesh(model.data)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method="BEAUTY", ngon_method="BEAUTY")
+    bm.to_mesh(model.data)
+    bm.free()
+    planar = triangle_count(model)
+    current = planar
 if current > target:
     decimate = model.modifiers.new("decimate", "DECIMATE")
     decimate.decimate_type = "COLLAPSE"
@@ -152,8 +174,17 @@ if current > target:
     decimate.use_collapse_triangulate = True
     bpy.context.view_layer.objects.active = model
     bpy.ops.object.modifier_apply(modifier=decimate.name)
+# Small open loops a reviewer sees as specks of the background (the kit closes loops up to 32 edges without a seam,
+# check_unit_files.SMALL_HOLE_EDGES); larger ones stay for UNIT-HOLE to report.
+bm = bmesh.new()
+bm.from_mesh(model.data)
+closed = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=SMALL_HOLE_EDGES)["faces"]
+bmesh.ops.triangulate(bm, faces=closed)
+bm.to_mesh(model.data)
+bm.free()
+report["small_holes_closed"] = len(closed)
 shape = tripo_shape.shape_report(original, arrays(model))
-report["reduction"] = {"welded_vertices": welded, "from": len(original[1]), "to": triangle_count(model), "budget": budget,
+report["reduction"] = {"welded_vertices": welded, "from": len(original[1]), "after_planar": planar, "to": triangle_count(model), "budget": budget,
                        "iou": shape["iou"], "shells_before": shape["shells_before"]["shells"], "shells_after": shape["shells_after"]["shells"],
                        "problems": tripo_shape.shape_problems(shape)}
 
