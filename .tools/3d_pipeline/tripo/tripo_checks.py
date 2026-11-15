@@ -25,6 +25,10 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   standing height and the torso (hips to head) near horizontal (at most `MAX_TORSO_VERTICAL_SHARE` of its length vertical).
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on).
+- TRIPO-WING-STRETCH: as TRIPO-CLOAK-STRETCH, for the wing region (`lib/tripo_chains.wing_masks`), with the same limit.
+- TRIPO-CHAIN-IN-BODY, TRIPO-CHAIN-GROUND: cloak or wing points deeper than `CHAIN_IN_BODY_MARGIN_SHARE` of the height inside the rest
+  of the body, or vertices more than `CHAIN_GROUND_MARGIN_SHARE` under the ground, in more than 1% of them in some frame. They run
+  for a cape (`--cape`) and for wings (`--wings`, or a job whose anatomy has wings or whose `tripo.chains` names wings).
 """
 
 from __future__ import annotations
@@ -41,7 +45,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, tripo_arms, tripo_checks as T, tripo_grip as G  # noqa: E402
+from lib import pdx_deform, pdx_motion, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -53,6 +57,14 @@ VANILLA_CLOAK_WORST = 0.0197
 CLOAK_MAX_STRETCH_SHARE = 0.05
 # Tripo's skeleton names the torso Hips, Spine, Spine01, Spine02; vanilla infantry's names it Hip and back_mid. Both are listed so one rule serves both.
 CLOAK_BONES = ("Hips", "Spine", "Spine01", "Spine02", "Hip", "back_mid", "LeftUpLeg", "RightUpLeg")
+# Chain regions (lib/tripo_chains.py). A wing membrane is skin and stretches no more than the cloak may. Cloth and membrane inside the body
+# use the weapon's rule (TRIPO-WEAPON-IN-BODY): points deeper than 1% of the height, at most 1% of them in any frame. Below the ground: the
+# region's vertices more than 1% of the height under the rest pose's ground, at most 1% of them.
+MAX_WING_STRETCH_SHARE = CLOAK_MAX_STRETCH_SHARE
+CHAIN_IN_BODY_MARGIN_SHARE = 0.01
+MAX_CHAIN_IN_BODY_SHARE = 0.01
+CHAIN_GROUND_MARGIN_SHARE = 0.01
+MAX_CHAIN_BELOW_GROUND_SHARE = 0.01
 ENCLOSURE_HALF_LENGTH_SHARE = 0.03
 TORSO_BONES = ("Hips", "Spine", "Spine01", "Spine02", "neck", "Head", "Hip", "back_mid", "head")
 LIMB_BONES = tuple(f"{side}{part}" for side in ("Left", "Right") for part in ("Arm", "ForeArm", "ForeArmRoll", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"))
@@ -105,7 +117,7 @@ def cloak_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict]
     hips = joints[index["Hips"]] if "Hips" in index else mesh.positions.mean(axis=0)
     front = front_direction(mesh)
     height = mesh.height
-    mask = T.cloak_region(mesh.positions, dominant_names, hips, front, height, CLOAK_BONES)
+    mask = T.cloak_region(mesh.positions, dominant_names, hips, front, height, cloak_bones(mesh))
     edges = pdx_deform.mesh_edges(mesh)
     out, numbers = [], {"region_vertices": int(mask.sum()), "clips": {}}
     for clip, anim in anims.items():
@@ -115,6 +127,77 @@ def cloak_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict]
             out.append(finding("TRIPO-CLOAK-STRETCH", clip,
                                f"{share:.1%} of the cloak region's edges are stretched or squashed in frame {frame * step} ({int(mask.sum())} vertices behind the body); the limit is {CLOAK_MAX_STRETCH_SHARE:.0%}",
                                share=round(share, 4), frame=frame * step))
+    return out, numbers
+
+
+def cloak_bones(mesh) -> tuple:
+    """The torso, hip and thigh bones, plus the cloak's own chain bones when the unit has them (lib/tripo_chains.py)."""
+
+    return CLOAK_BONES + tuple(tripo_chains.chain_bones(mesh.bones, "cloak"))
+
+
+def chain_regions(mesh, wings: bool, cloak: bool) -> Dict[str, np.ndarray]:
+    """Vertex masks of the regions a chain stage moves, by the same rules that stage selects them with."""
+
+    names = np.array(mesh.bones)
+    dominant = pdx_deform.dominant_bones(mesh)
+    dominant_names = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    hips = pdx_motion.rest_joints(mesh)[index["Hips"]] if "Hips" in index else mesh.positions.mean(axis=0)
+    front = front_direction(mesh)
+    regions = {}
+    if cloak:
+        regions["cloak"] = T.cloak_region(mesh.positions, dominant_names, hips, front, mesh.height, cloak_bones(mesh))
+    if wings:
+        left, right = tripo_chains.wing_masks(mesh.positions, dominant_names, hips, front, np.array([0.0, 1.0, 0.0]))
+        regions["wings"] = left | right
+    return regions
+
+
+def chain_clip_numbers(mesh, anim, regions, body, step: int) -> dict:
+    """One clip's worst in-body share and below-ground share per region, and the wing region's worst stretch."""
+
+    frames = posed_frames(mesh, anim, step)
+    edges = pdx_deform.mesh_edges(mesh)
+    ground = float(mesh.positions[:, 1].min())
+    out = {}
+    for name, mask in regions.items():
+        inside = tripo_chains.inside_share_series(frames, mesh.triangles, body, mask, mesh.height, CHAIN_IN_BODY_MARGIN_SHARE)
+        below = tripo_chains.below_ground_series(frames, mask, ground, mesh.height, CHAIN_GROUND_MARGIN_SHARE)
+        row = {"in_body_worst_share": round(max(inside), 4), "in_body_frame": int(np.argmax(inside)) * step,
+               "below_ground_worst_share": round(max(below), 4), "below_ground_frame": int(np.argmax(below)) * step}
+        if name == "wings":
+            share, frame = T.region_stretch_share(mesh.positions, frames, edges, mask, mesh.height)
+            row.update(stretch_worst_share=round(share, 4), stretch_frame=frame * step)
+        out[name] = row
+    return out
+
+
+def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
+    out = []
+    if row.get("stretch_worst_share", 0.0) > MAX_WING_STRETCH_SHARE:
+        out.append(finding("TRIPO-WING-STRETCH", clip, f"{row['stretch_worst_share']:.1%} of the wing region's edges are stretched or squashed in frame {row['stretch_frame']}; the limit is {MAX_WING_STRETCH_SHARE:.0%}", share=row["stretch_worst_share"]))
+    if row["in_body_worst_share"] > MAX_CHAIN_IN_BODY_SHARE:
+        out.append(finding("TRIPO-CHAIN-IN-BODY", clip, f"{row['in_body_worst_share']:.1%} of the {name} points are more than {CHAIN_IN_BODY_MARGIN_SHARE:.0%} of the height inside the body in frame {row['in_body_frame']} (limit {MAX_CHAIN_IN_BODY_SHARE:.0%})", region=name, share=row["in_body_worst_share"]))
+    if row["below_ground_worst_share"] > MAX_CHAIN_BELOW_GROUND_SHARE:
+        out.append(finding("TRIPO-CHAIN-GROUND", clip, f"{row['below_ground_worst_share']:.1%} of the {name} vertices are more than {CHAIN_GROUND_MARGIN_SHARE:.0%} of the height below the ground in frame {row['below_ground_frame']} (limit {MAX_CHAIN_BELOW_GROUND_SHARE:.0%})", region=name, share=row["below_ground_worst_share"]))
+    return out
+
+
+def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-STRETCH, TRIPO-CHAIN-IN-BODY and TRIPO-CHAIN-GROUND per clip, for the cloak and wing regions."""
+
+    regions = chain_regions(mesh, wings, cloak)
+    if not regions:
+        return [], {}
+    weapon = np.isin(np.array(mesh.bones)[np.clip(pdx_deform.dominant_bones(mesh), 0, None)], ["Weapon"])
+    body = ~np.any(np.stack(list(regions.values())), axis=0) & ~weapon
+    out, numbers = [], {"region_vertices": {name: int(mask.sum()) for name, mask in regions.items()}, "clips": {}}
+    for clip, anim in anims.items():
+        rows = chain_clip_numbers(mesh, anim, regions, body, step)
+        numbers["clips"][clip] = rows
+        for name, row in rows.items():
+            out += chain_row_findings(clip, name, row)
     return out, numbers
 
 
@@ -294,6 +377,18 @@ def load_unit(folder: Path):
     return mesh, anims
 
 
+def job_regions(args) -> (bool, bool):
+    """(cape, wings) from the flags, or from the job: `cape: true`, `anatomy.wings`, or the regions its `tripo.chains` names."""
+
+    cape, wings = args.cape, args.wings
+    if args.jobs_config and args.slug:
+        job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+        chains = {item["region"] if isinstance(item, dict) else str(item) for item in (job.get("tripo") or {}).get("chains") or []}
+        cape = cape or bool(job.get("cape")) or "cloak" in chains
+        wings = wings or bool((job.get("anatomy") or {}).get("wings")) or "wings" in chains
+    return cape, wings
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path)
@@ -302,20 +397,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--weapon-joint", default="mixamorig:Weapon", help="the weapon's joint in the gripped GLB")
     parser.add_argument("--clips", nargs="*", default=[], help="clips of the gripped GLB to check for the weapon in the body (default all)")
     parser.add_argument("--cape", action="store_true", help="the unit has a cloak or cape: run the cloak check (the job's `cape: true` does the same with --jobs-config and --slug)")
+    parser.add_argument("--wings", action="store_true", help="the unit has wings: run the wing stretch, in-body and ground checks")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--slug")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
-    cape = args.cape
-    if args.jobs_config and args.slug:
-        cape = cape or bool(json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug].get("cape"))
+    cape, wings = job_regions(args)
     if cape:
         found, numbers["cloak"] = cloak_findings(mesh, anims)
         findings += found
     else:
         numbers["cloak"] = "not run: the job's anatomy has no cape"
+    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    findings += found
     found, numbers["death"] = death_findings(mesh, anims)
     findings += found
     if not args.weapon_bone:

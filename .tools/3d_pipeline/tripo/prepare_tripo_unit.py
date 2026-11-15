@@ -6,7 +6,7 @@ Run it headless, through the Blender the pipeline discovers (tripo_intake.py doe
         --roles idle=idle move=walk attack=chop defend=hit_to_body_01 retreat=flee_01 death=fall
         [--rigid-part tripo_part_1=RightHand | --rigid-from-twin <segmented.glb> tripo_part_1=RightHand]
 
-What it does, with no new keyframes (only the clips Tripo exported):
+What it does, with no new keyframes (only the clips Tripo exported) except the chains' of step 5:
 
 1. Drops meshes without vertex groups (Blender's glTF import adds a stray bone-shape Icosphere).
 2. Renames the `mixamorig:*` bones to the names the kit expects (Spine1 -> Spine01, Spine2 -> Spine02,
@@ -19,6 +19,8 @@ What it does, with no new keyframes (only the clips Tripo exported):
 4. Writes `<base-name>.glb` (mesh only, the rest pose), `<base-name>_textures/{base_color,normal,
    metallic_roughness}.png` and one `<role-name>.glb` per role (mesh, the shared armature, exactly one
    animation: the Tripo clip named in `--roles`, in the clip's own frames).
+5. With `--chains cloak wings`, adds bone chains to those regions after the parts are joined, rebinds them and keys them in every
+   role clip after the arm level and before the snap easing (tripo/chain_stage.py; the rules are in lib/tripo_chains.py).
 
 It prints one JSON line (it starts with `{"tool": "prepare_tripo_unit"`) and, with `--report`, writes
 the same data plus the weapon vertex coordinates.
@@ -45,9 +47,10 @@ from mathutils import Quaternion, Vector, kdtree
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images  # noqa: E402
-from lib import tripo_arms, tripo_shape  # noqa: E402
-from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name  # noqa: E402
+from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images
+from lib import tripo_arms, tripo_shape
+from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name
+from tripo import chain_stage
 
 MAX_BONES = 50
 # Texels of every atlas cell kept as a gutter: the tile is resampled inside it and its edge pixels are repeated
@@ -92,8 +95,10 @@ def parse_args():
     # Default 0.85: chest height (0) read as dangling arms on the zombie; 0.85 of the way from chest to shoulder gives the arms straight forward
     # at shoulder height, the classic zombie reach.
     parser.add_argument("--arm-level-target", type=float, default=0.85, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
+    parser.add_argument("--chains", nargs="*", default=[], metavar="REGION",
+                        help="add bone chains to these regions (cloak, wings), rebind them and key them per role by rule (tripo/chain_stage.py, lib/tripo_chains.py)")
     parser.add_argument("--report", type=Path)
-    argv = sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
+    argv =sys.argv[sys.argv.index("--") + 1 :] if "--" in sys.argv else sys.argv[1:]
     return parser.parse_args(argv)
 
 
@@ -177,7 +182,9 @@ def classify_from_twin(armature_meshes, twin_path: Path, part: str):
     """Per object, a list of booleans: the vertex's nearest twin vertex belongs to `part`."""
 
     twin_objects = [o for o in import_glb(twin_path) if o.type == "MESH"]
-    in_part = lambda o: o.name == part or o.name.startswith(part + ".") or o.data.name == part  # noqa: E731
+    def in_part(o):
+        return o.name == part or o.name.startswith(part + ".") or o.data.name == part
+
     if not any(in_part(o) for o in twin_objects):
         raise SystemExit(f"The twin {twin_path.name} has no part named {part}; it has {[o.name for o in twin_objects]}")
     twin_points, twin_flags = [], []
@@ -498,24 +505,14 @@ def resize_rgb(tile, width: int, height: int):
     return pixels[::-1, :, :3]
 
 
-def pack_atlas(meshes, source_glb: Path, folder: Path):
-    """Put the parts' texture sets into one square atlas and remap each part's UVs into its cell.
+# Empty atlas area: black, a flat normal, and matte (roughness 1) so it never counts as glossy in the packed specular map.
+ATLAS_FILL = {"diffuse": (0, 0, 0), "normal": (128, 128, 255), "specular": (0, 255, 0)}
 
-    The part with the largest texture (the body) keeps seven eighths of the atlas side, and every
-    other part (a weapon) gets a one-eighth cell at the edge (`lib.tripo.atlas_layout`). Tiles are
-    resampled to their cells and nothing is baked. One material with the three atlas maps replaces
-    the parts' materials.
-    """
 
-    images = part_images(source_glb)
-    names = [obj.name for obj in meshes]
-    missing = [name for name in names if name not in images]
-    if missing:
-        raise SystemExit(f"No texture set found for {missing}; the GLB meshes are {sorted(images)}")
-    folder.mkdir(parents=True, exist_ok=True)
-    # Empty atlas area: black, a flat normal, and matte (roughness 1) so it never counts as glossy in the packed specular map.
-    written, tiles, fill = {}, {}, {"diffuse": (0, 0, 0), "normal": (128, 128, 255), "specular": (0, 255, 0)}
-    neutral_parts = {}
+def atlas_tiles(images, names):
+    """Per role, each part's decoded tile (None where a part lacks that map), and the parts that get a neutral stand-in per role."""
+
+    tiles, neutral_parts = {}, {}
     for role in ROLE_FILES:
         have = [role in images[name] for name in names]
         if not any(have):
@@ -527,18 +524,17 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         tiles[role] = [decode_rgb(images[name][role]) if images[name].get(role) else None for name in names]
         if not all(have):
             neutral_parts.setdefault(role, [n for n, ok in zip(names, have) if not ok])
-    if "diffuse" not in tiles:
-        raise SystemExit(f"{source_glb.name} embeds no base color map")
-    sizes = [tile.shape[:2] for tile in tiles["diffuse"]]
-    # A part's normal and metallic-roughness maps may be smaller or larger than its diffuse (a separately
-    # modelled weapon often is): every tile is resampled to its cell anyway, so only the diffuse sizes lay out the atlas.
-    map_sizes = {role: [list(tile.shape[:2]) if tile is not None else None for tile in row] for role, row in tiles.items()}
-    layout = atlas_layout(sizes)
-    side, rects = layout["size"], layout["rects"]
+    return tiles, neutral_parts
+
+
+def write_atlas_maps(tiles, rects, side: int, folder: Path):
+    """Write one atlas PNG per role (and the constant specular map when no part has one). Returns ({role: file}, neutral_specular)."""
+
+    written = {}
     for role, row in tiles.items():
         atlas = np.empty((side, side, 3), dtype=np.uint8)
-        atlas[:, :] = fill[role]
-        stand_in = (0, NEUTRAL_ROUGHNESS, 0) if role == "specular" else fill[role]
+        atlas[:, :] = ATLAS_FILL[role]
+        stand_in = (0, NEUTRAL_ROUGHNESS, 0) if role == "specular" else ATLAS_FILL[role]
         for tile, (x, y, width, height) in zip(row, rects):
             if tile is None:
                 tile = np.empty((height, width, 3), dtype=np.uint8)
@@ -557,6 +553,12 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         write_png(folder / ROLE_FILES["specular"], side, side, constant)
         write_rm_siblings(folder, constant)
         written["specular"] = ROLE_FILES["specular"]
+    return written, neutral_specular
+
+
+def remap_atlas_uvs(meshes, rects, side: int):
+    """Move each part's UVs into its atlas cell (inside the gutter). Returns each part's new UV range."""
+
     uv_ranges = {}
     for obj, (x, y, width, height) in zip(meshes, rects):
         layer = obj.data.uv_layers.active
@@ -570,6 +572,12 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         values[1::2] = (y + ATLAS_GUTTER + np.clip(vs, 0.0, 1.0) * inner_h) / side
         layer.data.foreach_set("uv", values)
         uv_ranges[obj.name] = [round(float(v), 5) for v in (values[0::2].min(), values[0::2].max(), values[1::2].min(), values[1::2].max())]
+    return uv_ranges
+
+
+def atlas_material(meshes, folder: Path, written):
+    """One material with the atlas maps, given to every part."""
+
     material = bpy.data.materials.new("unit_atlas")
     material.use_nodes = True
     nodes, links = material.node_tree.nodes, material.node_tree.links
@@ -598,6 +606,35 @@ def pack_atlas(meshes, source_glb: Path, folder: Path):
         obj.data.materials.append(material)
         for polygon in obj.data.polygons:
             polygon.material_index = 0
+
+
+def pack_atlas(meshes, source_glb: Path, folder: Path):
+    """Put the parts' texture sets into one square atlas and remap each part's UVs into its cell.
+
+    The part with the largest texture (the body) keeps seven eighths of the atlas side, and every
+    other part (a weapon) gets a one-eighth cell at the edge (`lib.tripo.atlas_layout`). Tiles are
+    resampled to their cells and nothing is baked. One material with the three atlas maps replaces
+    the parts' materials.
+    """
+
+    images = part_images(source_glb)
+    names = [obj.name for obj in meshes]
+    missing = [name for name in names if name not in images]
+    if missing:
+        raise SystemExit(f"No texture set found for {missing}; the GLB meshes are {sorted(images)}")
+    folder.mkdir(parents=True, exist_ok=True)
+    tiles, neutral_parts = atlas_tiles(images, names)
+    if "diffuse" not in tiles:
+        raise SystemExit(f"{source_glb.name} embeds no base color map")
+    sizes = [tile.shape[:2] for tile in tiles["diffuse"]]
+    # A part's normal and metallic-roughness maps may be smaller or larger than its diffuse (a separately
+    # modelled weapon often is): every tile is resampled to its cell anyway, so only the diffuse sizes lay out the atlas.
+    map_sizes = {role: [list(tile.shape[:2]) if tile is not None else None for tile in row] for role, row in tiles.items()}
+    layout = atlas_layout(sizes)
+    side, rects = layout["size"], layout["rects"]
+    written, neutral_specular = write_atlas_maps(tiles, rects, side, folder)
+    uv_ranges = remap_atlas_uvs(meshes, rects, side)
+    atlas_material(meshes, folder, written)
     return {"textures": written, "parts": names, "atlas_size": [side, side], "part_sizes": [list(size) for size in sizes], "map_sizes": map_sizes, "neutral_specular": neutral_specular, "neutral_map_parts": neutral_parts, "rects": [list(rect) for rect in rects], "uv_ranges_u_min_max_v_min_max": uv_ranges}
 
 
@@ -699,6 +736,12 @@ def step_degrees(a, b):
     return 2.0 * math.degrees(math.acos(min(1.0, abs(a.dot(b)))))
 
 
+def turn_rates(values, frames):
+    """Degrees per frame between neighbouring keys."""
+
+    return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
+
+
 def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16):
     """Keep every bone's quaternions on one hemisphere and ease a snap over more frames.
 
@@ -713,36 +756,89 @@ def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, m
         quats = key_quaternions(curves)
         frames = [kp.co.x for kp in curves[0].keyframe_points]
 
-        def rates(values):
-            return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
-
         flips = 0
         for k in range(1, len(quats)):
             if quats[k].dot(quats[k - 1]) < 0:
                 quats[k].negate()
                 flips += 1
-        before = max(rates(quats), default=0.0)
+        before = max(turn_rates(quats, frames), default=0.0)
         eased = []
         k = 1
         while k < len(quats):
-            if rates(quats)[k - 1] > trigger_degrees:
+            if turn_rates(quats, frames)[k - 1] > trigger_degrees:
                 for window in range(2, max_window + 1):
                     a, b = max(k - window, 0), min(k + window - 1, len(quats) - 1)
                     trial = list(quats)
                     for m in range(a, b + 1):
                         trial[m] = quats[a].slerp(quats[b], (frames[m] - frames[a]) / max(frames[b] - frames[a], 1e-6))
-                    if max(rates(trial)[max(a - 1, 0): b + 1], default=0.0) <= target_degrees or (a == 0 and b == len(quats) - 1):
+                    if max(turn_rates(trial, frames)[max(a - 1, 0): b + 1], default=0.0) <= target_degrees or (a == 0 and b == len(quats) - 1):
                         quats = trial
                         eased.append([int(frames[a]), int(frames[b])])
                         k = b
                         break
             k += 1
-        after = max(rates(quats), default=0.0)
+        after = max(turn_rates(quats, frames), default=0.0)
         out["flips_fixed"] += flips
         if flips or eased or before > trigger_degrees:
             out["snaps_eased"][bone.replace(PREFIX, "")] = {"flips": flips, "per_frame_before": round(before, 1), "per_frame_after": round(after, 1), "eased_frames": eased}
         write_quaternions(curves, quats)
     return out
+
+
+ARM_BONES = ("LeftArm", "RightArm")
+TRACKED_JOINTS = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")
+
+
+def assign_action(armature, action):
+    armature.animation_data_create()
+    armature.animation_data.action = action
+    slots = getattr(action, "slots", None)
+    if slots is not None and len(slots):
+        armature.animation_data.action_slot = slots[0]
+
+
+def joint_head(armature, name):
+    return np.array(armature.matrix_world @ armature.pose.bones[name].head)
+
+
+def track_joints(armature, frames):
+    """{joint: (frames, 3) world head positions} for the arm-level joints."""
+
+    scene = bpy.context.scene
+    tracks = {name: [] for name in TRACKED_JOINTS}
+    for frame in frames:
+        scene.frame_set(frame)
+        for name in tracks:
+            tracks[name].append(joint_head(armature, name))
+    return {name: np.array(values) for name, values in tracks.items()}
+
+
+def arm_levels(armature, frames, reach, front, standing, up, target_share):
+    """The hand levels of the clip as it is now, plus the mean error to chest height and the forward reach over the reach phase."""
+
+    now = track_joints(armature, frames)
+    levels = tripo_arms.hand_levels(now["LeftHand"], now["RightHand"], now["LeftArm"], now["RightArm"], now["Head"], up)
+    mid = 0.5 * (now["LeftHand"] + now["RightHand"])
+    chest = tripo_arms.chest_height(0.5 * (now["LeftArm"] + now["RightArm"]), now["Hips"], up, target_share)
+    levels["mean_error_in_reach"] = float(np.mean(mid[reach, up] - chest[reach]))
+    levels["forward_in_reach"] = float(np.mean((mid[reach] - now["Hips"][reach]) @ front)) / max(standing, 1e-9)
+    return levels
+
+
+def turned_hand_heights(armature, frames, sample, arm_quaternions, chest, angles, axis, up):
+    """Mean over the sampled reach frames of each hand's height minus the chest's, with arm k turned by angles[k] about `axis`."""
+
+    scene = bpy.context.scene
+    bones = armature.pose.bones
+    out = np.zeros(2)
+    for frame in sample:
+        scene.frame_set(int(frames[frame]))
+        for k, name in enumerate(ARM_BONES):
+            bones[name].rotation_quaternion = arm_quaternions[name][frame] @ Quaternion(axis, angles[k])
+        bpy.context.view_layer.update()
+        for k, hand in enumerate(("LeftHand", "RightHand")):
+            out[k] += joint_head(armature, hand)[up] - chest[frame]
+    return out / len(sample)
 
 
 def level_arms(armature, action, up=2, target_share=0.0):
@@ -754,28 +850,16 @@ def level_arms(armature, action, up=2, target_share=0.0):
     """
 
     scene = bpy.context.scene
-    armature.animation_data_create()
-    armature.animation_data.action = action
-    slots = getattr(action, "slots", None)
-    if slots is not None and len(slots):
-        armature.animation_data.action_slot = slots[0]
+    assign_action(armature, action)
     start, end = int(action.frame_range[0]), int(action.frame_range[1])
     frames = list(range(start, end + 1))
-    arms = ("LeftArm", "RightArm")
     bones = armature.pose.bones
-
-    def heads(name):
-        return np.array(armature.matrix_world @ bones[name].head)
-
-    tracks = {name: [] for name in ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")}
-    arm_quaternions = {name: [] for name in arms}
+    arm_quaternions = {name: [] for name in ARM_BONES}
     for frame in frames:
         scene.frame_set(frame)
-        for name in tracks:
-            tracks[name].append(heads(name))
-        for name in arms:
+        for name in ARM_BONES:
             arm_quaternions[name].append(Quaternion(bones[name].rotation_quaternion))
-    track = {name: np.array(values) for name, values in tracks.items()}
+    track = track_joints(armature, frames)
     scene.frame_set(start)
     rest_foot = np.array(armature.matrix_world @ armature.data.bones["LeftFoot"].head_local)
     rest_toe = np.array(armature.matrix_world @ armature.data.bones["LeftToeBase"].head_local)
@@ -787,59 +871,26 @@ def level_arms(armature, action, up=2, target_share=0.0):
     shoulder_mid = 0.5 * (track["LeftArm"] + track["RightArm"])
     reach = tripo_arms.reach_frames(hand_mid, track["Hips"], front)
     chest = tripo_arms.chest_height(shoulder_mid, track["Hips"], up, target_share)
-
-    def measure():
-        now = {name: [] for name in ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")}
-        for frame in frames:
-            scene.frame_set(frame)
-            for name in now:
-                now[name].append(heads(name))
-        now = {name: np.array(values) for name, values in now.items()}
-        levels = tripo_arms.hand_levels(now["LeftHand"], now["RightHand"], now["LeftArm"], now["RightArm"], now["Head"], up)
-        mid = 0.5 * (now["LeftHand"] + now["RightHand"])
-        levels["mean_error_in_reach"] = float(np.mean(mid[reach, up] - tripo_arms.chest_height(0.5 * (now["LeftArm"] + now["RightArm"]), now["Hips"], up, target_share)[reach]))
-        levels["forward_in_reach"] = float(np.mean((mid[reach] - now["Hips"][reach]) @ front)) / max(standing, 1e-9)
-        return levels
-
-    before = measure()
+    before = arm_levels(armature, frames, reach, front, standing, up, target_share)
     axes = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
     sample = reach[:: max(1, len(reach) // 12)]
 
-    def hand_heights(angles, axis):
-        """Mean over the sampled reach frames of each hand's height minus the chest's, with arm k turned by angles[k] about `axis`."""
+    def heights(angles, axis):
+        return turned_hand_heights(armature, frames, sample, arm_quaternions, chest, angles, axis, up)
 
-        out = np.zeros(2)
-        for frame in sample:
-            scene.frame_set(int(frames[frame]))
-            for k, name in enumerate(arms):
-                bones[name].rotation_quaternion = arm_quaternions[name][frame] @ Quaternion(axis, angles[k])
-            bpy.context.view_layer.update()
-            for k, hand in enumerate(("LeftHand", "RightHand")):
-                out[k] += heads(hand)[up] - chest[frame]
-        return out / len(sample)
-
-    slopes = []
-    for axis in axes:
-        high = hand_heights((0.15, 0.15), axis)
-        low = hand_heights((-0.15, -0.15), axis)
-        slopes.append((high - low) / 0.3)
-    slope_sum = [float(np.sum(np.abs(v))) for v in slopes]
-    axis_index = int(np.argmax(slope_sum))
+    slopes = [(heights((0.15, 0.15), axis) - heights((-0.15, -0.15), axis)) / 0.3 for axis in axes]
+    axis_index = int(np.argmax([float(np.sum(np.abs(v))) for v in slopes]))
     axis = axes[axis_index]
     signs = np.where(slopes[axis_index] >= 0, 1.0, -1.0)
-
-    def error(angle):
-        return float(np.mean(hand_heights(tuple(signs * angle), axis)))
-
-    angle, left = tripo_arms.solve_arm_offset(error, tolerance=0.002 * max(standing, 1e-9))
-    for k, name in enumerate(arms):
+    angle, left = tripo_arms.solve_arm_offset(lambda value: float(np.mean(heights(tuple(signs * value), axis))), tolerance=0.002 * max(standing, 1e-9))
+    for k, name in enumerate(ARM_BONES):
         curves = rotation_curves(action).get(name)
         if curves is None:
             continue
         offset = Quaternion(axis, float(signs[k] * angle))
         write_quaternions(curves, [q @ offset for q in key_quaternions(curves)])
     scene.frame_set(start)
-    after = measure()
+    after = arm_levels(armature, frames, reach, front, standing, up, target_share)
     return {
         "axis": axis_index, "signs": [float(v) for v in signs], "degrees": round(math.degrees(angle), 1), "error_left": round(left, 4),
         "reach_frames": [int(frames[i]) for i in (reach[0], reach[-1])], "before": {k: round(v, 3) for k, v in before.items()},
@@ -847,8 +898,9 @@ def level_arms(armature, action, up=2, target_share=0.0):
     }
 
 
-def main():
-    args = parse_args()
+def read_inputs(args):
+    """The roles, the rigid parts and the twin from the command line, with the weapon bones checked against the kit's names."""
+
     roles = dict(split_pair(item, "--roles item") for item in args.roles)
     rigid_parts = dict(split_pair(item, "--rigid-part") for item in args.rigid_part)
     twin = None
@@ -858,49 +910,63 @@ def main():
     for bone in list(rigid_parts.values()) + ([twin[2]] if twin else []):
         if bone not in KIT_NAMES | set(OPTIONAL_BONES.values()):
             raise SystemExit(f"Weapon bone {bone!r} is not a kit bone name: {sorted(KIT_NAMES)}")
-    args.out_dir.mkdir(parents=True, exist_ok=True)
+    return roles, rigid_parts, twin
+
+
+def load_rig(path: Path):
+    """Import the rigged GLB into an empty scene. Returns (armature, skinned meshes, names of the meshes dropped)."""
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    import_glb(args.rigged)
+    import_glb(path)
     armatures = [o for o in bpy.data.objects if o.type == "ARMATURE"]
     if len(armatures) != 1:
-        raise SystemExit(f"Expected one armature in {args.rigged.name}, found {len(armatures)}")
+        raise SystemExit(f"Expected one armature in {path.name}, found {len(armatures)}")
     armature = armatures[0]
     meshes = skinned_meshes(armature)
     if not meshes:
-        raise SystemExit(f"{args.rigged.name} has no skinned mesh")
+        raise SystemExit(f"{path.name} has no skinned mesh")
     ignored = []
     for obj in [o for o in bpy.data.objects if o.type == "MESH" and o not in meshes]:
         ignored.append(obj.name)
         bpy.data.objects.remove(obj, do_unlink=True)
+    return armature, meshes, ignored
 
+
+def reduce_parts(meshes, armature, args):
     budgets = parse_part_triangles(args.part_triangles)
     unknown = [part for part in budgets if not any(m.name == part for m in meshes)]
     if unknown:
         raise SystemExit(f"--part-triangles names no mesh: {unknown}; meshes are {[m.name for m in meshes]}")
-    decimated = {}
-    for obj in meshes:
-        if obj.name in budgets:
-            decimated[obj.name] = decimate_part(obj, armature, budgets[obj.name], args.shape_iou)
+    return {obj.name: decimate_part(obj, armature, budgets[obj.name], args.shape_iou) for obj in meshes if obj.name in budgets}
 
-    # Weapon vertices, decided on the untouched mesh.
+
+def part_matches(obj, part: str) -> bool:
+    return obj.name == part or obj.name.startswith(part + ".")
+
+
+def weapon_flag_map(meshes, rigid_parts, twin):
+    """{object name: (kit bone, per-vertex weapon flags)}, decided on the untouched mesh, and the twin's report."""
+
     twin_report, twin_flags = None, {}
     if twin:
         twin_flags, twin_report = classify_from_twin(meshes, twin[0], twin[1])
-    rigid_for = {}  # object name -> (kit bone, per-vertex weapon flags)
+    rigid_for = {}
     for obj in meshes:
         count = len(obj.data.vertices)
         for part, bone in rigid_parts.items():
-            if obj.name == part or obj.name.startswith(part + "."):
+            if part_matches(obj, part):
                 rigid_for[obj.name] = (bone, [True] * count)
         if twin and obj.name not in rigid_for:
             rigid_for[obj.name] = (twin[2], twin_flags[obj.name])
-    unmatched = [part for part in rigid_parts if not any(o.name == part or o.name.startswith(part + ".") for o in meshes)]
+    unmatched = [part for part in rigid_parts if not any(part_matches(o, part) for o in meshes)]
     if unmatched:
         raise SystemExit(f"--rigid-part names no mesh: {unmatched}; meshes are {[o.name for o in meshes]}")
+    return rigid_for, twin_report
 
-    # Bones: keep the kit's, merge the rest into their nearest kept parent, then rename.
-    bones_before = len(armature.data.bones)
+
+def merge_plan(armature):
+    """(kept bone -> kit name, every bone -> the kit bone it merges into, dropped bone names)."""
+
     keep = {b.name: KIT_BONES[short_name(b.name)] for b in armature.data.bones if short_name(b.name) in KIT_BONES}
     if not KIT_NAMES <= set(keep.values()):
         raise SystemExit(f"The rig lacks kit bones: {sorted(KIT_NAMES - set(keep.values()))}")
@@ -910,20 +976,26 @@ def main():
         if target is None:
             raise SystemExit(f"Bone {bone.name} has no kept ancestor")
         merge_into[bone.name] = keep[target.name]
-    dropped = sorted(name for name in merge_into if name not in keep)
-    all_weights = {obj.name: read_weights(obj) for obj in meshes}
+    return keep, merge_into, sorted(name for name in merge_into if name not in keep)
 
+
+def resolve_roles(roles):
     clip_names = {action.name for action in bpy.data.actions}
     print("TRIPO_CLIPS " + json.dumps(sorted(clip_names)), file=sys.stderr)
     try:
-        roles = {role: resolve_clip_name(clip, clip_names) for role, clip in roles.items()}
+        return clip_names, {role: resolve_clip_name(clip, clip_names) for role, clip in roles.items()}
     except ValueError as problem:
-        raise SystemExit(str(problem))
+        raise SystemExit(str(problem)) from None
+
+
+def drop_and_rename(armature, keep, dropped):
+    """Remove the dropped bones and their channels, rename the kept ones to the kit's names. Returns the bone names."""
+
+    dropped_set = set(dropped)
     for action in bpy.data.actions:
         for fcurve, container in action_fcurves(action):
-            if bone_of_path(fcurve.data_path) in set(dropped):
+            if bone_of_path(fcurve.data_path) in dropped_set:
                 container.remove(fcurve)
-
     select_only([armature], armature)
     bpy.ops.object.mode_set(mode="EDIT")
     for name in dropped:
@@ -940,9 +1012,13 @@ def main():
     bone_names = [b.name for b in armature.data.bones]
     if len(bone_names) > MAX_BONES or set(bone_names) - set(OPTIONAL_BONES.values()) != KIT_NAMES:
         raise SystemExit(f"Bone set wrong after the merge: {bone_names}")
+    return bone_names
 
-    weapon_summary = []
-    weapon_points = []
+
+def bind_meshes(meshes, all_weights, bone_names, merge_into, rigid_for):
+    """Rewrite every mesh's weights (merged bones, rigid weapon). Returns (weapon summary, weapon vertex positions)."""
+
+    weapon_summary, weapon_points = [], []
     for obj in meshes:
         bone, flags = rigid_for.get(obj.name, ("", [False] * len(obj.data.vertices)))
         rewrite_weights(obj, all_weights[obj.name], bone_names, merge_into, bone, flags)
@@ -952,10 +1028,12 @@ def main():
                 "object": obj.name, "bone": bone, "vertices": sum(flags), "of": len(flags),
                 "connected_groups": connected_weapon_parts(obj, flags)[:5],
             })
+    return weapon_summary, weapon_points
 
-    separated = separate_coincident_weapon_vertices(meshes, rigid_for) if rigid_for else 0
 
-    # Several parts (a segmented export): one atlas and one material, then join into one mesh.
+def join_parts(meshes, args):
+    """Several parts (a segmented export): one atlas and one material, then join into one mesh named `unit`."""
+
     body = meshes[0]
     atlas = None
     if len(meshes) > 1:
@@ -963,9 +1041,12 @@ def main():
         select_only(meshes, body)
         bpy.ops.object.join()
     body.name = "unit"
-    materials = [slot.material.name for slot in body.material_slots if slot.material]
+    return body, atlas
 
-    # Base model: the mesh alone in the rest pose.
+
+def export_base(armature, body, args, atlas):
+    """The base model: the mesh alone in the rest pose, and its texture sidecars. Returns (textures, base path)."""
+
     armature.data.pose_position = "REST"
     if armature.animation_data:
         armature.animation_data.action = None
@@ -973,40 +1054,66 @@ def main():
     base_path = args.out_dir / f"{args.base_name}.glb"
     export_glb(base_path, [body], body, animated=False)
     armature.data.pose_position = "POSE"
+    return textures, base_path
 
-    # One GLB per role: mesh, the shared armature and exactly one clip.
-    clips = {}
+
+def export_role(armature, body, args, role, clip, trims, stage, extras):
+    """One GLB for a role: the mesh, the shared armature and exactly one clip, after the trim, the arm level, the chains and the snap
+    easing. What each step did goes into `extras` (keyed by step, then role). Returns the clip's record."""
+
+    action, trimmed = bpy.data.actions[clip], None
+    if role in trims:
+        action, trimmed = trimmed_copy(action, int(trims[role]))
+    if role in args.arm_level:
+        extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target)
+    if stage is not None:
+        # Before the easing, so a chain bone pushed fast by a collision is eased like any other joint.
+        extras["chains"][role] = chain_stage.bake_chains(armature, action, stage, role)
+    if args.ease_snaps:
+        extras["ease_snaps"][role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
+    assign_action(armature, action)
+    role_path = args.out_dir / (args.role_name.format(role=role) + ".glb")
+    export_glb(role_path, [armature, body], armature, animated=True)
+    name_glb_animation(role_path, safe_animation_name(clip))
+    animations, joints = glb_animations(role_path)
+    if len(animations) != 1:
+        raise SystemExit(f"{role_path.name} holds {len(animations)} animations, expected exactly one")
+    return {
+        "clip": clip,
+        "file": role_path.name,
+        "animation_name": animations[0]["name"],
+        "frames": animations[0]["frames"],
+        "action_frame_range": [float(v) for v in action.frame_range],
+        "trimmed": trimmed,
+        "joints": joints,
+    }
+
+
+def main():
+    args = parse_args()
+    roles, rigid_parts, twin = read_inputs(args)
+    args.out_dir.mkdir(parents=True, exist_ok=True)
+    armature, meshes, ignored = load_rig(args.rigged)
+    decimated = reduce_parts(meshes, armature, args)
+    rigid_for, twin_report = weapon_flag_map(meshes, rigid_parts, twin)
+
+    # Bones: keep the kit's, merge the rest into their nearest kept parent, then rename.
+    bones_before = len(armature.data.bones)
+    keep, merge_into, dropped = merge_plan(armature)
+    all_weights = {obj.name: read_weights(obj) for obj in meshes}
+    clip_names, roles = resolve_roles(roles)
+    bone_names = drop_and_rename(armature, keep, dropped)
+    weapon_summary, weapon_points = bind_meshes(meshes, all_weights, bone_names, merge_into, rigid_for)
+    separated = separate_coincident_weapon_vertices(meshes, rigid_for) if rigid_for else 0
+    body, atlas = join_parts(meshes, args)
+    materials = [slot.material.name for slot in body.material_slots if slot.material]
+    # Secondary chains (lib/tripo_chains.py): new bones and weights for a cloak or wings, keyed per role below.
+    stage = chain_stage.add_chains(armature, body, list(args.chains)) if args.chains else None
+    textures, base_path = export_base(armature, body, args, atlas)
+
     trims = dict(split_pair(item, "--trim") for item in args.trim)
-    eased = {}
-    leveled = {}
-    for role, clip in roles.items():
-        action, trimmed = bpy.data.actions[clip], None
-        if role in trims:
-            action, trimmed = trimmed_copy(action, int(trims[role]))
-        if role in args.arm_level:
-            leveled[role] = level_arms(armature, action, target_share=args.arm_level_target)
-        if args.ease_snaps:
-            eased[role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
-        armature.animation_data_create()
-        armature.animation_data.action = action
-        slots = getattr(action, "slots", None)
-        if slots is not None and len(slots):
-            armature.animation_data.action_slot = slots[0]
-        role_path = args.out_dir / (args.role_name.format(role=role) + ".glb")
-        export_glb(role_path, [armature, body], armature, animated=True)
-        name_glb_animation(role_path, safe_animation_name(clip))
-        animations, joints = glb_animations(role_path)
-        if len(animations) != 1:
-            raise SystemExit(f"{role_path.name} holds {len(animations)} animations, expected exactly one")
-        clips[role] = {
-            "clip": clip,
-            "file": role_path.name,
-            "animation_name": animations[0]["name"],
-            "frames": animations[0]["frames"],
-            "action_frame_range": [float(v) for v in action.frame_range],
-            "trimmed": trimmed,
-            "joints": joints,
-        }
+    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}}
+    clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras) for role, clip in roles.items()}
 
     report = {
         "tool": "prepare_tripo_unit",
@@ -1015,10 +1122,10 @@ def main():
         "ignored_objects": ignored,
         "clips_in_file": sorted(clip_names),
         "bones_before": bones_before,
-        "ease_snaps": eased,
-        "arm_level": leveled,
-        "bones_after": len(bone_names),
-        "bone_names": bone_names,
+        "ease_snaps": extras["ease_snaps"],
+        "arm_level": extras["arm_level"],
+        "bones_after": len(armature.data.bones),
+        "bone_names": [b.name for b in armature.data.bones],
         "dropped_bones": len(dropped),
         "weapon": weapon_summary,
         "weapon_vertices_separated_from_body": separated,
@@ -1032,6 +1139,8 @@ def main():
         "textures": textures,
         "clips": clips,
     }
+    if stage is not None:
+        report["chains"] = {"plan": chain_stage.plan_summary(stage), "roles": extras["chains"]}
     print(json.dumps(report, sort_keys=True))
     if args.report:
         detail = dict(report, weapon_points=[[round(c, 6) for c in p] for p in weapon_points])

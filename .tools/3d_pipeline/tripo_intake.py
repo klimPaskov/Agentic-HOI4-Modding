@@ -28,6 +28,8 @@ roles in which the unit lets go of it: the kit grounds those clips by the body a
 judge that bone's part for drifting. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
+`chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
+it per role by fixed rules (`tripo/chain_stage.py`, `lib/tripo_chains.py`), so a cloak no longer follows the thighs and wings no longer follow the arms.
 `part_triangles` is optional too: `{"tripo_part_1": 1500}` reduces a part to about that many triangles
 before it is bound (a separately modelled weapon has far more than a hand weapon needs), and `"auto"` takes
 the first of 1500, 2500 and 4000 that keeps the part's shape. The reduction welds first and is checked
@@ -53,10 +55,10 @@ from typing import Any, Dict, List, Optional
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-import run_pilot  # noqa: E402
-from lib.credits import append_entry, read_ledger  # noqa: E402
-from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json  # noqa: E402
-from lib.tripo import inbox_file, uses_tripo  # noqa: E402
+import run_pilot
+from lib.credits import append_entry, read_ledger
+from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
+from lib.tripo import inbox_file, uses_tripo
 
 # Every Tripo job eases joint turns faster than this many degrees per frame (tripo/prepare_tripo_unit.py --ease-snaps). The kit retimes
 # Tripo's 24 fps clips to 30 and one frame's step can double, so a clip with 20 degrees a frame arrives at 38 against the kit's limit of 37
@@ -132,6 +134,10 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     value = config.get("ease_snaps", DEFAULT_EASE_SNAPS)
     if value:
         command += ["--ease-snaps"] + ([] if value is True else [str(float(value))])
+    # Secondary chains (tripo/chain_stage.py): `"chains": [{"region": "cloak"}, {"region": "wings"}]`, or the region names alone.
+    regions = [item["region"] if isinstance(item, dict) else str(item) for item in config.get("chains") or []]
+    if regions:
+        command += ["--chains", *regions]
     weapon = config.get("weapon")
     if weapon:
         pair = f"{weapon['part']}={weapon['bone']}"

@@ -211,6 +211,36 @@ The intake and the Blender stage apply these to every Tripo job without a settin
 
 Review sheets render from the packed material the game uses, so what you see on the sheet is what the map shows.
 
+### Secondary chains: cloaks and wings
+
+Tripo's humanoid rig has no cloth or wing bones. It binds a long cloak to the thighs, and a wing membrane to the arms and shoulders. Add `"chains"` to the job's `tripo` block and the intake gives that region its own bone chains, rebinds it and keys it in every role clip by fixed rules:
+
+```
+"tripo": {"roles": {...}, "chains": [{"region": "cloak"}]}
+"tripo": {"roles": {...}, "chains": [{"region": "wings"}]}
+```
+
+Nothing in the job sets a number. The stage reads the body and follows these rules (`lib/tripo_chains.py`, run in Blender by `tripo/chain_stage.py`):
+
+| Step | Rule |
+| --- | --- |
+| Region | Cloak: the region TRIPO-CLOAK-STRETCH measures, grown along the mesh into the cloth beside it that Tripo bound to the torso, hips or thighs, behind the hips and off every limb. Wings: everything farther from the mid-plane than 0.18 of the unit's width, without the forearms and hands, left and right |
+| Bone budget | HOI4 allows 50 bones. What the kit's bones leave is shared equally by the regions' sides. A pair of wings is two sides |
+| Chain shape | A chain bone is half a thigh long. Bones per chain are the region's length over that, 2 to 4. Chains are its width over that, 2 to 6. Over budget, bones per chain drop to 3 first, then chains to 2 |
+| Placement | Cloak: an even fan of chains across its width, each hanging from the upper spine. Wings: a fan from the wing root at the upper back, each chain moved onto a finger ridge where the wing has one |
+| Weights | Each vertex takes two neighbouring chains and two bones of each, so at most 4 influences. The region takes the chains whole. The chain weights blend into the body's over one chain bone outward from the region's border |
+| Cloak motion | All chains move as one sheet. Each bone follows the upper spine at the top and the hips at the hem, through a spring at the swing rate of a pendulum as long as the bone. The sheet is pushed off the legs and torso along the hips' back direction, never points above the horizontal, and stays above the ground |
+| Wing motion | A fold pose per role and a flap: a sine on each bone, a little later down the chain. Idle half folded with a slow breath, move folded with small beats, attack spread with one strong beat, defend wrapped forward, retreat flapping hard, death closing the fan and sagging flat with the body. A folded fan keeps 70% of its spread so the membrane never squashes |
+| Loops | Idle and move end where they start |
+
+The chains are keyed before the snap easing, so a bone a collision turned fast is eased like any other joint. The intake report lists the plan under `chains`: the bones, the region sizes and each role's fastest chain turn.
+
+Three checks cover the regions. TRIPO-WING-STRETCH is TRIPO-CLOAK-STRETCH for wings. TRIPO-CHAIN-IN-BODY fails a clip in which more than 1% of the cloak or wing points sit deeper than 1% of the height inside the rest of the body. TRIPO-CHAIN-GROUND fails one in which more than 1% of them sink 1% of the height under the ground. They run for `--cape` or `--wings`, or for a job whose `tripo.chains` names the region. TRIPO-CLOAK-STRETCH counts the cloak's chain bones as cloak bones.
+
+For a winged unit, set `target_height_m` so that the body without the wings is a soldier's height.
+
+Tested in November 2026: on an orc the cloak stretch passed in every clip (the attack fell from 13.8% to 2.9%), but some cloak points still pass into the body in the attack, retreat and death. On a demon the wings no longer follow the arms, but a reviewer still saw the membrane cross in front of the body in some clips, which no check measures yet.
+
 ## Tripo checks
 
 `tripo/tripo_checks.py` reads the unit's runtime files and fails what a viewer fails on a Tripo unit. Each limit is measured on vanilla clips or on clips a reviewer failed.
@@ -430,8 +460,8 @@ Units are the tested route. For other models, only the parts below have been pro
 ## Known limits
 
 - **Armed units.** The separate-weapon route has not passed review yet (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, and a long weapon carried down in a death clip passes through the body or the ground.
-- **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. It binds a wing membrane to the arms, shoulders and upper spine, so the wings bend and droop whenever the arms move. There is no wing step yet. Plan live work in Blender for a winged unit.
-- **Cloaks.** A long cloak stretches in clips that fold the torso (TRIPO-CLOAK-STRETCH). Weight edits did not fix it. Prefer a shorter garment in the picture.
+- **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. [Secondary chains](#secondary-chains-cloaks-and-wings) give wings their own bones and motion, but the membrane can still cross in front of the body in some clips. Tails and extra limbs have no step yet.
+- **Cloaks and armour.** [Secondary chains](#secondary-chains-cloaks-and-wings) stop a long cloak stretching, but some of it can still pass into the body in hard clips. Armour plates whose weight Tripo split between bones still bend a little.
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
 - **A weapon sinking in a death clip.** No free repair lifts a held prop out of the ground yet. Run `fit_prop.py` again (a higher `--ground-weight`, such as 40 instead of 10, cleared it on one unit), or turn the wrist live in Blender.
 - **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect to look for another preset, and sometimes a small live fix.
