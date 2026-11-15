@@ -190,7 +190,7 @@ def _seat_on_load(points: np.ndarray, triangles: np.ndarray, load: Any, landmark
     if rider_height <= 0:
         raise RuntimeError("A loaded mount needs rig_options.rider_height (the rider's height in this model's units) to place its Saddle_Node.")
     ground = float(points[:, 2].min())
-    seat = qload.place_saddle(points, triangles, load, rider_height)
+    seat = qload.place_saddle(points, triangles, load, rider_height, options.get("rider_footprint"))
     landmarks["saddle"] = np.asarray(seat["point"], dtype=float) - np.array([0.0, 0.0, ground])
     torso = points[:, 2] - ground > float(landmarks["belly_z"])
     roll = qload.roll_limit(points, load.mask, torso, np.array([0.0, 1.0, 0.0]), ql.COLLAPSE_ROLL)

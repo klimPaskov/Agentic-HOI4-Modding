@@ -23,7 +23,7 @@ without a setting:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -171,10 +171,34 @@ def find_load(points: np.ndarray, triangles: np.ndarray) -> Load:
     return Load(mask, deck_z + ground, cut_z + ground, (float(x_min), float(x_max), float(y_min), float(y_max)), deck_area, levels, floors)
 
 
-def place_saddle(points: np.ndarray, triangles: np.ndarray, load: Load, rider_height: float) -> Dict[str, object]:
+def _cell_code(cells: np.ndarray) -> np.ndarray:
+    return cells[..., 0] * 1_000_003 + cells[..., 1]
+
+
+def _crowd(candidates: np.ndarray, lifted: np.ndarray, radius: float, footprint: Optional[Dict[str, object]]) -> np.ndarray:
+    """Per candidate, the load vertices inside the rider's room: its swept footprint cells when known, else a circle of `radius`."""
+
+    if not len(lifted):
+        return np.zeros(len(candidates), dtype=np.int64)
+    if footprint and footprint.get("cells"):
+        cell = float(footprint["cell"])
+        cells = np.asarray(footprint["cells"], dtype=np.int64)
+        wanted = np.unique(_cell_code(cells))
+        rows = []
+        for centre in candidates:
+            keys = np.floor((lifted[:, :2] - centre[:2]) / cell).astype(np.int64)
+            rows.append(int(np.isin(_cell_code(keys), wanted).sum()))
+        return np.asarray(rows)
+    offsets = candidates[:, None, :2] - lifted[None, :, :2]
+    return (np.einsum("ijk,ijk->ij", offsets, offsets) < radius * radius).sum(axis=1)
+
+
+def place_saddle(points: np.ndarray, triangles: np.ndarray, load: Load, rider_height: float,
+                 footprint: Optional[Dict[str, object]] = None) -> Dict[str, object]:
     """The floor point under the clearest column of a standing rider `rider_height` tall (model units).
 
-    Every floor of the load is tried (the deck and any upper storey). The column has the rider's height and a fifth of it as radius,
+    Every floor of the load is tried (the deck and any upper storey). The column has the rider's height and, in plan, the cells its
+    own clips sweep (`footprint`, lib/mount_size.rider_footprint), or a circle a fifth of its height wide without them. Its centre
     stays wholly inside its floor's footprint, and counts the load's vertices inside it. The fewest wins, then the lower floor, then
     the point nearest its floor's centre.
     """
@@ -196,11 +220,7 @@ def place_saddle(points: np.ndarray, triangles: np.ndarray, load: Load, rider_he
         if not len(candidates):
             continue
         lifted = load_points[(load_points[:, 2] > floor_z + RIDER_FOOT_CLEARANCE * height) & (load_points[:, 2] < floor_z + rider_height)]
-        if len(lifted):
-            offsets = candidates[:, None, :2] - lifted[None, :, :2]
-            crowd = (np.einsum("ijk,ijk->ij", offsets, offsets) < radius * radius).sum(axis=1)
-        else:
-            crowd = np.zeros(len(candidates), dtype=np.int64)
+        crowd = _crowd(candidates, lifted, radius, footprint)
         centre = np.average(candidates[:, :2], axis=0, weights=area[on_floor])
         spread = np.linalg.norm(candidates[:, :2] - centre, axis=1)
         for k in range(len(candidates)):

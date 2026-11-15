@@ -99,6 +99,34 @@ def back_share(points: np.ndarray, triangles: np.ndarray, load: bool) -> Dict[st
     return {"back_share": float(landmarks["back_z"]) / height, "model_height": height, "back": float(landmarks["back_z"])}
 
 
+FOOTPRINT_CELLS = 24  # a rider's height spans this many footprint cells
+
+
+def rider_footprint(folder: Path, stem: str, roles: Dict[str, str]) -> Dict[str, Any]:
+    """Where the rider's clips carry it in plan: the cells (a 24th of its height wide) that any of its points covers in some frame
+    of the clips the mount's roles play, as integer (x, y) cells in the working frame (+X its left, -Y its front) with the node at
+    the origin, and the farthest reach from the node as a share of its height. The rest pose is not played, so it does not count."""
+
+    from lib import pdx_deform
+
+    mesh = pdx_deform.load_mesh(Path(folder) / f"{stem}.mesh")
+    cell = mesh.height / FOOTPRINT_CELLS
+    played = {roles.get(role, role) for role in ("idle", "move", "attack", "defend", "retreat", "death")}
+    cells, reach = set(), 0.0
+    for role in sorted(played):
+        path = Path(folder) / f"{stem}_{role}.anim"
+        if not path.is_file():
+            continue
+        anim = pdx_deform.load_anim(path)
+        matrices = pdx_deform.skinning_matrices(mesh, anim)
+        for frame in range(0, anim.frames, 2):
+            posed = pdx_deform.skin(mesh, matrices[frame])
+            reach = max(reach, float(np.hypot(posed[:, 0], posed[:, 2]).max()))
+            # The .mesh is +Y up with the unit facing -Z; the working frame is +Z up facing -Y.
+            cells.update(map(tuple, np.unique(np.floor(posed[:, [0, 2]] / cell).astype(int), axis=0).tolist()))
+    return {"cells": sorted(cells), "cell_share": 1.0 / FOOTPRINT_CELLS, "reach_share": reach / max(mesh.height, 1e-9)}
+
+
 def mount_size(glb: Path, entity_scale: float, size_vs_horse: float, load: bool,
                rider_mesh_height: Optional[float] = None) -> Dict[str, Any]:
     """The mesh height (`blender_target_height_m`) that puts the mount's back at `size_vs_horse` horses on the map, and the rider's scale."""

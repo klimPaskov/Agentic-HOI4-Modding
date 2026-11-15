@@ -93,6 +93,17 @@ class Saddle(unittest.TestCase):
         self.assertGreater(float(np.hypot(*seat["point"][:2])), seat["column_radius"])
         self.assertIn(round(float(seat["point"][2]), 2), {1.05, 1.62})
 
+    def test_the_rider_room_is_what_its_clips_sweep(self) -> None:
+        points, triangles = war_elephant().arrays()
+        load = qload.find_load(points, triangles)
+        # A rider that reaches 0.3 forward (-Y) of its node: no deck point keeps the post out of that reach, so the floor wins
+        # where the swept cells hold fewest load vertices, and the count is reported.
+        cells = [[x, y] for x in range(-1, 1) for y in range(-6, 1)]
+        seat = qload.place_saddle(points, triangles, load, 0.3, {"cells": cells, "cell": 0.05})
+        self.assertIn("column_load_vertices", seat)
+        clear = qload.place_saddle(points, triangles, load, 0.3, {"cells": [[0, 0]], "cell": 0.01})
+        self.assertEqual(clear["column_load_vertices"], 0)
+
     def test_a_load_rolls_only_until_it_meets_the_ground(self) -> None:
         points, triangles = war_elephant().arrays()
         load = qload.find_load(points, triangles)

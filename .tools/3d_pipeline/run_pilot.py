@@ -1813,7 +1813,7 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     size = tripo_mount_size(job, spec)
     if size and (spec.get("tripo") or {}).get("load"):
         # The load is found and bound by rule; the rider's height in this model's units places the Saddle_Node on its floor.
-        rig_options = {"load": True, "rider_height": size["rider_height_in_mount_mesh"]}
+        rig_options = {"load": True, "rider_height": size["rider_height_in_mount_mesh"], "rider_footprint": size.get("rider_footprint")}
     rig = blender.author_creature_rig(
         slug,
         component_checkpoint,
@@ -3147,6 +3147,11 @@ def tripo_mount_size(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]
     size = mount_size.mount_size(glb, float(spec.get("runtime_entity_scale", 0.8)), float(spec.get("size_vs_horse", 1.0)),
                                  bool(config.get("load")), rider.get("mesh_height"))
     size["size_vs_horse_reason"] = spec.get("size_vs_horse_reason", "")
+    if rider.get("folder"):
+        # The rider's room on the load is what its own clips sweep in plan (lib/mount_size.rider_footprint).
+        footprint = mount_size.rider_footprint(Path(rider["folder"]), str(rider.get("stem")), dict(rider.get("roles") or {}))
+        size["rider_reach_share"] = round(footprint["reach_share"], 4)
+        size["rider_footprint"] = {"cells": footprint["cells"], "cell": round(footprint["cell_share"] * size["rider_height_in_mount_mesh"], 5)}
     if spec.get("_explicit_target_height"):
         size["overridden_by_job"] = spec["blender_target_height_m"]
     else:
