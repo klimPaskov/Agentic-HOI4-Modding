@@ -1,0 +1,158 @@
+"""Review sheets for a static or rigid-part model (building, landmark, ship, vehicle, plane) from `tripo/static_model.py`.
+
+    py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <model folder> --model-kind vehicle --out <job folder>/review
+
+Two Blender starts, one after the other (a caller can gate them one by one with `--only close|game`):
+
+- `close`: `review_unit.render` at 512 px: every clip from front, left, back, right, the map camera and below, with
+  the diagnostics sheets, and `REVIEW_REQUEST.md` with the quality bar of `config/visual_review_prompt.md`, the
+  checklist and the kind's fixed notes (`KIND_NOTES`: what the kind is, so a reviewer does not judge a tank by a
+  soldier's feet).
+- `game`: `sheets/game_size.png` (and a 3x nearest-neighbour copy): the model and the vanilla model its size and entity
+  come from, side by side in the map camera and the front view, at the pixels a metre a vanilla soldier gets on the
+  map (60 px for `humanoid_unit`'s runtime height, as `weapon_sheets.py`). Each is drawn at its runtime size (mesh
+  size times entity scale), so the sheet shows whether the model reads, and is as big as vanilla's, at game size.
+
+Give `REVIEW_REQUEST.md` and the sheets, and nothing else, to a fresh reviewer, and record the reply with
+`review_unit.py <model folder> --out <job folder>/review --record reply.md`.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+from pathlib import Path
+from typing import List
+
+from PIL import Image, ImageDraw, ImageFont
+
+PIPELINE_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PIPELINE_ROOT))
+
+import review_unit  # noqa: E402
+from lib import static_kinds as sk  # noqa: E402
+
+# The pixels a metre of runtime size gets at game size: a vanilla soldier (humanoid_unit's source height 7.351824 at
+# entity scale 0.8, config/asset_profiles.json) is 60 px tall on the map camera (weapon_sheets.GAME_HEIGHT_PX).
+SOLDIER_RUNTIME_HEIGHT = 7.351824 * 0.8
+PX_PER_METRE = 60 / SOLDIER_RUNTIME_HEIGHT
+RENDER_SIZE, SHARE = 256, 1.45
+KIND_NOTES = {
+    "vehicle": [
+        "This is a WW2 light tank, a vehicle made of rigid parts (hull, turret, gun). It has no feet: for item 5, its tracks rest on the green disc.",
+        "The turret turns and the gun recoils by design. In idle the whole tank also turns on the spot and back, as vanilla light tanks do.",
+        "In the death clip the turret is blown off the hull and lands beside it, as vanilla tanks' death does: a turret leaving the hull there is the intended look.",
+    ],
+    "plane": [
+        "This is a WW2 single-engine fighter. In game it flies; it is rendered just above the green disc. It has no feet, so item 5 does not apply.",
+        "The propeller spins by design: between frames the blades are at different angles.",
+    ],
+    "ship": [
+        "This is a WW2 warship. The green disc is the water surface: the hull below it is under water in game and hidden there.",
+        "The ship rocks on the water in its clips, and in the death clip it rolls and sinks under the water, as vanilla ships do.",
+    ],
+    "building": ["This is a static map building with no animation: the rest pose is its only clip. It stands on the green disc. It has no feet, so item 5 means its base meets the ground."],
+    "landmark": ["This is a static landmark (a monument) with no animation: the rest pose is its only clip. It stands on the green disc. It has no feet, so item 5 means its base meets the ground."],
+}
+
+
+def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[Path]:
+    return review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True)
+
+
+def render_rest(mesh: Path, out: Path, texts: List[str]) -> dict:
+    request = {
+        "out": str(out.resolve()), "mesh": str(mesh.resolve()),
+        "diffuse": review_unit.diffuse_maps(mesh.resolve(), texts), "specular": review_unit.specular_maps(mesh.resolve()),
+        "pbr": True, "clips": [], "views": ["hoi4", "front"], "diagnostic_views": [], "size": RENDER_SIZE, "ortho_share": SHARE,
+    }
+    out.mkdir(parents=True, exist_ok=True)
+    path = out / "request.json"
+    path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
+    completed = subprocess.run([str(review_unit.find_blender()), "-b", "--python", str(review_unit.BLENDER_SCRIPT), "--", str(path.resolve())],
+                               capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if "REVIEW_RENDERED" not in completed.stdout:
+        raise SystemExit("Blender did not finish the renders: " + (completed.stdout + completed.stderr)[-1500:])
+    return json.loads((out / "index.json").read_text(encoding="utf-8"))
+
+
+def _span(mesh: Path) -> float:
+    """The rest pose's largest side, which the review camera frames (`review_render.py`: ortho scale = span x share)."""
+
+    from lib import pdx_deform
+
+    loaded = pdx_deform.load_mesh(mesh)
+    visible = ~loaded.collision if len(loaded.collision) else slice(None)
+    return float((loaded.positions[visible].max(axis=0) - loaded.positions[visible].min(axis=0)).max())
+
+
+def game_review(folder: Path, kind: str, out: Path, game: Path) -> Path:
+    contract = sk.kind_contract(kind)
+    mesh = sorted(folder.glob("*.mesh"))[0]
+    reference = game / contract["entity"]["mesh"]
+    scale = contract["entity"]["scale"]
+    rows = []
+    for label, path, texts in (("this model", mesh, []), (f"vanilla {reference.stem}", reference, review_unit.gfx_texts(game))):
+        index = render_rest(path, out / "game_tiles" / ("model" if path == mesh else "vanilla"), texts)
+        # the tile shows span x SHARE across RENDER_SIZE px; at game size it shows span x scale x PX_PER_METRE
+        factor = scale * PX_PER_METRE * _span(path) * SHARE / RENDER_SIZE
+        small = max(4, round(RENDER_SIZE * factor))
+        tiles = [Image.open(out / "game_tiles" / ("model" if path == mesh else "vanilla") / index["clips"][0]["rows"][0]["tiles"][view]).convert("RGB")
+                 .resize((small, small), Image.Resampling.LANCZOS) for view in ("hoi4", "front")]
+        rows.append((label, tiles))
+    font = ImageFont.load_default()
+    cell = max(max(t.width for _l, ts in rows for t in ts), 90) + 8
+    height = max(t.height for _l, ts in rows for t in ts) + 34
+    image = Image.new("RGB", (cell * 2 + 8, height * len(rows)), (30, 30, 30))
+    draw = ImageDraw.Draw(image)
+    for r, (label, tiles) in enumerate(rows):
+        draw.text((4, r * height + 2), label, fill=(255, 220, 120), font=font)
+        for c, (tile, view) in enumerate(zip(tiles, ("hoi4", "front"))):
+            image.paste(tile, (c * cell + 4, r * height + 16))
+            draw.text((c * cell + 4, r * height + 18 + tile.height), view, fill=(255, 255, 255), font=font)
+    target = out / "sheets" / "game_size.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    image.save(target)
+    image.resize((image.width * 3, image.height * 3), Image.Resampling.NEAREST).save(out / "sheets" / "game_size_x3.png")
+    return target
+
+
+def add_game_sheet(out: Path) -> None:
+    request = out / "REVIEW_REQUEST.md"
+    if not request.is_file():
+        return
+    text = request.read_text(encoding="utf-8")
+    marker = "Single tiles, if a sheet"
+    extra = ("Game-size sheet (the model above, the vanilla model of the same kind below, both at the size the map shows them; "
+             f"`game_size_x3.png` is the same sheet enlarged three times): `{(out / 'sheets' / 'game_size.png').resolve()}` and "
+             f"`{(out / 'sheets' / 'game_size_x3.png').resolve()}`. Judge on it whether the model reads as what it is at game size "
+             "and is about as large as the vanilla one.\n\n")
+    if "Game-size sheet" not in text and marker in text:
+        request.write_text(text.replace(marker, extra + marker, 1), encoding="utf-8", newline="\n")
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("folder", type=Path, help="the model's folder (its .mesh, .anim and .dds files)")
+    parser.add_argument("--model-kind", required=True, choices=sk.KINDS)
+    parser.add_argument("--out", type=Path, required=True, help="the review folder (outside gfx/)")
+    parser.add_argument("--only", choices=("close", "game"), help="one Blender start: the close-up review or the game-size sheet")
+    parser.add_argument("--note", action="append", default=[], help="a fixed note added to the kind's own (repeatable)")
+    parser.add_argument("--game", type=Path, help="the game folder (default: the one .tools/lib/game.py finds)")
+    args = parser.parse_args(argv)
+    folder, out = args.folder.resolve(), args.out.resolve()
+    if args.only in (None, "close"):
+        close_review(folder, args.model_kind, out, args.note)
+    if args.only in (None, "game"):
+        from tripo.static_model import game_dir
+
+        print(game_review(folder, args.model_kind, out, args.game or game_dir()))
+    add_game_sheet(out)
+    print(out / "REVIEW_REQUEST.md")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
