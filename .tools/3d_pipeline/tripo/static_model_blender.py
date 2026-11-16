@@ -48,6 +48,7 @@ request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding
 # of a generated plate's waviness, well under the 40-degree crease the shading keeps sharp).
 PLANAR_DEGREES = 3.0
 SMALL_HOLE_EDGES = 32
+SLIT_SHARE = 1e-3
 contract = request["contract"]
 kind = contract["kind"]
 name = request["name"]
@@ -178,6 +179,13 @@ if current > target:
 # check_unit_files.SMALL_HOLE_EDGES); larger ones stay for UNIT-HOLE to report.
 bm = bmesh.new()
 bm.from_mesh(model.data)
+# Slits first: open-edge vertices within a thousandth of the model's size of each other are one point. A reviewer saw
+# such a crack on the ship's deck as a cyan rim; the weld tolerance above (a hundred-thousandth) leaves it open.
+rim_verts = list({v for e in bm.edges if e.is_boundary for v in e.verts})
+slits = len(bm.verts)
+bmesh.ops.remove_doubles(bm, verts=rim_verts, dist=size * SLIT_SHARE)
+slits -= len(bm.verts)
+report["slit_vertices_merged"] = slits
 closed = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=SMALL_HOLE_EDGES)["faces"]
 bmesh.ops.triangulate(bm, faces=closed)
 bm.to_mesh(model.data)
