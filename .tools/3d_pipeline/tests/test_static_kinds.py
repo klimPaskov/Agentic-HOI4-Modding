@@ -255,6 +255,12 @@ class RunningGearTests(unittest.TestCase):
         self.assertEqual(len(gear["tracks"]), 16)  # both track boxes, 8 vertices each
         self.assertEqual([round(w["centre"][1], 1) for w in gear["wheels"][:2]], [-2.4, -2.4])  # front first, left then right
 
+    def test_a_coarse_piece_does_not_spin(self):
+        round_wheel = disc_mesh([1.8, 0.0, 0.5], 0.45, 0.25, sides=16)[0]
+        diamond = disc_mesh([1.8, 0.0, 0.5], 0.45, 0.25, sides=4)[0]
+        self.assertEqual(sk.rim_coverage(round_wheel, np.array([1.8, 0.0, 0.5])), 1.0)
+        self.assertLessEqual(sk.rim_coverage(diamond, np.array([1.8, 0.0, 0.5])), 0.34)
+
     def test_a_tank_in_one_piece_has_no_wheels(self):
         points, triangles = box_mesh([-2.0, -4.0, 0.0], [2.0, 4.0, 2.5])
         gear = sk.running_gear(points, triangles, self.RULE)

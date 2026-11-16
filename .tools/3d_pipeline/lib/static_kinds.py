@@ -494,6 +494,17 @@ def propeller_cut(points: np.ndarray, rule: dict) -> dict:
     return {"cut_y": cut_y, "hub": hub, "disc_span": float(disc[peak])}
 
 
+def rim_coverage(points: np.ndarray, centre: np.ndarray, sectors: int = 12) -> float:
+    """The share of the `sectors` angular sectors round the axle (seen from the side) that the piece's outer vertices
+    (beyond half its largest radius) reach: 1 for a round wheel, under a half for a coarse polygon or an arm."""
+
+    offset = points[:, 1:] - centre[1:]
+    radii = np.linalg.norm(offset, axis=1)
+    outer = offset[radii > 0.5 * radii.max()] if len(radii) and radii.max() > 0 else offset
+    angles = np.arctan2(outer[:, 1], outer[:, 0])
+    return len(set(((angles + np.pi) / (2 * np.pi) * sectors).astype(int) % sectors)) / sectors
+
+
 def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     """A tank's road wheels and track runs, from its separate pieces (a Smart Mesh tank models them apart).
 
@@ -502,7 +513,8 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     - a track run is a piece at least `rule.track_length_share` of the hull's length long;
     - a wheel is a round piece (its length and height within `rule.round_ratio` of each other, thinner across than
       round) whose diameter lies in `rule.diameter_share` (of the hull's length), whose top stays under the track's, and
-      whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`). Pieces whose centres lie within half
+      whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`) and reach round
+      it as far as theirs (`rule.rim_coverage`, `rim_coverage`). Pieces whose centres lie within half
       a radius of each other (a tyre and its hub) are one wheel.
     Returns {"wheels": [{"centre", "radius", "vertices"}], "tracks": vertex indices}, wheels ordered front to back and
     left before right, and the vertex indices index `points`.
@@ -543,6 +555,9 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
         # a wheel's vertices keep about one distance from its axle; a bogie bracket or a spiked arm does not
         radii = np.linalg.norm(points[vertices][:, 1:] - c[1:], axis=1)
         if radii.mean() > 0 and radii.std() / radii.mean() > rule.get("radius_spread", np.inf):
+            continue
+        # and its rim goes round: a coarse piece that would turn like a spinning diamond is left on the hull
+        if rim_coverage(points[vertices], c) < rule.get("rim_coverage", 0.0):
             continue
         round_pieces.append([vertices, c, diameter / 2])
     wheels = []

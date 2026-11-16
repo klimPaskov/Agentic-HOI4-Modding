@@ -412,6 +412,7 @@
     },
     "wheels": {
      "radius_spread": 0.426,
+     "rim_coverage": 0.45,
      "x_share": 0.5014,
      "diameter_share": [
       0.0329,
@@ -421,7 +422,7 @@
      "track_length_share": 0.5,
      "top_margin_share": 0.02,
      "road_wheel_diameter_share": 0.1254,
-     "source": "62 vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to 1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+     "source": "62 vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to 1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest, a rim reaching 0.9 of vanilla's least-covered sectors; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
      "validation": {
       "gfx/models/units/tanks/ENG_tank_light.mesh": {
        "wheels": 12,
@@ -444,9 +445,9 @@
        "precision": 0.391
       },
       "gfx/models/units/tanks/ITA_tank_light.mesh": {
-       "wheels": 24,
+       "wheels": 20,
        "recall": 1.0,
-       "precision": 0.813
+       "precision": 0.877
       },
       "gfx/models/units/tanks/JAP_tank_light.mesh": {
        "wheels": 16,

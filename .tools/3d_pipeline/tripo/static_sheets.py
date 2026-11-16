@@ -36,7 +36,6 @@ import numpy as np
 
 import review_unit
 from lib import static_kinds as sk
-from tripo import weapon_sheets
 
 # The pixels a metre of runtime size gets at game size: a vanilla soldier (humanoid_unit's source height 7.351824 at
 # entity scale 0.8, config/asset_profiles.json) is 60 px tall on the map camera (weapon_sheets.GAME_HEIGHT_PX).
@@ -89,12 +88,13 @@ def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[P
     return sheets + [target]
 
 
-def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front"), size: int = RENDER_SIZE, share: float = SHARE) -> dict:
+def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front"), size: int = RENDER_SIZE, share: float = SHARE,
+                ground_alpha: float = 1.0) -> dict:
     request = {
         "out": str(out.resolve()), "mesh": str(mesh.resolve()),
         "diffuse": review_unit.diffuse_maps(mesh.resolve(), texts), "specular": review_unit.specular_maps(mesh.resolve()),
         "pbr": True, "clips": [], "views": list(views), "view_angles": CLOSE_ANGLES, "diagnostic_views": [], "size": size, "ortho_share": share,
-        "ground_z": 0.0,
+        "ground_z": 0.0, "ground_alpha": ground_alpha,
     }
     out.mkdir(parents=True, exist_ok=True)
     path = out / "request.json"
@@ -104,6 +104,17 @@ def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front")
     if "REVIEW_RENDERED" not in completed.stdout:
         raise SystemExit("Blender did not finish the renders: " + (completed.stdout + completed.stderr)[-1500:])
     return json.loads((out / "index.json").read_text(encoding="utf-8"))
+
+
+def model_columns(tile: Image.Image) -> tuple:
+    """The first and last pixel columns the model covers in a tile: pixels unlike every colour on the tile's border
+    (the magenta world and the ground disc both reach the border; the model does not)."""
+
+    pixels = np.asarray(tile.convert("RGB")).astype(int)
+    border = np.unique(np.concatenate([pixels[0], pixels[-1], pixels[:, 0], pixels[:, -1]]), axis=0)
+    distance = np.abs(pixels[:, :, None, :] - border[None, None, :, :]).sum(-1).min(axis=2)
+    columns = np.nonzero((distance > 24).any(axis=0))[0]
+    return (int(columns.min()), int(columns.max()) + 1) if len(columns) else (0, tile.width)
 
 
 def _points(mesh: Path):
@@ -135,13 +146,14 @@ def game_review(folder: Path, kind: str, out: Path, game: Path) -> Path:
     rows = []
     for label, path, texts in (("this model", mesh, []), (f"vanilla {reference.stem}", reference, review_unit.gfx_texts(game))):
         scale = contract["entity"]["scale"] if path == mesh else nearest["scale"]
-        index = render_rest(path, out / "game_tiles" / ("model" if path == mesh else "vanilla"), texts)
+        # a plane flies: its game-size tiles have no ground disc, so its drawn wingspan can be measured
+        index = render_rest(path, out / "game_tiles" / ("model" if path == mesh else "vanilla"), texts, ground_alpha=0.0 if kind == "plane" else 1.0)
         names = index["clips"][0]["rows"][0]["tiles"]
         folder_tiles = out / "game_tiles" / ("model" if path == mesh else "vanilla")
         if kind == "plane":
             # a plane is compared by its wingspan: the front view's drawn width is set to the runtime wingspan, so
             # whatever else the renderer frames (a long fuselage, a locator) does not change the comparison
-            left, _top, right, _bottom = weapon_sheets.unit_pixels(Image.open(folder_tiles / names["front"]))
+            left, right = model_columns(Image.open(folder_tiles / names["front"]))
             factor = sk.main_measure(_points(path), kind) * scale * PX_PER_METRE / max(right - left, 1)
         else:
             # the tile shows span x SHARE across RENDER_SIZE px; at game size it shows span x scale x PX_PER_METRE
