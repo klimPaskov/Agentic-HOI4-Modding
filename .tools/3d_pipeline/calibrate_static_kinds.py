@@ -471,7 +471,7 @@ def calibrate(game: Path) -> dict:
             "kind": kind,
             "references": [e["rel"] for e in measured],
             "size": {
-                "measure": {"vehicle": "length", "ship": "length", "plane": "wingspan", "building": "footprint", "landmark": "largest side"}[kind],
+                "measure": {"vehicle": "length and height (geometric mean)", "ship": "length", "plane": "wingspan", "building": "footprint", "landmark": "largest side"}[kind],
                 "runtime": round(runtime, 4),
                 "source": round(source, 4),
                 "centre_share": [round(float(v), 4) for v in centre],

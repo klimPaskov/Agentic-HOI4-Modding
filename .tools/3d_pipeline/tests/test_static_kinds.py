@@ -173,8 +173,34 @@ class GeometryTests(unittest.TestCase):
         contract = {"size": {"source": 8.0, "centre_share": [0.0, 0.0, 0.2], "ground_share": 0.0}, "rules": {}}
         scale, offset = sk.placement(tank(), "vehicle", contract)
         placed = tank() * scale + offset
-        self.assertAlmostEqual(float(np.ptp(placed[:, 1])), 8.0, places=3)
+        # a tank is sized on its length and height together
+        self.assertAlmostEqual(float(np.sqrt(np.ptp(placed[:, 1]) * np.ptp(placed[:, 2]))), 8.0, places=3)
         self.assertAlmostEqual(float(placed[:, 2].min()), 0.0, places=6)
+
+    def test_a_taller_tank_is_drawn_shorter(self):
+        squat, tall = tank(), tank()
+        tall[:, 2] *= 1.5
+        self.assertLess(sk.main_measure(squat, "vehicle"), sk.main_measure(tall, "vehicle"))
+        self.assertAlmostEqual(sk.main_measure(squat, "ship"), sk.main_measure(tall, "ship"))  # a ship is sized on length alone
+
+    def test_landing_clears_the_hull_the_short_way(self):
+        hull = box([-2.0, -4.0, 0.0], [2.0, 4.0, 2.0])
+        against_side = box([1.5, -0.5, 0.0], [3.0, 0.5, 1.0])
+        shift = sk.landing_shift(against_side, hull)
+        self.assertAlmostEqual(shift[0], 0.5, places=6)  # off the side, not 7 m off the end
+        self.assertEqual(shift[1], 0.0)
+        clear = box([2.5, -0.5, 0.0], [3.5, 0.5, 1.0])
+        self.assertFalse(sk.landing_shift(clear, hull).any())
+        moved = against_side + shift
+        self.assertFalse(sk.landing_shift(moved + [1e-6, 0, 0], hull).any())
+
+    def test_flight_progress_and_ground_lift(self):
+        path = np.array([[0, 0, 0], [0, 0, 2], [1, 0, 3], [2, 0, 0]], dtype=float)
+        progress = sk.flight_progress(path)
+        self.assertEqual(progress[0], 0.0)
+        self.assertEqual(progress[-1], 1.0)
+        self.assertTrue((progress >= 0).all() and (progress <= 1).all())
+        self.assertEqual(list(sk.ground_lift([0.1, -0.2, 0.0])), [0.0, 0.2, 0.0])
 
 
 class ClipTests(unittest.TestCase):

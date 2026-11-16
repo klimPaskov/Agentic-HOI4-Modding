@@ -464,13 +464,44 @@ if rig is not None and request.get("motion"):
     if "barrel_cut" in parts_report and request.get("vanilla_barrel_length"):
         # A barrel recoils by the share of its own length vanilla's does, not by the share of the hull.
         barrel_scale = parts_report["barrel_cut"]["length"] / request["vanilla_barrel_length"]
+    parents = {spec["name"]: spec.get("parent") for spec in bone_specs}
+    # rest positions of each bone's vertices (at most 600 a bone, for speed), for the landing and ground rules
+    rest_points = {}
+    for part, indices in members.items():
+        bone = contract["parts"].get(part) or part
+        if bone in parents and indices:
+            chosen = np.array(sorted(indices))[:: max(1, len(indices) // 600)]
+            rest_points[bone] = np.vstack([rest_points.get(bone, np.zeros((0, 3))), positions[chosen]])
+
+    def subtree(top):
+        found = {top}
+        changed = True
+        while changed:
+            changed = False
+            for bone, parent in parents.items():
+                if parent in found and bone not in found:
+                    found.add(bone)
+                    changed = True
+        return found
+
+    def moved(world, bones):
+        points = [rest_points[b] @ world[b][:3, :3].T + world[b][:3, 3] for b in bones if b in rest_points]
+        return np.vstack(points) if points else np.zeros((0, 3))
+
+    def translate(world, bones, vector):
+        for b in bones:
+            m = np.eye(4)
+            m[:3, 3] = vector
+            world[b] = m @ world[b]
+
     for role, clip in request["motion"].items():
         action = bpy.data.actions.new(f"{name}_{role}")
         rig.animation_data_create()
         rig.animation_data.action = action
         frames = clip["frames"]
-        previous = {}
+        worlds = []
         for f in range(frames):
+            world = {}
             for bone in order:
                 c = Vector(heads[bone])
                 channel = clip["bones"].get(bone)
@@ -481,8 +512,45 @@ if rig is not None and request.get("motion"):
                         rotation = rotation @ Quaternion(Vector(extra["axis"]), math.radians(extra["degrees"][f]))
                     elif extra["type"] == "spin":
                         rotation = rotation @ Quaternion(Vector(extra["axis"]), math.radians(extra["degrees_per_frame"] * f))
-                local = Matrix.Translation(c + shift) @ rotation.to_matrix().to_4x4() @ Matrix.Translation(-c)
-                basis = rest[bone].inverted() @ local @ rest[bone]
+                local = np.array(Matrix.Translation(c + shift) @ rotation.to_matrix().to_4x4() @ Matrix.Translation(-c))
+                world[bone] = (world[parents[bone]] if parents.get(bone) else np.eye(4)) @ local
+            worlds.append(world)
+        rules = {}
+        # In a death, a mounted part that flies off (a tank's turret) is free: it lands clear of the hull and on the ground.
+        free = set()
+        if role == "death":
+            gap = (contract.get("rigid") or {}).get("max_gap_share", 0.01) * measure
+            for bone in contract.get("mounts", {}):
+                channel = clip["bones"].get(bone)
+                if channel and float(np.linalg.norm(np.array(channel["d"]), axis=1).max()) > gap:
+                    if not any(bone in subtree(other) for other in free):
+                        free |= subtree(bone)
+        body = [b for b in order if b not in free]
+        if free:
+            shift = sk.landing_shift(moved(worlds[-1], free), moved(worlds[-1], body))
+            centres = np.array([moved(w, free).mean(axis=0) for w in worlds])
+            progress = sk.flight_progress(centres)
+            for w, share in zip(worlds, progress):
+                translate(w, free, shift * share)
+            rules["landing_shift"] = [round(float(v), 4) for v in shift]
+        # A land model never sinks below the ground. In a death the wreck keeps vanilla's settling, but its free parts
+        # do not go into the ground.
+        if kind == "vehicle":
+            lifts = np.zeros(frames) if role == "death" else sk.ground_lift([moved(w, body)[:, 2].min() for w in worlds])
+            for w, lift in zip(worlds, lifts):
+                translate(w, order, (0.0, 0.0, lift))
+            rules["body_lift_max"] = round(float(lifts.max()), 4)
+            if free:
+                free_lifts = sk.ground_lift([moved(w, free)[:, 2].min() for w in worlds])
+                for w, lift in zip(worlds, free_lifts):
+                    translate(w, free, (0.0, 0.0, lift))
+                rules["free_lift_max"] = round(float(free_lifts.max()), 4)
+        previous = {}
+        for f, world in enumerate(worlds):
+            for bone in order:
+                parent = parents.get(bone)
+                local = np.linalg.inv(world[parent]) @ world[bone] if parent else world[bone]
+                basis = rest[bone].inverted() @ Matrix(local.tolist()) @ rest[bone]
                 location, quaternion, _scale = basis.decompose()
                 if bone in previous and previous[bone].dot(quaternion) < 0:
                     quaternion.negate()
@@ -496,7 +564,7 @@ if rig is not None and request.get("motion"):
         bpy.context.view_layer.objects.active = rig
         scene.frame_start, scene.frame_end = 1, frames
         bie.export_animfile(str(path), frame_start=1, frame_end=frames, uniform_scale=True)
-        clip_reports[role] = {"frames": frames, "file": path.name}
+        clip_reports[role] = {"frames": frames, "file": path.name, **rules}
     for pose in rig.pose.bones:
         pose.location, pose.rotation_quaternion = Vector(), Quaternion()
     rig.animation_data.action = None

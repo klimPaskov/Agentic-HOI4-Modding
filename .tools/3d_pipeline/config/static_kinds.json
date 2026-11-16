@@ -15,76 +15,76 @@
     "gfx/models/units/tanks/FIN_light_armor.mesh"
    ],
    "size": {
-    "measure": "length",
-    "runtime": 3.4605,
-    "source": 8.2393,
+    "measure": "length and height (geometric mean)",
+    "runtime": 2.326,
+    "source": 5.5381,
     "centre_share": [
      0.0,
-     -0.0078,
-     0.2088
+     -0.0111,
+     0.3231
     ],
     "ground_share": 0.0,
     "per_model": [
      {
       "rel": "gfx/models/units/tanks/ENG_tank_light.mesh",
-      "measure": 5.2343,
+      "measure": 4.117,
       "scale": 0.5,
-      "runtime": 2.6172
+      "runtime": 2.0585
      },
      {
       "rel": "gfx/models/units/tanks/FRA_tank_light.mesh",
-      "measure": 5.7675,
+      "measure": 4.0588,
       "scale": 0.6,
-      "runtime": 3.4605
+      "runtime": 2.4353
      },
      {
       "rel": "gfx/models/units/tanks/generic_tank_light.mesh",
-      "measure": 7.0782,
+      "measure": 4.5229,
       "scale": 0.48,
-      "runtime": 3.3976
+      "runtime": 2.171
      },
      {
       "rel": "gfx/models/units/tanks/GER_tank_light.mesh",
-      "measure": 6.3683,
+      "measure": 4.0451,
       "scale": 0.42,
-      "runtime": 2.6747
+      "runtime": 1.699
      },
      {
       "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
-      "measure": 7.329,
+      "measure": 4.6707,
       "scale": 0.498,
-      "runtime": 3.6499
+      "runtime": 2.326
      },
      {
       "rel": "gfx/models/units/tanks/JAP_tank_light.mesh",
-      "measure": 7.0485,
+      "measure": 5.0317,
       "scale": 0.5,
-      "runtime": 3.5243
+      "runtime": 2.5158
      },
      {
       "rel": "gfx/models/units/tanks/SOV_tank_light.mesh",
-      "measure": 7.7822,
+      "measure": 5.0293,
       "scale": 0.5,
-      "runtime": 3.8911
+      "runtime": 2.5146
      },
      {
       "rel": "gfx/models/units/tanks/USA_tank_light.mesh",
-      "measure": 5.4901,
+      "measure": 3.8864,
       "scale": 0.51,
-      "runtime": 2.7999
+      "runtime": 1.982
      },
      {
       "rel": "gfx/models/units/tanks/FIN_light_armor.mesh",
-      "measure": 7.7822,
+      "measure": 5.0293,
       "scale": 0.5,
-      "runtime": 3.8911
+      "runtime": 2.5146
      }
     ],
     "nearest": {
-     "rel": "gfx/models/units/tanks/FRA_tank_light.mesh",
-     "measure": 5.7675,
-     "scale": 0.6,
-     "runtime": 3.4605
+     "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
+     "measure": 4.6707,
+     "scale": 0.498,
+     "runtime": 2.326
     },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },

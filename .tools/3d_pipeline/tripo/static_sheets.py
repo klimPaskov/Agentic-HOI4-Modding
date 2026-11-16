@@ -32,8 +32,11 @@ from PIL import Image, ImageDraw, ImageFont
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
+import numpy as np
+
 import review_unit
 from lib import static_kinds as sk
+from tripo import weapon_sheets
 
 # The pixels a metre of runtime size gets at game size: a vanilla soldier (humanoid_unit's source height 7.351824 at
 # entity scale 0.8, config/asset_profiles.json) is 60 px tall on the map camera (weapon_sheets.GAME_HEIGHT_PX).
@@ -103,6 +106,16 @@ def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front")
     return json.loads((out / "index.json").read_text(encoding="utf-8"))
 
 
+def _points(mesh: Path):
+    """The rendered (not `Collision`) points of a mesh, in Blender space."""
+
+    from lib import pdx_deform
+
+    loaded = pdx_deform.load_mesh(mesh)
+    visible = ~loaded.collision if len(loaded.collision) else slice(None)
+    return np.array([sk.to_blender(p) for p in loaded.positions[visible]])
+
+
 def _span(mesh: Path) -> float:
     """The rest pose's largest side, which the review camera frames (`review_render.py`: ortho scale = span x share)."""
 
@@ -123,11 +136,18 @@ def game_review(folder: Path, kind: str, out: Path, game: Path) -> Path:
     for label, path, texts in (("this model", mesh, []), (f"vanilla {reference.stem}", reference, review_unit.gfx_texts(game))):
         scale = contract["entity"]["scale"] if path == mesh else nearest["scale"]
         index = render_rest(path, out / "game_tiles" / ("model" if path == mesh else "vanilla"), texts)
-        # the tile shows span x SHARE across RENDER_SIZE px; at game size it shows span x scale x PX_PER_METRE
-        factor = scale * PX_PER_METRE * _span(path) * SHARE / RENDER_SIZE
+        names = index["clips"][0]["rows"][0]["tiles"]
+        folder_tiles = out / "game_tiles" / ("model" if path == mesh else "vanilla")
+        if kind == "plane":
+            # a plane is compared by its wingspan: the front view's drawn width is set to the runtime wingspan, so
+            # whatever else the renderer frames (a long fuselage, a locator) does not change the comparison
+            left, _top, right, _bottom = weapon_sheets.unit_pixels(Image.open(folder_tiles / names["front"]))
+            factor = sk.main_measure(_points(path), kind) * scale * PX_PER_METRE / max(right - left, 1)
+        else:
+            # the tile shows span x SHARE across RENDER_SIZE px; at game size it shows span x scale x PX_PER_METRE
+            factor = scale * PX_PER_METRE * _span(path) * SHARE / RENDER_SIZE
         small = max(4, round(RENDER_SIZE * factor))
-        tiles = [Image.open(out / "game_tiles" / ("model" if path == mesh else "vanilla") / index["clips"][0]["rows"][0]["tiles"][view]).convert("RGB")
-                 .resize((small, small), Image.Resampling.LANCZOS) for view in ("hoi4", "front")]
+        tiles = [Image.open(folder_tiles / names[view]).convert("RGB").resize((small, small), Image.Resampling.LANCZOS) for view in ("hoi4", "front")]
         rows.append((label, tiles))
     font = ImageFont.load_default()
     cell = max(max(t.width for _l, ts in rows for t in ts), 90) + 8

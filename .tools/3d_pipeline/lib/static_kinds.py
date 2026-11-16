@@ -290,10 +290,17 @@ FRONT_TURNS = {"-y": 0, "-x": 1, "+y": 2, "+x": 3}
 
 
 def main_measure(points: np.ndarray, kind: str) -> float:
-    """The size a kind is scaled by: a tank's or ship's length, a plane's wingspan, a building's footprint, a landmark's largest side."""
+    """The size a kind is scaled by: a tank's length and height together (their geometric mean), a ship's length, a
+    plane's wingspan, a building's footprint, a landmark's largest side.
+
+    A tank sized on its length alone came out bulkier than vanilla's when its hull was taller or its turret bigger
+    (a reviewer saw it larger than vanilla's light tank at game size); length and height together keep both in step.
+    """
 
     span = np.ptp(points, axis=0)
-    if kind in ("vehicle", "ship"):
+    if kind == "vehicle":
+        return float(math.sqrt(span[1] * span[2]))
+    if kind == "ship":
         return float(span[1])
     if kind == "plane":
         return float(span[0])
@@ -637,6 +644,35 @@ def axis_quaternion(axis: Sequence[float], degrees: float) -> np.ndarray:
     axis = np.asarray(axis, dtype=float) / np.linalg.norm(axis)
     half = math.radians(degrees) / 2
     return np.concatenate([[math.cos(half)], math.sin(half) * axis])
+
+
+def landing_shift(free: np.ndarray, body: np.ndarray) -> np.ndarray:
+    """The horizontal shift that takes a blown-off part (`free`, its points where it lands) out of the body's box.
+
+    Nothing when their boxes do not overlap. Otherwise the shorter of the four ways out along x or y: a turret that
+    lands against the hull's side moves sideways off it, one that lands on its deck moves off the nearer end.
+    """
+
+    flo, fhi, blo, bhi = free.min(axis=0), free.max(axis=0), body.min(axis=0), body.max(axis=0)
+    if (np.minimum(fhi, bhi) - np.maximum(flo, blo) <= 0).any():
+        return np.zeros(3)
+    ways = [(bhi[0] - flo[0], (1, 0)), (fhi[0] - blo[0], (-1, 0)), (bhi[1] - flo[1], (0, 1)), (fhi[1] - blo[1], (0, -1))]
+    distance, (dx, dy) = min(ways, key=lambda way: way[0])
+    return np.array([dx * distance, dy * distance, 0.0])
+
+
+def flight_progress(centres: np.ndarray) -> np.ndarray:
+    """How far along its flight a part is in each frame (0 at the start, 1 where it lands), by distance from the start."""
+
+    travel = np.linalg.norm(centres - centres[0], axis=1)
+    total = float(np.linalg.norm(centres[-1] - centres[0]))
+    return np.clip(travel / total, 0.0, 1.0) if total > 1e-9 else np.zeros(len(centres))
+
+
+def ground_lift(lowest, sink: float = 0.0) -> np.ndarray:
+    """Per frame, how far to lift a model whose lowest point goes below the ground (by more than `sink`)."""
+
+    return np.maximum(0.0, -(np.asarray(lowest, dtype=float) + sink))
 
 
 # --------------------------------------------------------------------------------------------------
