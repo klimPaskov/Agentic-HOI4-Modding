@@ -185,6 +185,8 @@ class PillarLegs(unittest.TestCase):
         self.assertEqual(ql.pose_at("quadruped_brace", 0, ql.build_layout(heavy)), ql.pose_at("quadruped_brace", last, ql.build_layout(heavy)))
         rear = ql.pose_at("quadruped_rear", 16, ql.build_layout(heavy))["__root_pitch__"][0][1]
         self.assertAlmostEqual(rear, ql.pose_at("quadruped_rear", 16, ql.build_layout(runner))["__root_pitch__"][0][1] * ql.HEAVY_PITCH, places=6)
+        lift = ql.pose_at("quadruped_rear", 16, ql.build_layout(heavy))["Front_Left_Upper"][0][1]
+        self.assertAlmostEqual(lift, ql.pose_at("quadruped_rear", 16, ql.build_layout(runner))["Front_Left_Upper"][0][1] * ql.HEAVY_PITCH, places=6)
         light, pillar = ql.build_layout(runner), ql.build_layout(heavy)
         for frame in range(0, 20, 4):
             a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)

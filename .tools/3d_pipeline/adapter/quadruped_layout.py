@@ -580,8 +580,10 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
     elif style == "quadruped_brace":
         _brace(pose, t, has_tail)
     elif style == "quadruped_rear":
-        rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3)))
-        pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise * (HEAVY_PITCH if stance["graviportal"] else 1.0))]
+        # A heavy animal's rear is the whole rear at HEAVY_PITCH: a stamp, forefeet a little off the ground (a fresh review read the
+        # full foreleg lift under a small pitch as the elephant falling on its face).
+        rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3))) * (HEAVY_PITCH if stance["graviportal"] else 1.0)
+        pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise)]
         for side in ("Left", "Right"):
             kick = 1 + 0.25 * math.sin(6 * math.pi * t + (0 if side == "Left" else 1.5))
             pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -55.0 * rise * kick)]
@@ -612,9 +614,7 @@ def _brace(pose: Dict[str, List[Rotation]], t: float, has_tail: bool) -> None:
         pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -8.0 * brace)]
         pose[leg_name("Rear", side, "Upper")] = [(X_AXIS, 8.0 * brace)]
     pose["Neck_01"] = [(X_AXIS, 12.0 * brace)]
-    pose["Head"] = [(X_AXIS, 6.0 * brace)]
-    if has_tail:
-        pose["Tail_01"] = [(X_AXIS, 15.0 * brace)]
+    pose["Head"] = [(X_AXIS, 6.0 * brace)]  # the tail hangs: a review read a raised one as stiff
 
 
 def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict[str, List[Rotation]]:
