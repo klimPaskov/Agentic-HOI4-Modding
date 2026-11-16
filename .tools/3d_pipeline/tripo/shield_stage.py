@@ -2,7 +2,7 @@
 
     blender -b --factory-startup --python shield_stage.py -- <gripped.glb> <shield.glb> --out <shielded.glb>
         [--report report.json] [--hand RightHand] [--height-share 0.65] [--roll 180] [--hold-clips idle,walk,...]
-        [--hold-fade-clips CLIP] [--fall-fade-clips defeat_03 | --release-clips defeat_03] [--clearance-clips idle,walk,...]
+        [--hold-fade-clips CLIP] [--release-clips defeat_03 | --fall-fade-clips defeat_03] [--clearance-clips idle,walk,...]
         [--hold-hand out,forward,up]
 
 The body is the grip stage's GLB (`tripo/grip_weapon.py`: body `tripo_part_0`, weapon `tripo_part_1` on its `Weapon` bone, the
@@ -19,14 +19,12 @@ crescent's inner edge, the outer edge away from the body; the module says why):
    the clips the weapon arm is held in;
 4. the clearance turns the hand about the wrist until the shield leaves the body and the ground (`lib/tripo_clearance.py`, the
    weapon's rule), and reports the frames it could not clear;
-5. the death. The kit's rule keeps the shield in the fist (`--fall-fade-clips <death>`): the arm hold fades out by the first frame of
-   the fall, as it does for a dropped weapon, and the clearance judges every frame, so the turned wrist lays the shield on the ground
-   beside the body. Vanilla infantry carry their weapon down with the hand (it is attached to the hand node, and GER_infantry's
-   death_rifle never lets go), and measured on the round-4 dwarf the rule clears the death fully: the shield kept in the fist went 22.9%
-   into the body and 5.5% under the ground before the clearance, 0% and 0% after it, with the wrist turned at most 46 degrees. A shield
-   is no long haft that the fall drives through the ground. The weapon's drop stays available: in a `--release-clips` clip the fist lets
-   go at the first frame of the fall and the shield lies flat on the ground clear of the body and of the weapon the grip stage dropped
-   (`lib/tripo_clearance.plan_drop`); on the same dwarf it landed 4.3% of the height clear of the body, 0.4% of its points in the body.
+5. the death, by the weapon's rule (`--release-clips <death>`): the fist lets go at the first frame of the fall and the shield lies flat
+   on the ground clear of the body and of the weapon the grip stage dropped (`lib/tripo_clearance.plan_drop`). Vanilla infantry keep
+   their rifle in the hand, and `--fall-fade-clips <death>` does that (the hold fades out by the fall, the clearance judges every frame),
+   but measured on the round-4 dwarf's exported files the kept shield ended standing on its edge beside the fallen body: 5.1% of it in
+   the body, 3.8% under the ground, and the body 56% of its height tall (TRIPO-NOT-DOWN), with the wrist already turned up to 58
+   degrees. Dropped, it landed flat 4.3% of the height clear of the body, 0% in the body or under the ground, the body 39% tall.
 
 The earlier stage's weapon bone keeps its keys: nothing here eases or moves it. The result takes
 `prepare_tripo_unit.py --rigid-part tripo_part_1=Weapon --rigid-part tripo_part_2=Shield` unchanged. Exit 3 when a frame could not be

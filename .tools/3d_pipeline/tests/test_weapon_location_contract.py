@@ -29,8 +29,10 @@ class WeaponLocationContract(unittest.TestCase):
 
     def test_the_job_names_the_weapon_bone_for_the_roles_that_let_go_of_it(self) -> None:
         source = (PIPELINE_ROOT / "run_pilot.py").read_text(encoding="utf-8")
-        self.assertIn('role in (released.get("release_roles") or [])', source)
+        self.assertIn("location_bones = released_bones(held_parts(spec), role) or None", source)
         self.assertIn("location_bones=location_bones", source)
+        tripo = (PIPELINE_ROOT / "lib" / "tripo.py").read_text(encoding="utf-8")  # the weapon and the shield, each by its release_roles
+        self.assertIn('role in (part.get("release_roles") or [])', tripo)
 
     def test_the_retarget_keeps_only_the_named_bones_location_and_zeroes_the_rest(self) -> None:
         worker = (PIPELINE_ROOT / "adapter" / "blender_worker.py").read_text(encoding="utf-8")
