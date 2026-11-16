@@ -512,7 +512,7 @@ The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rule
 | STATIC-RIGID | Every rendered vertex follows one bone wholly, so no part bends |
 | STATIC-PART-GAP | No part lifts off the part it is mounted on in any frame, deaths excepted |
 
-`static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), a 1024 px close-up of the rest pose from the front and the back quarter (a ship's mast and a plane's gun stubs are small on the six-view sheets), and a game-size sheet: the model and the vanilla model it is sized after, side by side, at the pixels a metre a vanilla soldier gets on the map. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
+`static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), a 1024 px close-up of the rest pose from the front and the back quarter (a ship's mast and a plane's gun stubs are small on the six-view sheets), and a game-size sheet: the model and the vanilla model nearest the kind's median size, side by side, at the pixels a metre a vanilla soldier gets on the map. A ship's water is drawn see-through, so its hull shows as it sinks. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
 
 ## Other model kinds
 
@@ -544,6 +544,7 @@ The notes below come from models made by hand before the [static route](#static-
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
 - **A weapon sinking in a death clip.** No free repair lifts a held prop out of the ground yet. Run `fit_prop.py` again (a higher `--ground-weight`, such as 40 instead of 10, cleared it on one unit), or turn the wrist live in Blender.
 - **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect to look for another preset, and sometimes a small live fix.
+- **Static models at vanilla's budget.** A Tripo model of 20,000 triangles collapsed to a tank's 3,948 crumples its hull and running gear and thins the barrel to a blade (STATIC-SHAPE fails). Generate tanks and planes with Tripo's own triangle limit near the kind's budget instead (`triangle_budget` in `config/static_kinds.json`). Lumpy walls, stairs and roofs of a generated building or landmark come from the model itself, and no rule smooths them.
 - **Tank tracks and wheels** do not move: a Tripo tank is one piece, and the route splits off only the turret and the barrel. Vanilla scrolls its track texture and turns its wheels.
 - **UNIT-PROP-CLIP** reads a point behind an open, one-sided sheet such as a cape as inside the body. Look at the named frames before changing a clip.
 - **Review rounds** converge only with fixed notes and scoped rounds. Without them each fresh reviewer raises new minor items.
