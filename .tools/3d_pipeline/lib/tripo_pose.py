@@ -200,13 +200,65 @@ def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvi
     return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
 
 
+def _turned_toward_rest(anim: pdx_deform.Animation, joints: Sequence[str], rest: dict, share: float, weights: np.ndarray) -> pdx_deform.Animation:
+    """`anim` with each joint's rotation turned toward its rest rotation by `share` times the frame's weight."""
+
+    channels = {name: dict(channel) for name, channel in anim.channels.items()}
+    for joint in joints:
+        q = anim.channels[joint]["q"].copy()
+        for frame in range(anim.frames):
+            if weights[frame] > 0:
+                q[frame] = slerp(q[frame], rest[joint], share * weights[frame])
+        channels[joint]["q"] = q
+    return pdx_deform.Animation(anim.fps, anim.frames, channels)
+
+
+def _onset_ramp(frames: int, onset: int, length: int) -> np.ndarray:
+    """0 before `onset`, a smoothstep over `length` frames from it, then 1 to the end."""
+
+    weights = np.zeros(frames)
+    end = min(onset + length, frames - 1)
+    ramp = tripo_trim.settle_weights(length)
+    for frame in range(onset, frames):
+        weights[frame] = 1.0 if frame >= end else float(ramp[frame - onset])
+    return weights
+
+
+def _search_leg_settle(mesh, anim, groups: List[List[str]], rest: dict, before: float, target: float, exclude_bones: Sequence[str]):
+    """(share, joints): the first group whose smallest share brings the lifted boots under `target`, else the share and group that bring them
+    lowest. (0.0, []) when nothing lowers them."""
+
+    best_share, best_height, best_joints = 0.0, before, []
+    full = np.ones(anim.frames)
+    for joints in groups:
+        for share in np.linspace(0.05, 1.0, 20):
+            height = lifted_death_feet_height(mesh, _turned_toward_rest(anim, joints, rest, float(share), full), exclude_bones)
+            if height < best_height - 1e-6:
+                best_share, best_height, best_joints = float(share), height, joints
+            if height <= target:
+                return float(share), joints
+    return best_share, best_joints
+
+
+def _write_rotations(data: bytearray, keyed: List[str], joints: Sequence[str], result: pdx_deform.Animation, weights: np.ndarray) -> None:
+    """Write the joints' rotation samples of the frames with a weight into the `.anim` bytes, in place."""
+
+    offset = _samples_offset(bytes(data), b"q")
+    for joint in joints:
+        slot = keyed.index(joint)
+        for frame in np.nonzero(weights > 0)[0]:
+            position = offset + 4 * (4 * (int(frame) * len(keyed) + slot))
+            struct.pack_into("<4f", data, position, *[float(v) for v in result.channels[joint]["q"][frame]])
+
+
 def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: float = DEATH_FEET_LIMIT, target: float = DEATH_FEET_TARGET,
                       exclude_bones: Sequence[str] = ()) -> LegSettle:
     """Write `out_path`: `anim_path` with the legs turned toward the rest pose when the boots hang above the ground at the end of a death.
 
     One share s in [0, 1] for one group of leg joints (`LEG_SETTLE_GROUPS`: the knees, then the thighs, then both), the smallest that brings the
-    boots under `target`. The first group that reaches it wins. If none does, the group and share that bring them lowest. The share is ramped in
-    with a smoothstep from the frame the hips come down to the ground and held to the end. Only that group's rotation samples change."""
+    boots under `target`, judged as the ground pass will leave them (`lifted_death_feet_height`). The first group that reaches it wins. If none
+    does, the group and share that bring them lowest. The share is ramped in with a smoothstep from the frame the hips come down to the ground and
+    held to the end. Only that group's rotation samples change."""
 
     data = bytearray(Path(anim_path).read_bytes())
     mesh = pdx_deform.load_mesh(mesh_path)
@@ -219,59 +271,22 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
     info = read(anim_path).child("info")
     keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
     part = {"knees": [mesh.bones[leg.knee] for leg in legs.legs], "thighs": [mesh.bones[leg.hip] for leg in legs.legs if leg.hip >= 0]}
+    groups = [joints for joints in ([name for kind in group for name in part[kind] if name in keyed] for group in LEG_SETTLE_GROUPS) if joints]
     bind = pdx_deform._bind_locals(mesh)
     rest = {mesh.bones[i]: _quaternion_from_matrix(bind[i]) for i in range(len(mesh.bones))}
     onset = _lying_frame(mesh, anim, legs.pelvis)
-
-    def settled(knees: Sequence[str], share: float, weights: np.ndarray) -> pdx_deform.Animation:
-        channels = {name: dict(channel) for name, channel in anim.channels.items()}
-        for knee in knees:
-            q = anim.channels[knee]["q"].copy()
-            for frame in range(anim.frames):
-                if weights[frame] > 0:
-                    q[frame] = slerp(q[frame], rest[knee], share * weights[frame])
-            channels[knee]["q"] = q
-        return pdx_deform.Animation(anim.fps, anim.frames, channels)
-
-    def full_ramp(length: int) -> np.ndarray:
-        weights = np.zeros(anim.frames)
-        end = min(onset + length, anim.frames - 1)
-        for frame in range(onset, anim.frames):
-            weights[frame] = 1.0 if frame >= end else float(tripo_trim.settle_weights(length)[frame - onset])
-        return weights
-
-    best_share, best_height, knees = 0.0, before, []
-    for group in LEG_SETTLE_GROUPS:
-        joints = [name for kind in group for name in part[kind] if name in keyed]
-        if not joints:
-            continue
-        reached = False
-        for share in np.linspace(0.05, 1.0, 20):
-            height = lifted_death_feet_height(mesh, settled(joints, float(share), np.ones(anim.frames)), exclude_bones)
-            if height < best_height - 1e-6:
-                best_share, best_height, knees = float(share), height, joints
-            if height <= target:
-                reached = True
-                break
-        if reached:
-            break
-    if best_share == 0.0:
+    share, joints = _search_leg_settle(mesh, anim, groups, rest, before, target, exclude_bones)
+    if share == 0.0:
         Path(out_path).write_bytes(bytes(data))
         return LegSettle(False, height_before=before, height_after=before, note="turning the knees or the thighs does not lower the boots")
-    turn = max(quaternion_turn(q, slerp(q, rest[knee], best_share)) for knee in knees for q in anim.channels[knee]["q"][onset:])
+    turn = max(quaternion_turn(q, slerp(q, rest[joint], share)) for joint in joints for q in anim.channels[joint]["q"][onset:])
     length = int(min(max(tripo_trim.settle_frames(turn), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
-    weights = full_ramp(length)
-    result = settled(knees, best_share, weights)
-    offset = _samples_offset(bytes(data), b"q")
-    for knee in knees:
-        slot = keyed.index(knee)
-        for frame in range(anim.frames):
-            if weights[frame] > 0:
-                position = offset + 4 * (4 * (frame * len(keyed) + slot))
-                struct.pack_into("<4f", data, position, *[float(v) for v in result.channels[knee]["q"][frame]])
+    weights = _onset_ramp(anim.frames, onset, length)
+    result = _turned_toward_rest(anim, joints, rest, share, weights)
+    _write_rotations(data, keyed, joints, result, weights)
     Path(out_path).write_bytes(bytes(data))
     after = lifted_death_feet_height(mesh, result, exclude_bones)
-    return LegSettle(True, best_share, onset, length, before, after, joints=tuple(knees))
+    return LegSettle(True, share, onset, length, before, after, joints=tuple(joints))
 
 
 # ---- the checks --------------------------------------------------------------------------------------------------------
