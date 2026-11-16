@@ -461,9 +461,14 @@ def barrel_cut(points: np.ndarray, cut_z: float, rule: dict) -> dict:
 
 
 def propeller_cut(points: np.ndarray, rule: dict) -> dict:
-    """Where a single-engine plane's propeller ends: in the front `rule.search_share` of the fuselage, the slice of
-    greatest span is the blade disc, and the propeller ends at the first slice behind it narrower than
-    `rule.width_threshold` of that span. The hub is the middle of the disc."""
+    """Where a single-engine plane's propeller ends, walking the slices of the front `rule.search_share` of the fuselage
+    from the nose.
+
+    The blade disc is the widest slice met before the span first falls under `rule.width_threshold` of the widest so
+    far (so a wing root further back, wider still, is never taken for it). Behind the disc the propeller ends at the
+    cowling: the first slice no wider than the narrowest slice of the stretch behind it (plus a tenth), so a blade root
+    or a spinner skirt stays with the blades and the cowling stays with the body. The hub is the middle of the blades.
+    """
 
     y0, length = points[:, 1].min(), np.ptp(points[:, 1])
     fuselage = points[np.abs(points[:, 0] - np.median(points[:, 0])) < 0.5 * np.ptp(points[:, 0])]
@@ -471,14 +476,18 @@ def propeller_cut(points: np.ndarray, rule: dict) -> dict:
     widths = _slice_widths(fuselage, 1, 0, edges, trim=0.2)
     heights = _slice_widths(fuselage, 1, 2, edges, trim=0.2)
     disc = np.maximum(widths, heights)
-    peak = int(np.argmax(disc))
-    end = None
-    for k in range(peak, len(disc)):
-        if disc[k] < rule["width_threshold"] * disc[peak]:
-            end = k
+    peak, drop = 0, None
+    for k in range(len(disc)):
+        if disc[k] > disc[peak]:
+            peak = k
+        elif disc[peak] > 0 and 0 < disc[k] < rule["width_threshold"] * disc[peak]:
+            drop = k
             break
-    if end is None or disc[peak] <= 0:
+    if drop is None or disc[peak] <= 0:
         raise ValueError("no propeller found: no blade disc ahead of the cowling")
+    stretch = disc[drop: drop + max(3, len(disc) // 3)]
+    floor = float(stretch[stretch > 0].min())
+    end = drop + int(np.argmax((stretch > 0) & (stretch <= 1.1 * floor)))
     cut_y = float(edges[end])
     blades = points[points[:, 1] < cut_y]
     hub = [float((blades[:, 0].min() + blades[:, 0].max()) / 2), float(blades[:, 1].min()), float((blades[:, 2].min() + blades[:, 2].max()) / 2)]
@@ -492,7 +501,8 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     half-width out) and in the lower half:
     - a track run is a piece at least `rule.track_length_share` of the hull's length long;
     - a wheel is a round piece (its length and height within `rule.round_ratio` of each other, thinner across than
-      round) whose diameter lies in `rule.diameter_share` (of the hull's length) and whose top stays under the track's. Pieces whose centres lie within half
+      round) whose diameter lies in `rule.diameter_share` (of the hull's length), whose top stays under the track's, and
+      whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`). Pieces whose centres lie within half
       a radius of each other (a tyre and its hub) are one wheel.
     Returns {"wheels": [{"centre", "radius", "vertices"}], "tracks": vertex indices}, wheels ordered front to back and
     left before right, and the vertex indices index `points`.
@@ -529,6 +539,10 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
         if not (1 / rule["round_ratio"] <= e[1] / max(e[2], 1e-9) <= rule["round_ratio"]) or e[0] > diameter:
             continue
         if c[2] + e[2] / 2 > track_top:
+            continue
+        # a wheel's vertices keep about one distance from its axle; a bogie bracket or a spiked arm does not
+        radii = np.linalg.norm(points[vertices][:, 1:] - c[1:], axis=1)
+        if radii.mean() > 0 and radii.std() / radii.mean() > rule.get("radius_spread", np.inf):
             continue
         round_pieces.append([vertices, c, diameter / 2])
     wheels = []

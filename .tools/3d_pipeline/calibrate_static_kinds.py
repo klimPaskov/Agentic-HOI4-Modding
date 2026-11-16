@@ -229,8 +229,11 @@ def _wheel_shares(entry: dict):
             continue
         side = q[(q[:, 0] - centre_x) > 0] if ((q[:, 0] - centre_x) > 0).sum() >= len(q) / 3 else q
         e = np.ptp(side, axis=0)
+        middle = (side.min(axis=0) + side.max(axis=0)) / 2
+        radii = np.linalg.norm(side[:, 1:] - middle[1:], axis=1)
         rows.append((float(np.abs(q[:, 0] - centre_x).min() / (span[0] / 2)), float(max(e[1], e[2]) / span[1]),
-                     float(((side[:, 2].min() + side[:, 2].max()) / 2 - low[2]) / span[2])))
+                     float(((side[:, 2].min() + side[:, 2].max()) / 2 - low[2]) / span[2]),
+                     float(radii.std() / radii.mean()) if radii.mean() > 0 else None))
     return rows
 
 
@@ -242,7 +245,9 @@ def wheel_rules(measured: List[dict]) -> dict:
     inner = [r[0] for r in rows]
     diameters = [r[1] for r in rows]
     road = sorted(diameters)[len(diameters) // 2]
+    spreads = [r[3] for r in rows if r[3] is not None]
     rule = {
+        "radius_spread": round(1.05 * max(spreads), 4),
         "x_share": round(0.9 * min(inner), 4),
         "diameter_share": [round(0.5 * min(diameters), 4), round(1.5 * max(diameters), 4)],
         "round_ratio": 1.67,
@@ -250,7 +255,7 @@ def wheel_rules(measured: List[dict]) -> dict:
         "top_margin_share": 0.02,
         "road_wheel_diameter_share": round(road, 4),
         "source": f"{len(rows)} vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to "
-                  "1.5 times the largest; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+                  "1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
     }
     validation = {}
     for entry in measured:

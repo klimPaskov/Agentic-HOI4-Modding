@@ -210,6 +210,14 @@ bmesh.ops.remove_doubles(bm, verts=rim_verts, dist=size * SLIT_SHARE)
 slits -= len(bm.verts)
 report["slit_vertices_merged"] = slits
 closed = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=SMALL_HOLE_EDGES)["faces"]
+# like a cut's cap, a closed hole is one flat colour: the rim's UVs copied across it swirl the texture (a reviewer saw
+# the Smart Mesh factory's window bays as pinched spirals)
+uv_layer = bm.loops.layers.uv.active
+if uv_layer is not None:
+    for face in closed:
+        first = face.loops[0][uv_layer].uv.copy()
+        for loop in face.loops:
+            loop[uv_layer].uv = first
 bmesh.ops.triangulate(bm, faces=closed)
 bm.to_mesh(model.data)
 bm.free()
