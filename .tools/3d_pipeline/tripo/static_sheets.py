@@ -50,7 +50,8 @@ WATER_ALPHA = 0.6
 KIND_NOTES = {
     "vehicle": [
         "This is a WW2 light tank, a vehicle made of rigid parts (hull, turret, gun). It has no feet: for item 5, its tracks rest on the green disc.",
-        "The turret turns and the gun recoils by design. In idle the whole tank also turns on the spot and back, as vanilla light tanks do.",
+        "The turret turns and the gun recoils by design. In idle the whole tank stands turned 45 degrees from its heading for the whole clip and only the turret moves, as every vanilla tank idle does (33 of 33).",
+        "In the move the hull and running gear rock nose up and down on their suspension by a few degrees, as vanilla tank moves do (GER light tank up to 3.6 degrees).",
         "In the move clip the tread pattern on the tracks scrolls along the track runs, as vanilla tanks' tracks do.",
         "In the death clip the turret is blown off the hull and lands beside it, as vanilla tanks' death does: a turret leaving the hull there is the intended look.",
     ],
