@@ -251,6 +251,15 @@ bmesh.ops.remove_doubles(bm, verts=rim_verts, dist=size * SLIT_SHARE)
 slits -= len(bm.verts)
 report["slit_vertices_merged"] = slits
 closed = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=SMALL_HOLE_EDGES)["faces"]
+# An open rim of any size lying flat at the model's lowest height (a paved disc or a plinth with no underside) is
+# closed too: seen from below it was a missing floor, and the cap sits on the ground where nothing is lost.
+if kind in ("building", "landmark"):
+    floor = min(v.co.z for v in bm.verts)
+    reach = 0.01 * (max(v.co.z for v in bm.verts) - floor)
+    rim = [e for e in bm.edges if e.is_boundary and all(v.co.z <= floor + reach for v in e.verts)]
+    bottoms = bmesh.ops.holes_fill(bm, edges=rim, sides=0)["faces"] if rim else []
+    closed = list(closed) + list(bottoms)
+    report["ground_rims_closed"] = len(bottoms)
 # like a cut's cap, a closed hole is one flat colour: the rim's UVs copied across it swirl the texture (a reviewer saw
 # the Smart Mesh factory's window bays as pinched spirals)
 uv_layer = bm.loops.layers.uv.active
