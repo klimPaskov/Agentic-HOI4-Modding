@@ -217,6 +217,7 @@ def main(argv=None) -> int:
     parser.add_argument("--out", type=Path, required=True, help="the job folder (the mod tree goes to <out>/mod)")
     parser.add_argument("--front", choices=sorted(sk.FRONT_TURNS), help="which way the model faces as imported (default: found by rule)")
     parser.add_argument("--plan", action="store_true", help="only run the geometry rules on the GLB and print them")
+    parser.add_argument("--keep-blend", action="store_true", help="also save the Blender scene (tens of megabytes) for a look by hand")
     parser.add_argument("--game", type=Path, help="the game folder (default: the one .tools/lib/game.py finds)")
     args = parser.parse_args(argv)
     job = json.loads(args.job.read_text(encoding="utf-8"))
@@ -241,7 +242,7 @@ def main(argv=None) -> int:
         "glb": str(glb), "name": name, "out": str(files), "contract": contract, "front": front,
         "textures": {role: entry["file"] for role, entry in textures.items()},
         "motion": motion, "vanilla_barrel_length": barrel_length,
-        "report": str(out / "blender_report.json"), "blend": str(out / f"{name}.blend"),
+        "report": str(out / "blender_report.json"), "blend": str(out / f"{name}.blend") if args.keep_blend else None,
     }
     request_path = out / "blender_request.json"
     request_path.write_text(json.dumps(request), encoding="utf-8", newline="\n")
