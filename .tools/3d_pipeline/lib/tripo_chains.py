@@ -27,7 +27,8 @@ The rules, in order:
 5. Weights. Each vertex takes two neighbouring chains (linear in `u`) and two neighbouring bones of each (linear in `s` between bone
    middles): at most 4 influences. The region takes the chains' weights whole. They blend into the body's over one chain bone of surface
    distance outward from the region's border (`blend_alpha`), and each vertex keeps its 4 largest weights, normalised.
-6. Motion. Cloak (`simulate_sheet`): each chain bone's tail follows the upper spine and the hips by its height (`torso_follow_weights`)
+6. Motion. Cloak (`simulate_sheet`): each chain bone's tail follows the upper spine and the hips by its height, a side chain below the
+   hips a little of its side's thigh too (`torso_follow_weights`, `SIDE_THIGH_SHARE`),
    through a critically damped spring at the pendulum rate of the bone, omega = sqrt(g / bone length). The chains are
    pushed out of capsules round the legs and the torso along the hips' back direction, a push spreading to the neighbouring chains
    (`spread_pushes`), never pointing above the horizontal (`hang_below_horizon`, gravity), and kept above the ground. Wings: a fold pose per role plus a flap, a sine on each chain bone's rotation delayed a
