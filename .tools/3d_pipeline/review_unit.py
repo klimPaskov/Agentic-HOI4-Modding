@@ -54,6 +54,8 @@ from typing import Dict, List, Optional
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
+import numpy as np
+
 from lib import pdx_binary, pdx_deform, stage_verdict
 
 PROMPT = PIPELINE_ROOT / "config" / "visual_review_prompt.md"
@@ -151,15 +153,36 @@ def gfx_texts(mod_root: Optional[Path]) -> List[str]:
 
 
 def pick_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, count: int) -> List[int]:
-    """Evenly spaced sample indices plus the worst-stretch frame and the lowest and highest frames."""
+    """Evenly spaced sample indices plus the worst-stretch frame, the lowest and highest frames, and the frame where a bone
+    moves furthest from its first-frame place (`peak_motion_frame`)."""
 
     anim = pdx_deform.load_anim(anim_path)
     last = max(anim.frames - 1, 0)
     frames = {round(last * k / max(count - 1, 1)) for k in range(count)}
+    peak = peak_motion_frame(anim)
+    if peak is not None:
+        frames.add(peak)
     if mesh.skinned and anim.frames:
         report = pdx_deform.deformation_report(mesh, anim)
         frames.update((report.worst_frame, report.lowest_frame, report.highest_frame))
     return sorted(frame for frame in frames if 0 <= frame <= last)
+
+
+def peak_motion_frame(anim) -> Optional[int]:
+    """The frame where one bone's translation is furthest from its first frame, or None when nothing moves.
+
+    A tank's gun recoil peaks at frame 4 of a 149-frame attack and lasts about 20 frames, so evenly spaced frames missed it
+    and two fresh reviewers saw no shot fired."""
+
+    best, frame = 1e-6, None
+    for channel in anim.channels.values():
+        moves = np.asarray(channel.get("t", []), dtype=float)
+        if moves.ndim != 2 or len(moves) < 2:
+            continue
+        distance = np.linalg.norm(moves - moves[0], axis=1)
+        if float(distance.max()) > best:
+            best, frame = float(distance.max()), int(distance.argmax())
+    return frame
 
 
 def diagnostic_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path) -> List[int]:
