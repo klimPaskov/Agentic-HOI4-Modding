@@ -49,6 +49,7 @@ request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding
 PLANAR_DEGREES = 3.0
 SMALL_HOLE_EDGES = 32
 SLIT_SHARE = 1e-3
+CUT_CLEARANCE = 5e-4
 contract = request["contract"]
 kind = contract["kind"]
 name = request["name"]
@@ -117,7 +118,30 @@ def consistent_winding(bm):
                         stack.append(other)
         bmesh.ops.recalc_face_normals(bm, faces=island)
         fixed += len(island)
-    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "doubled_faces_dropped": len(doubles)}
+    # A closed piece whose faces all point inward (UNIT-INSIDE-OUT: the game culls its outside) is turned outward.
+    inside_out, done = 0, set()
+    for start in list(bm.faces):
+        if start in done:
+            continue
+        island, stack = [], [start]
+        done.add(start)
+        while stack:
+            face = stack.pop()
+            island.append(face)
+            for e in face.edges:
+                for other in e.link_faces:
+                    if other not in done:
+                        done.add(other)
+                        stack.append(other)
+        edges = {e for f in island for e in f.edges}
+        if not all(len(e.link_faces) == 2 for e in edges):
+            continue
+        volume = sum(f.verts[0].co.dot(f.verts[1].co.cross(f.verts[2].co)) for f in island if len(f.verts) == 3)
+        if volume < 0:
+            bmesh.ops.reverse_faces(bm, faces=island)
+            inside_out += 1
+    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "doubled_faces_dropped": len(doubles),
+            "inside_out_pieces_turned": inside_out}
 
 
 # ---- 1. import, join, face front, size and place ----
@@ -478,6 +502,16 @@ if bone_specs:
     for part, indices in members.items():
         if part in groups and indices:
             groups[part].add(sorted(indices), 1.0, "REPLACE")
+    # A part cut off the body is set off its cut by a hair (CUT_CLEARANCE of the height, under a millimetre at game
+    # size), so its rim and the body's do not share positions: the file checks weld shared positions, and a turret
+    # blown off in a death then read as a seam torn across the hull.
+    clearance = CUT_CLEARANCE * float(np.ptp(positions[:, 2]))
+    away = {"turret": (0.0, 0.0, clearance), "barrel": (0.0, -clearance, 0.0), "propeller": (0.0, -clearance, 0.0)}
+    for part, vector in away.items():
+        for index in members.get(part, ()):
+            model.data.vertices[index].co += Vector(vector)
+    if any(members.get(part) for part in away):
+        parts_report["cut_clearance"] = round(clearance, 5)
     model.parent = rig
     model.modifiers.new("Armature", "ARMATURE").object = rig
 report["bones"] = {b: [round(float(v), 4) for v in h] for b, h in heads.items()}
