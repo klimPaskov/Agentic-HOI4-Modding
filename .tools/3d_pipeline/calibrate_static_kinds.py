@@ -540,6 +540,23 @@ def nearest_tall(kind: str, measured: List[dict], rows: List[dict], runtime: flo
     return {k: (round(v, 4) if isinstance(v, float) else v) for k, v in best.items()}
 
 
+def tall_base_entry(kind: str, measured: List[dict]) -> Optional[dict]:
+    """How wide a base vanilla's tall and thin landmarks stand on, as a share of their height (the widest is the bound)."""
+
+    if kind != "landmark":
+        return None
+    rows = []
+    for entry in measured:
+        if sk.tall_and_thin(entry["points"]):
+            span = np.ptp(entry["points"], axis=0)
+            base = float(max(span[0], span[1]))
+            rows.append({"rel": entry["rel"], "height": round(float(span[2]), 4), "base": round(base, 4), "share": round(base / float(span[2]), 4)})
+    if not rows:
+        return None
+    return {"max_share": max(r["share"] for r in rows), "models": rows,
+            "about": "a tall and thin landmark is sized on its height unless its largest horizontal side is over max_share of that height, then on the base (largest side / max_share)"}
+
+
 def calibrate(game: Path) -> dict:
     definitions = sk.scan_definitions(game)
     turn_limit = json.loads((PIPELINE / "config" / "deformation_calibration.json").read_text(encoding="utf-8"))["groups"]["air_naval"]["turn_per_frame"]["value"]
@@ -584,7 +601,7 @@ def calibrate(game: Path) -> dict:
             "kind": kind,
             "references": [e["rel"] for e in measured],
             "size": {
-                "measure": {"vehicle": "area the map camera sees (square root)", "ship": "length", "plane": "wingspan", "building": "area the map camera sees (square root)", "landmark": "largest side, or height when tall and thin"}[kind],
+                "measure": {"vehicle": "area the map camera sees (square root)", "ship": "length", "plane": "wingspan", "building": "area the map camera sees (square root)", "landmark": "largest side, or height when tall and thin (its base at most vanilla's widest share of it)"}[kind],
                 "runtime": round(runtime, 4),
                 "source": round(source, 4),
                 "centre_share": [round(float(v), 4) for v in centre],
@@ -594,6 +611,7 @@ def calibrate(game: Path) -> dict:
                 "nearest": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in min(with_scale, key=lambda r: abs(r["runtime"] - runtime)).items()},
                 # a tall and thin landmark is compared with the tall and thin vanilla one nearest the median size
                 "nearest_tall": nearest_tall(kind, measured, rows, runtime),
+                "tall_base": tall_base_entry(kind, measured),
                 "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale",
             },
             "entity": {"reference": entity_name, "mesh": reference, "scale": ref_scale["scale"], "file": definitions["entity"][entity_name]["source"],

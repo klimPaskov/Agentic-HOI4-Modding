@@ -296,7 +296,14 @@ MAP_CAMERA_ELEVATION = 55.0
 TALL_LANDMARK = 2.0
 
 
-def main_measure(points: np.ndarray, kind: str) -> float:
+def tall_base_share(contract: dict) -> Optional[float]:
+    """The widest base a tall and thin landmark may have as a share of its height (the contract's `size.tall_base`)."""
+
+    tall_base = contract.get("size", {}).get("tall_base")
+    return float(tall_base["max_share"]) if tall_base else None
+
+
+def main_measure(points: np.ndarray, kind: str, base_share: Optional[float] = None) -> float:
     """The size a kind is scaled by: for a tank, the area the map camera sees (its length times its width and height
     as seen from the camera's 55 degree elevation, square-rooted) and the same for a building; a ship's length; a plane's
     wingspan; a landmark's largest side, or its height when it is tall and thin.
@@ -304,7 +311,10 @@ def main_measure(points: np.ndarray, kind: str) -> float:
     A tank sized on its length came out bulkier than vanilla's, sized on length and height it came out smaller in the
     map view (a taller, shorter hull covers less ground): reviewers compare what the camera shows, so the measure is that.
     A tall and thin landmark (`tall_and_thin`: an obelisk, a tower) is sized on its height, so a wide paved base
-    round it does not shrink it to a needle.
+    round it does not shrink it to a needle. Its base is bounded as well: when its largest horizontal side is over
+    `base_share` (vanilla's widest base of a tall and thin landmark, as a share of its height) times the height the
+    model would get, it is sized on the base (`largest side / base_share`), so a wide plaza does not read as a larger
+    monument than vanilla's.
     """
 
     span = np.ptp(points, axis=0)
@@ -322,7 +332,10 @@ def main_measure(points: np.ndarray, kind: str) -> float:
         long_side, short_side = max(span[0], span[1]), min(span[0], span[1])
         return float(math.sqrt(long_side * (short_side * math.sin(elevation) + span[2] * math.cos(elevation))))
     if kind == "landmark" and tall_and_thin(points):
-        return float(span[2])
+        height = float(span[2])
+        if base_share:
+            return max(height, float(max(span[0], span[1])) / base_share)
+        return height
     return float(span.max())
 
 
@@ -365,7 +378,7 @@ def placement(points: np.ndarray, kind: str, contract: dict) -> Tuple[float, np.
     """
 
     size = contract["size"]
-    scale = size["source"] / max(main_measure(points, kind), 1e-9)
+    scale = size["source"] / max(main_measure(points, kind, tall_base_share(contract)), 1e-9)
     scaled = points * scale
     low, high = scaled.min(axis=0), scaled.max(axis=0)
     centre_share = np.asarray(size["centre_share"], dtype=float)
@@ -1005,7 +1018,8 @@ def _structure(summary, contract: dict) -> List[Tuple[str, str, str]]:
 def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -> List[Tuple[str, str, str]]:
     """The kind's contract checked on an exported mesh: (rule, severity, message) for each problem.
 
-    - STATIC-SIZE: the main measure is within 2 % of vanilla's (the size the entity scale was chosen for).
+    - STATIC-SIZE: the main measure is within 2 % of vanilla's (the size the entity scale was chosen for). A tall and
+      thin landmark's measure is its height, or its base over vanilla's widest base share when the base is wider.
     - STATIC-TRIANGLES: no more triangles than the most detailed vanilla model of the kind.
     - STATIC-BONES, STATIC-LOCATORS: the bones and locators vanilla's entity and clips use are there.
     - STATIC-COLLISION: a kind whose vanilla models carry a `Collision` box has one 8-vertex box.
@@ -1026,7 +1040,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     visible = ~mesh.collision if len(mesh.collision) else np.ones(len(mesh.positions), dtype=bool)
     points = np.array([to_blender(p) for p in mesh.positions[visible]])
     kind = contract["kind"]
-    measure = main_measure(points, kind)
+    measure = main_measure(points, kind, tall_base_share(contract))
     target = contract["size"]["source"]
     if abs(measure - target) > 0.02 * target:
         findings.append(("STATIC-SIZE", "error", f"the {contract['size']['measure']} is {measure:.3f}; vanilla {kind}s measure {target:.3f} at entity scale {contract['entity']['scale']:g} (median of {len(contract['references'])} models)"))

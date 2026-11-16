@@ -216,6 +216,42 @@ class GeometryTests(unittest.TestCase):
         self.assertAlmostEqual(sk.main_measure(long_low, "vehicle") ** 2, 8 * (2 * np.sin(np.radians(55)) + np.cos(np.radians(55))), delta=0.05)
         self.assertGreater(sk.main_measure(short_tall, "vehicle"), 0)
 
+    def test_a_tall_landmark_on_a_wide_base_is_sized_on_the_base(self):
+        contract = {"size": {"source": 30.0, "centre_share": [0.0, 0.0, 0.0], "ground_share": 0.0, "tall_base": {"max_share": 0.9}}}
+        share = sk.tall_base_share(contract)
+        self.assertAlmostEqual(share, 0.9)
+        self.assertIsNone(sk.tall_base_share({"size": {}}))
+        plaza = box([-16.0, -16.0, 0.0], [16.0, 16.0, 0.5], 8000)
+        wide = np.vstack([plaza, box([-1.5, -1.5, 0.5], [1.5, 1.5, 29.0], 8000, seed=3)])
+        slim = np.vstack([box([-8.0, -8.0, 0.0], [8.0, 8.0, 0.5], 8000), box([-1.5, -1.5, 0.5], [1.5, 1.5, 29.0], 8000, seed=3)])
+        self.assertTrue(sk.tall_and_thin(wide) and sk.tall_and_thin(slim))
+        # a base within the bound keeps the height measure, a wider one is sized on its base
+        self.assertAlmostEqual(sk.main_measure(slim, "landmark", share), 29.0, delta=0.1)
+        self.assertAlmostEqual(sk.main_measure(wide, "landmark", share), 32.0 / 0.9, delta=0.1)
+        scale, offset = sk.placement(wide, "landmark", contract)
+        placed = wide * scale + offset
+        base = float(max(np.ptp(placed[:, 0]), np.ptp(placed[:, 1])))
+        self.assertAlmostEqual(base, 0.9 * 30.0, delta=0.05)
+        self.assertLess(float(np.ptp(placed[:, 2])), 30.0)
+        # the check agrees: the placed model is not flagged, the unplaced one is
+        self.assertAlmostEqual(sk.main_measure(placed, "landmark", share), 30.0, delta=0.05)
+        self.assertGreater(abs(sk.main_measure(wide, "landmark", share) - 30.0), 0.02 * 30.0)
+        # without a bound the old rule holds, and a palace is never bounded
+        self.assertAlmostEqual(sk.main_measure(wide, "landmark"), 29.0, delta=0.1)
+        palace = box([-15.0, -10.0, 0.0], [15.0, 10.0, 8.0], 8000, seed=4)
+        self.assertAlmostEqual(sk.main_measure(palace, "landmark", share), 30.0, delta=0.1)
+
+    @unittest.skipUnless((GAME / "gfx/models/buildings/landmarks").is_dir(), "the game is not installed here")
+    def test_the_contract_bound_is_the_widest_vanilla_tall_base(self):
+        contract = sk.kind_contract("landmark")
+        tall_base = contract["size"]["tall_base"]
+        self.assertEqual(max(m["share"] for m in tall_base["models"]), tall_base["max_share"])
+        for row in tall_base["models"]:
+            mesh = pdx_deform.load_mesh(GAME / row["rel"])
+            points = np.array([sk.to_blender(p) for p in mesh.positions[~mesh.collision]])
+            self.assertTrue(sk.tall_and_thin(points))
+            self.assertAlmostEqual(sk.main_measure(points, "landmark", tall_base["max_share"]), float(np.ptp(points[:, 2])), places=3)
+
     def test_a_building_is_sized_on_what_the_map_camera_sees(self):
         low_wide, tall = box([-3, -2, 0], [3, 2, 2], 4000), box([-3, -2, 0], [3, 2, 6], 4000, seed=2)
         seen = 6 * (4 * np.sin(np.radians(55)) + 2 * np.cos(np.radians(55)))

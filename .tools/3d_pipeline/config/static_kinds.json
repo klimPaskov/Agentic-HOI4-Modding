@@ -87,6 +87,7 @@
      "runtime": 2.8401
     },
     "nearest_tall": null,
+    "tall_base": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -599,6 +600,7 @@
      "runtime": 3.9851
     },
     "nearest_tall": null,
+    "tall_base": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -839,6 +841,7 @@
      "runtime": 13.0681
     },
     "nearest_tall": null,
+    "tall_base": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1188,6 +1191,7 @@
      "runtime": 3.6589
     },
     "nearest_tall": null,
+    "tall_base": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1383,7 +1387,7 @@
     "gfx/models/buildings/landmarks/landmark_volkshalle.mesh"
    ],
    "size": {
-    "measure": "largest side, or height when tall and thin",
+    "measure": "largest side, or height when tall and thin (its base at most vanilla's widest share of it)",
     "runtime": 5.15,
     "source": 32.1872,
     "centre_share": [
@@ -1519,6 +1523,36 @@
      "measure": 16.752,
      "scale": 0.3,
      "runtime": 5.0256
+    },
+    "tall_base": {
+     "max_share": 0.8757,
+     "models": [
+      {
+       "rel": "gfx/models/buildings/landmarks/landmark_big_ben.mesh",
+       "height": 20.2165,
+       "base": 3.4724,
+       "share": 0.1718
+      },
+      {
+       "rel": "gfx/models/buildings/landmarks/landmark_eiffel_tower.mesh",
+       "height": 22.2373,
+       "base": 9.4922,
+       "share": 0.4269
+      },
+      {
+       "rel": "gfx/models/buildings/landmarks/landmark_hakko_ichiu.mesh",
+       "height": 13.4985,
+       "base": 11.8211,
+       "share": 0.8757
+      },
+      {
+       "rel": "gfx/models/buildings/landmarks/landmark_statue_of_liberty.mesh",
+       "height": 16.752,
+       "base": 13.805,
+       "share": 0.8241
+      }
+     ],
+     "about": "a tall and thin landmark is sized on its height unless its largest horizontal side is over max_share of that height, then on the base (largest side / max_share)"
     },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
