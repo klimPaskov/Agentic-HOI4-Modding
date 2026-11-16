@@ -30,6 +30,7 @@ BONES = [
     ("Spine", 0, (0.0, 0.7, 0.0)), ("Spine02", 9, (0.0, 0.85, 0.0)), ("neck", 10, (0.0, 0.92, 0.0)), ("Head", 11, (0.0, 0.97, 0.0)),
     ("LeftArm", 10, (-0.15, 0.88, 0.0)), ("LeftForeArm", 13, (-0.3, 0.88, 0.0)), ("LeftHand", 14, (-0.45, 0.88, 0.0)),
     ("RightArm", 10, (0.15, 0.88, 0.0)), ("RightForeArm", 16, (0.3, 0.88, 0.0)), ("RightHand", 17, (0.45, 0.88, 0.0)),
+    ("Weapon", 18, (0.6, 0.88, 0.0)),
 ]
 NAMES = [name for name, _parent, _position in BONES]
 UPPER = {"Spine", "Spine02", "neck", "LeftArm", "RightArm"}
@@ -214,6 +215,19 @@ class DeathRest(Biped):
             steps = [P.quaternion_turn(after.channels[joint]["q"][i], after.channels[joint]["q"][i + 1]) for i in range(after.frames - 1)]
             original = [P.quaternion_turn(before.channels[joint]["q"][i], before.channels[joint]["q"][i + 1]) for i in range(before.frames - 1)]
             self.assertLessEqual(max(steps), max(max(original), tripo_trim.SETTLE_MAX_RATE) + 1e-3, joint)
+
+    def test_a_dropped_weapon_under_a_turned_arm_stays_where_it_fell(self) -> None:
+        # The orc (2026-11-16): its released axe hangs from the right hand, and laying that arm down swung the axe 33% of the height into
+        # the ground. A released bone below a turned joint keeps its place in the world.
+        path = self.clip("death", 70, lying(sit=40.0, arms=30.0))
+        out = self.folder / "settled.anim"
+        result = P.settle_death_upper(self.mesh_path, path, out, exclude_bones=("Weapon",))
+        self.assertTrue(result.changed, result)
+        weapon = NAMES.index("Weapon")
+        before = pdx_deform.skinning_matrices(self.mesh, self.load(path)) @ np.linalg.inv(self.mesh.inverse_bind)[None]
+        after = pdx_deform.skinning_matrices(self.mesh, self.load(out)) @ np.linalg.inv(self.mesh.inverse_bind)[None]
+        np.testing.assert_allclose(after[:, weapon], before[:, weapon], atol=1e-4)
+        self.assertFalse(np.allclose(after[:, NAMES.index("RightHand")], before[:, NAMES.index("RightHand")], atol=1e-3))
 
     def test_a_body_lying_flat_is_left_as_it_was(self) -> None:
         path = self.clip("death", 70, lying())

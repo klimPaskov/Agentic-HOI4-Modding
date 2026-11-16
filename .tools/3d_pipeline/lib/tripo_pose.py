@@ -518,6 +518,43 @@ def _skin_points(positions: np.ndarray, joints: np.ndarray, weights: np.ndarray,
     return out
 
 
+def _kept_in_place(mesh: pdx_deform.SkinnedMesh, original: pdx_deform.Animation, turned: pdx_deform.Animation,
+                   bones: Sequence[int]) -> pdx_deform.Animation:
+    """`turned` with each of `bones` (parent first) given the local keys that leave it where `original` has it in the world: a weapon the
+    unit has let go of stays where it fell when the arm that dropped it is laid down. The orc's axe hangs from its right hand, and turning
+    that arm 42 degrees toward the ground swung the dropped axe 33% of the height into it (2026-11-16)."""
+
+    world = pdx_deform.skinning_matrices(mesh, original) @ np.linalg.inv(mesh.inverse_bind)[None]
+    channels = {name: dict(channel) for name, channel in turned.channels.items()}
+    current = pdx_deform.Animation(turned.fps, turned.frames, channels)
+    for bone in bones:
+        parent = mesh.parents[bone]
+        if parent < 0:
+            continue
+        posed = pdx_deform.skinning_matrices(mesh, current) @ np.linalg.inv(mesh.inverse_bind)[None]
+        name = mesh.bones[bone]
+        q, t = channels[name]["q"].copy(), channels[name]["t"].copy()
+        scale = channels[name]["s"]
+        for frame in range(turned.frames):
+            local = np.linalg.inv(posed[frame, parent]) @ world[frame, bone]
+            new = _quaternion_from_matrix(local[:3, :3] / max(float(scale[frame]), 1e-12))
+            q[frame] = new if float(new @ q[frame]) >= 0 else -new
+            t[frame] = local[:3, 3]
+        channels[name]["q"], channels[name]["t"] = q, t
+    return current
+
+
+def _write_translations(data: bytearray, keyed: List[str], joints: Sequence[str], result: pdx_deform.Animation, weights: np.ndarray) -> None:
+    """Write the joints' translation samples of the frames with a weight into the `.anim` bytes, in place."""
+
+    offset = _samples_offset(bytes(data), b"t")
+    for joint in joints:
+        slot = keyed.index(joint)
+        for frame in np.nonzero(weights > 0)[0]:
+            position = offset + 4 * (3 * (int(frame) * len(keyed) + slot))
+            struct.pack_into("<3f", data, position, *[float(v) for v in result.channels[joint]["t"][frame]])
+
+
 def _smallest_turn(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, body: UpperBody, joints: Sequence[int], end: np.ndarray,
                    full: np.ndarray, heights: dict, judged: Sequence[str], target: float, exclude_bones: Sequence[str]) -> float:
     """Degrees: the smallest turn of `joints` toward the ground (`UPPER_SETTLE_STEP` steps) that brings the `judged` parts under `target`
@@ -593,7 +630,14 @@ def settle_death_upper(mesh_path: Path, anim_path: Path, out_path: Path, exclude
         return UpperSettle(False, onset, heights_before=before, heights_after=before, note="no turn toward the ground lowers the upper body")
     weights = np.zeros(anim.frames)
     weights[onset:] = 1.0
-    _write_rotations(data, keyed, changed, current, weights)
+    turned = {mesh.bones.index(name) for name in changed}
+    held = [i for i, name in enumerate(mesh.bones) if name in set(exclude_bones) and name in keyed
+            and turned & set(_chain_up(mesh.parents, i)[1:])]
+    if held:
+        current = _kept_in_place(mesh, anim, current, held)
+        moved = [joint.name for joint in info.children if "t" in str((joint.properties.get("sa") or [""])[0])]
+        _write_translations(data, moved, [mesh.bones[i] for i in held if mesh.bones[i] in moved], current, weights)
+    _write_rotations(data, keyed, changed + [mesh.bones[i] for i in held], current, weights)
     Path(out_path).write_bytes(bytes(data))
     return UpperSettle(True, onset, turns, ramps, before, heights)
 
