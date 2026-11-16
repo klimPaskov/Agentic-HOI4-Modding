@@ -793,6 +793,23 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
+def body_findings(mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
+    """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
+    rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
+
+    findings: List[dict] = []
+    if quadruped_checks.is_quadruped(mesh):
+        found, numbers["quadruped"] = quadruped_checks.quadruped_findings(mesh, anims)
+        findings += found
+    else:
+        found, numbers["death"] = death_findings(mesh, anims)
+        findings += found
+        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
+        findings += found
+    found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
+    return findings + found
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path)
@@ -822,17 +839,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
-    if quadruped_checks.is_quadruped(mesh):
-        # The kit's quadruped rig (a Tripo mount or beast): its own loop, hoof, lying-down and load rules (lib/quadruped_checks.py).
-        found, numbers["quadruped"] = quadruped_checks.quadruped_findings(mesh, anims)
-        findings += found
-    else:
-        found, numbers["death"] = death_findings(mesh, anims)
-        findings += found
-        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
-        findings += found
-    found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
-    findings += found
+    findings += body_findings(mesh, anims, numbers)
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
         findings += found
