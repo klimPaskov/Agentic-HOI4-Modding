@@ -10,7 +10,8 @@ Two Blender starts, one after the other (a caller can gate them one by one with 
   soldier's feet).
 - `game`: `sheets/game_size.png` (and a 3x nearest-neighbour copy): the model and the vanilla model its size and entity
   come from, side by side in the map camera and the front view, at the pixels a metre a vanilla soldier gets on the
-  map (60 px for `humanoid_unit`'s runtime height, as `weapon_sheets.py`). Each is drawn at its runtime size (mesh
+  map (60 px for `humanoid_unit`'s runtime height, as `weapon_sheets.py`). The vanilla model is the one nearest the kind's
+  median size (`size.nearest`). Each is drawn at its runtime size (mesh
   size times entity scale), so the sheet shows whether the model reads, and is as big as vanilla's, at game size.
 
 Give `REVIEW_REQUEST.md` and the sheets, and nothing else, to a fresh reviewer, and record the reply with
@@ -115,10 +116,12 @@ def _span(mesh: Path) -> float:
 def game_review(folder: Path, kind: str, out: Path, game: Path) -> Path:
     contract = sk.kind_contract(kind)
     mesh = sorted(folder.glob("*.mesh"))[0]
-    reference = game / contract["entity"]["mesh"]
-    scale = contract["entity"]["scale"]
+    # the vanilla model nearest the kind's median size, at its own entity scale; the model at the reference entity's
+    nearest = contract["size"]["nearest"]
+    reference = game / nearest["rel"]
     rows = []
     for label, path, texts in (("this model", mesh, []), (f"vanilla {reference.stem}", reference, review_unit.gfx_texts(game))):
+        scale = contract["entity"]["scale"] if path == mesh else nearest["scale"]
         index = render_rest(path, out / "game_tiles" / ("model" if path == mesh else "vanilla"), texts)
         # the tile shows span x SHARE across RENDER_SIZE px; at game size it shows span x scale x PX_PER_METRE
         factor = scale * PX_PER_METRE * _span(path) * SHARE / RENDER_SIZE

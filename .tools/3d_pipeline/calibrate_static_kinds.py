@@ -477,6 +477,8 @@ def calibrate(game: Path) -> dict:
                 "centre_share": [round(float(v), 4) for v in centre],
                 "ground_share": round(ground, 4),
                 "per_model": [{k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()} for r in rows],
+                # the vanilla model nearest the median size: the game-size review sheet draws the model beside it
+                "nearest": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in min(with_scale, key=lambda r: abs(r["runtime"] - runtime)).items()},
                 "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale",
             },
             "entity": {"reference": entity_name, "mesh": reference, "scale": ref_scale["scale"], "file": definitions["entity"][entity_name]["source"],

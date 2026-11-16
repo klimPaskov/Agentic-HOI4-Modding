@@ -80,6 +80,12 @@
       "runtime": 3.8911
      }
     ],
+    "nearest": {
+     "rel": "gfx/models/units/tanks/FRA_tank_light.mesh",
+     "measure": 5.7675,
+     "scale": 0.6,
+     "runtime": 3.4605
+    },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -501,6 +507,12 @@
       "runtime": 4.3986
      }
     ],
+    "nearest": {
+     "rel": "gfx/models/units/planes/JAP_light_plane_1.mesh",
+     "measure": 39.8513,
+     "scale": 0.1,
+     "runtime": 3.9851
+    },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -734,6 +746,12 @@
       "runtime": 13.0681
      }
     ],
+    "nearest": {
+     "rel": "gfx/models/units/ships/generic_destroyer.mesh",
+     "measure": 7.6871,
+     "scale": 1.7,
+     "runtime": 13.0681
+    },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1076,6 +1094,12 @@
       "runtime": 3.3616
      }
     ],
+    "nearest": {
+     "rel": "gfx/models/buildings/facility_land.mesh",
+     "measure": 6.0324,
+     "scale": 0.6,
+     "runtime": 3.6194
+    },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1396,6 +1420,12 @@
       "runtime": 5.5179
      }
     ],
+    "nearest": {
+     "rel": "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace.mesh",
+     "measure": 32.1872,
+     "scale": 0.16,
+     "runtime": 5.15
+    },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
