@@ -393,17 +393,72 @@ class Regions(unittest.TestCase):
         self.assertLessEqual(C.wing_side_cover(wing, body, root, FRONT, UP, 2.0, floor), ceiling)
         self.assertGreater(C.wing_side_cover(wing, body, root, FRONT, UP, 2.0, 0.0), ceiling)
 
-    def test_the_face_turn_shows_the_face_to_the_side_and_the_map(self) -> None:
+    @staticmethod
+    def face_shares(normal):
+        views = [C.review_view(FRONT, UP, *C.REVIEW_VIEWS[name]) for name in ("left", "right", "map")]
+        return [abs(float(C.unit(normal) @ view)) for view in views]
+
+    def test_the_held_face_turn_shows_the_face_to_the_side_and_the_map(self) -> None:
         normal = FRONT  # a wing spread in the frontal plane: edge-on from the side
-        self.assertAlmostEqual(C.face_shares(normal, FRONT, UP)["side"], 0.0)
-        sweep, tilt = C.face_turn(normal, FRONT, UP, 0.0, 80.0)
-        shares = C.face_shares(C.turned_normal(normal, FRONT, UP, sweep, tilt), FRONT, UP)
-        self.assertGreater(min(shares.values()), 0.5)
-        self.assertGreater(tilt, 0.0)
-        # a turn the side-view rule refuses is never taken; with none left it falls back to the floor
-        self.assertEqual(C.face_turn(normal, FRONT, UP, 20.0, 80.0, fits=lambda s, t: False), (20.0, 0.0))
-        sweep, tilt = C.face_turn(normal, FRONT, UP, 0.0, 80.0, fits=lambda s, t: t == 0.0)
-        self.assertEqual(tilt, 0.0)
+        self.assertAlmostEqual(self.face_shares(normal)[0], 0.0)
+        still = np.stack([np.eye(3)] * 5)
+        backs, tilts = C.held_face_turns(normal, still, "L", np.zeros(5), FRONT, UP)
+        self.assertGreater(min(self.face_shares(C.turned_normal(normal, FRONT, UP, backs[2], tilts[2]))), 0.5)
+        self.assertGreater(float(tilts[2]), 0.0)
+        self.assertTrue(np.all(backs <= C.FACE_SWEEP_MAX) and np.all(tilts <= C.FACE_TILT_MAX))
+        # the floors (side floor plus the torso's twist) hold, and the smoothing never takes a turn under them
+        floors = np.array([0.0, 0.0, 65.0, 0.0, 0.0])
+        backs, _tilts = C.held_face_turns(normal, still, "L", floors, FRONT, UP)
+        self.assertTrue(np.all(backs >= floors - 1e-9))
+
+    def test_the_held_face_turn_follows_the_torso_so_the_world_sees_the_face(self) -> None:
+        normal = FRONT
+        frames = 9
+        yaw = C.axis_angle_matrix(UP, math.radians(-30.0))  # the torso turns its front toward the unit's right: the left wing comes forward
+        still, turned = np.stack([np.eye(3)] * frames), np.stack([yaw] * frames)
+        back_still, tilt_still = C.held_face_turns(normal, still, "L", np.zeros(frames), FRONT, UP, window=1)
+        back_turned, tilt_turned = C.held_face_turns(normal, turned, "L", np.zeros(frames), FRONT, UP, window=1)
+        self.assertGreater(float(back_turned[0]), float(back_still[0]))  # it swings back against the turn
+        world = yaw @ C.turned_normal(normal, FRONT, UP, back_turned[0], tilt_turned[0])
+        fixed = yaw @ C.turned_normal(normal, FRONT, UP, back_still[0], tilt_still[0])
+        self.assertGreater(min(self.face_shares(world)), min(self.face_shares(fixed)))
+        self.assertGreater(min(self.face_shares(world)), 0.5)
+
+    def test_a_face_turn_leaves_the_root_bone_where_the_role_puts_it(self) -> None:
+        rest, _lateral = self.wing_chain()
+        wing = dict(self.WING, side=20.0)
+        plain = C.wing_pose_rotations(rest, 0.5, wing, UP, FRONT, self.pose(), np.zeros(3))
+        turned = C.wing_pose_rotations(rest, 0.5, wing, UP, FRONT, dict(self.pose(), face=1.0, face_back=60.0, face_tilt=30.0), np.zeros(3))
+        np.testing.assert_allclose(turned[0], plain[0], atol=1e-9)  # the skin where the wing grows from the shoulders turns no further
+        self.assertLess(float(turned[1] @ rest[1] @ FRONT), float(plain[1] @ rest[1] @ FRONT))  # the bones past it swing further back
+        directions = C.wing_pose_directions(rest, 0.5, wing, UP, FRONT, dict(self.pose(), face=1.0, face_back=60.0, face_tilt=30.0), np.zeros(3))
+        np.testing.assert_allclose(directions, [C.unit(t @ d) for t, d in zip(turned, rest)], atol=1e-9)
+
+    def test_a_face_turned_bone_keeps_its_roll(self) -> None:
+        # bone 1 of a face-turned wing takes the pose's whole rotation, roll included, not the shortest arc onto its direction
+        rest, _lateral = self.wing_chain()
+        lengths = np.array([0.1, 0.1, 0.1])
+        relative = chain_rest(lengths, start=(0.1, 0.0, 1.4), direction=rest[0])
+        plan = {"lengths": lengths, "wing": dict(self.WING, side=20.0, droop=0.0), "side": "L", "rest_directions": np.array([rest[0]] * 3),
+                "parent_rest": np.eye(4), "chain_u": 0.5, "rest_relative": relative}
+        stage = {"up": UP, "front": FRONT, "ground": -10.0, "height": 2.0}
+        quaternions = C.wing_quaternions(plan, np.stack([np.eye(4)] * 5), "retreat", stage)
+        pose = C.wing_role_pose("retreat", 5)
+        now = {key: value[2] for key, value in pose.items()}
+        backs, tilts = C.held_face_turns(plan["wing"]["normal"], np.stack([np.eye(3)] * 5), "L", np.full(5, 20.0), FRONT, UP,
+                                         most=max(C.FACE_SWEEP_MAX, plan["wing"]["sweep"]))
+        now.update(face_back=backs[2], face_tilt=tilts[2], twist=0.0)
+        turns = C.wing_pose_rotations(plan["rest_directions"], 0.5, plan["wing"], UP, FRONT, now, C.flap_angles(pose["phase"], pose["amplitude"], 3)[2])
+        world = np.eye(3)
+        for k in range(2):
+            world = world @ relative[k][:3, :3] @ C.matrix_from_quaternion(quaternions[2, k])
+        rest_world = relative[0][:3, :3] @ relative[1][:3, :3]
+        np.testing.assert_allclose(world, turns[1] @ rest_world, atol=1e-6)
+
+    def test_the_attack_and_the_retreat_turn_their_face(self) -> None:
+        for role, rule in C.WING_ROLES.items():
+            beating = rule.get("flap", 0.0) >= 20.0
+            self.assertEqual(bool(rule.get("face")), beating, role)
 
     def test_the_death_folds_before_the_fall_and_sags_after_it(self) -> None:
         hips = np.r_[np.full(40, 1.0), np.linspace(1.0, 0.4, 30), np.full(30, 0.4)]
@@ -643,6 +698,26 @@ class WingChecks(unittest.TestCase):
         self.assertEqual(self.rules("u_retreat", self.row(face=edge)), [("TRIPO-WING-EDGE-ON", "left")])
         self.assertEqual(self.rules("u_idle", self.row(face=edge)), [])  # folded and still: an edge is fine
         self.assertEqual(self.rules("u_death", self.row(face=edge)), [])
+
+    def test_the_face_share_reads_a_flat_wing_square_on_and_edge_on(self) -> None:
+        import tripo_checks as TC
+
+        up, front = np.array([0.0, 0.0, 1.0]), np.array([0.0, -1.0, 0.0])
+        steps = [(r, h) for r in np.linspace(0.0, 0.6, 31) for h in np.linspace(0.0, 0.6, 31)]
+        spread = np.array([[0.2 + r, 0.0, 1.0 + h] for r, h in steps])  # in the frontal plane: edge-on from the side
+        back = np.array([[0.2, r, 1.0 + h] for r, h in steps])  # swung fully back: face on from the side
+        mask = np.ones(len(steps), bool)
+        edge = TC.wing_face_shares_points([spread], (mask,), front, up, 2.0)
+        self.assertLess(edge["left"], 0.2)
+        faced = TC.wing_face_shares_points([back], (mask,), front, up, 2.0)
+        self.assertGreater(faced["left"], 0.9)
+        self.assertLess(faced["left"], 1.01)
+
+    def test_the_root_zone_is_where_the_chains_blend_into_the_body(self) -> None:
+        share = np.array([0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0])  # a strip: body, blend, wing
+        edges = np.stack([np.arange(6), np.arange(1, 7)], axis=1)
+        np.testing.assert_array_equal(C.root_zone(share, edges, rings=0), [False, False, False, True, False, False, False])
+        np.testing.assert_array_equal(np.where(C.root_zone(share, edges, rings=2))[0], [1, 2, 3, 4, 5])
 
     def test_idle_and_move_must_differ_at_map_size(self) -> None:
         import tripo_checks as TC
