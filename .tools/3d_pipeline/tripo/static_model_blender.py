@@ -82,13 +82,23 @@ def triangle_count(obj):
     return sum(len(p.vertices) - 2 for p in obj.data.polygons)
 
 
-def consistent_winding(bm):
-    """Winding: a piece with an edge its two faces walk the same way (a face turned against its neighbours, which the
-    game culls) is turned consistent with Blender's recalc; only such pieces are touched (a Smart Mesh plane's wings had
-    them). A face lying exactly on another one, facing the same way (a doubled face that flickers), is dropped. It runs
-    after the weld and again after the slits and small holes are closed, because joining a slit can bring two pieces of
-    opposite winding together (a Smart Mesh factory's roof gables)."""
+def _island(start, seen):
+    """The faces edge-connected to `start` that `seen` does not hold yet (they are added to it)."""
 
+    island, stack = [], [start]
+    seen.add(start)
+    while stack:
+        face = stack.pop()
+        island.append(face)
+        for edge in face.edges:
+            for other in edge.link_faces:
+                if other not in seen:
+                    seen.add(other)
+                    stack.append(other)
+    return island
+
+
+def _drop_doubled_faces(bm):
     bm.verts.index_update()
     doubles, seen_faces = [], {}
     for face in bm.faces:
@@ -100,48 +110,43 @@ def consistent_winding(bm):
             seen_faces[key] = face
     if doubles:
         bmesh.ops.delete(bm, geom=doubles, context="FACES_ONLY")
-    conflicted = [e for e in bm.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert]
-    fixed, seen = 0, set()
-    for edge in conflicted:
-        start = edge.link_faces[0]
-        if start in seen:
-            continue
-        island, stack = [], [start]
-        seen.add(start)
-        while stack:
-            face = stack.pop()
-            island.append(face)
-            for e in face.edges:
-                for other in e.link_faces:
-                    if other not in seen:
-                        seen.add(other)
-                        stack.append(other)
-        bmesh.ops.recalc_face_normals(bm, faces=island)
-        fixed += len(island)
-    # A closed piece whose faces all point inward (UNIT-INSIDE-OUT: the game culls its outside) is turned outward.
-    inside_out, done = 0, set()
+    return len(doubles)
+
+
+def _turn_inside_out_pieces(bm):
+    turned, done = 0, set()
     for start in list(bm.faces):
         if start in done:
             continue
-        island, stack = [], [start]
-        done.add(start)
-        while stack:
-            face = stack.pop()
-            island.append(face)
-            for e in face.edges:
-                for other in e.link_faces:
-                    if other not in done:
-                        done.add(other)
-                        stack.append(other)
-        edges = {e for f in island for e in f.edges}
-        if not all(len(e.link_faces) == 2 for e in edges):
+        island = _island(start, done)
+        if not all(len(e.link_faces) == 2 for f in island for e in f.edges):
             continue
         volume = sum(f.verts[0].co.dot(f.verts[1].co.cross(f.verts[2].co)) for f in island if len(f.verts) == 3)
         if volume < 0:
             bmesh.ops.reverse_faces(bm, faces=island)
-            inside_out += 1
-    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "doubled_faces_dropped": len(doubles),
-            "inside_out_pieces_turned": inside_out}
+            turned += 1
+    return turned
+
+
+def consistent_winding(bm):
+    """Winding: a piece with an edge its two faces walk the same way (a face turned against its neighbours, which the
+    game culls) is turned consistent with Blender's recalc; only such pieces are touched (a Smart Mesh plane's wings had
+    them). A face lying exactly on another one, facing the same way (a doubled face that flickers), is dropped, and a
+    closed piece whose faces all point inward (UNIT-INSIDE-OUT) is turned outward. It runs after the weld and again
+    after the slits and small holes are closed, because joining a slit can bring two pieces of opposite winding together
+    (a Smart Mesh factory's roof gables)."""
+
+    doubles = _drop_doubled_faces(bm)
+    conflicted = [e for e in bm.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert]
+    fixed, seen = 0, set()
+    for edge in conflicted:
+        if edge.link_faces[0] in seen:
+            continue
+        island = _island(edge.link_faces[0], seen)
+        bmesh.ops.recalc_face_normals(bm, faces=island)
+        fixed += len(island)
+    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "doubled_faces_dropped": doubles,
+            "inside_out_pieces_turned": _turn_inside_out_pieces(bm)}
 
 
 # ---- 1. import, join, face front, size and place ----
