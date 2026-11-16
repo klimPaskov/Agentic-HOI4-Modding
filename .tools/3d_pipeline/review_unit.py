@@ -90,6 +90,9 @@ def diffuse_maps(mesh_path: Path, gfx_texts: List[str]) -> Dict[str, str]:
                 continue
             for settings in re.finditer(r"meshsettings\s*=\s*\{(.*?)\}", body, re.S):
                 name = re.search(r'name\s*=\s*"([^"]+)"', settings.group(1))
+                index = re.search(r"\bindex\s*=\s*(\d+)", settings.group(1))
+                if index and int(index.group(1)) != 0:
+                    continue  # a shape's later stream (a tank's scrolling tracks) names its own maps in its mesh material
                 texture = re.search(r'texture_diffuse\s*=\s*"([^"]+)"', settings.group(1))
                 if name and texture and (mesh_path.parent / Path(texture.group(1)).name).exists():
                     maps[name.group(1)] = str(mesh_path.parent / Path(texture.group(1)).name)

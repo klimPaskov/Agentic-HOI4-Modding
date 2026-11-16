@@ -187,7 +187,8 @@ class GeometryTests(unittest.TestCase):
         hull = box([-2.0, -4.0, 0.0], [2.0, 4.0, 2.0])
         against_side = box([1.5, -0.5, 0.0], [3.0, 0.5, 1.0])
         shift = sk.landing_shift(against_side, hull)
-        self.assertAlmostEqual(shift[0], 0.5, places=6)  # off the side, not 7 m off the end
+        clearance = sk.LANDING_CLEARANCE_SHARE * 1.5  # a tenth of the part's own plan size
+        self.assertAlmostEqual(shift[0], 0.5 + clearance, places=6)  # off the side and clear of it, not 7 m off the end
         self.assertEqual(shift[1], 0.0)
         clear = box([2.5, -0.5, 0.0], [3.5, 0.5, 1.0])
         self.assertFalse(sk.landing_shift(clear, hull).any())
@@ -391,6 +392,13 @@ class TrackTests(unittest.TestCase):
         self.assertIn(rule["v_sign"], (1.0, -1.0))
         self.assertGreater(rule["links"], 0)
         self.assertGreater(rule["texture_anim_speed"], 0)
+
+    def test_clipped_hull_fittings_stay_on_the_hull(self):
+        shell = np.linspace(3.08, 4.24, 50)  # the turret, from its cut to its roof
+        fender = np.array([3.08, 3.09, 3.1])  # a fender corner the cut clipped 2 cm under its top
+        hatch = np.array([4.2, 4.3])  # a hatch on the roof
+        mantlet = np.linspace(3.2, 4.0, 10)  # in front, at the turret's height
+        self.assertEqual(sk.cut_slivers([shell, fender, hatch, mantlet], 3.08, 4.3), [1])
 
     def test_a_landed_part_is_judged_by_tilt_and_gap(self):
         points = np.array([sk.to_blender(p) for p in box([-1, -1, 0], [1, 1, 0.5], 500)])  # PDX space via the swap

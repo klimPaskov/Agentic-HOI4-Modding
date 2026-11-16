@@ -213,6 +213,20 @@ class Inputs(unittest.TestCase):
             self.assertTrue(maps["Howdah"].endswith("elephant_howdah_diffuse.dds"))
             self.assertIn("*", maps)
 
+    def test_a_later_stream_of_a_shape_keeps_the_body_map(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "gfx" / "models" / "units" / "tank"
+            unit.mkdir(parents=True)
+            for name in ("tank_diffuse.dds", "tank_tracks_diffuse.dds"):
+                (unit / name).write_bytes(b"")
+            gfx = (
+                'objectTypes = {\n\tpdxmesh = {\n\t\tname = "tank_mesh"\n\t\tfile = "gfx/models/units/tank/tank.mesh"\n'
+                '\t\tmeshsettings = {\n\t\t\tname = "tankShape"\n\t\t\tindex = 0\n\t\t\ttexture_diffuse = "tank_diffuse.dds"\n\t\t}\n'
+                '\t\tmeshsettings = {\n\t\t\tname = "tankShape"\n\t\t\tindex = 1\n\t\t\ttexture_diffuse = "tank_tracks_diffuse.dds"\n\t\t}\n\t}\n}\n'
+            )
+            maps = review_unit.diffuse_maps(unit / "tank.mesh", [gfx])
+            self.assertTrue(maps["tankShape"].endswith("tank_diffuse.dds"))  # the tracks stream draws its own maps
+
     def test_the_prompt_states_the_quality_bar(self) -> None:
         prompt = review_unit.PROMPT.read_text(encoding="utf-8")
         for rule in ("No holes", "No stretching", "No weights leaking", "Feet meet the ground", "The rig fits the body"):

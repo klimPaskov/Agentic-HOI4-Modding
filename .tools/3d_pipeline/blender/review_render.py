@@ -177,6 +177,7 @@ PBR = bool(request.get("pbr", True))  # the default: shaded from the packed PDX 
 if PBR:
     # Shade from the packed PDX specular the game gets: green = specular level, alpha = glossiness, blue = metalness
     # (roughness = 1 - glossiness). Workbench cannot read a texture for these, so this mode renders with EEVEE.
+    scrollers.clear()  # the trees are rebuilt below, so the Workbench mappings are gone (a removed node has no inputs)
     spec_images = {}
     for o in meshes:
         maps = ATTACH["diffuse"] if o.get("hoi4_rider") else request["diffuse"]

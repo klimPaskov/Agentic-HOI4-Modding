@@ -778,14 +778,22 @@ def axis_quaternion(axis: Sequence[float], degrees: float) -> np.ndarray:
     return np.concatenate([[math.cos(half)], math.sin(half) * axis])
 
 
-def landing_shift(free: np.ndarray, body: np.ndarray) -> np.ndarray:
-    """The horizontal shift that takes a blown-off part (`free`, its points where it lands) out of the body's box.
+LANDING_CLEARANCE_SHARE = 0.1  # of the blown-off part's own plan size (kit rule)
 
-    Nothing when their boxes do not overlap. Otherwise the shorter of the four ways out along x or y: a turret that
-    lands against the hull's side moves sideways off it, one that lands on its deck moves off the nearer end.
+
+def landing_shift(free: np.ndarray, body: np.ndarray, clearance_share: float = LANDING_CLEARANCE_SHARE) -> np.ndarray:
+    """The horizontal shift that takes a blown-off part (`free`, its points where it lands) out of the body's box,
+    with a clearance of `clearance_share` of the part's plan size: a reviewer read a turret landed flush against the
+    track run as lying on it.
+
+    Nothing when their boxes (the body's grown by the clearance in plan) do not overlap. Otherwise the shorter of the
+    four ways out along x or y: a turret that lands against the hull's side moves sideways off it, one that lands on its
+    deck moves off the nearer end.
     """
 
     flo, fhi, blo, bhi = free.min(axis=0), free.max(axis=0), body.min(axis=0), body.max(axis=0)
+    clearance = clearance_share * float(max(fhi[0] - flo[0], fhi[1] - flo[1]))
+    blo, bhi = blo - [clearance, clearance, 0.0], bhi + [clearance, clearance, 0.0]
     if (np.minimum(fhi, bhi) - np.maximum(flo, blo) <= 0).any():
         return np.zeros(3)
     ways = [(bhi[0] - flo[0], (1, 0)), (fhi[0] - blo[0], (-1, 0)), (bhi[1] - flo[1], (0, 1)), (fhi[1] - blo[1], (0, -1))]
@@ -843,6 +851,18 @@ def track_uvs(points: np.ndarray, v_per_length: float, v_sign: float = 1.0) -> n
     u = 0.03 + 0.94 * (x - inner) / max(outer - inner, 1e-9)
     v = v_sign * v_per_length * (points[:, 1] - points[:, 1].min())
     return np.stack([u, v], axis=1)
+
+
+CUT_SLIVER_SHARE = 0.05  # of the turret's height above its cut (kit rule)
+
+
+def cut_slivers(piece_heights, cut_z: float, top_z: float, share: float = CUT_SLIVER_SHARE) -> List[int]:
+    """The turret pieces that are only the clipped tops of hull fittings: pieces (each its vertices' heights) lying
+    wholly within `share` of the turret's height above the cut. A reviewer saw them hang in the air beside a blown-off
+    turret (a Smart Mesh tank's fender corners and bolts, 1 to 3 cm above the cut). They stay on the hull."""
+
+    reach = cut_z + share * max(top_z - cut_z, 1e-9)
+    return [k for k, heights in enumerate(piece_heights) if len(heights) and float(np.max(heights)) <= reach]
 
 
 def tread_links(rows) -> int:
