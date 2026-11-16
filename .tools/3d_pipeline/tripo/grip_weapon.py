@@ -76,6 +76,8 @@ import clip_check as cc
 
 FINGERS = ("Index", "Middle", "Ring", "Pinky", "Thumb")
 PREFIX = "mixamorig:"
+# Skin of these bones is kept clear like the cloak (`soft_cloth_mask`, `--soft-share` of the height): the head and the feet.
+KEEP_CLEAR_BONES = ("Head", "head", "neck", "Neck", "LeftFoot", "RightFoot", "LeftToeBase", "RightToeBase", "LeftToe_End", "RightToe_End")
 
 
 def parse_args():
@@ -811,8 +813,14 @@ def soft_cloth_mask(c):
     front = (heads["LeftToeBase"] - heads["LeftFoot"]) + (heads["RightToeBase"] - heads["RightFoot"])
     front[2] = 0.0
     mask = tripo_chains.cloak_mask(c.rest_coords, names, heads["Hips"], front, np.array([0.0, 0.0, 1.0]), c.height)
-    c.report["soft_cloth"] = {"vertices": int(mask.sum()), "share_of_height": c.args.soft_share}
-    return mask if mask.sum() >= 50 else None
+    if mask.sum() < 50:
+        mask = np.zeros(len(names), bool)
+    # The head and the feet are kept as clear as the cloak: a fresh review of the round 4 orc saw the axe haft lie across the crown in the
+    # attack's wind-up and its butt end go into the boot in the defend, while both stayed under the in-body check's 1% depth.
+    keep = np.isin(np.asarray(names), KEEP_CLEAR_BONES)
+    c.report["soft_cloth"] = {"vertices": int(mask.sum()), "head_and_feet": int(keep.sum()), "share_of_height": c.args.soft_share}
+    mask = mask | keep
+    return mask if mask.any() else None
 
 
 def clear_weapon_from_body(c):
