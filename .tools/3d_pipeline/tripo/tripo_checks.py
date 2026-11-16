@@ -49,6 +49,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
 - TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
   the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
+- TRIPO-HAND-BLEED: more than `MAX_HAND_BLEED_SHARE` of a shape's vertices lie outside a hand's own part (`lib/stretch_smooth.hand_parts`:
+  cut from the arm across the middle of the forearm) with more than `HAND_BLEED_MIN_WEIGHT` of their weight on that hand. Such skin
+  rises with the hand: a fresh review of the orc saw its cloak dragged up the right flank by the axe hand. Every unit.
 """
 
 from __future__ import annotations
@@ -65,7 +68,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_pose
+from lib import pdx_deform, pdx_motion, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_pose
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -127,6 +130,8 @@ LIMB_MARGIN_SHARE = 0.015  # limb skin this deep inside the torso counts (1.5% o
 # fail the vanilla deaths themselves; the limit is the worst of them with a margin of half again. The orc death measures 1.0%, the zombie 0.5 to 1.5%.
 MAX_LIMB_IN_TORSO_SHARE = 0.08
 MAX_FINAL_EXTENT_SHARE = 0.4
+HAND_BLEED_MIN_WEIGHT = 0.05
+MAX_HAND_BLEED_SHARE = 0.002  # the orc before the rule: 1,144 of 18,375 at the axe hand
 MAX_TORSO_VERTICAL_SHARE = 0.5  # the vanilla death clips end at 0.02 and 0.08
 ENCLOSURE_TOLERANCE_SHARE = T.ENCLOSURE_TOLERANCE_SHARE
 MIN_ENCLOSURE_SHARE = T.MIN_ENCLOSURE_SHARE
@@ -766,6 +771,28 @@ def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -
     return findings
 
 
+def hand_bleed_findings(mesh) -> (List[dict], dict):
+    """TRIPO-HAND-BLEED per hand, on the exported mesh's rest pose."""
+
+    if not mesh.skinned:
+        return [], {}
+    dense = stretch_smooth.dense_weights(mesh)
+    canon = pdx_deform.weld(mesh.positions, max(mesh.height, 1e-6) * 1e-5)
+    edges = pdx_deform.mesh_edges(mesh)
+    out, numbers = [], {}
+    for side, bled in stretch_smooth.hand_bleed(mesh, dense, canon, edges, HAND_BLEED_MIN_WEIGHT).items():
+        hand = f"{side}Hand"
+        shape = mesh.shape == mesh.shape[int(np.argmax(dense[:, mesh.bones.index(hand)]))]
+        share = float(bled[shape].sum()) / max(int(shape.sum()), 1)
+        numbers[hand] = {"vertices": int(bled.sum()), "share": round(share, 4)}
+        if share > MAX_HAND_BLEED_SHARE:
+            out.append(finding("TRIPO-HAND-BLEED", hand,
+                               f"{int(bled.sum())} vertices outside the hand carry more than {HAND_BLEED_MIN_WEIGHT:.0%} of its weight "
+                               f"({share:.2%} of the body, limit {MAX_HAND_BLEED_SHARE:.1%}): that skin rises with the hand",
+                               vertices=int(bled.sum()), share=round(share, 4)))
+    return out, numbers
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path)
@@ -798,6 +825,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     found, numbers["death"] = death_findings(mesh, anims)
     findings += found
     found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
+    findings += found
+    found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     findings += found
     if not args.weapon_bone:
         found, numbers["hands"] = hands_findings(mesh, anims)

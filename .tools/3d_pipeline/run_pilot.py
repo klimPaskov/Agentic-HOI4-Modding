@@ -3682,7 +3682,8 @@ def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: 
     totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
     return {"changed": result.changed, "passes": result.passes, "seed_vertices": result.seeds, "region_vertices": result.region,
             "vertices_changed": result.vertices_changed, "deformed_edges_before": totals["before"], "deformed_edges_after": totals["after"],
-            "per_clip_after": result.after, "trials": result.trials, "note": result.note}
+            "per_clip_after": result.after, "trials": result.trials, "note": result.note,
+            "hand_bleed_vertices": result.hand_bleed}
 
 
 def export_unit_roles(

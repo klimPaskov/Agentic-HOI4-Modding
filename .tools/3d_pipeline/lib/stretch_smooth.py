@@ -15,6 +15,9 @@ reads the exported `.mesh` and every `.anim` of the unit, as the game plays them
 4. Choice: each of `PASS_STEPS` is measured on every clip (the edges the region touches are skinned again, the rest keep their counts).
    The kept strength is the one with the fewest deformed edges summed over the clips' worst frames, provided no clip's worst stretched or
    squashed count rises by more than `WORSEN_SHARE` and no edge grows further than before. When no strength helps, nothing changes.
+First of all, the hand bleed (`unbleed_hands`): hand weight on skin outside the hand's own part (cut from the arm across the
+   middle of the forearm) goes to that skin's other bones, so cloth a resting hand lay against no longer rises with the hand.
+   Every later step measures from these weights.
 0. Before the smoothing, on a two-legged unit: the thigh split (`SPLIT_SHARES`). Cloth between the legs that Tripo weighted to both
    thighs gives part of the share both hold to the bone the legs hang from, kept on the same terms as a strength in step 4. The
    smoothing then starts from the split weights.
@@ -25,6 +28,7 @@ were, so every clip still plays.
 
 from __future__ import annotations
 
+import math
 import struct
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -50,6 +54,11 @@ PREFIX_LOCK_SHARES = {"Wing": 0.5}
 # legs, death 188 to 116.
 SPLIT_SHARES = (0.5, 1.0)
 SPLIT_MIN = 0.05
+# Hand bleed, first of all (`unbleed_hands`): the hand's own part is cut from the arm across the middle of the forearm. On the orc a cut
+# at the upper arm reached the whole body (the forearm touches the torso), while the forearm cut kept each hand apart (528 and 738 of
+# 18,375 vertices). A hand whose part is larger than this share of its shape touches the body and is left as it is.
+HAND_CUT = (0.35, 0.65)
+HAND_PART_MAX_SHARE = 0.2
 
 
 @dataclass
@@ -63,6 +72,7 @@ class SmoothResult:
     after: Dict[str, Dict[str, float]] = field(default_factory=dict)
     trials: Dict[str, int] = field(default_factory=dict)  # by passes, or "split <share>"
     note: str = ""
+    hand_bleed: int = 0  # vertices whose hand weight went to their other bones (`unbleed_hands`)
 
 
 # ---- reading and writing the skin streams in place -------------------------------------------------------------------
@@ -316,6 +326,11 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
     anims = {Path(p).stem: pdx_deform.load_anim(p) for p in anim_paths}
     canon = pdx_deform.weld(mesh.positions, max(mesh.height, 1e-6) * 1e-5)
     edges = pdx_deform.mesh_edges(mesh)  # pairs of canonical vertices
+    bled = write_unbled(mesh, mesh_path, out_path, canon, edges, locked_bones)
+    if bled:
+        mesh_path = out_path
+        mesh = pdx_deform.load_mesh(mesh_path)
+        data = Path(mesh_path).read_bytes()
     clips = _Clips(mesh, anims, edges)
     before = {name: clips.summary(name) for name in anims}
 
@@ -330,27 +345,15 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
     seeds &= ~locked & ~unskinned
     if not seeds.any():
         Path(out_path).write_bytes(data)
-        return SmoothResult(False, before=before, after=before, note="no clip deforms an edge")
+        return SmoothResult(bool(bled), before=before, after=before, note="no clip deforms an edge", hand_bleed=bled)
     region = grow(seeds, edges, RINGS) & ~locked & ~unskinned
     best, trials = None, {}
     total_before = sum(b["stretched"] + b["squashed"] for b in before.values())
-    base_joints, base_weights, base_rows, base_total, split_note = mesh.joints, mesh.weights, np.zeros(len(dense), bool), total_before, ""
-    for share in SPLIT_SHARES:
-        split = split_thighs(mesh, dense, locked, share)
-        if split is None:
-            break
-        rows = np.abs(split - dense).sum(axis=1) > 1e-6
-        joints, weights = sparse_rows(split)
-        joints, weights = np.where(rows[:, None], joints, mesh.joints), np.where(rows[:, None], weights, mesh.weights)
-        after = {name: clips.summary(name, rows[edges].any(axis=1), joints, weights) for name in anims}
-        total = sum(a["stretched"] + a["squashed"] for a in after.values())
-        trials[f"split {share}"] = int(total)
-        if not any(worse(before[n], after[n]) for n in anims) and total < base_total:
-            base_joints, base_weights, base_rows, base_total, base_dense = joints, weights, rows, total, split
-            best = (total, 0, joints, weights, after, int(rows.sum()))
-            split_note = f"thigh split {share} on {int(rows.sum())} vertices"
-    if base_rows.any():
-        dense = base_dense
+    split = best_split(mesh, dense, locked, clips, edges, before, trials)
+    base_joints, base_weights, base_rows, split_note = mesh.joints, mesh.weights, np.zeros(len(dense), bool), ""
+    if split is not None:
+        best, dense, base_rows, split_note = split
+        base_joints, base_weights = best[2], best[3]
     for passes in steps:
         joints, weights, changed_rows = smoothed_rows(mesh, dense, canon, edges, region, passes, base_joints, base_weights)
         changed_rows = changed_rows | base_rows
@@ -361,11 +364,132 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
             best = (total, int(passes), joints, weights, after, int(changed_rows.sum()))
     if best is None:
         Path(out_path).write_bytes(data)
-        return SmoothResult(False, seeds=int(seeds.sum()), region=int(region.sum()), before=before, after=before, trials=trials,
-                            note="no strength lowered the deformed edges without making a clip worse")
+        return SmoothResult(bool(bled), seeds=int(seeds.sum()), region=int(region.sum()), before=before, after=before, trials=trials,
+                            note="no strength lowered the deformed edges without making a clip worse", hand_bleed=bled)
     _total, passes, joints, weights, after, count = best
     write_weights(mesh_path, out_path, joints, weights, mesh.bones)
-    return SmoothResult(True, passes, int(seeds.sum()), int(region.sum()), count, before, after, trials, split_note)
+    return SmoothResult(True, passes, int(seeds.sum()), int(region.sum()), count, before, after, trials, split_note, bled)
+
+
+
+def write_unbled(mesh: pdx_deform.SkinnedMesh, mesh_path: Path, out_path: Path, canon: np.ndarray, edges: np.ndarray,
+                 locked_bones: Sequence[str]) -> int:
+    """Write `out_path` with the hand bleed removed (`unbleed_hands`) when there is any; return how many vertices changed."""
+
+    dense = dense_weights(mesh)
+    unbled, bled = unbleed_hands(mesh, dense, canon, edges, locked_bones)
+    if bled:
+        joints, weights = sparse_rows(unbled)
+        rows = np.abs(unbled - dense).sum(axis=1) > 1e-9
+        write_weights(mesh_path, out_path, np.where(rows[:, None], joints, mesh.joints), np.where(rows[:, None], weights, mesh.weights),
+                      mesh.bones)
+    return bled
+
+
+def best_split(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, locked: np.ndarray, clips: "_Clips", edges: np.ndarray,
+               before: Dict[str, Dict[str, float]], trials: Dict[str, int]) -> Optional[tuple]:
+    """The kept thigh split (`SPLIT_SHARES`): ((total, 0, joints, weights, after, rows changed), split dense weights, changed rows, note),
+    or None when no share lowers the deformed edges without making a clip worse. Each share's total goes into `trials`."""
+
+    kept, base_total = None, sum(b["stretched"] + b["squashed"] for b in before.values())
+    for share in SPLIT_SHARES:
+        split = split_thighs(mesh, dense, locked, share)
+        if split is None:
+            break
+        rows = np.abs(split - dense).sum(axis=1) > 1e-6
+        joints, weights = sparse_rows(split)
+        joints, weights = np.where(rows[:, None], joints, mesh.joints), np.where(rows[:, None], weights, mesh.weights)
+        after = {name: clips.summary(name, rows[edges].any(axis=1), joints, weights) for name in before}
+        total = sum(a["stretched"] + a["squashed"] for a in after.values())
+        trials[f"split {share}"] = int(total)
+        if not any(worse(before[n], after[n]) for n in before) and total < base_total:
+            base_total = total
+            kept = ((total, 0, joints, weights, after, int(rows.sum())), split, rows, f"thigh split {share} on {int(rows.sum())} vertices")
+    return kept
+
+
+def hand_parts(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.ndarray, edges: np.ndarray) -> Dict[str, Tuple[np.ndarray, List[int]]]:
+    """Per side with a forearm and a hand: (the hand's own part, the hand bones). The part is every vertex the hand's most weighted vertex
+    reaches over the welded edges with the forearm's middle band (`HAND_CUT` of the forearm, within its length of the bone) cut out, plus
+    that band. A side whose part holds more than `HAND_PART_MAX_SHARE` of its shape is joined to the body there and is left out."""
+
+    from . import pdx_motion
+
+    names = list(mesh.bones)
+    joints = pdx_motion.rest_joints(mesh)
+    positions = mesh.positions
+    out: Dict[str, Tuple[np.ndarray, List[int]]] = {}
+    for side in ("Left", "Right"):
+        forearm, hand = f"{side}ForeArm", f"{side}Hand"
+        if forearm not in names or hand not in names:
+            continue
+        f, h = names.index(forearm), names.index(hand)
+        bones = [i for i, name in enumerate(names) if name.startswith(hand)]
+        if not (dense[:, bones].sum(axis=1) > 0).any():
+            continue
+        span = joints[h] - joints[f]
+        length2 = float(span @ span)
+        if length2 < 1e-12:
+            continue
+        t = (positions - joints[f]) @ span / length2
+        distance = np.linalg.norm(positions - (joints[f] + np.clip(t, 0, 1)[:, None] * span), axis=1)
+        band = (t > HAND_CUT[0]) & (t < HAND_CUT[1]) & (distance < math.sqrt(length2))
+        cut = np.zeros(len(positions), bool)
+        cut[canon[band]] = True
+        kept = edges[~cut[edges].any(axis=1)]
+        start = int(canon[np.argmax(dense[:, bones].sum(axis=1))])
+        reached = _reach(len(positions), kept, start)
+        part = reached[canon] | cut[canon]
+        shape = mesh.shape == mesh.shape[start]
+        if part[shape].sum() > HAND_PART_MAX_SHARE * shape.sum():
+            continue
+        out[side] = (part, bones)
+    return out
+
+
+def _reach(count: int, edges: np.ndarray, start: int) -> np.ndarray:
+    neighbours: List[List[int]] = [[] for _ in range(count)]
+    for a, b in edges.tolist():
+        neighbours[a].append(b)
+        neighbours[b].append(a)
+    seen = np.zeros(count, bool)
+    seen[start] = True
+    stack = [start]
+    while stack:
+        for nxt in neighbours[stack.pop()]:
+            if not seen[nxt]:
+                seen[nxt] = True
+                stack.append(nxt)
+    return seen
+
+
+def hand_bleed(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.ndarray, edges: np.ndarray, at_least: float = 0.0) -> Dict[str, np.ndarray]:
+    """Per side: the vertices outside the hand's own part (`hand_parts`) with more than `at_least` of their weight on the hand bones."""
+
+    return {side: ~part & (dense[:, bones].sum(axis=1) > at_least) for side, (part, bones) in hand_parts(mesh, dense, canon, edges).items()}
+
+
+def unbleed_hands(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.ndarray, edges: np.ndarray,
+                  locked_bones: Sequence[str] = ()) -> Tuple[np.ndarray, int]:
+    """(dense weights, vertices changed): the hand bones' weight on vertices outside the hand's own part goes to each vertex's other
+    bones, in proportion. Tripo's rig gives the skin a resting hand lies against part of the hand's weight: the orc's cloak at the right
+    hip held 44% of the axe hand's weight and rose with it by a quarter of the height in the attack (a fresh review: the cloak dragged
+    up the right flank, a stiff fin at the hip). A vertex with no other bone, or on a locked bone, keeps its weights."""
+
+    out = dense.copy()
+    names = set(locked_bones)
+    locked = dense[:, [i for i, name in enumerate(mesh.bones) if name in names]].sum(axis=1) > 0 if names else np.zeros(len(dense), bool)
+    changed = np.zeros(len(dense), bool)
+    for part, bones in hand_parts(mesh, dense, canon, edges).values():
+        on_hand = dense[:, bones].sum(axis=1)
+        other = dense.sum(axis=1) - on_hand
+        fix = ~part & (on_hand > 0) & (other > 1e-6) & ~locked
+        if not fix.any():
+            continue
+        out[np.ix_(fix, bones)] = 0.0
+        out[fix] *= (dense[fix].sum(axis=1) / out[fix].sum(axis=1))[:, None]
+        changed |= fix
+    return out, int(changed.sum())
 
 
 def split_thighs(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, locked: np.ndarray, share: float) -> Optional[np.ndarray]:

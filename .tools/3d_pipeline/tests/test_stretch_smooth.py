@@ -118,6 +118,45 @@ class Pieces(unittest.TestCase):
         np.testing.assert_allclose(out[[0, 5]], dense[[0, 5]])
         self.assertTrue(np.all(np.diff(out[:, 1]) >= -1e-9), "the second bone's weight rises steadily along the strip")
 
+    def hand_body(self, joined: bool):
+        """An arm (x 1 to 2.5, the hand from x 2) and, apart from it, a body path whose first point lies under the hand and holds 40% of
+        the hand's weight. `joined` links the hand to that point, as a hand fused to the body."""
+
+        from types import SimpleNamespace
+
+        arm = [(1.0 + 0.1 * i, 0.0, 0.0) for i in range(16)]
+        body = [(2.2, -0.3 - 0.05 * i, 0.0) for i in range(100)]
+        positions = np.array(arm + body)
+        edges = [[i, i + 1] for i in range(15)] + [[16 + i, 17 + i] for i in range(99)] + ([[12, 16]] if joined else [])
+        dense = np.zeros((len(positions), 3))
+        dense[:10, 1] = 1.0
+        dense[10:16, 2] = 1.0
+        dense[16:, 0] = 1.0
+        dense[16] = [0.6, 0.0, 0.4]
+        mesh = SimpleNamespace(bones=["Hips", "RightForeArm", "RightHand"], positions=positions, shape=np.zeros(len(positions), int))
+        return mesh, dense, np.arange(len(positions)), np.array(edges)
+
+    def unbleed(self, joined: bool):
+        from unittest import mock
+
+        from lib import pdx_motion
+
+        mesh, dense, canon, edges = self.hand_body(joined)
+        with mock.patch.object(pdx_motion, "rest_joints", return_value=np.array([[0.0, 0, 0], [1.0, 0, 0], [2.0, 0, 0]])):
+            return dense, S.unbleed_hands(mesh, dense, canon, edges)
+
+    def test_hand_weight_on_skin_apart_from_the_hand_goes_to_that_skins_other_bones(self) -> None:
+        dense, (out, changed) = self.unbleed(joined=False)
+        self.assertEqual(changed, 1)
+        np.testing.assert_allclose(out[16], [1.0, 0.0, 0.0])
+        np.testing.assert_allclose(out[:16], dense[:16], err_msg="the arm and the hand keep their weights")
+        np.testing.assert_allclose(out[17:], dense[17:])
+
+    def test_a_hand_joined_to_the_body_is_left_alone(self) -> None:
+        dense, (out, changed) = self.unbleed(joined=True)
+        self.assertEqual(changed, 0)
+        np.testing.assert_allclose(out, dense)
+
     def test_the_thigh_split_moves_the_shared_part_of_both_thighs_to_the_pelvis(self) -> None:
         from unittest import mock
 
