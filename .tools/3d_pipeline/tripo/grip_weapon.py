@@ -1131,6 +1131,15 @@ def drop_failures(c):
 
 def main():
     args = parse_args()
+    from lib import glb_root
+
+    # clips exported without Tripo's "Animation in Place" walk off; the hold, clearance and drop below assume clips in place
+    named = [n for text in (args.hold_clips, args.hold_fade_clips, args.release_clips, args.clearance_clips) for n in (text or "").split(",")]
+    travelling = glb_root.travelling_clips(args.body, named)
+    if travelling:
+        print("grip_weapon refused: clips that move the hips across the ground " + json.dumps(travelling) +
+              "; export the rigged body again from Tripo with \"Animation in Place\" switched on", file=sys.stderr)
+        sys.exit(4)
     c = SimpleNamespace(args=args, hand=args.hand, report={"tool": "grip_weapon", "body": args.body.name, "weapon": args.weapon.name, "hand": args.hand})
     load_body(c)
     find_hand_frame(c)
