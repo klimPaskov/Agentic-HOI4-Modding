@@ -22,6 +22,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   (1.8 cm) is the lowest margin at which idle, walk and the retreat still pass (0 to 0.7% of points) while the orc's attack
   (6 to 13% from frame 28 of 24 fps, 35 of 30) and death (2 to 5% from frame 45 of 24 fps) fail, as a viewer saw them.
 - TRIPO-GRIP-ENCLOSURE: skin of the hand covers less than `MIN_ENCLOSURE_SHARE` of the haft's circumference at the grip.
+- TRIPO-WEAPON-HEAD-LEAD: in an attack the weapon's head trails the holding hand at the strike, so the blow lands butt first
+  (`lib/tripo_swing.py`, whose grip side the grip stage's `--head-toward auto` picks).
 - TRIPO-GRIP-THUMB: the thumb's tip is not on the other side of the haft than the fingertips (`MIN_THUMB_OPPOSITION_DEGREES`).
 - TRIPO-CLOAK-STRETCH: in a clip, more than `CLOAK_MAX_STRETCH_SHARE` of the edges of the cloak region (vertices behind
   the body, weighted to the torso, hips or thighs) are stretched past 1.5x or squashed under 0.5x. The limit is the worst
@@ -78,7 +80,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -867,6 +869,33 @@ def plate_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict]
     return out, numbers
 
 
+def head_lead_findings(mesh, anims: Dict[str, object], weapon_bone: str) -> (List[dict], dict):
+    """TRIPO-WEAPON-HEAD-LEAD on the attack clips: around the strike (the holding hand's fastest frame) the weapon's head must lead the hand
+    along its motion (`lib/tripo_swing.head_lead`), not trail it with the butt first."""
+
+    if weapon_bone not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
+        return [], {}
+    hand = holding_hand(mesh, weapon_bone)
+    if hand not in mesh.bones:
+        return [], {}
+    weapon = weapon_vertices(mesh, weapon_bone)
+    head, _axis = tripo_swing.head_end_mask(mesh.positions[weapon])
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if not clip.endswith("_attack"):
+            continue
+        matrices = pdx_deform.skinning_matrices(mesh, anim)
+        joints = (matrices @ np.linalg.inv(mesh.inverse_bind)[None])[:, mesh.bones.index(hand), :3, 3]
+        heads = np.array([pdx_deform.skin(mesh, matrices[frame])[weapon][head].mean(axis=0) for frame in range(anim.frames)])
+        frame, cosine = tripo_swing.head_lead(joints, heads - joints)
+        numbers[clip] = {"strike_frame": frame, "head_lead_cosine": round(cosine, 3)}
+        if cosine < tripo_swing.HEAD_LEAD_MIN:
+            out.append(finding("TRIPO-WEAPON-HEAD-LEAD", clip,
+                               f"at the strike (frame {frame}, the hand's fastest) the weapon's head trails the hand (cosine {cosine:+.2f} of the hand-to-head line to the hand's motion, limit {tripo_swing.HEAD_LEAD_MIN:+.1f}): the blow lands butt first",
+                               frame=frame, cosine=round(cosine, 3)))
+    return out, numbers
+
+
 def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
     """The weapon and grip checks of a run: on the runtime files when the unit has a weapon bone, and the grip stage's GLB as a diagnostic.
 
@@ -879,6 +908,8 @@ def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -
         found, numbers["weapon_runtime"] = weapon_runtime_findings(mesh, anims, args.weapon_bone, args.roles, (shield,))
         findings += found
         found, numbers["grip_runtime"] = grip_runtime_findings(mesh, args.weapon_bone)
+        findings += found
+        found, numbers["head_lead"] = head_lead_findings(mesh, anims, args.weapon_bone)
         findings += found
     if shield:
         found, numbers["shield_runtime"] = shield_runtime_findings(mesh, anims, shield, args.roles, args.weapon_bone)
