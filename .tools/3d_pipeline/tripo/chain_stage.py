@@ -449,8 +449,9 @@ def chain_bone_rest(head: np.ndarray, tail: np.ndarray, roll_axis: np.ndarray) -
 
 def wing_limits(sheet, heads, radii, up) -> Dict[str, float]:
     """The wing's pose room by rule (lib/tripo_chains.py): back swing, the side floor (the least back swing that keeps the wing off the
-    body in the side views), the face turn of a retreat, the fan's close and the down-stroke, from the torso's radius, the body and the
-    wing's own chains. Computed once from the left wing (the right one is its mirror)."""
+    body in the side views), the wing's plane normal (a beating wing's face turn starts from it, `held_face_turns`), the fan's close and
+    the down-stroke, from the torso's radius, the body and the wing's own chains. Computed once from the left wing (the right one is its
+    mirror)."""
 
     plane, joints, chain_u = sheet["plane"], sheet["joints"], np.asarray(sheet["chain_u"])
     first = C.unit(joints[:, 1] - joints[:, 0])
@@ -460,9 +461,6 @@ def wing_limits(sheet, heads, radii, up) -> Dict[str, float]:
     sweep = C.wing_sweep_degrees(float(sheet["shape_inputs"]["length"]), radii["Torso"])
     side, _ceiling = C.wing_side_floor(points, body, root, front, up, height, sweep)
     sweep = float(sheet.get("fold", {}).get("sweep", sweep))
-    # the face turn keeps the floor's swing and only tilts: a retreat swung further back (72 and 82 degrees on the demon) squashed its
-    # beating membrane past UNIT-ANIM-STRETCH in the clip's first beats
-    face_sweep, face_tilt = C.face_turn(normal, front, up, side, side)
     low = int(np.argmin(chain_u))
     low_rest = C.unit(np.diff(joints[low], axis=0))
     if sheet["side"] == "R":  # the pose rules work on the left wing; the right one is its mirror
@@ -470,7 +468,7 @@ def wing_limits(sheet, heads, radii, up) -> Dict[str, float]:
     return {
         "low_rest": low_rest, "low_lengths": np.linalg.norm(np.diff(joints[low], axis=0), axis=1), "low_u": float(chain_u[low]),
         "root": np.asarray(joints[low, 0], float),
-        "u_min": float(np.min(chain_u)), "normal": normal, "sweep": sweep, "side": side, "face_sweep": face_sweep, "face_tilt": face_tilt,
+        "u_min": float(np.min(chain_u)), "normal": normal, "sweep": sweep, "side": side,
         "close": float(sheet.get("fold", {}).get("close", C.FAN_CLOSE_SHARE)),
         "down": C.wing_down_degrees(first[int(np.argmin(chain_u))], -up),
         "droop": 0.0,
