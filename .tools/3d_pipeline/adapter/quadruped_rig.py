@@ -342,6 +342,33 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     return {"roll": best[1], "neck_lift": best[2], "torso_gap": round(best[0], 4), "tried": len(tried), "note": "no pair put the torso lowest"}
 
 
+def _torso_x(meshes: List[bpy.types.Object], torso: List[np.ndarray]) -> float:
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    total, count = 0.0, 0
+    for obj, mask in zip(meshes, torso):
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        try:
+            local = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
+            mesh.vertices.foreach_get("co", local)
+            matrix = np.array(evaluated.matrix_world, dtype=np.float64)
+            x = local.reshape(-1, 3).astype(np.float64) @ matrix[0, :3] + matrix[0, 3]
+            total, count = total + float(x[mask].sum()), count + int(mask.sum())
+        finally:
+            evaluated.to_mesh_clear()
+    return total / max(count, 1)
+
+
+def _spot_keeper(meshes: List[bpy.types.Object], pose_frame):
+    """A dying body lies where it stood: a function that, for the frame just posed, gives the sideways shift that keeps the torso's
+    centre over its standing spot (a fresh review saw the fallen elephant a body width aside, out of the camera)."""
+
+    torso = [np.isin(names, TORSO) for names in _dominant_groups(meshes)]
+    pose_frame(0, 0.0)
+    standing = _torso_x(meshes, torso)
+    return lambda: standing - _torso_x(meshes, torso)
+
+
 def _body_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
     """The whole body's turn: a rear pitches about the hind hooves, and a fall rolls about the edge of the side it falls toward,
     so the body lies where it stood."""
@@ -397,7 +424,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     rear_pivot = Vector(((rear[0][0] + rear[1][0]) / 2, (rear[0][1] + rear[1][1]) / 2, ground))
     root_pivot = root_rest.to_translation()
 
-    def pose_frame(frame: int, lift: float) -> None:
+    def pose_frame(frame: int, lift: float, shift: float = 0.0) -> None:
         pose = ql.pose_at(style, frame, layout)
         for bone in rig.pose.bones:
             bone.rotation_mode = "QUATERNION"
@@ -408,17 +435,18 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
             else:
                 bone.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
         body = _body_turn(pose, rear_pivot, root_pivot, float(landmarks["width"]))
-        rig.pose.bones["Root"].matrix = Matrix.Translation((0.0, 0.0, lift)) @ body @ root_rest
+        rig.pose.bones["Root"].matrix = Matrix.Translation((shift, 0.0, lift)) @ body @ root_rest
         bpy.context.view_layer.update()
 
     tuned = tune_collapse(rig, meshes, layout, last, pose_frame, ground) if style == "quadruped_collapse" else None
+    keep_spot = _spot_keeper(meshes, pose_frame) if style == "quadruped_collapse" else None
     contact_before, contact_after = [], []
     for frame in range(0, last + 1):
         scene.frame_set(frame)
         pose_frame(frame, 0.0)
-        lowest = _evaluated_min_z(meshes) - ground
+        lowest, shift = _evaluated_min_z(meshes) - ground, keep_spot() if keep_spot else 0.0
         contact_before.append(lowest)
-        pose_frame(frame, -lowest)
+        pose_frame(frame, -lowest, shift)
         contact_after.append(_evaluated_min_z(meshes) - ground)
         for bone in rig.pose.bones:
             bone.keyframe_insert("rotation_quaternion", frame=frame, group=bone.name)

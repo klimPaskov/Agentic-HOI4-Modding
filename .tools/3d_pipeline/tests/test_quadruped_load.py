@@ -179,6 +179,12 @@ class PillarLegs(unittest.TestCase):
         self.assertAlmostEqual(stance["flex"], ql.FLEX_REFERENCE / 0.25, places=3)
         self.assertEqual(ql.stance_style("quadruped_gallop", heavy), "quadruped_trot")
         self.assertEqual(ql.stance_style("quadruped_trot", heavy), "quadruped_walk")
+        self.assertEqual(ql.stance_style("quadruped_charge", heavy), "quadruped_rear")
+        self.assertEqual(ql.stance_style("quadruped_rear", heavy), "quadruped_brace")
+        last = ql.frame_count("quadruped_brace") - 1
+        self.assertEqual(ql.pose_at("quadruped_brace", 0, ql.build_layout(heavy)), ql.pose_at("quadruped_brace", last, ql.build_layout(heavy)))
+        rear = ql.pose_at("quadruped_rear", 16, ql.build_layout(heavy))["__root_pitch__"][0][1]
+        self.assertAlmostEqual(rear, ql.pose_at("quadruped_rear", 16, ql.build_layout(runner))["__root_pitch__"][0][1] * ql.HEAVY_PITCH, places=6)
         light, pillar = ql.build_layout(runner), ql.build_layout(heavy)
         for frame in range(0, 20, 4):
             a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)

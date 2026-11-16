@@ -433,7 +433,7 @@ GAITS = {
     "quadruped_trot": Gait(20, {"Front_Left": 0.0, "Rear_Right": 0.0, "Front_Right": 0.5, "Rear_Left": 0.5}, 0.5, 22.0, 60.0, 2.0, 3.0),
     "quadruped_gallop": Gait(14, {"Rear_Left": 0.0, "Rear_Right": 0.12, "Front_Left": 0.42, "Front_Right": 0.54}, 0.4, 32.0, 75.0, 6.0, 6.0),
 }
-ROLE_FRAMES = {"quadruped_idle": 72, "quadruped_charge": 36, "quadruped_rear": 48, "quadruped_collapse": 48}
+ROLE_FRAMES = {"quadruped_idle": 72, "quadruped_charge": 36, "quadruped_rear": 48, "quadruped_brace": 48, "quadruped_collapse": 48}
 DEFAULT_STYLE = {
     "idle": "quadruped_idle",
     "move": "quadruped_trot",
@@ -450,8 +450,12 @@ LEG_REACH = 2.2
 GRAVIPORTAL = 0.15
 FLEX_REFERENCE = 0.06
 FLEXING = ("_Lower", "_Cannon", "_Hoof")
-HEAVY_GAITS = {"quadruped_trot": "quadruped_walk", "quadruped_gallop": "quadruped_trot"}
-HEAVY_LUNGE = 1.6
+# A graviportal animal walks where a runner trots, trots where it gallops, attacks by rearing (a stamp, its forefeet up) and
+# defends braced: a fresh review read the charge's lunging head as crushed into the chest and the full rear as the attack.
+HEAVY_GAITS = {"quadruped_trot": "quadruped_walk", "quadruped_gallop": "quadruped_trot", "quadruped_charge": "quadruped_rear", "quadruped_rear": "quadruped_brace"}
+HEAVY_LUNGE = 1.0
+HEAVY_PITCH = 0.4  # of a runner's rear: a loaded elephant lifts its forefeet, it does not stand up
+NECK_REFERENCE = 0.3  # a runner's neck (withers to poll) over its body length; a shorter neck bends that much less
 COLLAPSE_ROLL = 82.0
 LOADED_STILL = ("Pelvis", "Spine", "Chest")
 
@@ -500,7 +504,12 @@ def leg_stance(landmarks: Dict[str, object]) -> Dict[str, float]:
     radii = [float(np.asarray(joints["radius"])) for joints in legs.values() if "radius" in joints]
     belly = float(landmarks.get("belly_z") or 0.0)
     ratio = float(np.median(radii)) / belly if radii and belly > 0 else 0.0
-    return {"ratio": ratio, "graviportal": ratio > GRAVIPORTAL, "flex": min(1.0, FLEX_REFERENCE / ratio) if ratio > 0 else 1.0}
+    neck = 1.0
+    if landmarks.get("poll") is not None and landmarks.get("length"):
+        withers = np.array([0.0, float(landmarks["front_y"]), float(landmarks["back_z"])])
+        reach = float(np.linalg.norm((np.asarray(landmarks["poll"], dtype=float) - withers)[1:])) / float(landmarks["length"])
+        neck = min(1.0, reach / NECK_REFERENCE)
+    return {"ratio": ratio, "graviportal": ratio > GRAVIPORTAL, "flex": min(1.0, FLEX_REFERENCE / ratio) if ratio > 0 else 1.0, "neck": neck}
 
 
 def stance_style(style: str, landmarks: Dict[str, object]) -> str:
@@ -509,13 +518,15 @@ def stance_style(style: str, landmarks: Dict[str, object]) -> str:
     return HEAVY_GAITS.get(style, style) if leg_stance(landmarks)["graviportal"] else style
 
 
-def _bent(pose: Dict[str, List[Rotation]], flex: float) -> Dict[str, List[Rotation]]:
-    """Scale the bend of every leg joint below the shoulder and hip by `flex`."""
+def _bent(pose: Dict[str, List[Rotation]], flex: float, neck: float = 1.0) -> Dict[str, List[Rotation]]:
+    """Scale the bend of every leg joint below the shoulder and hip by `flex`, and of the neck by `neck` (a short neck bends less)."""
 
-    if flex >= 1.0:
-        return pose
-    return {name: ([(axis, degrees * flex) for axis, degrees in rows] if name.startswith(("Front_", "Rear_")) and name.endswith(FLEXING) else rows)
-            for name, rows in pose.items()}
+    def share(name: str) -> float:
+        if name.startswith(("Front_", "Rear_")) and name.endswith(FLEXING):
+            return flex
+        return neck if name.startswith("Neck_") else 1.0
+
+    return {name: [(axis, degrees * share(name)) for axis, degrees in rows] for name, rows in pose.items()}
 
 
 def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]:
@@ -566,9 +577,11 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         pose["Neck_01"] = [(X_AXIS, 18.0 * lunge)]
         pose["Neck_02"] = [(X_AXIS, 10.0 * lunge)]
         pose["Head"] = [(X_AXIS, 8.0 * lunge)]
+    elif style == "quadruped_brace":
+        _brace(pose, t, has_tail)
     elif style == "quadruped_rear":
         rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3)))
-        pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise)]
+        pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise * (HEAVY_PITCH if stance["graviportal"] else 1.0))]
         for side in ("Left", "Right"):
             kick = 1 + 0.25 * math.sin(6 * math.pi * t + (0 if side == "Left" else 1.5))
             pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -55.0 * rise * kick)]
@@ -587,7 +600,21 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)))
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
-    return _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, stance["flex"]), load)
+    return _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, stance["flex"], stance["neck"]), load)
+
+
+def _brace(pose: Dict[str, List[Rotation]], t: float, has_tail: bool) -> None:
+    """The defend of a graviportal animal: it sets its legs apart, sinks back on its haunches a little and lowers its head and tusks."""
+
+    brace = _smooth(min(1.0, t / 0.3)) * (1 - _smooth(max(0.0, (t - 0.75) / 0.25)))
+    pose["__root_pitch__"] = [(X_AXIS, -4.0 * brace)]
+    for side in ("Left", "Right"):
+        pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -8.0 * brace)]
+        pose[leg_name("Rear", side, "Upper")] = [(X_AXIS, 8.0 * brace)]
+    pose["Neck_01"] = [(X_AXIS, 12.0 * brace)]
+    pose["Head"] = [(X_AXIS, 6.0 * brace)]
+    if has_tail:
+        pose["Tail_01"] = [(X_AXIS, 15.0 * brace)]
 
 
 def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict[str, List[Rotation]]:
