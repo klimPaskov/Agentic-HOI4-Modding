@@ -109,6 +109,10 @@ If no candidate can read as the attack, write one text-to-motion clip (20 credit
 
 On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on. Under **Number of Animations** press **Select All**. Tripo builds the file in about a minute and saves it as `tripo_convert_<id>.glb`. Move it into the job's inbox as `<asset>__rigged.glb`.
 
+With **Animation stay in Place** off, every clip carries its travel in the hips, and the loop, grounding and weapon-drop rules fail on it. The intake and the grip stage measure each role clip's hips travel in the file (`lib/glb_root.py`) and refuse one that moves more than a tenth of the hip height.
+
+Add clips later to the same rigged model the body came from. Tripo can hold several rigs of one model under different tasks, and a new rig does not match the old one: on the orc the joint rotations differed by up to 0.77 in quaternion distance, and the weapon settings tuned for the first rig put the axe into the body. Compare the vertex count and the joints' rest transforms with the earlier export before you use the new one.
+
 Two preset names change on export: the tile `defeat` exports as `defeat_02`, and the tile `defeat_02` exports as `defeat_03`. Read the clip names from the exported file, not from the tiles.
 
 ### 7. Pick the clips (free)
