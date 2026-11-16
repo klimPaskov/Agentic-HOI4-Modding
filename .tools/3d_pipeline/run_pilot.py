@@ -3732,6 +3732,19 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
     return record
 
 
+def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
+    """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
+    past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
+    brings the head's base back above the shoulder line. It runs before the weights are smoothed and fitted, so they fit the lifted clip."""
+
+    from lib import tripo_neck
+
+    lift = tripo_neck.lift_neck(mesh, anim, anim, role)
+    return {"changed": lift.changed, "group": lift.group, "joints": list(lift.joints), "share": lift.share, "frames_changed": lift.frames_changed,
+            "ramp_frames": lift.ramp_frames, "neck_before": round(lift.neck_before, 3), "neck_after": round(lift.neck_after, 3), "tried": lift.tried,
+            "note": lift.note}
+
+
 def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = ()) -> Dict[str, Any]:
     """The Tripo route's weight rule on the staged mesh (lib/stretch_smooth.py): smooth the weights where the unit's own clips stretch or
     squash edges, at the strength that lowers that most without making any clip worse. A held weapon's bone is locked, so it stays rigid,
@@ -4066,6 +4079,11 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
     weapon_cfg = held_parts(spec)  # the weapon and the shield
     weapon_bones = [part["bone"] for part in weapon_cfg if part.get("release_roles") and part.get("bone")]
     if uses_tripo(spec):
+        # First a humanoid's sunk head is lifted back above the shoulders (lib/tripo_neck.py). `"lift_neck": false` in the job's tripo block
+        # switches it off.
+        if not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("lift_neck", True) is not False:
+            for role in sorted(exports["animations"]):
+                records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         if (spec.get("tripo") or {}).get("smooth_weights", True) is not False:
