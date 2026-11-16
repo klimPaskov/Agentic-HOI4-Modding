@@ -281,7 +281,7 @@ Tested in November 2026: on an orc the plates stopped bending (0% stretch) and t
 | TRIPO-FOOT-BELOW-GROUND | A foot or toe sinks more than 0.1% of the height under the ground in a clip that is not a death. `UNIT-ANIM-GROUND` reads the toes too, but its limit is vanilla's worst clip of all (4.2%, a push-up), and vanilla's own role clips sink at most 0.9% |
 | TRIPO-DEATH-FEET | In the last 15 frames of a death the boots hang more than 1% of the height above the ground. Vanilla's deaths end within 0.6% |
 | TRIPO-WAIST-TWIST | The shoulders turn against the hips about the up axis more than a quarter past vanilla's worst clip of that role (retreat 23, move 25, idle 40, attack and defend 51, death 41 degrees, measured on GER infantry) |
-| TRIPO-NOT-DOWN | A death clip does not end lying down, on the front or the back |
+| TRIPO-NOT-DOWN | A death clip does not end lying down, on the front or the back: the body ends taller than 40% of its standing height, plus however much thicker than a human's (0.22 of the height) its torso is, or its torso is more than half upright. The ogre's torso is 0.40 deep, so it may lie at 58% |
 | TRIPO-LIMB-IN-TORSO | In a death clip an arm or a leg passes deep into the torso (limit set from vanilla's infantry deaths) |
 | TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job with `"cape": true` (read through `--jobs-config` and `--slug`), or with `--cape` |
 | TRIPO-WEAPON-IN-BODY, TRIPO-WEAPON-BELOW-GROUND | A held or dropped weapon is inside the body or under the ground in any frame of the exported clips (armed units) |

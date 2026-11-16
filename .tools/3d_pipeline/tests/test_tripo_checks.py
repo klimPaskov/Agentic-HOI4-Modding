@@ -140,6 +140,24 @@ class LimbInTorso(unittest.TestCase):
         outside[8:, 2] -= 5.0
         self.assertEqual(TC.limb_torso_core([outside], self.triangles, self.torso, self.limb, 10.0)[0], 0.0)
 
+    def _block_body(self, depth: float):
+        """A 1-unit-tall body: a torso block (Spine) `depth` deep and 0.5 wide, on two legs (LeftLeg)."""
+
+        from types import SimpleNamespace
+        corners = np.array([[x, y, z] for x in (-0.25, 0.25) for y in (0.5, 1.0) for z in (-depth / 2, depth / 2)])
+        legs = np.array([[x, y, 0.0] for x in (-0.1, 0.1) for y in (0.0, 0.5)])
+        positions = np.vstack([corners, legs])
+        joints = np.array([[0, 0, 0, 0]] * len(corners) + [[1, 0, 0, 0]] * len(legs))
+        weights = np.array([[1.0, 0, 0, 0]] * len(positions))
+        return SimpleNamespace(bones=["Spine", "LeftLeg"], positions=positions, joints=joints, weights=weights, collision=np.zeros(len(positions), bool))
+
+    def test_a_thick_body_gets_its_extra_torso_thickness_on_top_of_the_lying_limit(self) -> None:
+        human, ogre = self._block_body(0.2), self._block_body(0.4)
+        self.assertAlmostEqual(TC.torso_thickness_share(human), 0.2, places=3)
+        self.assertAlmostEqual(TC.final_extent_limit(human), TC.MAX_FINAL_EXTENT_SHARE, places=3)
+        self.assertAlmostEqual(TC.final_extent_limit(ogre), TC.MAX_FINAL_EXTENT_SHARE + 0.4 - TC.HUMAN_TORSO_THICKNESS_SHARE, places=3)
+        self.assertGreater(TC.final_extent_limit(ogre), 0.51)  # the ogre lay flat at 51% of its standing height
+
     def test_the_death_limits_are_named_constants(self) -> None:
         self.assertGreater(TC.MAX_FINAL_EXTENT_SHARE, 0.3)
         self.assertGreaterEqual(TC.MAX_LIMB_IN_TORSO_SHARE, 0.055)  # the worst frame of a vanilla death clip

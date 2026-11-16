@@ -130,6 +130,11 @@ LIMB_MARGIN_SHARE = 0.015  # limb skin this deep inside the torso counts (1.5% o
 # fail the vanilla deaths themselves; the limit is the worst of them with a margin of half again. The orc death measures 1.0%, the zombie 0.5 to 1.5%.
 MAX_LIMB_IN_TORSO_SHARE = 0.08
 MAX_FINAL_EXTENT_SHARE = 0.4
+# A lying body is as tall as its torso is thick. The limit above holds for a human torso (the Tripo zombie's is 0.217 of its height, vanilla
+# infantry's whole body 0.209 deep). A thicker body gets its extra thickness on top: the ogre's torso is 0.403 deep, and it lay flat on its front
+# (torso 6% upright) at 51% of its standing height, which the fixed limit read as not lying down (2026-11-16).
+HUMAN_TORSO_THICKNESS_SHARE = 0.22
+TORSO_WORDS = ("hips", "pelvis", "spine", "chest")
 HAND_BLEED_MIN_WEIGHT = 0.05
 MAX_HAND_BLEED_SHARE = 0.002  # the orc before the rule: 1,144 of 18,375 at the axe hand
 MAX_TORSO_VERTICAL_SHARE = 0.5  # the vanilla death clips end at 0.02 and 0.08
@@ -469,6 +474,28 @@ def final_extent_share(mesh, anim) -> float:
     return float(np.ptp(last[keep][:, 1]) / max(float(np.ptp(standing)), 1e-9))
 
 
+def torso_thickness_share(mesh) -> float:
+    """The rest torso's smaller horizontal extent (vertices weighted mostly to the hips, pelvis, spine or chest bones) as a share of the standing
+    height: how tall the body is when it lies on its front or back. 0 when the mesh has no such bones."""
+
+    names = np.array(mesh.bones)
+    dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
+    torso = np.array([any(word in str(name).lower() for word in TORSO_WORDS) for name in dominant])
+    if len(mesh.collision) == len(torso):
+        torso &= ~mesh.collision
+    if not torso.any():
+        return 0.0
+    points = mesh.positions[torso]
+    height = max(float(np.ptp(mesh.positions[:, 1])), 1e-9)
+    return float(min(np.ptp(points[:, 0]), np.ptp(points[:, 2])) / height)
+
+
+def final_extent_limit(mesh) -> float:
+    """`MAX_FINAL_EXTENT_SHARE`, raised by however much thicker than a human's the body's torso is."""
+
+    return MAX_FINAL_EXTENT_SHARE + max(0.0, torso_thickness_share(mesh) - HUMAN_TORSO_THICKNESS_SHARE)
+
+
 def torso_vertical_share(mesh, anim) -> float:
     """How upright the torso is at the end: the vertical part of the hips-to-head vector as a share of its length (1 upright, 0 lying)."""
 
@@ -491,11 +518,13 @@ def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
         extent = final_extent_share(mesh, anim)
         upright = torso_vertical_share(mesh, anim)
         worst = max(series) if series else 0.0
-        numbers[clip] = {"limb_in_torso_worst_share": round(worst, 4), "worst_frame": int(np.argmax(series)) * 2 if series else 0, "final_extent_share": round(extent, 3), "torso_vertical_share": round(upright, 2)}
+        limit = final_extent_limit(mesh)
+        numbers[clip] = {"limb_in_torso_worst_share": round(worst, 4), "worst_frame": int(np.argmax(series)) * 2 if series else 0, "final_extent_share": round(extent, 3),
+                         "final_extent_limit": round(limit, 3), "torso_vertical_share": round(upright, 2)}
         if worst > MAX_LIMB_IN_TORSO_SHARE:
             out.append(finding("TRIPO-LIMB-IN-TORSO", clip, f"{worst:.1%} of the limb points are more than {LIMB_MARGIN_SHARE:.1%} of the height inside the torso in frame {numbers[clip]['worst_frame']} (limit {MAX_LIMB_IN_TORSO_SHARE:.0%}): a limb goes through the body", share=round(worst, 4)))
-        if extent > MAX_FINAL_EXTENT_SHARE or upright > MAX_TORSO_VERTICAL_SHARE:
-            out.append(finding("TRIPO-NOT-DOWN", clip, f"the body ends {extent:.0%} of its standing height with the torso {upright:.0%} upright (limits {MAX_FINAL_EXTENT_SHARE:.0%} and {MAX_TORSO_VERTICAL_SHARE:.0%}): it does not end lying down", share=round(extent, 3), torso_vertical=round(upright, 2)))
+        if extent > limit or upright > MAX_TORSO_VERTICAL_SHARE:
+            out.append(finding("TRIPO-NOT-DOWN", clip, f"the body ends {extent:.0%} of its standing height with the torso {upright:.0%} upright (limits {limit:.0%} and {MAX_TORSO_VERTICAL_SHARE:.0%}): it does not end lying down", share=round(extent, 3), torso_vertical=round(upright, 2)))
     return out, numbers
 
 
