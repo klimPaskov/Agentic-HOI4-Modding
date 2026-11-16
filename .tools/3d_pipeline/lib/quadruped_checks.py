@@ -13,16 +13,19 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   1% of the height under the ground in some frame, the weapon rule (TRIPO-WEAPON-BELOW-GROUND) applied to a tower that would sink.
 - TRIPO-LOAD-STRETCH: more than 0.5% of the load's edges stretch or squash in some frame: a rigid tower bends (vanilla clothing's worst is
   2%, a plank never bends).
-- TRIPO-LOAD-SEAM: more than `LOAD_SEAM_LIMIT` of the edges of the skin the load blends into (every edge with an end that carries some but not
-  all of its weight on the load bone) stretch or squash in some frame, by the kit's measure (UNIT-ANIM-STRETCH: 1.5 times and 0.5% of the
-  height). The limit is vanilla clothing's worst share, 2.0%: that skin is tight to the body. UNIT-ANIM-STRETCH counts the whole mesh, so a
-  band of torn skin at the load's front passes it: round 9 of the war elephant stretched 153 edges in its death, 0.5% of 28,504 against
-  vanilla's 4.2%, while the ear roots and the neck under the tower's front stretched into a band that both fresh reviews failed (6.0% of
-  the seam's 2,297 edges here).
+- TRIPO-LOAD-SEAM: in some frame, more than `LOAD_SEAM_LIMIT` of the seam's edges beside one body part stretch or squash, by the kit's
+  measure (UNIT-ANIM-STRETCH: 1.5 times and 0.5% of the height). The seam is every edge with an end that carries some but not all of its
+  weight on the load bone, and every edge from the load to the body. Each edge belongs to the part its body end follows most (its
+  strongest bone but the load), and a part needs `SEAM_PART_EDGES` edges to be judged. The limit is vanilla clothing's worst share, 2.0%:
+  that skin is tight to the body. A share of the whole mesh or of the whole seam misses a band: round 9 of the war elephant stretched
+  0.5% of its 28,504 edges in its death (vanilla 4.2%) while the ear roots and the neck under the tower's front tore, and run 3 creased the
+  top of the neck against the tower's front in its retreat while only 0.65% of the whole seam's edges stretched. Beside the head that
+  crease is 16% of the edges (played offline on the round 9 mesh).
 - TRIPO-MAP-READ: an attack or a defend changes the silhouette in the map camera from the idle's less than `map_read.MIN_READ`
   (`lib/map_read.py`: the share of the idle's silhouette that changes shape at the size a player sees the unit, at the clip's 90th
-  percentile frame). The limit is vanilla's horse charge against its forward idle. Both reviews of round 9 read its attack (0.15) and one
-  its defend (0.01) as the idle on the map.
+  percentile frame), or a retreat from the move's less than `map_read.MIN_GAIT_READ`. The limits are vanilla's horse charge against its
+  forward idle, and against its walk. Both reviews of round 9 read its attack (0.15) and one its defend (0.01) as the idle on the map, and
+  both reviews of run 3 its retreat (0.02 from the move) as the move.
 - TRIPO-DEATH-STIFF-LEGS: in a death the legs bend less than `DEATH_LEG_BEND` degrees (the mean over the four legs of the turn between the
   thigh or upper arm and the foot, from the rest pose, at its largest): the body falls as a block on straight legs. Round 9 bent 8 degrees.
 """
@@ -48,7 +51,13 @@ DOWN_BELLY_SHARE = 0.05
 LOAD_SINK_LIMIT = 0.01
 LOAD_STRETCH_LIMIT = 0.005
 LOAD_SEAM_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (tripo_checks VANILLA_CLOAK_WORST, 1.97%), rounded
-MAP_READ_ROLES = ("attack", "defend")
+SEAM_PART_EDGES = 30  # a part beside the load is judged when this many seam edges follow it
+# role: (the role it must not look like, the least reading, the vanilla clip that reading comes from)
+MAP_READ_ROLES = {
+    "attack": ("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),
+    "defend": ("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),
+    "retreat": ("move", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk"),
+}
 DEATH_LEG_BEND = 25.0  # degrees
 
 
@@ -81,25 +90,40 @@ def seam_mask(mesh: pdx_deform.SkinnedMesh) -> np.ndarray:
     return (share > 1e-3) & ~load_mask(mesh)
 
 
-def seam_share(mesh: pdx_deform.SkinnedMesh, posed: np.ndarray, edges: np.ndarray, seam: np.ndarray) -> Tuple[float, int]:
-    """The worst frame's share of the edges touching the seam that the kit's measure counts as stretched or squashed, and that frame."""
+def seam_edges(mesh: pdx_deform.SkinnedMesh, edges: np.ndarray, load: np.ndarray, seam: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """The seam's edges (an end on the seam, or one end on the load and one off it) and, per edge, the part beside the load: the strongest
+    bone but the load of its body end (the end off the load; the first end when both are off it)."""
 
-    picked = edges[seam[edges[:, 0]] | seam[edges[:, 1]]]
-    if not len(picked):
-        return 0.0, 0
+    picked = edges[seam[edges[:, 0]] | seam[edges[:, 1]] | (load[edges[:, 0]] != load[edges[:, 1]])]
+    names = np.array(mesh.bones + [""])
+    own = np.where(mesh.joints == mesh.bones.index(LOAD_BONE), 0.0, mesh.weights) if LOAD_BONE in mesh.bones else mesh.weights
+    strongest = np.take_along_axis(mesh.joints, np.argmax(own, axis=1)[:, None], axis=1)[:, 0]
+    body_end = np.where(load[picked[:, 0]], picked[:, 1], picked[:, 0])
+    return picked, names[strongest[body_end]]
+
+
+def seam_share(mesh: pdx_deform.SkinnedMesh, posed: np.ndarray, picked: np.ndarray, parts: np.ndarray) -> Tuple[float, int, str]:
+    """The worst share, over the frames and the parts with at least `SEAM_PART_EDGES` seam edges, of a part's seam edges that the kit's
+    measure counts as stretched or squashed, with that frame and part."""
+
+    judged = [(name, parts == name) for name in np.unique(parts) if (parts == name).sum() >= SEAM_PART_EDGES]
+    if not judged:
+        return 0.0, 0, ""
     rest = np.linalg.norm(mesh.positions[picked[:, 0]] - mesh.positions[picked[:, 1]], axis=1)
     usable = rest > 1e-9
     height = max(mesh.height, 1e-6)
-    worst, worst_frame = 0.0, 0
+    worst = (0.0, 0, "")
     for frame, points in enumerate(posed):
         length = np.linalg.norm(points[picked[:, 0]] - points[picked[:, 1]], axis=1)
         ratio = np.where(usable, length / np.where(usable, rest, 1.0), 1.0)
         growth = (length - rest) / height
         bad = ((ratio > pdx_deform.STRETCH_RATIO) & (growth > pdx_deform.SIGNIFICANT_SHARE)) | (
             (ratio < pdx_deform.SQUASH_RATIO) & (-growth > pdx_deform.SIGNIFICANT_SHARE))
-        if bad.mean() > worst:
-            worst, worst_frame = float(bad.mean()), frame
-    return worst, worst_frame
+        for name, mask in judged:
+            share = float(bad[mask].mean())
+            if share > worst[0]:
+                worst = (share, frame, str(name))
+    return worst
 
 
 def leg_bend(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> float:
@@ -125,22 +149,24 @@ def leg_bend(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> float:
 
 
 def _map_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Animation], numbers: dict) -> List[dict]:
-    """TRIPO-MAP-READ for the attack and defend clips, against the unit's own idle."""
+    """TRIPO-MAP-READ: each role in `MAP_READ_ROLES` against the unit's own clip of the role it must not look like."""
 
-    idle = next((anim for clip, anim in anims.items() if tripo_pose.role_of(clip) == "idle"), None)
-    if idle is None:
-        return []
+    by_role = {tripo_pose.role_of(clip): anim for clip, anim in anims.items()}
     camera = map_read.MapCamera(mesh)
-    idle_frames = camera.frames(idle)
+    references: Dict[str, list] = {}
     out = []
     for clip, anim in anims.items():
         role = tripo_pose.role_of(clip)
-        if role not in MAP_READ_ROLES:
+        if role not in MAP_READ_ROLES or MAP_READ_ROLES[role][0] not in by_role:
             continue
-        reading = map_read.read_against_idle(camera, camera.frames(anim), idle_frames)
+        other, limit, what = MAP_READ_ROLES[role]
+        if other not in references:
+            references[other] = camera.frames(by_role[other])
+        reading = map_read.read_against_idle(camera, camera.frames(anim), references[other])
         numbers.setdefault(clip, {})["map_read"] = reading
-        if reading < map_read.MIN_READ:
-            out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the idle's silhouette (at least {map_read.MIN_READ:.0%}, vanilla's horse charge): it reads as the idle at map size", share=reading))
+        numbers[clip]["map_read_against"] = other
+        if reading < limit:
+            out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.0%}, {what}): it reads as the {other} at map size", share=reading))
     return out
 
 
@@ -149,7 +175,7 @@ def _frames(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> np.ndar
     return np.stack([pdx_deform.skin(mesh, matrices[f]) for f in range(anim.frames)])
 
 
-def _load_findings(mesh, clip: str, posed: np.ndarray, edges: np.ndarray, load: np.ndarray, seam: np.ndarray, row: dict) -> List[dict]:
+def _load_findings(mesh, clip: str, posed: np.ndarray, edges: np.ndarray, load: np.ndarray, seam: Tuple[np.ndarray, np.ndarray], row: dict) -> List[dict]:
     """TRIPO-LOAD-BELOW-GROUND, TRIPO-LOAD-STRETCH and TRIPO-LOAD-SEAM for one clip; fills `row`."""
 
     out: List[dict] = []
@@ -165,11 +191,12 @@ def _load_findings(mesh, clip: str, posed: np.ndarray, edges: np.ndarray, load: 
         row["load_stretch_share"] = round(share, 4)
         if share > LOAD_STRETCH_LIMIT:
             out.append(_finding("TRIPO-LOAD-STRETCH", clip, f"{share:.1%} of the load's edges stretch or squash in frame {frame} (limit {LOAD_STRETCH_LIMIT:.1%}): the load bends", share=round(share, 4)))
-    if seam.any():
-        share, frame = seam_share(mesh, posed, edges, seam)
+    if len(seam[0]):
+        share, frame, part = seam_share(mesh, posed, *seam)
         row["load_seam_share"] = round(share, 4)
+        row["load_seam_part"] = part
         if share > LOAD_SEAM_LIMIT:
-            out.append(_finding("TRIPO-LOAD-SEAM", clip, f"{share:.1%} of the edges where the load blends into the body stretch or squash in frame {frame} (limit {LOAD_SEAM_LIMIT:.0%}, vanilla clothing's worst): the skin at the load tears as the parts beside it turn", share=round(share, 4), frame=frame))
+            out.append(_finding("TRIPO-LOAD-SEAM", clip, f"{share:.1%} of the edges where the load meets the {part} skin stretch or squash in frame {frame} (limit {LOAD_SEAM_LIMIT:.0%}, vanilla clothing's worst): the skin at the load tears or creases as that part turns against it", share=round(share, 4), frame=frame, part=part))
     return out
 
 
@@ -199,9 +226,9 @@ def quadruped_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform
     torso = np.isin(dominant, TORSO)
     load = load_mask(mesh)
     edges = pdx_deform.mesh_edges(mesh)
-    seam = seam_mask(mesh)
+    seam = seam_edges(mesh, edges, load, seam_mask(mesh)) if load.any() else (np.zeros((0, 2), int), np.zeros(0, str))
     numbers["load_vertices"] = int(load.sum())
-    numbers["seam_vertices"] = int(seam.sum())
+    numbers["seam_edges"] = int(len(seam[0]))
     for clip, anim in anims.items():
         role = tripo_pose.role_of(clip)
         posed = _frames(mesh, anim)
