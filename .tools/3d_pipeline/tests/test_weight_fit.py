@@ -123,6 +123,37 @@ class Fit(unittest.TestCase):
                     gained = (fitted.joints == hand) & (fitted.weights > 0) & (fitted.positions[:, 0] < 2.0)[:, None]
                     self.assertFalse(gained.any(), "a locked bone is never added to a vertex that did not hold it")
 
+    def test_a_chains_blend_into_the_body_is_fitted_and_its_sheet_is_left_alone(self) -> None:
+        # The orc's right flank (2026-11-16): 1,626 of 2,206 vertices carried some cloak weight, so the fit left the whole flank alone and it
+        # sheared between the thigh, the chest and the cloak. Under `FIT_PREFIX_LOCK_SHARES` of chain weight the blend is fitted.
+        def row(x):
+            if x < 2.0:
+                return {"ArmR": 1.0}
+            if x < 2.5:
+                return {"HandR": 0.4, "ArmR": 0.6}
+            return {"HandR": 1.0}
+
+        saved = dict(W.FIT_PREFIX_LOCK_SHARES)
+        self.addCleanup(lambda: (W.FIT_PREFIX_LOCK_SHARES.clear(), W.FIT_PREFIX_LOCK_SHARES.update(saved)))
+        W.FIT_PREFIX_LOCK_SHARES.clear()
+        W.FIT_PREFIX_LOCK_SHARES.update({"Hand": 1e-9})
+        locked_result, _before, locked_after, locked_fit, _same, _sizes = self.run_strip(row, prefixes=("Hand",), degrees=120.0)
+        W.FIT_PREFIX_LOCK_SHARES.update({"Hand": 0.7})
+        result, before, after, fitted, _same, _sizes = self.run_strip(row, prefixes=("Hand",), degrees=120.0)
+        sheet = fitted.positions[:, 0] >= 2.5
+        hand = NAMES.index("HandR")
+        self.assertTrue(np.all((fitted.joints[sheet, 0] == hand) & (fitted.weights[sheet, 0] == 1.0)), "the chain's own sheet keeps its weights")
+        blend = (fitted.positions[:, 0] >= 2.0) & ~sheet
+        self.assertTrue(result.changed, result.note)
+        self.assertLess(after.stretched_edges + after.squashed_edges, locked_after.stretched_edges + locked_after.squashed_edges)
+        moved = np.abs(fitted.weights[blend] - locked_fit.weights[blend]).sum() + (fitted.joints[blend] != locked_fit.joints[blend]).sum()
+        self.assertGreater(moved, 0, "the blend rows are fitted")
+
+    def test_the_fit_locks_a_cloak_vertex_from_seven_tenths_of_its_weight(self) -> None:
+        self.assertEqual(W.FIT_PREFIX_LOCK_SHARES["Cloak"], 0.7)
+        self.assertEqual(W.FIT_PREFIX_LOCK_SHARES["Wing"], stretch_smooth.PREFIX_LOCK_SHARES["Wing"])
+        self.assertNotIn("Cloak", stretch_smooth.PREFIX_LOCK_SHARES, "the smoothing still keeps any cloak vertex whole")
+
     def test_a_clip_that_deforms_nothing_leaves_the_file_as_it_was(self) -> None:
         result, before, _after, _fitted, same, _sizes = self.run_strip(lambda x: {"ArmR": 1.0})
         self.assertEqual(before.stretched_edges + before.squashed_edges, 0)

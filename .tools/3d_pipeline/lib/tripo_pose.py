@@ -20,17 +20,37 @@ ENG_infantry and GER_infantry_snow, 2026-11-15):
   the ground, ramped in from the moment the body lies down, so no joint turns faster than `lib/tripo_trim.SETTLE_MAX_RATE`. It tries the knees
   first, then the thighs, then both (`LEG_SETTLE_GROUPS`): the zombie's death (2026-11-16) ended on its back with both thighs lifted at the hip,
   boots 4.3% up. Straightening its knees lifted the boots further (9.4% at the full share), and turning the thighs 40% back brought them down.
-- Waist twist (`waist_twist`, TRIPO-WAIST-TWIST). The turn about the up axis between the shoulder line (the two upper arms' joints) and the
-  hip line (the two thighs' joints), against the rest pose's. Vanilla's GER infantry clips on GER_infantry.mesh, worst per role:
-  retreat 23.2 (retreat_mg), move 25.1 (march, moving), idle 39.7 (long_idle01), attack 51.2 (charge_mg_shoot), death 40.7 (death_rifle).
-  Vanilla has no defend clip, so defend takes the attack's. The limit is the role's worst with a quarter added (`WAIST_TWIST_LIMITS`).
-  The zombie's retreat (Tripo's flee_01) twisted 43 degrees and a reviewer saw the waist wrung.
+- Waist twist (`stance_twist`, TRIPO-WAIST-TWIST). The turn about the up axis between the shoulder line (the two upper arms' joints) and
+  the way the planted feet point, against the rest pose's: what a viewer reads as a wrung waist is the chest turned away from feet that
+  stand still. Each foot's heading is its ankle joint's turn applied to the rest pose's ankle-to-toe direction (to the body's forward on a
+  rig without toes). A frame is read only when both feet stand: each foot within `STANCE_FOOT_LEVEL` of level (about 32 degrees) and its
+  lower end (ankle or toe joint, against its rest height) within `STANCE_PLANTED` of the height of the other's. A stride or a run gives no
+  reading, so a chest turned across a running body is not counted. Vanilla's GER infantry clips on GER_infantry.mesh (the same on
+  GER_infantry_alt_0, ENG_infantry and GER_infantry_snow, 2026-11-16), worst per role: retreat 19.6 (retreat_rifle), move 18.4 (moving_rifle),
+  idle 69.7 (long_idle02, the soldier looks behind him), attack 38.3 (charge_mg_shoot), death 30.8 (death_mg, still standing). Vanilla has
+  no defend clip, so defend takes the attack's. The limit is the role's worst with a quarter added (`WAIST_TWIST_LIMITS`).
+  The first measure (`waist_twist`, the shoulder line against the hip line) read 28 degrees on the orc's attack (2026-11-16) and passed
+  under its 64 degree limit, because the orc's Hips bone itself turned 44 degrees while the legs turned back: on the skin the chest turned
+  62 degrees against the feet, and two reviewers saw the torso wrung against hips that faced forward. The stance twist reads 68 there.
+  Every foot measure that also reads strides failed: vanilla's charges hold the chest 45 to 75 degrees off a running foot (charge_mg 69),
+  so the limit would have passed the orc again. The zombie's retreat (Tripo's flee_01) twisted 43 degrees by the first measure and a
+  reviewer saw the waist wrung.
+- Death rest (`death_rest_heights`, TRIPO-DEATH-REST). In the last frame of vanilla's deaths (`DEATH_REST_FRAMES`) the lowest skin of the
+  chest (the spine bones), the head and each hand sits at most 8.2% of the height above the ground once the body is lifted out of it
+  (death_rifle's head; death_mg ends with chest 3.4%, head 4.5%, hands 3.8% and 5.8%). The limit is that worst with a quarter added.
+  The end pose is judged, not the last `DEATH_FINAL_FRAMES`: death_rifle is still landing 8 frames before its end (a hand at 11.8%). The
+  orc's death (Tripo's defeat_03, 2026-11-16) ended with the hips on the ground and the chest at 5.8%, the head at 16.3% and the hands
+  at 19%, arms out level: two reviewers read a body frozen in a dive. `settle_death_upper` turns the spine, then the neck, then each upper
+  arm toward the ground (`UPPER_SETTLE_GROUPS`), each by the smallest turn that brings its parts within `DEATH_REST_TARGET` of the ground,
+  judged after the ground pass's lift, never so far that the lift raises the body by more than `UPPER_SETTLE_LIFT`. Each turn is ramped
+  in, like the legs' settle, once the hips are down and the chest, the head and the hands have stopped moving. On the orc: spine 22,
+  left arm 6 and right arm 40 degrees, chest 2.1%, head 3.2%, hands 3.4% and 4.0%.
 """
 
 from __future__ import annotations
 
 import struct
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
@@ -50,8 +70,18 @@ DEATH_FEET_TARGET = 0.004
 LYING_HIPS_SETTLE = 0.02
 LEG_SETTLE_MIN_FRAMES = 12  # a lying body takes its legs down over at least 0.4 s
 LEG_SETTLE_GROUPS = (("knees",), ("thighs",), ("thighs", "knees"))  # tried in this order, the first that brings the boots down wins
-VANILLA_WAIST_TWIST_DEGREES = {"retreat": 23.2, "move": 25.1, "idle": 39.7, "attack": 51.2, "defend": 51.2, "death": 40.7}
+VANILLA_WAIST_TWIST_DEGREES = {"retreat": 19.6, "move": 18.4, "idle": 69.7, "attack": 38.3, "defend": 38.3, "death": 30.8}
 WAIST_TWIST_LIMITS = {role: round(1.25 * value, 1) for role, value in VANILLA_WAIST_TWIST_DEGREES.items()}
+STANCE_FOOT_LEVEL = 0.85  # a foot's heading counts when its horizontal part is at least this share of it (within about 32 degrees of level)
+STANCE_PLANTED = 0.02  # both feet stand when their lower ends are within this share of the height of each other
+VANILLA_DEATH_REST = 0.082
+DEATH_REST_FRAMES = 1
+DEATH_REST_LIMIT = round(1.25 * VANILLA_DEATH_REST, 3)
+DEATH_REST_TARGET = 0.04  # what the upper-body settle aims for: vanilla's death_mg ends with its chest, head and hands at 3.4% to 5.8%
+UPPER_SETTLE_LIFT = 0.005  # the settle never turns a part so far into the ground that the ground pass lifts the body by more than this
+UPPER_SETTLE_STEP = 2.0  # degrees between the turns tried
+UPPER_SETTLE_MAX = 60.0
+UPPER_SETTLE_GROUPS = ("spine", "neck", "left arm", "right arm")  # tried in this order, each judged after the ones before
 FOOT_WORDS = ("foot", "toe")
 
 
@@ -289,6 +319,285 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
     return LegSettle(True, share, onset, length, before, after, joints=tuple(joints))
 
 
+# ---- the death's upper body --------------------------------------------------------------------------------------------
+
+def _subtree(parents: Sequence[int], joint: int) -> List[int]:
+    out, stack = [], [joint]
+    while stack:
+        current = stack.pop()
+        out.append(current)
+        stack += [i for i, parent in enumerate(parents) if parent == current]
+    return out
+
+
+def _chain_up(parents: Sequence[int], joint: int) -> List[int]:
+    out = [joint]
+    while parents[out[-1]] >= 0:
+        out.append(parents[out[-1]])
+    return out
+
+
+@dataclass
+class UpperBody:
+    """The joints the upper-body settle turns and the bones whose skin it judges, found from the skeleton: the trunk runs from the bone
+    the legs hang from (exclusive) up to the bone the two upper arms branch from; the neck from there to the head bone (the head itself
+    when nothing lies between); the hands are the bones named `hand` under each upper arm."""
+
+    pelvis: int
+    trunk: List[int]
+    neck: List[int]
+    head: List[int]
+    arms: Tuple[int, int]
+    hands: Tuple[List[int], List[int]]
+
+
+def upper_body(mesh: pdx_deform.SkinnedMesh) -> Optional[UpperBody]:
+    legs = pdx_motion.find_legs(mesh)
+    left, right = shoulder_joints(mesh)
+    if len(legs.legs) != 2 or legs.pelvis < 0 or left < 0 or right < 0:
+        return None
+    up_left, up_right = _chain_up(mesh.parents, left), _chain_up(mesh.parents, right)
+    branch = next((j for j in up_left if j in set(up_right)), -1)
+    if branch < 0 or legs.pelvis not in _chain_up(mesh.parents, branch):
+        return None
+    trunk, joint = [], branch
+    while joint >= 0 and joint != legs.pelvis:
+        trunk.append(joint)
+        joint = mesh.parents[joint]
+    trunk.reverse()
+    arms_below = set(_subtree(mesh.parents, left)) | set(_subtree(mesh.parents, right))
+    heads = [i for i, name in enumerate(mesh.bones) if "head" in name.lower() and i not in arms_below and branch in _chain_up(mesh.parents, i)]
+    if not trunk or not heads:
+        return None
+    head = min(heads, key=lambda i: len(_chain_up(mesh.parents, i)))
+    neck = list(reversed(_chain_up(mesh.parents, head)[1:_chain_up(mesh.parents, head).index(branch)])) or [head]
+    hands = tuple([i for i in _subtree(mesh.parents, arm) if "hand" in mesh.bones[i].lower()] for arm in (left, right))
+    return UpperBody(legs.pelvis, trunk, neck, _subtree(mesh.parents, head), (left, right), hands)  # type: ignore[arg-type]
+
+
+def _part_masks(mesh: pdx_deform.SkinnedMesh, body: UpperBody, exclude_bones: Sequence[str]) -> dict:
+    dominant = pdx_deform.dominant_bones(mesh)
+    excluded = np.isin(dominant, [i for i, name in enumerate(mesh.bones) if name in set(exclude_bones)])
+    parts = {"chest": body.trunk, "head": body.head, "left hand": body.hands[0], "right hand": body.hands[1], "hips": [body.pelvis]}
+    masks = {name: np.isin(dominant, bones) & ~excluded for name, bones in parts.items() if bones}
+    masks["body"] = ~excluded
+    return {name: mask for name, mask in masks.items() if mask.any()}
+
+
+def death_rest_heights(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, exclude_bones: Sequence[str] = (),
+                       final: int = DEATH_REST_FRAMES, body: Optional[UpperBody] = None) -> Optional[dict]:
+    """Over the last `final` frames of a death, the highest each part's lowest skin sits above the ground once the ground pass has lifted
+    the body out of it (share of height): `chest`, `head`, `left hand`, `right hand`, `hips`, and `lift`, the largest lift. Skin bound mostly
+    to `exclude_bones` (a dropped weapon) never counts. None for a body without legs, two upper arms and a head."""
+
+    body = body or upper_body(mesh)
+    if body is None:
+        return None
+    masks = _part_masks(mesh, body, exclude_bones)
+    height = max(mesh.height, 1e-6)
+    ground = float(mesh.positions[:, 1].min())
+    first = max(anim.frames - final, 0)
+    channels = {name: {key: values[first:] for key, values in channel.items()} for name, channel in anim.channels.items()}
+    tail = pdx_deform.Animation(anim.fps, anim.frames - first, channels)
+    matrices = pdx_deform.skinning_matrices(mesh, tail)
+    out = {name: -np.inf for name in masks if name != "body"}
+    out["lift"] = 0.0
+    for frame in range(tail.frames):
+        points = pdx_deform.skin(mesh, matrices[frame])[:, 1]
+        lift = max(0.0, ground - float(points[masks["body"]].min()))
+        out["lift"] = max(out["lift"], lift / height)
+        for name in out:
+            if name != "lift":
+                out[name] = max(out[name], (float(points[masks[name]].min()) + lift - ground) / height)
+    return {name: round(float(value), 4) for name, value in out.items()}
+
+
+def _world_rotations(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Tuple[np.ndarray, np.ndarray]:
+    """(F, B, 3, 3) each joint's world rotation (scale removed) and (F, B, 3) its position."""
+
+    world = pdx_deform.skinning_matrices(mesh, anim) @ np.linalg.inv(mesh.inverse_bind)[None]
+    u, _s, vt = np.linalg.svd(world[..., :3, :3])
+    rotation = u @ vt
+    flip = np.linalg.det(rotation) < 0
+    rotation[flip] = -rotation[flip]
+    return rotation, world[..., :3, 3]
+
+
+def _axis_angle(axis: np.ndarray, degrees: float) -> np.ndarray:
+    x, y, z = axis
+    angle = np.radians(degrees)
+    c, s = np.cos(angle), np.sin(angle)
+    k = np.array([[0.0, -z, y], [z, 0.0, -x], [-y, x, 0.0]])
+    return np.eye(3) + s * k + (1.0 - c) * (k @ k)
+
+
+def _turned_down(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, joints: Sequence[int], end: np.ndarray, angles: np.ndarray,
+                 up: int = 1) -> pdx_deform.Animation:
+    """`anim` with the chain `joints` (parent first) bent toward the ground: in each frame every joint turns `angles[frame] / len(joints)`
+    degrees about the world axis that carries the line from the first joint to `end` (a (F, 3) track) straight down, so the chain's far
+    end sinks and the bones below the first joint keep their place."""
+
+    rotations, positions = _world_rotations(mesh, anim)
+    down = np.zeros(3)
+    down[up] = -1.0
+    channels = {name: dict(channel) for name, channel in anim.channels.items()}
+    first = joints[0]
+    for joint in joints:
+        channels[mesh.bones[joint]]["q"] = anim.channels[mesh.bones[joint]]["q"].copy()
+    for frame in range(anim.frames):
+        if angles[frame] <= 0:
+            continue
+        axis = np.cross(end[frame] - positions[frame, first], down)
+        if np.linalg.norm(axis) < 1e-9:
+            continue
+        turn = _axis_angle(axis / np.linalg.norm(axis), float(angles[frame]) / len(joints))
+        for joint in joints:
+            parent = mesh.parents[joint]
+            frame_of_parent = rotations[frame, parent] if parent >= 0 else np.eye(3)
+            q = channels[mesh.bones[joint]]["q"]
+            local = pdx_deform._quaternion_matrices(q[frame][None])[0]
+            new = _quaternion_from_matrix(frame_of_parent.T @ turn @ frame_of_parent @ local)
+            q[frame] = new if float(new @ q[frame]) >= 0 else -new
+    return pdx_deform.Animation(anim.fps, anim.frames, channels)
+
+
+@dataclass
+class UpperSettle:
+    changed: bool
+    from_frame: int = 0
+    turns: dict = field(default_factory=dict)  # group: degrees (whole chain)
+    frames: dict = field(default_factory=dict)  # group: ramp frames
+    heights_before: dict = field(default_factory=dict)
+    heights_after: dict = field(default_factory=dict)
+    note: str = ""
+
+
+def _resting_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, joints: Sequence[int]) -> int:
+    """The first frame from which every one of `joints` stays within `LYING_HIPS_SETTLE` of the height of where it ends: the upper body has
+    come to rest, so a turn toward the ground does not push it through the ground while it still moves (an arm still swinging down)."""
+
+    posed = pdx_motion.posed_joints(mesh, anim)[:, list(joints), 1]
+    off = np.nonzero((np.abs(posed - posed[-1]) / max(mesh.height, 1e-6) > LYING_HIPS_SETTLE).any(axis=1))[0]
+    return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
+
+
+def _group_joints(body: UpperBody, group: str) -> Tuple[List[int], List[str], str]:
+    """(joints turned, parts judged, the part whose skin is the chain's far end) of one `UPPER_SETTLE_GROUPS` entry."""
+
+    if group == "spine":
+        return body.trunk, ["chest", "head"], "head"
+    if group == "neck":
+        return body.neck, ["head"], "head"
+    side = "left" if group.startswith("left") else "right"
+    return [body.arms[0 if side == "left" else 1]], [f"{side} hand"], f"{side} hand"
+
+
+def _end_track(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, mask: np.ndarray, samples: int = 400) -> np.ndarray:
+    """(F, 3) the centre of the skin in `mask` (up to `samples` of its vertices) in each frame: where a chain's far end is."""
+
+    chosen = np.nonzero(mask)[0]
+    chosen = chosen[np.linspace(0, len(chosen) - 1, min(samples, len(chosen))).round().astype(int)]
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    points = mesh.positions[chosen]
+    out = np.zeros((anim.frames, 3))
+    for frame in range(anim.frames):
+        out[frame] = _skin_points(points, mesh.joints[chosen], mesh.weights[chosen], matrices[frame]).mean(axis=0)
+    return out
+
+
+def _skin_points(positions: np.ndarray, joints: np.ndarray, weights: np.ndarray, matrices: np.ndarray) -> np.ndarray:
+    """Skin only `positions` (with their own joints and weights) by one frame's matrices."""
+
+    out = np.zeros_like(positions)
+    safe = np.clip(joints, 0, None)
+    for k in range(joints.shape[1]):
+        used = weights[:, k] > 0
+        if used.any():
+            m = matrices[safe[used, k]]
+            out[used] += weights[used, k, None] * (np.einsum("vij,vj->vi", m[:, :3, :3], positions[used]) + m[:, :3, 3])
+    return out
+
+
+def _smallest_turn(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, body: UpperBody, joints: Sequence[int], end: np.ndarray,
+                   full: np.ndarray, heights: dict, judged: Sequence[str], target: float, exclude_bones: Sequence[str]) -> float:
+    """Degrees: the smallest turn of `joints` toward the ground (`UPPER_SETTLE_STEP` steps) that brings the `judged` parts under `target`
+    without the lift growing by more than `UPPER_SETTLE_LIFT`, else the one that brings them lowest. 0.0 when no turn lowers them."""
+
+    best, best_value = 0.0, max(heights[name] for name in judged)
+    for degrees in np.arange(UPPER_SETTLE_STEP, UPPER_SETTLE_MAX + 1e-9, UPPER_SETTLE_STEP):
+        trial = death_rest_heights(mesh, _turned_down(mesh, anim, joints, end, degrees * full), exclude_bones, body=body)
+        if trial is None or trial["lift"] > heights["lift"] + UPPER_SETTLE_LIFT:
+            break
+        value = max(trial[name] for name in judged)
+        if value < best_value - 1e-4:
+            best, best_value = float(degrees), value
+        if value <= target:
+            break
+    return best
+
+
+def settle_death_upper(mesh_path: Path, anim_path: Path, out_path: Path, exclude_bones: Sequence[str] = (),
+                       target: float = DEATH_REST_TARGET, limit: float = DEATH_REST_LIMIT) -> UpperSettle:
+    """Write `out_path`: `anim_path` with the chest, the head and the hands brought down to the ground at the end of a death that ends with
+    the hips down and any of them higher than `limit` (TRIPO-DEATH-REST).
+
+    For each of `UPPER_SETTLE_GROUPS` in turn (the trunk's bones, the neck, each upper arm) whose parts still sit above `target`: the
+    smallest turn toward the ground, in `UPPER_SETTLE_STEP` steps up to `UPPER_SETTLE_MAX`, that brings them under it, judged on the end
+    pose as the ground pass will lift it (`death_rest_heights`). A turn that makes the lift grow by more than
+    `UPPER_SETTLE_LIFT` goes through the ground and is not taken; when no turn reaches the target, the one that brings the parts lowest.
+    Each kept turn is ramped in with a smoothstep from the frame the hips have come down and the chest, the head and the hands have come
+    to rest (`_lying_frame`, `_resting_frame`), over the frames the settle's speed limit asks for (at least `LEG_SETTLE_MIN_FRAMES`), and
+    held to the end. Only those joints' rotation samples change."""
+
+    data = bytearray(Path(anim_path).read_bytes())
+    mesh = pdx_deform.load_mesh(mesh_path)
+    anim = pdx_deform.load_anim(anim_path)
+    body = upper_body(mesh)
+    before = death_rest_heights(mesh, anim, exclude_bones, body=body) if body else None
+    if body is None or before is None:
+        Path(out_path).write_bytes(bytes(data))
+        return UpperSettle(False, note="no legs, two upper arms and a head found")
+    parts = [name for name in ("chest", "head", "left hand", "right hand") if name in before]
+    if before.get("hips", 1.0) > DEATH_FEET_LIMIT or max(before[name] for name in parts) <= limit:
+        Path(out_path).write_bytes(bytes(data))
+        note = "the body does not lie on the ground" if before.get("hips", 1.0) > DEATH_FEET_LIMIT else "the upper body rests on the ground"
+        return UpperSettle(False, heights_before=before, heights_after=before, note=note)
+    info = read(anim_path).child("info")
+    keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
+    onset = max(_lying_frame(mesh, anim, body.pelvis), _resting_frame(mesh, anim, [body.trunk[-1], body.head[0], *body.hands[0][:1], *body.hands[1][:1]]))
+    masks = _part_masks(mesh, body, exclude_bones)
+    current, heights = anim, before
+    turns, ramps, changed = {}, {}, []
+    full = np.zeros(anim.frames)
+    full[onset:] = 1.0
+    for group in UPPER_SETTLE_GROUPS:
+        joints, judged, far = _group_joints(body, group)
+        joints = [j for j in joints if mesh.bones[j] in keyed]
+        judged = [name for name in judged if name in heights]
+        if not joints or not judged or max(heights[name] for name in judged) <= target:
+            continue
+        if far not in masks:
+            continue
+        end = _end_track(mesh, current, masks[far])
+        best = _smallest_turn(mesh, current, body, joints, end, full, heights, judged, target, exclude_bones)
+        if best == 0.0:
+            continue
+        length = int(min(max(tripo_trim.settle_frames(best / len(joints)), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
+        weights = _onset_ramp(anim.frames, onset, length)
+        current = _turned_down(mesh, current, joints, end, best * weights)
+        heights = death_rest_heights(mesh, current, exclude_bones, body=body) or heights
+        turns[group], ramps[group] = round(best, 1), length
+        changed += [mesh.bones[j] for j in joints]
+    if not turns:
+        Path(out_path).write_bytes(bytes(data))
+        return UpperSettle(False, onset, heights_before=before, heights_after=before, note="no turn toward the ground lowers the upper body")
+    weights = np.zeros(anim.frames)
+    weights[onset:] = 1.0
+    _write_rotations(data, keyed, changed, current, weights)
+    Path(out_path).write_bytes(bytes(data))
+    return UpperSettle(True, onset, turns, ramps, before, heights)
+
+
 # ---- the checks --------------------------------------------------------------------------------------------------------
 
 def _finding(rule: str, subject: str, message: str, **numbers) -> dict:
@@ -343,11 +652,92 @@ def waist_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Opt
     return (turn + 180.0) % 360.0 - 180.0
 
 
+def _yaw(vectors: np.ndarray, up: int) -> np.ndarray:
+    a, b = [k for k in range(3) if k != up]
+    vectors = np.asarray(vectors, float)
+    return np.degrees(np.arctan2(vectors[..., b], vectors[..., a]))
+
+
+def _wrap(degrees: np.ndarray) -> np.ndarray:
+    return (np.asarray(degrees, float) + 180.0) % 360.0 - 180.0
+
+
+def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, rest_left: np.ndarray, rest_right: np.ndarray,
+                        foot_rotations: Sequence[np.ndarray], foot_headings: Sequence[np.ndarray], foot_lifts: Sequence[np.ndarray],
+                        up: int, height: float) -> np.ndarray:
+    """Per frame, the shoulder line's turn about the `up` axis against the way the standing feet point, less the rest pose's (degrees);
+    NaN in a frame where not every foot stands (the rule in the module docstring).
+
+    `shoulder_left` and `shoulder_right` are (F, 3) joint tracks and `rest_left`, `rest_right` their rest positions. Per foot:
+    `foot_rotations` (F, 3, 3) the ankle's turn from the rest pose, `foot_headings` (3,) its rest heading (the ankle to the toe), and
+    `foot_lifts` (F,) how far its lower end sits above its rest height. Blender (Z up) and the exported files (Y up) call this alike."""
+
+    shoulders = _wrap(_yaw(np.asarray(shoulder_right) - np.asarray(shoulder_left), up) - _yaw(np.asarray(rest_right) - np.asarray(rest_left), up))
+    frames = len(shoulders)
+    if not len(foot_rotations):
+        return np.full(frames, np.nan)
+    turns, level = [], []
+    for rotation, heading in zip(foot_rotations, foot_headings):
+        flat = np.asarray(heading, float).copy()
+        flat[up] = 0.0
+        flat = flat / max(float(np.linalg.norm(flat)), 1e-12)
+        posed = np.einsum("fij,j->fi", np.asarray(rotation, float), flat)
+        length = np.linalg.norm(posed, axis=1)
+        across = np.sqrt(np.maximum(length ** 2 - posed[:, up] ** 2, 0.0))
+        level.append(across / np.maximum(length, 1e-12) >= STANCE_FOOT_LEVEL)
+        turns.append(_wrap(_yaw(posed, up) - _yaw(flat, up)))
+    lifts = np.asarray(foot_lifts, float)
+    standing = np.all(level, axis=0) & (lifts.max(axis=0) - lifts.min(axis=0) <= STANCE_PLANTED * height)
+    radians = np.radians(np.asarray(turns))
+    feet = np.degrees(np.arctan2(np.sin(radians).sum(axis=0), np.cos(radians).sum(axis=0)))
+    return np.where(standing, _wrap(shoulders - feet), np.nan)
+
+
+def stance_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[np.ndarray]:
+    """`stance_twist_tracks` on an exported clip (NaN where the feet do not both stand). None without two legs and two upper arms."""
+
+    legs = pdx_motion.find_legs(mesh)
+    left, right = shoulder_joints(mesh)
+    if len(legs.legs) != 2 or left < 0 or right < 0:
+        return None
+    rest = pdx_motion.rest_joints(mesh)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    posed = (matrices @ np.linalg.inv(mesh.inverse_bind)[None])[:, :, :3, 3]
+    rotations, headings, lifts = [], [], []
+    for leg in legs.legs:
+        if leg.toe >= 0:
+            heading = rest[leg.toe] - rest[leg.ankle]
+        elif legs.forward is not None:
+            heading = legs.forward
+        else:
+            return None
+        rotations.append(matrices[:, leg.ankle, :3, :3])
+        headings.append(heading)
+        lift = posed[:, leg.ankle, 1] - rest[leg.ankle, 1]
+        if leg.toe >= 0:
+            lift = np.minimum(lift, posed[:, leg.toe, 1] - rest[leg.toe, 1])
+        lifts.append(lift)
+    return stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height)
+
+
 def twist_excess(twist: np.ndarray, target: float) -> np.ndarray:
     """Per frame, how far the twist goes past `target` (degrees, signed as the twist): what the untwist turns back."""
 
     twist = np.asarray(twist, float)
     return np.sign(twist) * np.maximum(np.abs(twist) - float(target), 0.0)
+
+
+def untwist_excess(twist: np.ndarray, target: float) -> np.ndarray:
+    """`twist_excess` for a stance twist with unread (NaN) frames: those take the excess of the read frames around them, interpolated, and
+    the clip's ends hold the nearest read frame's, so the spine's turn back has no step where a foot lifts. All zeros when no frame reads."""
+
+    twist = np.asarray(twist, float)
+    read = ~np.isnan(twist)
+    if not read.any():
+        return np.zeros(len(twist))
+    excess = twist_excess(np.where(read, twist, 0.0), target)
+    frames = np.arange(len(twist))
+    return np.interp(frames, frames[read], excess[read])
 
 
 def line_twist(left: np.ndarray, right: np.ndarray, hip_left: np.ndarray, hip_right: np.ndarray, up: int) -> np.ndarray:
@@ -366,8 +756,9 @@ def role_of(clip: str) -> str:
     return clip.rsplit("_", 1)[-1]
 
 
-def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> Tuple[List[dict], dict]:
-    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND, TRIPO-DEATH-FEET and TRIPO-WAIST-TWIST over a unit's clips (`anims`: clip stem to Animation)."""
+def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict, death_exclude: Sequence[str] = ()) -> Tuple[List[dict], dict]:
+    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND, TRIPO-DEATH-FEET, TRIPO-DEATH-REST and TRIPO-WAIST-TWIST over a unit's clips (`anims`: clip
+    stem to Animation). `death_exclude`: bones whose skin never decides where the dying body's ground is (a weapon or shield it lets go of)."""
 
     out: List[dict] = []
     numbers: dict = {}
@@ -384,6 +775,14 @@ def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> Tuple[List[dict]
             row["final_feet_height_share"] = round(height, 4)
             if height > DEATH_FEET_LIMIT:
                 out.append(_finding("TRIPO-DEATH-FEET", clip, f"in the last {DEATH_FINAL_FRAMES} frames the boots hang {height:.1%} of the height above the ground (limit {DEATH_FEET_LIMIT:.0%}, vanilla's deaths end within 0.6%)", share=round(height, 4)))
+            rest = death_rest_heights(mesh, anim, death_exclude)
+            if rest is not None:
+                row["final_rest_heights"] = rest
+                parts = {name: rest[name] for name in ("chest", "head", "left hand", "right hand") if name in rest}
+                high = {name: value for name, value in parts.items() if value > DEATH_REST_LIMIT}
+                if rest.get("hips", 1.0) <= DEATH_FEET_LIMIT and high:
+                    words = ", ".join(f"the {name} {value:.1%}" for name, value in high.items())
+                    out.append(_finding("TRIPO-DEATH-REST", clip, f"the body ends lying with {words} of the height above the ground (limit {DEATH_REST_LIMIT:.1%}, vanilla's deaths end with every part within {VANILLA_DEATH_REST:.1%}): it reads as frozen mid-fall", share=round(max(high.values()), 4)))
         else:
             heights = foot_heights(mesh, anim)
             lowest = float(np.nanmin(heights)) if len(heights) and not np.all(np.isnan(heights)) else 0.0
@@ -401,11 +800,17 @@ def _twist_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, cl
     """TRIPO-WAIST-TWIST for one clip (records the clip's largest twist in `row`)."""
 
     limit = WAIST_TWIST_LIMITS.get(role)
-    twist = waist_twist(mesh, anim) if limit is not None else None
-    if twist is None or not len(twist):
+    if limit is None:
         return []
-    frame = int(np.argmax(np.abs(twist)))
+    hips = waist_twist(mesh, anim)
+    if hips is not None and len(hips):
+        row["hip_line_twist_degrees"] = round(float(np.abs(hips).max()), 1)
+    twist = stance_twist(mesh, anim)
+    if twist is None or not len(twist) or np.all(np.isnan(twist)):
+        return []
+    frame = int(np.nanargmax(np.abs(twist)))
     row["waist_twist_degrees"] = round(float(abs(twist[frame])), 1)
+    row["waist_twist_frame"] = frame
     if abs(twist[frame]) <= limit:
         return []
-    return [_finding("TRIPO-WAIST-TWIST", clip, f"the shoulders turn {abs(twist[frame]):.0f} degrees against the hips in frame {frame} (limit {limit:g}, vanilla's worst {role} {VANILLA_WAIST_TWIST_DEGREES[role]:g}): the waist is wrung", degrees=round(float(abs(twist[frame])), 1), frame=frame)]
+    return [_finding("TRIPO-WAIST-TWIST", clip, f"the shoulders turn {abs(twist[frame]):.0f} degrees against the standing feet in frame {frame} (limit {limit:g}, vanilla's worst {role} {VANILLA_WAIST_TWIST_DEGREES[role]:g}): the waist is wrung", degrees=round(float(abs(twist[frame])), 1), frame=frame)]

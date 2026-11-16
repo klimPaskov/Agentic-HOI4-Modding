@@ -34,8 +34,11 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   standing height and the torso (hips to head) near horizontal (at most `MAX_TORSO_VERTICAL_SHARE` of its length vertical).
 - TRIPO-LOOP-POP: the last frame of an idle, move, attack, defend or retreat clip is more than 8 degrees from its first at some joint (vanilla's role
   clips reach 6.3), so the looped clip pops. TRIPO-FOOT-BELOW-GROUND: a foot or toe sinks more than 0.1% of the height in a clip that is not a death.
-  TRIPO-DEATH-FEET: in the last 15 frames of a death the boots hang more than 1% above the ground (vanilla's deaths end within 0.6%). All three are
-  `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, the grounding in `run_pilot`).
+  TRIPO-DEATH-FEET: in the last 15 frames of a death the boots hang more than 1% above the ground (vanilla's deaths end within 0.6%).
+  TRIPO-DEATH-REST: a death ends with the hips down and the chest, the head or a hand more than 10.2% of the height above the ground (vanilla's end
+  within 8.2%). TRIPO-WAIST-TWIST: the shoulders turn further against the standing feet than vanilla's worst for the role with a quarter added. All are
+  `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, `settle_death_upper`, the
+  grounding in `run_pilot`, the untwist in `tripo/prepare_tripo_unit.py`).
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on).
 - TRIPO-WING-STRETCH: as TRIPO-CLOAK-STRETCH, for the wing region (`lib/tripo_chains.wing_masks`), with the same limit.
@@ -879,7 +882,7 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
-def body_findings(mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
+def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = ()) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
     rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
 
@@ -890,7 +893,7 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
     else:
         found, numbers["death"] = death_findings(mesh, anims)
         findings += found
-        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
+        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims, [bone for bone in held_bones if bone in mesh.bones])
         findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
@@ -926,7 +929,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
-    findings += body_findings(mesh, anims, numbers)
+    findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone])
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
         findings += found

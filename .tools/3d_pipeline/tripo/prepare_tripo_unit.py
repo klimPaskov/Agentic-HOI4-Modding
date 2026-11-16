@@ -955,37 +955,72 @@ def level_arms(armature, action, up=2, target_share=0.0):
 
 
 SPINE_BONES = ("Spine", "Spine01", "Spine02")
-TWIST_JOINTS = ("LeftArm", "RightArm", "LeftUpLeg", "RightUpLeg")
+SHOULDER_JOINTS = ("LeftArm", "RightArm")
+FEET = (("LeftFoot", "LeftToeBase"), ("RightFoot", "RightToeBase"))
 
 
-def untwist_waist(armature, action, role, up=2):
-    """Turn the spine back about the world up axis wherever the shoulders twist against the hips further than vanilla's worst for the
-    role (lib/tripo_pose.VANILLA_WAIST_TWIST_DEGREES, TRIPO-WAIST-TWIST). Per frame the excess is split evenly over `SPINE_BONES`; each
-    bone's turn is about the up axis carried into its own pose space, so the turns add up and nothing below the waist moves.
-    Returns the record, or None when no frame goes past the target."""
+def body_height(body, up=2):
+    """The skinned body's rest-pose height in world units (its mesh data, not the posed evaluation, along the up axis)."""
+
+    count = len(body.data.vertices)
+    local = np.empty(count * 3)
+    body.data.vertices.foreach_get("co", local)
+    world = np.array(body.matrix_world)
+    points = local.reshape(-1, 3) @ world[:3, :3].T + world[:3, 3]
+    return max(float(np.ptp(points[:, up])), 1e-6) if count else 1.0
+
+
+def stance_tracks(armature, frames, height, up=2):
+    """The stance twist (lib/tripo_pose.stance_twist_tracks) of the assigned action at `frames`: the shoulder line against the way the
+    standing feet point, NaN where a foot does not stand. Each foot's turn is its pose bone's armature-space rotation against its rest."""
+
+    scene = bpy.context.scene
+    world = armature.matrix_world
+    bones = armature.data.bones
+    rest = {name: np.array(world @ bones[name].head_local) for name in SHOULDER_JOINTS + tuple(j for foot in FEET for j in foot)}
+    shoulders = {name: [] for name in SHOULDER_JOINTS}
+    rotations = {foot: [] for foot, _toe in FEET}
+    lifts = {foot: [] for foot, _toe in FEET}
+    rest_frames = {foot: (world @ bones[foot].matrix_local).to_3x3().normalized().inverted() for foot, _toe in FEET}
+    for frame in frames:
+        scene.frame_set(frame)
+        for name in SHOULDER_JOINTS:
+            shoulders[name].append(joint_head(armature, name))
+        for foot, toe in FEET:
+            posed = (world @ armature.pose.bones[foot].matrix).to_3x3().normalized()
+            rotations[foot].append(np.array(posed @ rest_frames[foot]))
+            lifts[foot].append(min(joint_head(armature, foot)[up] - rest[foot][up], joint_head(armature, toe)[up] - rest[toe][up]))
+    return tripo_pose.stance_twist_tracks(
+        np.array(shoulders["LeftArm"]), np.array(shoulders["RightArm"]), rest["LeftArm"], rest["RightArm"],
+        [np.array(rotations[foot]) for foot, _toe in FEET], [rest[toe] - rest[foot] for foot, toe in FEET],
+        [np.array(lifts[foot]) for foot, _toe in FEET], up, height)
+
+
+def untwist_waist(armature, action, role, body, up=2):
+    """Turn the spine back about the world up axis wherever the shoulders twist against the standing feet further than vanilla's worst
+    for the role (lib/tripo_pose.VANILLA_WAIST_TWIST_DEGREES, TRIPO-WAIST-TWIST, the stance twist). Frames where a foot does not stand
+    take the excess of the read frames around them (`tripo_pose.untwist_excess`). Per frame the excess is split evenly over
+    `SPINE_BONES`; each bone's turn is about the up axis carried into its own pose space, so the turns add up and nothing below the waist
+    moves. Returns the record, or None when the role has no target or the rig no spine."""
 
     target = tripo_pose.VANILLA_WAIST_TWIST_DEGREES.get(role)
     curves_of = rotation_curves(action)
     spine = [name for name in SPINE_BONES if name in curves_of]
-    if target is None or not spine:
+    names = armature.data.bones
+    if target is None or not spine or any(name not in names for name in SHOULDER_JOINTS + tuple(j for foot in FEET for j in foot)):
         return None
     scene = bpy.context.scene
     assign_action(armature, action)
     bones = armature.pose.bones
     keyed = [int(round(p.co.x)) for p in curves_of[spine[0]][0].keyframe_points]
-    tracks = {name: [] for name in TWIST_JOINTS}
-    for frame in keyed:
-        scene.frame_set(frame)
-        for name in TWIST_JOINTS:
-            tracks[name].append(joint_head(armature, name))
-    rest = {name: np.array(armature.matrix_world @ armature.data.bones[name].head_local) for name in TWIST_JOINTS}
-    rest_turn = float(tripo_pose.line_twist(rest["LeftArm"], rest["RightArm"], rest["LeftUpLeg"], rest["RightUpLeg"], up))
-    twist = tripo_pose.line_twist(*(np.array(tracks[name]) for name in TWIST_JOINTS), up) - rest_turn
-    twist = (twist + 180.0) % 360.0 - 180.0
-    excess = tripo_pose.twist_excess(twist, target)
+    height = body_height(body, up)
+    twist = stance_tracks(armature, keyed, height, up)
+    read = ~np.isnan(twist)
+    excess = tripo_pose.untwist_excess(twist, target)
+    worst = round(float(np.nanmax(np.abs(twist))), 1) if read.any() else None
     if not np.any(excess):
         scene.frame_set(keyed[0])
-        return {"target_degrees": target, "worst_before": round(float(np.abs(twist).max()), 1), "frames_changed": 0}
+        return {"target_degrees": target, "worst_before": worst, "frames_read": int(read.sum()), "frames_changed": 0}
     world_up = Vector((0.0, 0.0, 1.0))
     to_armature = armature.matrix_world.to_3x3().inverted()
     for name in spine:
@@ -999,9 +1034,11 @@ def untwist_waist(armature, action, role, up=2):
             angle = -math.radians(float(np.interp(frame, keyed, excess))) / len(spine)
             new.append(Quaternion(axis, angle) @ Quaternion(bone.rotation_quaternion))
         write_quaternions(curves_of[name], new)
+    after = stance_tracks(armature, keyed, height, up)
     scene.frame_set(keyed[0])
-    return {"target_degrees": target, "worst_before": round(float(np.abs(twist).max()), 1), "frames_changed": int(np.count_nonzero(excess)),
-            "largest_turn_back": round(float(np.abs(excess).max()), 1)}
+    return {"target_degrees": target, "worst_before": worst, "frames_read": int(read.sum()), "frames_changed": int(np.count_nonzero(excess)),
+            "largest_turn_back": round(float(np.abs(excess).max()), 1),
+            "worst_after": round(float(np.nanmax(np.abs(after))), 1) if (~np.isnan(after)).any() else None}
 
 
 def read_inputs(args):
@@ -1176,7 +1213,7 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
         extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target)
     if role in args.untwist:
         # Before the settle, so the clip settles back to its untwisted first pose.
-        extras["untwist"][role] = untwist_waist(armature, action, role)
+        extras["untwist"][role] = untwist_waist(armature, action, role, body)
     if role in args.settle:
         # After the arm level, before the chains: the cloth follows the settled body.
         extras["settle"][role] = settle_to_first(action)
