@@ -1405,6 +1405,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     - STATIC-LANDING: at a death's last frame a part blown off its mount lies flat on its base on the ground.
     - STATIC-TRACK-GROUND: in every clip but a death a tank's tracks and wheels stay on the ground (within vanilla's
       hull bob on its suspension); only the hull may bob.
+    - STATIC-SHADOW: the colour texture has no cast shadow painted into it (`lib/static_delight.py`).
+    - STATIC-SLAB: a building's or landmark's base slab is flat, square and shades flat (`lib/static_slab.py`).
     """
 
     from lib import pdx_binary, pdx_deform
@@ -1424,6 +1426,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     if triangles > budget:
         findings.append(("STATIC-TRIANGLES", "error", f"{triangles} triangles; the most detailed vanilla {kind} ({contract['triangle_budget']['mesh']}) has {budget}"))
     findings += _structure(summary, contract)
+    findings += _surface_findings(mesh_path, mesh, visible, kind)
     if contract.get("rigid") and mesh.skinned:
         partial = int((mesh.weights[visible].max(axis=1) < 0.999).sum())
         if partial:
@@ -1476,6 +1479,21 @@ def _track_ground(mesh, visible, anims, contract) -> List[Tuple[str, str, str]]:
         matrices = pdx_deform.skinning_matrices(skinnable, pdx_deform.load_anim(anim_path))
         lowest = [float(pdx_deform.skin(skinnable, matrices[f])[chosen][:, 1].min()) for f in range(matrices.shape[0])]
         findings += track_ground_findings(lowest, float(rest[:, 2].min()), height, float(rule["max_share"]), anim_path.name)
+    return findings
+
+
+def _surface_findings(mesh_path: Path, mesh, visible: np.ndarray, kind: str) -> List[Tuple[str, str, str]]:
+    """STATIC-SHADOW (every kind: a shadow painted into the colour texture) and STATIC-SLAB (a building's or landmark's
+    base slab that is warped), see `lib/static_delight.py` and `lib/static_slab.py`."""
+
+    from lib import static_delight, static_slab
+
+    findings = static_delight.shadow_findings(mesh_path, mesh_path.with_name(f"{mesh_path.stem}_diffuse.dds"))
+    if kind in ("building", "landmark") and len(mesh.normals) == len(mesh.positions):
+        points = np.array([to_blender(p) for p in mesh.positions])
+        normals = np.array([to_blender(p) for p in mesh.normals])
+        triangles = mesh.triangles[visible[mesh.triangles].all(axis=1)]
+        findings += static_slab.slab_findings(points, triangles, normals)
     return findings
 
 

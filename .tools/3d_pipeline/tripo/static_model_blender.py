@@ -41,6 +41,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib import static_kinds as sk
+from lib import static_slab
 from lib import tripo_shape
 from tripo.static_mesh_ops import CARD_GROUP, card_cost, remove_slivers, thicken_cards
 
@@ -569,6 +570,9 @@ if kind == "plane" and "propeller_cut" in parts_report:
         pivots["propeller"] = [hub.x, hub.y, hub.z + lift]
     parts_report["propeller_sweep"] = {"radius": round(radius, 4), "lift": round(lift, 4)}
 
+# ---- 3b. the base slab of a building or landmark: flat top, square outline (lib/static_slab.py) ----
+slab, report["slab"] = static_slab.square_mesh(model.data, kind)
+
 # ---- 4. skeleton, weights, collision, locators, material ----
 positions, triangles = arrays(model)
 low, high = positions.min(axis=0), positions.max(axis=0)
@@ -595,6 +599,8 @@ for polygon in mesh.polygons:
 if flipped:
     mesh.normals_split_custom_set(corner)
 report["normals_set_to_face"] = flipped
+if slab is not None:
+    report["slab"]["faces_shaded_flat"] = static_slab.shade_flat(mesh, slab)  # a corner shared with its sides must not lean
 
 bone_specs = list(contract["skeleton"]["bones"]) + [{"name": b, "parent": "root", "head_share": None} for b in contract.get("extra_bones", [])]
 bone_specs += [{"name": k, "parent": "wheel_suspention", "head_share": None} for k in wheel_parts]
