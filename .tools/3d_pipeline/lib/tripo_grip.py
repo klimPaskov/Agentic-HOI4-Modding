@@ -56,14 +56,17 @@ def segment_points(chain: np.ndarray, samples: int = SEGMENT_SAMPLES) -> np.ndar
 
 
 def haft_radius(vertices: np.ndarray, origin: np.ndarray, direction: np.ndarray, centre_along: float, window: float) -> float:
-    """The haft's radius near the grip: the median distance from the axis of vertices within `window` along it."""
+    """The haft's radius near the grip: the median distance from the axis of vertices within `window` along it.
+
+    A decimated haft has vertices only at the ends of long triangles, so the window is widened up to four times before it gives up."""
 
     d = unit(direction)
     along = (vertices - origin) @ d
-    near = vertices[np.abs(along - centre_along) <= window]
-    if len(near) < 8:
-        raise ValueError("too few weapon vertices near the grip point to measure the haft")
-    return float(np.median(line_distance(near, origin, d)))
+    for scale in (1.0, 2.0, 4.0):
+        near = vertices[np.abs(along - centre_along) <= window * scale]
+        if len(near) >= 8:
+            return float(np.median(line_distance(near, origin, d)))
+    raise ValueError("too few weapon vertices near the grip point to measure the haft")
 
 
 def contact_angle(

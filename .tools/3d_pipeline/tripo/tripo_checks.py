@@ -691,11 +691,16 @@ def weapon_runtime_findings(mesh, anims: Dict[str, object], weapon_bone: str, ro
     return out, numbers
 
 
-def grip_runtime_findings(mesh, weapon_bone: str, hand: str = "RightHand") -> (List[dict], dict):
+def grip_runtime_findings(mesh, weapon_bone: str, hand: str = "") -> (List[dict], dict):
     """TRIPO-GRIP-ENCLOSURE on the exported mesh's rest pose: the hand's skin (the fingers are merged into the hand bone) round the weapon's haft.
 
+    The hand is the weapon bone's parent (the grip stage makes the weapon bone a child of the hand that holds it), else `hand`, else RightHand:
+    the dwarf holds his glaive in his left hand, and measured at the right hand the haft had no vertices to measure (2026-11-16).
     The thumb check needs the finger bones, which the unit no longer has: it stays on the grip stage's GLB."""
 
+    if weapon_bone in mesh.bones and not hand:
+        parent = mesh.parents[mesh.bones.index(weapon_bone)] if mesh.bones.index(weapon_bone) < len(mesh.parents) else -1
+        hand = mesh.bones[parent] if parent >= 0 and "hand" in mesh.bones[parent].lower() else "RightHand"
     if weapon_bone not in mesh.bones or hand not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
         return [], {}
     weapon = mesh.positions[weapon_vertices(mesh, weapon_bone)]

@@ -81,6 +81,15 @@ class Curl(unittest.TestCase):
         column = np.vstack([shaft + [0, 0, z] for z in np.linspace(0.0, 1.0, 20)] + [np.array([[0.2, 0.0, 0.1]] * 3)])
         self.assertAlmostEqual(G.haft_radius(column, np.zeros(3), Z, 0.5, 0.1), 0.02, places=6)
 
+    def test_a_decimated_haft_with_rings_only_at_its_ends_is_still_measured(self) -> None:
+        # The dwarf's glaive (2026-11-16): long triangles with vertex rings 0.3 apart, none within the 0.05 window of the grip point.
+        angles = np.linspace(0, 2 * np.pi, 8, endpoint=False)
+        ring = np.stack([0.02 * np.cos(angles), 0.02 * np.sin(angles), np.zeros(8)], axis=1)
+        column = np.vstack([ring + [0, 0, z] for z in (0.0, 0.3, 0.6, 0.9)])
+        self.assertAlmostEqual(G.haft_radius(column, np.zeros(3), Z, 0.45, 0.05), 0.02, places=6)
+        with self.assertRaises(ValueError):
+            G.haft_radius(column[:4], np.zeros(3), Z, 0.45, 0.05)
+
 
 class Hold(unittest.TestCase):
     @staticmethod
