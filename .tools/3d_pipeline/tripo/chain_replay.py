@@ -133,8 +133,11 @@ def replay(folder: Path, regions: Optional[Sequence[str]] = None) -> dict:
         posed = [skin(positions, rows, skinning, f) for f in range(0, frames, CLIP_STEP)]
         share, frame = T.region_stretch_share(positions, posed, edges, mask, planned["height"])
         root_share, root_frame = T.region_stretch_share(positions, posed, edges, root, planned["height"])
+        rest_length = np.linalg.norm(positions[edges[:, 0]] - positions[edges[:, 1]], axis=1)
+        growth = max(float(((np.linalg.norm(p[edges[:, 0]] - p[edges[:, 1]], axis=1) - rest_length) / planned["height"]).max()) for p in posed)
         report["clips"][role] = {"cloak_stretch_share": round(share, 4), "frame": frame * CLIP_STEP,
-                                 "root_stretch_share": round(root_share, 4), "root_frame": root_frame * CLIP_STEP}
+                                 "root_stretch_share": round(root_share, 4), "root_frame": root_frame * CLIP_STEP,
+                                 "worst_edge_growth": round(growth, 4)}
     return report
 
 

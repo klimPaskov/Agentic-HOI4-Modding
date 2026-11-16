@@ -50,6 +50,8 @@ SWING_FRAME_STEP = 2  # every second frame of every clip is enough: an arm moves
 # clip's worst frame), dropping it took the stretched root edges from 196 to 104 in the retreat, 119 to 37 in the walk, 184 to 133 in the
 # death and 199 to 184 in the attack. The arms are capsules the chains collide with instead.
 ARM_ROOM_REGIONS: tuple = ()
+# The regions whose blend gives its arm weights to the torso (lib/tripo_chains.loosen_row): the wings, bound by Tripo to the arms.
+LOOSEN_REGIONS = ("wings",)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -312,8 +314,12 @@ def chain_rows(rows, positions, edges, sheets, limb_ends, arm_room):
         # skin the chains move loses its limb weights to the torso by the chains' own share (lib/tripo_chains.loosen_row). Never beyond the
         # blend: a ring loosened there carried no chain weight, so thigh and arm skin stayed with the torso while the limb swung (the round 4
         # orc's attack: thigh stretch 169 to 254 edges, UNIT-ANIM-STRETCH failed in attack and death).
-        for vertex in np.where(alpha > 0)[0]:
-            new_rows[vertex] = C.loosen_row(new_rows[vertex], float(alpha[vertex]))
+        # Wings only: in a cloak's blend the loosened hand weight left the cloak side of a hand-thigh join without the hand while its
+        # neighbour kept 43% of it, and the orc's attack grew one edge by 25.7% of the height (UNIT-ANIM-STRETCH, limit 23.8%; replayed
+        # without the cloak's loosening 21.0%, the cloak stretch unchanged).
+        if sheet["region"] in LOOSEN_REGIONS:
+            for vertex in np.where(alpha > 0)[0]:
+                new_rows[vertex] = C.loosen_row(new_rows[vertex], float(alpha[vertex]))
         sheet["blend_length"] = blend
         bound = np.where(alpha > 0)[0]
         u, s = sheet["coords"](positions[bound])
