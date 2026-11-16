@@ -85,6 +85,19 @@ Surface and deformation rules (always; limits are the largest values measured on
   counts, in-betweens included. The warning names the worst clip and frame to look at. A point behind
   an open, one-sided sheet (a cape) also reads as inside, so look before changing the clip.
 
+Model-kind rules (with `--model-kind building|landmark|ship|vehicle|plane`, for a static or rigid-part model from
+`tripo/static_model.py`; `lib/static_kinds.kind_findings` holds them, the limits are in `config/static_kinds.json`):
+
+- STATIC-SIZE, STATIC-GROUND: the main measure and the ground (a ship's waterline) are vanilla's for the kind.
+- STATIC-TRIANGLES, STATIC-SHADER: no more triangles than the kind's most detailed vanilla model, and its shader.
+- STATIC-BONES, STATIC-LOCATORS, STATIC-COLLISION: the bones, locators and `Collision` box vanilla's entity and clips use.
+- STATIC-RIGID: every rendered vertex follows one bone wholly, so no part bends.
+- STATIC-PART-GAP: no rigid part lifts off the part it is mounted on in any frame (deaths excepted).
+
+The roles are the kind's clips, and the surface and motion limits are the kind's group (`vehicle` for tanks,
+buildings and landmarks, `air_naval` for planes and ships; vanilla buildings are not calibrated, and a static hard
+surface is closest to a vehicle's).
+
 Mod rule (with `--mod-root`, or `--compare-units <folder>`):
 
 - UNIT-ANIM-SHARED: a clip of this unit is the same clip as one of another unit's (every joint turns
@@ -208,6 +221,9 @@ def _check_meshes(meshes, unit_type, profile, needs_animation, add, facts, skele
                 add("UNIT-NODE-ORIENTATION", "error", mesh_path, f"{node} is rotated; vanilla attach nodes (cavalry_horse.mesh Saddle_Node) have an identity rotation, and the engine turns the attached entity with the node")
 
 
+
+# The deformation group a static or rigid-part model kind is checked against (see the module docstring).
+MODEL_KIND_GROUP = {"vehicle": "vehicle", "building": "vehicle", "landmark": "vehicle", "plane": "air_naval", "ship": "air_naval"}
 
 # Vanilla soldiers, riders, horses, camels and deer play at 30.0 to 30.9 (their exporter rounds the length).
 ORGANIC_FPS = 30.0
@@ -698,6 +714,31 @@ def check_registration(folder: Path, mod_root: Path, unit_type: Optional[dict]) 
     return findings
 
 
+def model_kind_type(kind: str) -> dict:
+    """The unit-type stand-in for a static or rigid-part model kind: its clips are its roles, its group sets the limits."""
+
+    from lib import static_kinds
+
+    contract = static_kinds.kind_contract(kind)
+    return {"roles": {role: {} for role in contract["clips"]}, "calibration_group": MODEL_KIND_GROUP[kind], "entity_states": {}}
+
+
+def model_kind_findings(folder: Path, kind: str, stem: Optional[str] = None) -> List[Finding]:
+    """The STATIC-* rules of `lib/static_kinds.kind_findings` on each mesh of the folder."""
+
+    from lib import static_kinds
+
+    contract = static_kinds.kind_contract(kind)
+    findings = []
+    for mesh_path in sorted(folder.glob("*.mesh")):
+        if stem and mesh_path.stem != stem:
+            continue
+        anims = [path for path in sorted(folder.glob("*.anim")) if path.stem.startswith(mesh_path.stem + "_")]
+        for rule, severity, message in static_kinds.kind_findings(mesh_path, contract, anims):
+            findings.append(Finding(rule, severity, mesh_path.as_posix(), message))
+    return findings
+
+
 def repair_textures(folder: Path) -> List[str]:
     """Rewrite single-level or uncompressed DDS files as DXT5 with mips; clear normal-map blue.
 
@@ -773,6 +814,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--fps", type=float, help="the unit's own frame rate (default 30), for a unit whose entity events are timed in another rate's frames")
     parser.add_argument("--stem", help="check only <stem>.mesh and its animations, in a folder shared with another unit")
     parser.add_argument("--profile", help="an asset profile for the triangle budget (default: the unit type's)")
+    parser.add_argument("--model-kind", choices=("building", "landmark", "ship", "vehicle", "plane"),
+                        help="check a static or rigid-part model against its kind's vanilla contract (config/static_kinds.json) instead of a unit type")
     parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit, and compare its clips with the mod's other units")
     parser.add_argument("--compare-units", type=Path, help="compare the unit's clips with every unit under this folder (default with --mod-root: <mod-root>/gfx/models/units)")
     parser.add_argument("--reskin-of", action="append", default=[], metavar="UNIT", help="a unit folder or mesh stem this unit reskins; it may share that unit's clips (repeatable)")
@@ -800,9 +843,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     folder = args.folder.resolve()
     if not folder.is_dir():
         raise SystemExit(f"Not a folder: {folder}")
+    if args.model_kind:
+        unit_type = model_kind_type(args.model_kind)
     if args.fps:
         unit_type = dict(unit_type or {}, fps=args.fps)
     findings, facts = check_files(folder, unit_type, profile, args.stem, weapon_bones=args.weapon_bone)
+    if args.model_kind:
+        findings.extend(model_kind_findings(folder, args.model_kind, args.stem))
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
     units_root = args.compare_units or (args.mod_root / "gfx" / "models" / "units" if args.mod_root else None)

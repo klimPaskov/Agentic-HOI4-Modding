@@ -185,8 +185,11 @@ rest_low, rest_high = bounds()
 span = max(rest_high.x - rest_low.x, rest_high.y - rest_low.y, rest_high.z - rest_low.z, 1e-3)
 
 disc = bpy.data.meshes.new("ground")
-rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * span * 1.4, rest_low.z) for k in range(48)]
-disc.from_pydata([(0.0, 0.0, rest_low.z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
+# The disc sits at the rest pose's lowest point, or at `ground_z` when the request names it (a ship's waterline is z = 0,
+# with its keel below).
+ground_z = float(request["ground_z"]) if request.get("ground_z") is not None else rest_low.z
+rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * span * 1.4, ground_z) for k in range(48)]
+disc.from_pydata([(0.0, 0.0, ground_z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
 ground_material = bpy.data.materials.new("ground")
 ground_material.diffuse_color = (0.08, 0.16, 0.08, 1.0)
 if PBR:
@@ -197,7 +200,21 @@ if PBR:
     emission = gt.nodes.new("ShaderNodeEmission")
     emission.inputs["Color"].default_value = (0.08, 0.16, 0.08, 1.0)
     gt_out = gt.nodes.new("ShaderNodeOutputMaterial")
-    gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
+    alpha = float(request.get("ground_alpha", 1.0))
+    if alpha < 1.0:
+        # see-through water (`ground_alpha`): a sinking ship's hull shows under the surface instead of seeming cut off
+        clear = gt.nodes.new("ShaderNodeBsdfTransparent")
+        mix = gt.nodes.new("ShaderNodeMixShader")
+        mix.inputs["Fac"].default_value = alpha
+        gt.links.new(clear.outputs["BSDF"], mix.inputs[1])
+        gt.links.new(emission.outputs["Emission"], mix.inputs[2])
+        gt.links.new(mix.outputs["Shader"], gt_out.inputs["Surface"])
+        if hasattr(ground_material, "surface_render_method"):
+            ground_material.surface_render_method = "BLENDED"
+        else:
+            ground_material.blend_method = "BLEND"
+    else:
+        gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
 # The disc faces up, so with back faces culled the `below` view looks up through it. The PBR material needs this
 # set as well, or the disc hides the whole unit from below.
 ground_material.use_backface_culling = True
@@ -310,7 +327,7 @@ def paint_diagnostics():
         colour = np.tile([0.72, 0.72, 0.74, 1.0], (len(co), 1))
         hot = per_vertex > DIAG_START
         colour[hot] = np.stack([np.ones(hot.sum()), 0.9 * (1.0 - t[hot]), np.zeros(hot.sum()), np.ones(hot.sum())], axis=1)
-        colour[co[:, 2] < rest_low.z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
+        colour[co[:, 2] < ground_z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
         colour[info["open"]] = [0.0, 1.0, 1.0, 1.0]
         o.data.color_attributes["review_diag"].data.foreach_set("color", colour.astype(np.float32).ravel())
         o.data.update()

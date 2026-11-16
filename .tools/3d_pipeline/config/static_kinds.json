@@ -1,0 +1,1688 @@
+{
+ "_about": "Vanilla measurements for the static-model route (tripo/static_model.py) and its STATIC-* checks, from calibrate_static_kinds.py. Rerun after a game update; never edit a number by hand.",
+ "kinds": {
+  "vehicle": {
+   "kind": "vehicle",
+   "references": [
+    "gfx/models/units/tanks/ENG_tank_light.mesh",
+    "gfx/models/units/tanks/FRA_tank_light.mesh",
+    "gfx/models/units/tanks/generic_tank_light.mesh",
+    "gfx/models/units/tanks/GER_tank_light.mesh",
+    "gfx/models/units/tanks/ITA_tank_light.mesh",
+    "gfx/models/units/tanks/JAP_tank_light.mesh",
+    "gfx/models/units/tanks/SOV_tank_light.mesh",
+    "gfx/models/units/tanks/USA_tank_light.mesh",
+    "gfx/models/units/tanks/FIN_light_armor.mesh"
+   ],
+   "size": {
+    "measure": "area the map camera sees (square root)",
+    "runtime": 2.8401,
+    "source": 6.7622,
+    "centre_share": [
+     0.0,
+     -0.0093,
+     0.2766
+    ],
+    "ground_share": 0.0,
+    "per_model": [
+     {
+      "rel": "gfx/models/units/tanks/ENG_tank_light.mesh",
+      "measure": 4.7876,
+      "scale": 0.5,
+      "runtime": 2.3938
+     },
+     {
+      "rel": "gfx/models/units/tanks/FRA_tank_light.mesh",
+      "measure": 4.7732,
+      "scale": 0.6,
+      "runtime": 2.8639
+     },
+     {
+      "rel": "gfx/models/units/tanks/generic_tank_light.mesh",
+      "measure": 5.3722,
+      "scale": 0.48,
+      "runtime": 2.5787
+     },
+     {
+      "rel": "gfx/models/units/tanks/GER_tank_light.mesh",
+      "measure": 5.0612,
+      "scale": 0.42,
+      "runtime": 2.1257
+     },
+     {
+      "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
+      "measure": 5.703,
+      "scale": 0.498,
+      "runtime": 2.8401
+     },
+     {
+      "rel": "gfx/models/units/tanks/JAP_tank_light.mesh",
+      "measure": 5.8336,
+      "scale": 0.5,
+      "runtime": 2.9168
+     },
+     {
+      "rel": "gfx/models/units/tanks/SOV_tank_light.mesh",
+      "measure": 5.8743,
+      "scale": 0.5,
+      "runtime": 2.9371
+     },
+     {
+      "rel": "gfx/models/units/tanks/USA_tank_light.mesh",
+      "measure": 4.6286,
+      "scale": 0.51,
+      "runtime": 2.3606
+     },
+     {
+      "rel": "gfx/models/units/tanks/FIN_light_armor.mesh",
+      "measure": 5.8743,
+      "scale": 0.5,
+      "runtime": 2.9371
+     }
+    ],
+    "nearest": {
+     "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
+     "measure": 5.703,
+     "scale": 0.498,
+     "runtime": 2.8401
+    },
+    "nearest_tall": null,
+    "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
+   },
+   "entity": {
+    "reference": "GER_light_armor_entity",
+    "mesh": "gfx/models/units/tanks/GER_tank_light.mesh",
+    "scale": 0.42,
+    "file": "gfx/entities/units_tanks.asset",
+    "entity_scale": 0.7,
+    "pdxmesh_scale": 0.6,
+    "pdxmesh": "GER_tank_light_mesh"
+   },
+   "triangle_budget": {
+    "value": 3948,
+    "mesh": "gfx/models/units/tanks/ITA_tank_medium.mesh",
+    "models": 33
+   },
+   "shader": "PdxMeshAdvanced",
+   "texture_size": 512,
+   "specular_level": 103,
+   "gloss_quantiles": [
+    82.22,
+    83.22,
+    83.44,
+    83.56,
+    83.56,
+    83.67,
+    83.67,
+    83.67,
+    83.78,
+    83.89,
+    83.89,
+    84.0,
+    84.0,
+    84.0,
+    84.11,
+    84.11,
+    84.22,
+    84.22,
+    84.33,
+    84.33,
+    84.33,
+    84.44,
+    84.44,
+    84.44,
+    84.56,
+    84.56,
+    84.56,
+    84.56,
+    84.67,
+    84.67,
+    84.67,
+    84.78,
+    84.78,
+    84.78,
+    84.89,
+    84.89,
+    84.89,
+    84.89,
+    85.0,
+    85.0,
+    85.0,
+    85.11,
+    85.11,
+    85.22,
+    85.22,
+    85.22,
+    85.33,
+    85.33,
+    85.44,
+    85.44,
+    85.44,
+    85.56,
+    85.56,
+    85.67,
+    85.67,
+    85.78,
+    85.78,
+    85.89,
+    85.89,
+    86.0,
+    86.0,
+    86.0,
+    86.11,
+    86.11,
+    86.22,
+    86.22,
+    86.33,
+    86.44,
+    86.44,
+    86.56,
+    86.56,
+    86.67,
+    86.67,
+    86.78,
+    86.89,
+    86.89,
+    87.0,
+    87.0,
+    87.11,
+    87.22,
+    87.22,
+    87.33,
+    87.44,
+    87.44,
+    87.56,
+    87.56,
+    87.67,
+    87.78,
+    87.89,
+    87.89,
+    88.0,
+    88.11,
+    88.22,
+    88.33,
+    88.44,
+    88.56,
+    88.67,
+    88.78,
+    89.0,
+    89.44,
+    92.67
+   ],
+   "texture_sources": [
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/JAP_tank_light_specular.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds",
+    "gfx/models/units/tanks/tanks_specmaps.dds"
+   ],
+   "collision": {
+    "name": "pCubeShape1",
+    "size_share": [
+     1.1261,
+     1.1543,
+     1.1038
+    ],
+    "centre_share": [
+     0.5,
+     0.4972,
+     0.5519
+    ],
+    "bottom_share": 0.0,
+    "source": "Collision boxes of 9 of 9 models, as shares of their visible box (medians)"
+   },
+   "skeleton": {
+    "bones": [
+     {
+      "name": "root",
+      "parent": null,
+      "head_share": [
+       0.5,
+       0.5078,
+       0.0
+      ]
+     },
+     {
+      "name": "tank_base",
+      "parent": "root",
+      "head_share": [
+       0.5,
+       0.5078,
+       0.0244
+      ]
+     },
+     {
+      "name": "chassie",
+      "parent": "tank_base",
+      "head_share": [
+       0.5,
+       0.5037,
+       0.4667
+      ]
+     },
+     {
+      "name": "turret",
+      "parent": "chassie",
+      "head_share": [
+       0.5,
+       0.4664,
+       0.8235
+      ]
+     },
+     {
+      "name": "barrel_base",
+      "parent": "turret",
+      "head_share": [
+       0.5,
+       0.2335,
+       0.8006
+      ]
+     },
+     {
+      "name": "barrel_tip",
+      "parent": "barrel_base",
+      "head_share": [
+       0.5,
+       0.0365,
+       0.8006
+      ]
+     },
+     {
+      "name": "wheel_suspention",
+      "parent": "tank_base",
+      "head_share": [
+       0.5,
+       0.5168,
+       0.2789
+      ]
+     }
+    ],
+    "source": "rest places as shares of the visible box, medians over the models that have the bone"
+   },
+   "locators": [
+    {
+     "name": "barrel",
+     "parent": "barrel_tip",
+     "share": [
+      0.6749,
+      0.0822,
+      0.8803
+     ]
+    },
+    {
+     "name": "exhaust",
+     "parent": "chassie",
+     "share": [
+      0.6659,
+      0.9831,
+      0.56
+     ]
+    },
+    {
+     "name": "left_tracks",
+     "parent": "chassie",
+     "share": [
+      0.9371,
+      0.8663,
+      0.0345
+     ]
+    },
+    {
+     "name": "right_tracks",
+     "parent": "chassie",
+     "share": [
+      0.0732,
+      0.8663,
+      0.0345
+     ]
+    }
+   ],
+   "clips": {
+    "idle": {
+     "mesh": "gfx/models/units/tanks/GER_tank_light.mesh",
+     "anim": "gfx/models/units/tanks/GER_tank_light_idle.anim",
+     "fps": 15.0508,
+     "frames": 296,
+     "seconds": 19.6
+    },
+    "move": {
+     "mesh": "gfx/models/units/tanks/GER_tank_light.mesh",
+     "anim": "gfx/models/units/tanks/GER_tank_light_moving.anim",
+     "fps": 15.2381,
+     "frames": 40,
+     "seconds": 2.559
+    },
+    "attack": {
+     "mesh": "gfx/models/units/tanks/GER_tank_light.mesh",
+     "anim": "gfx/models/units/tanks/GER_tank_light_attack.anim",
+     "fps": 15.2,
+     "frames": 76,
+     "seconds": 4.934
+    },
+    "death": {
+     "mesh": "gfx/models/units/tanks/GER_tank_heavy.mesh",
+     "anim": "gfx/models/units/tanks/GER_tank_heavy_death.anim",
+     "fps": 15.1304,
+     "frames": 29,
+     "seconds": 1.851
+    }
+   },
+   "role_aliases": {},
+   "parts": {
+    "body": "chassie",
+    "turret": "turret",
+    "barrel": "barrel_base",
+    "tracks": "wheel_suspention"
+   },
+   "mounts": {
+    "turret": "chassie",
+    "barrel_base": "turret"
+   },
+   "rigid": {
+    "max_gap_share": 0.01,
+    "source": "kit rule: half a pixel at game size"
+   },
+   "rules": {
+    "turret": {
+     "area_share": 0.2055,
+     "area_threshold": 0.4533,
+     "search_from": 0.4674,
+     "cell_share": 0.02,
+     "min_height_share": 0.128,
+     "source": "plan area of the height slices that are mostly turret over the lower hull's (sk.slice_areas), over 8 vanilla light tanks; the threshold is their geometric middle, the search starts at three quarters of the lowest turret bottom, and a turret is at least half as tall as the shortest",
+     "validation": {
+      "gfx/models/units/tanks/ENG_tank_light.mesh": 0.9926,
+      "gfx/models/units/tanks/FRA_tank_light.mesh": 0.9648,
+      "gfx/models/units/tanks/generic_tank_light.mesh": 0.9901,
+      "gfx/models/units/tanks/GER_tank_light.mesh": 0.9958,
+      "gfx/models/units/tanks/JAP_tank_light.mesh": 0.9971,
+      "gfx/models/units/tanks/SOV_tank_light.mesh": 0.9587,
+      "gfx/models/units/tanks/USA_tank_light.mesh": 0.9821,
+      "gfx/models/units/tanks/FIN_light_armor.mesh": 0.9587
+     }
+    },
+    "barrel": {
+     "width_share": 0.0771,
+     "width_threshold": 0.2777,
+     "min_length_share": 0.0841,
+     "source": "barrel-weighted vs turret-weighted width over 7 vanilla light tanks; the threshold is their geometric middle; a barrel is at least half as long, against its turret, as vanilla's shortest"
+    },
+    "wheels": {
+     "radius_spread": 0.426,
+     "rim_coverage": 0.45,
+     "symmetry": 0.0317,
+     "x_share": 0.5014,
+     "diameter_share": [
+      0.0329,
+      0.2805
+     ],
+     "round_ratio": 1.67,
+     "track_length_share": 0.5,
+     "top_margin_share": 0.02,
+     "road_wheel_diameter_share": 0.1254,
+     "source": "62 vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to 1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest, a rim reaching 0.9 of vanilla's least-covered sectors, half-turn symmetry within twice vanilla's worst unless the rim closes a circle; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+     "validation": {
+      "gfx/models/units/tanks/ENG_tank_light.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 0.914
+      },
+      "gfx/models/units/tanks/FRA_tank_light.mesh": {
+       "wheels": 22,
+       "recall": 1.0,
+       "precision": 1.0
+      },
+      "gfx/models/units/tanks/generic_tank_light.mesh": {
+       "wheels": 16,
+       "recall": 1.0,
+       "precision": 0.928
+      },
+      "gfx/models/units/tanks/GER_tank_light.mesh": {
+       "wheels": 22,
+       "recall": 1.0,
+       "precision": 0.577
+      },
+      "gfx/models/units/tanks/ITA_tank_light.mesh": {
+       "wheels": 18,
+       "recall": 1.0,
+       "precision": 1.0
+      },
+      "gfx/models/units/tanks/JAP_tank_light.mesh": {
+       "wheels": 16,
+       "recall": 1.0,
+       "precision": 0.899
+      },
+      "gfx/models/units/tanks/SOV_tank_light.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 1.0
+      },
+      "gfx/models/units/tanks/USA_tank_light.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 1.0
+      },
+      "gfx/models/units/tanks/FIN_light_armor.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 1.0
+      }
+     }
+    }
+   },
+   "attack_turn": {
+    "degrees": 21.7,
+    "ease_frames": 27,
+    "source": "gfx/models/units/tanks/GER_tank_light_idle.anim: the turret's widest turn from rest, and the frames its fastest rate needs for it (eased, so 1.5 times)"
+   }
+  },
+  "plane": {
+   "kind": "plane",
+   "references": [
+    "gfx/models/units/planes/ENG_plane_light.mesh",
+    "gfx/models/units/planes/FRA_plane_light.mesh",
+    "gfx/models/units/planes/GER_plane_light.mesh",
+    "gfx/models/units/planes/ITA_plane_light.mesh",
+    "gfx/models/units/planes/JAP_plane_light.mesh",
+    "gfx/models/units/planes/SOV_plane_light.mesh",
+    "gfx/models/units/planes/USA_plane_light.mesh",
+    "gfx/models/units/planes/FIN_light_plane_0.mesh",
+    "gfx/models/units/planes/FIN_light_plane_2.mesh",
+    "gfx/models/units/planes/JAP_light_plane_1.mesh",
+    "gfx/models/units/planes/JAP_light_plane_3.mesh",
+    "gfx/models/units/planes/generic_plane_light.mesh"
+   ],
+   "size": {
+    "measure": "wingspan",
+    "runtime": 3.9866,
+    "source": 27.6847,
+    "centre_share": [
+     0.0,
+     0.008,
+     0.1268
+    ],
+    "ground_share": 0.0078,
+    "per_model": [
+     {
+      "rel": "gfx/models/units/planes/ENG_plane_light.mesh",
+      "measure": 27.4675,
+      "scale": 0.144,
+      "runtime": 3.9553
+     },
+     {
+      "rel": "gfx/models/units/planes/FRA_plane_light.mesh",
+      "measure": 27.5711,
+      "scale": 0.144,
+      "runtime": 3.9702
+     },
+     {
+      "rel": "gfx/models/units/planes/GER_plane_light.mesh",
+      "measure": 27.6948,
+      "scale": 0.144,
+      "runtime": 3.9881
+     },
+     {
+      "rel": "gfx/models/units/planes/ITA_plane_light.mesh",
+      "measure": 30.9174,
+      "scale": 0.144,
+      "runtime": 4.4521
+     },
+     {
+      "rel": "gfx/models/units/planes/JAP_plane_light.mesh",
+      "measure": 29.9516,
+      "scale": 0.144,
+      "runtime": 4.313
+     },
+     {
+      "rel": "gfx/models/units/planes/SOV_plane_light.mesh",
+      "measure": 25.8008,
+      "scale": 0.144,
+      "runtime": 3.7153
+     },
+     {
+      "rel": "gfx/models/units/planes/USA_plane_light.mesh",
+      "measure": 25.7202,
+      "scale": 0.144,
+      "runtime": 3.7037
+     },
+     {
+      "rel": "gfx/models/units/planes/FIN_light_plane_0.mesh",
+      "measure": 30.2606,
+      "scale": 0.145,
+      "runtime": 4.3878
+     },
+     {
+      "rel": "gfx/models/units/planes/FIN_light_plane_2.mesh",
+      "measure": 29.5438,
+      "scale": 0.145,
+      "runtime": 4.2839
+     },
+     {
+      "rel": "gfx/models/units/planes/JAP_light_plane_1.mesh",
+      "measure": 39.8513,
+      "scale": 0.1,
+      "runtime": 3.9851
+     },
+     {
+      "rel": "gfx/models/units/planes/JAP_light_plane_3.mesh",
+      "measure": 26.6563,
+      "scale": 0.145,
+      "runtime": 3.8652
+     },
+     {
+      "rel": "gfx/models/units/planes/generic_plane_light.mesh",
+      "measure": 30.5457,
+      "scale": 0.144,
+      "runtime": 4.3986
+     }
+    ],
+    "nearest": {
+     "rel": "gfx/models/units/planes/JAP_light_plane_1.mesh",
+     "measure": 39.8513,
+     "scale": 0.1,
+     "runtime": 3.9851
+    },
+    "nearest_tall": null,
+    "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
+   },
+   "entity": {
+    "reference": "ENG_light_plane_entity",
+    "mesh": "gfx/models/units/planes/ENG_plane_light.mesh",
+    "scale": 0.144,
+    "file": "gfx/entities/units_planes.asset",
+    "entity_scale": 0.144,
+    "pdxmesh_scale": 1.0,
+    "pdxmesh": "ENG_plane_light_mesh"
+   },
+   "triangle_budget": {
+    "value": 2252,
+    "mesh": "gfx/models/units/planes/SOV_plane_heavy.mesh",
+    "models": 41
+   },
+   "shader": "PdxMeshAdvanced",
+   "texture_size": 1024,
+   "specular_level": 34,
+   "gloss_quantiles": [
+    3.2,
+    16.4,
+    21.2,
+    25.0,
+    27.2,
+    28.6,
+    29.95,
+    31.1,
+    32.1,
+    32.7,
+    33.6,
+    34.6,
+    35.0,
+    35.8,
+    36.5,
+    37.16,
+    37.8,
+    38.3,
+    38.9,
+    39.4,
+    39.8,
+    40.4,
+    40.9,
+    41.3,
+    41.7,
+    42.2,
+    42.7,
+    43.3,
+    43.4,
+    44.0,
+    44.5,
+    44.8,
+    45.1,
+    45.6,
+    46.1,
+    46.4,
+    46.8,
+    47.2,
+    47.7,
+    48.1,
+    48.4,
+    48.8,
+    49.4,
+    49.6,
+    50.1,
+    50.5,
+    51.09,
+    51.7,
+    52.1,
+    52.7,
+    53.2,
+    53.8,
+    54.3,
+    55.0,
+    55.4,
+    56.0,
+    56.9,
+    57.3,
+    58.0,
+    58.5,
+    59.4,
+    59.9,
+    60.54,
+    61.2,
+    61.9,
+    62.7,
+    63.4,
+    64.4,
+    65.0,
+    65.7,
+    66.6,
+    67.5,
+    68.3,
+    68.9,
+    69.87,
+    70.8,
+    71.9,
+    72.7,
+    73.9,
+    74.7,
+    76.0,
+    77.0,
+    78.2,
+    79.3,
+    80.6,
+    81.7,
+    83.13,
+    84.5,
+    86.2,
+    87.3,
+    89.1,
+    90.5,
+    92.3,
+    94.13,
+    96.05,
+    98.2,
+    100.8,
+    104.5,
+    109.2,
+    120.34,
+    179.2
+   ],
+   "texture_sources": [
+    "gfx/models/units/planes/ENG_plane_light_spec.dds",
+    "gfx/models/units/planes/FRA_plane_light_specular.dds",
+    "gfx/models/units/planes/GER_plane_light_spec.dds",
+    "gfx/models/units/planes/ITA_plane_light_specular.dds",
+    "gfx/models/units/planes/JAP_plane_light_specular.dds",
+    "gfx/models/units/planes/SOV_plane_light_specular.dds",
+    "gfx/models/units/planes/USA_plane_light_specular.dds",
+    "gfx/models/units/planes/JAP_light_plane_1_specular.dds",
+    "gfx/models/units/planes/JAP_light_plane_3_specular.dds",
+    "gfx/models/units/planes/generic_plane_light_specular.dds"
+   ],
+   "collision": null,
+   "skeleton": {
+    "bones": [
+     {
+      "name": "root",
+      "parent": null,
+      "head_share": [
+       0.5,
+       0.4898,
+       -0.0334
+      ]
+     }
+    ],
+    "source": "rest places as shares of the visible box, medians over the models that have the bone"
+   },
+   "locators": [
+    {
+     "name": "gun2",
+     "parent": "root",
+     "share": [
+      0.3111,
+      0.1932,
+      0.1005
+     ]
+    },
+    {
+     "name": "gun1",
+     "parent": "root",
+     "share": [
+      0.6888,
+      0.1866,
+      0.1351
+     ]
+    }
+   ],
+   "clips": {
+    "idle": {
+     "mesh": "gfx/models/units/planes/ENG_plane_light.mesh",
+     "anim": "gfx/models/units/planes/fighter_default_idle.anim",
+     "fps": 15.1304,
+     "frames": 29,
+     "seconds": 1.851
+    }
+   },
+   "role_aliases": {},
+   "parts": {
+    "body": "root",
+    "propeller": "propeller"
+   },
+   "mounts": {
+    "propeller": "root"
+   },
+   "rigid": {
+    "max_gap_share": 0.01,
+    "source": "kit rule: half a pixel at game size"
+   },
+   "rules": {
+    "propeller": {
+     "search_share": 0.2,
+     "width_threshold": 0.6,
+     "source": "kit rule: vanilla planes have no separate propeller part"
+    }
+   },
+   "extra_bones": [
+    "propeller"
+   ],
+   "spin": {
+    "degrees_per_frame": 36.0,
+    "axis": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "source": "kit rule: 0.4 of a four-blade period and at most 90 % of vanilla's fastest air and naval joint (43.0 degrees a frame)"
+   }
+  },
+  "ship": {
+   "kind": "ship",
+   "references": [
+    "gfx/models/units/ships/generic_destroyer.mesh"
+   ],
+   "size": {
+    "measure": "length",
+    "runtime": 13.0681,
+    "source": 7.6871,
+    "centre_share": [
+     0.0,
+     0.0052,
+     0.111
+    ],
+    "ground_share": -0.0156,
+    "per_model": [
+     {
+      "rel": "gfx/models/units/ships/generic_destroyer.mesh",
+      "measure": 7.6871,
+      "scale": 1.7,
+      "runtime": 13.0681
+     }
+    ],
+    "nearest": {
+     "rel": "gfx/models/units/ships/generic_destroyer.mesh",
+     "measure": 7.6871,
+     "scale": 1.7,
+     "runtime": 13.0681
+    },
+    "nearest_tall": null,
+    "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
+   },
+   "entity": {
+    "reference": "destroyer_entity",
+    "mesh": "gfx/models/units/ships/generic_destroyer.mesh",
+    "scale": 1.7,
+    "file": "gfx/entities/units_ships.asset",
+    "entity_scale": 1.7,
+    "pdxmesh_scale": 1.0,
+    "pdxmesh": "generic_destroyer_mesh"
+   },
+   "triangle_budget": {
+    "value": 10674,
+    "mesh": "gfx/models/units/ships/generic_super_heavy_destroyer.mesh",
+    "models": 39
+   },
+   "shader": "PdxMeshAdvanced",
+   "texture_size": 1024,
+   "specular_level": 162,
+   "gloss_quantiles": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    2.0,
+    6.0,
+    8.0,
+    10.0,
+    11.1,
+    13.0,
+    15.0,
+    17.0,
+    19.0,
+    21.0,
+    22.0,
+    23.47,
+    25.0,
+    27.0,
+    28.0,
+    29.0,
+    30.0,
+    32.0,
+    33.0,
+    35.0,
+    37.0,
+    38.0,
+    40.0,
+    42.0,
+    43.0,
+    44.0,
+    46.0,
+    48.0,
+    49.94,
+    51.0,
+    52.0,
+    54.0,
+    55.0,
+    57.0,
+    58.0,
+    60.0,
+    62.0,
+    63.0,
+    65.0,
+    66.0,
+    68.0,
+    70.0,
+    71.0,
+    73.0,
+    74.0,
+    76.0,
+    77.0,
+    78.0,
+    80.0,
+    82.0,
+    83.0,
+    84.0,
+    85.0,
+    86.0,
+    88.0,
+    89.0,
+    90.0,
+    92.0,
+    93.0,
+    94.0,
+    95.0,
+    96.0,
+    97.0,
+    98.0,
+    99.0,
+    100.0,
+    102.0,
+    103.0,
+    104.0,
+    104.0,
+    105.0,
+    105.0,
+    105.0,
+    105.0,
+    105.0,
+    105.0,
+    105.0,
+    105.0,
+    106.0,
+    106.0,
+    106.0,
+    106.0,
+    106.0,
+    106.99,
+    108.0,
+    111.0,
+    113.0,
+    114.0,
+    117.0,
+    120.0,
+    123.0,
+    127.0,
+    133.0,
+    142.09,
+    198.0
+   ],
+   "texture_sources": [
+    "gfx/models/units/ships/generic_destroyer_specular.dds"
+   ],
+   "collision": {
+    "name": "pCubeShape1",
+    "size_share": [
+     1.9331,
+     1.0192,
+     0.9692
+    ],
+    "centre_share": [
+     0.5,
+     0.4948,
+     0.5463
+    ],
+    "bottom_share": 0.0617,
+    "source": "Collision boxes of 1 of 1 models, as shares of their visible box (medians)"
+   },
+   "skeleton": {
+    "bones": [
+     {
+      "name": "root",
+      "parent": null,
+      "head_share": [
+       0.5,
+       0.4948,
+       0.0617
+      ]
+     },
+     {
+      "name": "ship",
+      "parent": "root",
+      "head_share": [
+       0.5,
+       0.4948,
+       0.1797
+      ]
+     }
+    ],
+    "source": "rest places as shares of the visible box, medians over the models that have the bone"
+   },
+   "locators": [
+    {
+     "name": "engine_smoke",
+     "parent": "ship",
+     "share": [
+      0.5,
+      0.4536,
+      0.5286
+     ]
+    },
+    {
+     "name": "miss_effect_locator1",
+     "parent": null,
+     "share": [
+      2.8026,
+      0.029,
+      0.0617
+     ]
+    },
+    {
+     "name": "miss_effect_locator2",
+     "parent": null,
+     "share": [
+      4.1712,
+      0.5184,
+      0.0617
+     ]
+    },
+    {
+     "name": "miss_effect_locator3",
+     "parent": null,
+     "share": [
+      3.4536,
+      0.9596,
+      0.0617
+     ]
+    },
+    {
+     "name": "miss_effect_locator4",
+     "parent": null,
+     "share": [
+      -1.8618,
+      0.1227,
+      0.0617
+     ]
+    },
+    {
+     "name": "miss_effect_locator5",
+     "parent": null,
+     "share": [
+      -2.611,
+      0.4891,
+      0.0617
+     ]
+    },
+    {
+     "name": "miss_effect_locator6",
+     "parent": null,
+     "share": [
+      -1.8842,
+      0.8916,
+      0.0617
+     ]
+    },
+    {
+     "name": "front_moving_water_effect",
+     "parent": null,
+     "share": [
+      0.5,
+      0.0307,
+      0.0617
+     ]
+    },
+    {
+     "name": "back_moving_water_effect",
+     "parent": null,
+     "share": [
+      0.5,
+      0.9759,
+      0.0617
+     ]
+    },
+    {
+     "name": "hit_effect_locator1",
+     "parent": null,
+     "share": [
+      0.5,
+      0.7291,
+      0.2124
+     ]
+    },
+    {
+     "name": "hit_effect_locator2",
+     "parent": null,
+     "share": [
+      0.5,
+      0.279,
+      0.4059
+     ]
+    }
+   ],
+   "clips": {
+    "idle": {
+     "mesh": "gfx/models/units/ships/generic_destroyer.mesh",
+     "anim": "gfx/models/units/ships/generic_destroyer_idle.anim",
+     "fps": 15.375,
+     "frames": 41,
+     "seconds": 2.602
+    },
+    "death": {
+     "mesh": "gfx/models/units/ships/generic_destroyer.mesh",
+     "anim": "gfx/models/units/ships/generic_destroyer_death.anim",
+     "fps": 15.2344,
+     "frames": 65,
+     "seconds": 4.201
+    }
+   },
+   "role_aliases": {
+    "defend": "idle",
+    "attack": "idle"
+   },
+   "parts": {
+    "body": "ship"
+   },
+   "mounts": {},
+   "rigid": {
+    "max_gap_share": 0.01,
+    "source": "kit rule: half a pixel at game size"
+   },
+   "waterline": {
+    "width_share": 0.9521,
+    "draft_share": 0.0362,
+    "source": "beam at the waterline over the widest beam, and the keel's depth over the length, medians over gfx/models/units/ships/generic_destroyer.mesh, gfx/models/units/ships/support_ship.mesh, gfx/models/units/ships/generic_freighter.mesh"
+   }
+  },
+  "building": {
+   "kind": "building",
+   "references": [
+    "gfx/models/buildings/facility_land.mesh",
+    "gfx/models/buildings/facility_air.mesh",
+    "gfx/models/buildings/facility_naval.mesh",
+    "gfx/models/buildings/facility_nuclear.mesh"
+   ],
+   "size": {
+    "measure": "area the map camera sees (square root)",
+    "runtime": 3.7651,
+    "source": 6.2751,
+    "centre_share": [
+     -0.0438,
+     0.0045,
+     0.2234
+    ],
+    "ground_share": -0.0267,
+    "per_model": [
+     {
+      "rel": "gfx/models/buildings/facility_land.mesh",
+      "measure": 6.0981,
+      "scale": 0.6,
+      "runtime": 3.6589
+     },
+     {
+      "rel": "gfx/models/buildings/facility_air.mesh",
+      "measure": 6.5861,
+      "scale": 0.6,
+      "runtime": 3.9517
+     },
+     {
+      "rel": "gfx/models/buildings/facility_naval.mesh",
+      "measure": 6.4521,
+      "scale": 0.6,
+      "runtime": 3.8713
+     },
+     {
+      "rel": "gfx/models/buildings/facility_nuclear.mesh",
+      "measure": 5.1475,
+      "scale": 0.6,
+      "runtime": 3.0885
+     }
+    ],
+    "nearest": {
+     "rel": "gfx/models/buildings/facility_land.mesh",
+     "measure": 6.0981,
+     "scale": 0.6,
+     "runtime": 3.6589
+    },
+    "nearest_tall": null,
+    "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
+   },
+   "entity": {
+    "reference": "building_land_facility",
+    "mesh": "gfx/models/buildings/facility_land.mesh",
+    "scale": 0.6,
+    "file": "gfx/entities/buildings.asset",
+    "entity_scale": 1.0,
+    "pdxmesh_scale": 0.6,
+    "pdxmesh": "building_land_facility"
+   },
+   "triangle_budget": {
+    "value": 12348,
+    "mesh": "gfx/models/buildings/oil_refinery.mesh",
+    "models": 47
+   },
+   "shader": "PdxMeshAdvanced",
+   "texture_size": 512,
+   "specular_level": 56,
+   "gloss_quantiles": [
+    4.09,
+    17.73,
+    20.55,
+    23.45,
+    25.0,
+    26.09,
+    27.0,
+    27.73,
+    28.55,
+    29.36,
+    30.09,
+    30.73,
+    31.36,
+    31.73,
+    32.36,
+    33.0,
+    33.45,
+    34.0,
+    34.73,
+    35.09,
+    35.64,
+    36.27,
+    36.55,
+    37.0,
+    37.45,
+    37.91,
+    38.36,
+    38.64,
+    39.91,
+    40.82,
+    41.18,
+    41.55,
+    41.73,
+    42.45,
+    42.91,
+    43.09,
+    43.36,
+    43.82,
+    44.64,
+    45.36,
+    45.82,
+    46.09,
+    46.45,
+    46.73,
+    47.0,
+    47.36,
+    47.73,
+    47.91,
+    48.27,
+    48.55,
+    49.0,
+    49.36,
+    49.36,
+    50.0,
+    50.18,
+    50.64,
+    51.0,
+    51.18,
+    51.82,
+    52.0,
+    52.45,
+    52.82,
+    53.36,
+    54.18,
+    54.73,
+    55.45,
+    56.09,
+    56.64,
+    57.45,
+    58.18,
+    58.82,
+    59.55,
+    60.55,
+    61.36,
+    62.27,
+    63.18,
+    64.36,
+    65.36,
+    66.36,
+    67.55,
+    69.09,
+    70.73,
+    72.64,
+    74.55,
+    76.27,
+    77.45,
+    78.55,
+    79.55,
+    80.64,
+    82.0,
+    83.18,
+    84.73,
+    86.55,
+    88.27,
+    91.73,
+    94.27,
+    97.64,
+    101.0,
+    104.73,
+    116.18,
+    167.0
+   ],
+   "texture_sources": [
+    "gfx/models/buildings/landmarks/landmark_bojnice_castle_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_forbidden_city_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_hagia_sophia_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_hakko_ichiu_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_national_diet_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_prague_castle_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_reichstag_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_sadabad_complex_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_taj_mahal_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_tokyo_imperial_palace_specular.dds"
+   ],
+   "collision": {
+    "name": "collisionShape",
+    "size_share": [
+     0.6025,
+     0.7532,
+     0.8507
+    ],
+    "centre_share": [
+     0.5563,
+     0.494,
+     0.3195
+    ],
+    "bottom_share": -0.1059,
+    "source": "Collision boxes of 4 of 4 models, as shares of their visible box (medians)"
+   },
+   "skeleton": {
+    "bones": [],
+    "source": "rest places as shares of the visible box, medians over the models that have the bone"
+   },
+   "locators": [
+    {
+     "name": "lamp",
+     "parent": null,
+     "share": [
+      0.6898,
+      0.6002,
+      1.0
+     ]
+    }
+   ],
+   "clips": {},
+   "role_aliases": {},
+   "parts": {},
+   "mounts": {},
+   "rigid": null
+  },
+  "landmark": {
+   "kind": "landmark",
+   "references": [
+    "gfx/models/buildings/landmarks/landmark_big_ben.mesh",
+    "gfx/models/buildings/landmarks/landmark_bojnice_castle.mesh",
+    "gfx/models/buildings/landmarks/landmark_colosseum.mesh",
+    "gfx/models/buildings/landmarks/landmark_cristo_redentor.mesh",
+    "gfx/models/buildings/landmarks/landmark_eiffel_tower.mesh",
+    "gfx/models/buildings/landmarks/landmark_forbidden_city.mesh",
+    "gfx/models/buildings/landmarks/landmark_hagia_sophia.mesh",
+    "gfx/models/buildings/landmarks/landmark_hakko_ichiu.mesh",
+    "gfx/models/buildings/landmarks/landmark_hofburg_palace.mesh",
+    "gfx/models/buildings/landmarks/landmark_kremlin.mesh",
+    "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace.mesh",
+    "gfx/models/buildings/landmarks/landmark_national_diet.mesh",
+    "gfx/models/buildings/landmarks/landmark_prague_castle.mesh",
+    "gfx/models/buildings/landmarks/landmark_reichstag.mesh",
+    "gfx/models/buildings/landmarks/landmark_sadabad_complex.mesh",
+    "gfx/models/buildings/landmarks/landmark_statue_of_liberty.mesh",
+    "gfx/models/buildings/landmarks/landmark_taj_mahal.mesh",
+    "gfx/models/buildings/landmarks/landmark_tokyo_imperial_palace.mesh",
+    "gfx/models/buildings/landmarks/landmark_volkshalle.mesh"
+   ],
+   "size": {
+    "measure": "largest side, or height when tall and thin",
+    "runtime": 5.15,
+    "source": 32.1872,
+    "centre_share": [
+     0.0,
+     -0.0048,
+     0.2555
+    ],
+    "ground_share": -0.0007,
+    "per_model": [
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_big_ben.mesh",
+      "measure": 20.2165,
+      "scale": 0.3,
+      "runtime": 6.065
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_bojnice_castle.mesh",
+      "measure": 38.9714,
+      "scale": 0.12,
+      "runtime": 4.6766
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_colosseum.mesh",
+      "measure": 12.244,
+      "scale": 0.3,
+      "runtime": 3.6732
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_cristo_redentor.mesh",
+      "measure": 12.6493,
+      "scale": 0.3,
+      "runtime": 3.7948
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_eiffel_tower.mesh",
+      "measure": 22.2373,
+      "scale": 0.3,
+      "runtime": 6.6712
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_forbidden_city.mesh",
+      "measure": 24.4357,
+      "scale": 0.2,
+      "runtime": 4.8871
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_hagia_sophia.mesh",
+      "measure": 27.3334,
+      "scale": 0.2,
+      "runtime": 5.4667
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_hakko_ichiu.mesh",
+      "measure": 13.4985,
+      "scale": 0.3,
+      "runtime": 4.0496
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_hofburg_palace.mesh",
+      "measure": 23.1792,
+      "scale": 0.2,
+      "runtime": 4.6358
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_kremlin.mesh",
+      "measure": 15.2553,
+      "scale": 0.3,
+      "runtime": 4.5766
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace.mesh",
+      "measure": 32.1872,
+      "scale": 0.16,
+      "runtime": 5.15
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_national_diet.mesh",
+      "measure": 18.7155,
+      "scale": 0.3,
+      "runtime": 5.6147
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_prague_castle.mesh",
+      "measure": 52.8285,
+      "scale": 0.12,
+      "runtime": 6.3394
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_reichstag.mesh",
+      "measure": 19.3698,
+      "scale": 0.2,
+      "runtime": 3.874
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_sadabad_complex.mesh",
+      "measure": 31.7349,
+      "scale": 0.25,
+      "runtime": 7.9337
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_statue_of_liberty.mesh",
+      "measure": 16.752,
+      "scale": 0.3,
+      "runtime": 5.0256
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_taj_mahal.mesh",
+      "measure": 20.0046,
+      "scale": 0.3,
+      "runtime": 6.0014
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_tokyo_imperial_palace.mesh",
+      "measure": 18.9046,
+      "scale": 0.3,
+      "runtime": 5.6714
+     },
+     {
+      "rel": "gfx/models/buildings/landmarks/landmark_volkshalle.mesh",
+      "measure": 36.7858,
+      "scale": 0.15,
+      "runtime": 5.5179
+     }
+    ],
+    "nearest": {
+     "rel": "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace.mesh",
+     "measure": 32.1872,
+     "scale": 0.16,
+     "runtime": 5.15
+    },
+    "nearest_tall": {
+     "rel": "gfx/models/buildings/landmarks/landmark_statue_of_liberty.mesh",
+     "measure": 16.752,
+     "scale": 0.3,
+     "runtime": 5.0256
+    },
+    "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
+   },
+   "entity": {
+    "reference": "building_landmark_nanjing_presidential_palace",
+    "mesh": "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace.mesh",
+    "scale": 0.16,
+    "file": "gfx/entities/landmarks.asset",
+    "entity_scale": 0.16,
+    "pdxmesh_scale": 1.0,
+    "pdxmesh": "landmark_nanjing_presidential_palace_mesh"
+   },
+   "triangle_budget": {
+    "value": 25829,
+    "mesh": "gfx/models/buildings/landmarks/chinese_wall.mesh",
+    "models": 21
+   },
+   "shader": "PdxMeshAdvancedSnow",
+   "texture_size": 512,
+   "specular_level": 56,
+   "gloss_quantiles": [
+    4.09,
+    17.73,
+    20.55,
+    23.45,
+    25.0,
+    26.09,
+    27.0,
+    27.73,
+    28.55,
+    29.36,
+    30.09,
+    30.73,
+    31.36,
+    31.73,
+    32.36,
+    33.0,
+    33.45,
+    34.0,
+    34.73,
+    35.09,
+    35.64,
+    36.27,
+    36.55,
+    37.0,
+    37.45,
+    37.91,
+    38.36,
+    38.64,
+    39.91,
+    40.82,
+    41.18,
+    41.55,
+    41.73,
+    42.45,
+    42.91,
+    43.09,
+    43.36,
+    43.82,
+    44.64,
+    45.36,
+    45.82,
+    46.09,
+    46.45,
+    46.73,
+    47.0,
+    47.36,
+    47.73,
+    47.91,
+    48.27,
+    48.55,
+    49.0,
+    49.36,
+    49.36,
+    50.0,
+    50.18,
+    50.64,
+    51.0,
+    51.18,
+    51.82,
+    52.0,
+    52.45,
+    52.82,
+    53.36,
+    54.18,
+    54.73,
+    55.45,
+    56.09,
+    56.64,
+    57.45,
+    58.18,
+    58.82,
+    59.55,
+    60.55,
+    61.36,
+    62.27,
+    63.18,
+    64.36,
+    65.36,
+    66.36,
+    67.55,
+    69.09,
+    70.73,
+    72.64,
+    74.55,
+    76.27,
+    77.45,
+    78.55,
+    79.55,
+    80.64,
+    82.0,
+    83.18,
+    84.73,
+    86.55,
+    88.27,
+    91.73,
+    94.27,
+    97.64,
+    101.0,
+    104.73,
+    116.18,
+    167.0
+   ],
+   "texture_sources": [
+    "gfx/models/buildings/landmarks/landmark_bojnice_castle_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_forbidden_city_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_hagia_sophia_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_hakko_ichiu_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_nanjing_presidential_palace_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_national_diet_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_prague_castle_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_reichstag_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_sadabad_complex_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_taj_mahal_specular.dds",
+    "gfx/models/buildings/landmarks/landmark_tokyo_imperial_palace_specular.dds"
+   ],
+   "collision": {
+    "name": "collisionShape",
+    "size_share": [
+     0.8644,
+     0.8441,
+     0.6728
+    ],
+    "centre_share": [
+     0.5,
+     0.5001,
+     0.3406
+    ],
+    "bottom_share": 0.0013,
+    "source": "Collision boxes of 19 of 19 models, as shares of their visible box (medians)"
+   },
+   "skeleton": {
+    "bones": [
+     {
+      "name": "root",
+      "parent": null,
+      "head_share": [
+       0.498,
+       0.5091,
+       0.0095
+      ]
+     }
+    ],
+    "source": "rest places as shares of the visible box, medians over the models that have the bone"
+   },
+   "locators": [],
+   "clips": {},
+   "role_aliases": {},
+   "parts": {
+    "body": "root"
+   },
+   "mounts": {},
+   "rigid": {
+    "max_gap_share": 0.01,
+    "source": "kit rule: half a pixel at game size"
+   }
+  }
+ }
+}

@@ -476,9 +476,51 @@ The kit's helpers in `.tools/3d_pipeline/authoring/live_helpers.py` turn, place,
 
 The agent's guide is the skill's [live authoring reference](../.claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md), including vehicles (wheel pivots, fused rigid parts, turret traverse). The result goes through the same checks and the same review as any other unit.
 
+## Static and rigid-part models
+
+Buildings, landmarks, ships, tanks and planes have their own route. Tripo makes a plain textured model (no rig and no clips, 30 credits: HD Model, PBR on, 20,000 triangles, Generate in Parts off). One free script turns it into HOI4 files, and a second renders the review sheets:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/static_model.py <inbox>/<name>.json --out <job folder>
+py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <job folder>/mod/gfx/models/<folder>/<name> --model-kind <kind> --out <job folder>/review
+```
+
+The job file holds `name` and `model_kind`: `building`, `landmark`, `ship`, `vehicle` (a tank) or `plane`. The GLB is `<name>.glb` next to it. Add `--plan` to see what the stage would do, without Blender. The script writes a small mod tree under `<job folder>/mod`: the `.mesh`, one `.anim` per role and the three DXT5 textures under `gfx/models/<folder>/<name>/`, and `gfx/entities/<name>.asset` with the `pdxmesh`, the `animation` blocks and the entity. Then it runs the checks below and prints a verdict.
+
+Every number comes from vanilla files. `calibrate_static_kinds.py` measures them and writes `config/static_kinds.json`, each with the files it came from. Run it again after a game update. The role clips are read from the installed game when a model is made.
+
+| Kind | Size | Parts and bones | Clips |
+| --- | --- | --- | --- |
+| `building` | the area the map camera sees of vanilla's four facilities, entity scale 0.6 | one static shape, no bones, a `Collision` box, the `lamp` locator | none |
+| `landmark` | the largest side of 19 vanilla landmarks, or the height of a tall and thin one (an obelisk on a wide base) | all on `root`, a `Collision` box | none |
+| `ship` | a destroyer's length, the waterline at zero, the hull cut at vanilla's draft | vanilla's two-bone contract: all on `ship` under `root`, the destroyer's locators | the destroyer's idle and death. Like vanilla's support ship and freighter, a one-piece hull has no attack clip: its attack and defend states play idle, and the entity's muzzle and water effects show the shot |
+| `vehicle` | the area the map camera sees (length times width and height at its 55 degree elevation) of nine vanilla light tanks | hull on `chassie`, turret on `turret`, barrel on `barrel_base`, tracks on `wheel_suspention`, each road wheel on its own bone, vanilla's bone names, a `Collision` box, the `barrel`, `exhaust` and track locators | a light tank's idle, move and attack, a heavy tank's death |
+| `plane` | the wingspan of twelve vanilla light planes | body on `root`, propeller on `propeller` | the fighter idle, with the propeller spinning |
+
+What the stage does, in order:
+
+- **Facing.** The model is turned so its front faces -y, as vanilla's do. A tank's front is where its turret reaches further (the barrel), a ship's bow is its narrower end, a plane's nose is the end nearer the wing. Set `front` in the job file when a rule gets it wrong.
+- **Size and place.** Scaled to the kind's vanilla size at the reference entity's scale, centred and grounded where vanilla's are. A ship's waterline is where its hull reaches 95 % of its beam, as on vanilla hulls.
+- **Triangles and textures.** Faces turned against their neighbours are turned back, piece by piece, doubled faces are dropped and closed pieces facing inward are turned out, once after the weld and again after the holes are closed. Small open loops (up to 32 edges) are closed, as `repair_unit.py --repairs holes` does, in one flat colour so the texture does not swirl across them. A building's or landmark's open rim on the ground (a paved disc with no underside) is closed as well. Then the model is reduced to the triangle budget and texture size of the most detailed vanilla model of the kind: faces that lie flat together are merged first, then the rest is collapsed. The silhouettes are compared before and after, and a reduction that changes the outline fails the stage (STATIC-SHAPE). The maps are packed for `PdxMeshAdvanced`: the normal map as RRxG, the gloss remapped onto the distribution of the kind's vanilla specular maps, the specular level vanilla's.
+- **Rigid parts.** A tank's turret starts above the largest step in the plan area of its height slices, where the slices above are turret-sized. On vanilla's own light tanks this rule puts 92 to 100 % of the surface where their skinning does. The barrel is the thin run in front of the turret. A plane's propeller is the blade disc at the nose. A tank modelled in pieces (Tripo's Smart Mesh) also gives up its road wheels (round pieces inside the track loop, their vertices about one distance from the axle and their rim going round, as far as vanilla's wheels) and its track runs (pieces half the hull long): on vanilla's light tanks this rule finds every vertex their wheel bones carry. A wheel must also look the same turned half a turn, as vanilla's do, unless its rim closes a full circle (a toothed sprocket). A bogie arm or a coarse wheel that would turn like a spinning diamond stays on the hull. A plane's propeller ends at the cowling, the first slice behind the blade disc as narrow as the stretch behind it. Each part is split off with its own vertices, and each cut is closed with a cap in the colours around it, so a turning turret shows no hole.
+- **Clips.** Each role plays vanilla's clip of the kind, moved onto the model's own pivots and scaled to its size: the barrel recoils by the share of its own length vanilla's does. A tank's turret also turns 21.7 degrees (vanilla's idle traverse) before the shot and back after it. A propeller turns 36 degrees a frame over whole turns, so the loop does not jump, and the plane is lifted so the spinning blades clear the ground. Road wheels turn by vanilla's road-wheel spin, faster for a smaller wheel so the rim moves as far. No frame sinks below the ground (a death keeps vanilla's settling), and a turret blown off in a death lands on its flat base, clear of the hull, moved the short way off it. A cut part is set off its cut by a hair, so the file checks do not weld its rim to the body's.
+- **Mod text.** The entity is vanilla's entity for the kind, renamed. An event at a node the model lacks is dropped, and a state playing an animation the model lacks plays `idle`.
+
+The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rules with the kind's roles and its group's limits (`vehicle` for tanks, buildings and landmarks, `air_naval` for ships and planes), plus these:
+
+| Rule | Check |
+| --- | --- |
+| STATIC-SIZE, STATIC-GROUND | The size and the ground (a ship's waterline and draft) are vanilla's |
+| STATIC-TRIANGLES, STATIC-SHADER | Within the kind's budget, with its shader |
+| STATIC-BONES, STATIC-LOCATORS, STATIC-COLLISION | The bones, locators and 8-vertex `Collision` box vanilla's entity and clips use |
+| STATIC-RIGID | Every rendered vertex follows one bone wholly, so no part bends |
+| STATIC-PART-GAP | No part lifts off the part it is mounted on in any frame, deaths excepted |
+
+`static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), a 1024 px close-up of the rest pose from the front and the back quarter (a ship's mast and a plane's gun stubs are small on the six-view sheets), and a game-size sheet: the model and the vanilla model nearest the kind's median size, side by side, at the pixels a metre a vanilla soldier gets on the map. A ship's water is drawn see-through, so its hull shows as it sinks. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
+
 ## Other model kinds
 
-Units are the tested route. For other models, only the parts below have been proven, each on one model, outside the unit scripts.
+The notes below come from models made by hand before the [static route](#static-and-rigid-part-models). They still hold for a model made outside it.
 
 **Buildings and landmarks (proven on one model).**
 
@@ -495,8 +537,6 @@ Units are the tested route. For other models, only the parts below have been pro
 - Bake ambient occlusion with 128 samples. 16 leaves speckles along thin painted bands.
 - A sail can be a thin closed loft with its emblem drawn in the material from the object's coordinates. It bakes crisp at 1024 with no hand UV and shows from both sides without relying on culling.
 
-**Planes.** Not yet covered.
-
 **Textures for any 3D model.** Use DXT5 with a full mip chain. The 2D image tool (`convert_to_dds.py`) writes uncompressed BGRA with one mip level, which suits interface images but not models. Put the `.dds` files in the model's folder and run `check_unit_files.py <folder> --repair-textures`, which rewrites them as DXT5 with mips and clears a normal map's blue channel.
 
 
@@ -508,7 +548,10 @@ Units are the tested route. For other models, only the parts below have been pro
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
 - **A weapon sinking in a death clip.** No free repair lifts a held prop out of the ground yet. Run `fit_prop.py` again (a higher `--ground-weight`, such as 40 instead of 10, cleared it on one unit), or turn the wrist live in Blender.
 - **Torso twist.** Library clips often fail review where the torso twists hard, in attacks and deaths. Expect to look for another preset, and sometimes a small live fix.
-- **Planes** are not covered.
+- **Static models at vanilla's budget.** A Tripo model of 20,000 triangles collapsed to a tank's 3,948 crumples its hull and running gear and thins the barrel to a blade (STATIC-SHAPE fails). Tripo's own low-poly at the budget is no better: spiky shards and a flat blade for a barrel. Make static models with Tripo's Smart Mesh at about the kind's budget (`triangle_budget` in `config/static_kinds.json`): clean hard-surface pieces, a round barrel, separate wheels and tracks.
+- **Tank tracks** do not scroll, so a tank's move reads as a bob with turning sprocket, idler and rollers. Vanilla scrolls a track texture of its own with the `PdxMeshAdvancedAnim` shader, and a Tripo model has one texture atlas. A kit feature fixes it: give the track runs their own straight UV strip on a shared track texture and that shader. A new Tripo source does not.
+- **Open wall shells and facade notches** (a Smart Mesh factory): walls and window bays modelled as single open surfaces show as hollow recesses, and an open loop larger than 32 edges stays a notch. A new Tripo source fixes it (another Smart Mesh variant, or a closed-surface setting). A kit feature that closes large open loops would risk filling openings that belong to the design.
+- **Creases, a notched capstone and thin wings** (a Smart Mesh obelisk and its eagle): a folded face, a rough cap and paper-thin wings are in the source mesh. A new Tripo source fixes them. No kit rule straightens a folded face without guessing the intended shape.
 - **UNIT-PROP-CLIP** reads a point behind an open, one-sided sheet such as a cape as inside the body. Look at the named frames before changing a clip.
 - **Review rounds** converge only with fixed notes and scoped rounds. Without them each fresh reviewer raises new minor items.
 - **Small looks at game size.** At the map camera a unit is a few dozen pixels tall. A pale face or a torn hem is lost there. Judge fidelity on the close sheets and readability on the game-size sheet.
