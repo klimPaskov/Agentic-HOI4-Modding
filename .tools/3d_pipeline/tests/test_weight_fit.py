@@ -161,6 +161,55 @@ class Fit(unittest.TestCase):
         self.assertTrue(same)
 
 
+class Rounds(unittest.TestCase):
+    """`fit_rounds` repeats the fit from its own result while a round lowers the deformed edges enough (stub fits, no mesh)."""
+
+    @staticmethod
+    def summary(total):
+        return {"clip": {"stretched": total, "squashed": 0}}
+
+    def run_rounds(self, totals, **options):
+        """`totals` lists the deformed edges before the first round, then after each round the stub fit makes (0 for a round that changes nothing)."""
+
+        from unittest import mock
+
+        calls = []
+
+        def stub(mesh, anims, out, *args):
+            index = len(calls)
+            calls.append(mesh)
+            before, after = totals[index], totals[index + 1]
+            if after == before:
+                return W.FitResult(False, before=self.summary(before), after=self.summary(before))
+            return W.FitResult(True, 1.0, 10, 5, self.summary(before), self.summary(after), {"1.0": after})
+
+        with mock.patch.object(W, "fit", stub):
+            result = W.fit_rounds(Path("a.mesh"), [Path("a.anim")], Path("out.mesh"), **options)
+        return result, calls
+
+    def test_a_round_that_lowered_the_total_enough_is_followed_by_another_from_the_fitted_mesh(self) -> None:
+        result, calls = self.run_rounds([5382, 2185, 1688, 1501])
+        self.assertEqual(result.rounds, 3)
+        self.assertEqual(list(result.round_totals), [5382, 2185, 1688, 1501])
+        self.assertEqual(calls, [Path("a.mesh"), Path("out.mesh"), Path("out.mesh")])
+        self.assertEqual(result.before["clip"]["stretched"], 5382, "before is the first round's")
+        self.assertEqual(result.after["clip"]["stretched"], 1501)
+
+    def test_a_round_that_gains_less_than_the_bound_ends_it_and_the_rounds_are_capped(self) -> None:
+        result, _calls = self.run_rounds([1000, 500, 480, 300])
+        self.assertEqual(result.rounds, 2, "2 of 500 is under the gain bound: the third round never starts")
+        result, _calls = self.run_rounds([1000, 500, 250, 125, 60], max_rounds=2)
+        self.assertEqual(result.rounds, 2)
+
+    def test_a_round_that_changes_nothing_keeps_the_rounds_before_it(self) -> None:
+        result, _calls = self.run_rounds([1000, 500, 500])
+        self.assertTrue(result.changed)
+        self.assertEqual(result.rounds, 1)
+        self.assertEqual(result.after["clip"]["stretched"], 500)
+        first, _calls = self.run_rounds([1000, 1000])
+        self.assertFalse(first.changed)
+
+
 class Stage(unittest.TestCase):
     def test_the_stage_fits_the_staged_mesh_in_place_and_records_what_changed(self) -> None:
         import run_pilot

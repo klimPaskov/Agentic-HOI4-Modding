@@ -60,6 +60,8 @@ from typing import Dict, List, Optional, Tuple
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
+import numpy as np
+
 from lib import pdx_binary, pdx_deform, stage_verdict
 
 PROMPT = PIPELINE_ROOT / "config" / "visual_review_prompt.md"
@@ -159,11 +161,15 @@ def gfx_texts(mod_root: Optional[Path]) -> List[str]:
 
 
 def pick_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, count: int) -> List[int]:
-    """Evenly spaced sample indices plus the worst-stretch frame and the lowest and highest frames."""
+    """Evenly spaced sample indices plus the worst-stretch frame, the lowest and highest frames, and the frame where a bone
+    moves furthest from its first-frame place (`peak_motion_frame`)."""
 
     anim = pdx_deform.load_anim(anim_path)
     last = max(anim.frames - 1, 0)
     frames = {round(last * k / max(count - 1, 1)) for k in range(count)}
+    peak = peak_motion_frame(anim)
+    if peak is not None:
+        frames.add(peak)
     if mesh.skinned and anim.frames:
         report = pdx_deform.deformation_report(mesh, anim)
         frames.update((report.worst_frame, report.lowest_frame, report.highest_frame))
@@ -196,8 +202,8 @@ def flagged_frames(findings_files: List[Path], clip: str) -> Dict[int, str]:
 def review_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, step: int = REVIEW_STEP, flagged: Optional[Dict[int, str]] = None,
                   count: Optional[int] = None) -> Tuple[List[int], Dict[int, str]]:
     """(sample frames, {frame: why it is shown}) of one clip: the fixed spread (`spread_frames`, or `count` evenly spaced frames), then
-    the frames a check flagged and the worst-stretch, lowest and highest frames on top. A fixed frame is labelled only when a check
-    flagged it or it is an extreme too."""
+    the frames a check flagged, the frame a bone moves furthest (`peak_motion_frame`) and the worst-stretch, lowest and highest frames on
+    top. A fixed frame is labelled only when a check flagged it or it is an extreme too."""
 
     anim = pdx_deform.load_anim(anim_path)
     last = max(anim.frames - 1, 0)
@@ -206,6 +212,9 @@ def review_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, step: int = REV
     for frame, rules in (flagged or {}).items():
         if 0 <= frame <= last:
             labels.setdefault(frame, []).append(f"flagged {rules}")
+    peak = peak_motion_frame(anim)
+    if peak is not None and 0 <= peak <= last:
+        labels.setdefault(peak, []).append("furthest move")
     if mesh.skinned and anim.frames:
         report = pdx_deform.deformation_report(mesh, anim)
         for frame, why in ((report.worst_frame, "worst stretch"), (report.lowest_frame, "lowest"), (report.highest_frame, "highest")):
@@ -213,6 +222,23 @@ def review_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, step: int = REV
                 labels.setdefault(frame, []).append(why)
     frames = sorted(set(fixed) | set(labels))
     return frames, {frame: ", ".join(labels[frame]) for frame in frames if frame in labels}
+
+
+def peak_motion_frame(anim) -> Optional[int]:
+    """The frame where one bone's translation is furthest from its first frame, or None when nothing moves.
+
+    A tank's gun recoil peaks at frame 4 of a 149-frame attack and lasts about 20 frames, so evenly spaced frames missed it
+    and two fresh reviewers saw no shot fired."""
+
+    best, frame = 1e-6, None
+    for channel in anim.channels.values():
+        moves = np.asarray(channel.get("t", []), dtype=float)
+        if moves.ndim != 2 or len(moves) < 2:
+            continue
+        distance = np.linalg.norm(moves - moves[0], axis=1)
+        if float(distance.max()) > best:
+            best, frame = float(distance.max()), int(distance.argmax())
+    return frame
 
 
 def diagnostic_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path) -> List[int]:
@@ -436,6 +462,7 @@ def render(
     texture_anim_speed: Optional[float] = None,
     findings: Optional[List[Path]] = None,
     count: Optional[int] = None,
+    sun_shadow: bool = True,
 ) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
@@ -468,6 +495,8 @@ def render(
         "ground_alpha": ground_alpha,
         "texture_anim_speed": texture_anim_speed,
     }
+    if not sun_shadow:
+        request["sun_shadow"] = False
     if attach:
         request["attach"] = attach
     out.mkdir(parents=True, exist_ok=True)

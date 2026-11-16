@@ -287,3 +287,19 @@ class Inputs(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class PeakMotion(unittest.TestCase):
+    def test_the_frame_a_bone_moves_furthest_is_reviewed(self) -> None:
+        import numpy as np
+
+        recoil = np.zeros((149, 3))
+        recoil[1:22, 1] = np.concatenate([np.linspace(0.1, 0.48, 4), np.linspace(0.48, 0.0, 17)])
+        anim = review_unit.pdx_deform.Animation(fps=15.0, frames=149, channels={"barrel_tip": {"t": recoil, "q": np.tile([0.0, 0.0, 0.0, 1.0], (149, 1)), "s": np.ones(149)}})
+        self.assertEqual(review_unit.peak_motion_frame(anim), 4)
+
+    def test_a_still_clip_has_no_peak(self) -> None:
+        import numpy as np
+
+        anim = review_unit.pdx_deform.Animation(fps=15.0, frames=10, channels={"root": {"t": np.zeros((10, 3)), "q": np.tile([0.0, 0.0, 0.0, 1.0], (10, 1)), "s": np.ones(10)}})
+        self.assertIsNone(review_unit.peak_motion_frame(anim))

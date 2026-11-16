@@ -557,6 +557,49 @@ def tall_base_entry(kind: str, measured: List[dict]) -> Optional[dict]:
             "about": "a tall and thin landmark is sized on its height unless its largest horizontal side is over max_share of that height, then on the base (largest side / max_share)"}
 
 
+# A vehicle's height and footprint may exceed its vanilla reference's by this share (kit rule: under a pixel of the
+# reference's height at game size, so a model never reads taller than vanilla's beside it).
+SPAN_MARGIN = 0.05
+
+
+def span_bound_entry(kind: str, measured: List[dict], nearest_rel: str) -> Optional[dict]:
+    """A vehicle's height and footprint (the square root of its length times its width) as shares of its own main
+    measure, on the vanilla model nearest the kind's median size (the one the game-size sheet draws beside it)."""
+
+    if kind != "vehicle":
+        return None
+    entry = next(e for e in measured if e["rel"] == nearest_rel)
+    span = np.ptp(entry["points"], axis=0)
+    measure = sk.main_measure(entry["points"], kind)
+    return {"reference": nearest_rel, "height_share": round(float(span[2]) / measure, 4),
+            "footprint_share": round(float(math.sqrt(span[0] * span[1])) / measure, 4), "margin": SPAN_MARGIN,
+            "about": "a vehicle whose height or footprint (square root of length x width) is over the reference's share of the main measure, plus the margin, is sized on that span instead; kit rule margin: under a pixel at game size"}
+
+
+def move_ground_entry(game: Path, measured: List[dict]) -> dict:
+    """How far vanilla's light tanks bob their hull on its suspension in their move: the largest travel of the hull's
+    lowest point (`chassie`, in its parent `tank_base`'s frame) over the clip, as a share of the visible height. Vanilla
+    also bounces the whole tank (tracks with it) through `tank_base`, which the route takes out (the tracks stay on the
+    ground), so this is the most any part of the running gear may leave the ground."""
+
+    rows = {}
+    for entry in measured:
+        anim_path = game / entry["rel"].replace(".mesh", "_moving.anim")
+        mesh = entry["mesh"]
+        if not anim_path.is_file() or "chassie" not in mesh.bones:
+            continue
+        motion = sk.local_motion(mesh, pdx_deform.load_anim(anim_path))
+        if "chassie" not in motion:
+            continue
+        dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+        hull = np.array([sk.to_blender(p) for p in mesh.positions[(dominant == mesh.bones.index("chassie")) & ~mesh.collision]])
+        head = sk.to_blender(sk.bone_rest_heads(mesh)["chassie"])
+        lowest = [float(((hull - head) @ sk.quaternion_matrix(q).T + head + d)[:, 2].min()) for q, d in zip(motion["chassie"]["q"], motion["chassie"]["d"])]
+        rows[entry["rel"]] = round(float(np.ptp(lowest)) / float(np.ptp(entry["points"][:, 2])), 4)
+    return {"max_share": max(rows.values()), "per_model": rows,
+            "source": "the hull's bob on its suspension in vanilla light tank moves (chassie against tank_base), the largest, as a share of the height"}
+
+
 def calibrate(game: Path) -> dict:
     definitions = sk.scan_definitions(game)
     turn_limit = json.loads((PIPELINE / "config" / "deformation_calibration.json").read_text(encoding="utf-8"))["groups"]["air_naval"]["turn_per_frame"]["value"]
@@ -612,6 +655,7 @@ def calibrate(game: Path) -> dict:
                 # a tall and thin landmark is compared with the tall and thin vanilla one nearest the median size
                 "nearest_tall": nearest_tall(kind, measured, rows, runtime),
                 "tall_base": tall_base_entry(kind, measured),
+                "span_bound": span_bound_entry(kind, measured, min(with_scale, key=lambda r: abs(r["runtime"] - runtime))["rel"]),
                 "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale",
             },
             "entity": {"reference": entity_name, "mesh": reference, "scale": ref_scale["scale"], "file": definitions["entity"][entity_name]["source"],
@@ -637,6 +681,7 @@ def calibrate(game: Path) -> dict:
             speed = re.search(r"texture_anim_speed\s*=\s*([0-9.]+)", definitions["entity"][entity_name]["text"])
             contract["rules"]["tracks"]["texture_anim_speed"] = float(speed.group(1)) if speed else None
             contract["attack_turn"] = attack_turn(game, contract["clips"]["idle"])
+            contract["rules"]["move_ground"] = move_ground_entry(game, measured)
         if kind == "plane":
             contract["rules"] = {"propeller": PROPELLER_RULE}
             contract["extra_bones"] = ["propeller"]

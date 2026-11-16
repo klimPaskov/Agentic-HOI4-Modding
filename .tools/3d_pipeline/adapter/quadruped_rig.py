@@ -193,9 +193,11 @@ def _seat_on_load(points: np.ndarray, triangles: np.ndarray, load: Any, landmark
     seat = qload.fit_rider(points, triangles, load, rider_height, options.get("rider_footprint"))
     landmarks["saddle"] = np.asarray(seat["point"], dtype=float) - np.array([0.0, 0.0, ground])
     torso = points[:, 2] - ground > float(landmarks["belly_z"])
-    roll = qload.roll_limit(points, load.mask, torso, np.array([0.0, 1.0, 0.0]), ql.COLLAPSE_ROLL)
-    landmarks["load"] = {"roll_limit": roll, "bone": qload.LOAD_BONE}
-    return {**load.summary(float(np.ptp(points[:, 2]))), "saddle": _jsonable(seat), "roll_limit": roll, "bone": qload.LOAD_BONE}
+    axis = np.array([0.0, 1.0, 0.0])
+    roll = qload.roll_limit(points, load.mask, torso, axis, ql.COLLAPSE_ROLL)
+    other = qload.roll_limit(points, load.mask, torso, axis, -ql.COLLAPSE_ROLL)
+    landmarks["load"] = {"roll_limit": roll, "roll_limit_other_side": other, "bone": qload.LOAD_BONE}
+    return {**load.summary(float(np.ptp(points[:, 2]))), "saddle": _jsonable(seat), "roll_limit": roll, "roll_limit_other_side": other, "bone": qload.LOAD_BONE}
 
 
 def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
@@ -281,7 +283,6 @@ def _rotation(rows: List[ql.Rotation]) -> Quaternion:
 
 
 TORSO = ("Pelvis", "Spine", "Chest")
-DOWN_TOLERANCE = 0.01  # of the body's height
 
 
 def _dominant_groups(meshes: List[bpy.types.Object]) -> List[np.ndarray]:
@@ -313,33 +314,23 @@ def _lowest_by_group(meshes: List[bpy.types.Object], dominant: List[np.ndarray])
 
 
 def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground: float) -> Dict[str, Any]:
-    """Pick the death's roll and neck lift on its final pose, so the body ends lying on its torso.
+    """Pick the death's side, roll and neck lift on its final pose (`quadruped_layout.choose_collapse`), so the body ends lying on its torso:
+    neither a dropped head nor a load on the back may hold the dead body off the ground, and the neck turns against the roll only when
+    the head or neck is what holds it up."""
 
-    The largest roll (down from the layout's, in 6-degree steps) and the smallest neck lift (up to 60 degrees either way, in steps of 10)
-    whose final pose has no part lower than the torso by more than 1% of the body's height: neither a dropped head nor a
-    load on the back may hold the dead body off the ground. Without one, the pair whose torso ends nearest the lowest point."""
-
-    load = layout.landmarks.get("load") or {}
-    start = float(load.get("roll_limit", ql.COLLAPSE_ROLL)) if load else ql.COLLAPSE_ROLL
     dominant = _dominant_groups(meshes)
     height = float(layout.landmarks["height"])
-    best = None
-    tried = []
-    for roll in np.arange(start, -0.1, -6.0):
-        for lift in (0, 10, -10, 20, -20, 30, -30, 40, -40, 50, -50, 60, -60):
-            layout.landmarks["death"] = {"roll": float(roll), "neck_lift": float(lift)}
-            pose_frame(last, 0.0)
-            lowest = _lowest_by_group(meshes, dominant)
-            torso = min(lowest.get(name, math.inf) for name in TORSO)
-            gap = (torso - min(lowest.values())) / height
-            tried.append({"roll": round(float(roll), 1), "neck_lift": lift, "torso_gap": round(gap, 4)})
-            if best is None or gap < best[0] - 1e-9:
-                best = (gap, float(roll), float(lift))
-            if gap <= DOWN_TOLERANCE:
-                layout.landmarks["death"] = {"roll": float(roll), "neck_lift": float(lift)}
-                return {"roll": float(roll), "neck_lift": float(lift), "torso_gap": round(gap, 4), "tried": len(tried)}
-    layout.landmarks["death"] = {"roll": best[1], "neck_lift": best[2]}
-    return {"roll": best[1], "neck_lift": best[2], "torso_gap": round(best[0], 4), "tried": len(tried), "note": "no pair put the torso lowest"}
+
+    def evaluate(roll: float, lift: float):
+        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift}
+        pose_frame(last, 0.0)
+        lowest = _lowest_by_group(meshes, dominant)
+        torso = min(lowest.get(name, math.inf) for name in TORSO)
+        return (torso - min(lowest.values())) / height, min(lowest, key=lowest.get)
+
+    chosen = ql.choose_collapse(evaluate, ql.roll_limits(layout.landmarks))
+    layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"]}
+    return chosen
 
 
 def _torso_x(meshes: List[bpy.types.Object], torso: List[np.ndarray]) -> float:
@@ -370,11 +361,11 @@ def _spot_keeper(meshes: List[bpy.types.Object], pose_frame):
 
 
 def _body_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
-    """The whole body's turn: a rear pitches about the hind hooves, and a fall rolls about the edge of the side it falls toward,
-    so the body lies where it stood."""
+    """The whole body's turn: a rear pitches and a defend's sweep turns about the hind hooves, and a fall rolls about the edge of the side
+    it falls toward, so the body lies where it stood."""
 
-    if "__root_pitch__" in pose:
-        turn = _rotation(pose["__root_pitch__"]).to_matrix().to_4x4()
+    if "__root_pitch__" in pose or "__root_yaw__" in pose:
+        turn = _rotation(pose.get("__root_pitch__", []) + pose.get("__root_yaw__", [])).to_matrix().to_4x4()
         return Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
     if "__root_roll__" in pose:
         degrees = pose["__root_roll__"][0][1]

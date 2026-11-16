@@ -43,7 +43,7 @@ from pathlib import Path
 import bmesh
 import bpy
 import numpy as np
-from mathutils import Quaternion, Vector, kdtree
+from mathutils import Matrix, Quaternion, Vector, kdtree
 
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
@@ -841,6 +841,100 @@ def settle_to_first(action):
     return {"frames_added": count, "turn_degrees": round(worst_turn, 1), "worst_bone": worst_bone, "rate_degrees_per_frame": round(tripo_trim.settle_rate(steps), 2)}
 
 
+def held_weapon_hand(armature, args):
+    """(weapon bone, hand bone, other held bones) of a unit whose weapon has its own bone under a hand, else None."""
+
+    bones = {item.partition("=")[2] for item in args.rigid_part}
+    weapon = next((b for b in sorted(bones) if b == "Weapon" and b in armature.data.bones), None)
+    if weapon is None or armature.data.bones[weapon].parent is None:
+        return None
+    return weapon, armature.data.bones[weapon].parent.name, sorted(b for b in bones if b != weapon and b in armature.data.bones)
+
+
+def held_and_body(body, weapon_bone, others):
+    """(the held weapon's vertex mask, the body's mask, the body's triangles renumbered over its own vertices), or None when the weapon has under 50 vertices."""
+
+    names = {g.index: g.name for g in body.vertex_groups}
+    dominant = []
+    for v in body.data.vertices:
+        best = max(v.groups, key=lambda g: g.weight, default=None)
+        dominant.append(names.get(best.group, "") if best else "")
+    held = np.array([d == weapon_bone for d in dominant])
+    other = np.array([d in others for d in dominant])
+    if held.sum() < 50:
+        return None
+    mesh = body.data
+    mesh.calc_loop_triangles()
+    tri = np.empty(len(mesh.loop_triangles) * 3, dtype=np.int64)
+    mesh.loop_triangles.foreach_get("vertices", tri)
+    tri = tri.reshape(-1, 3)
+    keep = ~(held | other)
+    return held, keep, (np.cumsum(keep) - 1)[tri[keep[tri].all(axis=1)]]
+
+
+def evaluated_world(body) -> np.ndarray:
+    """The body's vertices as the armature poses them now, in world space."""
+
+    owner = body.evaluated_get(bpy.context.evaluated_depsgraph_get())
+    data = owner.to_mesh()
+    out = np.empty(len(data.vertices) * 3)
+    data.vertices.foreach_get("co", out)
+    owner.to_mesh_clear()
+    matrix = np.array(body.matrix_world)
+    return out.reshape(-1, 3) @ matrix[:3, :3].T + matrix[:3, 3]
+
+
+def clear_settled_weapon(armature, body, action, first_frame, last_frame, args):
+    """Keep the held weapon out of the body in the frames `settle_to_first` appended (lib/tripo_clearance.py, the grip stage's rule).
+
+    The grip stage cleared the clip as Tripo made it. The settle then blends every bone, the hand included, from the last pose to the first, and
+    the straight blend of two clear poses swings the weapon through the torso (the round 4 ogre's club: 9 frames, up to 9.1% of its points).
+    So the clearance runs again on the frames from the clip's old end on, and turns the hand about the wrist where the weapon is inside the body.
+    Returns the record, or None when the unit holds no weapon on its own bone."""
+
+    found = held_weapon_hand(armature, args)
+    if found is None or last_frame <= first_frame:
+        return None
+    weapon_bone, hand, others = found
+    from lib import tripo_clearance as CL
+
+    split = held_and_body(body, weapon_bone, others)
+    if split is None:
+        return None
+    held, keep, triangles = split
+    scene = bpy.context.scene
+    assign_action(armature, action)
+    start = max(first_frame - CL.HOLD_FRAMES, int(round(action.frame_range[0])))  # a few frames of the old clip too, so the turns fade in
+    frames = list(range(start, last_frame + 1))
+    weapon_frames, body_frames, pivots = [], [], []
+    for frame in frames:
+        scene.frame_set(frame)
+        points = evaluated_world(body)
+        weapon_frames.append(points[held])
+        body_frames.append(points[keep])
+        pivots.append(np.array(armature.matrix_world @ armature.pose.bones[hand].head))
+    height = float(max(f[:, 2].max() - f[:, 2].min() for f in body_frames[:1]))
+    result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height)
+    inverse = armature.matrix_world.inverted()
+    for index, frame in enumerate(frames):
+        vector = result["rotvecs"][index]
+        angle = float(np.linalg.norm(vector))
+        if angle < 1e-6:
+            continue
+        scene.frame_set(frame)
+        bone = armature.pose.bones[hand]
+        axis = (inverse.to_3x3() @ Vector(vector / angle)).normalized()
+        pivot = inverse @ Vector(pivots[index])
+        bone.matrix = Matrix.Translation(pivot) @ Matrix.Rotation(angle, 4, axis) @ Matrix.Translation(-pivot) @ bone.matrix
+        bpy.context.view_layer.update()
+        bone.keyframe_insert("rotation_quaternion", frame=frame)
+    for fcurve, _container in action_fcurves(action):
+        fcurve.update()
+    return {"hand": hand, "frames_judged": len(frames), "frames_changed": result["frames_changed"], "max_degrees": round(result["max_degrees"], 1),
+            "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
+            "failed_frames": [frames[i] for i in result["failed"]]}
+
+
 ARM_BONES = ("LeftArm", "RightArm")
 TRACKED_JOINTS = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")
 
@@ -1216,7 +1310,11 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
         extras["untwist"][role] = untwist_waist(armature, action, role, body)
     if role in args.settle:
         # After the arm level, before the chains: the cloth follows the settled body.
+        end_before = int(round(action.frame_range[1]))
         extras["settle"][role] = settle_to_first(action)
+        if extras["settle"][role] and extras["settle"][role].get("frames_added"):
+            # The straight blend of the held weapon's arm can swing the weapon through the body: the grip stage's clearance runs again on those frames.
+            extras["settle_clearance"][role] = clear_settled_weapon(armature, body, action, end_before, int(round(action.frame_range[1])), args)
     if stage is not None:
         # Before the easing, so a chain bone pushed fast by a collision is eased like any other joint.
         extras["chains"][role] = chain_stage.bake_chains(armature, action, stage, role)
@@ -1268,7 +1366,7 @@ def main():
     textures, base_path = export_base(armature, body, args, atlas)
 
     trims = dict(split_pair(item, "--trim") for item in args.trim)
-    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_chains": {}, "untwist": {}}
+    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_clearance": {}, "settle_chains": {}, "untwist": {}}
     trims_end = dict(split_pair(item, "--trim-end") for item in args.trim_end)
     clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras, trims_end) for role, clip in roles.items()}
 
@@ -1282,6 +1380,7 @@ def main():
         "ease_snaps": extras["ease_snaps"],
         "arm_level": extras["arm_level"],
         "settle": extras["settle"],
+        "settle_clearance": extras["settle_clearance"],
         "settle_chains": extras["settle_chains"],
         "untwist": extras["untwist"],
         "bones_after": len(armature.data.bones),

@@ -536,5 +536,184 @@ class ContractTests(unittest.TestCase):
         self.assertNotIn("STATIC-SHADER", rules)  # its track runs use vanilla's scrolling shader, which the contract allows
 
 
+
+def plate_mesh(low, high, cells=4):
+    """A flat open sheet in the plane z = low[2], `cells` by `cells` squares: (points, triangles)."""
+
+    xs = np.linspace(low[0], high[0], cells + 1)
+    ys = np.linspace(low[1], high[1], cells + 1)
+    points = np.array([[x, y, low[2]] for y in ys for x in xs])
+    faces = []
+    for j in range(cells):
+        for i in range(cells):
+            a = j * (cells + 1) + i
+            faces += [(a, a + 1, a + cells + 2), (a, a + cells + 2, a + cells + 1)]
+    return points, np.array(faces)
+
+
+def tube_mesh(start, end, radius, sides=8):
+    """A closed thin tube (a barrel or an antenna) from `start` to `end` along y: (points, triangles)."""
+
+    angles = np.linspace(0, 2 * np.pi, sides, endpoint=False)
+    ring = np.stack([radius * np.cos(angles), np.zeros(sides), radius * np.sin(angles)], axis=1)
+    points = np.vstack([ring + start, ring + end, [start], [end]])
+    faces = []
+    for k in range(sides):
+        n = (k + 1) % sides
+        faces += [(k, n, sides + n), (k, sides + n, sides + k), (2 * sides, n, k), (2 * sides + 1, sides + k, sides + n)]
+    return points, np.array(faces)
+
+
+def wedge_flake(origin, size=0.04, thickness=0.005):
+    """A small open wedge of four triangles (a Smart Mesh fender gusset): two side plates and the sloped strip."""
+
+    o = np.asarray(origin, dtype=float)
+    points = np.array([o, o + [0, size, 0], o + [0, 0, size], o + [thickness, 0, 0], o + [thickness, size, 0], o + [thickness, 0, size]])
+    return points, np.array([(0, 1, 2), (3, 5, 4), (1, 4, 5), (1, 5, 2)])
+
+
+class SurfaceCleanupTests(unittest.TestCase):
+    def test_a_needle_sticking_out_of_an_open_edge_is_found_and_a_barrel_is_not(self):
+        plate, plate_t = plate_mesh([0, 0, 0], [1, 1, 0])
+        # a needle hanging off the plate's edge: its base is the plate's edge between two of its vertices, its tip far out
+        tip = np.array([[0.01, 0.0, 0.0], [0.0, -0.6, 0.3]])
+        needle = (np.vstack([plate, tip]), np.vstack([plate_t, [(len(plate), 0, len(plate) + 1)]]))
+        self.assertEqual(sk.needle_triangles(*needle, size=1.0), [len(plate_t)])
+        barrel = assemble([(plate, plate_t), tube_mesh(np.array([0.5, 0.5, 0.2]), np.array([0.5, 2.5, 0.2]), 0.02)])
+        self.assertEqual(sk.needle_triangles(*barrel, size=2.5), [])  # a closed thin tube has no open edge
+        # a long thin triangle lying in the surface beside its neighbours (a fan into a seam) is no needle either
+        flat_tip = np.array([[0.01, 0.0, 0.0], [0.0, 0.6, 0.0]])
+        seam = (np.vstack([plate, flat_tip]), np.vstack([plate_t, [(len(plate), 0, len(plate) + 1)]]))
+        self.assertEqual(sk.needle_triangles(*seam, size=1.0), [])
+
+    def test_tiny_open_flakes_are_found_and_closed_or_large_pieces_are_not(self):
+        hull = box_mesh([0, 0, 0], [1, 0.6, 0.4])
+        flake = wedge_flake([0.3, 0.6, 0.4])
+        small_closed = box_mesh([0.1, 0.1, 0.4], [0.13, 0.13, 0.43])
+        plate = plate_mesh([0, 0, 0.5], [0.5, 0.5, 0.5])
+        points, triangles = assemble([hull, flake, small_closed, plate])
+        flakes = sk.loose_flakes(points, triangles, 1.0)
+        self.assertEqual(len(flakes), 1)
+        self.assertEqual(sorted(flakes[0].tolist()), [12, 13, 14, 15])  # the wedge's four triangles, nothing else
+
+    def test_flat_cards_get_a_thickness_bounded_by_their_neighbours(self):
+        disc, disc_t = disc_mesh([0.0, 0.0, 0.0], 0.15, 0.0, sides=16)
+        # an open card: the fan of one face of a zero-thickness disc
+        card = (disc, disc_t[[k for k in range(len(disc_t)) if k % 4 == 2]])
+        hull = box_mesh([0.2, -0.5, -0.2], [0.9, 0.5, 0.3])
+        points, triangles = assemble([card, hull])
+        cards = sk.flat_cards(points, triangles, 1.0)
+        self.assertEqual(len(cards), 1)
+        self.assertAlmostEqual(abs(float(cards[0]["normal"][0])), 1.0, places=6)
+        self.assertAlmostEqual(sk.card_thickness(cards[0], points, triangles, 1.0), sk.CARD_THICKNESS_SHARE, places=9)
+        # a closed plate 3 mm in front of it bounds it: each side grows into at most CARD_GAP_USE of the gap
+        wall = box_mesh([0.003, -0.2, -0.2], [0.03, 0.2, 0.2])
+        points, triangles = assemble([card, hull, wall])
+        thickness = sk.card_thickness(sk.flat_cards(points, triangles, 1.0)[0], points, triangles, 1.0)
+        self.assertAlmostEqual(thickness, 2 * sk.CARD_GAP_USE * 0.003, places=6)
+        # a belt passing through the card does not bound it (it touches it already)
+        belt = box_mesh([-0.003, -0.2, 0.1], [0.003, 0.2, 0.12])
+        points, triangles = assemble([card, hull, belt])
+        self.assertAlmostEqual(sk.card_thickness(sk.flat_cards(points, triangles, 1.0)[0], points, triangles, 1.0), sk.CARD_THICKNESS_SHARE, places=9)
+        # a closed wheel is no card
+        wheel = disc_mesh([0.0, 0.0, 0.0], 0.15, 0.03)
+        self.assertEqual(sk.flat_cards(*assemble([wheel, hull]), 1.0), [])
+
+    def test_the_rules_run_in_blenders_python(self):
+        """Blender's own Python has NumPy and no SciPy: the stage imports these rules there."""
+
+        self.assertNotIn("scipy", (PIPELINE / "lib" / "static_kinds.py").read_text(encoding="utf-8"))
+
+    def test_open_edges_and_pieces(self):
+        plate = plate_mesh([0, 0, 0], [1, 1, 0], cells=2)
+        self.assertEqual(sk.open_edge_count(plate[1]), 8)
+        self.assertEqual(sk.open_edge_count(box_mesh([0, 0, 0], [1, 1, 1])[1]), 0)
+        labels = sk.triangle_pieces(assemble([plate, box_mesh([2, 0, 0], [3, 1, 1])])[1])
+        self.assertEqual(len(set(labels.tolist())), 2)
+
+
+class GroundingTests(unittest.TestCase):
+    def test_running_gear_keeps_its_turn_and_loses_heave_and_pitch(self):
+        gear = box([-1.0, -2.0, 0.0], [1.0, 2.0, 0.5], 500)
+        turn = sk.quaternion_matrix(sk.axis_quaternion([0, 0, 1], 30.0))
+        pitch = sk.quaternion_matrix(sk.axis_quaternion([1, 0, 0], 4.0))
+        world = np.eye(4)
+        world[:3, :3] = turn @ pitch
+        world[:3, 3] = [0.3, 0.2, 0.15]  # a heave and a horizontal move
+        moved = gear @ world[:3, :3].T + world[:3, 3]
+        correction = sk.grounding(world, moved, 0.0)
+        fixed = moved @ correction[:3, :3].T + correction[:3, 3]
+        self.assertAlmostEqual(float(fixed[:, 2].min()), 0.0, places=9)  # on the ground
+        self.assertAlmostEqual(float(np.ptp(fixed[:, 2])), 0.5, places=6)  # level: its height is its rest height
+        self.assertTrue(np.allclose((correction @ world)[:3, :3], turn, atol=1e-9))  # only the turn about z is left
+        self.assertTrue(np.allclose(fixed[:, :2].mean(axis=0), moved[:, :2].mean(axis=0), atol=1e-9))  # in place
+
+    def test_track_ground_finding(self):
+        self.assertEqual(sk.track_ground_findings([0.0, 0.01, 0.0], 0.0, 1.0, 0.0314, "x_move.anim"), [])
+        finding = sk.track_ground_findings([0.0, 0.0323, 0.0], 0.0, 1.0, 0.0314, "x_move.anim")
+        self.assertEqual(finding[0][0], "STATIC-TRACK-GROUND")
+        self.assertIn("frame 1", finding[0][2])
+
+    @unittest.skipUnless((GAME / "gfx/models/units/tanks").is_dir(), "the game is not installed here")
+    def test_vanillas_whole_tank_bounce_would_fail_the_track_ground_check(self):
+        """Vanilla's light tank move bounces the tracks with the hull through tank_base: the route takes it out."""
+
+        tanks = GAME / "gfx/models/units/tanks"
+        findings = sk.kind_findings(tanks / "GER_tank_light.mesh", sk.kind_contract("vehicle"),
+                                    [tanks / "GER_tank_light_moving.anim", tanks / "GER_tank_light_idle.anim"])
+        ground = [message for rule, _severity, message in findings if rule == "STATIC-TRACK-GROUND"]
+        self.assertEqual(len(ground), 1)
+        self.assertIn("moving", ground[0])
+
+
+class SpanBoundTests(unittest.TestCase):
+    def test_a_tall_tank_is_sized_on_its_height_and_a_low_one_on_what_the_camera_sees(self):
+        contract = sk.kind_contract("vehicle")
+        bound = sk.span_bound(contract)
+        self.assertIsNotNone(bound)
+        self.assertIsNone(sk.span_bound(sk.kind_contract("building")))
+        source = contract["size"]["source"]
+        tall = box([-1.0, -2.0, 0.0], [1.0, 2.0, 3.0])
+        scale, _offset = sk.placement(tall, "vehicle", contract)
+        self.assertAlmostEqual(float(np.ptp(tall[:, 2])) * scale, bound["height"] * source, places=6)
+        self.assertAlmostEqual(sk.contract_measure(tall * scale, contract), source, places=6)  # STATIC-SIZE measures the same way
+        low = box([-1.67, -3.66, 0.0], [1.67, 3.66, 2.9])  # about vanilla's reference: under both bounds
+        self.assertAlmostEqual(sk.contract_measure(low, contract), sk.main_measure(low, "vehicle"), places=9)
+        wide = box([-3.0, -3.0, 0.0], [3.0, 3.0, 0.5])
+        scale, _offset = sk.placement(wide, "vehicle", contract)
+        self.assertAlmostEqual(6.0 * scale, bound["footprint"] * source, places=6)  # a broad flat tank is sized on its footprint
+
+    def test_the_bound_is_vanillas_reference_with_a_small_margin(self):
+        contract = sk.kind_contract("vehicle")
+        self.assertEqual(contract["size"]["span_bound"]["reference"], contract["size"]["nearest"]["rel"])
+        self.assertLessEqual(contract["size"]["span_bound"]["margin"], 0.1)
+        self.assertGreater(contract["rules"]["move_ground"]["max_share"], 0.0)
+
+
+class TrackLoopTests(unittest.TestCase):
+    def test_v_runs_round_the_loop_in_whole_tiles(self):
+        # a stadium-shaped loop seen from the side: two runs and two half-circle ends, on both sides of the hull
+        angles = np.linspace(0, np.pi, 9)[1:-1]
+        top = [[y, 1.0] for y in np.linspace(-3, 3, 13)]
+        rear = [[3 + 0.5 * np.sin(a), 0.5 + 0.5 * np.cos(a)] for a in angles]
+        bottom = [[y, 0.0] for y in np.linspace(3, -3, 13)]
+        front = [[-3 - 0.5 * np.sin(a), 0.5 - 0.5 * np.cos(a)] for a in angles]
+        outline = np.array(top + rear + bottom + front)
+        n = len(outline)
+        points = np.vstack([np.column_stack([np.full(n, x), outline]) for x in (-1.8, -1.5, 1.5, 1.8)])
+        place, total = sk.loop_positions(points[:n])
+        self.assertAlmostEqual(total, 12 + np.pi * 0.5 * 2, delta=0.1)  # two runs and two half circles
+        on_bottom = np.isclose(points[:n, 2], 0.0)
+        order = np.argsort(points[:n][on_bottom, 1])
+        self.assertTrue(np.all(np.diff(place[on_bottom][order]) > 0))  # growing toward the rear on the ground run
+        faces = [[k, (k + 1) % n, n + k] for k in range(n)]  # a strip across the run on the left side
+        uvs = sk.track_face_uvs(points, faces, 0.9, 1.0)
+        spans = [float(np.ptp(face[:, 1])) for face in uvs]
+        self.assertLess(max(spans), 1.0)  # no face smears the whole loop (the seam face takes the next tile)
+        ends = [k for k in range(n) if abs(points[k, 1]) > 3.0]
+        self.assertTrue(all(spans[k] > 0.05 for k in ends))  # the curved ends get tread too, not one stretched row
+        v = np.concatenate([face[:, 1] for face in uvs])
+        self.assertAlmostEqual(float(np.ptp(v)), round(total * 0.9), delta=1.0)  # a whole number of tiles round the loop
+
 if __name__ == "__main__":
     unittest.main()

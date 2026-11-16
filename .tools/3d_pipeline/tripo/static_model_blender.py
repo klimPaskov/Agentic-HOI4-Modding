@@ -41,7 +41,9 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib import static_kinds as sk
+from lib import static_slab
 from lib import tripo_shape
+from tripo.static_mesh_ops import CARD_GROUP, card_cost, remove_slivers, thicken_cards
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 # Faces within this angle of each other count as one flat plate in the first reduction step (kit rule: a degree or two
@@ -216,13 +218,14 @@ def scrolling_tracks(track_vertices, rule):
     order = sorted(members_set)
     where = {v: k for k, v in enumerate(order)}
     points = np.array([mesh.vertices[v].co[:] for v in order])
-    uvs = sk.track_uvs(points, rule["v_per_measure"] / measure, rule["v_sign"])
-    for polygon in faces:
+    corners = sk.track_face_uvs(points, [[where[mesh.loops[i].vertex_index] for i in p.loop_indices] for p in faces],
+                                rule["v_per_measure"] / measure, rule["v_sign"])
+    for polygon, face_uvs in zip(faces, corners):
         polygon.material_index = slot
-        for loop_index in polygon.loop_indices:
-            u, v = uvs[where[mesh.loops[loop_index].vertex_index]]
+        for loop_index, (u, v) in zip(polygon.loop_indices, face_uvs):
             uv[loop_index].uv = (float(u), 1.0 - float(v))  # io_pdx_mesh writes v as 1 - the Blender v
-    report["tracks"] = {"faces": len(faces), "material_index": slot, "v_span": round(float(np.ptp(uvs[:, 1])), 3)}
+    v_all = np.concatenate([c[:, 1] for c in corners]) if corners else np.zeros(1)
+    report["tracks"] = {"faces": len(faces), "material_index": slot, "v_span": round(float(np.ptp(v_all)), 3), "v_round_the_loop": True}
 
 
 # ---- 1. import, join, face front, size and place ----
@@ -289,11 +292,15 @@ bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=size * 1e-5)
 welded -= len(bm.verts)
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 report["winding"] = consistent_winding(bm)
+# Needle slivers and loose open flakes go before anything is judged or reduced, and the triangles the flat cards will
+# take when thickened (after the holes are closed, below) are kept back from the reduction's target.
+report["slivers"] = remove_slivers(bm, size)
+cards_cost = card_cost(bm, size)
 bm.to_mesh(model.data)
 bm.free()
 budget = contract["triangle_budget"]["value"]
-# The cuts and caps add triangles, so the mesh is reduced to 94 % of the budget first.
-target = int(budget * 0.94)
+# The cuts and caps add triangles, so the mesh is reduced to 94 % of the budget first, less what the cards will add.
+target = int(budget * 0.94) - cards_cost
 current = triangle_count(model)
 planar = None
 if current > target:
@@ -355,6 +362,14 @@ if uv_layer is not None:
             loop[uv_layer].uv = first
 bmesh.ops.triangulate(bm, faces=closed)
 report["winding_after_holes"] = consistent_winding(bm)
+# Flat one-sided cards get a thickness, then their winding is made consistent like any piece (a closed shell facing
+# inward is turned out).
+model.vertex_groups.clear()
+model.vertex_groups.new(name="thickened_cards")  # index CARD_GROUP of the deform layer thicken_cards writes
+assert model.vertex_groups["thickened_cards"].index == CARD_GROUP
+report["cards"] = thicken_cards(bm, size)
+report["cards"]["triangles_kept_back"] = cards_cost
+report["winding_after_cards"] = consistent_winding(bm)
 bm.to_mesh(model.data)
 bm.free()
 report["small_holes_closed"] = len(closed)
@@ -438,9 +453,16 @@ if triangle_count(model) > budget:
     decimate.decimate_type = "COLLAPSE"
     decimate.ratio = budget / triangle_count(model) * 0.995
     decimate.use_collapse_triangulate = True
+    if model.vertex_groups.get("thickened_cards"):
+        # a thickened card's rim edges are the shortest in the model: the collapse would fold the card flat again
+        decimate.vertex_group = "thickened_cards"
+        decimate.invert_vertex_group = True
+        decimate.vertex_group_factor = 1000.0
     bpy.context.view_layer.objects.active = model
     bpy.ops.object.modifier_apply(modifier=decimate.name)
     parts_report["second_reduction"] = triangle_count(model)
+for group in list(model.vertex_groups):
+    model.vertex_groups.remove(group)
 # The parts on the final faces. A face off the cut planes belongs to the region its centre lies in. The parts were
 # split apart, so each is its own set of vertex-connected pieces: a cap (a face on a cut plane) and any piece take the
 # part most of their piece's other faces have, so a cap closes the part it is joined to whichever way it faces.
@@ -548,6 +570,9 @@ if kind == "plane" and "propeller_cut" in parts_report:
         pivots["propeller"] = [hub.x, hub.y, hub.z + lift]
     parts_report["propeller_sweep"] = {"radius": round(radius, 4), "lift": round(lift, 4)}
 
+# ---- 3b. the base slab of a building or landmark: flat top, square outline (lib/static_slab.py) ----
+slab, report["slab"] = static_slab.square_mesh(model.data, kind)
+
 # ---- 4. skeleton, weights, collision, locators, material ----
 positions, triangles = arrays(model)
 low, high = positions.min(axis=0), positions.max(axis=0)
@@ -574,6 +599,8 @@ for polygon in mesh.polygons:
 if flipped:
     mesh.normals_split_custom_set(corner)
 report["normals_set_to_face"] = flipped
+if slab is not None:
+    report["slab"]["faces_shaded_flat"] = static_slab.shade_flat(mesh, slab)  # a corner shared with its sides must not lean
 
 bone_specs = list(contract["skeleton"]["bones"]) + [{"name": b, "parent": "root", "head_share": None} for b in contract.get("extra_bones", [])]
 bone_specs += [{"name": k, "parent": "wheel_suspention", "head_share": None} for k in wheel_parts]
@@ -743,6 +770,29 @@ if rig is not None and request.get("motion"):
                 world[bone] = (world[parents[bone]] if parents.get(bone) else np.eye(4)) @ local
             worlds.append(world)
         rules = {}
+        # A tank's tracks and wheels stay on the ground in every clip but its death: vanilla's move bounces the whole tank
+        # through tank_base, and the ground rule below lifted its dips and kept its rises, so the tank hopped. Each frame
+        # the running gear keeps only its turn about z (sk.grounding), and the hull keeps its own bob on its suspension.
+        gear_root = part_bone.get("tracks") if kind == "vehicle" else None
+        if kind == "vehicle" and role != "death" and gear_root in parents:
+            gear = [b for b in order if b == gear_root or parents.get(b) == gear_root]
+            gear = gear if any(b in rest_points for b in gear) else [b for b in order if b in rest_points]
+            rest_world = {b: np.eye(4) for b in order}
+            ground = float(moved(rest_world, gear)[:, 2].min())
+            # the correction goes on the bone under root that carries the running gear (vanilla's tank_base) and all
+            # below it: root keeps its own motion (the idle's turn), and with it the Collision box, which follows root
+            carrier = gear_root
+            while parents.get(carrier) and parents.get(parents[carrier]):
+                carrier = parents[carrier]
+            corrected = subtree(carrier)
+            heave = []
+            for w in worlds:
+                correction = sk.grounding(w[gear_root], moved(w, gear), ground)
+                heave.append(abs(float(correction[2, 3])))
+                for b in corrected:
+                    w[b] = correction @ w[b]
+            rules["gear_grounded_bones"] = carrier
+            rules["gear_grounded_max_heave"] = round(max(heave), 4)
         # In a death, a mounted part that flies off (a tank's turret) is free: it lands clear of the hull and on the ground.
         free = set()
         if role == "death":
@@ -830,6 +880,8 @@ bie.export_meshfile(str(mesh_path), exp_mesh=True, exp_skel=rig is not None, exp
                     split_verts=False, sort_verts="+", plain_txt=False)
 report["mesh"] = mesh_path.name
 report["triangles"] = triangle_count(model)
+final_points, final_triangles = arrays(model)
+report["open_edges_final"] = sk.open_edge_count(tripo_shape.weld(final_points, size * 1e-5)[final_triangles])
 report["box"] = {"low": [round(float(v), 4) for v in low], "high": [round(float(v), 4) for v in high]}
 if request.get("blend"):
     bpy.ops.wm.save_as_mainfile(filepath=request["blend"])

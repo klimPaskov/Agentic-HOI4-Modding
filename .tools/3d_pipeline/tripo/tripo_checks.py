@@ -39,8 +39,12 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   within 8.2%). TRIPO-WAIST-TWIST: the shoulders turn further against the standing feet than vanilla's worst for the role with a quarter added. All are
   `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, `settle_death_upper`, the
   grounding in `run_pilot`, the untwist in `tripo/prepare_tripo_unit.py`).
+- TRIPO-NECK-SUNK: in some frame of a humanoid's clip the head's base sits less than 74% of its rest height above the shoulder line, in the
+  chest's own frame (vanilla's worst role clip keeps 79%, a rifle shouldered). The head sinks between the shoulders with no neck. `lib/tripo_neck.py`,
+  whose lift `run_pilot` applies to the staged clips.
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
-  direction the unit faces (the front view shows it edge-on).
+  direction the unit faces (the front view shows it edge-on). A head whose thinnest spread is above `MAX_FACE_FLATNESS` of its middle one (a club, a
+  mace: no broad face) is not judged, and the numbers carry its `head_flatness`.
 - TRIPO-WING-STRETCH: as TRIPO-CLOAK-STRETCH, for the wing region (`lib/tripo_chains.wing_masks`), with the same limit.
 - TRIPO-CHAIN-IN-BODY, TRIPO-CHAIN-GROUND: cloak or wing points that go deeper than `CHAIN_IN_BODY_MARGIN_SHARE` of the height inside the
   rest of the body (points modelled that deep at rest are left out) in more than `MAX_CHAIN_IN_BODY_SHARE` of them, or vertices more than
@@ -74,7 +78,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_pose
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -148,6 +152,7 @@ ENCLOSURE_TOLERANCE_SHARE = T.ENCLOSURE_TOLERANCE_SHARE
 MIN_ENCLOSURE_SHARE = T.MIN_ENCLOSURE_SHARE
 MIN_THUMB_OPPOSITION_DEGREES = T.MIN_THUMB_OPPOSITION_DEGREES
 MAX_BLADE_FACING_DEGREES = T.MAX_BLADE_FACING_DEGREES
+MAX_FACE_FLATNESS = T.MAX_FACE_FLATNESS
 
 
 def finding(rule: str, subject: str, message: str, **numbers) -> dict:
@@ -269,9 +274,15 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
-    limbs = side_parts(mesh, wings)
-    front = front_direction(mesh)
-    up = np.array([0.0, 1.0, 0.0])
+    return wing_cover_points(frames, body, wings, side_parts(mesh, wings), front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height,
+                             death, upright)
+
+
+def wing_cover_points(frames, body: np.ndarray, wings: np.ndarray, limbs: np.ndarray, front: np.ndarray, up: np.ndarray, height: float,
+                      death: bool, upright: Optional[np.ndarray] = None) -> Dict[str, float]:
+    """`wing_cover` on posed points in any frame (`up` the world's up): `body` the vertices judged in the front and map views, `limbs` those
+    judged in the side views. `tripo/chain_replay.py` measures with it in Blender's Z-up world."""
+
     upright = np.ones(len(frames)) if upright is None else np.asarray(upright, float)
     out = {}
     for view, (azimuth, elevation) in {**COVER_VIEWS, **SIDE_VIEWS}.items():
@@ -281,8 +292,8 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
         judged = [posed for posed, standing in zip(frames, upright) if not (death and side) or standing > UPRIGHT_SHARE]
         if not judged:
             continue
-        direction = view_direction(front, azimuth, elevation)
-        out[view] = round(max(tripo_chains.front_cover_share(posed, body, wings, direction, up, mesh.height, judged=limbs if side else None) for posed in judged), 4)
+        direction = tripo_chains.review_view(front, up, azimuth, elevation)
+        out[view] = round(max(tripo_chains.front_cover_share(posed, body, wings, direction, up, height, judged=limbs if side else None) for posed in judged), 4)
     return out
 
 
@@ -291,16 +302,20 @@ def silhouette_cells(points: np.ndarray, first: np.ndarray, second: np.ndarray, 
 
 
 def wing_face_shares(mesh, frames, sides) -> Dict[str, float]:
+    """Per side view and the map view, the lower of the two wings' median face share over the frames (`wing_face_shares_points`)."""
+
+    return wing_face_shares_points(frames, sides, front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height)
+
+
+def wing_face_shares_points(frames, sides, front: np.ndarray, up: np.ndarray, height: float) -> Dict[str, float]:
     """Per side view and the map view, the lower of the two wings' median face share over the frames: the screen cells
     (`SILHOUETTE_CELL_SHARE` of the height) a wing's vertices fill in that view over those they fill on the wing's own principal plane
-    (1 face on, about 0.2 edge-on for a ragged membrane)."""
+    (1 face on, about 0.2 edge-on for a ragged membrane). Posed points in any frame, `up` the world's up."""
 
-    front = front_direction(mesh)
-    up = np.array([0.0, 1.0, 0.0])
-    cell = SILHOUETTE_CELL_SHARE * mesh.height
+    cell = SILHOUETTE_CELL_SHARE * height
     out = {}
     for view in ("left", "right", "map"):
-        direction = view_direction(front, *tripo_chains.REVIEW_VIEWS[view])
+        direction = tripo_chains.review_view(front, up, *tripo_chains.REVIEW_VIEWS[view])
         first = tripo_chains.unit(np.cross(up, direction))
         second = np.cross(direction, first)
         medians = []
@@ -331,9 +346,18 @@ def clip_role(clip: str) -> str:
     return clip.rsplit("_", 1)[-1]
 
 
-def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False, sides=None) -> dict:
-    """One clip's worst in-body share and below-ground share per region; for the wings also the worst stretch, the cover per review view,
-    the face shares (with `sides`, the left and right wing masks) and the map-view motion."""
+def wing_root_zone(mesh) -> np.ndarray:
+    """The wings' root zone (`lib/tripo_chains.root_zone`): where the wing chains' weights blend into the body at the shoulders."""
+
+    chain = np.isin(np.array(mesh.bones), tripo_chains.chain_bones(mesh.bones, "wings"))
+    share = np.where(mesh.joints >= 0, mesh.weights * chain[np.clip(mesh.joints, 0, None)], 0.0).sum(axis=1)
+    return tripo_chains.root_zone(share, pdx_deform.mesh_edges(mesh))
+
+
+def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False, sides=None, root=None) -> dict:
+    """One clip's worst in-body share and below-ground share per region; for the wings also the worst stretch, the worst stretch of the
+    root zone (with `root`, `wing_root_zone`), the cover per review view, the face shares (with `sides`, the left and right wing masks)
+    and the map-view motion."""
 
     frames = posed_frames(mesh, anim, step)
     edges = pdx_deform.mesh_edges(mesh)
@@ -351,6 +375,9 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False
                        map_motion=wing_map_motion(mesh, frames, mask))
             if sides is not None:
                 row["face"] = wing_face_shares(mesh, frames[::2], sides)
+            if root is not None and np.any(root):
+                root_share, root_frame = T.region_stretch_share(mesh.positions, frames, edges, root, mesh.height)
+                row.update(root_stretch_share=round(root_share, 4), root_stretch_frame=root_frame * step)
         out[name] = row
     return out
 
@@ -398,11 +425,12 @@ def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, ste
     if not regions:
         return [], {}
     sides = wing_sides(mesh) if wings else None
+    root = wing_root_zone(mesh) if wings else None
     weapon = np.isin(np.array(mesh.bones)[np.clip(pdx_deform.dominant_bones(mesh), 0, None)], ["Weapon"])
     body = ~np.any(np.stack(list(regions.values())), axis=0) & ~weapon
     out, numbers = [], {"region_vertices": {name: int(mask.sum()) for name, mask in regions.items()}, "clips": {}}
     for clip, anim in anims.items():
-        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"), sides=sides)
+        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"), sides=sides, root=root)
         numbers["clips"][clip] = rows
         for name, row in rows.items():
             out += chain_row_findings(clip, name, row)
@@ -424,8 +452,12 @@ def blade_findings(mesh, anims: Dict[str, object], weapon_bone: str) -> (List[di
     joints = pdx_motion.posed_joints(mesh, idle)[0]
     hand = next((i for i, name in enumerate(mesh.bones) if name == holding_hand(mesh, weapon_bone)), None)
     hand_point = joints[hand] if hand is not None else posed[weapon].mean(axis=0)
+    _head, normal, flatness = T.blade_head(posed[weapon], hand_point)
     angle, normal = T.blade_facing_degrees(posed[weapon], hand_point, front_direction(mesh))
-    numbers = {"degrees": round(angle, 1), "face_normal": np.round(normal, 3).tolist()}
+    numbers = {"degrees": round(angle, 1), "face_normal": np.round(normal, 3).tolist(), "head_flatness": round(flatness, 3)}
+    if flatness > MAX_FACE_FLATNESS:
+        numbers["judged"] = False  # a near-round head has no broad face (lib/tripo_checks.MAX_FACE_FLATNESS)
+        return [], numbers
     if angle > MAX_BLADE_FACING_DEGREES:
         return [finding("TRIPO-BLADE-FACING", "idle", f"the broad face of the weapon's head is {angle:.0f} degrees off the front view (limit {MAX_BLADE_FACING_DEGREES:.0f}): it shows edge-on", degrees=round(angle, 1))], numbers
     return [], numbers
@@ -894,6 +926,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         found, numbers["death"] = death_findings(mesh, anims)
         findings += found
         found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims, [bone for bone in held_bones if bone in mesh.bones])
+        findings += found
+        found, numbers["neck"] = tripo_neck.neck_findings(mesh, anims)
         findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
