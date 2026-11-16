@@ -144,6 +144,29 @@ welded = len(bm.verts)
 bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=size * 1e-5)
 welded -= len(bm.verts)
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
+# Winding: a piece with an edge its two faces walk the same way (a face turned against its neighbours, which the game
+# culls) is turned consistent with Blender's recalc. Only such pieces are touched (a Smart Mesh plane's wings had them).
+conflicted = [e for e in bm.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert]
+fixed = 0
+if conflicted:
+    seen = set()
+    for edge in conflicted:
+        start = edge.link_faces[0]
+        if start in seen:
+            continue
+        island, stack = [], [start]
+        seen.add(start)
+        while stack:
+            face = stack.pop()
+            island.append(face)
+            for e in face.edges:
+                for other in e.link_faces:
+                    if other not in seen:
+                        seen.add(other)
+                        stack.append(other)
+        bmesh.ops.recalc_face_normals(bm, faces=island)
+        fixed += len(island)
+report["winding"] = {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed}
 bm.to_mesh(model.data)
 bm.free()
 budget = contract["triangle_budget"]["value"]
@@ -530,7 +553,8 @@ if rig is not None and request.get("motion"):
             world = {}
             for bone in order:
                 c = Vector(heads[bone])
-                channel = clip["bones"].get(bone)
+                # a wheel turns only by the spin: vanilla's wheel channels also park its spare wheel bones far away
+                channel = None if bone in wheel_parts else clip["bones"].get(bone)
                 rotation = Quaternion(channel["q"][f]) if channel else Quaternion()
                 shift = Vector(channel["d"][f]) * (barrel_scale / clip["scale"] if bone.startswith("barrel") and channel else 1.0) if channel else Vector()
                 spin = clip.get("wheel_spin")
