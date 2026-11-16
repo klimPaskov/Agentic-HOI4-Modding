@@ -130,16 +130,43 @@ def clip_motion(game: Path, contract: dict) -> tuple[dict, Optional[float]]:
                 turn = contract["attack_turn"]
                 extras["turret"] = [{"type": "turn", "axis": [0.0, 0.0, 1.0],
                                      "degrees": [round(float(v), 4) for v in sk.turn_before_shot(frames, recoil, turn["degrees"], turn["ease_frames"])]}]
+        spin = vanilla_wheel_spin(mesh, motion) if contract["kind"] == "vehicle" else None
         motions[role] = {
             "frames": frames,
             "scale": scale,
             "source": clip["anim"],
+            "wheel_spin": None if spin is None else {"degrees": spin[0], "radius": spin[1] * scale},
             "bones": {bone: {"q": [[round(float(v), 7) for v in q] for q in channel["q"]],
                              "d": [[round(float(v) * scale, 6) for v in d] for d in channel["d"]]}
                       for bone, channel in motion.items()},
             "extras": extras,
         }
     return motions, barrel_length
+
+
+def vanilla_wheel_spin(mesh, motion: dict):
+    """A vanilla road wheel's turn about its axle per frame (degrees, unwrapped) and its radius, or None when the
+    clip turns no wheel. The road wheel is the wheel bone whose carried surface is nearest vanilla's median wheel size."""
+
+    wheels = [name for name in motion if name.startswith(("wheel_0", "wheel_1", "wheel_2"))]
+    if not wheels:
+        return None
+    dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+    radii = {}
+    for name in wheels:
+        chosen = (dominant == mesh.bones.index(name)) & ~mesh.collision
+        if chosen.sum() >= 4:
+            q = np.array([sk.to_blender(p) for p in mesh.positions[chosen]])
+            q = q[(q[:, 0] - q[:, 0].mean()) >= 0] if ((q[:, 0] - q[:, 0].mean()) >= 0).sum() >= 4 else q
+            radii[name] = float(max(np.ptp(q[:, 1]), np.ptp(q[:, 2])) / 2)
+    if not radii:
+        return None
+    road = sorted(radii, key=lambda n: radii[n])[len(radii) // 2]
+    quaternions = np.asarray(motion[road]["q"])
+    angles = np.unwrap(2 * np.arctan2(quaternions[:, 1] * np.sign(quaternions[:, 0] + 1e-12), np.abs(quaternions[:, 0])))
+    if np.ptp(angles) < 1e-3:
+        return None
+    return [round(float(v), 4) for v in np.degrees(angles - angles[0])], radii[road]
 
 
 def vanilla_barrel_length(mesh) -> Optional[float]:

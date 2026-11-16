@@ -88,7 +88,7 @@ CLIPS = {
 # The skeleton each kind rebuilds (vanilla's names). A tank keeps vanilla's hull and gun bones; its wheels are not rebuilt
 # (a Tripo tank has no separate wheels). A ship keeps vanilla's two-bone contract; a plane vanilla's root plus a propeller.
 SKELETON = {
-    "vehicle": ["root", "tank_base", "chassie", "turret", "barrel_base", "barrel_tip"],
+    "vehicle": ["root", "tank_base", "chassie", "turret", "barrel_base", "barrel_tip", "wheel_suspention"],
     "plane": ["root"],
     "ship": ["root", "ship"],
     "building": [],
@@ -98,7 +98,7 @@ SKELETON = {
 PARTS = {
     # A Tripo barrel is one tube: it follows vanilla's barrel_base, the outer tube. Vanilla's barrel_tip is an inner tube
     # that slides back into it on the shot (most of the barrel's length), so a one-piece barrel on it all but vanishes.
-    "vehicle": {"body": "chassie", "turret": "turret", "barrel": "barrel_base"},
+    "vehicle": {"body": "chassie", "turret": "turret", "barrel": "barrel_base", "tracks": "wheel_suspention"},
     "plane": {"body": "root", "propeller": "propeller"},
     "ship": {"body": "ship"},
     "landmark": {"body": "root"},
@@ -206,6 +206,67 @@ def clip_entry(game: Path, mesh_rel: str, anim_rel: str) -> dict:
 
 def _width(points: np.ndarray, chosen: np.ndarray) -> float:
     return float(np.percentile(points[chosen, 0], 99) - np.percentile(points[chosen, 0], 1))
+
+
+WHEEL_PREFIX = ("wheel_0", "wheel_1", "wheel_2")
+
+
+def _wheel_shares(entry: dict):
+    """(inner |x| as a share of the half-width, diameter as a share of the length, centre height as a share of the
+    height) of each of a vanilla tank's wheel bones, from the vertices that bone carries."""
+
+    mesh = entry["mesh"]
+    points = np.array([sk.to_blender(p) for p in mesh.positions])
+    dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+    low, high = entry["low"], entry["high"]
+    span, centre_x = high - low, (low[0] + high[0]) / 2
+    rows = []
+    for index, name in enumerate(mesh.bones):
+        if not name.startswith(WHEEL_PREFIX):
+            continue
+        q = points[(dominant == index) & ~mesh.collision]
+        if len(q) < 4:
+            continue
+        side = q[(q[:, 0] - centre_x) > 0] if ((q[:, 0] - centre_x) > 0).sum() >= len(q) / 3 else q
+        e = np.ptp(side, axis=0)
+        rows.append((float(np.abs(q[:, 0] - centre_x).min() / (span[0] / 2)), float(max(e[1], e[2]) / span[1]),
+                     float(((side[:, 2].min() + side[:, 2].max()) / 2 - low[2]) / span[2])))
+    return rows
+
+
+def wheel_rules(measured: List[dict]) -> dict:
+    """The road-wheel and track rule (lib/static_kinds.running_gear), from vanilla's wheel bones, and its check on
+    vanilla's own tanks: the share of their wheel-carried vertices it finds (recall) and of what it finds that is a wheel."""
+
+    rows = [row for entry in measured for row in _wheel_shares(entry)]
+    inner = [r[0] for r in rows]
+    diameters = [r[1] for r in rows]
+    road = sorted(diameters)[len(diameters) // 2]
+    rule = {
+        "x_share": round(0.9 * min(inner), 4),
+        "diameter_share": [round(0.5 * min(diameters), 4), round(1.5 * max(diameters), 4)],
+        "round_ratio": 1.67,
+        "track_length_share": 0.5,
+        "top_margin_share": 0.02,
+        "road_wheel_diameter_share": round(road, 4),
+        "source": f"{len(rows)} vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to "
+                  "1.5 times the largest; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+    }
+    validation = {}
+    for entry in measured:
+        mesh = entry["mesh"]
+        visible = ~mesh.collision
+        points = np.array([sk.to_blender(p) for p in mesh.positions])
+        triangles = mesh.triangles[visible[mesh.triangles].all(axis=1)]
+        found = sk.running_gear(points, triangles, rule)
+        dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+        truth = np.array([mesh.bones[j].startswith(WHEEL_PREFIX) if j >= 0 else False for j in dominant])
+        chosen = np.concatenate([w["vertices"] for w in found["wheels"]]) if found["wheels"] else np.zeros(0, dtype=np.int64)
+        if truth.any():
+            validation[entry["rel"]] = {"wheels": len(found["wheels"]), "recall": round(float(np.isin(np.nonzero(truth)[0], chosen).mean()), 3),
+                                        "precision": round(float(truth[chosen].mean()), 3) if len(chosen) else 0.0}
+    rule["validation"] = validation
+    return rule
 
 
 def vehicle_rules(game: Path, measured: List[dict]) -> dict:
@@ -499,6 +560,7 @@ def calibrate(game: Path) -> dict:
         }
         if kind == "vehicle":
             contract["rules"] = vehicle_rules(game, measured)
+            contract["rules"]["wheels"] = wheel_rules(measured)
             contract["attack_turn"] = attack_turn(game, contract["clips"]["idle"])
         if kind == "plane":
             contract["rules"] = {"propeller": PROPELLER_RULE}

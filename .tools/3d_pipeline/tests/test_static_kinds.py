@@ -203,6 +203,64 @@ class GeometryTests(unittest.TestCase):
         self.assertEqual(list(sk.ground_lift([0.1, -0.2, 0.0])), [0.0, 0.2, 0.0])
 
 
+def box_mesh(low, high):
+    """An 8-vertex closed box: (points, triangles)."""
+
+    (x0, y0, z0), (x1, y1, z1) = low, high
+    points = np.array([[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], dtype=float)
+    faces = [(0, 2, 1), (0, 3, 2), (4, 5, 6), (4, 6, 7), (0, 1, 5), (0, 5, 4), (1, 2, 6), (1, 6, 5), (2, 3, 7), (2, 7, 6), (3, 0, 4), (3, 4, 7)]
+    return points, np.array(faces)
+
+
+def disc_mesh(centre, radius, thickness, sides=16):
+    """A closed wheel facing x: (points, triangles)."""
+
+    angles = np.linspace(0, 2 * np.pi, sides, endpoint=False)
+    ring = np.stack([np.zeros(sides), radius * np.cos(angles), radius * np.sin(angles)], axis=1)
+    outer = ring + np.array(centre) + [thickness / 2, 0, 0]
+    inner = ring + np.array(centre) - [thickness / 2, 0, 0]
+    points = np.vstack([outer, inner, [np.array(centre) + [thickness / 2, 0, 0]], [np.array(centre) - [thickness / 2, 0, 0]]])
+    faces = []
+    for k in range(sides):
+        n = (k + 1) % sides
+        faces += [(k, n, sides + n), (k, sides + n, sides + k), (2 * sides, n, k), (2 * sides + 1, sides + k, sides + n)]
+    return points, np.array(faces)
+
+
+def assemble(parts):
+    points, triangles, offset = [], [], 0
+    for p, t in parts:
+        points.append(p)
+        triangles.append(t + offset)
+        offset += len(p)
+    return np.vstack(points), np.vstack(triangles)
+
+
+class RunningGearTests(unittest.TestCase):
+    RULE = {"x_share": 0.5, "diameter_share": [0.03, 0.28], "round_ratio": 1.67, "track_length_share": 0.5, "top_margin_share": 0.02}
+
+    def test_wheels_and_tracks_of_a_tank_in_pieces(self):
+        parts = [box_mesh([-1.5, -4.0, 0.6], [1.5, 4.0, 2.5])]  # hull
+        for side in (-1, 1):
+            parts.append(box_mesh([side * 2.0 - 0.3, -4.0, 0.0], [side * 2.0 + 0.3, 4.0, 1.4]))  # a track run
+            for y in (-2.4, -0.8, 0.8, 2.4):
+                parts.append(disc_mesh([side * 1.8, y, 0.5], 0.45, 0.25))  # road wheels inside the track loop
+        parts.append(disc_mesh([1.9, 0.0, 3.0], 0.2, 0.1))  # a round fitting high on the hull: not a wheel
+        points, triangles = assemble(parts)
+        gear = sk.running_gear(points, triangles, self.RULE)
+        self.assertEqual(len(gear["wheels"]), 8)
+        for wheel in gear["wheels"]:
+            self.assertAlmostEqual(wheel["radius"], 0.45, delta=0.02)
+            self.assertAlmostEqual(wheel["centre"][2], 0.5, delta=0.02)
+        self.assertEqual(len(gear["tracks"]), 16)  # both track boxes, 8 vertices each
+        self.assertEqual([round(w["centre"][1], 1) for w in gear["wheels"][:2]], [-2.4, -2.4])  # front first, left then right
+
+    def test_a_tank_in_one_piece_has_no_wheels(self):
+        points, triangles = box_mesh([-2.0, -4.0, 0.0], [2.0, 4.0, 2.5])
+        gear = sk.running_gear(points, triangles, self.RULE)
+        self.assertEqual(gear["wheels"], [])
+
+
 class ClipTests(unittest.TestCase):
     def test_resample_keeps_seconds_or_the_count_asked(self):
         q = np.array([sk.axis_quaternion([0, 0, 1], a) for a in np.linspace(0, 90, 16)])
@@ -291,6 +349,9 @@ class ContractTests(unittest.TestCase):
 
         tank, barrel = static_model.clip_motion(GAME, sk.kind_contract("vehicle"))
         self.assertEqual(set(tank), {"idle", "move", "attack", "death"})
+        spin = tank["move"]["wheel_spin"]["degrees"]
+        self.assertLess(min(spin[-1] % 360.0, 360.0 - spin[-1] % 360.0), 12.0)  # the wheels close whole turns over the loop
+        self.assertIsNone(tank["idle"]["wheel_spin"])
         self.assertGreater(barrel, 0)
         turn = tank["attack"]["extras"]["turret"][0]["degrees"]
         self.assertAlmostEqual(max(turn), sk.kind_contract("vehicle")["attack_turn"]["degrees"], places=3)
@@ -317,6 +378,13 @@ class ContractTests(unittest.TestCase):
                 if name == "state":
                     played = sk.scalar(value, "animation")
                     self.assertTrue(played is None or played in contract["clips"], (kind, played))
+
+    def test_wheel_rule_finds_every_vanilla_wheel(self):
+        """The wheel rule, run on vanilla's light tanks, finds every vertex their wheel bones carry."""
+
+        for rel, row in sk.load_kinds()["vehicle"]["rules"]["wheels"]["validation"].items():
+            self.assertGreaterEqual(row["recall"], 0.99, rel)
+            self.assertGreaterEqual(row["wheels"], 4, rel)
 
     @unittest.skipUnless((GAME / "gfx/models/units/tanks").is_dir(), "the game is not installed here")
     def test_kind_rules_fire_on_an_unscaled_vanilla_tank(self):

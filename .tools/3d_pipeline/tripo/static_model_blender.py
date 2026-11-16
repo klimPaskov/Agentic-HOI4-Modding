@@ -319,6 +319,29 @@ face_part = []
 for face in bm.faces:
     piece = votes.get(find(face.verts[0].index))
     face_part.append(max(set(piece), key=piece.count) if piece else region(centre(face)))
+# A tank's road wheels and track runs (separate pieces in a Smart Mesh) leave the hull: each wheel gets its own bone
+# under vanilla's wheel_suspention and spins, the tracks follow wheel_suspention as vanilla's do.
+wheel_parts = {}
+if kind == "vehicle" and contract["rules"].get("wheels"):
+    bm.verts.ensure_lookup_table()
+    final_points = np.array([v.co[:] for v in bm.verts])
+    final_triangles = np.array([[v.index for v in face.verts] for face in bm.faces])
+    gear = sk.running_gear(final_points, final_triangles, contract["rules"]["wheels"])
+    owner = {}
+    for k, wheel in enumerate(gear["wheels"]):
+        name_k = f"wheel_{k + 1:02d}"
+        wheel_parts[name_k] = {"centre": [float(v) for v in wheel["centre"]], "radius": wheel["radius"]}
+        for index in wheel["vertices"]:
+            owner[int(index)] = name_k
+    for index in gear["tracks"]:
+        owner.setdefault(int(index), "tracks")
+    for i, face in enumerate(bm.faces):
+        if face_part[i] != "body":
+            continue
+        owners = {owner.get(v.index) for v in face.verts}
+        if len(owners) == 1 and None not in owners:
+            face_part[i] = owners.pop()
+    parts_report["wheels"] = {k: {"centre": [round(v, 3) for v in w["centre"]], "radius": round(w["radius"], 3)} for k, w in wheel_parts.items()}
 vertex_part = {}
 for face, part in zip(bm.faces, face_part):
     for v in face.verts:
@@ -371,6 +394,9 @@ if flipped:
 report["normals_set_to_face"] = flipped
 
 bone_specs = list(contract["skeleton"]["bones"]) + [{"name": b, "parent": "root", "head_share": None} for b in contract.get("extra_bones", [])]
+bone_specs += [{"name": k, "parent": "wheel_suspention", "head_share": None} for k in wheel_parts]
+for k, wheel in wheel_parts.items():
+    pivots[k] = wheel["centre"]
 rig = None
 heads = {}
 if bone_specs:
@@ -391,7 +417,7 @@ if bone_specs:
             armature.edit_bones[spec["name"]].parent = armature.edit_bones[spec["parent"]]
             armature.edit_bones[spec["name"]].use_connect = False
     bpy.ops.object.mode_set(mode="OBJECT")
-    part_bone = contract["parts"]
+    part_bone = {**contract["parts"], **{k: k for k in wheel_parts}}
     groups = {part: model.vertex_groups.new(name=bone) for part, bone in part_bone.items()}
     bm = bmesh.new()
     bm.from_mesh(model.data)
@@ -468,7 +494,7 @@ if rig is not None and request.get("motion"):
     # rest positions of each bone's vertices (at most 600 a bone, for speed), for the landing and ground rules
     rest_points = {}
     for part, indices in members.items():
-        bone = contract["parts"].get(part) or part
+        bone = part_bone.get(part) or part
         if bone in parents and indices:
             chosen = np.array(sorted(indices))[:: max(1, len(indices) // 600)]
             rest_points[bone] = np.vstack([rest_points.get(bone, np.zeros((0, 3))), positions[chosen]])
@@ -507,6 +533,11 @@ if rig is not None and request.get("motion"):
                 channel = clip["bones"].get(bone)
                 rotation = Quaternion(channel["q"][f]) if channel else Quaternion()
                 shift = Vector(channel["d"][f]) * (barrel_scale / clip["scale"] if bone.startswith("barrel") and channel else 1.0) if channel else Vector()
+                spin = clip.get("wheel_spin")
+                if spin and bone in wheel_parts:
+                    # vanilla's road wheel turn, scaled so the rim moves as far as vanilla's: a smaller wheel turns faster
+                    turn = spin["degrees"][f] * spin["radius"] / max(wheel_parts[bone]["radius"], 1e-6)
+                    rotation = rotation @ Quaternion(Vector((1.0, 0.0, 0.0)), math.radians(turn))
                 for extra in clip.get("extras", {}).get(bone, []):
                     if extra["type"] == "turn":
                         rotation = rotation @ Quaternion(Vector(extra["axis"]), math.radians(extra["degrees"][f]))

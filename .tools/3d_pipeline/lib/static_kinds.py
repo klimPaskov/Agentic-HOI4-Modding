@@ -485,6 +485,64 @@ def propeller_cut(points: np.ndarray, rule: dict) -> dict:
     return {"cut_y": cut_y, "hub": hub, "disc_span": float(disc[peak])}
 
 
+def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
+    """A tank's road wheels and track runs, from its separate pieces (a Smart Mesh tank models them apart).
+
+    Pieces are the position-welded connected shells. Of those on the outer side (centre at least `rule.x_share` of the
+    half-width out) and in the lower half:
+    - a track run is a piece at least `rule.track_length_share` of the hull's length long;
+    - a wheel is a round piece (its length and height within `rule.round_ratio` of each other, thinner across than
+      round) whose diameter lies in `rule.diameter_share` (of the hull's length) and whose top stays under the track's. Pieces whose centres lie within half
+      a radius of each other (a tyre and its hub) are one wheel.
+    Returns {"wheels": [{"centre", "radius", "vertices"}], "tracks": vertex indices}, wheels ordered front to back and
+    left before right, and the vertex indices index `points`.
+    """
+
+    from lib import tripo_shape
+
+    size = float(np.ptp(points, axis=0).max())
+    welded = tripo_shape.weld(points, size * 1e-5)
+    low, high = points.min(axis=0), points.max(axis=0)
+    span = high - low
+    centre_x = (low[0] + high[0]) / 2
+    half = span[0] / 2
+    pieces = []
+    for shell in tripo_shape.shells(points, triangles, size * 1e-5):
+        vertices = np.nonzero(np.isin(welded, shell))[0]
+        q = points[vertices]
+        qlo, qhi = q.min(axis=0), q.max(axis=0)
+        e, c = qhi - qlo, (qlo + qhi) / 2
+        if abs(c[0] - centre_x) < rule["x_share"] * half or c[2] > (low[2] + high[2]) / 2:
+            continue
+        pieces.append((vertices, c, e))
+    tracks = [v for v, _c, e in pieces if e[1] >= rule["track_length_share"] * span[1]]
+    # a wheel sits inside the track loop: its top under the track's top (with a margin)
+    track_top = max((points[v][:, 2].max() for v in tracks), default=high[2]) + rule["top_margin_share"] * span[2]
+    lo_d, hi_d = rule["diameter_share"]
+    round_pieces = []
+    for vertices, c, e in pieces:
+        diameter = max(e[1], e[2])
+        if e[1] >= rule["track_length_share"] * span[1]:
+            continue
+        if not (lo_d * span[1] <= diameter <= hi_d * span[1]):
+            continue
+        if not (1 / rule["round_ratio"] <= e[1] / max(e[2], 1e-9) <= rule["round_ratio"]) or e[0] > diameter:
+            continue
+        if c[2] + e[2] / 2 > track_top:
+            continue
+        round_pieces.append([vertices, c, diameter / 2])
+    wheels = []
+    for vertices, c, radius in sorted(round_pieces, key=lambda p: -p[2]):
+        for wheel in wheels:
+            if np.linalg.norm(wheel["centre"][1:] - c[1:]) < 0.5 * wheel["radius"] and np.sign(wheel["centre"][0] - centre_x) == np.sign(c[0] - centre_x):
+                wheel["vertices"] = np.concatenate([wheel["vertices"], vertices])
+                break
+        else:
+            wheels.append({"centre": c.copy(), "radius": float(radius), "vertices": vertices})
+    wheels.sort(key=lambda w: (w["centre"][1], w["centre"][0]))
+    return {"wheels": wheels, "tracks": np.concatenate(tracks) if tracks else np.zeros(0, dtype=np.int64)}
+
+
 def box_point(low: Sequence[float], high: Sequence[float], share: Sequence[float]) -> List[float]:
     low, high = np.asarray(low, dtype=float), np.asarray(high, dtype=float)
     return [float(v) for v in low + (high - low) * np.asarray(share, dtype=float)]

@@ -289,6 +289,15 @@
        0.0365,
        0.8006
       ]
+     },
+     {
+      "name": "wheel_suspention",
+      "parent": "tank_base",
+      "head_share": [
+       0.5,
+       0.5168,
+       0.2789
+      ]
      }
     ],
     "source": "rest places as shares of the visible box, medians over the models that have the bone"
@@ -365,7 +374,8 @@
    "parts": {
     "body": "chassie",
     "turret": "turret",
-    "barrel": "barrel_base"
+    "barrel": "barrel_base",
+    "tracks": "wheel_suspention"
    },
    "mounts": {
     "turret": "chassie",
@@ -399,6 +409,65 @@
      "width_threshold": 0.2777,
      "min_length_share": 0.0841,
      "source": "barrel-weighted vs turret-weighted width over 7 vanilla light tanks; the threshold is their geometric middle; a barrel is at least half as long, against its turret, as vanilla's shortest"
+    },
+    "wheels": {
+     "x_share": 0.5014,
+     "diameter_share": [
+      0.0329,
+      0.2805
+     ],
+     "round_ratio": 1.67,
+     "track_length_share": 0.5,
+     "top_margin_share": 0.02,
+     "road_wheel_diameter_share": 0.1254,
+     "source": "62 vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to 1.5 times the largest; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+     "validation": {
+      "gfx/models/units/tanks/ENG_tank_light.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 0.851
+      },
+      "gfx/models/units/tanks/FRA_tank_light.mesh": {
+       "wheels": 22,
+       "recall": 1.0,
+       "precision": 1.0
+      },
+      "gfx/models/units/tanks/generic_tank_light.mesh": {
+       "wheels": 16,
+       "recall": 1.0,
+       "precision": 0.928
+      },
+      "gfx/models/units/tanks/GER_tank_light.mesh": {
+       "wheels": 42,
+       "recall": 1.0,
+       "precision": 0.391
+      },
+      "gfx/models/units/tanks/ITA_tank_light.mesh": {
+       "wheels": 24,
+       "recall": 1.0,
+       "precision": 0.813
+      },
+      "gfx/models/units/tanks/JAP_tank_light.mesh": {
+       "wheels": 16,
+       "recall": 1.0,
+       "precision": 0.899
+      },
+      "gfx/models/units/tanks/SOV_tank_light.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 1.0
+      },
+      "gfx/models/units/tanks/USA_tank_light.mesh": {
+       "wheels": 14,
+       "recall": 1.0,
+       "precision": 0.85
+      },
+      "gfx/models/units/tanks/FIN_light_armor.mesh": {
+       "wheels": 12,
+       "recall": 1.0,
+       "precision": 1.0
+      }
+     }
     }
    },
    "attack_turn": {
