@@ -209,6 +209,14 @@ class WeaponBone(unittest.TestCase):
         self.assertEqual(len(loose), 1)
         self.assertIn("float apart from the body at rest", loose[0].message)
 
+    def test_the_surface_distance_is_to_the_face_not_its_corners(self) -> None:
+        # A long thin triangle, like a decimated haft: a point beside its middle is near its surface and far from all three corners.
+        corners = np.array([[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.01, 0.5, 0.0]]])
+        point = np.array([[0.005, 0.5, 0.001]])
+        self.assertLess(pdx_motion.point_surface_distance(point, corners), 0.002)
+        self.assertGreater(float(np.linalg.norm(corners[0] - point, axis=1).min()), 0.004)
+        self.assertAlmostEqual(pdx_motion.point_surface_distance(np.array([[0.0, 2.0, 0.0]]), corners), 1.0, places=6)
+
     def test_a_part_that_follows_the_weapon_bone_only_partly_is_still_judged(self) -> None:
         loose, _facts = findings_with_weapon_bones([cube((0.15, 0.5, 0.04), 0.06, [("Head", 0.5), ("Spine", 0.5)])], ("Head",))
         self.assertTrue(loose)

@@ -627,10 +627,55 @@ def prop_clearance(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[PropC
     return reports
 
 
-def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePart]:
+def point_surface_distance(points: np.ndarray, corners: np.ndarray) -> float:
+    """The smallest distance from any of `points` (N, 3) to any triangle of `corners` (T, 3, 3), on the surface, not to its vertices.
+
+    A decimated haft is long triangles with vertices only at its ends, so a hand that closes round it can be far from every vertex of it."""
+
+    if not len(points) or not len(corners):
+        return float("inf")
+    a, b, c = corners[:, 0], corners[:, 1], corners[:, 2]
+    best = np.inf
+    for start in range(0, len(points), 256):
+        p = points[start:start + 256][:, None, :]
+        ab, ac, ap = b - a, c - a, p - a
+        d1, d2 = np.einsum("tk,ntk->nt", ab, ap), np.einsum("tk,ntk->nt", ac, ap)
+        bp, cp = p - b, p - c
+        d3, d4 = np.einsum("tk,ntk->nt", ab, bp), np.einsum("tk,ntk->nt", ac, bp)
+        d5, d6 = np.einsum("tk,ntk->nt", ab, cp), np.einsum("tk,ntk->nt", ac, cp)
+        va, vb, vc = d3 * d6 - d5 * d4, d5 * d2 - d1 * d6, d1 * d4 - d3 * d2
+        denom = np.where(np.abs(va + vb + vc) < 1e-12, 1e-12, va + vb + vc)
+        v, w = vb / denom, vc / denom
+        # Barycentric clamp: the closest point inside the triangle, else on its nearest edge.
+        inside = (va >= 0) & (vb >= 0) & (vc >= 0)
+        closest = a + v[..., None] * ab + w[..., None] * ac
+        dist = np.where(inside, np.linalg.norm(p - closest, axis=2), np.inf)
+        for e0, e1 in ((a, b), (b, c), (c, a)):
+            edge = e1 - e0
+            t = np.clip(np.einsum("ntk,tk->nt", p - e0, edge) / np.maximum(np.einsum("tk,tk->t", edge, edge), 1e-12), 0.0, 1.0)
+            dist = np.minimum(dist, np.linalg.norm(p - (e0 + t[..., None] * edge), axis=2))
+        best = min(best, float(dist.min()))
+    return best
+
+
+def _surface_gap(mesh: SkinnedMesh, mine: np.ndarray, others: np.ndarray) -> float:
+    """The distance from the body vertices near a part (within 5% of the height of its box) to the part's surface."""
+
+    height = max(mesh.height, 1e-6)
+    part_triangles = mesh.triangles[np.isin(mesh.triangles, mine).all(axis=1)]
+    low, high = mesh.positions[mine].min(axis=0) - 0.05 * height, mesh.positions[mine].max(axis=0) + 0.05 * height
+    near = others[np.all((mesh.positions[others] >= low) & (mesh.positions[others] <= high), axis=1)]
+    return point_surface_distance(mesh.positions[near], mesh.positions[part_triangles])
+
+
+def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation], rigid_props: Sequence[str] = ()) -> List[LoosePart]:
     """Every part but the largest, with its skinning and its distance from the rest of the unit per frame.
 
     A held prop (a separate shape that follows one bone wholly) counts as one part, however many pieces it has.
+    The rest gap of a held prop, and of a part that follows one of `rigid_props` wholly (the job's weapon bone, which the Tripo grip stage
+    binds in the body's one shape), is measured to the part's surface, not between vertices: a decimated haft is long triangles with
+    vertices only at their ends. Between vertices the dwarf's 1.4-height glaive measured 2.9% from the fingers that close round it, to its
+    surface 0.01% (2026-11-16).
     """
 
     labels = _parts(mesh)
@@ -663,18 +708,21 @@ def loose_parts(mesh: SkinnedMesh, clips: Dict[str, Animation]) -> List[LoosePar
             continue
         triangles = sum(triangle_count[member] for member in members)
         holder = -1
-        if key[0] == "prop":
-            others, holder = holding_vertices(mesh, props[key[1]], others)
-        sample = _evenly(mine, PROP_SAMPLES if key[0] == "prop" else PART_SAMPLES)
+        rigid = rigid_bone(mesh, mine)
+        prop_index = props[key[1]] if key[0] == "prop" else -1
+        if prop_index >= 0:
+            others, holder = holding_vertices(mesh, prop_index, others)
+        sample = _evenly(mine, PROP_SAMPLES if prop_index >= 0 else PART_SAMPLES)
         body = _evenly(others, BODY_SAMPLES)
         distance = np.linalg.norm(mesh.positions[sample][:, None] - mesh.positions[body][None], axis=2)
         flat = np.argsort(distance, axis=None)[:ANCHOR_PAIRS]
         pairs = np.stack(np.unravel_index(flat, distance.shape), axis=1)
         unweighted = int((mesh.weights[mine].sum(axis=1) <= 0).sum()) if mesh.skinned else 0
         gap = float(distance.min()) / height
-        bone = mesh.bones[props[key[1]]] if key[0] == "prop" else ""
+        if prop_index >= 0 or (rigid >= 0 and mesh.bones[rigid] in set(rigid_props)):
+            gap = min(gap, _surface_gap(mesh, mine, others) / height)
+        bone = mesh.bones[prop_index] if prop_index >= 0 else ""
         held_by = mesh.bones[holder] if holder >= 0 else ""
-        rigid = rigid_bone(mesh, mine)
         found.append(LoosePart(int(triangles), len(mine), unweighted, gap, gap, prop_bone=bone, held_by=held_by, rigid_to=mesh.bones[rigid] if rigid >= 0 else "", pieces=len(members)))
         anchors.append((sample[pairs[:, 0]], body[pairs[:, 1]]))
     if mesh.skinned and found:

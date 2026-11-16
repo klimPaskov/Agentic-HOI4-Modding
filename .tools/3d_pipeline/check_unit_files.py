@@ -503,7 +503,7 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits, weapon_bones
 
     from lib import pdx_motion
 
-    parts = pdx_motion.loose_parts(mesh, {path.name: anim for path, anim in loaded.items()})
+    parts = pdx_motion.loose_parts(mesh, {path.name: anim for path, anim in loaded.items()}, rigid_props=[bone for bone in weapon_bones if bone])
     facts["motion"][mesh_path.name]["loose_parts"] = [
         {"triangles": part.triangles, "unweighted": part.unweighted, "rest_gap": round(part.rest_gap, 4),
          "worst_gap": round(part.worst_gap, 4), "worst_clip": part.worst_clip, "worst_frame": part.worst_frame,
@@ -516,11 +516,12 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits, weapon_bones
     limit = limits.get("loose_gap")
     if limit is None:
         return
+    released_bones = {bone for bone in weapon_bones if bone}
     for prop in (part for part in parts if part.prop_bone and part.held_by):
         where = f"the body vertices that follow {prop.held_by}"
         if prop.rest_gap > limit:
             add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} ({prop.pieces} piece(s), {prop.triangles} triangles) is {prop.rest_gap:.1%} of the unit's height from {where} at rest: nothing holds it. Fit it to the hand again (fit_prop.py) or bind it to the bone that holds it")
-        elif prop.worst_gap > limit:
+        elif prop.worst_gap > limit and prop.prop_bone not in released_bones:  # a released weapon leaves the hand by design (the drop)
             add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} slides {prop.worst_gap:.1%} of the unit's height off {where} in {prop.worst_clip} frame {prop.worst_frame}; vanilla loose parts stay within {limit:.1%}")
     parts = [part for part in parts if not (part.prop_bone and part.held_by)]
     floating = [part for part in parts if part.rest_gap > limit]
