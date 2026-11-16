@@ -1050,18 +1050,41 @@ def simulate_sheet(parents: np.ndarray, chains: Sequence[dict], dt: float, capsu
     return [continuous_quaternions(q) for q in out]
 
 
-def torso_follow_weights(tails: np.ndarray, spine_head: np.ndarray, hips_head: np.ndarray, up: np.ndarray) -> List[Dict[str, float]]:
+def torso_follow_weights(tails: np.ndarray, spine_head: np.ndarray, hips_head: np.ndarray, up: np.ndarray,
+                         thighs: Optional[Tuple[np.ndarray, np.ndarray]] = None) -> List[Dict[str, float]]:
     """The cloak's follow rule: a joint at the upper spine's height follows `CHAIN_PARENT`, one at the hips' height or below follows the
     hips, and a joint between them follows both in proportion to its height. The cloth hangs from the shoulders and swings with the
-    pelvis, not with a thigh or an arm."""
+    pelvis, not with an arm. With `thighs` (the left and right thighs' heads), a joint off the middle gives `SIDE_THIGH_SHARE` times its
+    lateral offset (in units of the hips' width, at most 1) of its hips share to the thigh on its side: a side chain hangs beside that
+    thigh, and the cloth between them tore when it did not follow (`SIDE_THIGH_SHARE`)."""
 
     up = unit(up)
     top, bottom = float(spine_head @ up), float(hips_head @ up)
+    lateral, width = None, 0.0
+    if thighs is not None:
+        lateral = np.asarray(thighs[0], float) - np.asarray(thighs[1], float)
+        lateral = lateral - (lateral @ up) * up
+        width = float(np.linalg.norm(lateral))
+        lateral = unit(lateral) if width > 1e-9 else None
     out = []
     for tail in np.asarray(tails, float):
         share = float(np.clip((float(tail @ up) - bottom) / max(top - bottom, 1e-12), 0.0, 1.0))
-        out.append({name: weight for name, weight in ((CHAIN_PARENT, share), ("Hips", 1.0 - share)) if weight > 0})
+        row = {name: weight for name, weight in ((CHAIN_PARENT, share), ("Hips", 1.0 - share)) if weight > 0}
+        if lateral is not None and "Hips" in row:
+            offset = float((tail - np.asarray(hips_head, float)) @ lateral)
+            moved = row["Hips"] * SIDE_THIGH_SHARE * min(1.0, abs(offset) / width)
+            if moved > 0:
+                row["Hips"] -= moved
+                row["LeftUpLeg" if offset > 0 else "RightUpLeg"] = moved
+        out.append(row)
     return out
+
+
+# A cloak chain below the hips gives this share (times its lateral offset in hips widths, at most 1) of its hips follow to the thigh on its
+# side. A fresh review of the round 4 orc saw the cloth between the cloak's side chain and the thigh tear in every idle frame. Replayed
+# offline (tripo/chain_replay.py, the seam between chain-bound and leg-bound cloth): idle 51 to 33 stretched edges, attack 327 to 284,
+# retreat 392 to 363, with the cloak stretch at most 4.5% (retreat). At 0.5 the retreat's cloak stretch passed TRIPO-CLOAK-STRETCH (5.9%).
+SIDE_THIGH_SHARE = 0.25
 
 
 def follow_targets(rest_points: np.ndarray, weights: Sequence[Dict[str, float]], skinning: Dict[str, np.ndarray]) -> np.ndarray:

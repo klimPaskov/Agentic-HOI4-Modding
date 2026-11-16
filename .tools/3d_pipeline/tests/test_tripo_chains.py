@@ -247,6 +247,17 @@ class CloakSheet(unittest.TestCase):
         self.assertAlmostEqual(rows[1][C.CHAIN_PARENT], 0.5)
         self.assertEqual(rows[2], {"Hips": 1.0})
 
+    def test_a_side_chain_below_the_hips_follows_its_thigh_a_little(self) -> None:
+        thighs = (np.array([0.1, 0.0, 1.0]), np.array([-0.1, 0.0, 1.0]))  # left thigh at +x, hips 0.2 wide
+        tails = np.array([[0.0, 0.0, 0.9], [-0.2, 0.0, 0.9], [0.1, 0.0, 0.9], [-0.2, 0.0, 1.4]])
+        rows = C.torso_follow_weights(tails, np.array([0.0, 0.0, 1.4]), np.array([0.0, 0.0, 1.0]), UP, thighs)
+        self.assertEqual(rows[0], {"Hips": 1.0}, "the middle chain follows the hips alone")
+        self.assertAlmostEqual(rows[1]["RightUpLeg"], C.SIDE_THIGH_SHARE, msg="a chain a full hips width out gives the whole share")
+        self.assertAlmostEqual(rows[2]["LeftUpLeg"], 0.5 * C.SIDE_THIGH_SHARE)
+        self.assertEqual(rows[3], {C.CHAIN_PARENT: 1.0}, "a joint at the spine's height has no hips share to give")
+        for row in rows:
+            self.assertAlmostEqual(sum(row.values()), 1.0)
+
     def test_follow_targets_skin_the_rest_point(self) -> None:
         moved = np.eye(4)
         moved[:3, 3] = [0.0, 0.0, -0.5]

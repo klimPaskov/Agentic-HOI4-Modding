@@ -286,6 +286,14 @@ def body_height(positions, up) -> float:
     return float(np.ptp(positions @ up))
 
 
+def thighs(heads):
+    """(left, right) thigh heads for the cloak's side follow (lib/tripo_chains.SIDE_THIGH_SHARE), or None when the rig has no thighs."""
+
+    if "LeftUpLeg" in heads and "RightUpLeg" in heads:
+        return heads["LeftUpLeg"], heads["RightUpLeg"]
+    return None
+
+
 def bone_names(sheet) -> List[List[str]]:
     prefix = C.REGION_PREFIX[sheet["region"]] + sheet["side"]
     chains, bones = sheet["joints"].shape[0], sheet["joints"].shape[1] - 1
@@ -487,7 +495,7 @@ def chain_plan(rest_of: Callable[[str], np.ndarray], sheets, heads, radii, heigh
                 relative.append(np.linalg.inv(previous) @ own)
                 previous = own
             capsules = [(heads[start], heads[end], radii[name]) for name, start, end in CAPSULES]
-            follow = C.torso_follow_weights(joints[1:], heads[C.CHAIN_PARENT], heads["Hips"], up) if sheet["region"] == "cloak" else []
+            follow = C.torso_follow_weights(joints[1:], heads[C.CHAIN_PARENT], heads["Hips"], up, thighs(heads)) if sheet["region"] == "cloak" else []
             plans.append({
                 "region": sheet["region"], "side": sheet["side"], "chain": c, "bones": chain, "lengths": lengths,
                 "rest_relative": np.stack(relative), "omegas": C.pendulum_omegas(lengths, height), "rest_joints": joints,
