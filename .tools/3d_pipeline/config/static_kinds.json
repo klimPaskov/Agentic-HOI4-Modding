@@ -88,6 +88,13 @@
     },
     "nearest_tall": null,
     "tall_base": null,
+    "span_bound": {
+     "reference": "gfx/models/units/tanks/ITA_tank_light.mesh",
+     "height_share": 0.5219,
+     "footprint_share": 0.8667,
+     "margin": 0.05,
+     "about": "a vehicle whose height or footprint (square root of length x width) is over the reference's share of the main measure, plus the margin, is sized on that span instead; kit rule margin: under a pixel at game size"
+    },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -485,6 +492,21 @@
      "links": 5,
      "source": "gfx/models/units/tanks/GER_tank_light.mesh: its PdxMeshAdvancedAnim stream's v along the ground run, and the rows of tank_threads_01_diffuse.dds",
      "texture_anim_speed": 0.5
+    },
+    "move_ground": {
+     "max_share": 0.0314,
+     "per_model": {
+      "gfx/models/units/tanks/ENG_tank_light.mesh": 0.0136,
+      "gfx/models/units/tanks/FRA_tank_light.mesh": 0.0303,
+      "gfx/models/units/tanks/generic_tank_light.mesh": 0.0193,
+      "gfx/models/units/tanks/GER_tank_light.mesh": 0.0171,
+      "gfx/models/units/tanks/ITA_tank_light.mesh": 0.0279,
+      "gfx/models/units/tanks/JAP_tank_light.mesh": 0.0241,
+      "gfx/models/units/tanks/SOV_tank_light.mesh": 0.0271,
+      "gfx/models/units/tanks/USA_tank_light.mesh": 0.0314,
+      "gfx/models/units/tanks/FIN_light_armor.mesh": 0.0261
+     },
+     "source": "the hull's bob on its suspension in vanilla light tank moves (chassie against tank_base), the largest, as a share of the height"
     }
    },
    "attack_turn": {
@@ -601,6 +623,7 @@
     },
     "nearest_tall": null,
     "tall_base": null,
+    "span_bound": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -842,6 +865,7 @@
     },
     "nearest_tall": null,
     "tall_base": null,
+    "span_bound": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1192,6 +1216,7 @@
     },
     "nearest_tall": null,
     "tall_base": null,
+    "span_bound": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1554,6 +1579,7 @@
      ],
      "about": "a tall and thin landmark is sized on its height unless its largest horizontal side is over max_share of that height, then on the base (largest side / max_share)"
     },
+    "span_bound": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {

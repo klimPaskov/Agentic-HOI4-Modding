@@ -303,7 +303,24 @@ def tall_base_share(contract: dict) -> Optional[float]:
     return float(tall_base["max_share"]) if tall_base else None
 
 
-def main_measure(points: np.ndarray, kind: str, base_share: Optional[float] = None) -> float:
+def span_bound(contract: dict) -> Optional[dict]:
+    """The height and footprint a kind's model may have, as shares of its main measure (the contract's `size.span_bound`:
+    its vanilla reference's own shares, plus the margin), or None when the kind has no such bound."""
+
+    bound = contract.get("size", {}).get("span_bound")
+    if not bound:
+        return None
+    grow = 1.0 + float(bound["margin"])
+    return {"height": float(bound["height_share"]) * grow, "footprint": float(bound["footprint_share"]) * grow}
+
+
+def contract_measure(points: np.ndarray, contract: dict, kind: Optional[str] = None) -> float:
+    """The main measure with the contract's bounds (a tall landmark's base, a vehicle's height and footprint)."""
+
+    return main_measure(points, kind or contract["kind"], tall_base_share(contract), span_bound(contract))
+
+
+def main_measure(points: np.ndarray, kind: str, base_share: Optional[float] = None, bound: Optional[dict] = None) -> float:
     """The size a kind is scaled by: for a tank, the area the map camera sees (its length times its width and height
     as seen from the camera's 55 degree elevation, square-rooted) and the same for a building; a ship's length; a plane's
     wingspan; a landmark's largest side, or its height when it is tall and thin.
@@ -315,12 +332,20 @@ def main_measure(points: np.ndarray, kind: str, base_share: Optional[float] = No
     `base_share` (vanilla's widest base of a tall and thin landmark, as a share of its height) times the height the
     model would get, it is sized on the base (`largest side / base_share`), so a wide plaza does not read as a larger
     monument than vanilla's.
+
+    A vehicle's height and footprint are bounded the same way (`bound`, from `span_bound`): when its height or the
+    square root of its length times its width is over the share of the measure vanilla's reference tank has (plus a
+    small margin), it is sized on that instead (the span divided by the share), so a tall Tripo tank sized on the area
+    the camera sees does not stand taller than vanilla's beside it (reviewers saw one 15 to 50 % taller).
     """
 
     span = np.ptp(points, axis=0)
     if kind == "vehicle":
         elevation = math.radians(MAP_CAMERA_ELEVATION)
-        return float(math.sqrt(span[1] * (span[0] * math.sin(elevation) + span[2] * math.cos(elevation))))
+        seen = float(math.sqrt(span[1] * (span[0] * math.sin(elevation) + span[2] * math.cos(elevation))))
+        if bound:
+            return max(seen, float(span[2]) / bound["height"], float(math.sqrt(span[0] * span[1])) / bound["footprint"])
+        return seen
     if kind == "ship":
         return float(span[1])
     if kind == "plane":
@@ -378,7 +403,7 @@ def placement(points: np.ndarray, kind: str, contract: dict) -> Tuple[float, np.
     """
 
     size = contract["size"]
-    scale = size["source"] / max(main_measure(points, kind, tall_base_share(contract)), 1e-9)
+    scale = size["source"] / max(contract_measure(points, contract, kind), 1e-9)
     scaled = points * scale
     low, high = scaled.min(axis=0), scaled.max(axis=0)
     centre_share = np.asarray(size["centre_share"], dtype=float)
@@ -847,6 +872,40 @@ def ground_lift(lowest, sink: float = 0.0) -> np.ndarray:
     return np.maximum(0.0, -(np.asarray(lowest, dtype=float) + sink))
 
 
+def yaw_part(rotation: np.ndarray) -> np.ndarray:
+    """The turn about z (world up) in a rotation (3x3): its twist about z, with the pitch and roll left out."""
+
+    q = _quaternion_from_matrix(np.asarray(rotation, dtype=float))
+    twist = np.array([q[0], 0.0, 0.0, q[3]])
+    if np.linalg.norm(twist) < 1e-9:
+        return np.eye(3)
+    return quaternion_matrix(twist)
+
+
+def grounding(gear_world: np.ndarray, gear_points: np.ndarray, ground: float) -> np.ndarray:
+    """The correction (4x4, applied on the left of every bone's world matrix) that keeps a tank's running gear on the
+    ground in a frame: the tracks and wheels keep their turn about z and their horizontal place, and lose any heave,
+    pitch and roll (about their own middle), and their lowest point goes to `ground`.
+
+    `gear_world` is the running gear's bone (vanilla's `wheel_suspention`) in that frame and `gear_points` the running
+    gear's points in that frame. Vanilla's light tank moves bounce the whole tank through `tank_base`, the tracks with
+    the hull, by 7 to 10 % of its height round the ground. Held to the ground the dips were lifted and the rises kept,
+    and reviewers saw the tank hop. Applied to every bone, the correction leaves the hull's own bob on its suspension
+    (`chassie` against `tank_base`) as vanilla's.
+    """
+
+    gear_world = np.asarray(gear_world, dtype=float)
+    points = np.asarray(gear_points, dtype=float)
+    turn = yaw_part(gear_world[:3, :3]) @ gear_world[:3, :3].T
+    pivot = points.mean(axis=0)
+    correction = np.eye(4)
+    correction[:3, :3] = turn
+    correction[:3, 3] = pivot - turn @ pivot
+    after = points @ correction[:3, :3].T + correction[:3, 3]
+    correction[2, 3] += ground - float(after[:, 2].min())
+    return correction
+
+
 # --------------------------------------------------------------------------------------------------
 # Scrolling tracks: vanilla's tanks draw their track runs with `PdxMeshAdvancedAnim` on a small tread texture whose
 # v runs along the hull, and the entity's `texture_anim_speed` scrolls it
@@ -864,6 +923,319 @@ def track_uvs(points: np.ndarray, v_per_length: float, v_sign: float = 1.0) -> n
     u = 0.03 + 0.94 * (x - inner) / max(outer - inner, 1e-9)
     v = v_sign * v_per_length * (points[:, 1] - points[:, 1].min())
     return np.stack([u, v], axis=1)
+
+
+def _hull_2d(points: np.ndarray) -> np.ndarray:
+    """The convex hull of 2D points, counter-clockwise (Andrew's monotone chain)."""
+
+    pts = sorted(set(map(tuple, np.round(np.asarray(points, dtype=float), 9))))
+    if len(pts) < 3:
+        return np.asarray(pts, dtype=float)
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+
+    lower, upper = [], []
+    for p in pts:
+        while len(lower) >= 2 and cross(lower[-2], lower[-1], p) <= 0:
+            lower.pop()
+        lower.append(p)
+    for p in reversed(pts):
+        while len(upper) >= 2 and cross(upper[-2], upper[-1], p) <= 0:
+            upper.pop()
+        upper.append(p)
+    return np.asarray(lower[:-1] + upper[:-1], dtype=float)
+
+
+def loop_positions(points: np.ndarray) -> Tuple[np.ndarray, float]:
+    """How far round a track loop (seen from the side, y and z) each point lies, and the loop's length.
+
+    The loop is the convex outline of the run's side view. Each point takes the place of its nearest point on that
+    outline, measured from the front end of the ground run and growing toward the rear along it (vanilla's v grows
+    toward the rear on the ground run), so it goes up the rear wrap, forward along the top run and down the front wrap.
+    """
+
+    side = np.asarray(points, dtype=float)[:, 1:3]
+    hull = _hull_2d(side)
+    if len(hull) < 3:
+        return side[:, 0] - side[:, 0].min(), float(np.ptp(side[:, 0]))
+    # counter-clockwise seen with y right and z up runs rearward (+y) along the bottom: start at the bottom's front end
+    low = side[:, 1].min() + 0.02 * np.ptp(side[:, 1])
+    bottom = np.nonzero(hull[:, 1] <= low)[0]
+    start = int(bottom[np.argmin(hull[bottom, 0])]) if len(bottom) else int(np.argmin(hull[:, 1]))
+    hull = np.roll(hull, -start, axis=0)
+    ends = np.roll(hull, -1, axis=0)
+    lengths = np.linalg.norm(ends - hull, axis=1)
+    offsets = np.concatenate([[0.0], np.cumsum(lengths)[:-1]])
+    total = float(lengths.sum())
+    best = np.full(len(side), np.inf)
+    place = np.zeros(len(side))
+    for a, b, length, offset in zip(hull, ends, lengths, offsets):
+        if length <= 0:
+            continue
+        t = np.clip(((side - a) @ (b - a)) / (length * length), 0.0, 1.0)
+        distance = np.linalg.norm(side - (a + t[:, None] * (b - a)), axis=1)
+        closer = distance < best
+        best[closer] = distance[closer]
+        place[closer] = offset + t[closer] * length
+    return place, total
+
+
+def track_face_uvs(points: np.ndarray, faces: Sequence[Sequence[int]], v_per_length: float, v_sign: float = 1.0) -> List[np.ndarray]:
+    """Each face's corner UVs on a tank's track runs (Blender space points, faces as indices into them).
+
+    u runs across the run as `track_uvs`. v runs round the loop each side's run makes (`loop_positions`), at the
+    density vanilla's ground run has, rounded to a whole number of tread tiles a loop so the seam does not jump. A
+    reviewer saw a loop's curved ends as see-through when v ran along the hull: a near-upright face at the end got one
+    texel row of the tread stretched over it. A face across the seam takes the next tile, so it does not smear the
+    whole loop's tread over itself.
+    """
+
+    points = np.asarray(points, dtype=float)
+    uv = track_uvs(points, v_per_length, v_sign)
+    middle = (points[:, 0].min() + points[:, 0].max()) / 2
+    v = np.zeros(len(points))
+    period = np.zeros(len(points))
+    for side in (points[:, 0] < middle, points[:, 0] >= middle):
+        if side.sum() < 3:
+            continue
+        place, total = loop_positions(points[side])
+        tiles = max(1, int(round(total * v_per_length)))
+        v[side] = v_sign * place * tiles / max(total, 1e-9)
+        period[side] = tiles
+    out = []
+    for face in faces:
+        corners = np.array([[uv[i, 0], v[i]] for i in face])
+        first = corners[0, 1]
+        for k in range(1, len(corners)):
+            p = period[face[k]]
+            if p > 0 and abs(corners[k, 1] - first) > p / 2:
+                corners[k, 1] -= p * np.sign(corners[k, 1] - first)
+        out.append(corners)
+    return out
+
+
+# --------------------------------------------------------------------------------------------------
+# Surface cleanup before export: needle slivers, loose open flakes and flat one-sided cards (kit rules, each measured on
+# the Smart Mesh light tank tank_sm4; every share is of the model's size, its largest side)
+
+NEEDLE_ASPECT = 20.0  # longest edge over the height on it: a needle
+NEEDLE_PROTRUSION = 0.5  # its tip stands off the rest of the surface by half its length or more
+FLAKE_SIZE_SHARE = 0.05  # a loose open piece no larger than this
+FLAKE_THICKNESS_SHARE = 0.01  # and no thicker than this
+FLAKE_OPEN_SHARE = 0.5  # with at least half of its edges open
+CARD_FLATNESS = 0.02  # an open piece whose thickness is under this share of its own largest side is a flat card
+CARD_MIN_SHARE = 0.05  # and at least this large (a smaller one is a flake)
+CARD_THICKNESS_SHARE = 0.01  # a card is given this thickness
+CARD_SIDE_SHARE = 0.25  # but at most this share of its own smallest side
+CARD_CONTACT_SHARE = 0.2  # a piece nearer the sheet than this share of the thickness already rests against it
+CARD_GAP_USE = 0.8  # each side grows into at most this share of the gap to the nearest other piece
+
+
+def _edge_faces(triangles: np.ndarray) -> Dict[Tuple[int, int], List[int]]:
+    faces: Dict[Tuple[int, int], List[int]] = {}
+    for index, triangle in enumerate(np.asarray(triangles)):
+        for k in range(3):
+            a, b = int(triangle[k]), int(triangle[(k + 1) % 3])
+            faces.setdefault((min(a, b), max(a, b)), []).append(index)
+    return faces
+
+
+def open_edge_count(triangles: np.ndarray) -> int:
+    """Edges used by one triangle only (the cyan open edges of the diagnostics), on welded vertex indices."""
+
+    return sum(1 for faces in _edge_faces(triangles).values() if len(faces) == 1)
+
+
+def triangle_pieces(triangles: np.ndarray) -> np.ndarray:
+    """For each triangle the index of its piece (triangles joined through shared vertices)."""
+
+    triangles = np.asarray(triangles, dtype=np.int64)
+    parent = np.arange(int(triangles.max()) + 1 if len(triangles) else 0)
+
+    def find(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for a, b, c in triangles:
+        ra = find(a)
+        for other in (b, c):
+            ro = find(other)
+            if ro != ra:
+                parent[ro] = ra
+    roots = np.array([find(int(t[0])) for t in triangles], dtype=np.int64)
+    _unique, labels = np.unique(roots, return_inverse=True)
+    return labels.ravel()
+
+
+def _nearest(queries: np.ndarray, points: np.ndarray, chunk: int = 256) -> np.ndarray:
+    """The distance from each query point to the nearest of `points` (numpy only: Blender's Python has no SciPy)."""
+
+    out = np.full(len(queries), np.inf)
+    if not len(points):
+        return out
+    for start in range(0, len(queries), chunk):
+        block = queries[start: start + chunk]
+        out[start: start + chunk] = np.sqrt(((block[:, None, :] - points[None, :, :]) ** 2).sum(axis=2)).min(axis=1)
+    return out
+
+
+def _surface_points(points: np.ndarray, triangles: np.ndarray, per_triangle: int = 6) -> np.ndarray:
+    """A few points on every triangle (its corners, edge middles and centre), so a small triangle is not missed."""
+
+    a, b, c = (points[triangles[:, k]] for k in range(3))
+    samples = [a, b, c, (a + b) / 2, (b + c) / 2, (c + a) / 2, (a + b + c) / 3][: max(per_triangle, 1) + 1]
+    return np.concatenate(samples)
+
+
+def needle_triangles(points: np.ndarray, triangles: np.ndarray, size: Optional[float] = None) -> List[int]:
+    """Needle slivers that stick out of a surface: a triangle whose longest edge is over `NEEDLE_ASPECT` times its
+    height, with one of its two long edges open, whose tip (the corner across its shortest edge) stands off every
+    other triangle not touching it by `NEEDLE_PROTRUSION` of its length. A thin part modelled closed (a barrel, an
+    antenna) has no open edge and is never one."""
+
+    points, triangles = np.asarray(points, dtype=float), np.asarray(triangles, dtype=np.int64)
+    if not len(triangles):
+        return []
+    edges = _edge_faces(triangles)
+    a, b, c = (points[triangles[:, k]] for k in range(3))
+    lengths = np.stack([np.linalg.norm(b - a, axis=1), np.linalg.norm(c - b, axis=1), np.linalg.norm(a - c, axis=1)], axis=1)
+    area = 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
+    longest = lengths.max(axis=1)
+    aspect = longest * longest / np.maximum(2 * area, 1e-18)
+    candidates = np.nonzero(aspect > NEEDLE_ASPECT)[0]
+    if not len(candidates):
+        return []
+    samples = _surface_points(points, triangles)
+    owner = np.tile(np.arange(len(triangles)), len(samples) // len(triangles))
+    vertex_faces: Dict[int, set] = {}
+    for index, triangle in enumerate(triangles):
+        for v in triangle:
+            vertex_faces.setdefault(int(v), set()).add(index)
+    found = []
+    for i in candidates:
+        t = triangles[i]
+        short = int(np.argmin(lengths[i]))
+        tip = int(t[(short + 2) % 3])
+        long_edges = [(int(t[(short + 1) % 3]), tip), (tip, int(t[short]))]
+        if not any(len(edges[(min(u, w), max(u, w))]) == 1 for u, w in long_edges):
+            continue
+        touching = set().union(*(vertex_faces[int(v)] for v in t))
+        reach = NEEDLE_PROTRUSION * longest[i]
+        others = ~np.isin(owner, sorted(touching))
+        if not (np.linalg.norm(samples[others] - points[tip], axis=1) < reach).any():
+            found.append(int(i))
+    return found
+
+
+def _piece_shape(points: np.ndarray) -> Tuple[np.ndarray, float, float, float, np.ndarray]:
+    """A piece's main axes (rows), its thickness along the last, its largest and smallest in-plane side, centre."""
+
+    centre = points.mean(axis=0)
+    _u, _s, axes = np.linalg.svd(points - centre, full_matrices=False)
+    spans = np.ptp((points - centre) @ axes.T, axis=0)
+    return axes, float(spans[2]), float(spans[0]), float(spans[1]), centre
+
+
+def loose_flakes(points: np.ndarray, triangles: np.ndarray, size: float) -> List[np.ndarray]:
+    """Tiny loose flakes: pieces no larger than `FLAKE_SIZE_SHARE` of the model and no thicker than
+    `FLAKE_THICKNESS_SHARE`, at least `FLAKE_OPEN_SHARE` of whose edges are open (a few unclosed triangles, such as a
+    Smart Mesh tank's fender gussets, which reviewers saw as stray spikes along the hull). Each as its triangle indices."""
+
+    points, triangles = np.asarray(points, dtype=float), np.asarray(triangles, dtype=np.int64)
+    labels = triangle_pieces(triangles)
+    out = []
+    for piece in np.unique(labels):
+        chosen = np.nonzero(labels == piece)[0]
+        edges = _edge_faces(triangles[chosen])
+        if sum(1 for f in edges.values() if len(f) == 1) < FLAKE_OPEN_SHARE * len(edges):
+            continue
+        q = points[np.unique(triangles[chosen])]
+        if float(np.ptp(q, axis=0).max()) > FLAKE_SIZE_SHARE * size or len(q) < 3:
+            continue
+        _axes, thickness, _long, _short, _centre = _piece_shape(q)
+        if thickness <= FLAKE_THICKNESS_SHARE * size:
+            out.append(chosen)
+    return out
+
+
+def flat_cards(points: np.ndarray, triangles: np.ndarray, size: float) -> List[dict]:
+    """Flat one-sided cards: pieces with open edges whose thickness is under `CARD_FLATNESS` of their own largest side
+    and that are at least `CARD_MIN_SHARE` of the model (a Smart Mesh tank's drive sprocket and bogie arms, single
+    sheets with open rims that read as paper cutouts). Each as {"triangles", "normal", "centre", "long", "short"}."""
+
+    points, triangles = np.asarray(points, dtype=float), np.asarray(triangles, dtype=np.int64)
+    labels = triangle_pieces(triangles)
+    out = []
+    for piece in np.unique(labels):
+        chosen = np.nonzero(labels == piece)[0]
+        edges = _edge_faces(triangles[chosen])
+        if not any(len(f) == 1 for f in edges.values()):
+            continue
+        q = points[np.unique(triangles[chosen])]
+        if len(q) < 3:
+            continue
+        axes, thickness, long_side, short_side, centre = _piece_shape(q)
+        if long_side < CARD_MIN_SHARE * size or thickness > CARD_FLATNESS * long_side:
+            continue
+        out.append({"triangles": chosen, "normal": axes[2], "centre": centre, "long": long_side, "short": short_side})
+    return out
+
+
+def card_thickness(card: dict, points: np.ndarray, triangles: np.ndarray, size: float) -> float:
+    """How thick to make a flat card: `CARD_THICKNESS_SHARE` of the model, at most `CARD_SIDE_SHARE` of the card's own
+    smallest side, and no more than the gap to the nearest other piece in front of or behind it (inside its outline),
+    so the thickened card touches nothing it did not touch. A piece that already passes through the card (a track belt
+    round a sprocket, a hub through an arm) or rests against it (within `CARD_CONTACT_SHARE` of the thickness: the
+    bracket an arm is bolted to) does not bound it: thickening adds no new contact there."""
+
+    points, triangles = np.asarray(points, dtype=float), np.asarray(triangles, dtype=np.int64)
+    wanted = min(CARD_THICKNESS_SHARE * size, CARD_SIDE_SHARE * card["short"])
+    labels = triangle_pieces(triangles)
+    mine = set(int(t) for t in card["triangles"])
+    own_piece = labels[next(iter(mine))]
+    card_samples = _surface_points(points, triangles[sorted(mine)])
+    normal, centre = np.asarray(card["normal"], dtype=float), np.asarray(card["centre"], dtype=float)
+    flat = card_samples - np.outer((card_samples - centre) @ normal, normal)
+    gap = np.inf
+    for piece in np.unique(labels):
+        if piece == own_piece:
+            continue
+        others = _surface_points(points, triangles[labels == piece])
+        depth = (others - centre) @ normal
+        nearby = np.abs(depth) <= wanted
+        if not nearby.any():
+            continue
+        projected = others[nearby] - np.outer(depth[nearby], normal)
+        inside = _nearest(projected, flat) <= wanted
+        if not inside.any():
+            continue
+        d = depth[nearby][inside]
+        if d.min() < -1e-6 * size and d.max() > 1e-6 * size:
+            continue  # it already passes through the card
+        if float(np.abs(d).min()) <= CARD_CONTACT_SHARE * wanted:
+            continue  # it already rests against the card (a bracket the arm is bolted to)
+        gap = min(gap, float(np.abs(d).min()))
+    # the thickness is centred on the sheet: each side grows by half of it, and stops short of the gap
+    return float(max(0.0, min(wanted, 2 * CARD_GAP_USE * gap)))
+
+
+def track_ground_findings(lowest_per_frame, rest_lowest: float, height: float, share: float, clip: str) -> List[Tuple[str, str, str]]:
+    """STATIC-TRACK-GROUND for one clip: the running gear's lowest point leaves the ground (or sinks into it) by more
+    than `share` of the height in some frame (the contract's `rules.move_ground.max_share`, vanilla's light tanks' hull
+    bob on their suspension)."""
+
+    offsets = np.asarray(lowest_per_frame, dtype=float) - rest_lowest
+    if not len(offsets):
+        return []
+    limit = share * height
+    worst = int(np.argmax(np.abs(offsets)))
+    if abs(offsets[worst]) > limit:
+        way = "lifts off" if offsets[worst] > 0 else "sinks into"
+        return [("STATIC-TRACK-GROUND", "error", f"{clip} frame {worst}: the tracks' lowest point {way} the ground by {abs(offsets[worst]):.3f} ({abs(offsets[worst]) / height:.1%} of the height); the running gear stays on the ground, only the hull bobs on its suspension (at most {share:.1%} of the height, vanilla's)")]
+    return []
 
 
 CUT_SLIVER_SHARE = 0.05  # of the turret's height above its cut (kit rule)
@@ -1019,7 +1391,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     """The kind's contract checked on an exported mesh: (rule, severity, message) for each problem.
 
     - STATIC-SIZE: the main measure is within 2 % of vanilla's (the size the entity scale was chosen for). A tall and
-      thin landmark's measure is its height, or its base over vanilla's widest base share when the base is wider.
+      thin landmark's measure is its height, or its base over vanilla's widest base share when the base is wider. A
+      vehicle's is its height or footprint over vanilla's reference shares when either is larger (`span_bound`).
     - STATIC-TRIANGLES: no more triangles than the most detailed vanilla model of the kind.
     - STATIC-BONES, STATIC-LOCATORS: the bones and locators vanilla's entity and clips use are there.
     - STATIC-COLLISION: a kind whose vanilla models carry a `Collision` box has one 8-vertex box.
@@ -1030,6 +1403,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     - STATIC-PART-GAP: in every frame of every clip (deaths excepted), each rigid part stays on the part it is mounted on
       (no gap wider than `rigid.max_gap_share` of the main measure opens between them).
     - STATIC-LANDING: at a death's last frame a part blown off its mount lies flat on its base on the ground.
+    - STATIC-TRACK-GROUND: in every clip but a death a tank's tracks and wheels stay on the ground (within vanilla's
+      hull bob on its suspension); only the hull may bob.
     """
 
     from lib import pdx_binary, pdx_deform
@@ -1040,7 +1415,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     visible = ~mesh.collision if len(mesh.collision) else np.ones(len(mesh.positions), dtype=bool)
     points = np.array([to_blender(p) for p in mesh.positions[visible]])
     kind = contract["kind"]
-    measure = main_measure(points, kind, tall_base_share(contract))
+    measure = contract_measure(points, contract)
     target = contract["size"]["source"]
     if abs(measure - target) > 0.02 * target:
         findings.append(("STATIC-SIZE", "error", f"the {contract['size']['measure']} is {measure:.3f}; vanilla {kind}s measure {target:.3f} at entity scale {contract['entity']['scale']:g} (median of {len(contract['references'])} models)"))
@@ -1070,6 +1445,37 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     if contract.get("rigid") and mesh.skinned and anims:
         findings += _part_gaps(mesh, visible, anims, contract, measure)
         findings += _landing(mesh, visible, anims, contract)
+        findings += _track_ground(mesh, visible, anims, contract)
+    return findings
+
+
+def _track_ground(mesh, visible, anims, contract) -> List[Tuple[str, str, str]]:
+    """STATIC-TRACK-GROUND: in every clip but a death, a tank's running gear (the tracks' bone and the wheel bones under
+    it) keeps its lowest point on the ground within vanilla's hull bob (`rules.move_ground.max_share` of the height)."""
+
+    from lib import pdx_deform
+
+    rule = (contract.get("rules") or {}).get("move_ground")
+    gear_bone = (contract.get("parts") or {}).get("tracks")
+    if not rule or gear_bone not in mesh.bones:
+        return []
+    root = mesh.bones.index(gear_bone)
+    gear = {root} | {i for i, parent in enumerate(mesh.parents) if parent == root}
+    dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+    chosen = visible & np.isin(dominant, sorted(gear))
+    if chosen.sum() < 3:
+        return []
+    rest = np.array([to_blender(p) for p in mesh.positions[chosen]])
+    height = float(np.ptp(np.array([to_blender(p) for p in mesh.positions[visible]])[:, 2]))
+    inverse = np.array([ib if abs(np.linalg.det(ib)) > 1e-9 else np.eye(4) for ib in mesh.inverse_bind])
+    skinnable = type(mesh)(**{**mesh.__dict__, "inverse_bind": inverse})
+    findings = []
+    for anim_path in anims:
+        if anim_path.stem.endswith("_death"):
+            continue
+        matrices = pdx_deform.skinning_matrices(skinnable, pdx_deform.load_anim(anim_path))
+        lowest = [float(pdx_deform.skin(skinnable, matrices[f])[chosen][:, 1].min()) for f in range(matrices.shape[0])]
+        findings += track_ground_findings(lowest, float(rest[:, 2].min()), height, float(rule["max_share"]), anim_path.name)
     return findings
 
 
