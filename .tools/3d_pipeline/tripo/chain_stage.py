@@ -496,11 +496,12 @@ def chain_plan(rest_of: Callable[[str], np.ndarray], sheets, heads, radii, heigh
                 previous = own
             capsules = [(heads[start], heads[end], radii[name]) for name, start, end in CAPSULES]
             follow = C.torso_follow_weights(joints[1:], heads[C.CHAIN_PARENT], heads["Hips"], up, thighs(heads)) if sheet["region"] == "cloak" else []
+            follow_torso = C.torso_follow_weights(joints[1:], heads[C.CHAIN_PARENT], heads["Hips"], up) if sheet["region"] == "cloak" else []
             plans.append({
                 "region": sheet["region"], "side": sheet["side"], "chain": c, "bones": chain, "lengths": lengths,
                 "rest_relative": np.stack(relative), "omegas": C.pendulum_omegas(lengths, height), "rest_joints": joints,
                 "radii": C.clearance_radii(joints[1:], capsules, margin), "chain_u": float(sheet["chain_u"][c]),
-                "chains": len(sheet["chain_u"]), "tails": joints[1:], "follow": follow, "wing": wing,
+                "chains": len(sheet["chain_u"]), "tails": joints[1:], "follow": follow, "follow_torso": follow_torso, "wing": wing,
                 "rest_directions": C.unit(np.diff(joints, axis=0)), "parent_rest": parent,
                 "leading": bool(sheet.get("leading") is not None and c == int(sheet["leading"])),
             })
@@ -697,12 +698,19 @@ def back_directions(body: Dict[str, np.ndarray], front: np.ndarray) -> np.ndarra
     return np.stack([C.unit(C.orthonormal(matrix)[:3, :3] @ -front) for matrix in body["skinning"]["Hips"]])
 
 
-def bake_cloak(plans, body, stage, dt, looping) -> List[np.ndarray]:
-    """The cloak rule for all its chains at once (`lib.tripo_chains.simulate_sheet`): each tail follows the upper spine and the hips by
-    its height, through the spring, and the sheet is pushed off the legs and torso along the hips' back direction; once the torso lies
-    down, it drapes by gravity onto the body."""
+# Roles whose cloak follows the torso alone, without the side chains' thigh share (lib/tripo_chains.SIDE_THIGH_SHARE): in a death the
+# thighs swing forward as the body kneels, and on the round 4 orc the side chains following them went into the body (TRIPO-CHAIN-IN-BODY
+# 4.8% against 4.5% in the death, frame 84).
+TORSO_ONLY_ROLES = ("death",)
 
-    chains = [dict(plan, follow_points=C.follow_targets(plan["tails"], plan["follow"], body["skinning"])) for plan in plans]
+
+def bake_cloak(plans, body, stage, dt, looping, role: str = "") -> List[np.ndarray]:
+    """The cloak rule for all its chains at once (`lib.tripo_chains.simulate_sheet`): each tail follows the upper spine and the hips by
+    its height (a side chain below the hips also a little of its thigh, except in `TORSO_ONLY_ROLES`), through the spring, and the sheet is
+    pushed off the legs and torso along the hips' back direction; once the torso lies down, it drapes by gravity onto the body."""
+
+    key = "follow_torso" if role in TORSO_ONLY_ROLES else "follow"
+    chains = [dict(plan, follow_points=C.follow_targets(plan["tails"], plan.get(key, plan["follow"]), body["skinning"])) for plan in plans]
     track = body_track(body)
     lying = C.lying_share(track["Hips"], body["parents"][:, :3, 3], stage["up"])
     return C.simulate_sheet(body["parents"], chains, dt, body["axes"], stage["ground"], stage["up"], back_directions(body, stage["front"]),
@@ -714,7 +722,7 @@ def bake_numpy(stage: dict, body: Dict[str, np.ndarray], role: str, dt: float, l
 
     cloak = [plan for plan in stage["plans"] if plan["region"] == "cloak"]
     track = body_track(body)
-    baked = dict(zip((id(plan) for plan in cloak), bake_cloak(cloak, body, stage, dt, looping))) if cloak else {}
+    baked = dict(zip((id(plan) for plan in cloak), bake_cloak(cloak, body, stage, dt, looping, role))) if cloak else {}
     out = []
     for plan in stage["plans"]:
         if plan["region"] == "wings":

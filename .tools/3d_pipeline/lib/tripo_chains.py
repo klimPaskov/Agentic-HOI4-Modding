@@ -1085,7 +1085,8 @@ def torso_follow_weights(tails: np.ndarray, spine_head: np.ndarray, hips_head: n
 # side. A fresh review of the round 4 orc saw the cloth between the cloak's side chain and the thigh tear in every idle frame. Replayed
 # offline (tripo/chain_replay.py, the seam between chain-bound and leg-bound cloth): idle 51 to 33 stretched edges, attack 327 to 284,
 # retreat 392 to 363, with the cloak stretch at most 4.5% (retreat). At 0.5 the retreat's cloak stretch passed TRIPO-CLOAK-STRETCH (5.9%).
-SIDE_THIGH_SHARE = 0.25
+# Exported at 0.25 the retreat measured 5.0% (the replay reads about half a point low), so 0.2 (replay: retreat 4.4%, idle 35, attack 294).
+SIDE_THIGH_SHARE = 0.2
 
 
 def follow_targets(rest_points: np.ndarray, weights: Sequence[Dict[str, float]], skinning: Dict[str, np.ndarray]) -> np.ndarray:
