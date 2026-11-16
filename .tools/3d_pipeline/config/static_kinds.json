@@ -1134,46 +1134,46 @@
     "gfx/models/buildings/facility_nuclear.mesh"
    ],
    "size": {
-    "measure": "footprint",
-    "runtime": 4.0064,
-    "source": 6.6773,
+    "measure": "area the map camera sees (square root)",
+    "runtime": 3.7651,
+    "source": 6.2751,
     "centre_share": [
-     -0.0397,
-     0.0041,
-     0.2118
+     -0.0438,
+     0.0045,
+     0.2234
     ],
-    "ground_share": -0.0254,
+    "ground_share": -0.0267,
     "per_model": [
      {
       "rel": "gfx/models/buildings/facility_land.mesh",
-      "measure": 6.0324,
+      "measure": 6.0981,
       "scale": 0.6,
-      "runtime": 3.6194
+      "runtime": 3.6589
      },
      {
       "rel": "gfx/models/buildings/facility_air.mesh",
-      "measure": 7.3223,
+      "measure": 6.5861,
       "scale": 0.6,
-      "runtime": 4.3934
+      "runtime": 3.9517
      },
      {
       "rel": "gfx/models/buildings/facility_naval.mesh",
-      "measure": 7.7145,
+      "measure": 6.4521,
       "scale": 0.6,
-      "runtime": 4.6287
+      "runtime": 3.8713
      },
      {
       "rel": "gfx/models/buildings/facility_nuclear.mesh",
-      "measure": 5.6027,
+      "measure": 5.1475,
       "scale": 0.6,
-      "runtime": 3.3616
+      "runtime": 3.0885
      }
     ],
     "nearest": {
      "rel": "gfx/models/buildings/facility_land.mesh",
-     "measure": 6.0324,
+     "measure": 6.0981,
      "scale": 0.6,
-     "runtime": 3.6194
+     "runtime": 3.6589
     },
     "nearest_tall": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"

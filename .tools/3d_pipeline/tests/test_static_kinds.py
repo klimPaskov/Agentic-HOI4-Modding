@@ -215,6 +215,13 @@ class GeometryTests(unittest.TestCase):
         self.assertAlmostEqual(sk.main_measure(long_low, "vehicle") ** 2, 8 * (2 * np.sin(np.radians(55)) + np.cos(np.radians(55))), delta=0.05)
         self.assertGreater(sk.main_measure(short_tall, "vehicle"), 0)
 
+    def test_a_building_is_sized_on_what_the_map_camera_sees(self):
+        low_wide, tall = box([-3, -2, 0], [3, 2, 2], 4000), box([-3, -2, 0], [3, 2, 6], 4000, seed=2)
+        seen = 6 * (4 * np.sin(np.radians(55)) + 2 * np.cos(np.radians(55)))
+        self.assertAlmostEqual(sk.main_measure(low_wide, "building") ** 2, seen, delta=0.05)
+        # the same footprint with tall chimneys is drawn smaller, so it does not read bulkier than vanilla's
+        self.assertGreater(sk.main_measure(tall, "building"), sk.main_measure(low_wide, "building"))
+
     def test_flight_progress_and_ground_lift(self):
         path = np.array([[0, 0, 0], [0, 0, 2], [1, 0, 3], [2, 0, 0]], dtype=float)
         progress = sk.flight_progress(path)

@@ -298,8 +298,8 @@ TALL_LANDMARK = 2.0
 
 def main_measure(points: np.ndarray, kind: str) -> float:
     """The size a kind is scaled by: for a tank, the area the map camera sees (its length times its width and height
-    as seen from the camera's 55 degree elevation, square-rooted); a ship's length; a plane's wingspan; a building's
-    footprint; a landmark's largest side, or its height when it is tall and thin.
+    as seen from the camera's 55 degree elevation, square-rooted) and the same for a building; a ship's length; a plane's
+    wingspan; a landmark's largest side, or its height when it is tall and thin.
 
     A tank sized on its length came out bulkier than vanilla's, sized on length and height it came out smaller in the
     map view (a taller, shorter hull covers less ground): reviewers compare what the camera shows, so the measure is that.
@@ -316,7 +316,11 @@ def main_measure(points: np.ndarray, kind: str) -> float:
     if kind == "plane":
         return float(span[0])
     if kind == "building":
-        return float(max(span[0], span[1]))
+        # as a tank: what the map camera sees, the footprint's long side times its short side and the height at the
+        # camera's elevation (a factory with tall chimneys sized on its footprint read bulkier than vanilla's facility)
+        elevation = math.radians(MAP_CAMERA_ELEVATION)
+        long_side, short_side = max(span[0], span[1]), min(span[0], span[1])
+        return float(math.sqrt(long_side * (short_side * math.sin(elevation) + span[2] * math.cos(elevation))))
     if kind == "landmark" and tall_and_thin(points):
         return float(span[2])
     return float(span.max())
