@@ -133,6 +133,30 @@ class Clip(unittest.TestCase):
         self.assertLessEqual(result["max_degrees"], C.MAX_ANGLE_DEGREES + 1e-6)
         self.assertGreater(result["frames_changed"], 0)
 
+    def test_the_blend_between_two_clear_poses_is_cleared_again_after_the_loop_settle(self) -> None:
+        # The settle (`prepare_tripo_unit.settle_to_first`) blends the weapon arm from the clip's last pose to its first. The straight blend of two
+        # poses that both clear the body (a stick up and a stick down at the pivot's side) swings the stick through the box in the middle
+        # (round 4 ogre: 9 frames of the attack, up to 9.1% of the club). The clearance on the blended frames takes it out again.
+        vertices, triangles = box()
+        pivot = np.array([0.8, 0.0, 0.0])
+        weapons, pivots, bodies = [], [], []
+        for frame in range(13):
+            angle = np.pi / 2 + np.pi * frame / 12  # from +y through -x to -y
+            direction = np.array([np.cos(angle), np.sin(angle), 0.0])
+            weapons.append(np.array([pivot + direction * 0.6 * k / 59 for k in range(60)]))
+            pivots.append(pivot)
+            bodies.append(vertices)
+        before = [C.deep_share(w, vertices, triangles, 1.0, C.CLEAR_MARGIN_SHARE, ground_axis=C.GROUND_AXIS) for w in weapons]
+        self.assertEqual(before[0], 0.0)
+        self.assertEqual(before[-1], 0.0)
+        self.assertGreater(max(before), 0.4)
+        result = C.clear_clip(weapons, pivots, bodies, triangles, 1.0)
+        self.assertEqual(result["failed"], [])
+        self.assertLessEqual(max(result["after"]), C.LIMIT)
+        self.assertGreater(result["frames_changed"], 0)
+        size = np.linalg.norm(result["rotvecs"], axis=1)
+        self.assertLess(size[0], size[6])  # the turn is largest where the blend is deepest in the body
+
     def test_frames_from_the_release_on_are_left_to_the_fall(self) -> None:
         vertices, triangles = box()
         pivot = np.array([0.8, 0.0, 0.0])

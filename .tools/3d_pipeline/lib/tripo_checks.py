@@ -27,6 +27,11 @@ MIN_THUMB_OPPOSITION_DEGREES = 90.0
 # The broad face of a blade must face the camera within this angle in the idle pose (the front view shows the shape the
 # artist drew; edge-on it reads as a stick).
 MAX_BLADE_FACING_DEGREES = 50.0
+# A head with no broad face has no facing to judge: the thinnest axis of a near-round head is whichever way noise points (the round 4 ogre's club
+# turned about its haft by -74, 0 and +74 degrees read 85, 74 and 87 degrees off the front). The head's thinnest spread over its middle spread
+# (`blade_head`) measured 0.72 on that club and 0.41 on the orc's axe blade (a real flat head), 0.18 to 0.5 on the blade of a synthetic axe.
+# Above 0.55 (about their geometric mean) the head is round enough that the facing is not judged and the check reports the ratio only.
+MAX_FACE_FLATNESS = 0.55
 
 
 def unit(vector: np.ndarray) -> np.ndarray:
@@ -72,22 +77,36 @@ def enclosure_share(
     return covered / max(total, 1)
 
 
+def blade_head(weapon_points: np.ndarray, hand_point: np.ndarray, head_share: float = 0.25) -> Tuple[np.ndarray, np.ndarray, float]:
+    """(the head's points, the head's face normal, its flatness) of a held weapon.
+
+    The haft is the longest principal axis of the weapon's points. Each end of it is the `head_share` of the points farthest along it, and the head is the
+    end with the larger cross-section (the product of its two smaller spreads): a hand may hold the weapon nearer its head than its butt, so
+    "the end farthest from the hand" read the orc's axe by its butt (2026-11-16: 0.89 against the blade's 0.41). The face normal is the head's thinnest
+    principal axis. The flatness is the head's thinnest spread over its middle spread (standard deviations): 0 is a plate, 1 is round.
+    `hand_point` is kept for the callers' signature."""
+
+    points = np.asarray(weapon_points, float)
+    _centre, axes, _values = principal_axes(points)
+    along = points @ axes[0]
+    order = np.argsort(along)
+    size = max(int(head_share * len(points)), 10)
+    best = None
+    for head in (points[order[:size]], points[order[-size:]]):
+        _c, head_axes, head_values = principal_axes(head)
+        spread = np.sqrt(np.clip(head_values, 0.0, None))
+        area = float(spread[1] * spread[2])
+        if best is None or area > best[0]:
+            best = (area, head, head_axes[2], float(spread[2] / max(spread[1], 1e-12)))
+    return best[1], best[2], best[3]
+
+
 def blade_facing_degrees(weapon_points: np.ndarray, hand_point: np.ndarray, front: np.ndarray, head_share: float = 0.25) -> Tuple[float, np.ndarray]:
-    """Angle (0 to 90 degrees) between the broad face of a weapon's head and `front`, and the face's normal.
+    """Angle (0 to 90 degrees) between the broad face of a weapon's head and `front`, and the face's normal (head: `blade_head`).
 
-    The haft is the longest principal axis of the weapon's points. The head is the `head_share` of the points
-    that lie farthest from the hand along it; its face normal is the head's thinnest principal axis. 0 means the
-    face looks straight at a camera in front of the unit, 90 means edge-on.
-    """
+    0 means the face looks straight at a camera in front of the unit, 90 means edge-on."""
 
-    centre, axes, _values = principal_axes(weapon_points)
-    haft = axes[0]
-    along = (np.asarray(weapon_points, float) - hand_point) @ haft
-    far_end = along > 0 if abs(along.max()) >= abs(along.min()) else along < 0
-    order = np.argsort(np.abs(np.where(far_end, along, 0.0)))[::-1]
-    head = np.asarray(weapon_points, float)[order[: max(int(head_share * len(weapon_points)), 10)]]
-    _c, head_axes, _v = principal_axes(head)
-    normal = head_axes[2]
+    _head, normal, _flatness = blade_head(weapon_points, hand_point, head_share)
     cosine = abs(float(unit(normal) @ unit(front)))
     return float(np.degrees(np.arccos(np.clip(cosine, 0.0, 1.0)))), normal
 

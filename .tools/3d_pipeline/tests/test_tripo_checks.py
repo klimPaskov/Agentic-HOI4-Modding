@@ -81,6 +81,56 @@ class BladeFacing(unittest.TestCase):
         self.assertLess(abs(near - far), 10.0)
 
 
+def club(count: int = 1500, seed: int = 3) -> np.ndarray:
+    """A haft along x with a thick, near-round head at the far end (spreads 0.72 thinnest to middle, as the round 4 ogre's club)."""
+
+    rng = np.random.default_rng(seed)
+    haft = np.stack([rng.uniform(0.0, 1.6, count), rng.normal(0, 0.01, count), rng.normal(0, 0.01, count)], axis=1)
+    head = np.stack([rng.uniform(1.6, 2.0, count // 4), rng.normal(0, 0.12, count // 4), rng.normal(0, 0.088, count // 4)], axis=1)
+    return np.concatenate([haft, head])
+
+
+class FlatHead(unittest.TestCase):
+    front = np.array([0.0, 0.0, 1.0])
+
+    def test_a_blade_is_flat_and_a_club_is_round(self) -> None:
+        _h, _n, blade = T.blade_head(plate(2), np.zeros(3))
+        _h, _n, round_head = T.blade_head(club(), np.zeros(3))
+        self.assertLess(blade, T.MAX_FACE_FLATNESS)
+        self.assertGreater(round_head, T.MAX_FACE_FLATNESS)
+        self.assertLess(blade, 0.41)
+        self.assertGreater(round_head, 0.65)
+
+    def test_the_head_is_the_end_with_the_broad_cross_section_whichever_end_the_hand_holds(self) -> None:
+        points = plate(2)
+        near_hand = T.blade_facing_degrees(points, np.array([1.8, 0.0, 0.0]), self.front)[0]
+        far_hand = T.blade_facing_degrees(points, np.array([0.0, 0.0, 0.0]), self.front)[0]
+        self.assertAlmostEqual(near_hand, far_hand, places=3)
+        self.assertLess(near_hand, 10.0)
+
+    def judged(self, points: np.ndarray):
+        """TRIPO-BLADE-FACING on a unit whose only weapon-bone vertices are `points` (the pose functions stubbed)."""
+
+        from types import SimpleNamespace
+        from unittest import mock
+
+        count = len(points)
+        mesh = SimpleNamespace(bones=["RightHand", "Weapon"], parents=[-1, 0], weights=np.ones((count, 1)), joints=np.ones((count, 1), int), height=1.0)
+        idle = SimpleNamespace(frames=1)
+        with mock.patch.object(TC.pdx_deform, "dominant_bones", lambda _m: np.ones(count, int)),                 mock.patch.object(TC, "posed_frames", lambda _m, _a, step=1: [points]),                 mock.patch.object(TC.pdx_motion, "posed_joints", lambda _m, _a: np.zeros((1, 2, 3))),                 mock.patch.object(TC, "front_direction", lambda _m: self.front):
+            return TC.blade_findings(mesh, {"unit_idle": idle}, "Weapon")
+
+    def test_a_round_head_is_not_judged_and_a_flat_edge_on_blade_still_fails(self) -> None:
+        findings, numbers = self.judged(club())
+        self.assertEqual(findings, [])
+        self.assertFalse(numbers["judged"])
+        self.assertGreater(numbers["head_flatness"], TC.MAX_FACE_FLATNESS)
+        findings, numbers = self.judged(plate(1))
+        self.assertEqual([f["rule"] for f in findings], ["TRIPO-BLADE-FACING"])
+        self.assertLess(numbers["head_flatness"], TC.MAX_FACE_FLATNESS)
+        self.assertEqual(self.judged(plate(2))[0], [])
+
+
 class Cloak(unittest.TestCase):
     def setUp(self) -> None:
         # Two rows of vertices: the body's front (kept out) and a cloak behind it, hanging from 0.8 to 0.3 of a 1.0 body.
