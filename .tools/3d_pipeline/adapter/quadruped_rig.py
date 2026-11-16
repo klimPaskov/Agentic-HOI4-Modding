@@ -342,6 +342,21 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     return {"roll": best[1], "neck_lift": best[2], "torso_gap": round(best[0], 4), "tried": len(tried), "note": "no pair put the torso lowest"}
 
 
+def _body_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
+    """The whole body's turn: a rear pitches about the hind hooves, and a fall rolls about the edge of the side it falls toward,
+    so the body lies where it stood."""
+
+    if "__root_pitch__" in pose:
+        turn = _rotation(pose["__root_pitch__"]).to_matrix().to_4x4()
+        return Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
+    if "__root_roll__" in pose:
+        degrees = pose["__root_roll__"][0][1]
+        edge = root_pivot + Vector((math.copysign(0.5 * width, degrees), 0.0, 0.0))
+        turn = _rotation(pose["__root_roll__"]).to_matrix().to_4x4()
+        return Matrix.Translation(edge) @ turn @ Matrix.Translation(-edge)
+    return Matrix.Identity(4)
+
+
 def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -360,6 +375,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     landmarks = _landmarks_from_payload(np.zeros((0, 3)), {"landmarks": json.loads(rig["hoi4_quadruped_landmarks"])})
     layout = ql.build_layout(landmarks)
     meshes = h["mesh_objects"]()
+    asked, style = style, ql.stance_style(style, landmarks)  # a graviportal animal never gallops
     total = ql.frame_count(style)
     loop = style in ql.LOOPING
     last = total if loop else total - 1
@@ -391,13 +407,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
                 bone.rotation_quaternion = rest[bone.name].inverted() @ _rotation(rows) @ rest[bone.name]
             else:
                 bone.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
-        body = Matrix.Identity(4)
-        if "__root_pitch__" in pose:
-            turn = _rotation(pose["__root_pitch__"]).to_matrix().to_4x4()
-            body = Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
-        elif "__root_roll__" in pose:
-            turn = _rotation(pose["__root_roll__"]).to_matrix().to_4x4()
-            body = Matrix.Translation(root_pivot) @ turn @ Matrix.Translation(-root_pivot)
+        body = _body_turn(pose, rear_pivot, root_pivot, float(landmarks["width"]))
         rig.pose.bones["Root"].matrix = Matrix.Translation((0.0, 0.0, lift)) @ body @ root_rest
         bpy.context.view_layer.update()
 
@@ -437,4 +447,6 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "ground_contact_after": {"min": min(contact_after), "max": max(contact_after)},
         "ground_tolerance": GROUND_TOLERANCE * float(landmarks["height"]),
         "collapse": tuned,
+        "asked_style": asked,
+        "stance": ql.leg_stance(landmarks),
     }

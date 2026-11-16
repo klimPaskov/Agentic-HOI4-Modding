@@ -444,6 +444,14 @@ DEFAULT_STYLE = {
 }
 LOOPING = {"quadruped_idle", "quadruped_walk", "quadruped_trot", "quadruped_gallop"}
 LEG_REACH = 2.2
+# Pillar legs: a leg whose radius is more than GRAVIPORTAL of its length (the belly's height) is a graviportal leg, an
+# elephant's (0.22 to 0.25), not a runner's (a horse's is about 0.05). Its joints bend FLEX_REFERENCE over that share of a
+# runner's, it never gallops, and its attack is carried by the head.
+GRAVIPORTAL = 0.15
+FLEX_REFERENCE = 0.06
+FLEXING = ("_Lower", "_Cannon", "_Hoof")
+HEAVY_GAITS = {"quadruped_trot": "quadruped_walk", "quadruped_gallop": "quadruped_trot"}
+HEAVY_LUNGE = 1.6
 COLLAPSE_ROLL = 82.0
 LOADED_STILL = ("Pelvis", "Spine", "Chest")
 
@@ -485,6 +493,31 @@ def _leg_rotations(gait: Gait, t: float, end: str, side: str) -> Dict[str, List[
     return rows
 
 
+def leg_stance(landmarks: Dict[str, object]) -> Dict[str, float]:
+    """The legs' median radius over their length (the belly's height), and the share of a runner's joint bend they get."""
+
+    legs = landmarks.get("legs") or {}
+    radii = [float(np.asarray(joints["radius"])) for joints in legs.values() if "radius" in joints]
+    belly = float(landmarks.get("belly_z") or 0.0)
+    ratio = float(np.median(radii)) / belly if radii and belly > 0 else 0.0
+    return {"ratio": ratio, "graviportal": ratio > GRAVIPORTAL, "flex": min(1.0, FLEX_REFERENCE / ratio) if ratio > 0 else 1.0}
+
+
+def stance_style(style: str, landmarks: Dict[str, object]) -> str:
+    """A graviportal animal walks where a runner trots and trots (an elephant's amble) where a runner gallops."""
+
+    return HEAVY_GAITS.get(style, style) if leg_stance(landmarks)["graviportal"] else style
+
+
+def _bent(pose: Dict[str, List[Rotation]], flex: float) -> Dict[str, List[Rotation]]:
+    """Scale the bend of every leg joint below the shoulder and hip by `flex`."""
+
+    if flex >= 1.0:
+        return pose
+    return {name: ([(axis, degrees * flex) for axis, degrees in rows] if name.startswith(("Front_", "Rear_")) and name.endswith(FLEXING) else rows)
+            for name, rows in pose.items()}
+
+
 def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]:
     """Each bone's armature-space rotations (axis, degrees) at `frame`; the key `__root_offset__` moves the Root.
 
@@ -493,6 +526,7 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
 
     names = set(layout.names())
     load = layout.landmarks.get("load") or {}
+    stance = leg_stance(layout.landmarks)
     total = frame_count(style)
     t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
     pose: Dict[str, List[Rotation]] = {}
@@ -521,12 +555,13 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         for end, side in LEGS:
             pose[leg_name(end, side, "Upper")] = [(X_AXIS, shift if end == "Front" else -shift)]
     elif style == "quadruped_charge":
-        gallop = GAITS["quadruped_gallop"]
+        heavy = stance["graviportal"]
+        gallop = GAITS["quadruped_trot" if heavy else "quadruped_gallop"]
         # Two whole strides, so the clip ends in its first pose: the game loops an attack (TRIPO-LOOP-POP).
         cycle = (t * 2.0) % 1.0
         for end, side in LEGS:
             pose.update(_leg_rotations(gallop, cycle, end, side))
-        lunge = math.sin(math.pi * t)
+        lunge = math.sin(math.pi * t) * (HEAVY_LUNGE if heavy else 1.0)
         pose["Spine"] = [(X_AXIS, 6.0 * math.sin(2 * math.pi * cycle))]
         pose["Neck_01"] = [(X_AXIS, 18.0 * lunge)]
         pose["Neck_02"] = [(X_AXIS, 10.0 * lunge)]
@@ -552,7 +587,7 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)))
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
-    return _held_back({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, load)
+    return _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, stance["flex"]), load)
 
 
 def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict[str, List[Rotation]]:

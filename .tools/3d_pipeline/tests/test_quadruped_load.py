@@ -164,6 +164,28 @@ class LoadedPoses(unittest.TestCase):
                 self.assertAlmostEqual(degrees_a, degrees_b, places=6, msg=name)
 
 
+class PillarLegs(unittest.TestCase):
+    def test_pillar_legs_bend_less_and_never_gallop(self) -> None:
+        rng = np.random.default_rng(5)
+        parts = [rng.normal((x, y, z), 0.03, (300, 3)) for x in (-0.25, 0.25) for y in (0.0, 1.6) for z in np.linspace(0.05, 0.95, 4)]
+        parts.append(np.column_stack([rng.uniform(-0.35, 0.35, 3000), rng.uniform(-0.2, 1.8, 3000), rng.uniform(1.0, 1.6, 3000)]))
+        parts.append(rng.normal((0.0, -0.5, 1.8), 0.05, (300, 3)))
+        runner = ql.detect_landmarks(np.vstack(parts))
+        self.assertFalse(ql.leg_stance(runner)["graviportal"])
+        self.assertEqual(ql.stance_style("quadruped_gallop", runner), "quadruped_gallop")
+        heavy = {**runner, "legs": {key: {**joints, "radius": np.asarray(0.25 * float(runner["belly_z"]))} for key, joints in runner["legs"].items()}}
+        stance = ql.leg_stance(heavy)
+        self.assertTrue(stance["graviportal"])
+        self.assertAlmostEqual(stance["flex"], ql.FLEX_REFERENCE / 0.25, places=3)
+        self.assertEqual(ql.stance_style("quadruped_gallop", heavy), "quadruped_trot")
+        self.assertEqual(ql.stance_style("quadruped_trot", heavy), "quadruped_walk")
+        light, pillar = ql.build_layout(runner), ql.build_layout(heavy)
+        for frame in range(0, 20, 4):
+            a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)
+            self.assertAlmostEqual(b["Front_Left_Cannon"][0][1], a["Front_Left_Cannon"][0][1] * stance["flex"], places=6)
+            self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1], places=6)
+
+
 class MountSize(unittest.TestCase):
     def test_vanilla_constants(self) -> None:
         self.assertAlmostEqual(mount_size.VANILLA_WITHERS_MAP, 3.676, places=3)
