@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -454,10 +454,31 @@ FLEXING = ("_Lower", "_Cannon", "_Hoof")
 # defends braced: a fresh review read the charge's lunging head as crushed into the chest and the full rear as the attack.
 HEAVY_GAITS = {"quadruped_trot": "quadruped_walk", "quadruped_gallop": "quadruped_trot", "quadruped_charge": "quadruped_rear", "quadruped_rear": "quadruped_brace"}
 HEAVY_LUNGE = 1.0
-HEAVY_PITCH = 0.4  # of a runner's rear: a loaded elephant lifts its forefeet, it does not stand up
+# Of a runner's rear: a loaded elephant lifts its forefeet, it does not stand up. At 0.4 the round 9 war elephant's attack read as the idle
+# from the map camera (TRIPO-MAP-READ 0.15), at 0.6 it reads 0.24 (played offline on its exported mesh).
+HEAVY_PITCH = 0.6
+# A pillar leg lifted in a rear reaches forward from the shoulder this share of a runner's: its fold lifts the foot, and the full reach
+# at HEAVY_PITCH 0.6 stretched the skin of the elbow against the chest (offline on the round 9 war elephant: 30 deformed edges, 14 at 0.6).
+HEAVY_REACH = 0.6
+REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
+RETREAT_HEAD = -20.0  # the neck's and head's turn in a heavy animal's retreat (negative raises them)
+BRACE_SWEEP = 14.0  # degrees the defend swings the forequarters to each side about the hind feet
 NECK_REFERENCE = 0.3  # a runner's neck (withers to poll) over its body length; a shorter neck bends that much less
 COLLAPSE_ROLL = 82.0
+COLLAPSE_ROLL_STEP = 6.0
+COLLAPSE_SAG = 15.0  # degrees the legs on the upper side turn down toward the ground as the body falls (a review saw them stick out level)
+DOWN_TOLERANCE = 0.01  # of the body's height: how much lower than the torso another part may end in a death
+# The death turns the neck back against the roll only when the head or neck is what holds the dead body up, and at most this far. Round 9
+# turned it 60 degrees against an 82 degree roll to gain 0.8% of the height while the tower held the body up: the neck and the ear roots
+# under the tower's front stretched into a band (TRIPO-LOAD-SEAM 6.0%).
+NECK_PARTS = ("Neck_01", "Neck_02", "Head")
+NECK_LIFTS = (10.0, -10.0, 20.0, -20.0, 30.0, -30.0)
 LOADED_STILL = ("Pelvis", "Spine", "Chest")
+# Under a load the neck and head turn half as far. The load rests against them: Tripo makes a howdah's front one skin with the ear roots and
+# the top of the head, so the load's ring (quadruped_load.bind_load) reaches them, and every turn of the head against the load stretches
+# that skin. On the round 9 war elephant's death (played offline on its exported mesh) the full turn stretched 1.7% of the seam's edges
+# (TRIPO-LOAD-SEAM), half of it 0.4%.
+LOADED_NECK = 0.5
 
 Rotation = Tuple[Tuple[float, float, float], float]
 
@@ -518,13 +539,17 @@ def stance_style(style: str, landmarks: Dict[str, object]) -> str:
     return HEAVY_GAITS.get(style, style) if leg_stance(landmarks)["graviportal"] else style
 
 
-def _bent(pose: Dict[str, List[Rotation]], flex: float, neck: float = 1.0) -> Dict[str, List[Rotation]]:
-    """Scale the bend of every leg joint below the shoulder and hip by `flex`, and of the neck by `neck` (a short neck bends less)."""
+def _bent(pose: Dict[str, List[Rotation]], flex: float, neck: float = 1.0, load: Optional[Dict[str, object]] = None,
+          free: frozenset = frozenset()) -> Dict[str, List[Rotation]]:
+    """Scale the bend of every leg joint below the shoulder and hip by `flex` (but the `free` ones), and of the neck by `neck` (a short neck
+    bends less, a loaded one `LOADED_NECK` of that). Under a load the head turns by the neck's share too."""
 
     def share(name: str) -> float:
-        if name.startswith(("Front_", "Rear_")) and name.endswith(FLEXING):
+        if name.startswith(("Front_", "Rear_")) and name.endswith(FLEXING) and name not in free:
             return flex
-        return neck if name.startswith("Neck_") else 1.0
+        if name.startswith("Neck_") or (load and name == "Head"):
+            return neck
+        return 1.0
 
     return {name: [(axis, degrees * share(name)) for axis, degrees in rows] for name, rows in pose.items()}
 
@@ -541,6 +566,7 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
     total = frame_count(style)
     t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
     pose: Dict[str, List[Rotation]] = {}
+    free: set = set()  # leg joints that bend as far as a runner's whatever the build
     has_tail = "Tail_01" in names
     if style in GAITS:
         gait = GAITS[style]
@@ -553,6 +579,11 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         if has_tail:
             pose["Tail_01"] = [(Z_AXIS, 8.0 * math.sin(2 * math.pi * t)), (X_AXIS, -10.0)]
             pose["Tail_02"] = [(Z_AXIS, 6.0 * math.sin(2 * math.pi * t - 0.6))]
+        if style == "quadruped_trot" and stance["graviportal"]:
+            # A heavy animal trots only in its retreat (it walks to move): it flees with its head up (reviews read a plain trot as the
+            # move with a longer stride).
+            pose["Neck_01"] = [(X_AXIS, RETREAT_HEAD + gait.head_degrees * wave)]
+            pose["Head"] = [(X_AXIS, RETREAT_HEAD - 0.5 * gait.head_degrees * wave)]
     elif style == "quadruped_idle":
         breath = math.sin(2 * math.pi * t * 2)
         pose["Chest"] = [(X_AXIS, 1.2 * breath)]
@@ -579,42 +610,131 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         pose["Head"] = [(X_AXIS, 8.0 * lunge)]
     elif style == "quadruped_brace":
         _brace(pose, t, has_tail)
+        free = {leg_name("Front", side, segment) for side in ("Left", "Right") for segment in ("Lower", "Cannon", "Hoof")}
     elif style == "quadruped_rear":
-        # A heavy animal's rear is the whole rear at HEAVY_PITCH: a stamp, forefeet a little off the ground (a fresh review read the
-        # full foreleg lift under a small pitch as the elephant falling on its face).
-        rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3))) * (HEAVY_PITCH if stance["graviportal"] else 1.0)
-        pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise)]
-        for side in ("Left", "Right"):
-            kick = 1 + 0.25 * math.sin(6 * math.pi * t + (0 if side == "Left" else 1.5))
-            pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -55.0 * rise * kick)]
-            pose[leg_name("Front", side, "Lower")] = [(X_AXIS, 40.0 * rise)]
-            pose[leg_name("Front", side, "Cannon")] = [(X_AXIS, 85.0 * rise)]
-            pose[leg_name("Rear", side, "Upper")] = [(X_AXIS, 32.0 * rise - 12.0 * rise)]
-            pose[leg_name("Rear", side, "Lower")] = [(X_AXIS, 15.0 * rise)]
-            pose[leg_name("Rear", side, "Cannon")] = [(X_AXIS, -15.0 * rise)]
-        pose["Neck_01"] = [(X_AXIS, -12.0 * rise)]
-        pose["Head"] = [(X_AXIS, 10.0 * rise)]
-        if has_tail:
-            pose["Tail_01"] = [(X_AXIS, 20.0 * rise)]
+        _rear(pose, t, has_tail, stance["graviportal"])
+        # A lifted foreleg carries no weight, so it folds as far as a runner's whatever its build.
+        free = {leg_name("Front", side, segment) for side in ("Left", "Right") for segment in ("Lower", "Cannon", "Hoof")}
     elif style == "quadruped_collapse":
         death = layout.landmarks.get("death") or {}
         roll = float(death.get("roll", load.get("roll_limit", COLLAPSE_ROLL) if load else COLLAPSE_ROLL))
-        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)))
+        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)), bool(load))
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
-    return _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, stance["flex"], stance["neck"]), load)
+    # A dying animal's legs give way whatever their build: the collapse bends them fully (a review saw pillar legs held straight read as
+    # a rigid block tipping over).
+    flex = 1.0 if style == "quadruped_collapse" else stance["flex"]
+    neck = stance["neck"] * (LOADED_NECK if load else 1.0)
+    return _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, flex, neck, load, free), load)
+
+
+def _rear(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, heavy: bool) -> None:
+    """The rear: the body pitches up about the hind feet and the forelegs lift. A heavy animal's is the whole rear at HEAVY_PITCH with the
+    forelegs reaching HEAVY_REACH as far (a fresh review read the full foreleg lift under a small pitch as the elephant falling on its face)."""
+
+    rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3))) * (HEAVY_PITCH if heavy else 1.0)
+    pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise)]
+    for side in ("Left", "Right"):
+        kick = 1 + 0.25 * math.sin(6 * math.pi * t + (0 if side == "Left" else 1.5))
+        pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -55.0 * rise * kick * (HEAVY_REACH if heavy else 1.0))]
+        pose[leg_name("Front", side, "Lower")] = [(X_AXIS, 40.0 * rise)]
+        pose[leg_name("Front", side, "Cannon")] = [(X_AXIS, 85.0 * rise)]
+        pose[leg_name("Rear", side, "Upper")] = [(X_AXIS, 32.0 * rise - 12.0 * rise)]
+        pose[leg_name("Rear", side, "Lower")] = [(X_AXIS, 15.0 * rise)]
+        pose[leg_name("Rear", side, "Cannon")] = [(X_AXIS, -15.0 * rise)]
+    pose["Neck_01"] = [(X_AXIS, -12.0 * rise)]
+    # The head rises with the forequarters (a review read a head that dipped as the forefeet lifted as kneeling in mid-air).
+    pose["Head"] = [(X_AXIS, REAR_HEAD * rise)]
+    if has_tail:
+        pose["Tail_01"] = [(X_AXIS, 20.0 * rise)]
 
 
 def _brace(pose: Dict[str, List[Rotation]], t: float, has_tail: bool) -> None:
-    """The defend of a graviportal animal: it sets its legs apart, sinks back on its haunches a little and lowers its head and tusks."""
+    """The defend of a graviportal animal: braced on its hind legs, it swings its forequarters to one side and the other, sweeping its
+    head and tusks across its front (BRACE_SWEEP degrees about the hind feet), and steps its forefeet across in each swing.
 
-    brace = _smooth(min(1.0, t / 0.3)) * (1 - _smooth(max(0.0, (t - 0.75) / 0.25)))
-    pose["__root_pitch__"] = [(X_AXIS, -4.0 * brace)]
-    for side in ("Left", "Right"):
-        pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -8.0 * brace)]
-        pose[leg_name("Rear", side, "Upper")] = [(X_AXIS, 8.0 * brace)]
+    A small brace (legs apart, weight back, head low) read the same as the idle from the map camera (lib/map_read.py 0.01): only a turn about
+    the vertical changes the silhouette under a tall load (a rigid 10 degree yaw reads 0.17 there, a 10 degree pitch 0.04, a roll 0.06)."""
+
+    brace = _smooth(min(1.0, t / 0.15)) * (1 - _smooth(max(0.0, (t - 0.85) / 0.15)))
+    # Out to one side, across to the other, back to the middle: three moves, each with the forefeet off the ground.
+    moves = ((0.05, 0.25, 0.0, 1.0), (0.4, 0.6, 1.0, -1.0), (0.75, 0.95, -1.0, 0.0))
+    side, step = 0.0, 0.0
+    for start, stop, before, after in moves:
+        if t >= stop:
+            side = after
+        elif t > start:
+            share = (t - start) / (stop - start)
+            side, step = before + (after - before) * _smooth(share), math.sin(math.pi * share)
+            break
+        else:
+            side = before
+            break
+    pose["__root_yaw__"] = [(Z_AXIS, BRACE_SWEEP * side)]
+    for leg_side in ("Left", "Right"):
+        # A step: the forearm reaches forward and the foot folds back under it (a fold alone tipped the toe into the ground).
+        pose[leg_name("Front", leg_side, "Upper")] = [(X_AXIS, -10.0 * brace - 15.0 * step)]
+        pose[leg_name("Front", leg_side, "Lower")] = [(X_AXIS, -10.0 * step)]
+        pose[leg_name("Front", leg_side, "Cannon")] = [(X_AXIS, 50.0 * step)]
+        pose[leg_name("Rear", leg_side, "Upper")] = [(X_AXIS, 8.0 * brace)]
     pose["Neck_01"] = [(X_AXIS, 12.0 * brace)]
     pose["Head"] = [(X_AXIS, 6.0 * brace)]  # the tail hangs: a review read a raised one as stiff
+
+
+def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:
+    """The largest roll toward each side (positive, then negative degrees about the body's long axis): COLLAPSE_ROLL, or less with a
+    load (quadruped_load.roll_limit, `roll_limit` and `roll_limit_other_side` in the landmarks' `load`)."""
+
+    load = landmarks.get("load") or {}
+    if not load:
+        return COLLAPSE_ROLL, -COLLAPSE_ROLL
+    first = float(load.get("roll_limit", COLLAPSE_ROLL))
+    return first, float(load.get("roll_limit_other_side", -first))
+
+
+def choose_collapse(evaluate, start_rolls: Sequence[float]) -> Dict[str, object]:
+    """The death's side, final roll and neck lift.
+
+    On each side (`start_rolls`, the largest roll toward it, degrees with its sign) the largest roll down from it in COLLAPSE_ROLL_STEP
+    steps whose final pose has no part lower than the torso by more than DOWN_TOLERANCE of the height, with the neck straight unless the
+    head or neck is that part, then the smallest neck lift (NECK_LIFTS) that brings the torso down. The side whose pair rolls farther wins
+    (the first side on a tie). Without such a pair, the straight-necked roll whose torso ends nearest the lowest point, unless a neck lift
+    brings it nearer by more than DOWN_TOLERANCE. So the body falls onto the side where its torso reaches out farthest: a war elephant
+    whose left ear spreads wider than its flank lies on its right side with its neck straight.
+
+    `evaluate(roll, neck_lift)` poses the final frame and returns (the torso's height over the lowest point as a share of the height, the
+    lowest part's bone)."""
+
+    straight, lifted, found, tried = None, None, [], 0
+    for start in start_rolls:
+        sign = 1.0 if start >= 0 else -1.0
+        for magnitude in np.arange(abs(float(start)), -0.1, -COLLAPSE_ROLL_STEP):
+            roll = sign * float(magnitude)
+            gap, part = evaluate(roll, 0.0)
+            tried += 1
+            if gap <= DOWN_TOLERANCE:
+                found.append({"roll": roll, "neck_lift": 0.0, "torso_gap": round(gap, 4)})
+                break
+            if straight is None or gap < straight[0] - 1e-9:
+                straight = (gap, roll, 0.0)
+            if part not in NECK_PARTS:
+                continue
+            done = False
+            for lift in NECK_LIFTS:
+                gap, _part = evaluate(roll, lift)
+                tried += 1
+                if gap <= DOWN_TOLERANCE:
+                    found.append({"roll": roll, "neck_lift": lift, "torso_gap": round(gap, 4)})
+                    done = True
+                    break
+                if lifted is None or gap < lifted[0] - 1e-9:
+                    lifted = (gap, roll, lift)
+            if done:
+                break
+    if found:
+        return {**max(found, key=lambda row: abs(row["roll"])), "tried": tried}
+    best = lifted if lifted is not None and lifted[0] < straight[0] - DOWN_TOLERANCE else straight
+    return {"roll": best[1], "neck_lift": best[2], "torso_gap": round(best[0], 4), "tried": tried, "note": "no pair put the torso lowest"}
 
 
 def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict[str, List[Rotation]]:
@@ -623,23 +743,30 @@ def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict
     return {name: rows for name, rows in pose.items() if not (load and name in LOADED_STILL)}
 
 
-def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float, neck_lift: float = 0.0) -> None:
-    """The death: the legs buckle and the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit).
+def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float, neck_lift: float = 0.0, loaded: bool = False) -> None:
+    """The death: the legs buckle and fold, the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit) and
+    the legs on top sag toward the ground.
 
     `neck_lift` turns the neck back against the roll as the body settles, so the head lies no lower than the torso
-    (quadruped_rig.tune_collapse picks it and the roll on the final pose)."""
+    (quadruped_rig.tune_collapse picks it and the roll on the final pose). Under a load (`loaded`) the head does not nod against it:
+    the load rests on the head, and a war elephant's nod of 7 degrees as its legs buckled tore a band across its brow under
+    the tower's front (TRIPO-LOAD-SEAM 0.44% of the seam's edges in 24 frames, 0.04% without the nod)."""
 
     buckle = _smooth(min(1.0, t / 0.3))
     fall = _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
     settle = _smooth(max(0.0, (t - 0.65) / 0.35))
+    # A positive roll lays the body on its left side (+X), so the right legs end on top, and those sag toward the ground as it falls.
+    upper_side = "Right" if roll >= 0 else "Left"
     for end, side in LEGS:
         fold = 1.0 if end == "Front" else 0.7
-        pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold)]
+        sag = [(Y_AXIS, -math.copysign(COLLAPSE_SAG, roll) * fall)] if side == upper_side else []
+        pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold)] + sag
         pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold)]
-        pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.6 * settle))]
+        pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.3 * settle))]
     pose["__root_roll__"] = [(Y_AXIS, roll * fall)]
-    pose["Neck_01"] = [(X_AXIS, 25.0 * buckle - 30.0 * settle), (Y_AXIS, -neck_lift * fall)]
+    nod = 0.0 if loaded else 1.0
+    pose["Neck_01"] = [(X_AXIS, (25.0 * buckle - 30.0 * settle) * nod), (Y_AXIS, -neck_lift * fall)]
     pose["Neck_02"] = [(Z_AXIS, 20.0 * settle)]
-    pose["Head"] = [(X_AXIS, -10.0 * settle)]
+    pose["Head"] = [(X_AXIS, -10.0 * settle * nod)]
     if has_tail:
         pose["Tail_01"] = [(X_AXIS, 25.0 * settle)]
