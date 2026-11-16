@@ -372,6 +372,7 @@ def render(
     ground_z: Optional[float] = None,
     ground_alpha: float = 1.0,
     attach: Optional[Dict[str, object]] = None,
+    texture_anim_speed: Optional[float] = None,
 ) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
@@ -400,6 +401,7 @@ def render(
         "size": size,
         "ground_z": ground_z,
         "ground_alpha": ground_alpha,
+        "texture_anim_speed": texture_anim_speed,
     }
     if attach:
         request["attach"] = attach

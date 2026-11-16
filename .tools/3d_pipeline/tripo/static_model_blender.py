@@ -149,6 +149,34 @@ def consistent_winding(bm):
             "inside_out_pieces_turned": _turn_inside_out_pieces(bm)}
 
 
+def scrolling_tracks(track_vertices, rule):
+    """The track runs as vanilla draws them: their own material with vanilla's scrolling shader on a tread texture
+    (`<name>_tracks_*.dds`, written by static_model.py from the run's own colour), and UVs whose v runs along the hull at
+    vanilla's density, so the entity's texture_anim_speed scrolls the tread along the run. The atlas UVs the runs had
+    are reported, so the tread takes their colour."""
+
+    mesh = model.data
+    track_material = bie.create_shader(SimpleNamespace(shader=[rule["shader"]], diff=[f"{name}_tracks_diffuse.dds"], n=[f"{name}_tracks_normal.dds"],
+                                                       spec=[f"{name}_tracks_specular.dds"]), f"PDXmat_{name}Tracks", str(out))
+    mesh.materials.append(track_material)
+    slot = len(mesh.materials) - 1
+    members_set = set(int(i) for i in track_vertices)
+    faces = [p for p in mesh.polygons if all(v in members_set for v in p.vertices)]
+    uv = mesh.uv_layers.active.data
+    atlas = [tuple(uv[i].uv) for p in faces for i in p.loop_indices]
+    report["track_atlas_uvs"] = [[round(a, 4), round(b, 4)] for a, b in atlas[:: max(1, len(atlas) // 2000)]]
+    order = sorted(members_set)
+    where = {v: k for k, v in enumerate(order)}
+    points = np.array([mesh.vertices[v].co[:] for v in order])
+    uvs = sk.track_uvs(points, rule["v_per_measure"] / measure, rule["v_sign"])
+    for polygon in faces:
+        polygon.material_index = slot
+        for loop_index in polygon.loop_indices:
+            u, v = uvs[where[mesh.loops[loop_index].vertex_index]]
+            uv[loop_index].uv = (float(u), 1.0 - float(v))  # io_pdx_mesh writes v as 1 - the Blender v
+    report["tracks"] = {"faces": len(faces), "material_index": slot, "v_span": round(float(np.ptp(uvs[:, 1])), 3)}
+
+
 # ---- 1. import, join, face front, size and place ----
 before = set(bpy.data.objects)
 bpy.ops.import_scene.gltf(filepath=request["glb"])
@@ -528,6 +556,9 @@ if bone_specs:
         parts_report["cut_clearance"] = round(clearance, 5)
     model.parent = rig
     model.modifiers.new("Armature", "ARMATURE").object = rig
+    track_rule = contract.get("rules", {}).get("tracks")
+    if track_rule and members.get("tracks"):
+        scrolling_tracks(members["tracks"], track_rule)
 report["bones"] = {b: [round(float(v), 4) for v in h] for b, h in heads.items()}
 
 if contract.get("collision"):
@@ -672,6 +703,12 @@ if rig is not None and request.get("motion"):
                 for bone in free:
                     w[bone] = about @ turn @ back @ w[bone]
             rules["landing_turn_degrees"] = round(sk.rotation_angle(settle_q), 1)
+            # it comes down on the ground: vanilla's flight ends where vanilla's turret lay, which after the turn upright
+            # left the Smart Mesh turret's base a third of the height in the air; the drop is eased in with the flight
+            drop = max(0.0, float(moved(worlds[-1], free)[:, 2].min()))
+            for w, share in zip(worlds, progress):
+                translate(w, free, (0.0, 0.0, -drop * float(share) ** 2))
+            rules["landing_drop"] = round(drop, 4)
             shift = sk.landing_shift(moved(worlds[-1], free), moved(worlds[-1], body))
             for w, share in zip(worlds, progress):
                 translate(w, free, shift * share)

@@ -180,7 +180,30 @@ def vanilla_barrel_length(mesh) -> Optional[float]:
     return float(np.ptp(np.array([sk.to_blender(p) for p in mesh.positions[chosen]])[:, 1]))
 
 
-def registration(name: str, kind: str, contract: dict, roles: list, nodes: list, game: Path) -> str:
+def tread_textures(report: dict, contract: dict, name: str, files: Path, work: Path) -> Optional[dict]:
+    """The tread texture of a tank's scrolling tracks (lib/static_kinds.tread_images), in the colour the run had in
+    the model's own atlas (the median texel under its old UVs), at the size and link count of vanilla's tread."""
+
+    if not report.get("tracks"):
+        return None
+    rule = contract["rules"]["tracks"]
+    with Image.open(work / f"{name}_diffuse.png") as atlas:
+        pixels = np.asarray(atlas.convert("RGB"))
+    height, width = pixels.shape[:2]
+    samples = [pixels[min(height - 1, int((1.0 - v) * height)) % height, min(width - 1, int(u * width)) % width] for u, v in report.get("track_atlas_uvs", [])]
+    colour = np.median(np.array(samples), axis=0) if samples else np.array([70.0, 70.0, 65.0])
+    images = sk.tread_images(colour, rule["links"], tuple(rule["texture_size"]))
+    written = {}
+    for role, array in images.items():
+        staged = work / f"{name}_tracks_{role}.png"
+        Image.fromarray(array, "RGBA").save(staged)
+        header = model_dds.write_dxt5(staged, files / f"{name}_tracks_{role}.dds")
+        written[role] = {"file": f"{name}_tracks_{role}.dds", "size": [header["width"], header["height"]]}
+    written["colour"] = [round(float(v), 1) for v in colour]
+    return written
+
+
+def registration(name: str, kind: str, contract: dict, roles: list, nodes: list, game: Path, tracks: bool = False) -> str:
     folder = FOLDERS[kind]
     animations = {role: f"{name}_{role}_animation" for role in roles}
     entity = contract["entity"]
@@ -190,6 +213,10 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
         raise SystemExit(f"vanilla's entity {entity['reference']} was not found under {game / 'gfx/entities'}")
     settings = [{"name": f"{name}Shape", "index": 0, "texture_diffuse": f"{name}_diffuse.dds", "texture_normal": f"{name}_normal.dds",
                  "texture_specular": f"{name}_specular.dds", "shader": contract["shader"]}]
+    if tracks:
+        # the shape's second stream, the track runs, on vanilla's scrolling shader (as vanilla's FIN_light_armor lists it)
+        settings.append({"name": f"{name}Shape", "index": 1, "texture_diffuse": f"{name}_tracks_diffuse.dds", "texture_normal": f"{name}_tracks_normal.dds",
+                         "texture_specular": f"{name}_tracks_specular.dds", "shader": contract["rules"]["tracks"]["shader"]})
     pdxmesh_scale = entity.get("pdxmesh_scale", 1.0)
     parts = ["objectTypes = {",
              sk.pdxmesh_text(name, f"{folder}/{name}/{name}.mesh", animations, settings, pdxmesh_scale if abs(pdxmesh_scale - 1.0) > 1e-9 else None),
@@ -251,8 +278,9 @@ def main(argv=None) -> int:
     nodes = list(report.get("locators", {})) + list(report.get("bones", {}))
     entities = out / "mod" / "gfx" / "entities"
     entities.mkdir(parents=True, exist_ok=True)
-    (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game), encoding="utf-8", newline="\n")
+    (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
     report["textures"] = textures
+    report["tread"] = tread_textures(report, contract, name, files, out / "textures")
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files
 

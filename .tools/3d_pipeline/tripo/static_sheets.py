@@ -51,6 +51,7 @@ KIND_NOTES = {
     "vehicle": [
         "This is a WW2 light tank, a vehicle made of rigid parts (hull, turret, gun). It has no feet: for item 5, its tracks rest on the green disc.",
         "The turret turns and the gun recoils by design. In idle the whole tank also turns on the spot and back, as vanilla light tanks do.",
+        "In the move clip the tread pattern on the tracks scrolls along the track runs, as vanilla tanks' tracks do.",
         "In the death clip the turret is blown off the hull and lands beside it, as vanilla tanks' death does: a turret leaving the hull there is the intended look.",
     ],
     "plane": [
@@ -73,7 +74,8 @@ def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[P
     # the disc is the game's ground (a ship's water) at z = 0, where the route puts it
     # a ship's water is see-through (60 % opaque), so the hull under it shows as it sinks
     sheets = review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0,
-                                ground_alpha=WATER_ALPHA if kind == "ship" else 1.0)
+                                ground_alpha=WATER_ALPHA if kind == "ship" else 1.0,
+                                texture_anim_speed=(sk.kind_contract(kind).get("rules", {}).get("tracks") or {}).get("texture_anim_speed"))
     mesh = sorted(folder.glob("*.mesh"))[0]
     index = render_rest(mesh, out / "closeup_tiles", [], views=tuple(CLOSE_ANGLES), size=CLOSE_SIZE, share=CLOSE_SHARE)
     row = index["clips"][0]["rows"][0]["tiles"]

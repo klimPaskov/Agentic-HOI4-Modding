@@ -472,6 +472,18 @@
        "precision": 1.0
       }
      }
+    },
+    "tracks": {
+     "shader": "PdxMeshAdvancedAnim",
+     "v_per_measure": 6.0526,
+     "v_sign": 1.0,
+     "texture_size": [
+      64,
+      32
+     ],
+     "links": 5,
+     "source": "gfx/models/units/tanks/GER_tank_light.mesh: its PdxMeshAdvancedAnim stream's v along the ground run, and the rows of tank_threads_01_diffuse.dds",
+     "texture_anim_speed": 0.5
     }
    },
    "attack_turn": {

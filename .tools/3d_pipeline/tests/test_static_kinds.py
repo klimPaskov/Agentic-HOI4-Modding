@@ -350,6 +350,62 @@ class ClipTests(unittest.TestCase):
         self.assertAlmostEqual(abs(axis[2]) / np.linalg.norm(axis), 1.0, places=6)  # PDX up is Blender z
 
 
+class TrackTests(unittest.TestCase):
+    def test_track_uvs_run_across_and_along_the_hull(self):
+        left = box([-2.0, -4.0, 0.0], [-1.4, 4.0, 1.0], 3000)
+        right = box([1.4, -4.0, 0.0], [2.0, 4.0, 1.0], 3000, seed=3)
+        points = np.concatenate([left, right])
+        uv = sk.track_uvs(points, 0.75, 1.0)
+        self.assertAlmostEqual(float(uv[:, 0].min()), 0.03, places=6)  # u spans the run's width, as vanilla's 0.03 to 0.97
+        self.assertAlmostEqual(float(uv[:, 0].max()), 0.97, places=6)
+        mirrored = np.abs(points[:, 0])
+        order = np.argsort(mirrored)
+        self.assertTrue(np.all(np.diff(uv[order, 0]) >= -1e-9))  # both runs map their outer edge to the same u
+        slope = np.polyfit(points[:, 1], uv[:, 1], 1)[0]
+        self.assertAlmostEqual(float(slope), 0.75, places=6)  # v grows along the hull at the asked density
+        self.assertAlmostEqual(float(uv[:, 1].min()), 0.0, places=6)
+        backwards = sk.track_uvs(points, 0.75, -1.0)
+        self.assertAlmostEqual(float(np.polyfit(points[:, 1], backwards[:, 1], 1)[0]), -0.75, places=6)
+
+    def test_tread_images_are_the_asked_size_and_tangent_space(self):
+        images = sk.tread_images(np.array([90.0, 85.0, 70.0]), 5, (64, 32))
+        self.assertEqual(set(images), {"diffuse", "normal", "specular"})
+        for role, array in images.items():
+            self.assertEqual(array.shape, (32, 64, 4), role)
+            self.assertEqual(array.dtype, np.uint8, role)
+        self.assertEqual(int(images["normal"][..., 2].max()), 0)  # PDX normal maps keep x in green and y in alpha
+        rows = images["diffuse"][..., :3].astype(float).mean(axis=(1, 2))
+        self.assertEqual(sk.tread_links(rows), 5)  # as many links a tile as asked, counted as calibration counts vanilla's
+        self.assertLess(abs(float(np.median(images["diffuse"][..., :3].reshape(-1, 3), axis=0)[0]) - 90.0), 40.0)
+
+    def test_tread_links_count_the_gaps_round_the_tile(self):
+        self.assertEqual(sk.tread_links([71, 119, 116, 96, 99, 89, 61, 92, 117, 100, 95, 107, 64, 73, 109, 99, 90, 106, 68, 50,
+                                         106, 112, 93, 108, 102, 70, 88, 117, 101, 96, 114, 78]), 5)  # vanilla's tank_threads_01 rows
+        self.assertEqual(sk.tread_links([50, 100, 100, 100, 50, 100, 100, 50]), 2)  # a gap across the seam counts once
+        self.assertEqual(sk.tread_links([90] * 8), 1)
+
+    def test_the_vehicle_contract_carries_vanillas_track_rule(self):
+        rule = sk.kind_contract("vehicle")["rules"]["tracks"]
+        self.assertEqual(rule["shader"], "PdxMeshAdvancedAnim")
+        self.assertGreater(rule["v_per_measure"], 0)
+        self.assertIn(rule["v_sign"], (1.0, -1.0))
+        self.assertGreater(rule["links"], 0)
+        self.assertGreater(rule["texture_anim_speed"], 0)
+
+    def test_a_landed_part_is_judged_by_tilt_and_gap(self):
+        points = np.array([sk.to_blender(p) for p in box([-1, -1, 0], [1, 1, 0.5], 500)])  # PDX space via the swap
+        flat = np.eye(4)
+        tilt, lowest = sk.landed_pose(flat, points)
+        self.assertAlmostEqual(tilt, 0.0, places=6)
+        self.assertAlmostEqual(lowest, 0.0, places=6)
+        lifted = np.eye(4)
+        lifted[1, 3] = 1.44  # PDX y is up: the turret the review saw floating
+        self.assertAlmostEqual(sk.landed_pose(lifted, points)[1], 1.44, places=6)
+        tipped = np.eye(4)
+        tipped[:3, :3] = sk.SWAP @ sk.quaternion_matrix(sk.axis_quaternion([1, 0, 0], 30.0))[:3, :3] @ sk.SWAP
+        self.assertAlmostEqual(sk.landed_pose(tipped, points)[0], 30.0, places=4)
+
+
 class ContractTests(unittest.TestCase):
     def test_every_kind_has_a_measured_contract(self):
         kinds = sk.load_kinds()
@@ -433,6 +489,7 @@ class ContractTests(unittest.TestCase):
         self.assertIn("STATIC-SIZE", rules)  # vanilla's own mesh is 0.77 of the size the reference entity scale needs
         self.assertNotIn("STATIC-BONES", rules)
         self.assertNotIn("STATIC-COLLISION", rules)
+        self.assertNotIn("STATIC-SHADER", rules)  # its track runs use vanilla's scrolling shader, which the contract allows
 
 
 if __name__ == "__main__":
