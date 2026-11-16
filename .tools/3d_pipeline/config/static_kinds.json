@@ -15,77 +15,78 @@
     "gfx/models/units/tanks/FIN_light_armor.mesh"
    ],
    "size": {
-    "measure": "length and height (geometric mean)",
-    "runtime": 2.326,
-    "source": 5.5381,
+    "measure": "area the map camera sees (square root)",
+    "runtime": 2.8401,
+    "source": 6.7622,
     "centre_share": [
      0.0,
-     -0.0111,
-     0.3231
+     -0.0093,
+     0.2766
     ],
     "ground_share": 0.0,
     "per_model": [
      {
       "rel": "gfx/models/units/tanks/ENG_tank_light.mesh",
-      "measure": 4.117,
+      "measure": 4.7876,
       "scale": 0.5,
-      "runtime": 2.0585
+      "runtime": 2.3938
      },
      {
       "rel": "gfx/models/units/tanks/FRA_tank_light.mesh",
-      "measure": 4.0588,
+      "measure": 4.7732,
       "scale": 0.6,
-      "runtime": 2.4353
+      "runtime": 2.8639
      },
      {
       "rel": "gfx/models/units/tanks/generic_tank_light.mesh",
-      "measure": 4.5229,
+      "measure": 5.3722,
       "scale": 0.48,
-      "runtime": 2.171
+      "runtime": 2.5787
      },
      {
       "rel": "gfx/models/units/tanks/GER_tank_light.mesh",
-      "measure": 4.0451,
+      "measure": 5.0612,
       "scale": 0.42,
-      "runtime": 1.699
+      "runtime": 2.1257
      },
      {
       "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
-      "measure": 4.6707,
+      "measure": 5.703,
       "scale": 0.498,
-      "runtime": 2.326
+      "runtime": 2.8401
      },
      {
       "rel": "gfx/models/units/tanks/JAP_tank_light.mesh",
-      "measure": 5.0317,
+      "measure": 5.8336,
       "scale": 0.5,
-      "runtime": 2.5158
+      "runtime": 2.9168
      },
      {
       "rel": "gfx/models/units/tanks/SOV_tank_light.mesh",
-      "measure": 5.0293,
+      "measure": 5.8743,
       "scale": 0.5,
-      "runtime": 2.5146
+      "runtime": 2.9371
      },
      {
       "rel": "gfx/models/units/tanks/USA_tank_light.mesh",
-      "measure": 3.8864,
+      "measure": 4.6286,
       "scale": 0.51,
-      "runtime": 1.982
+      "runtime": 2.3606
      },
      {
       "rel": "gfx/models/units/tanks/FIN_light_armor.mesh",
-      "measure": 5.0293,
+      "measure": 5.8743,
       "scale": 0.5,
-      "runtime": 2.5146
+      "runtime": 2.9371
      }
     ],
     "nearest": {
      "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
-     "measure": 4.6707,
+     "measure": 5.703,
      "scale": 0.498,
-     "runtime": 2.326
+     "runtime": 2.8401
     },
+    "nearest_tall": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -413,6 +414,7 @@
     "wheels": {
      "radius_spread": 0.426,
      "rim_coverage": 0.45,
+     "symmetry": 0.0317,
      "x_share": 0.5014,
      "diameter_share": [
       0.0329,
@@ -422,7 +424,7 @@
      "track_length_share": 0.5,
      "top_margin_share": 0.02,
      "road_wheel_diameter_share": 0.1254,
-     "source": "62 vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to 1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest, a rim reaching 0.9 of vanilla's least-covered sectors; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+     "source": "62 vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to 1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest, a rim reaching 0.9 of vanilla's least-covered sectors, half-turn symmetry within twice vanilla's worst unless the rim closes a circle; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
      "validation": {
       "gfx/models/units/tanks/ENG_tank_light.mesh": {
        "wheels": 12,
@@ -440,14 +442,14 @@
        "precision": 0.928
       },
       "gfx/models/units/tanks/GER_tank_light.mesh": {
-       "wheels": 42,
+       "wheels": 22,
        "recall": 1.0,
-       "precision": 0.391
+       "precision": 0.577
       },
       "gfx/models/units/tanks/ITA_tank_light.mesh": {
-       "wheels": 20,
+       "wheels": 18,
        "recall": 1.0,
-       "precision": 0.877
+       "precision": 1.0
       },
       "gfx/models/units/tanks/JAP_tank_light.mesh": {
        "wheels": 16,
@@ -460,9 +462,9 @@
        "precision": 1.0
       },
       "gfx/models/units/tanks/USA_tank_light.mesh": {
-       "wheels": 14,
+       "wheels": 12,
        "recall": 1.0,
-       "precision": 0.85
+       "precision": 1.0
       },
       "gfx/models/units/tanks/FIN_light_armor.mesh": {
        "wheels": 12,
@@ -584,6 +586,7 @@
      "scale": 0.1,
      "runtime": 3.9851
     },
+    "nearest_tall": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -823,6 +826,7 @@
      "scale": 1.7,
      "runtime": 13.0681
     },
+    "nearest_tall": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1171,6 +1175,7 @@
      "scale": 0.6,
      "runtime": 3.6194
     },
+    "nearest_tall": null,
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },
    "entity": {
@@ -1366,7 +1371,7 @@
     "gfx/models/buildings/landmarks/landmark_volkshalle.mesh"
    ],
    "size": {
-    "measure": "largest side",
+    "measure": "largest side, or height when tall and thin",
     "runtime": 5.15,
     "source": 32.1872,
     "centre_share": [
@@ -1496,6 +1501,12 @@
      "measure": 32.1872,
      "scale": 0.16,
      "runtime": 5.15
+    },
+    "nearest_tall": {
+     "rel": "gfx/models/buildings/landmarks/landmark_statue_of_liberty.mesh",
+     "measure": 16.752,
+     "scale": 0.3,
+     "runtime": 5.0256
     },
     "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale"
    },

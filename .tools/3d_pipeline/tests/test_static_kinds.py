@@ -173,11 +173,11 @@ class GeometryTests(unittest.TestCase):
         contract = {"size": {"source": 8.0, "centre_share": [0.0, 0.0, 0.2], "ground_share": 0.0}, "rules": {}}
         scale, offset = sk.placement(tank(), "vehicle", contract)
         placed = tank() * scale + offset
-        # a tank is sized on its length and height together
-        self.assertAlmostEqual(float(np.sqrt(np.ptp(placed[:, 1]) * np.ptp(placed[:, 2]))), 8.0, places=3)
+        # a tank is sized on the area the map camera sees
+        self.assertAlmostEqual(sk.main_measure(placed, "vehicle"), 8.0, places=3)
         self.assertAlmostEqual(float(placed[:, 2].min()), 0.0, places=6)
 
-    def test_a_taller_tank_is_drawn_shorter(self):
+    def test_a_taller_tank_is_drawn_smaller(self):
         squat, tall = tank(), tank()
         tall[:, 2] *= 1.5
         self.assertLess(sk.main_measure(squat, "vehicle"), sk.main_measure(tall, "vehicle"))
@@ -193,6 +193,27 @@ class GeometryTests(unittest.TestCase):
         self.assertFalse(sk.landing_shift(clear, hull).any())
         moved = against_side + shift
         self.assertFalse(sk.landing_shift(moved + [1e-6, 0, 0], hull).any())
+
+    def test_a_landed_turret_sits_on_its_base(self):
+        flipped = np.eye(4)
+        flipped[:3, :3] = sk.quaternion_matrix(sk.axis_quaternion([1, 0, 0], 172.9))
+        settle = sk.upright_turn(flipped)
+        up = settle @ flipped[:3, :3] @ np.array([0.0, 0.0, 1.0])
+        self.assertAlmostEqual(float(up[2]), 1.0, places=6)
+        self.assertTrue(np.allclose(sk.upright_turn(np.eye(4)), np.eye(3)))
+
+    def test_tall_landmarks_and_the_map_camera_measure(self):
+        base = box([-16.0, -16.0, 0.0], [16.0, 16.0, 0.5], 8000)
+        obelisk = box([-1.5, -1.5, 0.5], [1.5, 1.5, 29.0], 8000, seed=3)
+        palace = box([-15.0, -10.0, 0.0], [15.0, 10.0, 8.0], 8000, seed=4)
+        self.assertTrue(sk.tall_and_thin(np.vstack([base, obelisk])))
+        self.assertFalse(sk.tall_and_thin(palace))
+        self.assertAlmostEqual(sk.main_measure(np.vstack([base, obelisk]), "landmark"), 29.0, delta=0.1)
+        self.assertAlmostEqual(sk.main_measure(palace, "landmark"), 30.0, delta=0.1)
+        long_low, short_tall = box([-1, -4, 0], [1, 4, 1], 4000), box([-1, -3, 0], [1, 3, 2], 4000)
+        # the camera sees length x (width sin 55 + height cos 55)
+        self.assertAlmostEqual(sk.main_measure(long_low, "vehicle") ** 2, 8 * (2 * np.sin(np.radians(55)) + np.cos(np.radians(55))), delta=0.05)
+        self.assertGreater(sk.main_measure(short_tall, "vehicle"), 0)
 
     def test_flight_progress_and_ground_lift(self):
         path = np.array([[0, 0, 0], [0, 0, 2], [1, 0, 3], [2, 0, 0]], dtype=float)
@@ -260,6 +281,12 @@ class RunningGearTests(unittest.TestCase):
         diamond = disc_mesh([1.8, 0.0, 0.5], 0.45, 0.25, sides=4)[0]
         self.assertEqual(sk.rim_coverage(round_wheel, np.array([1.8, 0.0, 0.5])), 1.0)
         self.assertLessEqual(sk.rim_coverage(diamond, np.array([1.8, 0.0, 0.5])), 0.34)
+
+    def test_an_arm_is_not_round_about_its_axle(self):
+        wheel = disc_mesh([1.8, 0.0, 0.5], 0.45, 0.25, sides=16)[0]
+        self.assertLess(sk.half_turn_mismatch(wheel, np.array([1.8, 0.0, 0.5]), 0.45), 0.01)
+        arm = np.array([[1.8, -0.4, 0.2], [1.8, 0.0, 0.5], [1.8, 0.4, 0.6], [1.8, 0.1, 0.9], [1.8, -0.3, 0.7]])
+        self.assertGreater(sk.half_turn_mismatch(arm, np.array([1.8, 0.0, 0.55]), 0.45), 0.2)
 
     def test_a_tank_in_one_piece_has_no_wheels(self):
         points, triangles = box_mesh([-2.0, -4.0, 0.0], [2.0, 4.0, 2.5])

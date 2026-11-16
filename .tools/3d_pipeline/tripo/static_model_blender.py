@@ -81,6 +81,45 @@ def triangle_count(obj):
     return sum(len(p.vertices) - 2 for p in obj.data.polygons)
 
 
+def consistent_winding(bm):
+    """Winding: a piece with an edge its two faces walk the same way (a face turned against its neighbours, which the
+    game culls) is turned consistent with Blender's recalc; only such pieces are touched (a Smart Mesh plane's wings had
+    them). A face lying exactly on another one, facing the same way (a doubled face that flickers), is dropped. It runs
+    after the weld and again after the slits and small holes are closed, because joining a slit can bring two pieces of
+    opposite winding together (a Smart Mesh factory's roof gables)."""
+
+    bm.verts.index_update()
+    doubles, seen_faces = [], {}
+    for face in bm.faces:
+        key = tuple(sorted(v.index for v in face.verts))
+        other = seen_faces.get(key)
+        if other is not None and other.normal.dot(face.normal) > 0.99:
+            doubles.append(face)
+        else:
+            seen_faces[key] = face
+    if doubles:
+        bmesh.ops.delete(bm, geom=doubles, context="FACES_ONLY")
+    conflicted = [e for e in bm.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert]
+    fixed, seen = 0, set()
+    for edge in conflicted:
+        start = edge.link_faces[0]
+        if start in seen:
+            continue
+        island, stack = [], [start]
+        seen.add(start)
+        while stack:
+            face = stack.pop()
+            island.append(face)
+            for e in face.edges:
+                for other in e.link_faces:
+                    if other not in seen:
+                        seen.add(other)
+                        stack.append(other)
+        bmesh.ops.recalc_face_normals(bm, faces=island)
+        fixed += len(island)
+    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "doubled_faces_dropped": len(doubles)}
+
+
 # ---- 1. import, join, face front, size and place ----
 before = set(bpy.data.objects)
 bpy.ops.import_scene.gltf(filepath=request["glb"])
@@ -144,29 +183,7 @@ welded = len(bm.verts)
 bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=size * 1e-5)
 welded -= len(bm.verts)
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
-# Winding: a piece with an edge its two faces walk the same way (a face turned against its neighbours, which the game
-# culls) is turned consistent with Blender's recalc. Only such pieces are touched (a Smart Mesh plane's wings had them).
-conflicted = [e for e in bm.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert]
-fixed = 0
-if conflicted:
-    seen = set()
-    for edge in conflicted:
-        start = edge.link_faces[0]
-        if start in seen:
-            continue
-        island, stack = [], [start]
-        seen.add(start)
-        while stack:
-            face = stack.pop()
-            island.append(face)
-            for e in face.edges:
-                for other in e.link_faces:
-                    if other not in seen:
-                        seen.add(other)
-                        stack.append(other)
-        bmesh.ops.recalc_face_normals(bm, faces=island)
-        fixed += len(island)
-report["winding"] = {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed}
+report["winding"] = consistent_winding(bm)
 bm.to_mesh(model.data)
 bm.free()
 budget = contract["triangle_budget"]["value"]
@@ -219,6 +236,7 @@ if uv_layer is not None:
         for loop in face.loops:
             loop[uv_layer].uv = first
 bmesh.ops.triangulate(bm, faces=closed)
+report["winding_after_holes"] = consistent_winding(bm)
 bm.to_mesh(model.data)
 bm.free()
 report["small_holes_closed"] = len(closed)
@@ -590,9 +608,23 @@ if rig is not None and request.get("motion"):
                         free |= subtree(bone)
         body = [b for b in order if b not in free]
         if free:
-            shift = sk.landing_shift(moved(worlds[-1], free), moved(worlds[-1], body))
             centres = np.array([moved(w, free).mean(axis=0) for w in worlds])
             progress = sk.flight_progress(centres)
+            # it lands on its flat base: the turn that sets its up axis back to world up is eased in over the flight
+            top = next(bone for bone in order if bone in free)
+            settle = sk.upright_turn(worlds[-1][top])
+            settle_q = sk._quaternion_from_matrix(settle)
+            for w, share, centre in zip(worlds, progress, centres):
+                turn = np.eye(4)
+                turn[:3, :3] = sk.quaternion_matrix(sk._slerp(np.array([1.0, 0.0, 0.0, 0.0]), settle_q, float(share)))
+                about = np.eye(4)
+                about[:3, 3] = centre
+                back = np.eye(4)
+                back[:3, 3] = -centre
+                for bone in free:
+                    w[bone] = about @ turn @ back @ w[bone]
+            rules["landing_turn_degrees"] = round(sk.rotation_angle(settle_q), 1)
+            shift = sk.landing_shift(moved(worlds[-1], free), moved(worlds[-1], body))
             for w, share in zip(worlds, progress):
                 translate(w, free, shift * share)
             rules["landing_shift"] = [round(float(v), 4) for v in shift]

@@ -289,24 +289,49 @@ def rotate_quarter_turns(points: np.ndarray, turns: int) -> np.ndarray:
 FRONT_TURNS = {"-y": 0, "-x": 1, "+y": 2, "+x": 3}
 
 
-def main_measure(points: np.ndarray, kind: str) -> float:
-    """The size a kind is scaled by: a tank's length and height together (their geometric mean), a ship's length, a
-    plane's wingspan, a building's footprint, a landmark's largest side.
+# The map camera's elevation in degrees (review_render.py's `hoi4` view, the HOI4 map angle).
+MAP_CAMERA_ELEVATION = 55.0
+# A landmark is tall and thin when its height is over this many times the larger side of its upper half
+# (kit rule; vanilla's Big Ben and Eiffel tower are, its palaces and castles are not).
+TALL_LANDMARK = 2.0
 
-    A tank sized on its length alone came out bulkier than vanilla's when its hull was taller or its turret bigger
-    (a reviewer saw it larger than vanilla's light tank at game size); length and height together keep both in step.
+
+def main_measure(points: np.ndarray, kind: str) -> float:
+    """The size a kind is scaled by: for a tank, the area the map camera sees (its length times its width and height
+    as seen from the camera's 55 degree elevation, square-rooted); a ship's length; a plane's wingspan; a building's
+    footprint; a landmark's largest side, or its height when it is tall and thin.
+
+    A tank sized on its length came out bulkier than vanilla's, sized on length and height it came out smaller in the
+    map view (a taller, shorter hull covers less ground): reviewers compare what the camera shows, so the measure is that.
+    A tall and thin landmark (`tall_and_thin`: an obelisk, a tower) is sized on its height, so a wide paved base
+    round it does not shrink it to a needle.
     """
 
     span = np.ptp(points, axis=0)
     if kind == "vehicle":
-        return float(math.sqrt(span[1] * span[2]))
+        elevation = math.radians(MAP_CAMERA_ELEVATION)
+        return float(math.sqrt(span[1] * (span[0] * math.sin(elevation) + span[2] * math.cos(elevation))))
     if kind == "ship":
         return float(span[1])
     if kind == "plane":
         return float(span[0])
     if kind == "building":
         return float(max(span[0], span[1]))
+    if kind == "landmark" and tall_and_thin(points):
+        return float(span[2])
     return float(span.max())
+
+
+def tall_and_thin(points: np.ndarray) -> bool:
+    """A landmark that stands more than `TALL_LANDMARK` times as tall as its upper half is wide (an
+    obelisk or a tower; a paved base or a plinth round it does not count)."""
+
+    z0, height = points[:, 2].min(), float(np.ptp(points[:, 2]))
+    upper = points[points[:, 2] > z0 + 0.5 * height]
+    if len(upper) < 4:
+        return False
+    footprint = float(max(np.ptp(upper[:, 0]), np.ptp(upper[:, 1])))
+    return height > TALL_LANDMARK * footprint
 
 
 def waterline_height(points: np.ndarray, width_share: float) -> float:
@@ -505,6 +530,16 @@ def rim_coverage(points: np.ndarray, centre: np.ndarray, sectors: int = 12) -> f
     return len(set(((angles + np.pi) / (2 * np.pi) * sectors).astype(int) % sectors)) / sectors
 
 
+def half_turn_mismatch(points: np.ndarray, centre: np.ndarray, radius: float) -> float:
+    """How far a piece's vertices land from its own vertices when turned half a turn about the axle (seen from the side),
+    the 90th percentile as a share of its radius: 0 for a wheel with hub and spokes, large for an arm."""
+
+    offset = points[:, 1:] - centre[1:]
+    turned = -offset
+    gaps = np.sqrt(((offset[:, None, :] - turned[None, :, :]) ** 2).sum(axis=2)).min(axis=1)
+    return float(np.percentile(gaps, 90) / max(radius, 1e-9))
+
+
 def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     """A tank's road wheels and track runs, from its separate pieces (a Smart Mesh tank models them apart).
 
@@ -513,8 +548,9 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     - a track run is a piece at least `rule.track_length_share` of the hull's length long;
     - a wheel is a round piece (its length and height within `rule.round_ratio` of each other, thinner across than
       round) whose diameter lies in `rule.diameter_share` (of the hull's length), whose top stays under the track's, and
-      whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`) and reach round
-      it as far as theirs (`rule.rim_coverage`, `rim_coverage`). Pieces whose centres lie within half
+      whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`), reach round it as
+      far as theirs (`rule.rim_coverage`), and look the same turned half a turn (`rule.symmetry`, `half_turn_mismatch`)
+      unless the rim closes a full circle. Pieces whose centres lie within half
       a radius of each other (a tyre and its hub) are one wheel.
     Returns {"wheels": [{"centre", "radius", "vertices"}], "tracks": vertex indices}, wheels ordered front to back and
     left before right, and the vertex indices index `points`.
@@ -556,8 +592,13 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
         radii = np.linalg.norm(points[vertices][:, 1:] - c[1:], axis=1)
         if radii.mean() > 0 and radii.std() / radii.mean() > rule.get("radius_spread", np.inf):
             continue
-        # and its rim goes round: a coarse piece that would turn like a spinning diamond is left on the hull
-        if rim_coverage(points[vertices], c) < rule.get("rim_coverage", 0.0):
+        # and it is round about its axle: its rim goes round (a coarse piece would turn like a spinning diamond), and
+        # either it looks the same turned half a turn (hub and spokes, as vanilla's wheels) or its rim closes a full
+        # circle (a toothed sprocket). A bogie arm does neither.
+        coverage = rim_coverage(points[vertices], c)
+        if coverage < rule.get("rim_coverage", 0.0):
+            continue
+        if coverage < 1.0 and half_turn_mismatch(points[vertices], c, diameter / 2) > rule.get("symmetry", np.inf):
             continue
         round_pieces.append([vertices, c, diameter / 2])
     wheels = []
@@ -754,6 +795,25 @@ def flight_progress(centres: np.ndarray) -> np.ndarray:
     travel = np.linalg.norm(centres - centres[0], axis=1)
     total = float(np.linalg.norm(centres[-1] - centres[0]))
     return np.clip(travel / total, 0.0, 1.0) if total > 1e-9 else np.zeros(len(centres))
+
+
+def upright_turn(world: np.ndarray) -> np.ndarray:
+    """The rotation (3x3) that takes a part's rest up axis, as `world` (4x4) carries it, back to world up: the
+    smallest turn that sets a blown-off turret down on its flat base."""
+
+    up = world[:3, :3] @ np.array([0.0, 0.0, 1.0])
+    up = up / np.linalg.norm(up)
+    target = np.array([0.0, 0.0, 1.0])
+    axis = np.cross(up, target)
+    sine, cosine = float(np.linalg.norm(axis)), float(np.dot(up, target))
+    if sine < 1e-9:
+        if cosine > 0:
+            return np.eye(3)
+        axis = np.cross(up, [1.0, 0.0, 0.0])
+        axis = axis if np.linalg.norm(axis) > 1e-6 else np.cross(up, [0.0, 1.0, 0.0])
+        return quaternion_matrix(axis_quaternion(axis / np.linalg.norm(axis), 180.0))
+    angle = math.degrees(math.atan2(sine, cosine))
+    return quaternion_matrix(axis_quaternion(axis / sine, angle))
 
 
 def ground_lift(lowest, sink: float = 0.0) -> np.ndarray:

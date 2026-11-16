@@ -234,7 +234,8 @@ def _wheel_shares(entry: dict):
         rows.append((float(np.abs(q[:, 0] - centre_x).min() / (span[0] / 2)), float(max(e[1], e[2]) / span[1]),
                      float(((side[:, 2].min() + side[:, 2].max()) / 2 - low[2]) / span[2]),
                      float(radii.std() / radii.mean()) if radii.mean() > 0 else None,
-                     sk.rim_coverage(side, middle)))
+                     sk.rim_coverage(side, middle),
+                     sk.half_turn_mismatch(side, middle, max(e[1], e[2]) / 2)))
     return rows
 
 
@@ -250,6 +251,7 @@ def wheel_rules(measured: List[dict]) -> dict:
     rule = {
         "radius_spread": round(1.05 * max(spreads), 4),
         "rim_coverage": round(0.9 * min(r[4] for r in rows), 4),
+        "symmetry": round(2.0 * max(r[5] for r in rows), 4),
         "x_share": round(0.9 * min(inner), 4),
         "diameter_share": [round(0.5 * min(diameters), 4), round(1.5 * max(diameters), 4)],
         "round_ratio": 1.67,
@@ -257,7 +259,7 @@ def wheel_rules(measured: List[dict]) -> dict:
         "top_margin_share": 0.02,
         "road_wheel_diameter_share": round(road, 4),
         "source": f"{len(rows)} vanilla wheel bones: the innermost wheel at 0.9 of its share of the half-width, diameters from half the smallest to "
-                  "1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest, a rim reaching 0.9 of vanilla's least-covered sectors; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
+                  "1.5 times the largest, a vertex spread from the centre up to 1.05 times vanilla's widest, a rim reaching 0.9 of vanilla's least-covered sectors, half-turn symmetry within twice vanilla's worst unless the rim closes a circle; kit rules: round within 1.67, a track run is half the hull long, a wheel's top under the track's top",
     }
     validation = {}
     for entry in measured:
@@ -495,6 +497,16 @@ def role_aliases(game: Path, clips: dict, bones: List[str]) -> dict:
     return aliases
 
 
+def nearest_tall(kind: str, measured: List[dict], rows: List[dict], runtime: float) -> Optional[dict]:
+    if kind != "landmark":
+        return None
+    tall = [r for r, e in zip(rows, measured) if r["runtime"] and sk.tall_and_thin(e["points"])]
+    if not tall:
+        return None
+    best = min(tall, key=lambda r: abs(r["runtime"] - runtime))
+    return {k: (round(v, 4) if isinstance(v, float) else v) for k, v in best.items()}
+
+
 def calibrate(game: Path) -> dict:
     definitions = sk.scan_definitions(game)
     turn_limit = json.loads((PIPELINE / "config" / "deformation_calibration.json").read_text(encoding="utf-8"))["groups"]["air_naval"]["turn_per_frame"]["value"]
@@ -539,7 +551,7 @@ def calibrate(game: Path) -> dict:
             "kind": kind,
             "references": [e["rel"] for e in measured],
             "size": {
-                "measure": {"vehicle": "length and height (geometric mean)", "ship": "length", "plane": "wingspan", "building": "footprint", "landmark": "largest side"}[kind],
+                "measure": {"vehicle": "area the map camera sees (square root)", "ship": "length", "plane": "wingspan", "building": "footprint", "landmark": "largest side, or height when tall and thin"}[kind],
                 "runtime": round(runtime, 4),
                 "source": round(source, 4),
                 "centre_share": [round(float(v), 4) for v in centre],
@@ -547,6 +559,8 @@ def calibrate(game: Path) -> dict:
                 "per_model": [{k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()} for r in rows],
                 # the vanilla model nearest the median size: the game-size review sheet draws the model beside it
                 "nearest": {k: (round(v, 4) if isinstance(v, float) else v) for k, v in min(with_scale, key=lambda r: abs(r["runtime"] - runtime)).items()},
+                # a tall and thin landmark is compared with the tall and thin vanilla one nearest the median size
+                "nearest_tall": nearest_tall(kind, measured, rows, runtime),
                 "about": "runtime = main measure x entity scale; the model is exported at runtime / the reference entity's scale",
             },
             "entity": {"reference": entity_name, "mesh": reference, "scale": ref_scale["scale"], "file": definitions["entity"][entity_name]["source"],

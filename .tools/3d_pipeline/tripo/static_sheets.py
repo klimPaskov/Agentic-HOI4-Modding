@@ -142,6 +142,8 @@ def game_review(folder: Path, kind: str, out: Path, game: Path) -> Path:
     mesh = sorted(folder.glob("*.mesh"))[0]
     # the vanilla model nearest the kind's median size, at its own entity scale; the model at the reference entity's
     nearest = contract["size"]["nearest"]
+    if kind == "landmark" and contract["size"].get("nearest_tall") and sk.tall_and_thin(_points(mesh)):
+        nearest = contract["size"]["nearest_tall"]  # an obelisk is compared with a vanilla tower, not a palace
     reference = game / nearest["rel"]
     rows = []
     for label, path, texts in (("this model", mesh, []), (f"vanilla {reference.stem}", reference, review_unit.gfx_texts(game))):
