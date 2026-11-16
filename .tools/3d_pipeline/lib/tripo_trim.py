@@ -11,7 +11,7 @@ rest, holding its last pose. In the game that reads as a unit that chops and the
 - It applies to the roles of `DEFAULT_ROLES` (attack, defend, retreat). Never to idle, move or death: an idle or a walk is a loop and a death
   holds its lying pose on purpose. A job's own `tripo.trim` entry for a role wins (`tripo_intake.prepare_command`).
 
-A trimmed or not, an action clip is looped by the game, so it must also END in its first frame's pose (`settle_frames`): after the trim,
+A trimmed or not, every looped clip must also END in its first frame's pose (`settle_frames`): after the trim,
 `prepare_tripo_unit.py` appends frames that blend every bone from the last pose back to frame 1. Their number comes from the clip's own motion:
 the largest bone turn between the two poses, spread so that no bone turns faster than the clip's own fast motion (its `PEAK_PERCENTILE`th
 percentile of the fastest bone's turn per frame) and never faster than `SETTLE_MAX_RATE`, with the smoothstep's peak speed 1.5 times its mean.
@@ -36,8 +36,10 @@ FLOOR_SHARE = 0.05
 SETTLE_SECONDS = 0.5
 MIN_SAVED_SHARE = 0.2
 MIN_KEEP_SECONDS = 1.0
-# The settle back to frame 1 (see the module text). Roles are the action clips; idle and move are loops by their own cycle, death ends lying.
-SETTLE_ROLES = ("attack", "defend", "retreat")
+# The settle back to frame 1 (see the module text). Every looped role: an idle or a walk loops by its own cycle and gets no frames (it ends
+# within the tolerance), but the grip stage's wrist turns can break that cycle (the round 4 orc's swagger ended 17 degrees from its start at
+# the axe hand, TRIPO-LOOP-POP). A death ends lying and is never settled.
+SETTLE_ROLES = ("idle", "move", "attack", "defend", "retreat")
 SETTLE_TOLERANCE_DEGREES = 1.0
 SETTLE_MAX_RATE = 10.5  # degrees a source frame: 0.75 of the 14 degree easing trigger, far under the kit's 37 degrees at 30 fps
 SETTLE_PEAK_SMOOTHSTEP = 1.5

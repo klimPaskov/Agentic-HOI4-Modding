@@ -190,9 +190,14 @@ class Intake(unittest.TestCase):
         self.assertLess(int(ends[0].split("=")[1]), 120)
         self.assertNotIn("--trim", command)
 
-    def test_the_action_roles_settle_back_to_their_first_pose_and_the_job_can_limit_it(self) -> None:
+    def test_every_looped_role_settles_back_to_its_first_pose_and_the_job_can_limit_it(self) -> None:
         command = self.command()
-        self.assertEqual(command[command.index("--settle") + 1:command.index("--settle") + 4], ["attack", "defend", "retreat"])
+        settled = command[command.index("--settle") + 1:]
+        settled = settled[:next((i for i, item in enumerate(settled) if item.startswith("--")), len(settled))]
+        self.assertEqual([r for r in settled if r in ("idle", "move", "attack", "defend", "retreat", "death")],
+                         [r for r in ("idle", "move", "attack", "defend", "retreat") if r in settled])
+        self.assertNotIn("death", settled, "a death ends lying and is never settled")
+        self.assertIn("attack", settled)
         self.spec["tripo"]["settle"] = ["attack"]
         command = self.command()
         self.assertEqual(command[command.index("--settle") + 1], "attack")

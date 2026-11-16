@@ -32,6 +32,10 @@ ANGLES_DEGREES = (4.0, 8.0, 12.0, 17.0, 23.0, 30.0, 38.0, 46.0, 53.0, 60.0)
 HOLD_FRAMES = 4  # a solved frame's rotation fades out over this many frames either side, so smoothing does not dilute it
 MAX_POINTS = 600
 SOFT_SHARE = 0.04  # a weapon keeps this far (share of the height) from cloth that a later stage swings (the cloak's chains), see `deep_share`
+# The up axis of the poses the clearance solve sees (the grip stage's Blender world is Z-up): a held weapon below the body's lowest point counts as
+# in the body, so the wrist turns it out of the ground too. The round 4 orc's guard crouch held its axe 3.3% under the feet (TRIPO-WEAPON-BELOW-GROUND).
+# None switches it off. The drop after a release has its own ground rule.
+GROUND_AXIS: Optional[int] = 2
 
 
 def _clip_check():
@@ -73,7 +77,7 @@ def sample_points(points: np.ndarray, count: int = MAX_POINTS) -> np.ndarray:
 
 
 def deep_share(points: np.ndarray, body_positions: np.ndarray, body_triangles: np.ndarray, height: float, margin: float = MARGIN_SHARE,
-               soft: Optional[np.ndarray] = None, soft_share: float = 0.0) -> float:
+               soft: Optional[np.ndarray] = None, soft_share: float = 0.0, ground_axis: Optional[int] = None) -> float:
     """Share of `points` inside the body (ray parity) and deeper than `margin` of `height` from its nearest vertex.
 
     `soft` (a mask over `body_positions`) names cloth that a later stage swings (a cloak given its own bone chains moves a few percent of
@@ -93,6 +97,9 @@ def deep_share(points: np.ndarray, body_positions: np.ndarray, body_triangles: n
             bad[inside] = cc.nearest_vertex_distance(points[inside], body_positions) / height > margin
     if soft is not None and soft_share > 0 and np.any(soft):
         bad |= cc.nearest_vertex_distance(points, body_positions[soft]) / height < soft_share
+    if ground_axis is not None:
+        # a held weapon under the body's lowest point is in the ground (TRIPO-WEAPON-BELOW-GROUND judges the same way)
+        bad |= points[:, ground_axis] < body_positions[:, ground_axis].min()
     return float(bad.sum()) / len(points)
 
 
@@ -122,7 +129,7 @@ def solve_frame(
     """
 
     axes = fibonacci_axes() if axes is None else axes
-    start = deep_share(weapon_points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share)
+    start = deep_share(weapon_points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS)
     if start <= target:
         return np.zeros(3), start
     best = (start, np.zeros(3))
@@ -134,7 +141,7 @@ def solve_frame(
         found = None
         for axis in axes:
             moved = offsets @ rotation_matrix(axis, angle).T + pivot
-            share = deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share)
+            share = deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS)
             if share < best[0]:
                 best = (share, axis * angle)
             if share <= target and (found is None or share < found[0]):
@@ -190,7 +197,7 @@ def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, las
             out.append(0.0)
             continue
         moved = (free[i] - pivots[i]) @ rotvec_matrix(vectors[i]).T + pivots[i]
-        out.append(deep_share(moved, body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share))
+        out.append(deep_share(moved, body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS))
     return out
 
 
@@ -220,8 +227,8 @@ def clear_clip(
     count = len(weapon_frames)
     last = count if skip_from is None else min(skip_from, count)
     free = _clip_free_points(weapon_frames, pivots, height, rest_weapon, rest_grip)
-    before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE) if i < last else 0.0 for i in range(count)]
-    wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share) if i < last else 0.0 for i in range(count)]
+    before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, ground_axis=GROUND_AXIS) if i < last else 0.0 for i in range(count)]
+    wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS) if i < last else 0.0 for i in range(count)]
     raw = np.zeros((count, 3))
     for i in range(last):
         if wanted[i] > target:

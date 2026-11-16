@@ -76,6 +76,13 @@ class Maths(unittest.TestCase):
         self.assertGreater(C.deep_share(centre, vertices, triangles, 1.0, margin=0.05), 0.0)
         self.assertEqual(C.deep_share(centre, vertices, triangles, 1.0, margin=0.9), 0.0)  # deeper than the margin only when it is that deep
 
+    def test_a_held_weapon_under_the_bodys_lowest_point_counts_when_the_up_axis_is_given(self) -> None:
+        vertices, triangles = box()
+        under = np.array([[2.0, 0.0, float(vertices[:, 2].min()) - 0.1]])
+        self.assertEqual(C.deep_share(under, vertices, triangles, 1.0), 0.0, "without an up axis only the body counts")
+        self.assertEqual(C.deep_share(under, vertices, triangles, 1.0, ground_axis=2), 1.0)
+        self.assertEqual(C.GROUND_AXIS, 2, "the grip stage's poses are Z-up")
+
 
 class Solve(unittest.TestCase):
     def setUp(self) -> None:
