@@ -108,6 +108,27 @@ def death_feet_height(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, 
     return float(np.nanmax(heights)) if len(heights) and not np.all(np.isnan(heights)) else 0.0
 
 
+def lifted_death_feet_height(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, exclude_bones: Sequence[str] = (),
+                             final: int = DEATH_FINAL_FRAMES) -> float:
+    """`death_feet_height` as it will be after the ground pass: a death is lifted so no part of the body is under the ground, so each final
+    frame's boots rise by however far its lowest body point sinks. Vertices bound mostly to `exclude_bones` (a dropped weapon) do not count."""
+
+    mask = foot_mask(mesh)
+    if not mask.any():
+        return 0.0
+    height = max(mesh.height, 1e-6)
+    ground = float(mesh.positions[:, 1].min())
+    excluded = [i for i, name in enumerate(mesh.bones) if name in set(exclude_bones)]
+    body = ~np.isin(pdx_deform.dominant_bones(mesh), excluded) if excluded else np.ones(len(mesh.positions), bool)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    worst = -np.inf
+    for frame in range(max(anim.frames - final, 0), anim.frames):
+        points = pdx_deform.skin(mesh, matrices[frame])
+        lift = max(0.0, ground - float(points[body, 1].min()))
+        worst = max(worst, (float(points[mask, 1].min()) + lift - ground) / height)
+    return float(worst) if np.isfinite(worst) else 0.0
+
+
 # ---- the death's legs --------------------------------------------------------------------------------------------------
 
 def _quaternion_from_matrix(m: np.ndarray) -> np.ndarray:
@@ -179,7 +200,8 @@ def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvi
     return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
 
 
-def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: float = DEATH_FEET_LIMIT, target: float = DEATH_FEET_TARGET) -> LegSettle:
+def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: float = DEATH_FEET_LIMIT, target: float = DEATH_FEET_TARGET,
+                      exclude_bones: Sequence[str] = ()) -> LegSettle:
     """Write `out_path`: `anim_path` with the legs turned toward the rest pose when the boots hang above the ground at the end of a death.
 
     One share s in [0, 1] for one group of leg joints (`LEG_SETTLE_GROUPS`: the knees, then the thighs, then both), the smallest that brings the
@@ -190,7 +212,7 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
     mesh = pdx_deform.load_mesh(mesh_path)
     anim = pdx_deform.load_anim(anim_path)
     legs = pdx_motion.find_legs(mesh)
-    before = death_feet_height(mesh, anim)
+    before = lifted_death_feet_height(mesh, anim, exclude_bones)
     if not legs.legs or legs.pelvis < 0 or before <= limit:
         Path(out_path).write_bytes(bytes(data))
         return LegSettle(False, height_before=before, height_after=before, note="the boots are on the ground" if before <= limit else "no legs found")
@@ -225,7 +247,7 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
             continue
         reached = False
         for share in np.linspace(0.05, 1.0, 20):
-            height = death_feet_height(mesh, settled(joints, float(share), np.ones(anim.frames)))
+            height = lifted_death_feet_height(mesh, settled(joints, float(share), np.ones(anim.frames)), exclude_bones)
             if height < best_height - 1e-6:
                 best_share, best_height, knees = float(share), height, joints
             if height <= target:
@@ -248,7 +270,7 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
                 position = offset + 4 * (4 * (frame * len(keyed) + slot))
                 struct.pack_into("<4f", data, position, *[float(v) for v in result.channels[knee]["q"][frame]])
     Path(out_path).write_bytes(bytes(data))
-    after = death_feet_height(mesh, result)
+    after = lifted_death_feet_height(mesh, result, exclude_bones)
     return LegSettle(True, best_share, onset, length, before, after, joints=tuple(knees))
 
 

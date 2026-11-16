@@ -127,13 +127,14 @@ class Feet(Unit):
         self.assertEqual(P.pose_findings(self.mesh, {"unit_move": self.load(anim_path)})[0], [])
 
 
-def lying_death(knee_degrees: float, thigh_degrees: float = 0.0):
-    """Stand 20 frames, fall onto the front over 20 more, bend both knees (or lift both thighs) over 10 and lie so to frame 70."""
+def lying_death(knee_degrees: float, thigh_degrees: float = 0.0, sink: float = 0.0):
+    """Stand 20 frames, fall onto the front over 20 more, bend both knees (or lift both thighs) over 10 and lie so to frame 70.
+    `sink` lowers the lying body by that share of the height, so part of it ends under the ground."""
 
     def pose(frame: int):
         fall = min(max((frame - 20) / 20.0, 0.0), 1.0)
         bend = min(max((frame - 45) / 10.0, 0.0), 1.0)
-        moved = {"Hips": ((0.0, 0.55 - 0.45 * fall, 0.0), about_x(90.0 * fall))}
+        moved = {"Hips": ((0.0, 0.55 - (0.45 + sink) * fall, 0.0), about_x(90.0 * fall))}
         for side in ("Left", "Right"):
             moved[f"{side}Leg"] = (rest_translation(f"{side}Leg"), about_x(knee_degrees * bend))
             if thigh_degrees:
@@ -164,7 +165,7 @@ class DeathFeet(Unit):
         self.assertTrue(result.changed, result)
         self.assertLess(result.height_after, result.height_before)
         after = self.load(out)
-        self.assertAlmostEqual(P.death_feet_height(self.mesh, after), result.height_after, places=4)
+        self.assertAlmostEqual(P.lifted_death_feet_height(self.mesh, after), result.height_after, places=4)
         self.assertLessEqual(P.death_feet_height(self.mesh, after), P.DEATH_FEET_LIMIT)
 
     def test_only_the_knees_change_and_no_joint_turns_faster_than_before_or_than_the_settle_rate(self) -> None:
@@ -208,6 +209,23 @@ class DeathFeet(Unit):
         result = P.settle_death_legs(self.mesh_path, path, out)
         self.assertFalse(result.changed)
         self.assertEqual(path.read_bytes(), out.read_bytes())
+
+    def test_the_lifted_boot_height_adds_how_far_the_body_sinks_under_the_ground(self) -> None:
+        # The ogre (2026-11-16): settling the thighs put the boots on the ground but pushed the legs under it, the ground pass then lifted the
+        # body 2.5% and the boots ended 1.5% up. The settle now judges the boots as the lift will leave them.
+        level = self.load(self.clip("death", 70, lying_death(0.0)))
+        sunk = self.load(self.clip("death", 70, lying_death(0.0, sink=0.06)))
+        self.assertLess(P.death_feet_height(self.mesh, sunk), P.death_feet_height(self.mesh, level) - 0.05)
+        self.assertAlmostEqual(P.lifted_death_feet_height(self.mesh, sunk), P.lifted_death_feet_height(self.mesh, level), places=3)
+        self.assertGreaterEqual(P.lifted_death_feet_height(self.mesh, level), P.death_feet_height(self.mesh, level))
+
+    def test_the_legs_are_settled_on_the_grounded_body_so_a_lift_does_not_raise_the_boots_again(self) -> None:
+        # The ogre (2026-11-16): its face went under the ground in the death, so the ground pass lifted the body 5.3% after the legs were
+        # settled against the rest ground, and the boots ended 4.5% up. Grounding first, then settling, then grounding again keeps them down.
+        path = self.clip("death", 70, lying_death(90.0, sink=0.06))
+        record = run_pilot.ground_exported_clip(self.mesh_path, path, "death", {})
+        self.assertTrue(record["legs"]["changed"], record)
+        self.assertLessEqual(P.death_feet_height(self.mesh, self.load(path)), P.DEATH_FEET_LIMIT, record)
 
     def test_the_run_pilot_grounding_straightens_the_legs_of_a_death_only(self) -> None:
         path = self.hanging()
