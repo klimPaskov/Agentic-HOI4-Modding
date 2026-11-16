@@ -43,6 +43,7 @@ RENDER_SIZE, SHARE = 256, 1.45
 # long thin model (a ship, a plane) shows its small parts (a mast, gun stubs) larger than on the six-view sheets.
 CLOSE_ANGLES = {"front_quarter": [35, 20], "back_quarter": [215, 20]}
 CLOSE_SIZE, CLOSE_SHARE = 1024, 1.05
+WATER_ALPHA = 0.6
 KIND_NOTES = {
     "vehicle": [
         "This is a WW2 light tank, a vehicle made of rigid parts (hull, turret, gun). It has no feet: for item 5, its tracks rest on the green disc.",
@@ -57,7 +58,8 @@ KIND_NOTES = {
         "This is a WW2 warship. The green disc is the water surface: the hull below it is under water in game and hidden there.",
         "It is sized to the length of vanilla's destroyer. Its beam, superstructure and colours are its own design.",
         "The ship rocks on the water in idle. Like vanilla's support ship and freighter it has no attack clip: in game the shot shows as muzzle and water effects.",
-        "In the death clip the ship tips up steeply and sinks, as vanilla's destroyer does. The water disc hides whatever is below it, so only the parts still above the water show. The below view shows the whole ship.",
+        "The green disc is drawn see-through, so the hull under the water shows darker through it.",
+        "In idle the ship only bobs gently on the water, as vanilla's destroyer does. In the death clip it tips up steeply and sinks, as vanilla's destroyer does. The whole hull is one rigid part.",
     ],
     "building": ["This is a static map building with no animation: the rest pose is its only clip. It stands on the green disc. It has no feet, so item 5 means its base meets the ground."],
     "landmark": ["This is a static landmark (a monument) with no animation: the rest pose is its only clip. It stands on the green disc. It has no feet, so item 5 means its base meets the ground."],
@@ -66,7 +68,9 @@ KIND_NOTES = {
 
 def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[Path]:
     # the disc is the game's ground (a ship's water) at z = 0, where the route puts it
-    sheets = review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0)
+    # a ship's water is see-through (60 % opaque), so the hull under it shows as it sinks
+    sheets = review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0,
+                                ground_alpha=WATER_ALPHA if kind == "ship" else 1.0)
     mesh = sorted(folder.glob("*.mesh"))[0]
     index = render_rest(mesh, out / "closeup_tiles", [], views=tuple(CLOSE_ANGLES), size=CLOSE_SIZE, share=CLOSE_SHARE)
     row = index["clips"][0]["rows"][0]["tiles"]

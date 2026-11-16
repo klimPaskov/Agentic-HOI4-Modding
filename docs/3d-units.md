@@ -489,7 +489,7 @@ Every number comes from vanilla files. `calibrate_static_kinds.py` measures them
 | --- | --- | --- | --- |
 | `building` | the footprint of vanilla's four facilities, entity scale 0.6 | one static shape, no bones, a `Collision` box, the `lamp` locator | none |
 | `landmark` | the largest side of 19 vanilla landmarks | all on `root`, a `Collision` box | none |
-| `ship` | a destroyer's length, the waterline at zero, the hull cut at vanilla's draft | vanilla's two-bone contract: all on `ship` under `root`, the destroyer's locators | the destroyer's idle, attack, defend and death |
+| `ship` | a destroyer's length, the waterline at zero, the hull cut at vanilla's draft | vanilla's two-bone contract: all on `ship` under `root`, the destroyer's locators | the destroyer's idle and death. Like vanilla's support ship and freighter, a one-piece hull has no attack clip: its attack and defend states play idle, and the entity's muzzle and water effects show the shot |
 | `vehicle` | the length of nine vanilla light tanks | hull on `chassie`, turret on `turret`, barrel on `barrel_tip`, vanilla's bone names, a `Collision` box, the `barrel`, `exhaust` and track locators | a light tank's idle, move and attack, a heavy tank's death |
 | `plane` | the wingspan of twelve vanilla light planes | body on `root`, propeller on `propeller` | the fighter idle, with the propeller spinning |
 
@@ -497,7 +497,7 @@ What the stage does, in order:
 
 - **Facing.** The model is turned so its front faces -y, as vanilla's do. A tank's front is where its turret reaches further (the barrel), a ship's bow is its narrower end, a plane's nose is the end nearer the wing. Set `front` in the job file when a rule gets it wrong.
 - **Size and place.** Scaled to the kind's vanilla size at the reference entity's scale, centred and grounded where vanilla's are. A ship's waterline is where its hull reaches 95 % of its beam, as on vanilla hulls.
-- **Triangles and textures.** Reduced to the triangle budget and texture size of the most detailed vanilla model of the kind. The silhouettes are compared before and after, and a reduction that changes the outline fails the stage (STATIC-SHAPE). The maps are packed for `PdxMeshAdvanced`: the normal map as RRxG, the gloss remapped onto the distribution of the kind's vanilla specular maps, the specular level vanilla's.
+- **Triangles and textures.** Small open loops (up to 32 edges) are closed first, as `repair_unit.py --repairs holes` does. Then the model is reduced to the triangle budget and texture size of the most detailed vanilla model of the kind: faces that lie flat together are merged first, then the rest is collapsed. The silhouettes are compared before and after, and a reduction that changes the outline fails the stage (STATIC-SHAPE). The maps are packed for `PdxMeshAdvanced`: the normal map as RRxG, the gloss remapped onto the distribution of the kind's vanilla specular maps, the specular level vanilla's.
 - **Rigid parts.** A tank's turret starts above the largest step in the plan area of its height slices, where the slices above are turret-sized. On vanilla's own light tanks this rule puts 92 to 100 % of the surface where their skinning does. The barrel is the thin run in front of the turret. A plane's propeller is the blade disc at the nose. Each part is split off with its own vertices, and each cut is closed with a cap in the colours around it, so a turning turret shows no hole.
 - **Clips.** Each role plays vanilla's clip of the kind, moved onto the model's own pivots and scaled to its size: the barrel recoils by the share of its own length vanilla's does. A tank's turret also turns 21.7 degrees (vanilla's idle traverse) before the shot and back after it. A propeller turns 36 degrees a frame over whole turns, so the loop does not jump.
 - **Mod text.** The entity is vanilla's entity for the kind, renamed. An event at a node the model lacks is dropped, and a state playing an animation the model lacks plays `idle`.
@@ -512,7 +512,7 @@ The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rule
 | STATIC-RIGID | Every rendered vertex follows one bone wholly, so no part bends |
 | STATIC-PART-GAP | No part lifts off the part it is mounted on in any frame, deaths excepted |
 
-`static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), and a game-size sheet: the model and the vanilla model it is sized after, side by side, at the pixels a metre a vanilla soldier gets on the map. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
+`static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), a 1024 px close-up of the rest pose from the front and the back quarter (a ship's mast and a plane's gun stubs are small on the six-view sheets), and a game-size sheet: the model and the vanilla model it is sized after, side by side, at the pixels a metre a vanilla soldier gets on the map. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
 
 ## Other model kinds
 

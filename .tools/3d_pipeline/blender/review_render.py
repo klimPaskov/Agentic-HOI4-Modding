@@ -200,7 +200,21 @@ if PBR:
     emission = gt.nodes.new("ShaderNodeEmission")
     emission.inputs["Color"].default_value = (0.08, 0.16, 0.08, 1.0)
     gt_out = gt.nodes.new("ShaderNodeOutputMaterial")
-    gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
+    alpha = float(request.get("ground_alpha", 1.0))
+    if alpha < 1.0:
+        # see-through water (`ground_alpha`): a sinking ship's hull shows under the surface instead of seeming cut off
+        clear = gt.nodes.new("ShaderNodeBsdfTransparent")
+        mix = gt.nodes.new("ShaderNodeMixShader")
+        mix.inputs["Fac"].default_value = alpha
+        gt.links.new(clear.outputs["BSDF"], mix.inputs[1])
+        gt.links.new(emission.outputs["Emission"], mix.inputs[2])
+        gt.links.new(mix.outputs["Shader"], gt_out.inputs["Surface"])
+        if hasattr(ground_material, "surface_render_method"):
+            ground_material.surface_render_method = "BLENDED"
+        else:
+            ground_material.blend_method = "BLEND"
+    else:
+        gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
 # The disc faces up, so with back faces culled the `below` view looks up through it. The PBR material needs this
 # set as well, or the disc hides the whole unit from below.
 ground_material.use_backface_culling = True

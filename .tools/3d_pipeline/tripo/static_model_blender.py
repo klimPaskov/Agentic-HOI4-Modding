@@ -245,7 +245,16 @@ caps = 0
 if cuts:
     on_cut = lambda v: any(abs((v.co - co).dot(no)) < 1e-4 * size for co, no in cuts)
     rim = [e for e in bm.edges if e.is_boundary and all(on_cut(v) for v in e.verts)]
-    caps = len(bmesh.ops.holes_fill(bm, edges=rim, sides=0)["faces"])
+    filled = bmesh.ops.holes_fill(bm, edges=rim, sides=0)["faces"]
+    caps = len(filled)
+    # holes_fill copies the rim's UVs across the cap, which smears the texture into a swirl a reviewer sees when the
+    # turret is gone (the death clip): every corner of a cap takes one rim UV, so the cap is one flat colour
+    uv = bm.loops.layers.uv.active
+    if uv is not None:
+        for face in filled:
+            first = face.loops[0][uv].uv.copy()
+            for loop in face.loops:
+                loop[uv].uv = first
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 bm.to_mesh(model.data)
 bm.free()

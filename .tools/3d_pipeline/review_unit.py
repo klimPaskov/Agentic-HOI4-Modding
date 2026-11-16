@@ -345,6 +345,7 @@ def render(
     checklist: bool = True,
     only: Optional[List[str]] = None,
     ground_z: Optional[float] = None,
+    ground_alpha: float = 1.0,
 ) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
@@ -372,6 +373,7 @@ def render(
         "diagnostic_views": DIAGNOSTIC_VIEWS if diagnostics else [],
         "size": size,
         "ground_z": ground_z,
+        "ground_alpha": ground_alpha,
     }
     out.mkdir(parents=True, exist_ok=True)
     request_path = out / "render_request.json"
