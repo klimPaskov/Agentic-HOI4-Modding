@@ -98,6 +98,47 @@ def _island(start, seen):
     return island
 
 
+def _conflicts(faces):
+    """Edges of `faces` whose two faces walk them the same way (one of the two faces is turned)."""
+
+    edges = {e for f in faces for e in f.edges}
+    return sum(1 for e in edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert)
+
+
+def _recalc_if_better(bm, island):
+    """Blender's recalc on a piece, kept only when it leaves fewer conflicted edges: on a piece with edges shared by
+    three faces it can turn more faces wrong than it mends (the Smart Mesh monument's base went from 17 to 123)."""
+
+    before = _conflicts(island)
+    facing = {f: f.normal.copy() for f in island}
+    bmesh.ops.recalc_face_normals(bm, faces=island)
+    bm.normal_update()
+    if _conflicts(island) < before:
+        _turn_lone_faces(bm, island)  # the recalc can leave a face or two at odds with its neighbours (a factory's 3)
+        return True
+    turned = [f for f in island if f.normal.dot(facing[f]) < 0]
+    bmesh.ops.reverse_faces(bm, faces=turned)
+    bm.normal_update()
+    _turn_lone_faces(bm, island)
+    return False
+
+
+def _turn_lone_faces(bm, island, rounds=8):
+    """Turn the faces at odds with most of their neighbours (two or more of their edges conflicted), a round at a
+    time, while each round leaves fewer conflicted edges."""
+
+    for _ in range(rounds):
+        before = _conflicts(island)
+        odd = [f for f in island if sum(1 for e in f.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert) >= 2]
+        if not odd:
+            return
+        bmesh.ops.reverse_faces(bm, faces=odd)
+        if _conflicts(island) >= before:
+            bmesh.ops.reverse_faces(bm, faces=odd)
+            return
+    bm.normal_update()
+
+
 def _drop_doubled_faces(bm):
     bm.verts.index_update()
     doubles, seen_faces = [], {}
@@ -138,15 +179,50 @@ def consistent_winding(bm):
 
     doubles = _drop_doubled_faces(bm)
     conflicted = [e for e in bm.edges if len(e.link_loops) == 2 and e.link_loops[0].vert == e.link_loops[1].vert]
-    fixed, seen = 0, set()
+    fixed, kept, seen = 0, 0, set()
     for edge in conflicted:
         if edge.link_faces[0] in seen:
             continue
         island = _island(edge.link_faces[0], seen)
-        bmesh.ops.recalc_face_normals(bm, faces=island)
-        fixed += len(island)
-    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "doubled_faces_dropped": doubles,
-            "inside_out_pieces_turned": _turn_inside_out_pieces(bm)}
+        if _recalc_if_better(bm, island):
+            fixed += len(island)
+        else:
+            kept += 1
+    return {"conflicted_edges": len(conflicted), "faces_reoriented_in_pieces": fixed, "pieces_kept_as_they_were": kept,
+            "conflicted_after": _conflicts(bm.faces), "doubled_faces_dropped": doubles, "inside_out_pieces_turned": _turn_inside_out_pieces(bm)}
+
+
+def scrolling_tracks(track_vertices, rule):
+    """The track runs as vanilla draws them: their own material with vanilla's scrolling shader on a tread texture
+    (`<name>_tracks_*.dds`, written by static_model.py from the run's own colour), and UVs whose v runs along the hull at
+    vanilla's density, so the entity's texture_anim_speed scrolls the tread along the run. The atlas UVs the runs had
+    are reported, so the tread takes their colour."""
+
+    mesh = model.data
+    track_material = bie.create_shader(SimpleNamespace(shader=[rule["shader"]], diff=[f"{name}_tracks_diffuse.dds"], n=[f"{name}_tracks_normal.dds"],
+                                                       spec=[f"{name}_tracks_specular.dds"]), f"PDXmat_{name}Tracks", str(out))
+    # the tread files are written after Blender (static_model.py), so io_pdx_mesh made named placeholders with no path, and
+    # the exporter writes a texture's path: give each its file name, or the mesh's material names an empty file
+    for node in track_material.node_tree.nodes:
+        if node.type == "TEX_IMAGE" and node.image is not None and not node.image.filepath:
+            node.image.filepath = str(Path(out) / node.image.name)
+    mesh.materials.append(track_material)
+    slot = len(mesh.materials) - 1
+    members_set = set(int(i) for i in track_vertices)
+    faces = [p for p in mesh.polygons if all(v in members_set for v in p.vertices)]
+    uv = mesh.uv_layers.active.data
+    atlas = [tuple(uv[i].uv) for p in faces for i in p.loop_indices]
+    report["track_atlas_uvs"] = [[round(a, 4), round(b, 4)] for a, b in atlas[:: max(1, len(atlas) // 2000)]]
+    order = sorted(members_set)
+    where = {v: k for k, v in enumerate(order)}
+    points = np.array([mesh.vertices[v].co[:] for v in order])
+    uvs = sk.track_uvs(points, rule["v_per_measure"] / measure, rule["v_sign"])
+    for polygon in faces:
+        polygon.material_index = slot
+        for loop_index in polygon.loop_indices:
+            u, v = uvs[where[mesh.loops[loop_index].vertex_index]]
+            uv[loop_index].uv = (float(u), 1.0 - float(v))  # io_pdx_mesh writes v as 1 - the Blender v
+    report["tracks"] = {"faces": len(faces), "material_index": slot, "v_span": round(float(np.ptp(uvs[:, 1])), 3)}
 
 
 # ---- 1. import, join, face front, size and place ----
@@ -244,6 +320,10 @@ if current > target:
     decimate.use_collapse_triangulate = True
     bpy.context.view_layer.objects.active = model
     bpy.ops.object.modifier_apply(modifier=decimate.name)
+# STATIC-SHAPE judges the reduction alone, before the holes below are closed: a cap over an opening adds to the outline
+# by design (the Smart Mesh monument's base had wedge openings through it, and their caps read as a 0.91 top outline)
+shape = tripo_shape.shape_report(original, arrays(model))
+reduced_to = triangle_count(model)
 # Small open loops a reviewer sees as specks of the background (the kit closes loops up to 32 edges without a seam,
 # check_unit_files.SMALL_HOLE_EDGES); larger ones stay for UNIT-HOLE to report.
 bm = bmesh.new()
@@ -278,8 +358,7 @@ report["winding_after_holes"] = consistent_winding(bm)
 bm.to_mesh(model.data)
 bm.free()
 report["small_holes_closed"] = len(closed)
-shape = tripo_shape.shape_report(original, arrays(model))
-report["reduction"] = {"welded_vertices": welded, "from": len(original[1]), "after_planar": planar, "to": triangle_count(model), "budget": budget,
+report["reduction"] = {"welded_vertices": welded, "from": len(original[1]), "after_planar": planar, "to": reduced_to, "budget": budget,
                        "iou": shape["iou"], "shells_before": shape["shells_before"]["shells"], "shells_after": shape["shells_after"]["shells"],
                        "problems": tripo_shape.shape_problems(shape)}
 
@@ -406,6 +485,22 @@ face_part = []
 for face in bm.faces:
     piece = votes.get(find(face.verts[0].index))
     face_part.append(max(set(piece), key=piece.count) if piece else region(centre(face)))
+# The clipped tops of hull fittings the turret cut sliced (pieces lying just above the cut) stay on the hull.
+if kind == "vehicle":
+    turret_pieces = {}
+    for i, face in enumerate(bm.faces):
+        if face_part[i] == "turret":
+            turret_pieces.setdefault(find(face.verts[0].index), []).append(i)
+    if turret_pieces:
+        keys = list(turret_pieces)
+        faces_list = list(bm.faces)
+        heights = [[v.co.z for i in turret_pieces[k] for v in faces_list[i].verts] for k in keys]
+        top = max(max(h) for h in heights)
+        slivers = sk.cut_slivers(heights, parts_report["turret_cut"]["cut_z"], top)
+        for k in slivers:
+            for i in turret_pieces[keys[k]]:
+                face_part[i] = "body"
+        parts_report["cut_slivers_kept_on_hull"] = len(slivers)
 # A tank's road wheels and track runs (separate pieces in a Smart Mesh) leave the hull: each wheel gets its own bone
 # under vanilla's wheel_suspention and spins, the tracks follow wheel_suspention as vanilla's do.
 wheel_parts = {}
@@ -528,6 +623,9 @@ if bone_specs:
         parts_report["cut_clearance"] = round(clearance, 5)
     model.parent = rig
     model.modifiers.new("Armature", "ARMATURE").object = rig
+    track_rule = contract.get("rules", {}).get("tracks")
+    if track_rule and members.get("tracks"):
+        scrolling_tracks(members["tracks"], track_rule)
 report["bones"] = {b: [round(float(v), 4) for v in h] for b, h in heads.items()}
 
 if contract.get("collision"):
@@ -672,6 +770,12 @@ if rig is not None and request.get("motion"):
                 for bone in free:
                     w[bone] = about @ turn @ back @ w[bone]
             rules["landing_turn_degrees"] = round(sk.rotation_angle(settle_q), 1)
+            # it comes down on the ground: vanilla's flight ends where vanilla's turret lay, which after the turn upright
+            # left the Smart Mesh turret's base a third of the height in the air; the drop is eased in with the flight
+            drop = max(0.0, float(moved(worlds[-1], free)[:, 2].min()))
+            for w, share in zip(worlds, progress):
+                translate(w, free, (0.0, 0.0, -drop * float(share) ** 2))
+            rules["landing_drop"] = round(drop, 4)
             shift = sk.landing_shift(moved(worlds[-1], free), moved(worlds[-1], body))
             for w, share in zip(worlds, progress):
                 translate(w, free, shift * share)

@@ -122,6 +122,33 @@ def import_clip(target, path):
         if other is not None:
             other.data = saved
 
+# A stream on vanilla's scrolling shader (a tank's track runs, `PdxMeshAdvancedAnim`) keeps the textures its own
+# material names (io_pdx_mesh loaded them beside the mesh), not the shape's body map. Its tread scrolls in a move
+# clip as the game scrolls it, by the entity's `texture_anim_speed` UV units a second.
+SCROLLING = "PdxMeshAdvancedAnim"
+own_maps = {}
+for o in meshes:
+    for slot in o.material_slots:
+        material = slot.material
+        if material is not None and material.get("shader") == SCROLLING and material.node_tree:
+            found = [n.image for n in material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image]
+            own_maps[material.name] = {
+                "diffuse": next((i for i in found if "diff" in i.name.lower()), found[0] if found else None),
+                "specular": next((i for i in found if "spec" in i.name.lower()), None),
+            }
+scrollers = []  # (mapping node) of every scrolling material, moved per frame in a move clip
+
+
+def scroll_node(tree, image_node):
+    """A UV mapping in front of `image_node`, kept to scroll the tread."""
+
+    coordinates = tree.nodes.new("ShaderNodeTexCoord")
+    mapping = tree.nodes.new("ShaderNodeMapping")
+    tree.links.new(coordinates.outputs["UV"], mapping.inputs["Vector"])
+    tree.links.new(mapping.outputs["Vector"], image_node.inputs["Vector"])
+    scrollers.append(mapping)
+
+
 # A `.mesh` usually names no texture: the `.gfx` meshsettings do. Give each shape its diffuse map
 # as the active image node, which Workbench's texture colour mode draws.
 images = {}
@@ -140,13 +167,17 @@ for o in meshes:
             continue
         slot.material.use_nodes = True
         node = slot.material.node_tree.nodes.new("ShaderNodeTexImage")
-        node.image = images[path]
+        own = own_maps.get(slot.material.name, {}).get("diffuse")
+        node.image = own or images[path]
+        if slot.material.name in own_maps:
+            scroll_node(slot.material.node_tree, node)
         slot.material.node_tree.nodes.active = node
 
 PBR = bool(request.get("pbr", True))  # the default: shaded from the packed PDX specular. "pbr": false keeps the old Workbench studio light
 if PBR:
     # Shade from the packed PDX specular the game gets: green = specular level, alpha = glossiness, blue = metalness
     # (roughness = 1 - glossiness). Workbench cannot read a texture for these, so this mode renders with EEVEE.
+    scrollers.clear()  # the trees are rebuilt below, so the Workbench mappings are gone (a removed node has no inputs)
     spec_images = {}
     for o in meshes:
         maps = ATTACH["diffuse"] if o.get("hoi4_rider") else request["diffuse"]
@@ -172,10 +203,18 @@ if PBR:
             out_node = tree.nodes.new("ShaderNodeOutputMaterial")
             bsdf = tree.nodes.new("ShaderNodeBsdfPrincipled")
             diffuse = tree.nodes.new("ShaderNodeTexImage")
-            diffuse.image = images[diffuse_path]
+            diffuse.image = own_maps.get(material.name, {}).get("diffuse") or images[diffuse_path]
             spec = tree.nodes.new("ShaderNodeTexImage")
             if spec_path:
                 spec.image = spec_images[spec_path]
+            if material.name in own_maps:
+                own_spec = own_maps[material.name].get("specular")
+                if own_spec is not None:
+                    own_spec.colorspace_settings.name = "Non-Color"
+                    own_spec.alpha_mode = "CHANNEL_PACKED"
+                    spec.image = own_spec
+                scroll_node(tree, diffuse)
+                scroll_node(tree, spec)
             split = tree.nodes.new("ShaderNodeSeparateColor")
             invert = tree.nodes.new("ShaderNodeMath")
             invert.operation = "SUBTRACT"
@@ -318,10 +357,20 @@ def aim(view):
 index = {"mesh": request["mesh"], "views": request["views"], "clips": []}
 
 
+def scroll(clip, frame):
+    """Move every scrolling tread to where the game has it at this frame of a move clip (still in any other clip)."""
+
+    speed = float(request.get("texture_anim_speed") or 0.0)
+    offset = -(frame - 1) / 30.0 * speed if clip.endswith("_move") else 0.0  # Blender's v is 1 - the game's
+    for mapping in scrollers:
+        mapping.inputs["Location"].default_value[1] = offset
+
+
 def render(clip, frames):
     rows = []
     for frame in frames:
         scene.frame_set(frame)
+        scroll(clip, frame)
         place_rider()
         row = {"frame": frame, "tiles": {}}
         for view in request["views"]:

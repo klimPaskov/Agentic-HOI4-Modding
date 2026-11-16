@@ -24,6 +24,7 @@ import argparse
 import importlib.util
 import json
 import math
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -237,6 +238,38 @@ def _wheel_shares(entry: dict):
                      sk.rim_coverage(side, middle),
                      sk.half_turn_mismatch(side, middle, max(e[1], e[2]) / 2)))
     return rows
+
+
+TRACK_SHADER = "PdxMeshAdvancedAnim"
+
+
+def track_rules(game: Path, rel: str) -> dict:
+    """How vanilla's light tank draws its scrolling tracks: the stream with `PdxMeshAdvancedAnim`, its UV v growing
+    along the hull on the ground run (the density per main measure and its sign), and its tread texture (size and the
+    number of links a tile, from the dark gaps along its rows)."""
+
+    root = pdx_binary.read(game / rel)
+    streams = [m for shape in root.child("object").children for m in shape.children
+               if m.name == "mesh" and m.child("material") is not None and m.child("material").properties.get("shader") == [TRACK_SHADER]]
+    mesh = streams[0]
+    points = np.array([sk.to_blender(p) for p in np.asarray(mesh.properties["p"], dtype=float).reshape(-1, 3)])
+    uv = np.asarray(mesh.properties["u0"], dtype=float).reshape(-1, 2)
+    side = points[:, 0] > (points[:, 0].min() + points[:, 0].max()) / 2
+    bottom = side & (points[:, 2] < points[side, 2].min() + 0.1 * np.ptp(points[side, 2]))
+    slope = float(np.polyfit(points[bottom, 1], uv[bottom, 1], 1)[0])
+    whole = visible_points(pdx_deform.load_mesh(game / rel))
+    measure = sk.main_measure(whole, "vehicle")
+    texture = (game / rel).parent / str(mesh.child("material").properties["diff"][0])
+    pixels = model_dds.decode_top_level(texture.read_bytes()).astype(float)
+    rows = pixels[..., :3].mean(axis=(1, 2))
+    return {
+        "shader": TRACK_SHADER,
+        "v_per_measure": round(abs(slope) * measure, 4),
+        "v_sign": 1.0 if slope > 0 else -1.0,
+        "texture_size": [int(pixels.shape[1]), int(pixels.shape[0])],
+        "links": sk.tread_links(rows),
+        "source": f"{rel}: its {TRACK_SHADER} stream's v along the ground run, and the rows of {texture.name}",
+    }
 
 
 def wheel_rules(measured: List[dict]) -> dict:
@@ -582,6 +615,9 @@ def calibrate(game: Path) -> dict:
         if kind == "vehicle":
             contract["rules"] = vehicle_rules(game, measured)
             contract["rules"]["wheels"] = wheel_rules(measured)
+            contract["rules"]["tracks"] = track_rules(game, ENTITY_REFERENCE["vehicle"])
+            speed = re.search(r"texture_anim_speed\s*=\s*([0-9.]+)", definitions["entity"][entity_name]["text"])
+            contract["rules"]["tracks"]["texture_anim_speed"] = float(speed.group(1)) if speed else None
             contract["attack_turn"] = attack_turn(game, contract["clips"]["idle"])
         if kind == "plane":
             contract["rules"] = {"propeller": PROPELLER_RULE}

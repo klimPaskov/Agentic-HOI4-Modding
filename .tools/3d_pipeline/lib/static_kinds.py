@@ -778,14 +778,22 @@ def axis_quaternion(axis: Sequence[float], degrees: float) -> np.ndarray:
     return np.concatenate([[math.cos(half)], math.sin(half) * axis])
 
 
-def landing_shift(free: np.ndarray, body: np.ndarray) -> np.ndarray:
-    """The horizontal shift that takes a blown-off part (`free`, its points where it lands) out of the body's box.
+LANDING_CLEARANCE_SHARE = 0.1  # of the blown-off part's own plan size (kit rule)
 
-    Nothing when their boxes do not overlap. Otherwise the shorter of the four ways out along x or y: a turret that
-    lands against the hull's side moves sideways off it, one that lands on its deck moves off the nearer end.
+
+def landing_shift(free: np.ndarray, body: np.ndarray, clearance_share: float = LANDING_CLEARANCE_SHARE) -> np.ndarray:
+    """The horizontal shift that takes a blown-off part (`free`, its points where it lands) out of the body's box,
+    with a clearance of `clearance_share` of the part's plan size: a reviewer read a turret landed flush against the
+    track run as lying on it.
+
+    Nothing when their boxes (the body's grown by the clearance in plan) do not overlap. Otherwise the shorter of the
+    four ways out along x or y: a turret that lands against the hull's side moves sideways off it, one that lands on its
+    deck moves off the nearer end.
     """
 
     flo, fhi, blo, bhi = free.min(axis=0), free.max(axis=0), body.min(axis=0), body.max(axis=0)
+    clearance = clearance_share * float(max(fhi[0] - flo[0], fhi[1] - flo[1]))
+    blo, bhi = blo - [clearance, clearance, 0.0], bhi + [clearance, clearance, 0.0]
     if (np.minimum(fhi, bhi) - np.maximum(flo, blo) <= 0).any():
         return np.zeros(3)
     ways = [(bhi[0] - flo[0], (1, 0)), (fhi[0] - blo[0], (-1, 0)), (bhi[1] - flo[1], (0, 1)), (fhi[1] - blo[1], (0, -1))]
@@ -824,6 +832,79 @@ def ground_lift(lowest, sink: float = 0.0) -> np.ndarray:
     """Per frame, how far to lift a model whose lowest point goes below the ground (by more than `sink`)."""
 
     return np.maximum(0.0, -(np.asarray(lowest, dtype=float) + sink))
+
+
+# --------------------------------------------------------------------------------------------------
+# Scrolling tracks: vanilla's tanks draw their track runs with `PdxMeshAdvancedAnim` on a small tread texture whose
+# v runs along the hull, and the entity's `texture_anim_speed` scrolls it
+
+
+def track_uvs(points: np.ndarray, v_per_length: float, v_sign: float = 1.0) -> np.ndarray:
+    """(u, v) of track-run vertices (Blender space): u across the run (its x span mapped onto 0.03 to 0.97, as
+    vanilla's track UVs), v along the hull (y times `v_per_length`, growing toward the rear when `v_sign` is 1, as
+    vanilla's do), so the tread tiles along the run and the shader's scroll moves it along the hull."""
+
+    points = np.asarray(points, dtype=float)
+    x = np.abs(points[:, 0] - (points[:, 0].min() + points[:, 0].max()) / 2) if np.ptp(points[:, 0]) > 0 else np.zeros(len(points))
+    # each side's run maps its own width: |x| from the inner to the outer edge of the runs
+    inner, outer = x.min(), x.max()
+    u = 0.03 + 0.94 * (x - inner) / max(outer - inner, 1e-9)
+    v = v_sign * v_per_length * (points[:, 1] - points[:, 1].min())
+    return np.stack([u, v], axis=1)
+
+
+CUT_SLIVER_SHARE = 0.05  # of the turret's height above its cut (kit rule)
+
+
+def cut_slivers(piece_heights, cut_z: float, top_z: float, share: float = CUT_SLIVER_SHARE) -> List[int]:
+    """The turret pieces that are only the clipped tops of hull fittings: pieces (each its vertices' heights) lying
+    wholly within `share` of the turret's height above the cut. A reviewer saw them hang in the air beside a blown-off
+    turret (a Smart Mesh tank's fender corners and bolts, 1 to 3 cm above the cut). They stay on the hull."""
+
+    reach = cut_z + share * max(top_z - cut_z, 1e-9)
+    return [k for k, heights in enumerate(piece_heights) if len(heights) and float(np.max(heights)) <= reach]
+
+
+def tread_links(rows) -> int:
+    """How many track links a tread tile holds: the runs of dark rows (the gaps between links, darker than the mean by
+    a standard deviation) along it, counted round the tile because it repeats."""
+
+    rows = np.asarray(rows, dtype=float)
+    dark = rows < rows.mean() - rows.std()
+    if not dark.any():
+        return 1
+    starts = dark & ~np.roll(dark, 1)
+    return max(1, int(starts.sum()) or 1)
+
+
+def tread_images(colour, links: int, size=(64, 32)) -> dict:
+    """A tileable tread (RGBA arrays, width across the run, height along it): `links` track links a tile, each a plate
+    with a raised grouser across it and a dark gap after it, a guide line down the middle, darker edges. `colour` is
+    the model's own track colour (its median texel), so the tread matches the texture Tripo painted.
+    Returns {"diffuse", "normal" (PDX layout: tangent x in green, y in alpha, blue black), "specular"}."""
+
+    width, height = size
+    v = (np.arange(height) + 0.5) / height * links % 1.0
+    u = (np.arange(width) + 0.5) / width
+    # height field along a link: a gap (low, at least one texel row so every link shows its gap), the plate, a grouser
+    # bar (high) at a third
+    gap = max(0.15, 1.1 * links / height)
+    along = np.where(v < gap, 0.0, np.where(np.abs(v - 0.4) < 0.08, 1.0, 0.55))
+    across = 1.0 - 0.35 * (np.abs(u - 0.5) > 0.42) + 0.15 * (np.abs(u - 0.5) < 0.04)
+    relief = along[:, None] * across[None, :]
+    shade = 0.45 + 0.55 * relief
+    base = np.asarray(colour, dtype=float)[:3]
+    diffuse = np.clip(base[None, None, :] * shade[..., None], 0, 255)
+    gy, gx = np.gradient(relief)
+    normal = np.zeros((height, width, 4))
+    normal[..., 1] = np.clip(128 - 90 * gx, 0, 255)
+    normal[..., 3] = np.clip(128 - 90 * gy, 0, 255)
+    specular = np.zeros((height, width, 4))
+    specular[..., 1] = 40
+    specular[..., 2] = 60 * relief  # worn grousers shine a little
+    specular[..., 3] = 30 + 40 * relief
+    rgba = np.concatenate([diffuse, np.full((height, width, 1), 255.0)], axis=2)
+    return {"diffuse": rgba.astype(np.uint8), "normal": normal.astype(np.uint8), "specular": specular.astype(np.uint8)}
 
 
 # --------------------------------------------------------------------------------------------------
@@ -896,6 +977,31 @@ def animation_text(animation: str, file_name: str) -> str:
 # Checks on the exported files (STATIC-* rules)
 
 
+def _structure(summary, contract: dict) -> List[Tuple[str, str, str]]:
+    """STATIC-BONES, STATIC-LOCATORS, STATIC-COLLISION and STATIC-SHADER on a mesh summary."""
+
+    findings: List[Tuple[str, str, str]] = []
+    kind = contract["kind"]
+    wanted_bones = [bone["name"] for bone in contract.get("skeleton", {}).get("bones", [])] + contract.get("extra_bones", [])
+    missing = [bone for bone in wanted_bones if bone not in summary.bones]
+    if missing:
+        findings.append(("STATIC-BONES", "error", f"missing bones {', '.join(missing)}; vanilla's clips and entity use them"))
+    missing = [loc["name"] for loc in contract.get("locators", []) if loc["name"] not in summary.locators]
+    if missing:
+        findings.append(("STATIC-LOCATORS", "error", f"missing locators {', '.join(missing)}; vanilla's entity places its effects there"))
+    if contract.get("collision"):
+        boxes = [s for s in summary.streams if s.material_shader.lower() == "collision"]
+        if len(boxes) != 1 or boxes[0].vertices != 8:
+            findings.append(("STATIC-COLLISION", "error", f"{len(boxes)} Collision shape(s) ({', '.join(str(b.vertices) for b in boxes)} vertices); vanilla {kind}s carry one 8-vertex box, the selection shape"))
+    elif any(s.material_shader.lower() == "collision" for s in summary.streams):
+        findings.append(("STATIC-COLLISION", "warning", f"a Collision shape on a {kind}; vanilla {kind}s have none"))
+    shaders = {s.material_shader for s in summary.streams if s.material_shader.lower() != "collision"}
+    allowed = {contract["shader"]} | ({contract["rules"]["tracks"]["shader"]} if contract.get("rules", {}).get("tracks") else set())
+    if not shaders <= allowed or contract["shader"] not in shaders:
+        findings.append(("STATIC-SHADER", "error", f"rendered with {', '.join(sorted(shaders))}; vanilla {kind}s use {contract['shader']}"))
+    return findings
+
+
 def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -> List[Tuple[str, str, str]]:
     """The kind's contract checked on an exported mesh: (rule, severity, message) for each problem.
 
@@ -909,6 +1015,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
       vanilla's draft).
     - STATIC-PART-GAP: in every frame of every clip (deaths excepted), each rigid part stays on the part it is mounted on
       (no gap wider than `rigid.max_gap_share` of the main measure opens between them).
+    - STATIC-LANDING: at a death's last frame a part blown off its mount lies flat on its base on the ground.
     """
 
     from lib import pdx_binary, pdx_deform
@@ -927,22 +1034,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     budget = contract["triangle_budget"]["value"]
     if triangles > budget:
         findings.append(("STATIC-TRIANGLES", "error", f"{triangles} triangles; the most detailed vanilla {kind} ({contract['triangle_budget']['mesh']}) has {budget}"))
-    wanted_bones = [bone["name"] for bone in contract.get("skeleton", {}).get("bones", [])] + contract.get("extra_bones", [])
-    missing = [bone for bone in wanted_bones if bone not in summary.bones]
-    if missing:
-        findings.append(("STATIC-BONES", "error", f"missing bones {', '.join(missing)}; vanilla's clips and entity use them"))
-    missing = [loc["name"] for loc in contract.get("locators", []) if loc["name"] not in summary.locators]
-    if missing:
-        findings.append(("STATIC-LOCATORS", "error", f"missing locators {', '.join(missing)}; vanilla's entity places its effects there"))
-    if contract.get("collision"):
-        boxes = [s for s in summary.streams if s.material_shader.lower() == "collision"]
-        if len(boxes) != 1 or boxes[0].vertices != 8:
-            findings.append(("STATIC-COLLISION", "error", f"{len(boxes)} Collision shape(s) ({', '.join(str(b.vertices) for b in boxes)} vertices); vanilla {kind}s carry one 8-vertex box, the selection shape"))
-    elif any(s.material_shader.lower() == "collision" for s in summary.streams):
-        findings.append(("STATIC-COLLISION", "warning", f"a Collision shape on a {kind}; vanilla {kind}s have none"))
-    shaders = {s.material_shader for s in summary.streams if s.material_shader.lower() != "collision"}
-    if shaders != {contract["shader"]}:
-        findings.append(("STATIC-SHADER", "error", f"rendered with {', '.join(sorted(shaders))}; vanilla {kind}s use {contract['shader']}"))
+    findings += _structure(summary, contract)
     if contract.get("rigid") and mesh.skinned:
         partial = int((mesh.weights[visible].max(axis=1) < 0.999).sum())
         if partial:
@@ -963,6 +1055,54 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
             findings.append(("STATIC-GROUND", "error", f"the lowest point is at {low:.3f}; vanilla {kind}s sit at {expected:.3f}"))
     if contract.get("rigid") and mesh.skinned and anims:
         findings += _part_gaps(mesh, visible, anims, contract, measure)
+        findings += _landing(mesh, visible, anims, contract)
+    return findings
+
+
+LANDING_TILT_DEGREES = 5.0  # a blown-off part lies flat within this (kit rule, "a few degrees")
+LANDING_GAP_SHARE = 0.01  # and its lowest point within this share of the height of the ground
+
+
+def landed_pose(last: np.ndarray, points: np.ndarray) -> Tuple[float, float]:
+    """How a part lies under its last skinning matrix (PDX space): the degrees between its rest up axis and world up,
+    and the height of its lowest point above the ground (Blender z)."""
+
+    up = SWAP @ last[:3, :3] @ SWAP @ np.array([0.0, 0.0, 1.0])
+    tilt = math.degrees(math.acos(float(np.clip(up[2] / np.linalg.norm(up), -1, 1))))
+    lowest = float(min(to_blender(p)[2] for p in _apply(last, np.asarray(points, float))))
+    return tilt, lowest
+
+
+def _landing(mesh, visible, anims, contract) -> List[Tuple[str, str, str]]:
+    """STATIC-LANDING: at a death's last frame every mounted part that left its mount lies on its base (its rest up
+    axis within LANDING_TILT_DEGREES of world up) with its lowest point on the ground (within LANDING_GAP_SHARE of the
+    height): a reviewer saw a turret propped on its rim, and one measured a third of the height in the air."""
+
+    from lib import pdx_deform
+
+    findings = []
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+    height = float(np.ptp(np.array([to_blender(p) for p in mesh.positions[visible]])[:, 2]))
+    inverse = np.array([ib if abs(np.linalg.det(ib)) > 1e-9 else np.eye(4) for ib in mesh.inverse_bind])
+    skinnable = type(mesh)(**{**mesh.__dict__, "inverse_bind": inverse})
+    for anim_path in anims:
+        if not anim_path.stem.endswith("_death"):
+            continue
+        matrices = pdx_deform.skinning_matrices(skinnable, pdx_deform.load_anim(anim_path))
+        left = set()
+        for part in contract.get("mounts", {}):
+            chosen = visible & (dominant == index[part]) if part in index else np.zeros(0, dtype=bool)
+            if chosen.sum() >= 3:
+                rest_centre = mesh.positions[chosen].mean(axis=0)
+                if np.linalg.norm(_apply(matrices[-1, index[part]], rest_centre[None])[0] - rest_centre) >= LANDING_GAP_SHARE * height:
+                    left.add(part)
+        for part in sorted(left):
+            if contract["mounts"][part] in left:
+                continue  # it rides on a part that flew off (a barrel on its turret): that part is judged
+            tilt, lowest = landed_pose(matrices[-1, index[part]], mesh.positions[visible & (dominant == index[part])])
+            if tilt > LANDING_TILT_DEGREES or abs(lowest) > LANDING_GAP_SHARE * height:
+                findings.append(("STATIC-LANDING", "error", f"{anim_path.name}: the {part} ends {tilt:.1f} degrees off its base and its lowest point {lowest:.3f} from the ground; a blown-off part lies flat on the ground (within {LANDING_TILT_DEGREES:g} degrees and {LANDING_GAP_SHARE:.0%} of the height)"))
     return findings
 
 
