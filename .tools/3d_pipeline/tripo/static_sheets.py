@@ -75,7 +75,7 @@ def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[P
     # a ship's water is see-through (60 % opaque), so the hull under it shows as it sinks
     sheets = review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0,
                                 ground_alpha=WATER_ALPHA if kind == "ship" else 1.0,
-                                texture_anim_speed=(sk.kind_contract(kind).get("rules", {}).get("tracks") or {}).get("texture_anim_speed"))
+                                texture_anim_speed=(sk.kind_contract(kind).get("rules", {}).get("tracks") or {}).get("texture_anim_speed"), sun_shadow=False)
     mesh = sorted(folder.glob("*.mesh"))[0]
     index = render_rest(mesh, out / "closeup_tiles", [], views=tuple(CLOSE_ANGLES), size=CLOSE_SIZE, share=CLOSE_SHARE)
     row = index["clips"][0]["rows"][0]["tiles"]
@@ -96,7 +96,7 @@ def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front")
         "out": str(out.resolve()), "mesh": str(mesh.resolve()),
         "diffuse": review_unit.diffuse_maps(mesh.resolve(), texts), "specular": review_unit.specular_maps(mesh.resolve()),
         "pbr": True, "clips": [], "views": list(views), "view_angles": CLOSE_ANGLES, "diagnostic_views": [], "size": size, "ortho_share": share,
-        "ground_z": 0.0, "ground_alpha": ground_alpha,
+        "ground_z": 0.0, "ground_alpha": ground_alpha, "sun_shadow": False,
     }
     out.mkdir(parents=True, exist_ok=True)
     path = out / "request.json"

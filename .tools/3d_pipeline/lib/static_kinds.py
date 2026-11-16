@@ -1030,6 +1030,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     - STATIC-PART-GAP: in every frame of every clip (deaths excepted), each rigid part stays on the part it is mounted on
       (no gap wider than `rigid.max_gap_share` of the main measure opens between them).
     - STATIC-LANDING: at a death's last frame a part blown off its mount lies flat on its base on the ground.
+    - STATIC-SHADOW: the colour texture has no cast shadow painted into it (`lib/static_delight.py`).
+    - STATIC-SLAB: a building's or landmark's base slab is flat, square and shades flat (`lib/static_slab.py`).
     """
 
     from lib import pdx_binary, pdx_deform
@@ -1049,6 +1051,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     if triangles > budget:
         findings.append(("STATIC-TRIANGLES", "error", f"{triangles} triangles; the most detailed vanilla {kind} ({contract['triangle_budget']['mesh']}) has {budget}"))
     findings += _structure(summary, contract)
+    findings += _surface_findings(mesh_path, mesh, visible, kind)
     if contract.get("rigid") and mesh.skinned:
         partial = int((mesh.weights[visible].max(axis=1) < 0.999).sum())
         if partial:
@@ -1070,6 +1073,21 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     if contract.get("rigid") and mesh.skinned and anims:
         findings += _part_gaps(mesh, visible, anims, contract, measure)
         findings += _landing(mesh, visible, anims, contract)
+    return findings
+
+
+def _surface_findings(mesh_path: Path, mesh, visible: np.ndarray, kind: str) -> List[Tuple[str, str, str]]:
+    """STATIC-SHADOW (every kind: a shadow painted into the colour texture) and STATIC-SLAB (a building's or landmark's
+    base slab that is warped), see `lib/static_delight.py` and `lib/static_slab.py`."""
+
+    from lib import static_delight, static_slab
+
+    findings = static_delight.shadow_findings(mesh_path, mesh_path.with_name(f"{mesh_path.stem}_diffuse.dds"))
+    if kind in ("building", "landmark") and len(mesh.normals) == len(mesh.positions):
+        points = np.array([to_blender(p) for p in mesh.positions])
+        normals = np.array([to_blender(p) for p in mesh.normals])
+        triangles = mesh.triangles[visible[mesh.triangles].all(axis=1)]
+        findings += static_slab.slab_findings(points, triangles, normals)
     return findings
 
 

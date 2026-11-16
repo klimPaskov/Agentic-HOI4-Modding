@@ -41,7 +41,7 @@ from PIL import Image
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import model_dds, pdx_deform
+from lib import model_dds, pdx_deform, static_delight
 from lib import static_kinds as sk
 from lib.texture_lineage import embedded_images
 from pack_pdx_material import remap_gloss_table
@@ -66,8 +66,23 @@ def _resize(image: Image.Image, size: int) -> Image.Image:
     return Image.merge(image.mode, [band.resize((size, size), Image.Resampling.LANCZOS) for band in image.split()])
 
 
-def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path) -> Dict[str, dict]:
-    """The GLB's base colour, normal and metallic-roughness maps as the kind's PDX diffuse, normal and specular DDS."""
+def delighted(source: Image.Image, glb: Path, report: dict) -> Image.Image:
+    """The base colour map with the cast shadows Tripo painted into it lifted (lib/static_delight.py), or as it is when it
+    has none. The report says what was found."""
+
+    try:
+        groups = static_delight.glb_groups(glb, min(static_delight.ANALYSIS_SIZE, source.width))
+    except (KeyError, ValueError) as error:
+        report.update({"skipped": f"the GLB has no UVs to group the texture by ({error})"})
+        return source
+    lifted, found = static_delight.delight(source, groups)
+    report.update(found)
+    return lifted if found["regions"] else source
+
+
+def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None) -> Dict[str, dict]:
+    """The GLB's base colour, normal and metallic-roughness maps as the kind's PDX diffuse, normal and specular DDS. The
+    colour map is delighted first; `delight` (when given) receives what was lifted."""
 
     images = embedded_images(glb)
     if not images["diffuse"]:
@@ -76,7 +91,7 @@ def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path)
         raise SystemExit(f"{glb.name} has {len(images['diffuse'])} base colour maps; the route packs one atlas")
     size = int(contract["texture_size"])
     work.mkdir(parents=True, exist_ok=True)
-    colour = _resize(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGBA"), size)
+    colour = _resize(delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, delight if delight is not None else {}).convert("RGBA"), size)
     colour = Image.merge("RGBA", (*colour.split()[:3], Image.new("L", (size, size), 255)))
     if images["normal"]:
         source = _resize(Image.open(io.BytesIO(images["normal"][0])).convert("RGB"), size)
@@ -263,7 +278,8 @@ def main(argv=None) -> int:
     if files.exists():
         shutil.rmtree(files)
     files.mkdir(parents=True)
-    textures = pack_textures(glb, contract, name, files, out / "textures")
+    delight: dict = {}
+    textures = pack_textures(glb, contract, name, files, out / "textures", delight)
     motion, barrel_length = clip_motion(game, contract) if contract.get("clips") else ({}, None)
     request = {
         "glb": str(glb), "name": name, "out": str(files), "contract": contract, "front": front,
@@ -280,6 +296,7 @@ def main(argv=None) -> int:
     entities.mkdir(parents=True, exist_ok=True)
     (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
     report["textures"] = textures
+    report["delight"] = delight
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files

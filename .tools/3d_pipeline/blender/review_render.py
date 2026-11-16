@@ -257,6 +257,7 @@ if PBR:
     scene.world = world
     sun_data = bpy.data.lights.new("sun", "SUN")
     sun_data.energy = float(request.get("sun", 3.0))
+    sun_data.use_shadow = bool(request.get("sun_shadow", True))  # off: no part casts a shadow on another (static review sheets)
     sun = bpy.data.objects.new("sun", sun_data)
     sun.rotation_euler = (math.radians(55), 0.0, math.radians(-25))
     scene.collection.objects.link(sun)
