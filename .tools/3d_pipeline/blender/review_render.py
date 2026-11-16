@@ -79,6 +79,17 @@ if ATTACH:
             else:
                 o["hoi4_rider"] = True
                 meshes.append(o)
+    if rider_rig is not None:
+        # The rider's skin follows the rider's own rig (the importer can bind it to the first rig that has a bone of the same name).
+        for o in added:
+            if o.type == "MESH":
+                for modifier in o.modifiers:
+                    if modifier.type == "ARMATURE":
+                        modifier.object = rider_rig
+                if o.parent is not rider_rig:
+                    world = o.matrix_world.copy()
+                    o.parent = rider_rig
+                    o.matrix_world = world
     if rig is not None and rider_rig is not None:
         RIDER_REST = rider_rig.matrix_world.copy()
         print("REVIEW_RIDER", rider_rig.name, "node found:", ATTACH.get("node") in rig.data.bones)
@@ -91,7 +102,8 @@ def place_rider():
         return
     bpy.context.view_layer.update()
     node = rig.pose.bones[ATTACH["node"]]
-    rider_rig.matrix_world = rig.matrix_world @ node.matrix @ Matrix.Diagonal((ATTACH["scale"],) * 3 + (1.0,)) @ RIDER_REST
+    # Both rigs come in with io_pdx_mesh's own object transform: the rider's rest is taken into the mount's armature space first.
+    rider_rig.matrix_world = rig.matrix_world @ node.matrix @ Matrix.Diagonal((ATTACH["scale"],) * 3 + (1.0,)) @ rig.matrix_world.inverted() @ RIDER_REST
     bpy.context.view_layer.update()
 
 
