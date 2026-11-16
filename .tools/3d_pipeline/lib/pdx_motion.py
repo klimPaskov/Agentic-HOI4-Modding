@@ -102,6 +102,36 @@ def _skinned_bones(mesh: SkinnedMesh) -> np.ndarray:
     return used
 
 
+def _reanchored(mesh: SkinnedMesh, legs: List["Leg"], joints: np.ndarray, height: float) -> List["Leg"]:
+    """Two legs whose found hips do not hang from the bone both legs share are a hoofed body standing on its toes (Tripo's demon: the
+    ground joint is the hoof, so the chain found is knee, hock and hoof). Each leg moves up one joint: the thigh's top as the hip, the
+    knee, and the hock as the ankle, with the hoof as the toe. The knee and waist checks then read a hock bending back as a hock, not as
+    a knee bending backward."""
+
+    if len(legs) != 2:
+        return legs
+
+    def chain(j: int) -> List[int]:
+        out = [j]
+        while mesh.parents[out[-1]] >= 0:
+            out.append(mesh.parents[out[-1]])
+        return out
+
+    up_a, up_b = chain(legs[0].hip), chain(legs[1].hip)
+    common = next((j for j in up_a if j in set(up_b)), -1)
+    if common < 0 or mesh.parents[legs[0].hip] == common or mesh.parents[legs[1].hip] == common:
+        return legs
+    out = []
+    for leg in legs:
+        hip = mesh.parents[leg.hip]
+        if hip < 0 or hip == common:
+            return legs
+        upper = np.linalg.norm(joints[leg.hip] - joints[hip])
+        lower = np.linalg.norm(joints[leg.knee] - joints[leg.hip])
+        out.append(Leg(hip, leg.hip, leg.knee, leg.ankle, float(upper + lower)))
+    return out
+
+
 def find_legs(mesh: SkinnedMesh) -> LegSet:
     """Leg chains from the rest pose: an ankle near the ground whose parent and grandparent rise to the hips."""
 
@@ -142,6 +172,7 @@ def find_legs(mesh: SkinnedMesh) -> LegSet:
         if best is None or joints[leg.ankle, 1] < joints[best.ankle, 1]:
             by_knee[leg.knee] = leg
     legs = sorted(by_knee.values(), key=lambda leg: joints[leg.hip, 0])
+    legs = _reanchored(mesh, legs, joints, height)
     pelvis_candidates = {mesh.parents[leg.hip] for leg in legs}
     pelvis = pelvis_candidates.pop() if len(pelvis_candidates) == 1 else (legs[0].hip if legs else -1)
     forward = None

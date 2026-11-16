@@ -15,6 +15,9 @@ reads the exported `.mesh` and every `.anim` of the unit, as the game plays them
 4. Choice: each of `PASS_STEPS` is measured on every clip (the edges the region touches are skinned again, the rest keep their counts).
    The kept strength is the one with the fewest deformed edges summed over the clips' worst frames, provided no clip's worst stretched or
    squashed count rises by more than `WORSEN_SHARE` and no edge grows further than before. When no strength helps, nothing changes.
+0. Before the smoothing, on a two-legged unit: the thigh split (`SPLIT_SHARES`). Cloth between the legs that Tripo weighted to both
+   thighs gives part of the share both hold to the bone the legs hang from, kept on the same terms as a strength in step 4. The
+   smoothing then starts from the split weights.
 
 Only the `ix`, `w` and `bones` values of the `skin` blocks change, in place: positions, triangles, the skeleton and the clips stay as they
 were, so every clip still plays.
@@ -41,6 +44,12 @@ WORSEN_SHARE = 0.02
 # whole (smoothing its blend let the orc's dying cloak sink into the body); a wing's blend into the back may smooth, which cut the
 # demon's root-zone stretch by about a fifth (attack 9.3% to 8.0%, idle 4.1% to 3.3%).
 PREFIX_LOCK_SHARES = {"Wing": 0.5}
+# Thigh split, tried before the smoothing on a two-legged unit: a vertex weighted to both thighs (a kilt or coat skirt between the legs)
+# gives this share of the part both thighs hold equally (2 x the smaller thigh weight) to the bone the legs hang from, so a stride no
+# longer tears it in two. Kept only when no clip gets worse. Offline on the orc at 0.5: retreat 234 to 158 stretched edges between the
+# legs, death 188 to 116.
+SPLIT_SHARES = (0.5, 1.0)
+SPLIT_MIN = 0.05
 
 
 @dataclass
@@ -52,7 +61,7 @@ class SmoothResult:
     vertices_changed: int = 0
     before: Dict[str, Dict[str, float]] = field(default_factory=dict)
     after: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    trials: Dict[int, int] = field(default_factory=dict)
+    trials: Dict[str, int] = field(default_factory=dict)  # by passes, or "split <share>"
     note: str = ""
 
 
@@ -325,11 +334,29 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
     region = grow(seeds, edges, RINGS) & ~locked & ~unskinned
     best, trials = None, {}
     total_before = sum(b["stretched"] + b["squashed"] for b in before.values())
+    base_joints, base_weights, base_rows, base_total, split_note = mesh.joints, mesh.weights, np.zeros(len(dense), bool), total_before, ""
+    for share in SPLIT_SHARES:
+        split = split_thighs(mesh, dense, locked, share)
+        if split is None:
+            break
+        rows = np.abs(split - dense).sum(axis=1) > 1e-6
+        joints, weights = sparse_rows(split)
+        joints, weights = np.where(rows[:, None], joints, mesh.joints), np.where(rows[:, None], weights, mesh.weights)
+        after = {name: clips.summary(name, rows[edges].any(axis=1), joints, weights) for name in anims}
+        total = sum(a["stretched"] + a["squashed"] for a in after.values())
+        trials[f"split {share}"] = int(total)
+        if not any(worse(before[n], after[n]) for n in anims) and total < base_total:
+            base_joints, base_weights, base_rows, base_total, base_dense = joints, weights, rows, total, split
+            best = (total, 0, joints, weights, after, int(rows.sum()))
+            split_note = f"thigh split {share} on {int(rows.sum())} vertices"
+    if base_rows.any():
+        dense = base_dense
     for passes in steps:
-        joints, weights, changed_rows = smoothed_rows(mesh, dense, canon, edges, region, passes)
+        joints, weights, changed_rows = smoothed_rows(mesh, dense, canon, edges, region, passes, base_joints, base_weights)
+        changed_rows = changed_rows | base_rows
         after = {name: clips.summary(name, changed_rows[edges].any(axis=1), joints, weights) for name in anims}
         total = sum(a["stretched"] + a["squashed"] for a in after.values())
-        trials[int(passes)] = int(total)
+        trials[str(passes)] = int(total)
         if not any(worse(before[n], after[n]) for n in anims) and total < total_before and (best is None or total < best[0]):
             best = (total, int(passes), joints, weights, after, int(changed_rows.sum()))
     if best is None:
@@ -338,7 +365,29 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
                             note="no strength lowered the deformed edges without making a clip worse")
     _total, passes, joints, weights, after, count = best
     write_weights(mesh_path, out_path, joints, weights, mesh.bones)
-    return SmoothResult(True, passes, int(seeds.sum()), int(region.sum()), count, before, after, trials)
+    return SmoothResult(True, passes, int(seeds.sum()), int(region.sum()), count, before, after, trials, split_note)
+
+
+def split_thighs(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, locked: np.ndarray, share: float) -> Optional[np.ndarray]:
+    """The dense weights with the thigh split moved (`SPLIT_SHARES`), or None when the unit has not two legs hanging from one bone or no
+    unlocked vertex is weighted to both thighs."""
+
+    from . import pdx_motion
+
+    legs = pdx_motion.find_legs(mesh)
+    if not legs.biped or legs.pelvis < 0:
+        return None
+    left, right = legs.legs[0].hip, legs.legs[1].hip
+    both = np.minimum(dense[:, left], dense[:, right])
+    zone = (both > SPLIT_MIN) & ~locked
+    if not zone.any():
+        return None
+    moved = np.where(zone, share * both, 0.0)
+    out = dense.copy()
+    out[:, left] -= moved
+    out[:, right] -= moved
+    out[:, legs.pelvis] += 2 * moved
+    return out
 
 
 def locked_vertices(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.ndarray, locked_bones: Sequence[str],
@@ -358,7 +407,8 @@ def locked_vertices(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.n
 
 
 def smoothed_rows(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.ndarray, edges: np.ndarray, region: np.ndarray,
-                  passes: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+                  passes: int, base_joints: Optional[np.ndarray] = None,
+                  base_weights: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """(joints, weights, changed rows) after `passes` passes over `region`. The smoothing runs on the canonical vertices (welded copies are
     one point) and is copied to every copy. A vertex only takes bones of its own shape's skeleton."""
 
@@ -372,7 +422,9 @@ def smoothed_rows(mesh: pdx_deform.SkinnedMesh, dense: np.ndarray, canon: np.nda
     smoothed = smooth_dense(dense, edges, region & is_canon, passes, allowed)[canon]
     changed = region[canon] | region
     joints, weights = sparse_rows(np.where(changed[:, None], smoothed, dense))
-    return np.where(changed[:, None], joints, mesh.joints), np.where(changed[:, None], weights, mesh.weights), changed
+    base_joints = mesh.joints if base_joints is None else base_joints
+    base_weights = mesh.weights if base_weights is None else base_weights
+    return np.where(changed[:, None], joints, base_joints), np.where(changed[:, None], weights, base_weights), changed
 
 
 def worse(before: Dict[str, float], after: Dict[str, float]) -> bool:

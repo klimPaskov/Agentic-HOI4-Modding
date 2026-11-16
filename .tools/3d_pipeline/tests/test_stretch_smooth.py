@@ -65,6 +65,9 @@ class Smoothing(unittest.TestCase):
         self.assertEqual(result.before["u_attack"]["stretched"], before.stretched_edges, "the rule measures as UNIT-ANIM-STRETCH does")
         self.assertEqual(result.after["u_attack"]["stretched"], after.stretched_edges, "its rescoring of the region matches a full measure")
         self.assertEqual(size_before, size_after, "only the skin values change, in place")
+        import json
+
+        json.dumps(result.trials, sort_keys=True)  # run_pilot writes it into files.json with sorted keys (one key type)
         np.testing.assert_allclose(smoothed.weights.sum(axis=1), 1.0, atol=1e-5)
         self.assertLessEqual(int((smoothed.weights > 0).sum(axis=1).max()), 4)
 
@@ -114,6 +117,23 @@ class Pieces(unittest.TestCase):
         out = S.smooth_dense(dense, edges, region, 8)
         np.testing.assert_allclose(out[[0, 5]], dense[[0, 5]])
         self.assertTrue(np.all(np.diff(out[:, 1]) >= -1e-9), "the second bone's weight rises steadily along the strip")
+
+    def test_the_thigh_split_moves_the_shared_part_of_both_thighs_to_the_pelvis(self) -> None:
+        from unittest import mock
+
+        from lib import pdx_motion
+
+        legs = pdx_motion.LegSet([pdx_motion.Leg(1, 3, 4, -1, 1.0), pdx_motion.Leg(2, 5, 6, -1, 1.0)], 0, None)
+        # pelvis, left thigh, right thigh: a skirt point between the legs, one on a thigh alone, and one locked (a cloak)
+        dense = np.array([[0.0, 0.5, 0.5], [0.0, 1.0, 0.0], [0.2, 0.4, 0.4]])
+        locked = np.array([False, False, True])
+        with mock.patch.object(pdx_motion, "find_legs", return_value=legs):
+            out = S.split_thighs(object(), dense, locked, 0.5)
+        np.testing.assert_allclose(out[0], [0.5, 0.25, 0.25])
+        np.testing.assert_allclose(out[1:], dense[1:], err_msg="a one-thigh point and a locked point keep their weights")
+        np.testing.assert_allclose(out.sum(axis=1), dense.sum(axis=1))
+        with mock.patch.object(pdx_motion, "find_legs", return_value=pdx_motion.LegSet([], -1, None)):
+            self.assertIsNone(S.split_thighs(object(), dense, locked, 0.5), "no legs, no split")
 
 
 if __name__ == "__main__":
