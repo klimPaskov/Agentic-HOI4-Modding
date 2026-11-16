@@ -16,8 +16,10 @@ ENG_infantry and GER_infantry_snow, 2026-11-15):
   `run_pilot.ground_exported_clips` grounds the exported clips per frame by `pdx_ground` with `GROUND_TOLERANCE`, under the check's limit.
 - Death feet (`death_feet_height`, TRIPO-DEATH-FEET). In the last `DEATH_FINAL_FRAMES` frames of vanilla's deaths (death_rifle, death_mg) the lowest foot
   vertex sits -0.6% to +0.6% of the height above the rest ground (the body sinks into it, the boots stay on it). The limit is 1%. The orc's boots hung
-  5.6% up with both lower legs bent. `settle_death_legs` straightens the knees toward the rest pose, by the smallest share that brings the boots to
-  the ground, ramped in from the moment the body lies down, so no joint turns faster than `lib/tripo_trim.SETTLE_MAX_RATE`.
+  5.6% up with both lower legs bent. `settle_death_legs` turns the leg joints toward the rest pose, by the smallest share that brings the boots to
+  the ground, ramped in from the moment the body lies down, so no joint turns faster than `lib/tripo_trim.SETTLE_MAX_RATE`. It tries the knees
+  first, then the thighs, then both (`LEG_SETTLE_GROUPS`): the zombie's death (2026-11-16) ended on its back with both thighs lifted at the hip,
+  boots 4.3% up. Straightening its knees lifted the boots further (9.4% at the full share), and turning the thighs 40% back brought them down.
 - Waist twist (`waist_twist`, TRIPO-WAIST-TWIST). The turn about the up axis between the shoulder line (the two upper arms' joints) and the
   hip line (the two thighs' joints), against the rest pose's. Vanilla's GER infantry clips on GER_infantry.mesh, worst per role:
   retreat 23.2 (retreat_mg), move 25.1 (march, moving), idle 39.7 (long_idle01), attack 51.2 (charge_mg_shoot), death 40.7 (death_rifle).
@@ -47,6 +49,7 @@ DEATH_FEET_LIMIT = 0.01
 DEATH_FEET_TARGET = 0.004
 LYING_HIPS_SETTLE = 0.02
 LEG_SETTLE_MIN_FRAMES = 12  # a lying body takes its legs down over at least 0.4 s
+LEG_SETTLE_GROUPS = (("knees",), ("thighs",), ("thighs", "knees"))  # tried in this order, the first that brings the boots down wins
 VANILLA_WAIST_TWIST_DEGREES = {"retreat": 23.2, "move": 25.1, "idle": 39.7, "attack": 51.2, "defend": 51.2, "death": 40.7}
 WAIST_TWIST_LIMITS = {role: round(1.25 * value, 1) for role, value in VANILLA_WAIST_TWIST_DEGREES.items()}
 FOOT_WORDS = ("foot", "toe")
@@ -162,6 +165,7 @@ class LegSettle:
     height_before: float = 0.0
     height_after: float = 0.0
     note: str = ""
+    joints: Tuple[str, ...] = ()
 
 
 def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvis: int) -> int:
@@ -176,10 +180,11 @@ def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvi
 
 
 def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: float = DEATH_FEET_LIMIT, target: float = DEATH_FEET_TARGET) -> LegSettle:
-    """Write `out_path`: `anim_path` with the knees straightened toward the rest pose when the boots hang above the ground at the end of a death.
+    """Write `out_path`: `anim_path` with the legs turned toward the rest pose when the boots hang above the ground at the end of a death.
 
-    One share s in [0, 1] for both knees, the smallest that brings the boots under `target` (or, if none does, the one that brings them lowest),
-    ramped in with a smoothstep from the frame the hips come down to the ground and held to the end. Only the knee joints' rotation samples change."""
+    One share s in [0, 1] for one group of leg joints (`LEG_SETTLE_GROUPS`: the knees, then the thighs, then both), the smallest that brings the
+    boots under `target`. The first group that reaches it wins. If none does, the group and share that bring them lowest. The share is ramped in
+    with a smoothstep from the frame the hips come down to the ground and held to the end. Only that group's rotation samples change."""
 
     data = bytearray(Path(anim_path).read_bytes())
     mesh = pdx_deform.load_mesh(mesh_path)
@@ -191,12 +196,12 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
         return LegSettle(False, height_before=before, height_after=before, note="the boots are on the ground" if before <= limit else "no legs found")
     info = read(anim_path).child("info")
     keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
-    knees = [mesh.bones[leg.knee] for leg in legs.legs if mesh.bones[leg.knee] in keyed]
+    part = {"knees": [mesh.bones[leg.knee] for leg in legs.legs], "thighs": [mesh.bones[leg.hip] for leg in legs.legs if leg.hip >= 0]}
     bind = pdx_deform._bind_locals(mesh)
     rest = {mesh.bones[i]: _quaternion_from_matrix(bind[i]) for i in range(len(mesh.bones))}
     onset = _lying_frame(mesh, anim, legs.pelvis)
 
-    def settled(share: float, weights: np.ndarray) -> pdx_deform.Animation:
+    def settled(knees: Sequence[str], share: float, weights: np.ndarray) -> pdx_deform.Animation:
         channels = {name: dict(channel) for name, channel in anim.channels.items()}
         for knee in knees:
             q = anim.channels[knee]["q"].copy()
@@ -213,20 +218,28 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
             weights[frame] = 1.0 if frame >= end else float(tripo_trim.settle_weights(length)[frame - onset])
         return weights
 
-    best_share, best_height = 0.0, before
-    for share in np.linspace(0.05, 1.0, 20):
-        height = death_feet_height(mesh, settled(float(share), np.ones(anim.frames)))
-        if height < best_height - 1e-6:
-            best_share, best_height = float(share), height
-        if height <= target:
+    best_share, best_height, knees = 0.0, before, []
+    for group in LEG_SETTLE_GROUPS:
+        joints = [name for kind in group for name in part[kind] if name in keyed]
+        if not joints:
+            continue
+        reached = False
+        for share in np.linspace(0.05, 1.0, 20):
+            height = death_feet_height(mesh, settled(joints, float(share), np.ones(anim.frames)))
+            if height < best_height - 1e-6:
+                best_share, best_height, knees = float(share), height, joints
+            if height <= target:
+                reached = True
+                break
+        if reached:
             break
     if best_share == 0.0:
         Path(out_path).write_bytes(bytes(data))
-        return LegSettle(False, height_before=before, height_after=before, note="straightening the knees does not lower the boots")
+        return LegSettle(False, height_before=before, height_after=before, note="turning the knees or the thighs does not lower the boots")
     turn = max(quaternion_turn(q, slerp(q, rest[knee], best_share)) for knee in knees for q in anim.channels[knee]["q"][onset:])
     length = int(min(max(tripo_trim.settle_frames(turn), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
     weights = full_ramp(length)
-    result = settled(best_share, weights)
+    result = settled(knees, best_share, weights)
     offset = _samples_offset(bytes(data), b"q")
     for knee in knees:
         slot = keyed.index(knee)
@@ -236,7 +249,7 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
                 struct.pack_into("<4f", data, position, *[float(v) for v in result.channels[knee]["q"][frame]])
     Path(out_path).write_bytes(bytes(data))
     after = death_feet_height(mesh, result)
-    return LegSettle(True, best_share, onset, length, before, after)
+    return LegSettle(True, best_share, onset, length, before, after, joints=tuple(knees))
 
 
 # ---- the checks --------------------------------------------------------------------------------------------------------

@@ -127,8 +127,8 @@ class Feet(Unit):
         self.assertEqual(P.pose_findings(self.mesh, {"unit_move": self.load(anim_path)})[0], [])
 
 
-def lying_death(knee_degrees: float):
-    """Stand 20 frames, fall onto the front over 20 more, bend both knees up over 10 and lie so to frame 70."""
+def lying_death(knee_degrees: float, thigh_degrees: float = 0.0):
+    """Stand 20 frames, fall onto the front over 20 more, bend both knees (or lift both thighs) over 10 and lie so to frame 70."""
 
     def pose(frame: int):
         fall = min(max((frame - 20) / 20.0, 0.0), 1.0)
@@ -136,6 +136,8 @@ def lying_death(knee_degrees: float):
         moved = {"Hips": ((0.0, 0.55 - 0.45 * fall, 0.0), about_x(90.0 * fall))}
         for side in ("Left", "Right"):
             moved[f"{side}Leg"] = (rest_translation(f"{side}Leg"), about_x(knee_degrees * bend))
+            if thigh_degrees:
+                moved[f"{side}UpLeg"] = (rest_translation(f"{side}UpLeg"), about_x(thigh_degrees * bend))
         return moved
 
     return pose
@@ -180,6 +182,25 @@ class DeathFeet(Unit):
         steps = [P.quaternion_turn(after.channels["LeftLeg"]["q"][i], after.channels["LeftLeg"]["q"][i + 1]) for i in range(after.frames - 1)]
         original = [P.quaternion_turn(before.channels["LeftLeg"]["q"][i], before.channels["LeftLeg"]["q"][i + 1]) for i in range(before.frames - 1)]
         self.assertLessEqual(max(steps), max(max(original), tripo_trim.SETTLE_MAX_RATE) + 1e-3)
+
+    def test_thighs_lifted_at_the_hip_are_turned_back_and_the_straight_knees_are_left_alone(self) -> None:
+        # The zombie's death: straight knees, both thighs lifted, so straightening the knees cannot lower the boots.
+        path = self.clip("death", 70, lying_death(0.0, 30.0))
+        self.assertGreater(P.death_feet_height(self.mesh, self.load(path)), P.DEATH_FEET_LIMIT)
+        out = self.folder / "settled.anim"
+        result = P.settle_death_legs(self.mesh_path, path, out)
+        self.assertTrue(result.changed, result)
+        self.assertEqual(set(result.joints), {"LeftUpLeg", "RightUpLeg"})
+        self.assertLessEqual(P.death_feet_height(self.mesh, self.load(out)), P.DEATH_FEET_LIMIT)
+        before, after = self.load(path), self.load(out)
+        for joint in before.channels:
+            if joint not in ("LeftUpLeg", "RightUpLeg"):
+                self.assertTrue(np.allclose(before.channels[joint]["q"], after.channels[joint]["q"], atol=1e-5), joint)
+
+    def test_the_knees_are_tried_before_the_thighs(self) -> None:
+        self.assertEqual(P.LEG_SETTLE_GROUPS[0], ("knees",))
+        result = P.settle_death_legs(self.mesh_path, self.hanging(), self.folder / "settled.anim")
+        self.assertEqual(set(result.joints), {"LeftLeg", "RightLeg"})
 
     def test_a_death_with_its_boots_on_the_ground_is_left_alone(self) -> None:
         path = self.clip("death", 70, lying_death(0.0))

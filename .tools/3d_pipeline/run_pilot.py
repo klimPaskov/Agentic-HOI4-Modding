@@ -3718,7 +3718,7 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, An
     record: Dict[str, Any] = {}
     if role == "death" and humanoid:
         legs = tripo_pose.settle_death_legs(mesh, anim, anim)
-        record["legs"] = {"changed": legs.changed, "knee_share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
+        record["legs"] = {"changed": legs.changed, "joints": list(legs.joints), "share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
                           "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
     fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=[released] if released else ())
     record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
