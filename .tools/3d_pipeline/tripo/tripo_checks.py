@@ -68,7 +68,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_pose
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_pose
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -822,13 +822,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
-    found, numbers["death"] = death_findings(mesh, anims)
-    findings += found
-    found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
-    findings += found
+    if quadruped_checks.is_quadruped(mesh):
+        # The kit's quadruped rig (a Tripo mount or beast): its own loop, hoof, lying-down and load rules (lib/quadruped_checks.py).
+        found, numbers["quadruped"] = quadruped_checks.quadruped_findings(mesh, anims)
+        findings += found
+    else:
+        found, numbers["death"] = death_findings(mesh, anims)
+        findings += found
+        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
+        findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     findings += found
-    if not args.weapon_bone:
+    if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
         findings += found
     if args.weapon_bone:

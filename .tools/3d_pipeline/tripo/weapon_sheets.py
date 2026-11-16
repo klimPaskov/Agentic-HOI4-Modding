@@ -41,6 +41,9 @@ def evenly(frames: int, count: int) -> List[int]:
     return sorted({round(last * k / max(count - 1, 1)) for k in range(count)})
 
 
+RIDER: Dict = {}  # the `attach` block for a mount's rider (review_unit.rider_attach), set by --rider
+
+
 def render_tiles(folder: Path, out: Path, wanted: List[str], count: int, views: List[str], angles: Dict, size: int, share: float) -> dict:
     meshes = sorted(folder.glob("*.mesh"))
     mesh_path = meshes[0]
@@ -64,6 +67,8 @@ def render_tiles(folder: Path, out: Path, wanted: List[str], count: int, views: 
         "diagnostic_views": [],
         "size": size,
     }
+    if RIDER:
+        request["attach"] = review_unit.rider_attach(Path(RIDER["folder"]), RIDER.get("stem"), RIDER["scale"], RIDER["roles"], [c["name"] for c in clips])
     out.mkdir(parents=True, exist_ok=True)
     path = out / "weapon_request.json"
     path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
@@ -168,7 +173,13 @@ def main() -> int:
     parser.add_argument("folder", type=Path)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--sheet", choices=("close", "game"), required=True)
+    parser.add_argument("--rider", type=Path, help="a mount's rider folder, drawn on the mount's Saddle_Node (as review_unit.py --rider)")
+    parser.add_argument("--rider-stem")
+    parser.add_argument("--rider-scale", type=float, default=1.0)
+    parser.add_argument("--rider-roles", nargs="*", default=[], metavar="ROLE=RIDER_ROLE")
     args = parser.parse_args()
+    if args.rider:
+        RIDER.update(folder=str(args.rider), stem=args.rider_stem, scale=args.rider_scale, roles=dict(pair.split("=", 1) for pair in args.rider_roles))
     target = close_sheet(args.folder, args.out) if args.sheet == "close" else game_sheet(args.folder, args.out)
     print(target)
     return 0

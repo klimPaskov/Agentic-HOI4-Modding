@@ -109,6 +109,31 @@ def specular_maps(mesh_path: Path) -> Dict[str, str]:
     return {}
 
 
+def rider_attach(rider: Optional[Path], rider_stem: Optional[str], scale: float, roles: Dict[str, str], clip_names: List[str], node: str = "Saddle_Node") -> Optional[Dict[str, object]]:
+    """The `attach` block of a render request: the rider entity's mesh, maps and one clip per mount clip, drawn on the mount's node.
+
+    An attached entity's scale multiplies its parent's (lib/mount_size.py), so in the mount's mesh units the rider is scaled by its own
+    entity scale. `roles` maps a mount role to the rider role it plays then (a rider's idle while the mount moves); a role not named plays
+    the rider's clip of the same role, or its idle."""
+
+    if rider is None:
+        return None
+    meshes = sorted(rider.glob("*.mesh"))
+    mesh = next((m for m in meshes if m.stem == rider_stem), meshes[0] if meshes else None)
+    if mesh is None:
+        raise SystemExit(f"no rider .mesh in {rider}")
+    anims = {anim.stem[len(mesh.stem) + 1:]: anim for anim in owned_anims(rider, mesh.stem, [m.stem for m in meshes])}
+    clips = {}
+    for name in clip_names:
+        role = name.rsplit("_", 1)[-1]
+        wanted = roles.get(role, role)
+        anim = anims.get(wanted) or anims.get("idle")
+        if anim is not None:
+            clips[name] = str(anim.resolve())
+    return {"mesh": str(mesh.resolve()), "node": node, "scale": float(scale), "diffuse": diffuse_maps(mesh.resolve(), []),
+            "specular": specular_maps(mesh.resolve()), "clips": clips}
+
+
 def gfx_texts(mod_root: Optional[Path]) -> List[str]:
     if mod_root is None:
         return []
@@ -346,6 +371,7 @@ def render(
     only: Optional[List[str]] = None,
     ground_z: Optional[float] = None,
     ground_alpha: float = 1.0,
+    attach: Optional[Dict[str, object]] = None,
 ) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
@@ -375,6 +401,8 @@ def render(
         "ground_z": ground_z,
         "ground_alpha": ground_alpha,
     }
+    if attach:
+        request["attach"] = attach
     out.mkdir(parents=True, exist_ok=True)
     request_path = out / "render_request.json"
     request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
@@ -407,6 +435,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--note-file", type=Path, help="a file of fixed notes, one per line (keep it in the job folder so every round uses it)")
     parser.add_argument("--checklist", action=argparse.BooleanOptionalAction, default=True, help="ask for the quality bar item by item and fail a reply without it (default on)")
     parser.add_argument("--clips", nargs="+", metavar="CLIP", help="an intermediate round: render and judge only these clips (roles or file stems) and the rest pose")
+    parser.add_argument("--rider", type=Path, help="a mount's rider: the folder of the rider entity's .mesh and .anim files, drawn on the mount's Saddle_Node")
+    parser.add_argument("--rider-stem", help="the rider's file stem, when its folder holds several")
+    parser.add_argument("--rider-scale", type=float, default=1.0, help="the rider entity's scale (it multiplies the mount's, so it is the rider's size in the mount's mesh units)")
+    parser.add_argument("--rider-roles", nargs="*", default=[], metavar="ROLE=RIDER_ROLE", help="the rider clip each mount role plays, for example move=idle")
     args = parser.parse_args(argv)
     out = args.out
     unit = args.stem or next((mesh.stem for mesh in sorted(args.folder.glob("*.mesh"))), args.folder.name)
@@ -437,7 +469,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     notes = list(args.note)
     if args.note_file:
         notes += [line.strip().lstrip("-").strip() for line in args.note_file.read_text(encoding="utf-8").splitlines() if line.strip()]
-    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size, not args.no_diagnostics, notes, args.checklist, args.clips)
+    attach = None
+    if args.rider:
+        mount = next((m for m in sorted(args.folder.glob("*.mesh")) if m.stem == (args.stem or m.stem)), None)
+        names = [anim.stem for anim in owned_anims(args.folder, mount.stem, [m.stem for m in sorted(args.folder.glob("*.mesh"))])] if mount else []
+        attach = rider_attach(args.rider, args.rider_stem, args.rider_scale, dict(pair.split("=", 1) for pair in args.rider_roles), names)
+    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size, not args.no_diagnostics, notes, args.checklist, args.clips, attach=attach)
     request = out / "REVIEW_REQUEST.md"
     stage_verdict.write(
         stage_verdict.verdict(

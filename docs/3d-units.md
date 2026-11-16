@@ -365,6 +365,39 @@ Every type gets the six land-unit roles: idle, move, attack, defend, retreat and
 
 Mounts are built to vanilla's horse size on the map, which is smaller than vanilla infantry. A mounted unit is two jobs, a `mount` and a `rider`. The mount's entity attaches the rider's entity to its `Saddle_Node`, the way vanilla cavalry does, so one horse can carry several kinds of rider.
 
+### Tripo quadrupeds and mounts
+
+Tripo's rig is for humanoids. For a `mount` or `quadruped_beast`, export Tripo's plain textured model (not rigged) into the inbox as `<asset>__model.glb`. The intake records it, and `run_pilot.py` rigs and animates it with the kit's quadruped rules (`adapter/quadruped_layout.py`), with no Tripo rig or clips and no credits after the model. The job adds:
+
+```
+"unit_type": "mount", "provider": "tripo", "size_vs_horse": 1.7, "size_vs_horse_reason": "...",
+"tripo": {"load": true},
+"rider": {"folder": "<exported rider unit>", "stem": "<its stem>", "roles": {"move": "idle", "retreat": "idle", "death": "idle"}}
+```
+
+Every number comes from a rule:
+
+| Step | Rule |
+| --- | --- |
+| Size | The mount's back stands `size_vs_horse` times vanilla's horse on the map (the horse's `Saddle_Node` is 3.68 units up there). `size_vs_horse` is the species' withers height over a horse's, stated with its source. The back is measured on the model, so the mesh height follows (`lib/mount_size.py`, report `blender/reports/mount_size.json`) |
+| Rider size | An attached entity's scale multiplies its parent's: vanilla's rifle is 0.73 of the soldier's height on the map only that way. So the rider entity gets the scale that makes it vanilla's rider size, 3.82 units on the map |
+| Facing | The animal's length is its longest horizontal extent, and the end with the higher head faces forward |
+| Legs | A leg's bones take only the skin within 2.2 of the leg's radii of its own line, so a trunk or straps beside a leg never follow it |
+| Load | With `tripo.load`, the load is found by rule (`adapter/quadruped_load.py`). Its deck is the lowest height band with at least half of the most upward-facing flat surface. Its cut is the deck's own underside. The load is everything above the cut joined to the deck's footprint, and outside the footprint only what rises above the deck. It is bound wholly to its own bone, `Load`, a child of the Spine that never turns, and fades into the body over 6% of the body's height. The `Saddle_Node` is a child of `Load` |
+| Pillar legs | A leg whose radius is more than 0.15 of its length (the belly's height) is a pillar leg, an elephant's (0.22 to 0.25, a horse's 0.05). Its joints below the shoulder and hip bend 0.06 over that share as far as a runner's. Such an animal walks where a runner trots and trots where a runner gallops. It attacks with a runner's whole rear at 0.4 (a stamp with the forefeet a little off the ground) and defends braced: legs apart, weight back, head and tusks low. A neck shorter than 0.3 of the body's length (withers to poll) bends that much less. Fresh reviews read a horse's bend on the elephant as legs crumpling under the body, its lunging head as crushed into the chest, and a full rear as the attack |
+| Back | Under a load the back does not bend: Pelvis, Spine and Chest keep still and the legs, neck, head and tail move |
+| Saddle_Node | On the floor of the load (the deck or an upper storey) where the rider's room holds the fewest load vertices. The room is the rider's height and, in plan, the cells its own clips sweep (with the job's `rider.roles` map), or a circle a fifth of its height wide without a rider. The load's faces are sampled densely, so a wide plank counts where it crosses the room. Ties go to the lower floor, then to the floor's centre |
+| Rider fit | The largest rider, from vanilla's size down to half of it in 5% steps, whose room holds no load at all. The rider entity's scale follows that share (`rider_share` in `mount_size.json`). The war elephant's tower was modelled for a crew 0.6 of a vanilla rider, and a full-size rider stood through its upper floor |
+| Death | The body rolls about the edge of the side it falls toward, and every frame is shifted sideways so the torso's centre stays over its standing spot. It rolls onto its side only until the load reaches lower than the torso. Then the final pose is tuned: the largest roll and the smallest turn of the neck against it with no part lower than the torso by more than 1% of the body's height, so neither a dropped head nor the tower holds the dead body off the ground |
+| Loops | The charge runs two whole strides, so the attack ends in its first pose |
+| Repairs | `winding`, `bridges`, `holes`, `weights` and `normals`. Tripo makes the animal and its load as one skin: `bridges` cuts a part fused to another, and `weights` blends a join inside one skin, such as a hanging tail grown into a hind leg |
+
+The Tripo route's other rules apply as for a humanoid: grounding of every exported frame, the weight smoothing (with the `Load` bone locked) and the stretch checks. `tripo_checks.py` runs quadruped rules instead of the humanoid ones: TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND for the hooves, TRIPO-NOT-DOWN (the torso ends within 5% of the height of the ground), TRIPO-LOAD-BELOW-GROUND and TRIPO-LOAD-STRETCH (more than 0.5% of the load's edges stretch: a plank never bends).
+
+Tested in November 2026 on a war elephant carrying a two-storey tower (one Tripo model, 30 credits, nothing after it): the file checks and the quadruped Tripo checks pass, the tower stays rigid and the rider stands on the upper deck. Four fresh reviews failed it, the last on three major and seven minor defects. Still open after the last: the skin stretches at the shoulders, hips and elbows in the rear and the fall (the distance weights are hard at the leg joints), the head twists where the neck turns against the roll, the fallen body keeps its legs straight, and retreat reads like a faster move.
+
+Review a mount with its rider on the node. `review_unit.py` and `tripo/weapon_sheets.py` take `--rider <folder> --rider-stem <stem> --rider-scale <scale> --rider-roles move=idle retreat=idle death=idle` and draw the rider entity on the `Saddle_Node`, playing its mapped clip in each of the mount's clips. The registration names the rider's mesh and entity after the mount, so a foot unit's files can ride without clashing with that unit's own blocks.
+
 ### Check the body before you rig it
 
 The body column names a body preset in `.tools/3d_pipeline/config/body_presets.json`. `measure_body.py` counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It measures the body only, not separate plates, a quiver or a weapon. It fails a model with pieces floating apart from the body, so you drop them before paying for the rig. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles, which is rigged and animated live in Blender. It reads files only.
@@ -543,6 +576,7 @@ The notes below come from models made by hand before the [static route](#static-
 ## Known limits
 
 - **Armed units.** The separate-weapon route has not passed review yet (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, and a long weapon carried down in a death clip passes through the body or the ground.
+- **Quadruped mounts.** The Tripo quadruped route has not passed review yet (see [Tripo quadrupeds and mounts](#tripo-quadrupeds-and-mounts)). Its distance weights stretch the skin at the leg joints in the rear and the fall.
 - **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. [Secondary chains](#secondary-chains-cloaks-and-wings) give wings their own bones and motion, but the membrane can still cross in front of the body in some clips. Tails and extra limbs have no step yet.
 - **Cloaks and armour.** [Secondary chains](#secondary-chains-cloaks-and-wings) stop a long cloak stretching, but some of it can still pass into the body in hard clips. Armour plates whose weight Tripo split between bones still bend a little.
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
