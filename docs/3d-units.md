@@ -340,6 +340,7 @@ The agent works in your Chrome through Claude in Chrome, on the tab where you ar
 - It never reloads the Tripo page in the middle of a paid step.
 - Exports go to your Downloads folder. The agent moves them into the inbox and renames them. It takes only a file created after its own click (newer than a marker file it touches first), never "the newest file of that type", because Downloads also holds your own files and a blocked download leaves an old file the newest.
 - Chrome lets one page start one download on its own. A second export from the same tab is blocked without a message, so the agent opens a fresh tab for each further download. A multi-view group's download button saves only its first view.
+- Tripo's image tool saves its pictures as WebP with a `.png` name. The job's reference must be a real PNG, so the agent converts each downloaded picture before it uses it.
 - It writes the balance before and after each paid step into the job's ledger, and stops at the budget.
 
 This ran end to end on several models in November 2026. Tripo changes its page from time to time. When a helper stops finding a button, the agent says so and you finish that step by hand from the card.
