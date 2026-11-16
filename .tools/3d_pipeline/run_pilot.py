@@ -3743,6 +3743,24 @@ def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: 
             "hand_bleed_vertices": result.hand_bleed}
 
 
+def fit_clip_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str, Any], locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
+    """The Tripo route's weight fit on the staged mesh (lib/weight_fit.py), after the smoothing: the weights where the unit's own clips
+    deform it are solved for the ones that keep its edges' lengths in those clips, at the strength that lowers the deformed edges most
+    without making any clip worse. The weapon, chain and load bones are locked as for the smoothing, and so are the armour plates."""
+
+    from lib import pdx_deform, tripo_chains, weight_fit
+
+    mesh = staged / f"{stem}.mesh"
+    mask = weight_fit.plate_vertices(pdx_deform.load_mesh(mesh)) if plates else None
+    result = weight_fit.fit(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
+                            locked_bones=([weapon["bone"]] if weapon.get("bone") else []) + list(locked),
+                            locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()), locked_mask=mask)
+    totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
+    return {"changed": result.changed, "step": result.step, "region_vertices": result.region, "vertices_changed": result.vertices_changed,
+            "plate_vertices_locked": int(mask.sum()) if mask is not None else 0, "deformed_edges_before": totals["before"],
+            "deformed_edges_after": totals["after"], "per_clip_after": result.after, "trials": result.trials, "note": result.note}
+
+
 def export_unit_roles(
     job: Path,
     spec: Dict[str, Any],
@@ -4048,6 +4066,13 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
             load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
             records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones)
+            records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
+        # plates locked. `"fit_weights": false` in the job's tripo block switches it off.
+        if (spec.get("tripo") or {}).get("fit_weights", True) is not False:
+            load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
+            plates = any((chain or {}).get("region") == "plates" for chain in ((spec.get("tripo") or {}).get("chains") or []))
+            records[f"{stem}.mesh"]["weight_fit"] = fit_clip_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones, plates)
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # Then the mesh the game loads decides where the ground is.
         for role in sorted(exports["animations"]):
