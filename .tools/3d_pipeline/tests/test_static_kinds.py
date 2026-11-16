@@ -197,6 +197,12 @@ class ClipTests(unittest.TestCase):
         self.assertAlmostEqual(turn[38], 20.0)
         self.assertAlmostEqual(turn[-1], 0.0, places=6)
         self.assertLess(np.abs(np.diff(turn)).max(), 2.5)
+        early = np.zeros(60)
+        early[1:8] = 1.0  # a gun that fires on its second frame, as vanilla's light tank does
+        turn = sk.turn_before_shot(60, early, 20.0, 12)
+        self.assertLess(np.abs(np.diff(turn)).max(), 2.6)  # still eased over 12 frames, not snapped
+        self.assertAlmostEqual(turn[12], 20.0)
+        self.assertAlmostEqual(turn[-1], 0.0, places=6)
 
     def test_spin_closes_whole_turns(self):
         frames = sk.spin_frames(1.85, 36.0)

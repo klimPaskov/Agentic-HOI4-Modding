@@ -600,22 +600,28 @@ def smoothstep(t: float) -> float:
 
 
 def turn_before_shot(frames: int, recoil: np.ndarray, degrees: float, ease_frames: int) -> np.ndarray:
-    """The turret's extra turn (degrees about z) per frame for an attack: eased in to `degrees` by the first frame of
-    recoil, held while the gun recoils, eased back after the last. `recoil` is the barrel's displacement per frame."""
+    """The turret's extra turn (degrees about z) per frame for an attack: eased in to `degrees` over `ease_frames`, held
+    while the gun recoils, eased back after the last recoil frame. `recoil` is the barrel's displacement per frame."""
 
     peak = float(np.max(recoil)) if len(recoil) else 0.0
     moving = np.nonzero(recoil > 0.05 * peak)[0] if peak > 0 else np.array([], dtype=int)
     first, last = (int(moving[0]), int(moving[-1])) if len(moving) else (frames // 3, frames // 3)
-    ease_in = max(1, min(ease_frames, first))
-    ease_out = max(1, min(ease_frames, frames - 1 - last))
+    # The turn always takes `ease_frames` (never a snap): it ends at the first recoil frame when the clip leaves room
+    # before it, else it starts at frame 0 and the gun fires while the turret is still coming round. Vanilla's light tank
+    # fires on its second frame, and a turn squeezed into those frames snapped the turret 21.7 degrees in two.
+    ease_frames = max(1, ease_frames)
+    start = max(0, first - ease_frames)
+    end = start + ease_frames
+    hold_until = max(last, end)
+    ease_out = max(1, min(ease_frames, frames - 1 - hold_until))
     out = np.zeros(frames)
     for f in range(frames):
-        if f <= first:
-            out[f] = degrees * smoothstep((f - (first - ease_in)) / ease_in)
-        elif f <= last:
+        if f <= end:
+            out[f] = degrees * smoothstep((f - start) / ease_frames)
+        elif f <= hold_until:
             out[f] = degrees
         else:
-            out[f] = degrees * (1 - smoothstep((f - last) / ease_out))
+            out[f] = degrees * (1 - smoothstep((f - hold_until) / ease_out))
     return out
 
 
@@ -797,8 +803,14 @@ def _part_gaps(mesh, visible, anims: Sequence[Path], contract: dict, measure: fl
             if a.sum() < 3 or b.sum() < 3:
                 continue
             rest_gap = _nearest_gap(mesh.positions[a], mesh.positions[b])
+            low, high = mesh.positions[b].min(axis=0), mesh.positions[b].max(axis=0)
             for f in range(0, matrices.shape[0], max(1, matrices.shape[0] // 24)):
                 pa = _apply(matrices[f, index[part]], mesh.positions[a])
+                # a part that slides into its mount (a barrel recoiling into the turret) does not lift off it: any of
+                # its points inside the mount's box, in the mount's own frame, means it is still seated
+                local = _apply(np.linalg.inv(matrices[f, index[base]]), pa)
+                if ((local >= low) & (local <= high)).all(axis=1).any():
+                    continue
                 pb = _apply(matrices[f, index[base]], mesh.positions[b])
                 gap = _nearest_gap(pa, pb) - rest_gap
                 if gap > worst[0]:
