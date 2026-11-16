@@ -572,7 +572,7 @@ Every number comes from vanilla files. `calibrate_static_kinds.py` measures them
 | Kind | Size | Parts and bones | Clips |
 | --- | --- | --- | --- |
 | `building` | the area the map camera sees of vanilla's four facilities, entity scale 0.6 | one static shape, no bones, a `Collision` box, the `lamp` locator | none |
-| `landmark` | the largest side of 19 vanilla landmarks, or the height of a tall and thin one (an obelisk on a wide base) | all on `root`, a `Collision` box | none |
+| `landmark` | the largest side of 19 vanilla landmarks, or the height of a tall and thin one (an obelisk on a wide base), unless its base is wider than vanilla's widest (see below) | all on `root`, a `Collision` box | none |
 | `ship` | a destroyer's length, the waterline at zero, the hull cut at vanilla's draft | vanilla's two-bone contract: all on `ship` under `root`, the destroyer's locators | the destroyer's idle and death. Like vanilla's support ship and freighter, a one-piece hull has no attack clip: its attack and defend states play idle, and the entity's muzzle and water effects show the shot |
 | `vehicle` | the area the map camera sees (length times width and height at its 55 degree elevation) of nine vanilla light tanks | hull on `chassie`, turret on `turret`, barrel on `barrel_base`, tracks on `wheel_suspention`, each road wheel on its own bone, vanilla's bone names, a `Collision` box, the `barrel`, `exhaust` and track locators | a light tank's idle, move and attack, a heavy tank's death |
 | `plane` | the wingspan of twelve vanilla light planes | body on `root`, propeller on `propeller` | the fighter idle, with the propeller spinning |
@@ -606,6 +606,7 @@ The notes below come from models made by hand before the [static route](#static-
 
 **Buildings and landmarks (proven on one model).**
 
+- A tall and thin landmark (height over twice the larger side of its upper half) is sized on its height, but its base is bounded too. Vanilla's four (Big Ben, the Eiffel Tower, Hakko Ichiu, the Statue of Liberty) stand on bases of 0.17, 0.43, 0.88 and 0.82 times their height, so the contract's `size.tall_base.max_share` is 0.8757. A model whose largest horizontal side is wider than that share of the height it would get is sized on the base (largest side divided by 0.8757), so a wide paved plaza does not read as a larger monument than vanilla's. STATIC-SIZE measures the same way. An obelisk with a plaza 1.12 times its height wide came out as tall as the Statue of Liberty and 1.40 times as wide at its base. It is now 0.80 times as tall and 1.09 times as wide.
 - A building can be textured with no image: one joined mesh, procedural Blender materials, smart UV project and packed islands, then Cycles bakes colour, ambient occlusion, a tangent normal map and the specular maps, packed for the PDX shader. A whole castle baked in about 40 seconds.
 - Blender's Brick Texture node samples only two axes, so walls facing one way come out as vertical stripes. Pick the projection per face by its dominant normal axis (triplanar).
 - `io_pdx_mesh` refuses faces with more than four corners ("Tangent space can only be computed for tris/quads"). Triangulate before export.
