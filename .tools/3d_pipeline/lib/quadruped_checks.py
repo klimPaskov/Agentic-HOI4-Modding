@@ -25,7 +25,13 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   (`lib/map_read.py`: the share of the idle's silhouette that changes shape at the size a player sees the unit, at the clip's 90th
   percentile frame), or a retreat from the move's less than `map_read.MIN_GAIT_READ`. The limits are vanilla's horse charge against its
   forward idle, and against its walk. Both reviews of round 9 read its attack (0.15) and one its defend (0.01) as the idle on the map, and
-  both reviews of run 3 its retreat (0.02 from the move) as the move.
+  both reviews of run 3 its retreat (0.02 from the move) as the move. A retreat is judged against the defend too, at the same limit: run 4
+  swung its retreat to both sides as its defend does (0.05 from the defend), and a review read them as one clip.
+- TRIPO-LEG-ROOT-STRETCH: in some frame of a clip, more than `LEG_ROOT_LIMIT` of a leg root's edges stretch or squash,
+  by the kit's measure. A leg's root is the skin with at least `LEG_ROOT_SHARE` of its weight on the torso and as much on the leg's
+  Upper bone, where the hip or shoulder meets the body, and the limit is vanilla clothing's worst share, 2.0%. Run 4 of the war elephant
+  stretched 2.4% of its near hind leg's root in the retreat, where both fresh reviews saw the thigh and flank stretch against the belly,
+  and 5.3% of its near foreleg's root in the defend. Vanilla's coarse horse is no reference: its charge reaches 20% there.
 - TRIPO-DEATH-STIFF-LEGS: in a death the legs bend less than `DEATH_LEG_BEND` degrees (the mean over the four legs of the turn between the
   thigh or upper arm and the foot, from the rest pose, at its largest): the body falls as a block on straight legs. Round 9 bent 8 degrees.
 """
@@ -54,10 +60,13 @@ LOAD_SEAM_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (trip
 SEAM_PART_EDGES = 30  # a part beside the load is judged when this many seam edges follow it
 # role: (the role it must not look like, the least reading, the vanilla clip that reading comes from)
 MAP_READ_ROLES = {
-    "attack": ("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),
-    "defend": ("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),
-    "retreat": ("move", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk"),
+    "attack": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),),
+    "defend": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),),
+    "retreat": (("move", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk"),
+                ("defend", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk")),
 }
+LEG_ROOT_SHARE = 0.2  # a leg's root: skin with at least this weight on the torso (Pelvis, Spine, Chest) and on the leg's Upper bone
+LEG_ROOT_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (tripo_checks VANILLA_CLOAK_WORST, 1.97%), rounded
 DEATH_LEG_BEND = 25.0  # degrees
 
 
@@ -157,17 +166,58 @@ def _map_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Anim
     out = []
     for clip, anim in anims.items():
         role = tripo_pose.role_of(clip)
-        if role not in MAP_READ_ROLES or MAP_READ_ROLES[role][0] not in by_role:
-            continue
-        other, limit, what = MAP_READ_ROLES[role]
-        if other not in references:
-            references[other] = camera.frames(by_role[other])
-        reading = map_read.read_against_idle(camera, camera.frames(anim), references[other])
-        numbers.setdefault(clip, {})["map_read"] = reading
-        numbers[clip]["map_read_against"] = other
-        if reading < limit:
-            out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.0%}, {what}): it reads as the {other} at map size", share=reading))
+        frames = None
+        for other, limit, what in MAP_READ_ROLES.get(role, ()):
+            if other not in by_role:
+                continue
+            if other not in references:
+                references[other] = camera.frames(by_role[other])
+            frames = camera.frames(anim) if frames is None else frames
+            reading = map_read.read_against_idle(camera, frames, references[other])
+            numbers.setdefault(clip, {}).setdefault("map_read", {})[other] = reading
+            if reading < limit:
+                out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.0%}, {what}): it reads as the {other} at map size", share=reading, against=other))
     return out
+
+
+def leg_roots(mesh: pdx_deform.SkinnedMesh, edges: np.ndarray) -> Dict[str, np.ndarray]:
+    """Per leg, the edges of its root: those with an end that carries at least `LEG_ROOT_SHARE` of its weight on the torso and as much on
+    the leg's Upper bone (the hip or shoulder where the leg meets the body)."""
+
+    dense = np.zeros((len(mesh.positions), len(mesh.bones)))
+    rows = np.arange(len(mesh.positions))
+    for slot in range(mesh.joints.shape[1]):
+        np.add.at(dense, (rows, np.clip(mesh.joints[:, slot], 0, None)), np.where(mesh.joints[:, slot] >= 0, mesh.weights[:, slot], 0.0))
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    torso = dense[:, [index[name] for name in TORSO if name in index]].sum(axis=1)
+    out = {}
+    for prefix in ("Front_Left", "Front_Right", "Rear_Left", "Rear_Right"):
+        if f"{prefix}_Upper" not in index:
+            continue
+        root = (torso >= LEG_ROOT_SHARE) & (dense[:, index[f"{prefix}_Upper"]] >= LEG_ROOT_SHARE)
+        picked = edges[root[edges[:, 0]] | root[edges[:, 1]]]
+        if len(picked):
+            out[prefix] = picked
+    return out
+
+
+def leg_root_share(mesh: pdx_deform.SkinnedMesh, posed: np.ndarray, roots: Dict[str, np.ndarray]) -> Tuple[float, int, str]:
+    """The worst share, over the frames and the legs, of a leg root's edges the kit's measure counts as stretched or squashed."""
+
+    height = max(mesh.height, 1e-6)
+    worst = (0.0, 0, "")
+    for leg, picked in roots.items():
+        rest = np.linalg.norm(mesh.positions[picked[:, 0]] - mesh.positions[picked[:, 1]], axis=1)
+        length = np.linalg.norm(posed[:, picked[:, 0]] - posed[:, picked[:, 1]], axis=2)
+        ratio = length / np.maximum(rest, 1e-9)
+        growth = (length - rest) / height
+        bad = ((ratio > pdx_deform.STRETCH_RATIO) & (growth > pdx_deform.SIGNIFICANT_SHARE)) | (
+            (ratio < pdx_deform.SQUASH_RATIO) & (-growth > pdx_deform.SIGNIFICANT_SHARE))
+        shares = bad.mean(axis=1)
+        frame = int(np.argmax(shares))
+        if shares[frame] > worst[0]:
+            worst = (float(shares[frame]), frame, leg)
+    return worst
 
 
 def _frames(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> np.ndarray:
@@ -227,6 +277,7 @@ def quadruped_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform
     load = load_mask(mesh)
     edges = pdx_deform.mesh_edges(mesh)
     seam = seam_edges(mesh, edges, load, seam_mask(mesh)) if load.any() else (np.zeros((0, 2), int), np.zeros(0, str))
+    roots = leg_roots(mesh, edges)
     numbers["load_vertices"] = int(load.sum())
     numbers["seam_edges"] = int(len(seam[0]))
     for clip, anim in anims.items():
@@ -247,6 +298,11 @@ def quadruped_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform
         if role == "death":
             out += _death_findings(mesh, clip, anim, posed, torso, row)
         out += _load_findings(mesh, clip, posed, edges, load, seam, row)
+        if roots:
+            share, frame, leg = leg_root_share(mesh, posed, roots)
+            row["leg_root_share"], row["leg_root"] = round(share, 4), leg
+            if share > LEG_ROOT_LIMIT:
+                out.append(_finding("TRIPO-LEG-ROOT-STRETCH", clip, f"{share:.1%} of the {leg.replace('_', ' ').lower()} leg's root edges (where it meets the body) stretch or squash in frame {frame} (limit {LEG_ROOT_LIMIT:.0%}, vanilla clothing's worst): the hip or shoulder turns too far for the skin there", share=round(share, 4), frame=frame, leg=leg))
         numbers[clip] = row
     out += _map_findings(mesh, anims, numbers)
     return out, numbers

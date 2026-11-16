@@ -191,7 +191,7 @@ class PillarLegs(unittest.TestCase):
         for frame in range(0, 20, 4):
             a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)
             self.assertAlmostEqual(b["Front_Left_Cannon"][0][1], a["Front_Left_Cannon"][0][1] * stance["flex"], places=6)
-            self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1], places=6)
+            self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1] * ql.PILLAR_SWING / ql.GAITS["quadruped_trot"].swing_degrees, places=6)
 
 
 class MountSize(unittest.TestCase):
