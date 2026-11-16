@@ -3759,13 +3759,14 @@ def fit_clip_weights(staged: Path, stem: str, roles: List[str], weapon: Any, loc
 
     mesh = staged / f"{stem}.mesh"
     mask = weight_fit.plate_vertices(pdx_deform.load_mesh(mesh)) if plates else None
-    result = weight_fit.fit(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
+    result = weight_fit.fit_rounds(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
                             locked_bones=held_bones(_parts(weapon)) + list(locked),
                             locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()), locked_mask=mask)
     totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
     return {"changed": result.changed, "step": result.step, "region_vertices": result.region, "vertices_changed": result.vertices_changed,
             "plate_vertices_locked": int(mask.sum()) if mask is not None else 0, "deformed_edges_before": totals["before"],
-            "deformed_edges_after": totals["after"], "per_clip_after": result.after, "trials": result.trials, "note": result.note}
+            "deformed_edges_after": totals["after"], "per_clip_after": result.after, "trials": result.trials, "note": result.note,
+            "rounds": result.rounds, "round_totals": list(result.round_totals)}
 
 
 def export_unit_roles(

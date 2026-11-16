@@ -71,6 +71,13 @@ SPARSE_FROM = 0.6
 # Guard: an edge the fit makes grow past its clip's worst growth before, or newly deformed in a clip whose count rose, gets the weights its
 # two vertices (and one ring around them) had before. At most this many rounds per step.
 GUARD_ROUNDS = 6
+# Repeated fits (`fit_rounds`): one fit leaves the strain it could not remove in one go, and its best step is often the full one, so a second
+# fit from the fitted weights goes on. The round-4 ogre's attack kept 6.5% of its back's edges stretched at frame 40 (limit 5%, TRIPO-CLOAK-STRETCH)
+# after one fit (2185 deformed edges of 5382); two more rounds took the unit to 1688 and 1501 (attack 6.5% to 3.9%, no clip's cloak share higher,
+# every clip's deformed count lower). A round must lower the total by `ROUND_GAIN` for another to start, at most `MAX_ROUNDS` in all; every round
+# keeps the rule's own guard (no clip worse), so a round that helps nothing changes nothing.
+MAX_ROUNDS = 3
+ROUND_GAIN = 0.10
 MAX_INFLUENCES = stretch_smooth.MAX_INFLUENCES
 
 
@@ -84,6 +91,8 @@ class FitResult:
     after: Dict[str, Dict[str, float]] = field(default_factory=dict)
     trials: Dict[str, int] = field(default_factory=dict)  # deformed edges by step
     note: str = ""
+    rounds: int = 1  # the fits that were kept (`fit_rounds`)
+    round_totals: Sequence[int] = ()  # deformed edges before the first round and after each kept one
 
 
 def _project_simplex(values: np.ndarray, mask: np.ndarray) -> np.ndarray:
@@ -391,3 +400,28 @@ def plate_vertices(mesh: pdx_deform.SkinnedMesh) -> Optional[np.ndarray]:
     for mask in masks.values():
         out |= mask
     return out
+
+
+def _total(summary: Dict[str, Dict[str, float]]) -> int:
+    return int(sum(clip["stretched"] + clip["squashed"] for clip in summary.values()))
+
+
+def fit_rounds(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_bones: Sequence[str] = (),
+               locked_prefixes: Sequence[str] = (), locked_mask: Optional[np.ndarray] = None, steps: Sequence[float] = STEPS,
+               iterations: int = ITERATIONS, max_rounds: int = MAX_ROUNDS, round_gain: float = ROUND_GAIN) -> FitResult:
+    """`fit`, repeated from its own result while a round lowered the deformed edges by at least `round_gain` of what it started with, at most
+    `max_rounds` times. The result's `before` is the first round's, its `after`, `step` and `trials` the last kept round's."""
+
+    first = fit(mesh_path, anim_paths, out_path, locked_bones, locked_prefixes, locked_mask, steps, iterations)
+    if not first.changed:
+        return first
+    result, totals = first, [_total(first.before), _total(first.after)]
+    while result.rounds < max_rounds and totals[-2] > 0 and (totals[-2] - totals[-1]) / totals[-2] >= round_gain:
+        nxt = fit(out_path, anim_paths, out_path, locked_bones, locked_prefixes, locked_mask, steps, iterations)
+        if not nxt.changed:
+            break
+        totals.append(_total(nxt.after))
+        result = FitResult(True, nxt.step, nxt.region, result.vertices_changed + nxt.vertices_changed, first.before, nxt.after, nxt.trials,
+                           nxt.note, result.rounds + 1, tuple(totals))
+    result.round_totals = tuple(totals)
+    return result

@@ -37,7 +37,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   TRIPO-DEATH-FEET: in the last 15 frames of a death the boots hang more than 1% above the ground (vanilla's deaths end within 0.6%). All three are
   `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, the grounding in `run_pilot`).
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
-  direction the unit faces (the front view shows it edge-on).
+  direction the unit faces (the front view shows it edge-on). A head whose thinnest spread is above `MAX_FACE_FLATNESS` of its middle one (a club, a
+  mace: no broad face) is not judged, and the numbers carry its `head_flatness`.
 - TRIPO-WING-STRETCH: as TRIPO-CLOAK-STRETCH, for the wing region (`lib/tripo_chains.wing_masks`), with the same limit.
 - TRIPO-CHAIN-IN-BODY, TRIPO-CHAIN-GROUND: cloak or wing points that go deeper than `CHAIN_IN_BODY_MARGIN_SHARE` of the height inside the
   rest of the body (points modelled that deep at rest are left out) in more than `MAX_CHAIN_IN_BODY_SHARE` of them, or vertices more than
@@ -145,6 +146,7 @@ ENCLOSURE_TOLERANCE_SHARE = T.ENCLOSURE_TOLERANCE_SHARE
 MIN_ENCLOSURE_SHARE = T.MIN_ENCLOSURE_SHARE
 MIN_THUMB_OPPOSITION_DEGREES = T.MIN_THUMB_OPPOSITION_DEGREES
 MAX_BLADE_FACING_DEGREES = T.MAX_BLADE_FACING_DEGREES
+MAX_FACE_FLATNESS = T.MAX_FACE_FLATNESS
 
 
 def finding(rule: str, subject: str, message: str, **numbers) -> dict:
@@ -421,8 +423,12 @@ def blade_findings(mesh, anims: Dict[str, object], weapon_bone: str) -> (List[di
     joints = pdx_motion.posed_joints(mesh, idle)[0]
     hand = next((i for i, name in enumerate(mesh.bones) if name == holding_hand(mesh, weapon_bone)), None)
     hand_point = joints[hand] if hand is not None else posed[weapon].mean(axis=0)
+    _head, normal, flatness = T.blade_head(posed[weapon], hand_point)
     angle, normal = T.blade_facing_degrees(posed[weapon], hand_point, front_direction(mesh))
-    numbers = {"degrees": round(angle, 1), "face_normal": np.round(normal, 3).tolist()}
+    numbers = {"degrees": round(angle, 1), "face_normal": np.round(normal, 3).tolist(), "head_flatness": round(flatness, 3)}
+    if flatness > MAX_FACE_FLATNESS:
+        numbers["judged"] = False  # a near-round head has no broad face (lib/tripo_checks.MAX_FACE_FLATNESS)
+        return [], numbers
     if angle > MAX_BLADE_FACING_DEGREES:
         return [finding("TRIPO-BLADE-FACING", "idle", f"the broad face of the weapon's head is {angle:.0f} degrees off the front view (limit {MAX_BLADE_FACING_DEGREES:.0f}): it shows edge-on", degrees=round(angle, 1))], numbers
     return [], numbers
