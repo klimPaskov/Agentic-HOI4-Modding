@@ -327,7 +327,7 @@ def paint_diagnostics():
         colour = np.tile([0.72, 0.72, 0.74, 1.0], (len(co), 1))
         hot = per_vertex > DIAG_START
         colour[hot] = np.stack([np.ones(hot.sum()), 0.9 * (1.0 - t[hot]), np.zeros(hot.sum()), np.ones(hot.sum())], axis=1)
-        colour[co[:, 2] < rest_low.z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
+        colour[co[:, 2] < ground_z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
         colour[info["open"]] = [0.0, 1.0, 1.0, 1.0]
         o.data.color_attributes["review_diag"].data.foreach_set("color", colour.astype(np.float32).ravel())
         o.data.update()
