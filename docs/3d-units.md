@@ -390,6 +390,8 @@ Every number comes from a rule:
 
 The Tripo route's other rules apply as for a humanoid: grounding of every exported frame, the weight smoothing (with the `Load` bone locked) and the stretch checks. `tripo_checks.py` runs quadruped rules instead of the humanoid ones: TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND for the hooves, TRIPO-NOT-DOWN (the torso ends within 5% of the height of the ground), TRIPO-LOAD-BELOW-GROUND and TRIPO-LOAD-STRETCH (more than 0.5% of the load's edges stretch: a plank never bends).
 
+Tested in November 2026 on a war elephant carrying a two-storey tower (one Tripo model, 30 credits, nothing after it): the file checks and the quadruped Tripo checks pass, the tower stays rigid and the rider stands on the upper deck. Three fresh reviews failed it, each on fewer defects. Still open after the last: the skin stretches at the shoulders, hips and elbows in the rear and the fall (the distance weights are hard at the leg joints), the head twists where the neck turns against the roll, the fallen body keeps its legs straight, and retreat reads like a faster move.
+
 Review a mount with its rider on the node. `review_unit.py` and `tripo/weapon_sheets.py` take `--rider <folder> --rider-stem <stem> --rider-scale <scale> --rider-roles move=idle retreat=idle death=idle` and draw the rider entity on the `Saddle_Node`, playing its mapped clip in each of the mount's clips. The registration names the rider's mesh and entity after the mount, so a foot unit's files can ride without clashing with that unit's own blocks.
 
 ### Check the body before you rig it
@@ -530,6 +532,7 @@ Units are the tested route. For other models, only the parts below have been pro
 ## Known limits
 
 - **Armed units.** The separate-weapon route has not passed review yet (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, and a long weapon carried down in a death clip passes through the body or the ground.
+- **Quadruped mounts.** The Tripo quadruped route has not passed review yet (see [Tripo quadrupeds and mounts](#tripo-quadrupeds-and-mounts)). Its distance weights stretch the skin at the leg joints in the rear and the fall.
 - **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. [Secondary chains](#secondary-chains-cloaks-and-wings) give wings their own bones and motion, but the membrane can still cross in front of the body in some clips. Tails and extra limbs have no step yet.
 - **Cloaks and armour.** [Secondary chains](#secondary-chains-cloaks-and-wings) stop a long cloak stretching, but some of it can still pass into the body in hard clips. Armour plates whose weight Tripo split between bones still bend a little.
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.
