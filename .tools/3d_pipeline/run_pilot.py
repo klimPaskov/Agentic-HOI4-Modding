@@ -1823,6 +1823,12 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         rig_name=f"{spec['runtime_stem']}_armature",
         rig_options=rig_options or None,
     )
+    seat = ((rig.get("load") or {}).get("saddle") or {}) if rig_options else {}
+    if seat.get("rider_share"):
+        # The rider that fits the load (quadruped_load.fit_rider): its entity scale follows the share the rig found room for.
+        size.update(rider_share=seat["rider_share"], rider_entity_scale=round(size["rider_entity_scale"] * float(seat["rider_share"]), 4),
+                    saddle_room_load_vertices=seat.get("column_load_vertices"))
+        write_json(job / "blender" / "reports" / "mount_size.json", size)
     current_checkpoint = rig_checkpoint
     action_reports: Dict[str, Dict[str, Any]] = {}
     for action in spec["required_actions"]:

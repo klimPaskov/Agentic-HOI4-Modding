@@ -171,6 +171,26 @@ def find_load(points: np.ndarray, triangles: np.ndarray) -> Load:
     return Load(mask, deck_z + ground, cut_z + ground, (float(x_min), float(x_max), float(y_min), float(y_max)), deck_area, levels, floors)
 
 
+SAMPLE_SHARE = 0.04  # of the rider's height: the spacing of the points sampled on the load's faces
+
+
+def surface_samples(points: np.ndarray, triangles: np.ndarray, spacing: float) -> np.ndarray:
+    """The vertices plus points spread over every face about `spacing` apart, so a large flat face (an upper floor two
+    triangles wide) counts where it crosses a rider's room, not only at its corners."""
+
+    out = [points[np.unique(triangles)]] if len(triangles) else [np.zeros((0, 3))]
+    a, b, c = points[triangles[:, 0]], points[triangles[:, 1]], points[triangles[:, 2]]
+    longest = np.maximum.reduce([np.linalg.norm(b - a, axis=1), np.linalg.norm(c - b, axis=1), np.linalg.norm(a - c, axis=1)])
+    for steps in np.unique(np.clip(np.ceil(longest / max(spacing, 1e-9)).astype(int), 1, 64)):
+        if steps < 2:
+            continue
+        pick = np.ceil(longest / spacing).clip(1, 64).astype(int) == steps
+        grid = np.array([(i, j) for i in range(steps + 1) for j in range(steps + 1 - i)], dtype=float) / steps
+        u, v = grid[:, 0][None, :, None], grid[:, 1][None, :, None]
+        out.append((a[pick][:, None] + u * (b[pick] - a[pick])[:, None] + v * (c[pick] - a[pick])[:, None]).reshape(-1, 3))
+    return np.concatenate(out)
+
+
 def _cell_code(cells: np.ndarray) -> np.ndarray:
     return cells[..., 0] * 1_000_003 + cells[..., 1]
 
@@ -208,7 +228,7 @@ def place_saddle(points: np.ndarray, triangles: np.ndarray, load: Load, rider_he
     centres, normals, area = faces(points, triangles)
     band = BAND * height
     radius = RIDER_RADIUS_SHARE * rider_height
-    load_points = points[load.mask]
+    load_points = surface_samples(points, triangles[load.mask[triangles].all(axis=1)], SAMPLE_SHARE * rider_height)
     rows = []
     for floor_index, (floor_z, (x_min, x_max, y_min, y_max)) in enumerate(load.floors or [(load.deck_z, load.footprint)]):
         on_floor = (
@@ -237,6 +257,28 @@ def place_saddle(points: np.ndarray, triangles: np.ndarray, load: Load, rider_he
         "rider_height": float(rider_height),
         "candidates": len(rows),
     }
+
+
+RIDER_SHARES = tuple(round(1.0 - 0.05 * step, 2) for step in range(11))  # vanilla's rider size down to half of it
+
+
+def fit_rider(points: np.ndarray, triangles: np.ndarray, load: Load, rider_height: float,
+              footprint: Optional[Dict[str, object]] = None) -> Dict[str, object]:
+    """The Saddle_Node for the largest rider, from vanilla's size down to half of it in 5% steps, that has a clear room on a floor
+    of the load (no load surface in its swept cells). Without one, vanilla's size where the room is least crowded.
+
+    A tower built for a crew smaller than vanilla's riders (the war elephant's crew figure is 0.6 of one) has no room for a full
+    size rider, and a rider through the planks reads as broken. The share is reported, and the rider entity's scale follows it."""
+
+    first = None
+    for share in RIDER_SHARES:
+        sized = dict(footprint, cell=float(footprint["cell"]) * share) if footprint and footprint.get("cells") else None
+        seat = place_saddle(points, triangles, load, rider_height * share, sized)
+        seat["rider_share"] = share
+        first = first or seat
+        if seat["column_load_vertices"] == 0:
+            return seat
+    return first
 
 
 def roll_limit(points: np.ndarray, mask: np.ndarray, torso: np.ndarray, axis: np.ndarray, most_degrees: float) -> float:
