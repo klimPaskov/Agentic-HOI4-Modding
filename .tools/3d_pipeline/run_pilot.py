@@ -69,7 +69,7 @@ from lib.texture_lineage import (
     provider_texture_rels,
     verify_texture_lineage,
 )
-from lib.tripo import animation_source_kind, provider_name, uses_tripo
+from lib.tripo import animation_source_kind, held_bones, held_parts, provider_name, released_bones, uses_tripo
 from lib.reuse import (
     block_message,
     copy_artifacts,
@@ -3707,25 +3707,32 @@ def write_animation_receipt(
     return receipt_rel
 
 
-def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Dict[str, Any], humanoid: bool = True) -> Dict[str, Any]:
+def _parts(held: Any) -> List[Dict[str, Any]]:
+    """The held parts as a list: the job's weapon block alone (a dict) or `lib.tripo.held_parts` (the weapon and the shield)."""
+
+    return [part for part in (held if isinstance(held, list) else [held]) if part]
+
+
+def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoid: bool = True) -> Dict[str, Any]:
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
-    weapon the unit has let go of never deciding where it is. A death whose boots hang above the ground has its knees straightened first."""
+    weapon or shield the unit has let go of never deciding where it is. A death whose boots hang above the ground has its knees straightened first.
+    `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
 
     from lib import pdx_ground, tripo_pose
 
-    released = weapon.get("bone") if weapon.get("bone") and role in (weapon.get("release_roles") or []) else None
+    released = released_bones(_parts(weapon), role)
     record: Dict[str, Any] = {}
     if role == "death" and humanoid:
         legs = tripo_pose.settle_death_legs(mesh, anim, anim)
         record["legs"] = {"changed": legs.changed, "joints": list(legs.joints), "share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
                           "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
-    fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=[released] if released else ())
+    fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=released)
     record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
     return record
 
 
-def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str, Any], locked: Sequence[str] = ()) -> Dict[str, Any]:
+def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = ()) -> Dict[str, Any]:
     """The Tripo route's weight rule on the staged mesh (lib/stretch_smooth.py): smooth the weights where the unit's own clips stretch or
     squash edges, at the strength that lowers that most without making any clip worse. A held weapon's bone is locked, so it stays rigid,
     and so are the chain stage's cloak and wing bones, whose weights that stage sets by its own rule."""
@@ -3734,7 +3741,7 @@ def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: 
 
     mesh = staged / f"{stem}.mesh"
     result = stretch_smooth.smooth(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
-                                   locked_bones=([weapon["bone"]] if weapon.get("bone") else []) + list(locked),
+                                   locked_bones=held_bones(_parts(weapon)) + list(locked),
                                    locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()))
     totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
     return {"changed": result.changed, "passes": result.passes, "seed_vertices": result.seeds, "region_vertices": result.region,
@@ -3743,7 +3750,7 @@ def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: 
             "hand_bleed_vertices": result.hand_bleed}
 
 
-def fit_clip_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str, Any], locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
+def fit_clip_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
     """The Tripo route's weight fit on the staged mesh (lib/weight_fit.py), after the smoothing: the weights where the unit's own clips
     deform it are solved for the ones that keep its edges' lengths in those clips, at the strength that lowers the deformed edges most
     without making any clip worse. The weapon, chain and load bones are locked as for the smoothing, and so are the armour plates."""
@@ -3753,7 +3760,7 @@ def fit_clip_weights(staged: Path, stem: str, roles: List[str], weapon: Dict[str
     mesh = staged / f"{stem}.mesh"
     mask = weight_fit.plate_vertices(pdx_deform.load_mesh(mesh)) if plates else None
     result = weight_fit.fit(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
-                            locked_bones=([weapon["bone"]] if weapon.get("bone") else []) + list(locked),
+                            locked_bones=held_bones(_parts(weapon)) + list(locked),
                             locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()), locked_mask=mask)
     totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
     return {"changed": result.changed, "step": result.step, "region_vertices": result.region, "vertices_changed": result.vertices_changed,
@@ -3908,8 +3915,8 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         )
         target = f"{stem}_{role}"
         imported_rel = f"blender/checkpoints/unit_{role}.blend"
-        released = ((spec.get("tripo") or {}).get("weapon") or {}) if tripo else {}
-        location_bones = [released["bone"]] if released.get("bone") and role in (released.get("release_roles") or []) else None
+        # the weapon and the shield the unit lets go of in this role keep their own location keys (the drop's path)
+        location_bones = released_bones(held_parts(spec), role) or None
         imported = blender.import_animation_action(
             slug, chain, source_rel, receipt_rel, imported_rel, scene_name, armature, target,
             animation_source_kind(spec), str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
@@ -3921,13 +3928,12 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, slump=bool(action.get("slump")))
         else:
             finished_rel = f"blender/checkpoints/unit_{role}_grounded.blend"
-            # In a clip where the unit lets go of its weapon (the job names the roles in tripo.weapon.release_roles),
-            # the weapon bone never decides where the ground is: the body does.
-            weapon_cfg = ((spec.get("tripo") or {}).get("weapon") or {}) if tripo else {}
-            weapon_bone = weapon_cfg.get("bone") if role in (weapon_cfg.get("release_roles") or []) else None
+            # In a clip where the unit lets go of its weapon or shield (the job names the roles in tripo.weapon.release_roles and
+            # tripo.shield.release_roles), that bone never decides where the ground is: the body does.
+            let_go = released_bones(held_parts(spec), role)
             finishing = blender.correct_action_grounding(
                 slug, chain, finished_rel, target, target_armature_name=armature,
-                excluded_contact_bones=[weapon_bone] if weapon_bone else None,
+                excluded_contact_bones=let_go or None,
             )
         chain = finished_rel
         roles[role] = {"action": target, "clip_role": clip_role, "receipt": receipt_rel, "import": imported, "finishing": finishing}
@@ -4057,8 +4063,8 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
     if repaired:
         records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         records[f"{stem}.mesh"]["repairs"] = repaired["repairs"]
-    weapon_cfg = ((spec.get("tripo") or {}).get("weapon") or {}) if uses_tripo(spec) else {}
-    weapon_bones = [weapon_cfg["bone"]] if weapon_cfg.get("release_roles") and weapon_cfg.get("bone") else []
+    weapon_cfg = held_parts(spec)  # the weapon and the shield
+    weapon_bones = [part["bone"] for part in weapon_cfg if part.get("release_roles") and part.get("bone")]
     if uses_tripo(spec):
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.

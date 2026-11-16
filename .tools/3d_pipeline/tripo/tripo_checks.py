@@ -8,6 +8,9 @@ The unit folder holds the runtime `.mesh` and `.anim` files. `--gripped` is the 
 bones and the clips); the weapon checks need it, and `--weapon-bone` names the weapon's bone in the unit's mesh. A unit
 without a weapon gets the cloak check only. Findings (exit code 1 when there is one):
 
+- TRIPO-SHIELD-IN-BODY and TRIPO-SHIELD-BELOW-GROUND are the same two rules for a shield held in the other hand (`--shield-bone`, or a job
+  with `tripo.shield`): its points in the body, leaving out the fist's zone, and under the body's lowest point. Each part's check leaves the
+  other part out of the body.
 - TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND are judged on the exported `.mesh` and `.anim` (what the game loads), every frame of each clip
   (`weapon_runtime_findings`), and TRIPO-GRIP-ENCLOSURE on the exported mesh's rest pose. The grip stage's GLB (`--gripped`) is kept as a
   diagnostic of that stage: its weapon numbers are in the report, and only its thumb check (it needs the finger bones) can fail the unit.
@@ -257,7 +260,7 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
 
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
-    body = ~wings & (dominant != "Weapon")
+    body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
     limbs = side_parts(mesh, wings)
     front = front_direction(mesh)
     up = np.array([0.0, 1.0, 0.0])
@@ -411,7 +414,7 @@ def blade_findings(mesh, anims: Dict[str, object], weapon_bone: str) -> (List[di
         return [], {}
     posed = posed_frames(mesh, idle, step=max(1, idle.frames))[0]
     joints = pdx_motion.posed_joints(mesh, idle)[0]
-    hand = next((i for i, name in enumerate(mesh.bones) if name == "RightHand"), None)
+    hand = next((i for i, name in enumerate(mesh.bones) if name == holding_hand(mesh, weapon_bone)), None)
     hand_point = joints[hand] if hand is not None else posed[weapon].mean(axis=0)
     angle, normal = T.blade_facing_degrees(posed[weapon], hand_point, front_direction(mesh))
     numbers = {"degrees": round(angle, 1), "face_normal": np.round(normal, 3).tolist()}
@@ -595,33 +598,40 @@ def weapon_vertices(mesh, weapon_bone: str) -> np.ndarray:
     return (pdx_deform.dominant_bones(mesh) == bone) & (mesh.weights.max(axis=1) > 0.99)
 
 
-def weapon_split(mesh, weapon_bone: str):
-    """(weapon mask, the body's triangles renumbered over the body's own vertices, the sampled weapon vertex indices, which of them are free)."""
+def weapon_split(mesh, weapon_bone: str, other_bones: Sequence[str] = ()):
+    """(the held mask, the body's triangles renumbered over the body's own vertices, the sampled weapon vertex indices, which of them are free,
+    the clearance module). The held mask is the part's own vertices and those of the other held parts, and the body is every other vertex (`other_bones`: the weapon's
+    check leaves the shield out of the body and the shield's check the weapon)."""
 
     from lib import tripo_clearance as C
 
     weapon = weapon_vertices(mesh, weapon_bone)
-    keep = ~weapon[mesh.triangles].any(axis=1)
-    remap = np.cumsum(~weapon) - 1
+    held = weapon.copy()
+    for bone in other_bones:
+        if bone and bone in mesh.bones:
+            held |= weapon_vertices(mesh, bone)
+    body = ~held
+    keep = body[mesh.triangles].all(axis=1)
+    remap = np.cumsum(body) - 1
     body_triangles = remap[mesh.triangles[keep]]
     indices = np.nonzero(weapon)[0]
     indices = indices[np.linspace(0, len(indices) - 1, min(WEAPON_MAX_POINTS, len(indices))).astype(int)]
     joint = pdx_motion.rest_joints(mesh)[mesh.bones.index(weapon_bone)]
     free = np.linalg.norm(mesh.positions[indices] - joint, axis=1) > WEAPON_GRIP_ZONE_SHARE * mesh.height
-    return weapon, body_triangles, indices, free, C
+    return held, body_triangles, indices, free, C
 
 
-def weapon_frame_numbers(mesh, anim, weapon_bone: str) -> dict:
+def weapon_frame_numbers(mesh, anim, weapon_bone: str, other_bones: Sequence[str] = ()) -> dict:
     """Per frame of one clip: the share of the weapon's free points deeper than the margin inside the body, the share of all its sampled points
     under the body's lowest vertex of that frame, and where its centre is (all as shares of the height)."""
 
-    weapon, body_triangles, indices, free, C = weapon_split(mesh, weapon_bone)
+    held, body_triangles, indices, free, C = weapon_split(mesh, weapon_bone, other_bones)
     height = mesh.height
     matrices = pdx_deform.skinning_matrices(mesh, anim)
     deep, below, centres = [], [], []
     for frame in range(matrices.shape[0]):
         posed = pdx_deform.skin(mesh, matrices[frame])
-        body = posed[~weapon]
+        body = posed[~held]
         points = posed[indices]
         deep.append(C.deep_share(points[free], body, body_triangles, height, PENETRATION_MARGIN_SHARE))
         below.append(float((points[:, 1] < body[:, 1].min() - WEAPON_GROUND_TOLERANCE_SHARE * height).mean()))
@@ -629,19 +639,23 @@ def weapon_frame_numbers(mesh, anim, weapon_bone: str) -> dict:
     return {"deep": deep, "below": below, "centres": np.array(centres) / max(height, 1e-9)}
 
 
-def weapon_runtime_findings(mesh, anims: Dict[str, object], weapon_bone: str, roles: Sequence[str] = ()) -> (List[dict], dict):
+def weapon_runtime_findings(mesh, anims: Dict[str, object], weapon_bone: str, roles: Sequence[str] = (), other_bones: Sequence[str] = (),
+                            part: str = "weapon") -> (List[dict], dict):
     """TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND per clip of the unit, measured on the runtime files.
 
     `roles` limits the clips to those whose name ends with one of them (default all). The numbers also say how far the weapon's centre moves
-    in the last half of the clip (the largest distance from its final place, a share of the height), which a dropped weapon should not."""
+    in the last half of the clip (the largest distance from its final place, a share of the height), which a dropped weapon should not.
+    `other_bones` are the other held parts, left out of the body. With `part="shield"` the same rules judge a held shield and are named
+    TRIPO-SHIELD-IN-BODY and TRIPO-SHIELD-BELOW-GROUND (`shield_runtime_findings`)."""
 
     if weapon_bone not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
         return [], {}
     out, numbers = [], {}
+    rule = part.upper()
     for clip, anim in anims.items():
         if roles and not any(clip.endswith("_" + role) for role in roles):
             continue
-        row = weapon_frame_numbers(mesh, anim, weapon_bone)
+        row = weapon_frame_numbers(mesh, anim, weapon_bone, other_bones)
         deep, below, centres = row["deep"], row["below"], row["centres"]
         bad = [i for i, value in enumerate(deep) if value > MAX_IN_BODY_SHARE]
         low = [i for i, value in enumerate(below) if value > MAX_WEAPON_BELOW_GROUND_SHARE]
@@ -652,21 +666,42 @@ def weapon_runtime_findings(mesh, anims: Dict[str, object], weapon_bone: str, ro
             "moved_in_last_half_share": round(float(np.linalg.norm(centres[half:] - centres[-1], axis=1).max()), 4),
         }
         if bad:
-            out.append(finding("TRIPO-WEAPON-IN-BODY", clip,
-                               f"the weapon is more than {PENETRATION_MARGIN_SHARE:.0%} of the height inside the body in {len(bad)} of {len(deep)} frames of the exported clip (frames {bad[0]} to {bad[-1]}), up to {100 * max(deep):.1f}% of its points (limit {100 * MAX_IN_BODY_SHARE:.1f}%)",
+            out.append(finding(f"TRIPO-{rule}-IN-BODY", clip,
+                               f"the {part} is more than {PENETRATION_MARGIN_SHARE:.0%} of the height inside the body in {len(bad)} of {len(deep)} frames of the exported clip (frames {bad[0]} to {bad[-1]}), up to {100 * max(deep):.1f}% of its points (limit {100 * MAX_IN_BODY_SHARE:.1f}%)",
                                frames=bad[:40], worst_pct=round(100 * max(deep), 2)))
         if low:
-            out.append(finding("TRIPO-WEAPON-BELOW-GROUND", clip,
-                               f"more than {MAX_WEAPON_BELOW_GROUND_SHARE:.0%} of the weapon's points are under the body's lowest point in {len(low)} of {len(below)} frames of the exported clip, up to {100 * max(below):.1f}%",
+            out.append(finding(f"TRIPO-{rule}-BELOW-GROUND", clip,
+                               f"more than {MAX_WEAPON_BELOW_GROUND_SHARE:.0%} of the {part}'s points are under the body's lowest point in {len(low)} of {len(below)} frames of the exported clip, up to {100 * max(below):.1f}%",
                                frames=low[:40], worst_pct=round(100 * max(below), 2)))
     return out, numbers
 
 
-def grip_runtime_findings(mesh, weapon_bone: str, hand: str = "RightHand") -> (List[dict], dict):
+def shield_runtime_findings(mesh, anims: Dict[str, object], shield_bone: str, roles: Sequence[str] = (), weapon_bone: str = "") -> (List[dict], dict):
+    """TRIPO-SHIELD-IN-BODY and TRIPO-SHIELD-BELOW-GROUND: the weapon's rules for a shield held in the other hand (tripo/shield_stage.py),
+    on the runtime files, every frame. The judged points leave out the fist's zone round the grip, as for a weapon, and the weapon is not
+    part of the body. A dropped shield's stillness is reported as `moved_in_last_half_share`."""
+
+    return weapon_runtime_findings(mesh, anims, shield_bone, roles, (weapon_bone,), part="shield")
+
+
+def holding_hand(mesh, weapon_bone: str, default: str = "RightHand") -> str:
+    """The hand that holds the part: the parent of its own bone when that is a hand (the grip stage's `Weapon` bone is a child of the hand it
+    closed, the left one for a left-handed unit), else `default`."""
+
+    if weapon_bone in mesh.bones:
+        parent = mesh.parents[mesh.bones.index(weapon_bone)]
+        if 0 <= parent < len(mesh.bones) and mesh.bones[parent].endswith("Hand"):
+            return mesh.bones[parent]
+    return default
+
+
+def grip_runtime_findings(mesh, weapon_bone: str, hand: str = "") -> (List[dict], dict):
     """TRIPO-GRIP-ENCLOSURE on the exported mesh's rest pose: the hand's skin (the fingers are merged into the hand bone) round the weapon's haft.
 
-    The thumb check needs the finger bones, which the unit no longer has: it stays on the grip stage's GLB."""
+    The hand is the one that holds the weapon's bone (`holding_hand`). The thumb check needs the finger bones, which the unit no longer has: it
+    stays on the grip stage's GLB. A haft the intake's reduction left with too few vertices at the grip to measure is reported unmeasured."""
 
+    hand = hand or holding_hand(mesh, weapon_bone)
     if weapon_bone not in mesh.bones or hand not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
         return [], {}
     weapon = mesh.positions[weapon_vertices(mesh, weapon_bone)]
@@ -678,9 +713,12 @@ def grip_runtime_findings(mesh, weapon_bone: str, hand: str = "RightHand") -> (L
     palm = pdx_motion.rest_joints(mesh)[hand_bone]
     haft = axes[0]
     point = centre + float((palm - centre) @ haft) * haft
-    radius = G.haft_radius(weapon, point, haft, 0.0, 0.05 * height)
+    try:
+        radius = G.haft_radius(weapon, point, haft, 0.0, 0.05 * height)
+    except ValueError as problem:
+        return [], {"hand": hand, "unmeasured": str(problem)}
     coverage = T.enclosure_share(point, haft, radius, skin, ENCLOSURE_TOLERANCE_SHARE * height, ENCLOSURE_HALF_LENGTH_SHARE * height)
-    numbers = {"enclosure_share": round(coverage, 3), "haft_radius": round(radius, 4), "skin_points": int(len(skin))}
+    numbers = {"hand": hand, "enclosure_share": round(coverage, 3), "haft_radius": round(radius, 4), "skin_points": int(len(skin))}
     if coverage < MIN_ENCLOSURE_SHARE:
         return [finding("TRIPO-GRIP-ENCLOSURE", "grip", f"hand skin covers {coverage:.0%} of the haft's circumference at the grip of the exported mesh (limit {MIN_ENCLOSURE_SHARE:.0%}): the fingers do not wrap it", share=round(coverage, 3))], numbers
     return [], numbers
@@ -702,6 +740,21 @@ def advisory_rules(args) -> set:
         job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
         advisory = advisory or ((job.get("tripo") or {}).get("weapon") or {}).get("grip_check") == "advisory"
     return {"TRIPO-GRIP-ENCLOSURE"} if advisory else set()
+
+
+def shield_bone(args) -> str:
+    """The shield's bone: `--shield-bone`, or the job's `tripo.shield` (its `bone`, `Shield` by default). Empty for a unit without a shield."""
+
+    if getattr(args, "shield_bone", ""):
+        return args.shield_bone
+    if getattr(args, "jobs_config", None) and getattr(args, "slug", None):
+        from lib.tripo_shield import SHIELD_BONE
+
+        job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+        shield = (job.get("tripo") or {}).get("shield")
+        if isinstance(shield, dict):
+            return shield.get("bone", SHIELD_BONE)
+    return ""
 
 
 def split_advisory(findings: List[dict], rules: set) -> (List[dict], List[dict]):
@@ -757,10 +810,14 @@ def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -
     unit no longer has, so it stays a finding."""
 
     findings = []
+    shield = shield_bone(args)
     if args.weapon_bone:
-        found, numbers["weapon_runtime"] = weapon_runtime_findings(mesh, anims, args.weapon_bone, args.roles)
+        found, numbers["weapon_runtime"] = weapon_runtime_findings(mesh, anims, args.weapon_bone, args.roles, (shield,))
         findings += found
         found, numbers["grip_runtime"] = grip_runtime_findings(mesh, args.weapon_bone)
+        findings += found
+    if shield:
+        found, numbers["shield_runtime"] = shield_runtime_findings(mesh, anims, shield, args.roles, args.weapon_bone)
         findings += found
     if args.gripped:
         found, numbers["weapon_in_body_glb"] = weapon_in_body_findings(args.gripped, args.clips, args.weapon_joint)
@@ -816,6 +873,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--gripped", type=Path, help="the grip stage's GLB, for the weapon-in-body and grip checks")
     parser.add_argument("--weapon-bone", default="", help="the weapon's bone in the unit's mesh (blade facing)")
     parser.add_argument("--weapon-joint", default="mixamorig:Weapon", help="the weapon's joint in the gripped GLB")
+    parser.add_argument("--shield-bone", default="", help="the bone of a shield held in the other hand (the job's `tripo.shield` names it too)")
     parser.add_argument("--clips", nargs="*", default=[], help="clips of the gripped GLB to check for the weapon in the body (default all)")
     parser.add_argument("--roles", nargs="*", default=[], help="roles (idle, move, attack, defend, retreat, death) whose exported clips get the weapon checks (default all)")
     parser.add_argument("--grip-advisory", action="store_true", help="report TRIPO-GRIP-ENCLOSURE without failing the unit (the job's `tripo.weapon.grip_check: \"advisory\"` does the same)")

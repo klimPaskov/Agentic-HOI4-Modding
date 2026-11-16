@@ -179,6 +179,23 @@ def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvi
     return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
 
 
+def _settle_search(groups: Sequence[Sequence[str]], height_of, before: float, target: float):
+    """(share, joints): over the joint groups in order, the smallest share that brings the boots to `target`, the first group that reaches it
+    winning, or else the group and share that bring them lowest. `height_of(joints, share)` is the boots' height. (0.0, []) when none lowers them."""
+
+    best_share, best_height, knees = 0.0, before, []
+    for joints in groups:
+        if not joints:
+            continue
+        for share in np.linspace(0.05, 1.0, 20):
+            height = height_of(joints, float(share))
+            if height < best_height - 1e-6:
+                best_share, best_height, knees = float(share), height, list(joints)
+            if height <= target:
+                return best_share, knees
+    return best_share, knees
+
+
 def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: float = DEATH_FEET_LIMIT, target: float = DEATH_FEET_TARGET) -> LegSettle:
     """Write `out_path`: `anim_path` with the legs turned toward the rest pose when the boots hang above the ground at the end of a death.
 
@@ -218,21 +235,8 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
             weights[frame] = 1.0 if frame >= end else float(tripo_trim.settle_weights(length)[frame - onset])
         return weights
 
-    best_share, best_height, knees = 0.0, before, []
-    for group in LEG_SETTLE_GROUPS:
-        joints = [name for kind in group for name in part[kind] if name in keyed]
-        if not joints:
-            continue
-        reached = False
-        for share in np.linspace(0.05, 1.0, 20):
-            height = death_feet_height(mesh, settled(joints, float(share), np.ones(anim.frames)))
-            if height < best_height - 1e-6:
-                best_share, best_height, knees = float(share), height, joints
-            if height <= target:
-                reached = True
-                break
-        if reached:
-            break
+    groups = [[name for kind in group for name in part[kind] if name in keyed] for group in LEG_SETTLE_GROUPS]
+    best_share, knees = _settle_search(groups, lambda joints, share: death_feet_height(mesh, settled(joints, share, np.ones(anim.frames))), before, target)
     if best_share == 0.0:
         Path(out_path).write_bytes(bytes(data))
         return LegSettle(False, height_before=before, height_after=before, note="turning the knees or the thighs does not lower the boots")
