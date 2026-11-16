@@ -770,6 +770,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
         expected = contract["size"]["ground_share"] * target
         # a building or landmark on a thin plinth sinks less than vanilla's foundations (placement), never above ground
         sunk_less = kind in ("building", "landmark") and expected - 0.01 * target <= low <= 0.01 * target
+        # a plane flies: it may sit higher than vanilla's (lifted so its propeller's disc clears the ground), never lower
+        sunk_less = sunk_less or (kind == "plane" and low >= expected - 0.01 * target)
         if abs(low - expected) > 0.01 * target and not sunk_less:
             findings.append(("STATIC-GROUND", "error", f"the lowest point is at {low:.3f}; vanilla {kind}s sit at {expected:.3f}"))
     if contract.get("rigid") and mesh.skinned and anims:

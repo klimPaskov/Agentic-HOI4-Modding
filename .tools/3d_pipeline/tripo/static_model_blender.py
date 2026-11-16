@@ -330,6 +330,19 @@ parts_report["vertices_in_two_parts"] = shared
 parts_report["triangles_per_part"] = {p: face_part.count(p) for p in sorted(set(face_part))}
 report["parts"] = parts_report
 
+# A spinning propeller sweeps a disc: when the disc reaches below the plane's ground, the plane is lifted by the
+# difference, so no blade passes under it (a reviewer saw a blade tip dip below the ground in idle).
+if kind == "plane" and "propeller_cut" in parts_report:
+    hub = Vector(pivots["propeller"])
+    blades = [Vector(v) for v in arrays(model)[0] if v[1] < parts_report["propeller_cut"]["cut_y"]]
+    radius = max(((v - hub) - (v - hub).project(Vector((0, 1, 0)))).length for v in blades) if blades else 0.0
+    ground = contract["size"]["ground_share"] * measure
+    lift = max(0.0, ground - (hub.z - radius))
+    if lift > 0:
+        model.data.transform(Matrix.Translation((0, 0, lift)))
+        pivots["propeller"] = [hub.x, hub.y, hub.z + lift]
+    parts_report["propeller_sweep"] = {"radius": round(radius, 4), "lift": round(lift, 4)}
+
 # ---- 4. skeleton, weights, collision, locators, material ----
 positions, triangles = arrays(model)
 low, high = positions.min(axis=0), positions.max(axis=0)
