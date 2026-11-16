@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 PROVIDERS = ("meshy", "tripo")
 # model: one textured GLB (a building, a prop). rigged: a rigged, animated GLB (a unit).
@@ -26,6 +26,33 @@ def provider_name(spec: Dict[str, Any]) -> str:
 
 def uses_tripo(spec: Dict[str, Any]) -> bool:
     return provider_name(spec) == "tripo"
+
+
+def held_parts(spec: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """The rigid parts a Tripo unit holds, each bound wholly to its own bone: the job's `tripo.weapon`, then `tripo.shield` (its part and
+    bone default to `tripo_part_2` and `Shield`, the names tripo/shield_stage.py gives them). Empty for a Meshy job."""
+
+    if not uses_tripo(spec):
+        return []
+    block = spec.get("tripo") or {}
+    parts = [dict(block["weapon"])] if block.get("weapon") else []
+    if isinstance(block.get("shield"), dict):  # an empty block is a shield with the default part and bone
+        from lib.tripo_shield import SHIELD_BONE, SHIELD_PART
+
+        parts.append({"part": SHIELD_PART, "bone": SHIELD_BONE, **block["shield"]})
+    return parts
+
+
+def released_bones(parts: List[Dict[str, Any]], role: str) -> List[str]:
+    """The bones of the held parts the unit lets go of in `role` (each part's `release_roles`)."""
+
+    return [part["bone"] for part in parts if part.get("bone") and role in (part.get("release_roles") or [])]
+
+
+def held_bones(parts: List[Dict[str, Any]]) -> List[str]:
+    """The bones of every held part: a weight rule leaves them alone, so the parts stay rigid."""
+
+    return [part["bone"] for part in parts if part.get("bone")]
 
 
 def animation_source_kind(spec: Dict[str, Any]) -> str:

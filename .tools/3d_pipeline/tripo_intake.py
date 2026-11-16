@@ -25,7 +25,9 @@ rigidly to the bone (`source` "rigged": the part is a mesh in the rigged export;
 whose nearest vertex in the `segmented` export belongs to the part). `weapon.bone` may be `Weapon`, the bone a
 separate weapon gets from `tripo/grip_weapon.py --weapon-bone`; `weapon.release_roles` (for example `["death"]`) names the
 roles in which the unit lets go of it: the kit grounds those clips by the body alone and the loose-part check does not
-judge that bone's part for drifting. `trim` is optional: it cuts a
+judge that bone's part for drifting. `shield` is optional too: `{"part": "tripo_part_2", "bone": "Shield", "release_roles": ["death"]}`
+(those are the defaults but for the roles) names the shield `tripo/shield_stage.py` put in the free hand, bound rigidly to its own bone,
+with the same release rule as the weapon. `trim` is optional: it cuts a
 long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
@@ -64,6 +66,7 @@ from lib import tripo_pose, tripo_trim
 from lib.credits import append_entry, read_ledger
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
 from lib.tripo import inbox_file, uses_tripo
+from lib.tripo_shield import SHIELD_BONE, SHIELD_PART
 
 # Every Tripo job eases joint turns faster than this many degrees per frame (tripo/prepare_tripo_unit.py --ease-snaps). The kit retimes
 # Tripo's 24 fps clips to 30 and one frame's step can double, so a clip with 20 degrees a frame arrives at 38 against the kit's limit of 37
@@ -180,14 +183,25 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     regions = [item["region"] if isinstance(item, dict) else str(item) for item in config.get("chains") or []]
     if regions:
         command += ["--chains", *regions]
+    return command + rigid_part_args(config, files)
+
+
+def rigid_part_args(config: Dict[str, Any], files: Dict[str, Path]) -> List[str]:
+    """The prepare script's options for the parts bound rigidly to one bone each: the weapon, then a shield held in the free hand
+    (tripo/shield_stage.py), a second rigid part on its own bone."""
+
+    out: List[str] = []
     weapon = config.get("weapon")
     if weapon:
         pair = f"{weapon['part']}={weapon['bone']}"
         if weapon.get("source") == "twin":
-            command += ["--rigid-from-twin", str(files["segmented"]), pair]
+            out += ["--rigid-from-twin", str(files["segmented"]), pair]
         else:
-            command += ["--rigid-part", pair]
-    return command
+            out += ["--rigid-part", pair]
+    shield = config.get("shield")
+    if isinstance(shield, dict):  # an empty block is a shield with the default part and bone
+        out += ["--rigid-part", f"{shield.get('part', SHIELD_PART)}={shield.get('bone', SHIELD_BONE)}"]
+    return out
 
 
 def parse_report(output: str) -> Dict[str, Any]:

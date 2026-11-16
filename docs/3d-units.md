@@ -285,6 +285,7 @@ Tested in November 2026: on an orc the plates stopped bending (0% stretch) and t
 | TRIPO-LIMB-IN-TORSO | In a death clip an arm or a leg passes deep into the torso (limit set from vanilla's infantry deaths) |
 | TRIPO-CLOAK-STRETCH | A cloak stretches more than vanilla clothing. Runs only for a job with `"cape": true` (read through `--jobs-config` and `--slug`), or with `--cape` |
 | TRIPO-WEAPON-IN-BODY, TRIPO-WEAPON-BELOW-GROUND | A held or dropped weapon is inside the body or under the ground in any frame of the exported clips (armed units) |
+| TRIPO-SHIELD-IN-BODY, TRIPO-SHIELD-BELOW-GROUND | The same for a shield held in the other hand (a job with `tripo.shield`, see [Shields](#shields)) |
 | TRIPO-PLATE-STRETCH | An armour plate bound by the plates rule stretches more than 2% |
 | TRIPO-WING-FRONT | The wings hide more than 5% of the body in the front or map view, or more than 10% of the limbs and head in a side view |
 | TRIPO-WING-EDGE-ON | A beating wing (attack, retreat) shows less than 40% of its face in a side or the map view, as a median over the clip |
@@ -310,6 +311,47 @@ Tripo's rig bends a weapon modelled into the hand, and Tripo's clips animate an 
 The weapon checks judge the exported `.mesh` and `.anim` files, the ones the game loads. TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND are measured there, frame by frame. The grip stage's own GLB is only a diagnostic. In a death clip the weapon is dropped before the body falls: the hand lets go at the start of the fall, and the weapon tumbles to the ground on its own path, flat and clear of where the body will lie. The retarget keeps the weapon bone's location for this. A coarse Tripo hand cannot wrap a haft tightly. A job may set `tripo.weapon.grip_check` to `"advisory"`, so TRIPO-GRIP-ENCLOSURE is reported but does not fail the unit, and a reviewer judges the hand at game zoom. TRIPO-GRIP-THUMB still counts.
 
 Until an armed unit passes a fresh review, keep armed units to weapons held low and short, or plan live work in Blender for the attack.
+
+### Shields
+
+A shield held in the free hand is a second rigid part. Model it on its own like the weapon, then run `tripo/shield_stage.py` on the grip stage's GLB, before the intake:
+
+```
+blender -b --factory-startup --python .tools/3d_pipeline/tripo/shield_stage.py -- <gripped.glb> <shield.glb> --out <shielded.glb> --report <report.json> --hand RightHand --hold-clips <the weapon's hold clips> --hold-fade-clips <attack> --release-clips <death> --clearance-clips <every role clip>
+```
+
+The stage runs the grip stage's own steps on the free hand. Only the grip on the shield is its own rule (`lib/tripo_shield.py`), read from the model with no per-unit number:
+
+| Step | Rule |
+| --- | --- |
+| Size | The shield's longest axis is `--height-share` of the body's height, 0.65 by default (the dwarf's art) |
+| Outer edge | The side the shield's middle bows to, away from the line between its ends. The spikes of a crescent are there |
+| Grip | The fist closes round the middle of the inner edge, on a bar along the long axis just inside the hollow. The bar has a held haft's radius, 1.5% of the height |
+| Roll | The shield reaches out of the back of the fist (`--roll 180`), so the palm and the fingers stay outside it and a hanging arm holds the outer edge away from the body |
+| Hold | The grip goes to the unit's side with the long axis upright, by default high enough that the lower end is 8% of the height over the ground |
+| Binding | Weight 1.0 on its own bone `Shield`, a child of the hand, as mesh `tripo_part_2`. With the weapon the unit has 24 bones of HOI4's 50 |
+| Clearance | The weapon's rule: the hand turns about the wrist, frame by frame, until the shield leaves the body and the ground. The fist's zone round the grip is not judged |
+| Death | The weapon's rule: the fist lets go at the start of the fall and the shield lies flat on the ground clear of the body and the dropped weapon (`--release-clips <death>`). `--fall-fade-clips <death>` keeps it in the fist instead, as vanilla keeps a rifle, and the clearance then judges every frame |
+
+The job names the shield in its `tripo` block. The intake then binds `tripo_part_2` to `Shield` and the weight rules leave the bone alone. In its `release_roles` the bone keeps its location keys and never decides where the ground is, so a shield kept in the fist leaves the list out:
+
+```
+"tripo": {"weapon": {...}, "shield": {"part": "tripo_part_2", "bone": "Shield", "release_roles": ["death"]}}
+```
+
+`tripo_checks.py` judges it on the exported files with the weapon's two rules, TRIPO-SHIELD-IN-BODY and TRIPO-SHIELD-BELOW-GROUND. Each part's check leaves the other part out of the body.
+
+Tested in November 2026 on the round-4 dwarf (glaive in the left hand, the crescent shield, 0.65 of his height, in the right fist), measured on the exported files by the shield checks:
+
+| Role | Shield kept in the fist, outer edge held out | Dropped, earlier hold |
+| --- | --- | --- |
+| Idle, move | 0% | 0% |
+| Defend | 1.5% in the body in 2 frames | 2.8% in 77 frames |
+| Retreat | 1.3% in 8 frames | 2.3% in 7 frames |
+| Attack | 35.7% in 51 frames | 41.7% in 69 frames |
+| Death | 5.1% in the body in 2 frames, 3.8% under the ground in 5, and the body ends 56% of its height tall (TRIPO-NOT-DOWN) | 0% and 0%, the body ends 39% tall |
+
+The death rule follows from the last row. Kept in the fist, the shield ends standing on its edge beside the fallen body, and the wrist turn cannot lay it flat. Dropped, it lands flat, 4.3% of the height clear of the body. The outer-edge target of the hold brought the outer edge from 56.5 degrees off the side (the idle) to under 1.5 degrees in every held clip, and the grip moved 8 to 14% of the height from the hold point instead of 5 to 9%. The attack fails as the weapon's does, because Tripo's attack holds both hands on one haft before the body, and needs a clip made for a shield.
 
 ## Tripo settings
 

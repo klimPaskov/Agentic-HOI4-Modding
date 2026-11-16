@@ -249,6 +249,12 @@ def torso_inside_share(body, groups, arm_names, coords):
 WEAPON_BONE = "Weapon"
 
 
+def bone_name(c) -> str:
+    """The held part's own bone: `Weapon`, or the name a later stage gives its part (the shield stage's `Shield`)."""
+
+    return getattr(c, "bone_name", WEAPON_BONE)
+
+
 def rotation_curves(action):
     """{bone: {component: fcurve}} of the quaternion rotation channels."""
 
@@ -285,17 +291,20 @@ def step_rates(values, frames):
     return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
 
 
-def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16):
+def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16, skip=()):
     """Keep every bone's quaternions on one hemisphere and ease a snap over more frames.
 
     A step faster than `trigger_degrees` per frame is replaced by a slerp between the keys `w` frames before and
     after it, with the smallest `w` (up to `max_window`) that brings every step in the range to `target_degrees`
     per frame or less. Returns what was found: flips fixed, and per bone the fastest step before and after
-    (degrees per frame) for the bones that had a flip or a step over the trigger.
+    (degrees per frame) for the bones that had a flip or a step over the trigger. Bones named in `skip` are left as they are (a later
+    stage leaves alone the weapon bone an earlier one keyed against its hand).
     """
 
     out = {"flips_fixed": 0, "snaps_eased": {}}
     for bone, curves in rotation_curves(action).items():
+        if bone in skip:
+            continue
         quats = key_quaternions(curves)
         frames = [kp.co.x for kp in curves[0].keyframe_points]
         rates = partial(step_rates, frames=frames)
@@ -636,13 +645,13 @@ def bind_weapon(c):
     weapon.matrix_parent_inverse = arm.matrix_world.inverted()
     bind_bone = PREFIX + hand
     if c.args.weapon_bone:
-        bind_bone = PREFIX + WEAPON_BONE
+        bind_bone = PREFIX + bone_name(c)
         add_weapon_bone(c, bind_bone)
     hand_group = weapon.vertex_groups.new(name=bind_bone)
     hand_group.add(list(range(len(weapon.data.vertices))), 1.0, "REPLACE")
     modifier = weapon.modifiers.new("Armature", "ARMATURE")
     modifier.object = arm
-    weapon.name, weapon.data.name = "tripo_part_1", "tripo_part_1"
+    weapon.name, weapon.data.name = getattr(c, "part_name", "tripo_part_1"), getattr(c, "part_name", "tripo_part_1")
     body.name, body.data.name = "tripo_part_0", "tripo_part_0"
     # the haft's axis, carried with the hand bone: (point, direction) at rest
     c.hand_rest = np.array(arm.matrix_world @ arm.data.bones[PREFIX + hand].matrix_local)
@@ -893,7 +902,7 @@ SUBFRAMES = 4  # keys per frame from the release on: the export samples at 30 fp
 def ease_clip(c, action):
     """Ease a clip's fast turns the way the unit's intake does (`prepare_tripo_unit`, `--ease-snaps`), so the pose judged here is the exported one."""
 
-    return normalise_rotation_keys(action, trigger_degrees=c.args.ease_snaps, target_degrees=0.75 * c.args.ease_snaps)
+    return normalise_rotation_keys(action, trigger_degrees=c.args.ease_snaps, target_degrees=0.75 * c.args.ease_snaps, skip=getattr(c, "ease_skip", ()))
 
 
 def smooth_rotation_keys(action):
@@ -931,7 +940,7 @@ def key_weapon_pose(c, action, f0, plan, lifts):
     moves on (the hand's motion lifted by the grounding step, the planned path interpolated between planned frames)."""
 
     arm = c.arm
-    bone = PREFIX + WEAPON_BONE
+    bone = PREFIX + bone_name(c)
     bone_rest = np.array(arm.matrix_world @ arm.data.bones[bone].matrix_local)
     pb = arm.pose.bones[bone]
     pb.rotation_mode = "QUATERNION"
@@ -964,8 +973,8 @@ def steady_weapon(c, action, f0, release, tumble, lifts):
 
     arm, scene, weapon, height = c.arm, c.scene, c.weapon, c.height
     use_action(arm, action)
-    pb = arm.pose.bones[PREFIX + WEAPON_BONE]
-    bone_rest = np.array(arm.matrix_world @ arm.data.bones[PREFIX + WEAPON_BONE].matrix_local)[:3, :3]
+    pb = arm.pose.bones[PREFIX + bone_name(c)]
+    bone_rest = np.array(arm.matrix_world @ arm.data.bones[PREFIX + bone_name(c)].matrix_local)[:3, :3]
     count, largest, landed_centre = len(lifts), 0.0, None
     for index in range(release, count):
         for fraction in ((k / SUBFRAMES for k in range(SUBFRAMES)) if index < count - 1 else (0.0,)):
@@ -1034,6 +1043,11 @@ def drop_weapon(c, action):
     attached = attached.copy()
     attached[:, 2, 3] += lifts
     grounded = [frame + np.array([0.0, 0.0, lift]) for frame, lift in zip(body_frames, lifts)]
+    # Parts dropped by an earlier stage (the weapon, when the shield stage drops a shield) are kept clear of like the body: their frames,
+    # in the grounded world, are added after the body's vertices (the body's triangles still index the body alone).
+    extra = getattr(c, "occupant_frames", {}).get(action.name)
+    if extra:
+        grounded = [np.concatenate([frame, other]) for frame, other in zip(grounded, extra)]
     release = int(c.hold["clips"][action.name]["faded_out_by_frame"]) - f0
     axes = np.stack([c.head_dir, c.blade, c.third], axis=1)
     plan = CL.plan_drop(c.placed, c.haft_centre, axes, attached, grounded, body_triangles(c.body), c.height, 0.0, release, fps)
@@ -1169,14 +1183,15 @@ def main():
         raise SystemExit(3)
 
 
-try:
-    main()
-except SystemExit as failure:
-    import os
+if __name__ == "__main__":  # Blender runs a --python script as __main__; the shield stage imports the steps above
+    try:
+        main()
+    except SystemExit as failure:
+        import os
 
-    if failure.code not in (None, 0):
-        sys.stdout.flush()
-        print(f"grip_weapon failed: {failure.code}", file=sys.stderr)
-        sys.stderr.flush()
-        os._exit(1)
-    raise
+        if failure.code not in (None, 0):
+            sys.stdout.flush()
+            print(f"grip_weapon failed: {failure.code}", file=sys.stderr)
+            sys.stderr.flush()
+            os._exit(1)
+        raise

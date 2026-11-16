@@ -11,7 +11,8 @@ What it does, with no new keyframes (only the clips Tripo exported) except the c
 1. Drops meshes without vertex groups (Blender's glTF import adds a stray bone-shape Icosphere).
 2. Renames the `mixamorig:*` bones to the names the kit expects (Spine1 -> Spine01, Spine2 -> Spine02,
    Neck -> neck) and merges every other bone (fingers, `*_End`) into its nearest kept parent: the weights
-   are added to that parent and the bone and its channels are dropped. HOI4 allows 50 bones; 23 remain.
+   are added to that parent and the bone and its channels are dropped. HOI4 allows 50 bones; 22 remain, and the
+   `Weapon` and `Shield` bones of a separately modelled weapon and shield when the rig has them.
 3. Binds a held weapon rigidly: every weapon vertex gets weight 1.0 on one hand bone. The weapon is a
    whole part (`--rigid-part`, for a segmented rigged export) or the vertices whose nearest vertex in a
    segmented twin of the same pose belongs to that part (`--rigid-from-twin`; both are first normalised
@@ -67,8 +68,9 @@ for _side in ("Left", "Right"):
     for _part in ("Shoulder", "Arm", "ForeArm", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"):
         KIT_BONES[f"{_side}{_part}"] = f"{_side}{_part}"
 KIT_NAMES = set(KIT_BONES.values())
-# The grip stage may add a bone for the separate weapon (a child of the hand); it is kept when the rig has it.
-OPTIONAL_BONES = {"Weapon": "Weapon"}
+# The grip stage may add a bone for the separate weapon (a child of the hand), and the shield stage one for a shield held in the
+# other hand (tripo/shield_stage.py); each is kept when the rig has it. With both the unit has 24 bones of HOI4's 50.
+OPTIONAL_BONES = {"Weapon": "Weapon", "Shield": "Shield"}
 KIT_BONES.update(OPTIONAL_BONES)
 
 
