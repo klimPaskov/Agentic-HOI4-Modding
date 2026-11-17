@@ -43,13 +43,14 @@ def bend(frames):
 
 
 class Smoothing(unittest.TestCase):
-    def run_strip(self, bone_of_x, locked=(), prefixes=()):
+    def run_strip(self, bone_of_x, locked=(), prefixes=(), mask_of=None):
         positions, triangles, bones = strip(bone_of_x)
         with tempfile.TemporaryDirectory() as folder:
             mesh, anim, out = Path(folder) / "u.mesh", Path(folder) / "u_attack.anim", Path(folder) / "out.mesh"
             write_mesh(mesh, positions, triangles, bones)
             write_anim(anim, 12, bend(12))
-            result = S.smooth(mesh, [anim], out, locked_bones=locked, locked_prefixes=prefixes)
+            mask = None if mask_of is None else np.array([mask_of(x) for x, _y, _z in positions])
+            result = S.smooth(mesh, [anim], out, locked_bones=locked, locked_prefixes=prefixes, locked_mask=mask)
             before = pdx_deform.deformation_report(pdx_deform.load_mesh(mesh), pdx_deform.load_anim(anim))
             smoothed = pdx_deform.load_mesh(out)
             after = pdx_deform.deformation_report(smoothed, pdx_deform.load_anim(anim))
@@ -86,6 +87,13 @@ class Smoothing(unittest.TestCase):
         _result, _before, _after, smoothed, _same, _size = self.run_strip(lambda x: "ArmR" if x < 2.0 else "HandR", prefixes=("Hand",))
         hand = smoothed.joints[:, 0] == NAMES.index("HandR")
         self.assertTrue(np.all(smoothed.weights[hand, 0] == 1.0))
+
+    def test_a_locked_mask_keeps_its_vertices_whole(self) -> None:
+        border = lambda x: 1.5 < x < 2.5  # the plate: the vertices around the hard border keep the weights they had
+        _result, _before, _after, smoothed, _same, _size = self.run_strip(lambda x: "ArmR" if x < 2.0 else "HandR", mask_of=border)
+        positions, _triangles, bones = strip(lambda x: "ArmR" if x < 2.0 else "HandR")
+        kept = np.array([border(x) for x, _y, _z in positions])
+        self.assertTrue(np.all(smoothed.weights[kept, 0] == 1.0), "a masked vertex stays bound to its own bone alone")
 
     def test_a_clip_that_deforms_nothing_leaves_the_file_as_it_was(self) -> None:
         result, before, _after, _smoothed, same, _size = self.run_strip(lambda x: "ArmR")

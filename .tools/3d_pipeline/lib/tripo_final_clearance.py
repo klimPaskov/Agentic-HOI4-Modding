@@ -34,6 +34,17 @@ RAMP_DEGREES = 8.0  # the turn added to a hand grows or fades by at most this ma
 # the frames the smoothing leaves in the body are reported and judged by TRIPO-WEAPON-IN-BODY, which fails loudly where a run that stopped would hide it.
 MAX_HAND_STEP_DEGREES = 35.0
 SMOOTH_RADII = (0, 1, 2, 3, 4, 6, 8)
+# A weapon the unit has let go of is cleared by moving it, never by turning the hand: from the frame it came to rest it sits at one place on
+# the ground, and the body that settles after it (a death's chest and head laid down) can come to lie in it. The weapon's own bone is shifted
+# along the ground by the smallest distance that clears every frame from the ramp on, eased in over the `DROP_RAMP_FRAMES` before it lands.
+DROP_RAMP_FRAMES = 8
+DROP_STEP_SHARE = 0.02  # the shift grows in steps of this share of the height
+DROP_MAX_SHARE = 0.5
+DROP_DIRECTIONS = 16
+DROP_REST_SHARE = 0.01  # the weapon has landed once its centre stays within this share of the height of where it ends
+# The grip stage turns the hand by at most 60 degrees. On the exported files a frame the swing carries through the body can need more: the round 4
+# dwarf's idle had its glaive 31% inside the body at frame 73 with the 60 degrees spent. The smallest turn that clears is still the one taken.
+MAX_TURN_DEGREES = 90.0
 MAX_PASSES = 2  # a hand turned for one part can move the other part's frames a little: one more pass
 
 
@@ -155,7 +166,7 @@ def clear_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: s
         weapon_frames.append(posed[indices][free])
         body_frames.append(posed[body])
         pivots.append(world[frame, hand, :3, 3])
-    result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, ground_axis=UP_AXIS, coherent=True)
+    result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, max_angle=MAX_TURN_DEGREES, ground_axis=UP_AXIS, coherent=True)
     record.worst_before = float(max(result["before"]))
     record.worst_after = float(max(result["after"]))
     record.failed_frames = [int(i) for i in result["failed"]]
@@ -186,6 +197,108 @@ def clear_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: s
     return pdx_deform.Animation(anim.fps, anim.frames, channels), record
 
 
+def landing_frame(centres: np.ndarray, height: float) -> int:
+    """The first frame from which the weapon's centre stays within `DROP_REST_SHARE` of the height of where it ends."""
+
+    away = np.linalg.norm(centres - centres[-1], axis=1) > DROP_REST_SHARE * height
+    return int(np.nonzero(away)[0].max()) + 1 if away.any() else 0
+
+
+def _smoothstep(count: int, start: int, end: int) -> np.ndarray:
+    """(count,) 0 up to `start`, 1 from `end` on, a smoothstep between."""
+
+    x = np.clip((np.arange(count) - start) / max(end - start, 1), 0.0, 1.0)
+    return x * x * (3.0 - 2.0 * x)
+
+
+def _shifted_translations(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, world: np.ndarray, index: int, shift: np.ndarray, ramp: np.ndarray):
+    """(the bone's translation samples with the world `shift` times each frame's `ramp` added, the frames that changed as 1.0)."""
+
+    parent = int(mesh.parents[index])
+    t = anim.channels[mesh.bones[index]]["t"].copy()
+    weights = np.zeros(_frames_of(anim))
+    for frame in np.nonzero(ramp > 0.0)[0]:
+        shifted = world[frame, index].copy()
+        shifted[:3, 3] += shift * ramp[frame]
+        t[frame] = (np.linalg.inv(world[frame, parent]) @ shifted)[:3, 3]
+        weights[frame] = 1.0
+    return t, weights
+
+
+def _drop_directions(base: float):
+    """The unit vectors along the ground (x, z), the one at angle `base` first, then the others by their turn from it."""
+
+    turns = sorted(range(DROP_DIRECTIONS), key=lambda k: abs(((k * 2 * np.pi / DROP_DIRECTIONS + np.pi) % (2 * np.pi)) - np.pi))
+    for k in turns:
+        angle = base + k * 2 * np.pi / DROP_DIRECTIONS
+        yield np.array([np.cos(angle), 0.0, np.sin(angle)])
+
+
+def clear_dropped_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: str, others: Sequence[str], moved: Sequence[str]):
+    """(the clip with the dropped part shifted, the record, the frames to write). The clip itself when the part is clear in every frame."""
+
+    record = PropClearance(bone, "")
+    if bone not in moved or bone not in mesh.bones or mesh.parents[mesh.bones.index(bone)] < 0:
+        record.note = "the part's bone has no location keys"
+        return anim, record, None
+    held, triangles, body = part_split(mesh, bone, others)
+    if held.sum() < 50:
+        record.note = "fewer than 50 vertices"
+        return anim, record, None
+    height = float(mesh.height)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    world = matrices @ np.linalg.pinv(mesh.inverse_bind)[None]
+    index = mesh.bones.index(bone)
+    indices = np.nonzero(held)[0]
+    indices = indices[np.linspace(0, len(indices) - 1, min(MAX_POINTS, len(indices))).astype(int)]
+    free = np.linalg.norm(mesh.positions[indices] - pdx_motion.rest_joints(mesh)[index], axis=1) > GRIP_ZONE_SHARE * height
+    count = _frames_of(anim)
+    weapon_frames, body_frames = [], []
+    for frame in range(count):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        weapon_frames.append(posed[indices][free])
+        body_frames.append(posed[body])
+    landed = landing_frame(np.array([points.mean(axis=0) for points in weapon_frames]), height)
+    start = max(landed - DROP_RAMP_FRAMES, 0)
+    ramp = _smoothstep(count, start, landed)
+    frames = range(start, count)
+
+    def share(offset: np.ndarray, i: int) -> float:
+        # the body test alone: a shift along the ground cannot lift the part, and the grounding lifts the whole unit with it
+        return CL.deep_share(weapon_frames[i] + offset * ramp[i], body_frames[i], triangles, height, CL.CLEAR_MARGIN_SHARE)
+
+    before = [share(np.zeros(3), i) for i in frames]
+    record.worst_before = float(max(before, default=0.0))
+    if record.worst_before <= CL.LIMIT:
+        return anim, record, None
+    away = weapon_frames[-1].mean(axis=0) - body_frames[-1].mean(axis=0)  # from the body's middle to the weapon's at the end
+    away[UP_AXIS] = 0.0
+    base = float(np.arctan2(away[2], away[0])) if float(np.linalg.norm(away)) > 1e-9 else 0.0
+    # the worst frames first, then every fourth, then all: a candidate usually fails on the first of them
+    order = [[frames[i] for i in np.argsort(-np.asarray(before))[:6]], list(frames)[::4], list(frames)]
+    found = None
+    for step in range(1, int(DROP_MAX_SHARE / DROP_STEP_SHARE) + 1):
+        for direction in _drop_directions(base):
+            offset = direction * step * DROP_STEP_SHARE * height
+            if all(share(offset, i) <= CL.LIMIT for only in order for i in only):  # stops at the first frame that is not
+                found = offset
+                break
+        if found is not None:
+            break
+    if found is None:
+        record.failed_frames = [int(i) for i, share in zip(frames, before) if share > CL.LIMIT]
+        record.worst_after = record.worst_before
+        record.note = "no shift along the ground clears the part"
+        return anim, record, None
+    t, weights = _shifted_translations(mesh, anim, world, index, found, ramp)
+    channels = {name: dict(channel) for name, channel in anim.channels.items()}
+    channels[bone] = dict(channels[bone], t=t)
+    record.changed, record.frames_changed, record.smoothed_over = True, int((weights > 0).sum()), landed  # landed: the frame the part came to rest
+    record.worst_after = float(max(share(found, i) for i in frames))
+    record.max_degrees = round(float(np.linalg.norm(found)) / height, 4)  # the shift, a share of the height
+    return pdx_deform.Animation(anim.fps, anim.frames, channels), record, weights
+
+
 def clear_clip_file(mesh_path: Path, anim_path: Path, out_path: Path, parts: Sequence[Dict[str, str]], role: str = "") -> Dict[str, dict]:
     """Write `out_path`: `anim_path` with every held part kept out of the body. `parts` lists {"bone", "release_roles"} for the weapon, then the
     shield. A part the unit lets go of in `role` is left to its fall. Returns the record per part."""
@@ -197,6 +310,7 @@ def clear_clip_file(mesh_path: Path, anim_path: Path, out_path: Path, parts: Seq
     keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
     bones = [part["bone"] for part in parts if part.get("bone") and role not in (part.get("release_roles") or [])]
     everyone = [part["bone"] for part in parts if part.get("bone")]
+    released = [part["bone"] for part in parts if part.get("bone") and role in (part.get("release_roles") or [])]
     records: Dict[str, dict] = {}
     changed_hands: List[str] = []
     for _pass in range(MAX_PASSES):
@@ -222,6 +336,13 @@ def clear_clip_file(mesh_path: Path, anim_path: Path, out_path: Path, parts: Seq
                 records[bone] = dict(record.__dict__)
         if not again:
             break
+    moved = [joint.name for joint in info.children if "t" in str((joint.properties.get("sa") or [""])[0])]
+    for bone in released:
+        result, record, weights = clear_dropped_part(mesh, anim, bone, [b for b in everyone if b != bone], moved)
+        records[bone] = dict(record.__dict__, released=True)
+        if record.changed:
+            anim = result
+            tripo_pose._write_translations(data, moved, [bone], anim, weights)
     if changed_hands:
         everything = np.ones(max(anim.frames, 1))
         tripo_pose._write_rotations(data, keyed, changed_hands, anim, everything)

@@ -64,6 +64,11 @@ from . import pdx_deform, stretch_smooth
 RINGS = 3
 CANDIDATES = 8
 FRAMES_PER_CLIP = 24
+# Each clip's most deformed frames join the even samples: a hard bend (an attack's torso at 70 to 110 degrees) is a few frames wide.
+PEAK_FRAMES = 6
+# A frame counts in the penalty by `1 + PEAK_WEIGHT * (its deformed edges / its clip's worst frame's) ** 2` (mean 1 over all frames), so the few
+# frames where a clip bends hardest are not averaged away by the many easy ones.
+PEAK_WEIGHT = 3.0
 ITERATIONS = 100
 RATE = 0.02
 TOLERANCE = float(np.log(1.1))
@@ -174,7 +179,7 @@ class _Problem:
     of the vertices outside the region that anchor it."""
 
     def __init__(self, mesh: pdx_deform.SkinnedMesh, matrices: Sequence[np.ndarray], edges: np.ndarray, rows: np.ndarray,
-                 order: np.ndarray, caps: Optional[np.ndarray]):
+                 order: np.ndarray, caps: Optional[np.ndarray], frame_weights: Optional[np.ndarray] = None):
         positions = mesh.positions
         self.height = max(mesh.height, 1e-6)
         self.caps, self.order, self.bones = caps, order, len(mesh.bones)
@@ -189,6 +194,7 @@ class _Problem:
         self.inner = (slot[inner[:, 0]], slot[inner[:, 1]])
         self.smooth_gather = _Gather(self.inner[0], self.inner[1], len(rows))
         self.frames = len(matrices)
+        self.frame_weight = np.ones(self.frames) if frame_weights is None else np.asarray(frame_weights, float)
         self.moved = np.empty((self.frames, len(rows), order.shape[1], 3), np.float32)
         outside = np.unique(self.touched[slot[self.touched] < 0])
         self.fixed = np.zeros((self.frames, len(positions), 3), np.float32)
@@ -212,7 +218,7 @@ class _Problem:
         if self.caps is not None:
             over = np.maximum((length - self.rest) / self.height - self.caps[:, None], 0.0)
             pull += 2.0 * GROWTH_WEIGHT * over / (self.caps[:, None] ** 2) / self.height / length
-        per_edge = np.ascontiguousarray((pull[..., None] * span / self.frames).transpose(1, 0, 2))  # (edges, frames, 3)
+        per_edge = np.ascontiguousarray((pull[..., None] * span * (self.frame_weight / self.frames)[:, None, None]).transpose(1, 0, 2))  # (edges, frames, 3)
         grad = np.einsum("rfc,frkc->rk", self.gather(per_edge), self.moved).astype(float)
         grad += 2.0 * PULL * (weights - start)
         full = np.zeros((len(weights), self.bones))  # smoothness over the region's own edges, in the shared bone space
@@ -221,7 +227,7 @@ class _Problem:
 
 
 def fit_dense(mesh: pdx_deform.SkinnedMesh, matrices: Sequence[np.ndarray], edges: np.ndarray, region: np.ndarray,
-              allowed: Optional[np.ndarray] = None, iterations: int = ITERATIONS, caps: Optional[np.ndarray] = None) -> np.ndarray:
+              allowed: Optional[np.ndarray] = None, iterations: int = ITERATIONS, caps: Optional[np.ndarray] = None, frame_weights: Optional[np.ndarray] = None) -> np.ndarray:
     """(V, B) dense weights with the `region` rows (canonical vertices, the ends of `edges`) fitted to the frames in `matrices` (a list
     of (B, 4, 4) skinning matrices) by step 3 of the rule. `allowed` (V, B) marks the bones each row may take. `caps` (one per frame)
     is the growth, as a share of the height, past which an edge is penalised for growing (`CAP_SHARE` of its clip's worst before)."""
@@ -231,7 +237,7 @@ def fit_dense(mesh: pdx_deform.SkinnedMesh, matrices: Sequence[np.ndarray], edge
     if not len(rows) or not len(matrices):
         return dense
     order, usable, start = _candidates(dense, edges, rows, allowed)
-    problem = _Problem(mesh, matrices, edges, rows, order, caps)
+    problem = _Problem(mesh, matrices, edges, rows, order, caps, frame_weights)
     weights = start.copy()
     mean, square = np.zeros_like(weights), np.zeros_like(weights)
     for step in range(iterations):
@@ -255,16 +261,24 @@ def fit_dense(mesh: pdx_deform.SkinnedMesh, matrices: Sequence[np.ndarray], edge
     return out
 
 
-def sampled_matrices(clips: "stretch_smooth._Clips", before: Dict[str, Dict[str, float]], per_clip: int = FRAMES_PER_CLIP):
-    """(frames, caps): `per_clip` evenly spaced frames' skinning matrices of every clip, and each frame's growth cap (`CAP_SHARE` of its
-    clip's worst growth before, at least the kit's significant share)."""
+def sampled_matrices(clips: "stretch_smooth._Clips", before: Dict[str, Dict[str, float]], per_clip: int = FRAMES_PER_CLIP,
+                     peak_frames: int = PEAK_FRAMES):
+    """(frames, caps, weights): `per_clip` evenly spaced frames' skinning matrices of every clip, plus its `peak_frames` most deformed frames (a hard
+    bend lasts a few frames and falls between the even samples), and each frame's growth cap (`CAP_SHARE` of its clip's worst growth
+    before, at least the kit's significant share) and its weight in the penalty (`PEAK_WEIGHT`)."""
 
-    out, caps = [], []
+    out, caps, weights = [], [], []
     for name, matrices in clips.matrices.items():
-        pick = np.unique(np.linspace(0, matrices.shape[0] - 1, min(per_clip, matrices.shape[0])).round().astype(int))
+        pick = np.linspace(0, matrices.shape[0] - 1, min(per_clip, matrices.shape[0])).round().astype(int)
+        stretched, squashed, _growth = clips.masks[name]
+        deformed = stretched.sum(axis=1) + squashed.sum(axis=1)
+        worst = np.argsort(-deformed, kind="stable")[:peak_frames]
+        pick = np.unique(np.concatenate([pick, worst[deformed[worst] > 0]]))
         out.extend(matrices[pick])
         caps += [max(CAP_SHARE * before[name]["worst"], pdx_deform.SIGNIFICANT_SHARE)] * len(pick)
-    return out, np.asarray(caps)
+        weights.extend(1.0 + PEAK_WEIGHT * (deformed[pick] / max(float(deformed.max()), 1.0)) ** 2)
+    weights = np.asarray(weights)
+    return out, np.asarray(caps), weights / weights.mean()
 
 
 def fit(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_bones: Sequence[str] = (),
@@ -302,8 +316,8 @@ def fit(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_bone
         Path(out_path).write_bytes(data)
         return FitResult(False, before=before, after=before, note="no clip deforms an edge")
     allowed = _allowed(mesh, dense, locked_bones, locked_prefixes)
-    frames, caps = sampled_matrices(clips, before)
-    fitted = fit_dense(mesh, frames, edges, region, allowed, iterations, caps)[canon]
+    frames, caps, frame_weights = sampled_matrices(clips, before)
+    fitted = fit_dense(mesh, frames, edges, region, allowed, iterations, caps, frame_weights)[canon]
     rows = region[canon]
     total_before = sum(b["stretched"] + b["squashed"] for b in before.values())
     best, trials = None, {}
