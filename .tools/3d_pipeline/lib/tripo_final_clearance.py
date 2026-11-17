@@ -62,6 +62,7 @@ class PropClearance:
     smoothed_over: int = 0  # the radius (frames) the hand's added turn was smoothed over to stay under the spin limit
     max_roll_degrees: float = 0.0  # the part turned about its own long axis where the wrist could not clear it
     max_arm_degrees: float = 0.0  # the upper arm turned about the shoulder, last
+    search_bound_reached: bool = False  # a search past the wrist stopped at its bound (lib/tripo_clearance.STAGE_TESTS, BRIDGE_TESTS)
 
 
 def _frames_of(anim: pdx_deform.Animation) -> int:
@@ -271,6 +272,7 @@ def clear_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: s
     record.max_degrees = round(float(result["max_degrees"]), 1)
     record.max_roll_degrees = round(float(result["max_roll_degrees"]), 1)
     record.max_arm_degrees = round(float(result["max_arm_degrees"]), 1)
+    record.search_bound_reached = bool(result["search_bound_reached"])
     return pdx_deform.Animation(anim.fps, anim.frames, channels), record, [name for name, _index in bones]
 
 

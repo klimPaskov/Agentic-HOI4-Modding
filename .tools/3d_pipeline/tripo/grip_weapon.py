@@ -927,8 +927,9 @@ def clear_weapon_from_body(c):
         wanted = [resolve_clip_name(n, c.action_names) for n in args.clearance_clips.split(",") if n]
         for action in [a for a in bpy.data.actions if not wanted or a.name in wanted]:
             row = None
+            budgets = {"bridge": CL.Budget(CL.WRIST_BRIDGE_TESTS), "stage": CL.Budget(CL.STAGE_TESTS)}  # one bound per clip, over its passes
             for number in range(CLEARANCE_PASSES):
-                result = clear_action(c, action, triangles, soft)
+                result = clear_action(c, action, triangles, soft, budgets)
                 if row is None:
                     row = result
                 elif max(result["before_shares"]) > CL.LIMIT:
@@ -939,6 +940,7 @@ def clear_weapon_from_body(c):
                         row[key] = sorted(set(row[key]) | set(result[key]))
                     for key in ("max_degrees", "max_roll_degrees", "max_arm_degrees"):
                         row[key] = max(row[key], result[key])
+                    row["search_bound_reached"] = row["search_bound_reached"] or result["search_bound_reached"]
                 eased[action.name] = ease_clip(c, action)  # the hand turns are eased as the intake eases them
                 left = measure_action(c, action, triangles)
                 row.setdefault("worst_share_after_easing", []).append(round(max(left), 4))
@@ -979,7 +981,43 @@ def measure_action(c, action, triangles):
     return out
 
 
-def clear_action(c, action, triangles, soft):
+def key_turns(c, frames_list, result, pivots, shoulders, can_roll):
+    """Key one pass's turns: the hand about the wrist, the part's roll about its haft (every frame, when its bone has no keys yet), the upper arm."""
+
+    arm, scene, action = c.arm, c.scene, c.arm.animation_data.action
+    hand_name = PREFIX + c.hand
+    upper_name = PREFIX + c.hand.replace("Hand", "Arm")
+    part_bone = PREFIX + bone_name(c)
+    rolled = can_roll and float(np.abs(result["rolls"]).max()) > 1e-6
+    part_keyed = any(fcurve.data_path == f'pose.bones["{part_bone}"].rotation_quaternion' for fcurve, _c in action_fcurves(action))
+    for index, frame in enumerate(frames_list):
+        scene.frame_set(frame)
+        vector = result["rotvecs"][index]
+        angle = float(np.linalg.norm(vector))
+        if angle >= 1e-6:
+            set_pose_matrix(arm, hand_name, vector / angle, angle, pivots[index])
+            arm.pose.bones[hand_name].keyframe_insert("rotation_quaternion", frame=frame)
+        if rolled:
+            part = arm.pose.bones[part_bone]
+            part.rotation_mode = "QUATERNION"
+            if not part_keyed:
+                # the part's bone has no keys of its own yet: every frame is keyed, so a roll does not hold into the frames without one
+                part.rotation_quaternion = Quaternion()
+                bpy.context.view_layer.update()
+            roll = result["rolls"][index]
+            size = float(np.linalg.norm(roll))
+            if size >= 1e-6:
+                set_pose_matrix(arm, part_bone, roll / size, size, haft_now(c)[0])
+            if size >= 1e-6 or not part_keyed:
+                part.keyframe_insert("rotation_quaternion", frame=frame)
+        turn = result["arm_rotvecs"][index]
+        size = float(np.linalg.norm(turn))
+        if size >= 1e-6:
+            set_pose_matrix(arm, upper_name, turn / size, size, shoulders[index])
+            arm.pose.bones[upper_name].keyframe_insert("rotation_quaternion", frame=frame)
+
+
+def clear_action(c, action, triangles, soft, budgets=None):
     """One pass of the clearance on one clip: solve the turns on the clip as it is keyed now and key them. Returns the report row."""
 
     args, arm, scene, height, weapon, body = c.args, c.arm, c.scene, c.height, c.weapon, c.body
@@ -1011,35 +1049,9 @@ def clear_action(c, action, triangles, soft):
     own = [math.degrees(hand_keys[i].rotation_difference(hand_keys[i + 1]).angle) for i in range(len(hand_keys) - 1)]
     room = [max(args.ease_snaps - step, WRIST_ROOM_DEGREES) for step in own]
     result = CL.clear_clip_staged(weapon_frames, pivots, body_frames, triangles, height, grips=grips if can_roll else None,
-                                  haft_axes=hafts if can_roll else None, shoulders=shoulders, arm_joints=joints, up_axis=2, wrist_room=room,
+                                  haft_axes=hafts if can_roll else None, shoulders=shoulders, arm_joints=joints, up_axis=2, wrist_room=room, budgets=budgets,
                                   skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre, soft=soft, soft_share=args.soft_share)
-    rolled = can_roll and float(np.abs(result["rolls"]).max()) > 1e-6
-    part_keyed = any(fcurve.data_path == f'pose.bones["{part_bone}"].rotation_quaternion' for fcurve, _c in action_fcurves(action))
-    for index, frame in enumerate(frames_list):
-        scene.frame_set(frame)
-        vector = result["rotvecs"][index]
-        angle = float(np.linalg.norm(vector))
-        if angle >= 1e-6:
-            set_pose_matrix(arm, hand_name, vector / angle, angle, pivots[index])
-            arm.pose.bones[hand_name].keyframe_insert("rotation_quaternion", frame=frame)
-        if rolled:
-            part = arm.pose.bones[part_bone]
-            part.rotation_mode = "QUATERNION"
-            if not part_keyed:
-                # the part's bone has no keys of its own yet: every frame is keyed, so a roll does not hold into the frames without one
-                part.rotation_quaternion = Quaternion()
-                bpy.context.view_layer.update()
-            roll = result["rolls"][index]
-            size = float(np.linalg.norm(roll))
-            if size >= 1e-6:
-                set_pose_matrix(arm, part_bone, roll / size, size, haft_now(c)[0])
-            if size >= 1e-6 or not part_keyed:
-                part.keyframe_insert("rotation_quaternion", frame=frame)
-        turn = result["arm_rotvecs"][index]
-        size = float(np.linalg.norm(turn))
-        if size >= 1e-6:
-            set_pose_matrix(arm, upper_name, turn / size, size, shoulders[index])
-            arm.pose.bones[upper_name].keyframe_insert("rotation_quaternion", frame=frame)
+    key_turns(c, frames_list, result, pivots, shoulders, can_roll)
     return {
         "frames": len(frames_list), "frames_changed": result["frames_changed"], "max_degrees": round(result["max_degrees"], 1),
         "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
@@ -1047,7 +1059,7 @@ def clear_action(c, action, triangles, soft):
         "failed_frames": [frames_list[i] for i in result["failed"]], "released_from_frame": None if skip is None else first + skip,
         "rolled_frames": [frames_list[i] for i in result["rolled_frames"]], "max_roll_degrees": round(result["max_roll_degrees"], 1),
         "arm_turned_frames": [frames_list[i] for i in result["armed_frames"]], "max_arm_degrees": round(result["max_arm_degrees"], 1),
-        "before_shares": list(result["before"]),
+        "search_bound_reached": result["search_bound_reached"], "before_shares": list(result["before"]),
     }
 
 

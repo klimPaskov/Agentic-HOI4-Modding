@@ -292,6 +292,21 @@ class Staged(unittest.TestCase):
         self.assertLessEqual(steps(bridged), 10.0 + 1e-6)
         self.assertEqual(bridged["failed"], [])
 
+    def test_the_bridge_stops_at_its_bound_and_keeps_what_it_found(self) -> None:
+        turns = np.zeros((40, 3))
+        turns[::2, 2] = np.radians(60.0)  # a jump at every step
+        tests = {"n": 0}
+
+        def never(frame, vector):
+            tests["n"] += 1
+            return False
+
+        budget = C.Budget(100)
+        out = C.bridge_turns(turns, never, [10.0] * 39, budget=budget)
+        self.assertTrue(budget.spent_out)
+        self.assertLessEqual(tests["n"], 100)
+        np.testing.assert_array_equal(out, turns)
+
     def test_no_arm_turn_puts_the_wrist_in_the_body(self) -> None:
         shoulder, elbow, wrist = np.array([0.8, 0.0, 0.9]), np.array([0.7, 0.0, 0.7]), np.array([0.6, 0.0, 0.52])
         points = stick(wrist, length=0.6, count=60)
