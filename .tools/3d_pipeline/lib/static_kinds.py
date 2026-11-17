@@ -311,7 +311,8 @@ def span_bound(contract: dict) -> Optional[dict]:
     if not bound:
         return None
     grow = 1.0 + float(bound["margin"])
-    return {"height": float(bound["height_share"]) * grow, "footprint": float(bound["footprint_share"]) * grow}
+    return {"height": float(bound["height_share"]) * grow, "footprint": float(bound["footprint_share"]) * grow,
+            "height_reference": float(bound["height_share"]), "footprint_reference": float(bound["footprint_share"])}
 
 
 def contract_measure(points: np.ndarray, contract: dict, kind: Optional[str] = None) -> float:
@@ -336,7 +337,9 @@ def main_measure(points: np.ndarray, kind: str, base_share: Optional[float] = No
     A vehicle's height and footprint are bounded the same way (`bound`, from `span_bound`): when its height or the
     square root of its length times its width is over the share of the measure vanilla's reference tank has (plus a
     small margin), it is sized on that instead (the span divided by the share), so a tall Tripo tank sized on the area
-    the camera sees does not stand taller than vanilla's beside it (reviewers saw one 15 to 50 % taller).
+    the camera sees does not stand taller than vanilla's beside it (reviewers saw one 15 to 50 % taller). Held to the height
+    alone, such a tank's footprint came out 70 to 80 % of vanilla's, so the bounds are balanced: the measure is the mean of the
+    ones at which the height and the footprint equal vanilla's, where that is larger than the bounds alone give.
     """
 
     span = np.ptp(points, axis=0)
@@ -344,7 +347,18 @@ def main_measure(points: np.ndarray, kind: str, base_share: Optional[float] = No
         elevation = math.radians(MAP_CAMERA_ELEVATION)
         seen = float(math.sqrt(span[1] * (span[0] * math.sin(elevation) + span[2] * math.cos(elevation))))
         if bound:
-            return max(seen, float(span[2]) / bound["height"], float(math.sqrt(span[0] * span[1])) / bound["footprint"])
+            height_of, footprint_of = float(span[2]), float(math.sqrt(span[0] * span[1]))
+            footprint_limited = max(seen, footprint_of / bound["footprint"])
+            limited = max(footprint_limited, height_of / bound["height"])
+            if "height_reference" in bound:
+                # Balanced: a tall Tripo tank held to vanilla's height (plus the margin) came out 70 to 80 % of vanilla's footprint, a
+                # flat slab at map size. The measure at which the height is vanilla's, and the one at which the footprint is, differ;
+                # their mean gives each the same error from vanilla's (taller by as much as the footprint is shorter), so the worse of
+                # the two is as small as it can be. It relaxes only the height bound, only down from what the height bound gave, and
+                # never past the footprint bound or what the camera sees (`seen`).
+                balanced = (height_of / bound["height_reference"] + footprint_of / bound["footprint_reference"]) / 2
+                return max(footprint_limited, min(limited, balanced))
+            return limited
         return seen
     if kind == "ship":
         return float(span[1])
@@ -1127,6 +1141,83 @@ def _surface_points(points: np.ndarray, triangles: np.ndarray, per_triangle: int
     a, b, c = (points[triangles[:, k]] for k in range(3))
     samples = [a, b, c, (a + b) / 2, (b + c) / 2, (c + a) / 2, (a + b + c) / 3][: max(per_triangle, 1) + 1]
     return np.concatenate(samples)
+
+
+def _ray_hits(corners: np.ndarray, origin: np.ndarray, direction: np.ndarray, skip: int, eps: float) -> bool:
+    """Whether the ray from `origin` along `direction` meets any triangle (`corners`, n x 3 x 3) other than `skip` farther than `eps`
+    (Moller-Trumbore, numpy)."""
+
+    a, b, c = corners[:, 0], corners[:, 1], corners[:, 2]
+    e1, e2 = b - a, c - a
+    h = np.cross(direction, e2)
+    det = (e1 * h).sum(axis=1)
+    ok = np.abs(det) > 1e-14
+    inv = 1.0 / np.where(ok, det, 1.0)
+    s = origin - a
+    u = (s * h).sum(axis=1) * inv
+    q = np.cross(s, e1)
+    v = (q @ direction) * inv
+    t = (e2 * q).sum(axis=1) * inv
+    hit = ok & (u >= 0) & (v >= 0) & (u + v <= 1) & (t > eps)
+    hit[skip] = False
+    return bool(hit.any())
+
+
+WALL_SHARE = 0.001  # of the model's surface: a triangle is a wall (not a speck) when its area is at least this share
+
+
+def inside_out_walls(points: np.ndarray, triangles: np.ndarray, share: float = WALL_SHARE) -> List[int]:
+    """Triangles of a wall that faces into the model: nothing stands behind its back, so seen from outside it is culled and the
+    inside shows through, while its front looks into the model's own surface. A ray from its centre along its normal
+    meets the model, and one along the reverse normal escapes. (A roof or hull side is the other way round, and a thin
+    one-sided plate such as a fender lets both rays escape: neither is listed.) A Smart Mesh tank's lower rear plate came
+    out this way: the rear showed the hull's floor, pale like a roof, through it."""
+
+    points = np.asarray(points, dtype=float)
+    triangles = np.asarray(triangles, dtype=np.int64)
+    corners = points[triangles]
+    cross = np.cross(corners[:, 1] - corners[:, 0], corners[:, 2] - corners[:, 0])
+    area = np.linalg.norm(cross, axis=1) / 2.0
+    normal = cross / np.maximum(2.0 * area[:, None], 1e-18)
+    eps = 1e-4 * float(np.linalg.norm(np.ptp(points, axis=0)))
+    found = []
+    for i in np.where(area >= share * area.sum())[0]:
+        centre = corners[i].mean(axis=0)
+        if _ray_hits(corners, centre, normal[i], i, eps) and not _ray_hits(corners, centre, -normal[i], i, eps):
+            found.append(int(i))
+    return found
+
+
+def small_pieces(points: np.ndarray, triangles: np.ndarray, share: float, min_triangles: int = 4) -> List[np.ndarray]:
+    """The triangles (index arrays) of each separate piece, joined by shared vertices, whose bounding box diagonal is at most
+    `share` of the whole model's and that has at least `min_triangles`: a Smart Mesh tank's bolts, hooks and fittings."""
+
+    triangles = np.asarray(triangles, dtype=np.int64)
+    if not len(triangles):
+        return []
+    parent = np.arange(len(points))
+
+    def root(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for a, b, c in triangles:
+        ra, rb, rc = root(a), root(b), root(c)
+        parent[rb] = ra
+        parent[rc] = ra
+    owner = np.array([root(t[0]) for t in triangles])
+    whole = float(np.linalg.norm(np.ptp(points, axis=0)))
+    pieces = []
+    for key in np.unique(owner):
+        chosen = np.where(owner == key)[0]
+        if len(chosen) < min_triangles:
+            continue
+        corners = points[np.unique(triangles[chosen])]
+        if float(np.linalg.norm(np.ptp(corners, axis=0))) <= share * whole:
+            pieces.append(chosen)
+    return pieces
 
 
 def needle_triangles(points: np.ndarray, triangles: np.ndarray, size: Optional[float] = None) -> List[int]:

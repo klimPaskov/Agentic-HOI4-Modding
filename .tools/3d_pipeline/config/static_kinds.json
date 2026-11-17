@@ -491,6 +491,26 @@
      ],
      "links": 5,
      "source": "gfx/models/units/tanks/GER_tank_light.mesh: its PdxMeshAdvancedAnim stream's v along the ground run, and the rows of tank_threads_01_diffuse.dds",
+     "tone": {
+      "luma": 96.5,
+      "colour": [
+       97.7,
+       97.9,
+       86.2
+      ],
+      "per_model": {
+       "gfx/models/units/tanks/ENG_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/FRA_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/generic_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/GER_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/ITA_tank_light.mesh": 92.48,
+       "gfx/models/units/tanks/JAP_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/SOV_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/USA_tank_light.mesh": 96.5,
+       "gfx/models/units/tanks/FIN_light_armor.mesh": 96.5
+      },
+      "source": "the mean texel of the PdxMeshAdvancedAnim diffuse texture of 9 vanilla light tanks, the median of their luma"
+     },
      "texture_anim_speed": 0.5
     },
     "move_ground": {

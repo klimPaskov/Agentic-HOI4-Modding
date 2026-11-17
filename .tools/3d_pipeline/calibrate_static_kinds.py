@@ -243,7 +243,28 @@ def _wheel_shares(entry: dict):
 TRACK_SHADER = "PdxMeshAdvancedAnim"
 
 
-def track_rules(game: Path, rel: str) -> dict:
+def track_tone(game: Path, rels: List[str]) -> dict:
+    """The tone of vanilla's light tanks' tread textures: each one's mean brightness (Rec. 601 luma, over all its texels, the grousers and
+    the gaps included) and mean colour, and the median over the tanks. A Tripo tank's tracks are painted in the hull's colour."""
+
+    rows = {}
+    for rel in rels:
+        root = pdx_binary.read(game / rel)
+        for shape in root.child("object").children:
+            for m in shape.children:
+                if m.name == "mesh" and m.child("material") is not None and m.child("material").properties.get("shader") == [TRACK_SHADER]:
+                    texture = (game / rel).parent / str(m.child("material").properties["diff"][0])
+                    if texture.is_file():
+                        mean = model_dds.decode_top_level(texture.read_bytes()).astype(float)[..., :3].mean(axis=(0, 1))
+                        rows[rel] = mean
+    colours = np.array(list(rows.values()))
+    luma = colours @ np.array([0.299, 0.587, 0.114])
+    return {"luma": round(float(np.median(luma)), 2), "colour": [round(float(v), 1) for v in np.median(colours, axis=0)],
+            "per_model": {rel: round(float(l), 2) for rel, l in zip(rows, luma)},
+            "source": f"the mean texel of the PdxMeshAdvancedAnim diffuse texture of {len(rows)} vanilla light tanks, the median of their luma"}
+
+
+def track_rules(game: Path, rel: str, tone_rels: Optional[List[str]] = None) -> dict:
     """How vanilla's light tank draws its scrolling tracks: the stream with `PdxMeshAdvancedAnim`, its UV v growing
     along the hull on the ground run (the density per main measure and its sign), and its tread texture (size and the
     number of links a tile, from the dark gaps along its rows)."""
@@ -269,6 +290,7 @@ def track_rules(game: Path, rel: str) -> dict:
         "texture_size": [int(pixels.shape[1]), int(pixels.shape[0])],
         "links": sk.tread_links(rows),
         "source": f"{rel}: its {TRACK_SHADER} stream's v along the ground run, and the rows of {texture.name}",
+        **({"tone": track_tone(game, tone_rels)} if tone_rels else {}),
     }
 
 
@@ -677,7 +699,7 @@ def calibrate(game: Path) -> dict:
         if kind == "vehicle":
             contract["rules"] = vehicle_rules(game, measured)
             contract["rules"]["wheels"] = wheel_rules(measured)
-            contract["rules"]["tracks"] = track_rules(game, ENTITY_REFERENCE["vehicle"])
+            contract["rules"]["tracks"] = track_rules(game, ENTITY_REFERENCE["vehicle"], [e["rel"] for e in measured])
             speed = re.search(r"texture_anim_speed\s*=\s*([0-9.]+)", definitions["entity"][entity_name]["text"])
             contract["rules"]["tracks"]["texture_anim_speed"] = float(speed.group(1)) if speed else None
             contract["attack_turn"] = attack_turn(game, contract["clips"]["idle"])

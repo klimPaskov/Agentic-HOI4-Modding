@@ -100,6 +100,26 @@ class RingSeamTests(unittest.TestCase):
         self.assertLess(abs(float(pixel[0]) - 106.0), 16.0)
         self.assertLess(abs(float(pixel[2]) - 68.0), 12.0)
 
+    def test_a_big_roof_triangle_along_the_ring_is_matched_by_its_texels_not_its_centre(self):
+        """Four big triangles fan out from the turret's axis: each one's centre is far outside the band, but its edge runs along the
+        ring, so its texels near the axis lie in the band (a Smart Mesh's big roof plates: the bright arc outside a turret base)."""
+
+        z = CUT - 0.01
+        fan_p = np.array([[0, 0, z], [5, 0, z], [0, 5, z], [-5, 0, z], [0, -5, z]], dtype=float)
+        fan_t = np.array([[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1]])
+        band_p, band_t = annulus(0.9, 1.45, z, sectors=32)
+        wedge = band_t[:3]  # the only band triangles: a small wedge by the +x axis
+        positions = np.concatenate([fan_p, band_p])
+        triangles = np.concatenate([fan_t, wedge + len(fan_p)])
+        roof_p, roof_t = annulus(1.6, 2.5, z)
+        triangles = np.concatenate([triangles, roof_t + len(positions)])
+        positions = np.concatenate([positions, roof_p])
+        uv = positions[:, :2] / 8.0 + 0.5
+        fixed, report = sd.ring_seam(roof_texture((178, 184, 60)), uv, positions, triangles, CUT, CUT + 1.25, np.zeros(3), 1.0)
+        self.assertGreater(report["band_texels_from_points"], 1000)
+        pixel = np.asarray(fixed.resize((SIZE, SIZE)))[SIZE // 2 + 44, SIZE // 2]  # a band texel (1.4 from the axis) far from the wedge
+        self.assertLess(abs(float(pixel[0]) - 106.0), 16.0)
+
     def test_the_roof_itself_is_not_touched(self):
         source = roof_texture((178, 184, 60))
         fixed, _ = self.run_seam(source)
@@ -117,6 +137,79 @@ class RingSeamTests(unittest.TestCase):
         uv = positions[:, :2] / 8.0 + 0.5
         _fixed, report = sd.ring_seam(roof_texture((178, 184, 60)), uv, positions, triangles, CUT, CUT + 1.25, np.zeros(3), 1.0)
         self.assertIn("skipped", report)
+
+
+class SmallPieceTests(unittest.TestCase):
+    def test_small_pieces_are_the_separate_shells_under_the_size_share(self):
+        big = annulus(0.9, 1.45, 0.0, rings=2, sectors=8)
+        cube = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=float) * 0.1 + [3, 0, 0]
+        faces = np.array([[0, 2, 1], [0, 3, 2], [4, 5, 6], [4, 6, 7], [0, 1, 5], [0, 5, 4], [1, 2, 6], [1, 6, 5], [2, 3, 7], [2, 7, 6], [3, 0, 4], [3, 4, 7]])
+        points = np.concatenate([big[0], cube])
+        triangles = np.concatenate([big[1], faces + len(big[0])])
+        pieces = sk.small_pieces(points, triangles, 0.1)
+        self.assertEqual(len(pieces), 1)
+        self.assertEqual(sorted(pieces[0].tolist()), list(range(len(big[1]), len(triangles))))
+
+
+class InsideOutWallTests(unittest.TestCase):
+    def box(self, flip_back):
+        """A closed box 0..2 each way, outward faces, except that the back wall (y = 2) faces inward when `flip_back`."""
+
+        p = np.array([[x, y, z] for x in (0, 2) for y in (0, 2) for z in (0, 2)], dtype=float)
+        idx = lambda x, y, z: x * 4 + y * 2 + z
+        quads = {"front": ([0, 1, 0], [(0, 0, 0), (1, 0, 0), (1, 0, 1), (0, 0, 1)]), "back": ([0, 1, 0], [(0, 1, 0), (0, 1, 1), (1, 1, 1), (1, 1, 0)]),
+                 "bottom": ([0, 0, 1], [(0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0)]), "top": ([0, 0, 1], [(0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1)]),
+                 "left": ([1, 0, 0], [(0, 0, 0), (0, 0, 1), (0, 1, 1), (0, 1, 0)]), "right": ([1, 0, 0], [(1, 0, 0), (1, 1, 0), (1, 1, 1), (1, 0, 1)])}
+        triangles, names = [], []
+        for name, (_axis, corners) in quads.items():
+            q = [idx(*c) for c in corners]
+            tri = [[q[0], q[1], q[2]], [q[0], q[2], q[3]]]
+            normal = np.cross(p[tri[0][1]] - p[tri[0][0]], p[tri[0][2]] - p[tri[0][0]])
+            centre = p[tri[0]].mean(axis=0)
+            outward = float(normal @ (centre - np.array([1.0, 1.0, 1.0]))) > 0
+            if outward == (name == "back" and flip_back):
+                tri = [t[::-1] for t in tri]
+            triangles += tri
+            names += [name] * 2
+        return p, np.array(triangles), names
+
+    def test_a_wall_facing_into_the_model_is_found_and_the_others_are_not(self):
+        p, t, names = self.box(flip_back=True)
+        found = sk.inside_out_walls(p, t, share=0.01)
+        self.assertEqual(sorted(names[i] for i in found), ["back", "back"])
+        p, t, _names = self.box(flip_back=False)
+        self.assertEqual(sk.inside_out_walls(p, t, share=0.01), [])
+
+    def test_a_thin_one_sided_plate_is_left_alone(self):
+        p = np.array([[0, 0, 0], [2, 0, 0], [2, 0, 2], [0, 0, 2]], dtype=float)
+        self.assertEqual(sk.inside_out_walls(p, np.array([[0, 1, 2], [0, 2, 3]]), share=0.01), [])
+
+
+class TreadToneTests(unittest.TestCase):
+    def run_tread(self, colour):
+        import tempfile
+
+        from tripo import static_model
+
+        contract = sk.kind_contract("vehicle")
+        with tempfile.TemporaryDirectory() as folder:
+            work, files = Path(folder) / "w", Path(folder) / "f"
+            work.mkdir()
+            files.mkdir()
+            Image.new("RGB", (8, 8), colour).save(work / "t_diffuse.png")
+            report = {"tracks": True, "track_atlas_uvs": [[0.5, 0.5]]}
+            written = static_model.tread_textures(report, contract, "t", files, work)
+        return written, report, contract["rules"]["tracks"]["tone"]["luma"]
+
+    def test_a_run_painted_in_a_light_colour_is_darkened_to_vanillas_tread(self):
+        written, report, tone = self.run_tread((200, 200, 120))
+        self.assertIn("track_tone", report)
+        self.assertLess(max(written["colour"]), 200)
+
+    def test_a_run_already_darker_than_vanillas_tread_is_left_alone(self):
+        written, report, _tone = self.run_tread((60, 60, 40))
+        self.assertNotIn("track_tone", report)
+        self.assertEqual(written["colour"], [60.0, 60.0, 40.0])
 
 
 class ContrastTests(unittest.TestCase):

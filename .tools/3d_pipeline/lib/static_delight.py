@@ -342,6 +342,36 @@ def _triangle_mask(uv: np.ndarray, triangles: np.ndarray, size: int) -> np.ndarr
     return np.asarray(canvas) > 0
 
 
+def _texel_points(uv: np.ndarray, positions: np.ndarray, triangles: np.ndarray, size: int) -> Tuple[np.ndarray, np.ndarray]:
+    """(a `size` x `size` grid of the model's 3D point under each texel centre, which texels a triangle covers). A big
+    roof triangle's few texels span a long stretch of the model, so the point under a texel, not the triangle's centre,
+    says where on the model a texel is."""
+
+    points = np.zeros((size, size, 3))
+    covered = np.zeros((size, size), dtype=bool)
+    uv = np.asarray(uv, dtype=float)
+    positions = np.asarray(positions, dtype=float)
+    for tri in np.asarray(triangles):
+        a, b, c = (uv[i] * size for i in tri)
+        low = np.maximum(np.floor(np.minimum(np.minimum(a, b), c) - 0.5).astype(int), 0)
+        high = np.minimum(np.ceil(np.maximum(np.maximum(a, b), c) + 0.5).astype(int), size - 1)
+        det = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
+        if abs(det) < 1e-12 or high[0] < low[0] or high[1] < low[1]:
+            continue
+        xs, ys = np.meshgrid(np.arange(low[0], high[0] + 1) + 0.5, np.arange(low[1], high[1] + 1) + 0.5)
+        w0 = ((b[1] - c[1]) * (xs - c[0]) + (c[0] - b[0]) * (ys - c[1])) / det
+        w1 = ((c[1] - a[1]) * (xs - c[0]) + (a[0] - c[0]) * (ys - c[1])) / det
+        w2 = 1.0 - w0 - w1
+        inside = (w0 >= -1e-9) & (w1 >= -1e-9) & (w2 >= -1e-9)
+        if not inside.any():
+            continue
+        a3, b3, c3 = positions[tri[0]], positions[tri[1]], positions[tri[2]]
+        xi, yi = xs[inside].astype(int), ys[inside].astype(int)
+        points[yi, xi] = w0[inside, None] * a3 + w1[inside, None] * b3 + w2[inside, None] * c3
+        covered[yi, xi] = True
+    return points, covered
+
+
 def _off_roof(rgb: np.ndarray, median: np.ndarray) -> np.ndarray:
     """Which texels (rows of `rgb`) are off the roof's colour: brighter or darker than `SEAM_LUMA` or another colour family."""
 
@@ -377,6 +407,17 @@ def ring_seam(image: Image.Image, uv: np.ndarray, positions: np.ndarray, triangl
         return base, report
     band_mask = _triangle_mask(uv, np.asarray(triangles)[band], work)
     roof_mask = _triangle_mask(uv, np.asarray(triangles)[roof], work) & ~band_mask
+    # A triangle is judged by its centre above, but a big roof triangle (a few texels over a long stretch of roof) can have
+    # its edge along the ring while its centre lies far out: the texels whose own point on the model lies in the band
+    # belong to the band, wherever their triangle's centre is (the bright arc outside a tank's turret base).
+    points, covered = _texel_points(uv, positions, triangles, work)
+    texel_side = np.linalg.norm(points[..., :2] - np.asarray(centre)[:2], axis=2) / max(radius, 1e-9)
+    texel_high = (points[..., 2] <= cut_z + SEAM_ABOVE * height) & (points[..., 2] >= cut_z - SEAM_BELOW * height)
+    texel_band = covered & texel_high & (texel_side >= SEAM_INNER) & (texel_side <= SEAM_OUTER)
+    texel_roof = covered & texel_high & (texel_side > SEAM_OUTER) & (texel_side <= SEAM_REFERENCE)
+    report["band_texels_from_points"] = int((texel_band & ~band_mask).sum())
+    band_mask = band_mask | texel_band
+    roof_mask = (roof_mask | texel_roof) & ~band_mask
     if band_mask.sum() < 4 or roof_mask.sum() < 4:
         report["skipped"] = "the seam band or the roof round it has no texels"
         return base, report

@@ -183,6 +183,25 @@ class GeometryTests(unittest.TestCase):
         self.assertLess(sk.main_measure(squat, "vehicle"), sk.main_measure(tall, "vehicle"))
         self.assertAlmostEqual(sk.main_measure(squat, "ship"), sk.main_measure(tall, "ship"))  # a ship is sized on length alone
 
+    def test_a_tall_short_tank_balances_height_and_footprint_against_vanilla(self):
+        contract = {"size": {"span_bound": {"height_share": 0.52, "footprint_share": 0.87, "margin": 0.05}}}
+        bound = sk.span_bound(contract)
+        points = np.array([[0.0, 0.0, 0.0], [3.7, 5.9, 3.7]])
+        measure = sk.main_measure(points, "vehicle", None, bound)
+        wide = np.array([[-3.0, -3.0, 0.0], [3.0, 3.0, 0.5]])  # a broad flat one is still held to the footprint bound
+        self.assertAlmostEqual(sk.main_measure(wide, "vehicle", None, bound), 6.0 / bound["footprint"], places=6)
+        height_ratio = 3.7 / (0.52 * measure)
+        footprint_ratio = float(np.sqrt(3.7 * 5.9)) / (0.87 * measure)
+        # the height alone would hold it to 1.05 and its footprint to 0.8: the balance is as far over in height as under in footprint
+        self.assertGreater(height_ratio, 1.05)
+        self.assertAlmostEqual(height_ratio - 1.0, 1.0 - footprint_ratio, places=6)
+        old = max(3.7 / bound["height"], float(np.sqrt(3.7 * 5.9)) / bound["footprint"])
+        self.assertLess(measure, old)  # larger than the height bound alone gives
+        # a model within the bounds is sized on what the camera sees, as before
+        flat = np.array([[0.0, 0.0, 0.0], [3.0, 6.0, 2.5]])
+        seen = sk.main_measure(flat, "vehicle")
+        self.assertAlmostEqual(sk.main_measure(flat, "vehicle", None, bound), seen, places=6)
+
     def test_landing_clears_the_hull_the_short_way(self):
         hull = box([-2.0, -4.0, 0.0], [2.0, 4.0, 2.0])
         against_side = box([1.5, -0.5, 0.0], [3.0, 0.5, 1.0])
@@ -675,7 +694,12 @@ class SpanBoundTests(unittest.TestCase):
         source = contract["size"]["source"]
         tall = box([-1.0, -2.0, 0.0], [1.0, 2.0, 3.0])
         scale, _offset = sk.placement(tall, "vehicle", contract)
-        self.assertAlmostEqual(float(np.ptp(tall[:, 2])) * scale, bound["height"] * source, places=6)
+        # held to vanilla's height alone it would be at bound["height"]: the balance lets it stand a little taller, as far over in
+        # height as it is under in footprint
+        height_ratio = float(np.ptp(tall[:, 2])) * scale / source / bound["height_reference"]
+        footprint_ratio = float(np.sqrt(2.0 * 4.0)) * scale / source / bound["footprint_reference"]
+        self.assertGreater(float(np.ptp(tall[:, 2])) * scale, bound["height"] * source)
+        self.assertAlmostEqual(height_ratio - 1.0, 1.0 - footprint_ratio, places=6)
         self.assertAlmostEqual(sk.contract_measure(tall * scale, contract), source, places=6)  # STATIC-SIZE measures the same way
         low = box([-1.67, -3.66, 0.0], [1.67, 3.66, 2.9])  # about vanilla's reference: under both bounds
         self.assertAlmostEqual(sk.contract_measure(low, contract), sk.main_measure(low, "vehicle"), places=9)
