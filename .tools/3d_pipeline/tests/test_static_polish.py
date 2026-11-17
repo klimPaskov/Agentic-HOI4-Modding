@@ -65,6 +65,26 @@ class PartClipTests(unittest.TestCase):
         points, triangles = self.turret
         self.assertEqual(self.crossings((points + [4.0, 0.0, -0.5], triangles)), 0)
 
+    def modelled(self, rest):
+        """`_part_clips`'s exclusions: edges crossing in the rest pose and edges in the mount's seam band (z up here)."""
+
+        crossing = sk.part_crossing_masks(rest[0], rest[1], self.hull[0], self.hull[1])
+        seam = sk.mount_seam_masks(np.vstack([rest[0], self.hull[0]]), rest[1], self.hull[1] + len(rest[0]), up=2)
+        return crossing[0] | seam[0], crossing[1] | seam[1]
+
+    def test_a_ring_sunk_into_the_roof_turns_without_a_clip(self) -> None:
+        ring, ring_triangles = box_mesh((-0.8, -0.8, 0.97), (0.8, 0.8, 1.8))  # its base 0.03 under the roof, within the seam band
+        modelled = self.modelled((ring, ring_triangles))
+        for degrees in range(0, 360, 20):
+            turned = turn_z(ring, degrees, np.zeros(3))
+            self.assertEqual(sk.part_crossings(turned, ring_triangles, self.hull[0], self.hull[1], modelled), 0, degrees)
+
+    def test_a_rod_driven_into_the_hull_still_clips_past_the_rest_crossings(self) -> None:
+        points, triangles = self.turret
+        modelled = self.modelled(self.turret)
+        recoiled = points - [0.0, 0.0, 0.5]  # the whole turret and gun pushed down through the deck
+        self.assertGreater(sk.part_crossings(recoiled, triangles, self.hull[0], self.hull[1], modelled), 0)
+
     def test_mounts_follow_the_chain(self) -> None:
         self.assertEqual(sk._mounted_on("turret", {"turret": "chassie", "barrel_base": "turret"}), {"turret", "barrel_base"})
 

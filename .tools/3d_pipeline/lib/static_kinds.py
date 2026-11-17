@@ -1627,8 +1627,14 @@ def edge_crossings(points: np.ndarray, edges: np.ndarray, corners: np.ndarray, e
     """How many of the segments (`points[edges]`) pass through the inside of any triangle (`corners`, (T, 3, 3)): the
     Moller-Trumbore test, ends and rims excluded by `eps`, so a part resting on another (touching) does not count."""
 
+    return int(edge_crossing_mask(points, edges, corners, eps).sum())
+
+
+def edge_crossing_mask(points: np.ndarray, edges: np.ndarray, corners: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    """Which of the segments (`points[edges]`) pass through the inside of any triangle (`corners`), as `edge_crossings`."""
+
     if not len(edges) or not len(corners):
-        return 0
+        return np.zeros(len(edges), dtype=bool)
     v0 = corners[:, 0]
     e1, e2 = corners[:, 1] - v0, corners[:, 2] - v0
     hits = np.zeros(len(edges), dtype=bool)
@@ -1646,15 +1652,48 @@ def edge_crossings(points: np.ndarray, edges: np.ndarray, corners: np.ndarray, e
         v = inv * np.einsum("ek,etk->et", direction, q)
         t = inv * np.einsum("tk,etk->et", e2, q)
         hits[start : start + 256] = (ok & (u > eps) & (v > eps) & (u + v < 1 - eps) & (t > eps) & (t < 1 - eps)).any(axis=1)
-    return int(hits.sum())
+    return hits
 
 
-def part_crossings(moving: np.ndarray, moving_triangles: np.ndarray, base: np.ndarray, base_triangles: np.ndarray) -> int:
+def part_crossings(moving: np.ndarray, moving_triangles: np.ndarray, base: np.ndarray, base_triangles: np.ndarray,
+                   modelled: Optional[Tuple[np.ndarray, np.ndarray]] = None) -> int:
     """Edges of either part that pass through the other's surface: a part that clips into the other (a turret's gun
-    or fitting through the hull) has at least one; two parts that only touch or stand apart have none."""
+    or fitting through the hull) has at least one; two parts that only touch or stand apart have none. `modelled`
+    (`part_crossing_masks` at rest) leaves out the edges that already cross in the rest pose: a turret whose ring is
+    modelled sunk into the hull roof turns inside it, unseen, and that is not a clip."""
 
-    return (edge_crossings(moving, _edges_of(moving_triangles), base[np.asarray(base_triangles).reshape(-1, 3)])
-            + edge_crossings(base, _edges_of(base_triangles), moving[np.asarray(moving_triangles).reshape(-1, 3)]))
+    moving_hits, base_hits = part_crossing_masks(moving, moving_triangles, base, base_triangles)
+    if modelled is not None:
+        moving_hits, base_hits = moving_hits & ~modelled[0], base_hits & ~modelled[1]
+    return int(moving_hits.sum() + base_hits.sum())
+
+
+def part_crossing_masks(moving: np.ndarray, moving_triangles: np.ndarray, base: np.ndarray, base_triangles: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    """Per edge of each part (in `_edges_of` order), whether it passes through the other's surface."""
+
+    return (edge_crossing_mask(moving, _edges_of(moving_triangles), base[np.asarray(base_triangles).reshape(-1, 3)]),
+            edge_crossing_mask(base, _edges_of(base_triangles), moving[np.asarray(moving_triangles).reshape(-1, 3)]))
+
+
+MOUNT_SEAM_SHARE = CUT_SLIVER_SHARE  # of the mounted part's height above its cut: the band where a turret's sunk ring meets the hull roof
+
+
+def mount_seam_masks(rest: np.ndarray, moving_triangles: np.ndarray, base_triangles: np.ndarray, up: int = 1) -> Tuple[np.ndarray, np.ndarray]:
+    """Per edge of each part (in `_edges_of` order), whether it lies in the seam band where the mounted part meets its
+    base: within `MOUNT_SEAM_SHARE` of the mounted part's height of its lowest point (the cut), in the rest pose. A
+    Smart Mesh tank's turret ring is a faceted cylinder sunk into the hull roof, so as it turns its facets cross the
+    roof's edges in that band (47 edges, all within 0.601 to 0.614 of the tank's height for a turret spanning 0.601
+    to 0.906). A gun or fitting that clips the hull does so above the band. The same share keeps a piece the turret
+    cut only clipped on the hull (`CUT_SLIVER_SHARE`)."""
+
+    moving_edges, base_edges = _edges_of(moving_triangles), _edges_of(base_triangles)
+    used = np.unique(np.asarray(moving_triangles).reshape(-1))
+    if not len(used):
+        return np.zeros(len(moving_edges), dtype=bool), np.zeros(len(base_edges), dtype=bool)
+    low, high = float(rest[used, up].min()), float(rest[used, up].max())
+    band = MOUNT_SEAM_SHARE * max(high - low, 1e-9)
+    middle = lambda edges: (rest[edges[:, 0], up] + rest[edges[:, 1], up]) / 2 if len(edges) else np.zeros(0)
+    return middle(moving_edges) <= low + band, np.abs(middle(base_edges) - low) <= band
 
 
 def _mounted_on(part: str, mounts: Dict[str, str]) -> set:
@@ -1698,9 +1737,13 @@ def _part_clips(mesh, visible, anims: Sequence[Path], contract: dict) -> List[Tu
             if not len(moving_triangles) or not len(base_triangles):
                 continue
             worst = (0, 0)
+            rest = np.asarray(mesh.positions, float)
+            modelled = part_crossing_masks(rest, moving_triangles, rest, base_triangles)
+            seam = mount_seam_masks(rest, moving_triangles, base_triangles)
+            modelled = (modelled[0] | seam[0], modelled[1] | seam[1])
             for f in range(0, matrices.shape[0], max(1, -(-matrices.shape[0] // 24))):
                 posed = pdx_deform.skin(skinnable, matrices[f])
-                crossings = part_crossings(posed, moving_triangles, posed, base_triangles)
+                crossings = part_crossings(posed, moving_triangles, posed, base_triangles, modelled)
                 if crossings > worst[0]:
                     worst = (crossings, f)
             if worst[0]:
