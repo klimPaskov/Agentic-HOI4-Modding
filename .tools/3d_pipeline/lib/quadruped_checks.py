@@ -30,6 +30,8 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   the idle at the same 0.15, under the horse walk's 0.175 against its forward idle: run 5's heavy walk read 0.01, and a review could not
   tell it from the idle at map size. A defend is judged against the move at 0.15 too: run 6 swayed its defend to both sides with
   stepping forefeet, and a review read it as a copy of its swaying walk (0.05 from the move).
+  A unit under a tall load (a load bone) is held to `map_read.LOADED_SHARE` of those limits: no yaw-free clip of the war elephant reaches the
+  horse's (see `lib/map_read.py`), and a clip that turns the whole body reads as veering.
 - TRIPO-LOOP-HEADING: a move, attack, defend or retreat starts or ends turned more than `HEADING_LIMIT` degrees from the unit's rest
   heading (the best turn about the vertical from the rest pose's vertices, seen from above). Vanilla's horse and camel walk and charge
   start and end within 1.6 degrees and its infantry's move within 8.1, while its idles (the horse 43, the camel 45, the infantry 30) and
@@ -174,6 +176,7 @@ def _map_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Anim
 
     by_role = {tripo_pose.role_of(clip): anim for clip, anim in anims.items()}
     camera = map_read.MapCamera(mesh)
+    loaded = bool(load_mask(mesh).any())
     references: Dict[str, list] = {}
     out = []
     for clip, anim in anims.items():
@@ -187,8 +190,9 @@ def _map_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Anim
             frames = camera.frames(anim) if frames is None else frames
             reading = map_read.read_against_idle(camera, frames, references[other])
             numbers.setdefault(clip, {}).setdefault("map_read", {})[other] = reading
+            limit = map_read.loaded_limit(limit, loaded)
             if reading < limit:
-                out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.0%}, {what}): it reads as the {other} at map size", share=reading, against=other))
+                out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.1%}, {what}{", times " + str(map_read.LOADED_SHARE) + " for a unit under a tall load" if loaded else ""}): it reads as the {other} at map size", share=reading, against=other))
     return out
 
 

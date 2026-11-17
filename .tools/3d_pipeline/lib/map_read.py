@@ -40,6 +40,17 @@ ALIGN_PIXELS = 6  # a tenth of the height: the largest bob or slide that is not 
 READ_PERCENTILE = 90.0
 MIN_READ = 0.18
 MIN_GAIT_READ = 0.15
+# A unit under a tall load (a war elephant's howdah tower) shows its legs and body little in the map camera, which looks down at 55 degrees.
+# Played offline on the war elephant of run 7 (2026-11-17) against its idle: the legs' stride and fold alone read 0.01 to 0.014 (a vanilla
+# horse's walk 0.175), a body pitch of 8 degrees (the most that keeps the forefeet on the ground) 0.03, a rock of the whole body of 12 degrees
+# 0.09, a sway of the whole body about the vertical of 10 degrees 0.17 (two reviews read that as veering off the heading) and a neck swing
+# of 30 degrees 0.12. The neck cannot swing: the tower's front is one skin with the head and neck, and 10 degrees at the first neck bone
+# tears 29% of the seam's edges (TRIPO-LOAD-SEAM, limit 2%). With the head bone alone (30 degrees keeps the seam at 1.6%), the spread
+# forelegs, a rock of 8 degrees and the 8 degree pitch, the clips read 0.06 (move), 0.10 (defend) and 0.09 and 0.05 (retreat from the move
+# and the defend). So no yaw-free clip of a loaded unit that keeps its skin reaches the horse's limits, and `loaded_limit` takes
+# LOADED_SHARE of them: 0.045 for the move and the gait pairs, 0.054 for an attack or a defend from the idle. Reviewers failed 0.01 (run 5,
+# the idle at map size) and read 0.17 as veering, and no review has yet seen a clip between, so run 8's reviews are what confirms the share.
+LOADED_SHARE = 0.3
 MAX_FRAMES = 30  # frames sampled per clip (evenly), and per idle
 
 
@@ -161,3 +172,9 @@ def read_against_idle(camera: MapCamera, frames: Sequence[np.ndarray], idle: Seq
 def clip_reading(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, idle: pdx_deform.Animation) -> float:
     camera = MapCamera(mesh)
     return read_against_idle(camera, camera.frames(anim), camera.frames(idle))
+
+
+def loaded_limit(limit: float, loaded: bool) -> float:
+    """The least reading of a unit that carries a tall load: LOADED_SHARE of the horse's limit."""
+
+    return round(LOADED_SHARE * limit, 4) if loaded else limit

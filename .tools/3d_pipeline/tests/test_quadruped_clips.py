@@ -99,7 +99,7 @@ class LoadedPoses(unittest.TestCase):
     def test_a_loaded_neck_and_head_turn_less(self) -> None:
         free = ql.build_layout(_landmarks(True))
         loaded = ql.build_layout(_landmarks(True, load=True))
-        for style, frame in (("quadruped_brace", 20), ("quadruped_rear", 20)):
+        for style, frame in (("quadruped_charge", 12), ("quadruped_rear", 20)):
             a, b = ql.pose_at(style, frame, free), ql.pose_at(style, frame, loaded)
             self.assertAlmostEqual(_degrees(b, "Neck_01"), _degrees(a, "Neck_01") * ql.LOADED_NECK, places=6)
             neck = ql.leg_stance(free.landmarks)["neck"]
@@ -113,55 +113,94 @@ class LoadedPoses(unittest.TestCase):
         runner = ql.pose_at("quadruped_rear", 20, light)
         self.assertAlmostEqual(_degrees(pose, "Front_Left_Cannon"), _degrees(runner, "Front_Left_Cannon") * ql.HEAVY_PITCH, places=6)
 
-    def test_a_heavy_retreat_turns_away_and_back_to_its_heading(self) -> None:
+    def _yaw_free(self, style: str, layout: ql.Layout) -> None:
+        for frame in range(ql.frame_count(style) + 1):
+            pose = ql.pose_at(style, frame, layout)
+            self.assertNotIn("__root_yaw__", pose, (style, frame))
+            self.assertNotIn("__root_roll__", pose, (style, frame))
+
+    def test_a_heavy_move_defend_and_retreat_never_turn_the_whole_body(self) -> None:
+        for load in (False, True):
+            heavy = ql.build_layout(_landmarks(True, load=load))
+            for style in ("quadruped_walk", "quadruped_brace", "quadruped_flee"):
+                self._yaw_free(style, heavy)
+        for name in ("RETREAT_TURN", "WALK_SWAY", "GUARD_TURN"):
+            self.assertFalse(hasattr(ql, name), name)
+
+    def test_a_heavy_walk_swings_the_head_once_a_stride_and_ends_at_its_heading(self) -> None:
+        heavy, light = ql.build_layout(_landmarks(True, load=True)), ql.build_layout(_landmarks(False))
+        total = ql.frame_count("quadruped_walk")
+        heads = [_degrees(ql.pose_at("quadruped_walk", frame, heavy), "Head", ql.Z_AXIS) for frame in range(total + 1)]
+        neck = ql.leg_stance(heavy.landmarks)["neck"]
+        self.assertAlmostEqual(max(heads), ql.WALK_HEAD_SWING * neck, delta=0.5, msg="the load does not halve a displayed head")
+        self.assertAlmostEqual(min(heads), -ql.WALK_HEAD_SWING * neck, delta=0.5)
+        self.assertAlmostEqual(heads[0], heads[-1], places=6)
+        self.assertGreater(max(heads[: total // 2]), 1.0, "out to one side in the first half of the stride")
+        self.assertLess(min(heads[total // 2 :]), -1.0, "and to the other in the second")
+        self.assertEqual(ql.pose_at("quadruped_walk", total // 4, light).get("Head", [])[1:], [], "a runner's walk keeps its plain nod")
+
+    def test_a_heavy_walk_lifts_and_folds_its_feet_fully(self) -> None:
+        heavy = ql.build_layout(_landmarks(True, load=True))
+        runner = ql.build_layout(_landmarks(False))
+        top = max(abs(_degrees(ql.pose_at("quadruped_walk", f, heavy), "Front_Left_Cannon")) for f in range(ql.frame_count("quadruped_walk")))
+        full = max(abs(_degrees(ql.pose_at("quadruped_walk", f, runner), "Front_Left_Cannon")) for f in range(ql.frame_count("quadruped_walk")))
+        self.assertAlmostEqual(top, full, places=6)
+
+    def test_a_heavy_retreat_steps_backward_raises_the_head_and_returns_to_its_heading(self) -> None:
         heavy = ql.build_layout(_landmarks(True, load=True))
         self.assertEqual(ql.stance_style("quadruped_gallop", heavy.landmarks), "quadruped_flee")
         total = ql.frame_count("quadruped_flee")
         self.assertEqual(total, 2 * ql.frame_count("quadruped_trot"))
-        yaws = [_degrees(ql.pose_at("quadruped_flee", frame, heavy), "__root_yaw__", ql.Z_AXIS) for frame in range(total + 1)]
-        self.assertAlmostEqual(yaws[0], 0.0, places=6)
-        self.assertAlmostEqual(yaws[-1], 0.0, places=6)
-        self.assertAlmostEqual(yaws[total // 2], ql.RETREAT_TURN, places=6, msg="turned away in the middle")
-        self.assertGreaterEqual(min(yaws), -1e-9, "it never swings to the other side")
-
-    def test_a_heavy_walk_sways_once_a_stride_and_ends_at_its_heading(self) -> None:
-        heavy, light = ql.build_layout(_landmarks(True)), ql.build_layout(_landmarks(False))
-        total = ql.frame_count("quadruped_walk")
-        yaws = [_degrees(ql.pose_at("quadruped_walk", frame, heavy), "__root_yaw__", ql.Z_AXIS) for frame in range(total + 1)]
-        self.assertAlmostEqual(max(yaws), ql.WALK_SWAY, delta=0.2)
-        self.assertAlmostEqual(min(yaws), -ql.WALK_SWAY, delta=0.2)
-        self.assertAlmostEqual(yaws[0], 0.0, places=6)
-        self.assertNotIn("__root_yaw__", ql.pose_at("quadruped_walk", total // 4, light), "a runner's walk does not sway")
+        walkward = [_degrees(ql.pose_at("quadruped_trot", f, heavy), "Front_Left_Upper") for f in range(1, 6)]
+        backward = [_degrees(ql.pose_at("quadruped_flee", total - f, heavy), "Front_Left_Upper") for f in range(1, 6)]
+        self.assertEqual([round(v, 6) for v in backward], [round(v, 6) for v in walkward], "the stride runs in reverse")
+        poses = [ql.pose_at("quadruped_flee", f, heavy) for f in range(total + 1)]
+        for first, last in ((poses[0], poses[-1]),):
+            self.assertEqual(first, last)
+        self.assertAlmostEqual(_degrees(poses[0], "Head"), 0.0, places=6)
+        middle = poses[total // 2]
+        self.assertLess(_degrees(middle, "Head"), -10.0, "the head is raised in alarm")
+        self.assertEqual(_degrees(middle, "Neck_01"), 0.0, "the neck stays: it tears the tower's front skin")
+        heads = [_degrees(pose, "Head", ql.Z_AXIS) for pose in poses]
+        self.assertGreater(max(heads), 1.0, "and shakes to both sides")
+        self.assertLess(min(heads), -1.0)
+        self.assertEqual(_degrees(middle, "Front_Left_Upper", ql.Y_AXIS), -_degrees(middle, "Front_Right_Upper", ql.Y_AXIS))
 
     def test_a_heavy_retreat_loops_on_two_trot_strides(self) -> None:
         heavy = ql.build_layout(_landmarks(True, load=True))
         total = ql.frame_count("quadruped_flee")
         self.assertEqual(ql.pose_at("quadruped_flee", 0, heavy), ql.pose_at("quadruped_flee", total, heavy), "it loops")
-        trot = ql.pose_at("quadruped_trot", 5, heavy)
-        flee = ql.pose_at("quadruped_flee", 5, heavy)
-        second = ql.pose_at("quadruped_flee", 5 + ql.frame_count("quadruped_trot"), heavy)
-        self.assertAlmostEqual(_degrees(second, "Front_Left_Upper"), _degrees(trot, "Front_Left_Upper"), places=6, msg="two strides")
-        self.assertAlmostEqual(_degrees(flee, "Front_Left_Upper"), _degrees(trot, "Front_Left_Upper"), places=6)
-        self.assertLessEqual(_degrees(flee, "Neck_01"), abs(_degrees(trot, "Neck_01")) + 1e-9, "the head is not raised into a load")
+        first = ql.pose_at("quadruped_flee", 3, heavy)["Front_Left_Upper"]
+        second = ql.pose_at("quadruped_flee", 3 + ql.frame_count("quadruped_trot"), heavy)["Front_Left_Upper"]
+        self.assertAlmostEqual(first[0][1], second[0][1], places=6, msg="two strides")
 
-    def test_the_defend_is_a_braced_guard_turned_one_way_with_planted_feet(self) -> None:
+    def test_the_defend_is_a_threat_display_with_the_heading_and_the_forefeet_kept(self) -> None:
         layout = ql.build_layout(_landmarks(True, load=True))
         total = ql.frame_count("quadruped_brace")
         poses = [ql.pose_at("quadruped_brace", frame, layout) for frame in range(total)]
-        yaws = [_degrees(pose, "__root_yaw__", ql.Z_AXIS) for pose in poses]
-        self.assertAlmostEqual(yaws[0], 0.0, places=6)
-        self.assertAlmostEqual(yaws[-1], 0.0, places=6)
-        self.assertLessEqual(max(yaws), 1e-9, "it turns to one side only, away from the retreat's turn")
-        self.assertGreater(-min(yaws), ql.GUARD_TURN)
-        self.assertLess(-min(yaws), ql.GUARD_TURN + ql.GUARD_SWEEP + 1e-6)
+        self.assertEqual(poses[0].get("__root_pitch__"), [(ql.X_AXIS, -0.0)])
+        self.assertAlmostEqual(_degrees(poses[-1], "__root_pitch__"), 0.0, places=6)
+        pitches = [_degrees(pose, "__root_pitch__") for pose in poses]
+        self.assertAlmostEqual(min(pitches), -ql.GUARD_PITCH, places=6, msg="the body rocks back")
+        self.assertLessEqual(ql.GUARD_PITCH, 8.0, "more lifts the forefeet off the ground")
         for pose in poses:
             for side in ("Left", "Right"):
                 self.assertFalse(pose.get(f"Front_{side}_Cannon"), "no forefoot steps")
+        heads = [_degrees(pose, "Head") for pose in poses]
+        peak, bottom = int(np.argmin(heads)), int(np.argmax(heads))
+        self.assertLess(min(heads), -10.0, "the head rises")
+        self.assertGreater(max(heads), 5.0, "and then lowers with the tusks forward")
+        self.assertLess(peak, bottom, "raised first, lowered after")
         held = poses[total // 2]
-        self.assertGreater(_degrees(held, "Neck_01"), 0.0, "the head is lowered")
-        self.assertLess(_degrees(held, "Front_Left_Upper"), 0.0, "the forefeet are set forward")
-        self.assertNotEqual(_degrees(held, "Front_Left_Upper", ql.Y_AXIS), 0.0, "and spread")
+        self.assertNotEqual(_degrees(held, "Front_Left_Upper", ql.Y_AXIS), 0.0, "the forelegs spread")
         self.assertEqual(_degrees(held, "Front_Left_Upper", ql.Y_AXIS), -_degrees(held, "Front_Right_Upper", ql.Y_AXIS))
+
+    def test_a_displayed_head_keeps_the_whole_neck_share_under_a_load(self) -> None:
+        free = ql.build_layout(_landmarks(True))
+        loaded = ql.build_layout(_landmarks(True, load=True))
+        for style, frame in (("quadruped_brace", 8), ("quadruped_flee", 12), ("quadruped_walk", 5)):
+            a, b = ql.pose_at(style, frame, free), ql.pose_at(style, frame, loaded)
+            self.assertAlmostEqual(_degrees(b, "Neck_01"), _degrees(a, "Neck_01"), places=6, msg=style)
 
     def test_a_pillar_hip_and_shoulder_turn_no_farther_than_a_walk(self) -> None:
         heavy, light = ql.build_layout(_landmarks(True)), ql.build_layout(_landmarks(False))
@@ -235,6 +274,32 @@ class MapReading(unittest.TestCase):
             found = quadruped_checks._map_findings(mesh, anims, numbers)
             self.assertEqual([item["against"] for item in found if item["subject"] == "unit_retreat"], failing)
             self.assertEqual(sorted(numbers["unit_retreat"]["map_read"]), ["defend", "move"])
+
+
+class LoadedMapReading(unittest.TestCase):
+    def test_a_loaded_unit_is_held_to_a_share_of_the_horses_limits(self) -> None:
+        self.assertEqual(map_read.loaded_limit(map_read.MIN_READ, False), map_read.MIN_READ)
+        self.assertAlmostEqual(map_read.loaded_limit(map_read.MIN_READ, True), map_read.LOADED_SHARE * map_read.MIN_READ, places=4)
+        self.assertLess(map_read.LOADED_SHARE, 1.0)
+        self.assertGreater(map_read.LOADED_SHARE * map_read.MIN_GAIT_READ, 0.03, "four times run 5's walk, which a review read as the idle (0.01)")
+
+    def test_the_check_judges_a_loaded_unit_by_the_loaded_limits(self) -> None:
+        mesh = towered_animal()
+        small = turning(12, yaw=9.0)
+        idle = turning(12)
+        reading = map_read.clip_reading(mesh, small, idle)
+        self.assertGreater(reading, map_read.loaded_limit(map_read.MIN_READ, True))
+        self.assertLess(reading, map_read.MIN_READ)
+        anims = {"unit_idle": idle, "unit_attack": small}
+        self.assertEqual([item["subject"] for item in quadruped_checks._map_findings(mesh, anims, {})], ["unit_attack"], "a plain unit fails")
+        original = quadruped_checks.load_mask
+        quadruped_checks.load_mask = lambda m: np.ones(len(m.positions), bool)
+        try:
+            self.assertEqual(quadruped_checks._map_findings(mesh, anims, {}), [], "a unit under a load passes")
+            flat = {"unit_idle": idle, "unit_attack": turning(12, yaw=0.5)}
+            self.assertEqual([item["subject"] for item in quadruped_checks._map_findings(mesh, flat, {})], ["unit_attack"], "but not as the idle")
+        finally:
+            quadruped_checks.load_mask = original
 
 
 def seamed_mount():
