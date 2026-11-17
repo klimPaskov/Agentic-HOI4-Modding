@@ -81,6 +81,23 @@ def sample_points(points: np.ndarray, count: int = MAX_POINTS) -> np.ndarray:
     return points[np.linspace(0, len(points) - 1, count).astype(int)]
 
 
+_INSIDE_TESTS: List[Tuple[np.ndarray, np.ndarray, object]] = []
+INSIDE_TESTS_KEPT = 4
+
+
+def _inside_test(body_positions: np.ndarray, body_triangles: np.ndarray):
+    """The body's ray test (`clip_check.InsideTest`), made once per posed body and kept for the next tests of the same arrays: a frame's solve
+    tests hundreds of trial turns against one pose. The arrays are held with the test, so the identity check cannot match a new array."""
+
+    for positions, triangles, test in _INSIDE_TESTS:
+        if positions is body_positions and triangles is body_triangles:
+            return test
+    test = _clip_check().InsideTest(body_positions[body_triangles])
+    _INSIDE_TESTS.insert(0, (body_positions, body_triangles, test))
+    del _INSIDE_TESTS[INSIDE_TESTS_KEPT:]
+    return test
+
+
 def deep_share(points: np.ndarray, body_positions: np.ndarray, body_triangles: np.ndarray, height: float, margin: float = MARGIN_SHARE,
                soft: Optional[np.ndarray] = None, soft_share: float = 0.0, ground_axis: Optional[int] = None) -> float:
     """Share of `points` inside the body (ray parity) and deeper than `margin` of `height` from its nearest vertex.
@@ -97,7 +114,7 @@ def deep_share(points: np.ndarray, body_positions: np.ndarray, body_triangles: n
     near = np.all((points >= low) & (points <= high), axis=1)
     if near.any():
         inside = np.zeros(len(points), dtype=bool)
-        inside[near] = cc.points_inside_mesh(points[near], body_positions[body_triangles])
+        inside[near] = _inside_test(body_positions, body_triangles)(points[near])
         if inside.any():
             bad[inside] = cc.nearest_vertex_distance(points[inside], body_positions) / height > margin
     if soft is not None and soft_share > 0 and np.any(soft):
@@ -373,7 +390,6 @@ def arm_frame(points: np.ndarray, shoulder: np.ndarray, joints: np.ndarray, body
     `raised` (above the shoulder in the clip) no turn may lower the wrist by more than `RAISE_KEEP_SHARE` of the height. `axes` are tried
     first when given (those near the frame before's axis, as `clear_clip(coherent=True)` does), then every axis."""
 
-    cc = _clip_check()
     start = deep_share(points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
     if start <= target:
         return np.zeros(3), start
@@ -391,7 +407,7 @@ def arm_frame(points: np.ndarray, shoulder: np.ndarray, joints: np.ndarray, body
             moved_joints = joint_offsets @ rotation.T + shoulder
             if raised and moved_joints[-1][up_axis] < wrist_up - RAISE_KEEP_SHARE * height:
                 continue
-            if cc.points_inside_mesh(moved_joints, body_positions[body_triangles]).any():
+            if _inside_test(body_positions, body_triangles)(moved_joints).any():
                 continue
             share = deep_share(offsets @ rotation.T + shoulder, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
             if share < best[0]:
@@ -578,7 +594,7 @@ class _Staged:
         moved = (joints - self.shoulders[i]) @ rotvec_matrix(vector).T + self.shoulders[i]
         if self.raised(i) and moved[-1][self.up_axis] < joints[-1][self.up_axis] - RAISE_KEEP_SHARE * self.height:
             return False
-        return not bool(_clip_check().points_inside_mesh(moved, self.body_frames[i][self.body_triangles]).any())
+        return not bool(_inside_test(self.body_frames[i], self.body_triangles)(moved).any())
 
 
 def _roll_stage(st: _Staged, haft_axes, after, arms) -> Tuple[np.ndarray, List[int]]:
