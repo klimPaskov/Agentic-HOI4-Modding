@@ -66,7 +66,28 @@ class LiveBootstrapContractTests(unittest.TestCase):
         self.assertFalse((ROOT / ".claude" / "skills" / "hoi4-live-testing").exists())
         bootstrap_component = component(data, "mcp.hoi4_live.bootstrap")
         self.assertEqual(bootstrap_component["source"]["path"], ".tools/mcp/bootstrap_hoi4_live_tools.py")
-        self.assertEqual(bootstrap_component["platforms"], ["windows"])
+        self.assertEqual(bootstrap_component["platforms"], ["windows", "macos"])
+        self.assertEqual(workflow["platforms"], ["windows", "macos"])
+        action = next(rule for rule in workflow["validation"] if rule["id"] == "live.bootstrap")
+        macos = action["parameters"]["platform_pins"]["macos"]
+        self.assertEqual(macos["expected_writes"], ["~/Library/Application Support/hoi4-live-tools/**"])
+        self.assertIn("PyObjC", macos["network_access"])
+
+    def test_platform_prefixes_and_refusal(self) -> None:
+        with mock.patch.dict(bootstrap.os.environ, {}, clear=True), mock.patch.object(
+            bootstrap.Path, "home", return_value=Path("/Users/a")
+        ):
+            with mock.patch.object(bootstrap.sys, "platform", "darwin"):
+                self.assertEqual(
+                    bootstrap.installed_prefix(), Path("/Users/a/Library/Application Support/hoi4-live-tools")
+                )
+            with mock.patch.object(bootstrap.sys, "platform", "win32"):
+                self.assertEqual(bootstrap.installed_prefix(), Path("/Users/a/AppData/Local/hoi4-live-tools"))
+        with mock.patch.dict(bootstrap.os.environ, {"HOI4_LIVE_PREFIX": "/x"}):
+            self.assertEqual(bootstrap.installed_prefix(), Path("/x"))
+        with mock.patch.object(bootstrap.sys, "platform", "linux"), contextlib.redirect_stderr(io.StringIO()) as err:
+            self.assertEqual(bootstrap.main(["--quiet"]), 2)
+        self.assertIn("Windows and macOS", err.getvalue())
 
     def test_hosts_and_redirects(self) -> None:
         self.assertTrue(bootstrap.host_allowed("https://github.com/x"))
@@ -153,7 +174,7 @@ class LiveBootstrapContractTests(unittest.TestCase):
             (prefix / "install.json").write_text(json.dumps({"version": bootstrap.RELEASE_VERSION}), encoding="utf-8")
             with contextlib.ExitStack() as stack:
                 stack.enter_context(mock.patch.object(bootstrap, "installed_prefix", return_value=prefix))
-                stack.enter_context(mock.patch.object(bootstrap.sys, "platform", "win32"))
+                stack.enter_context(mock.patch.object(bootstrap.sys, "platform", "darwin"))
                 run = stack.enter_context(mock.patch.object(bootstrap, "run_installer", return_value=0))
                 fetch = stack.enter_context(mock.patch.object(bootstrap, "download"))
                 self.assertEqual(bootstrap.main(["--quiet"]), 0)

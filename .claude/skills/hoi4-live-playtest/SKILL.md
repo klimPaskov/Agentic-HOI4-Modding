@@ -17,7 +17,7 @@ Read the selected provider guidance above and inspect that server's advertised t
 
 Clausewitz MCP reads state directly from the native Linux HOI4 1.19.2 process. These reads need neither OCR nor a save. Linux hosts connect directly; Windows hosts use WSL; macOS hosts use SSH to Linux. Complete manual Linux/game/server setup and confirm the Linux game and server are ready in HOI4 Mod Setup before registration. See references/clausewitz-mcp.md.
 
-HOI4 Live Tools is experimental, slower and not thoroughly tested. Windows is verified; upstream macOS support is incomplete. See references/hoi4-live-tools.md only for this provider's interface, console, save, log and campaign operations.
+HOI4 Live Tools is experimental, slower and not thoroughly tested. It runs on Windows and macOS. See references/hoi4-live-tools.md only for this provider's interface, console, save, log and campaign operations.
 
 With manual testing selected, give the user a bounded test recipe and record the observations they provide.
 
@@ -39,4 +39,4 @@ Use one corrected retry for a failed call, then stop that test path. Distinguish
 
 - references/setup.md: provider choice, setup and update/repair.
 - references/clausewitz-mcp.md: Linux native version restriction and MIT acknowledgement.
-- references/hoi4-live-tools.md: provider-specific operations, installed with that Windows runtime.
+- references/hoi4-live-tools.md: provider-specific operations, installed with that runtime.

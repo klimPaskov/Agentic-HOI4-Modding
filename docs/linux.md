@@ -66,7 +66,7 @@ API-backed image routes use the same package-owned Python adapter. Saved keys st
 
 Clausewitz MCP connects directly on a native Linux host. It supports native HOI4 **1.19.2 only**, at source commit `97c85437081904d5ad07bae1623ec58d1c0a5b9e`. Follow [upstream setup](https://github.com/smerss/Clausewitz-MCP/tree/97c85437081904d5ad07bae1623ec58d1c0a5b9e) to prepare the game, Python environment and process-read permissions. Setup's native convention is `~/tools/Clausewitz-MCP/.venv/bin/python` launching `~/tools/Clausewitz-MCP/clausewitz.py serve`; readiness requires those files and the compatible game/server environment. Confirm that readiness separately before registering `clausewitz_linux`. Provider selection and an installer test do not verify game compatibility or launch the game.
 
-Windows still connects through WSL and macOS through SSH to Linux. HOI4 Live Tools and the Meshy/Blender 3D bootstrap remain Windows-verified workflows and are not installed as native Linux routes. Manual testing registers no live server. See [the live setup guide](../.claude/skills/hoi4-live-playtest/references/setup.md) for bounded tests and capability gates.
+Windows still connects through WSL and macOS through SSH to Linux. HOI4 Live Tools (Windows and macOS) and the Meshy/Blender 3D bootstrap (Windows) are not installed as native Linux routes. Manual testing registers no live server. See [the live setup guide](../.claude/skills/hoi4-live-playtest/references/setup.md) for bounded tests and capability gates.
 
 ## Manifest compatibility
 

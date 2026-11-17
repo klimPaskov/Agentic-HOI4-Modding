@@ -51,7 +51,7 @@ Clients with no skills target read `.claude/skills/` directly. Cline, Devin Desk
 
 ## Optional workflows
 
-- **Live testing:** choose a provider and follow the [live-testing setup guide](../.claude/skills/hoi4-live-playtest/references/setup.md). Clausewitz MCP needs a manual Linux game and server setup. HOI4 Live Tools uses the Windows bootstrap.
+- **Live testing:** choose a provider and follow the [live-testing setup guide](../.claude/skills/hoi4-live-playtest/references/setup.md). Clausewitz MCP needs a manual Linux game and server setup. HOI4 Live Tools uses its bootstrap on Windows and macOS.
 - **Portraits, 3D and Super Events:** copy the workflow's references, tools and runtime assets together. The [manifest](../hoi4-mod-setup.manifest.json) is the file inventory.
 - **ChatGPT project sources:** copy `.tools/package_chatgpt_project_sources.py` (and its Windows `.bat` launcher) and run it yourself. See the [packaging tool guide](../.tools/README.md#chatgpt-source-packaging).
 

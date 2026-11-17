@@ -5,6 +5,7 @@ on:
     paths:
       - ".tools/mcp/bootstrap_hoi4_agent_tools.py"
       - "scripts/test_mcp_npm_toolchain.py"
+      - "scripts/test_macos_source_contract.py"
       - ".github/workflows/mcp-runtime.yml"
   workflow_dispatch:
 
@@ -19,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-22.04]
+        os: [windows-latest, ubuntu-22.04, macos-15]
         node: ["22", "24"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -32,7 +33,7 @@ jobs:
         with:
           python-version: "3.13"
       - name: Unit-test private toolchain boundaries
-        run: python -m unittest scripts/test_mcp_npm_toolchain.py
+        run: python -m unittest scripts/test_mcp_npm_toolchain.py scripts/test_macos_source_contract.py
       - name: Bootstrap with an isolated user profile
         shell: pwsh
         run: |
