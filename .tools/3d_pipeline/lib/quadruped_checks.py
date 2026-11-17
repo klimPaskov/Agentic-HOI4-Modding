@@ -26,7 +26,14 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   percentile frame), or a retreat from the move's less than `map_read.MIN_GAIT_READ`. The limits are vanilla's horse charge against its
   forward idle, and against its walk. Both reviews of round 9 read its attack (0.15) and one its defend (0.01) as the idle on the map, and
   both reviews of run 3 its retreat (0.02 from the move) as the move. A retreat is judged against the defend too, at the same limit: run 4
-  swung its retreat to both sides as its defend does (0.05 from the defend), and a review read them as one clip.
+  swung its retreat to both sides as its defend does (0.05 from the defend), and a review read them as one clip. A move is judged against
+  the idle at the same 0.15, under the horse walk's 0.175 against its forward idle: run 5's heavy walk read 0.01, and a review could not
+  tell it from the idle at map size.
+- TRIPO-LOOP-HEADING: a move, attack, defend or retreat starts or ends turned more than `HEADING_LIMIT` degrees from the unit's rest
+  heading (the best turn about the vertical from the rest pose's vertices, seen from above). Vanilla's horse and camel walk and charge
+  start and end within 1.6 degrees and its infantry's move within 8.1, while its idles (the horse 43, the camel 45, the infantry 30) and
+  its infantry's retreat (42 to 49) hold a turn. Run 5 of the war elephant held its retreat turned 25 degrees, and both fresh reviews saw it
+  snap round against the move and face away from its travel.
 - TRIPO-LEG-ROOT-STRETCH: in some frame of a clip, more than `LEG_ROOT_LIMIT` of a leg root's edges stretch or squash,
   by the kit's measure. A leg's root is the skin with at least `LEG_ROOT_SHARE` of its weight on the torso and as much on the leg's
   Upper bone, where the hip or shoulder meets the body, and the limit is vanilla clothing's worst share, 2.0%. Run 4 of the war elephant
@@ -60,11 +67,14 @@ LOAD_SEAM_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (trip
 SEAM_PART_EDGES = 30  # a part beside the load is judged when this many seam edges follow it
 # role: (the role it must not look like, the least reading, the vanilla clip that reading comes from)
 MAP_READ_ROLES = {
+    "move": (("idle", map_read.MIN_GAIT_READ, "under vanilla's horse walk against its idle, 0.175"),),
     "attack": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),),
     "defend": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),),
     "retreat": (("move", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk"),
                 ("defend", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk")),
 }
+HEADING_ROLES = ("move", "attack", "defend", "retreat")
+HEADING_LIMIT = 10.0  # degrees: vanilla's horse and camel walk and charge start and end within 1.6, its infantry's move within 8.1
 LEG_ROOT_SHARE = 0.2  # a leg's root: skin with at least this weight on the torso (Pelvis, Spine, Chest) and on the leg's Upper bone
 LEG_ROOT_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (tripo_checks VANILLA_CLOAK_WORST, 1.97%), rounded
 DEATH_LEG_BEND = 25.0  # degrees
@@ -220,6 +230,26 @@ def leg_root_share(mesh: pdx_deform.SkinnedMesh, posed: np.ndarray, roots: Dict[
     return worst
 
 
+def heading(rest: np.ndarray, posed: np.ndarray) -> float:
+    """The turn about the vertical (degrees) that best carries the rest pose's vertices onto the posed ones, seen from above."""
+
+    a = rest[:, [0, 2]] - rest[:, [0, 2]].mean(axis=0)
+    b = posed[:, [0, 2]] - posed[:, [0, 2]].mean(axis=0)
+    h = a.T @ b
+    return float(np.degrees(np.arctan2(h[0, 1] - h[1, 0], h[0, 0] + h[1, 1])))
+
+
+def _heading_findings(mesh: pdx_deform.SkinnedMesh, clip: str, posed: np.ndarray, row: dict) -> List[dict]:
+    """TRIPO-LOOP-HEADING: a looping clip a unit plays while it travels or fights starts and ends at its rest heading."""
+
+    first, last = heading(mesh.positions, posed[0]), heading(mesh.positions, posed[-1])
+    row["heading_first_last"] = [round(first, 1), round(last, 1)]
+    worst = max(abs(first), abs(last))
+    if worst <= HEADING_LIMIT:
+        return []
+    return [_finding("TRIPO-LOOP-HEADING", clip, f"the clip starts or ends turned {worst:.0f} degrees from the unit's heading (limit {HEADING_LIMIT:.0f}, vanilla's mounts and infantry move): the unit snaps round when the clip begins and faces away from its travel", degrees=round(worst, 1))]
+
+
 def _frames(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> np.ndarray:
     matrices = pdx_deform.skinning_matrices(mesh, anim)
     return np.stack([pdx_deform.skin(mesh, matrices[f]) for f in range(anim.frames)])
@@ -297,6 +327,8 @@ def quadruped_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform
                 out.append(_finding("TRIPO-FOOT-BELOW-GROUND", clip, f"a hoof sinks {-lowest.min():.2%} of the height under the ground in frame {frame} (limit {tripo_pose.FOOT_SINK_LIMIT:.1%})", share=round(float(-lowest.min()), 4), frame=frame))
         if role == "death":
             out += _death_findings(mesh, clip, anim, posed, torso, row)
+        if role in HEADING_ROLES:
+            out += _heading_findings(mesh, clip, posed, row)
         out += _load_findings(mesh, clip, posed, edges, load, seam, row)
         if roots:
             share, frame, leg = leg_root_share(mesh, posed, roots)

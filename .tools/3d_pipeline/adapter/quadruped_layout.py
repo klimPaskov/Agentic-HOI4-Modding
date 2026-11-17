@@ -461,7 +461,8 @@ HEAVY_PITCH = 0.6
 # at HEAVY_PITCH 0.6 stretched the skin of the elbow against the chest (offline on the round 9 war elephant: 30 deformed edges, 14 at 0.6).
 HEAVY_REACH = 0.6
 REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
-RETREAT_TURN = 25.0  # degrees a heavy animal's retreat holds its forequarters turned away about the hind feet (two trot strides)
+RETREAT_TURN = 30.0  # degrees a heavy animal's retreat turns its forequarters away about the hind feet in the middle of its two strides
+WALK_SWAY = 10.0  # degrees a heavy walk sways its forequarters to each side about the hind feet, once a stride
 BRACE_SWEEP = 14.0  # degrees the defend swings the forequarters to each side about the hind feet
 BRACE_REACH = 6.0  # degrees the defend sets its forelegs forward at the shoulder, the rest of PILLAR_SWING goes to each step
 # A pillar leg's hip and shoulder turn no farther than a runner's walk swings them. The trot's 22 degrees at the hip stretched the
@@ -576,11 +577,17 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
     has_tail = "Tail_01" in names
     if style in GAITS:
         _gait(pose, _pillar_gait(GAITS[style], stance), t, has_tail)
+        if style == "quadruped_walk" and stance["graviportal"]:
+            # A heavy walk sways its forequarters about the hind feet once a stride: under a tall load the feet barely change the map
+            # silhouette, so a plain walk read as the idle (TRIPO-MAP-READ 0.01).
+            pose["__root_yaw__"] = [(Z_AXIS, WALK_SWAY * math.sin(2 * math.pi * t))]
     elif style == "quadruped_flee":
-        # Two trot strides with the forequarters held turned away about the hind feet. A plain trot read as the move with a longer stride,
-        # a raised head creased the neck against a load's front edge, and a swing to both sides read as the defend's sweep.
+        # Two trot strides while the forequarters turn away about the hind feet and back. A plain trot read as the move with a longer
+        # stride, a raised head creased the neck against a load's front edge, a swing to both sides read as the defend's sweep, and a turn
+        # held through the whole clip snapped the unit round against its travel.
         _gait(pose, _pillar_gait(GAITS["quadruped_trot"], stance), (2.0 * t) % 1.0, has_tail)
-        pose["__root_yaw__"] = [(Z_AXIS, RETREAT_TURN)]
+        turned = _smooth(min(1.0, t / 0.3)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3)))
+        pose["__root_yaw__"] = [(Z_AXIS, RETREAT_TURN * turned)]
     elif style == "quadruped_idle":
         breath = math.sin(2 * math.pi * t * 2)
         pose["Chest"] = [(X_AXIS, 1.2 * breath)]

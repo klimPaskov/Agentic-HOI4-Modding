@@ -113,13 +113,29 @@ class LoadedPoses(unittest.TestCase):
         runner = ql.pose_at("quadruped_rear", 20, light)
         self.assertAlmostEqual(_degrees(pose, "Front_Left_Cannon"), _degrees(runner, "Front_Left_Cannon") * ql.HEAVY_PITCH, places=6)
 
-    def test_a_heavy_retreat_trots_two_strides_turned_away(self) -> None:
+    def test_a_heavy_retreat_turns_away_and_back_to_its_heading(self) -> None:
         heavy = ql.build_layout(_landmarks(True, load=True))
         self.assertEqual(ql.stance_style("quadruped_gallop", heavy.landmarks), "quadruped_flee")
         total = ql.frame_count("quadruped_flee")
         self.assertEqual(total, 2 * ql.frame_count("quadruped_trot"))
         yaws = [_degrees(ql.pose_at("quadruped_flee", frame, heavy), "__root_yaw__", ql.Z_AXIS) for frame in range(total + 1)]
-        self.assertEqual(set(yaws), {ql.RETREAT_TURN}, "held turned away to one side, never swung to the other")
+        self.assertAlmostEqual(yaws[0], 0.0, places=6)
+        self.assertAlmostEqual(yaws[-1], 0.0, places=6)
+        self.assertAlmostEqual(yaws[total // 2], ql.RETREAT_TURN, places=6, msg="turned away in the middle")
+        self.assertGreaterEqual(min(yaws), -1e-9, "it never swings to the other side")
+
+    def test_a_heavy_walk_sways_once_a_stride_and_ends_at_its_heading(self) -> None:
+        heavy, light = ql.build_layout(_landmarks(True)), ql.build_layout(_landmarks(False))
+        total = ql.frame_count("quadruped_walk")
+        yaws = [_degrees(ql.pose_at("quadruped_walk", frame, heavy), "__root_yaw__", ql.Z_AXIS) for frame in range(total + 1)]
+        self.assertAlmostEqual(max(yaws), ql.WALK_SWAY, delta=0.2)
+        self.assertAlmostEqual(min(yaws), -ql.WALK_SWAY, delta=0.2)
+        self.assertAlmostEqual(yaws[0], 0.0, places=6)
+        self.assertNotIn("__root_yaw__", ql.pose_at("quadruped_walk", total // 4, light), "a runner's walk does not sway")
+
+    def test_a_heavy_retreat_loops_on_two_trot_strides(self) -> None:
+        heavy = ql.build_layout(_landmarks(True, load=True))
+        total = ql.frame_count("quadruped_flee")
         self.assertEqual(ql.pose_at("quadruped_flee", 0, heavy), ql.pose_at("quadruped_flee", total, heavy), "it loops")
         trot = ql.pose_at("quadruped_trot", 5, heavy)
         flee = ql.pose_at("quadruped_flee", 5, heavy)
@@ -232,6 +248,24 @@ def seamed_mount():
     mesh = P.SkinnedMesh(positions=positions, triangles=np.zeros((0, 3), int), joints=joints, weights=weights,
                          bones=["Root", "Load", "Head", "Tail_01"], parents=[-1, 0, 0, 0], inverse_bind=np.tile(np.eye(4), (4, 1, 1)))
     return mesh, edges, count
+
+
+class LoopHeading(unittest.TestCase):
+    def test_a_clip_turned_at_its_ends_fails_and_one_turned_in_the_middle_passes(self) -> None:
+        mesh = towered_animal()
+        rest = mesh.positions
+        turn = lambda degrees: rest @ np.array([[np.cos(np.radians(degrees)), 0, -np.sin(np.radians(degrees))], [0, 1, 0], [np.sin(np.radians(degrees)), 0, np.cos(np.radians(degrees))]])
+        self.assertAlmostEqual(abs(quadruped_checks.heading(rest, turn(25.0))), 25.0, places=4)
+        row: dict = {}
+        self.assertTrue(quadruped_checks._heading_findings(mesh, "unit_retreat", np.stack([turn(25.0), turn(25.0), turn(25.0)]), row))
+        self.assertFalse(quadruped_checks._heading_findings(mesh, "unit_retreat", np.stack([rest, turn(30.0), turn(2.0)]), row))
+        self.assertEqual(set(quadruped_checks.HEADING_ROLES), {"move", "attack", "defend", "retreat"})
+
+    def test_the_check_fails_a_move_that_reads_as_the_idle(self) -> None:
+        mesh = towered_animal()
+        for move, failing in ((turning(12, yaw=2.0), True), (turning(12, yaw=30.0), False)):
+            found = quadruped_checks._map_findings(mesh, {"unit_idle": turning(12), "unit_move": move}, {})
+            self.assertEqual(bool(found), failing)
 
 
 class LegRoot(unittest.TestCase):
