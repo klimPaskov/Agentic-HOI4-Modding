@@ -408,6 +408,26 @@ hull_layer = bm.faces.layers.int.new(HULL_LEVEL) if kind == "vehicle" else None 
 if kind == "vehicle":
     turret = sk.turret_cut(samples, contract["rules"]["turret"])
     barrel = sk.barrel_cut(samples, turret["cut_z"], contract["rules"]["barrel"])
+    # The collar: a Smart Mesh's sunk ring leaves a faceted skirt of small faces standing a hair out of the roof round the
+    # turret's base, which the turret covers. Uncovered (the turret gone, or the light low) it shows as a bright thin ring.
+    # Its faces (small, sloping, in the ring's band) are snapped down into the roof plane.
+    above = samples[(samples[:, 2] >= turret["cut_z"]) & (samples[:, 1] >= barrel["cut_y"])]
+    axis = (above.min(axis=0) + above.max(axis=0)) / 2
+    ring_radius = sk.ring_footprint(positions, triangles, turret["cut_z"], axis)
+    turret_height = float(samples[:, 2].max()) - turret["cut_z"]
+    bm.normal_update()
+    in_band = lambda c, lo, hi: lo <= math.hypot(c.x - axis[0], c.y - axis[1]) / ring_radius <= hi and turret["cut_z"] - 0.1 * turret_height <= c.z <= turret["cut_z"] + 0.04 * turret_height
+    roof_levels = [centre(f).z for f in bm.faces if abs(f.normal.z) > 0.95 and in_band(centre(f), 0.85, 1.5)]
+    collar = [f for f in bm.faces if in_band(centre(f), 0.85, 1.15) and abs(f.normal.z) < math.cos(math.radians(30))
+              and max(v.co.z for v in f.verts) - min(v.co.z for v in f.verts) <= 0.04 * turret_height]
+    snapped = 0
+    if roof_levels and collar:
+        roof_z = min(float(np.median(roof_levels)), turret["cut_z"] - 1e-3 * turret_height)
+        moved = {v for f in collar for v in f.verts if v.co.z > roof_z}
+        for v in moved:
+            v.co.z = roof_z
+        snapped = len(moved)
+    collar_report = {"faces": len(collar), "vertices_snapped": snapped}
     bisect(bm.faces[:], (0, 0, turret["cut_z"]), (0, 0, 1))
     upper = [f for f in bm.faces if centre(f).z > turret["cut_z"]]
     bisect(upper, (0, barrel["cut_y"], 0), (0, 1, 0))
@@ -417,9 +437,6 @@ if kind == "vehicle":
         part_of[face] = "body" if c.z <= turret["cut_z"] else ("barrel" if c.y < barrel["cut_y"] else "turret")
     # Hull roof the cut only clipped (a Smart Mesh's roof plates and bolts lie a hair above it, outside the turret's ring)
     # is not the turret's: carried off with it, it leaves a hole in the roof and hangs beside the flying turret.
-    above = samples[(samples[:, 2] >= turret["cut_z"]) & (samples[:, 1] >= barrel["cut_y"])]
-    axis = (above.min(axis=0) + above.max(axis=0)) / 2
-    ring_radius = sk.ring_footprint(positions, triangles, turret["cut_z"], axis)
     bm.verts.index_update()
     link = list(range(len(bm.verts)))
 
@@ -449,7 +466,7 @@ if kind == "vehicle":
     pivots["turret"] = [float((above[:, 0].min() + above[:, 0].max()) / 2), float((above[:, 1].min() + above[:, 1].max()) / 2), turret["cut_z"]]
     pivots["barrel_base"] = barrel["pivot"]
     pivots["barrel_tip"] = barrel["pivot"]
-    parts_report = {"turret_cut": turret, "barrel_cut": barrel, "hull_level_roof": parts_report_hull}
+    parts_report = {"turret_cut": turret, "barrel_cut": barrel, "hull_level_roof": parts_report_hull, "collar": collar_report}
 elif kind == "plane":
     propeller = sk.propeller_cut(samples, contract["rules"]["propeller"])
     bisect(bm.faces[:], (0, propeller["cut_y"], 0), (0, 1, 0))
@@ -486,6 +503,26 @@ if cuts:
             first = face.loops[0][uv].uv.copy()
             for loop in face.loops:
                 loop[uv].uv = first
+# A sheet the model's own surface leaves open along a long edge (a track's inner wall, a fender plate) is one-sided: seen
+# from the open side it is culled and the background shows through (a magenta gap between the road wheels from below).
+# Each such sheet (the faces joined to the open edge's face that lie within 15 degrees of it) gets a reversed copy.
+sheet_edges = [e for e in bm.edges if e.is_boundary and e.calc_length() >= 0.03 * size] if kind == "vehicle" else []
+hull_side = lambda f: centre(f).z <= turret["cut_z"]  # (the faces were split and rebuilt: part_of no longer holds them)
+sheet_seeds = [e.link_faces[0] for e in sheet_edges if hull_side(e.link_faces[0])]
+sheet, queue = set(), list(sheet_seeds)
+while queue:
+    f = queue.pop()
+    if f in sheet:
+        continue
+    sheet.add(f)
+    for edge in f.edges:
+        for g in edge.link_faces:
+            if g not in sheet and hull_side(g) and g.normal.dot(f.normal) >= math.cos(math.radians(15)):
+                queue.append(g)
+if sheet:
+    copies = [g for g in bmesh.ops.duplicate(bm, geom=list(sheet))["geom"] if isinstance(g, bmesh.types.BMFace)]
+    bmesh.ops.reverse_faces(bm, faces=copies)
+parts_report["double_sided_sheets"] = {"open_edges": len(sheet_edges), "faces_copied": len(sheet) if sheet else 0}
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 bm.to_mesh(model.data)
 bm.free()

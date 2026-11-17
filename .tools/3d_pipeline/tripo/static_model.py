@@ -130,6 +130,24 @@ def vanilla_spread(game: Path, contract: dict) -> list:
     return spreads
 
 
+def vanilla_metallic(game: Optional[Path], contract: dict) -> Optional[int]:
+    """The metallic channel (blue) of the reference models' specular maps, median of their medians: vanilla's tanks are
+    painted metal (their light tanks 129), where Tripo's maps carry none and a flat panel facing the light washes out white."""
+
+    if game is None:
+        return None
+    values = []
+    for rel in contract.get("references", []):
+        mesh = game / rel
+        spec = mesh.with_name(mesh.stem + "_specular.dds")
+        try:
+            with Image.open(spec) as opened:
+                values.append(float(np.median(np.asarray(opened.convert("RGBA"))[..., 2])))
+        except OSError:
+            continue
+    return int(round(float(np.median(values)))) if len(values) >= 3 else None
+
+
 def contrasted(source: Image.Image, glb: Path, contract: dict, front: Optional[str], game: Optional[Path], report: dict) -> Image.Image:
     """A tank's colour map with its brightness spread lifted to the flattest quarter of vanilla's light tanks
     (lib/static_delight.contrast_lift), or as it is for any other kind or a texture already that lively."""
@@ -192,6 +210,11 @@ def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path,
         _r, roughness, metallic = source.split()
     else:
         roughness, metallic = Image.new("L", (size, size), NEUTRAL_ROUGHNESS), zero
+    if contract["kind"] == "vehicle" and metallic.getextrema()[1] == 0:
+        vanilla = vanilla_metallic(game, contract)
+        if vanilla:
+            metallic = Image.new("L", (size, size), vanilla)
+            found["metallic"] = vanilla
     gloss = roughness.point(lambda v: 255 - v)
     if contract.get("gloss_quantiles"):
         gloss = gloss.point(remap_gloss_table(gloss, contract["gloss_quantiles"]))
