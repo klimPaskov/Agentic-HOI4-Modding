@@ -321,3 +321,161 @@ def shadow_findings(mesh_path: Path, diffuse_path: Path) -> List[Tuple[str, str,
              f"the colour texture has a cast shadow: a region {100 * r['share']:.0f} % of one facet group's area, at {r['median_ratio']:.2f} of the group's median brightness "
              f"(the game's light will contradict a painted shadow; lift it with the route's delighting or make the texture from a picture lit without cast shadows)")
             for r in regions]
+
+
+# The ring seam: the band round a tank's turret ring ------------------------------------------------------------------
+
+SEAM_INNER = 0.85  # the seam band runs from this share of the ring's radius ...
+SEAM_OUTER = 1.5  # ... to this share, measured sideways from the turret's axis
+SEAM_BELOW = 0.3  # of the turret's height below its cut, the band's lowest part (the hull roof and the slope round the sunk ring)
+SEAM_ABOVE = 0.1  # of the turret's height above its cut, the band's highest part (the turret wall's foot)
+SEAM_REFERENCE = 2.6  # the roof the band is matched to lies out to this share of the ring's radius
+SEAM_LUMA = 0.12  # a band texel is off the roof's colour when it is this share brighter or darker than the roof's median ...
+SEAM_CHROMA = 0.025  # ... or its colour shares (red, green, blue over their sum) differ from the roof's by more than this
+
+
+def _triangle_mask(uv: np.ndarray, triangles: np.ndarray, size: int) -> np.ndarray:
+    canvas = Image.new("L", (size, size), 0)
+    draw = ImageDraw.Draw(canvas)
+    for tri in np.asarray(triangles):
+        draw.polygon([(float(uv[i][0]) * size, float(uv[i][1]) * size) for i in tri], fill=255)
+    return np.asarray(canvas) > 0
+
+
+def _off_roof(rgb: np.ndarray, median: np.ndarray) -> np.ndarray:
+    """Which texels (rows of `rgb`) are off the roof's colour: brighter or darker than `SEAM_LUMA` or another colour family."""
+
+    luma = rgb @ LUMA / max(float(median @ LUMA), 1e-6)
+    share = rgb / np.maximum(rgb.sum(axis=1, keepdims=True), 1.0)
+    chroma = np.abs(share - median / max(float(median.sum()), 1.0)).max(axis=1)
+    return (np.abs(luma - 1.0) > SEAM_LUMA) | (chroma > SEAM_CHROMA)
+
+
+def ring_seam(image: Image.Image, uv: np.ndarray, positions: np.ndarray, triangles: np.ndarray, cut_z: float, top_z: float,
+              centre: np.ndarray, radius: float) -> Tuple[Image.Image, dict]:
+    """(the texture with the ring's seam band matched to the roof, a report). Tripo paints the sunk ring's band, which a
+    turret hides, in whatever colour it likes: a bright yellow-green halo round the turret on the hull roof. The band is
+    every triangle whose centre lies between `SEAM_INNER` and `SEAM_OUTER` of the ring's radius from the turret's axis and
+    between `SEAM_BELOW` under the cut and `SEAM_ABOVE` over it (shares of the turret's height). The roof is the same
+    heights farther out (to `SEAM_REFERENCE`). A band texel off the roof's median colour (`_off_roof`) takes the median,
+    brightened or darkened by its own deviation within the same tolerance, so grain and rivets stay. The report holds the
+    share of band texels off the roof's colour before and after."""
+
+    work = min(ANALYSIS_SIZE, image.width)
+    base = image.convert("RGB").resize((work, work), Image.Resampling.LANCZOS) if image.width != work else image.convert("RGB")
+    rgb = np.asarray(base, dtype=float)
+    height = max(top_z - cut_z, 1e-9)
+    corners = np.asarray(positions)[np.asarray(triangles)]
+    middle = corners.mean(axis=1)
+    sideways = np.linalg.norm(middle[:, :2] - np.asarray(centre)[:2], axis=1) / max(radius, 1e-9)
+    high = (middle[:, 2] <= cut_z + SEAM_ABOVE * height) & (middle[:, 2] >= cut_z - SEAM_BELOW * height)
+    band = high & (sideways >= SEAM_INNER) & (sideways <= SEAM_OUTER)
+    roof = high & (sideways > SEAM_OUTER) & (sideways <= SEAM_REFERENCE)
+    report = {"band_triangles": int(band.sum()), "roof_triangles": int(roof.sum())}
+    if band.sum() < 3 or roof.sum() < 3:
+        report["skipped"] = "too few triangles in the seam band or the roof round it"
+        return base, report
+    band_mask = _triangle_mask(uv, np.asarray(triangles)[band], work)
+    roof_mask = _triangle_mask(uv, np.asarray(triangles)[roof], work) & ~band_mask
+    if band_mask.sum() < 4 or roof_mask.sum() < 4:
+        report["skipped"] = "the seam band or the roof round it has no texels"
+        return base, report
+    median = np.median(rgb[roof_mask], axis=0)
+    off = _off_roof(rgb[band_mask], median)
+    report.update({"texels": int(band_mask.sum()), "roof_median": [round(float(v), 1) for v in median], "off_before": round(float(off.mean()), 4)})
+    # the roof's own scatter sets what the roof counts as normal: a band no wilder than the roof round it is left alone
+    roof_off = float(_off_roof(rgb[roof_mask], median).mean())
+    report["off_roof"] = round(roof_off, 4)
+    if float(off.mean()) <= roof_off + 0.02:
+        report["off_after"] = report["off_before"]
+        return base, report
+    texels = rgb[band_mask]
+    luma = np.clip(texels @ LUMA / max(float(median @ LUMA), 1e-6), 1.0 - 0.75 * SEAM_LUMA, 1.0 + 0.5 * SEAM_LUMA)
+    matched = median[None, :] * luma[:, None]
+    mix = off.astype(float)[:, None]
+    fixed = rgb.copy()
+    fixed[band_mask] = texels * (1.0 - mix) + matched * mix
+    report["off_after"] = round(float(_off_roof(fixed[band_mask], median).mean()), 4)
+    return Image.fromarray(np.uint8(np.round(np.clip(fixed, 0, 255))), "RGB"), report
+
+
+# Contrast: a flat Tripo texture against vanilla's ---------------------------------------------------------------------
+
+CONTRAST_MAX_GAIN = 1.5  # the lift never stretches the brightness spread by more than this (a moderate lift, not a repaint)
+CONTRAST_HEIGHT = 0.15  # of its brightness, the most a texel is darkened at the model's foot or lightened at its top
+CONTRAST_SIZE = 256  # the side the texture's spread is measured at
+
+
+def luma_spread(rgb: np.ndarray, covered: np.ndarray) -> float:
+    """The brightness spread of the texels the model uses: their standard deviation over their mean (`rgb` is the
+    texture, `covered` the texels some face uses)."""
+
+    luma = (np.asarray(rgb, dtype=float) @ LUMA)[covered]
+    return float(luma.std() / max(float(luma.mean()), 1e-6)) if luma.size else 0.0
+
+
+def covered_texels(uv: np.ndarray, triangles: np.ndarray, size: int) -> np.ndarray:
+    return group_map(uv, triangles, np.zeros(len(triangles), dtype=np.int64), size) >= 0
+
+
+def texture_spread(image: Image.Image, uv: np.ndarray, triangles: np.ndarray) -> float:
+    """`luma_spread` of a colour texture at `CONTRAST_SIZE`, over the texels the faces' UVs cover."""
+
+    rgb = np.asarray(image.convert("RGB").resize((CONTRAST_SIZE, CONTRAST_SIZE), Image.Resampling.BOX), dtype=float)
+    return luma_spread(rgb, covered_texels(uv, triangles, CONTRAST_SIZE))
+
+
+def _height_map(uv: np.ndarray, heights: np.ndarray, triangles: np.ndarray, size: int) -> np.ndarray:
+    """(size, size) height of the surface under each texel (NaN where no face is), interpolated across each triangle."""
+
+    out = np.full((size, size), np.nan)
+    pixels = np.asarray(uv, dtype=float) * size
+    for tri in np.asarray(triangles):
+        a, b, c = pixels[tri]
+        x0, x1 = int(max(np.floor(min(a[0], b[0], c[0])), 0)), int(min(np.ceil(max(a[0], b[0], c[0])), size - 1))
+        y0, y1 = int(max(np.floor(min(a[1], b[1], c[1])), 0)), int(min(np.ceil(max(a[1], b[1], c[1])), size - 1))
+        if x1 < x0 or y1 < y0:
+            continue
+        det = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
+        if abs(det) < 1e-9:
+            continue
+        xs, ys = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(y0, y1 + 1) + 0.5)
+        w0 = ((b[1] - c[1]) * (xs - c[0]) + (c[0] - b[0]) * (ys - c[1])) / det
+        w1 = ((c[1] - a[1]) * (xs - c[0]) + (a[0] - c[0]) * (ys - c[1])) / det
+        w2 = 1.0 - w0 - w1
+        inside = (w0 >= -0.02) & (w1 >= -0.02) & (w2 >= -0.02)
+        value = w0 * heights[tri[0]] + w1 * heights[tri[1]] + w2 * heights[tri[2]]
+        block = out[y0:y1 + 1, x0:x1 + 1]
+        block[inside] = value[inside]
+    return out
+
+
+def contrast_lift(image: Image.Image, uv: np.ndarray, heights: np.ndarray, triangles: np.ndarray, target: float) -> Tuple[Image.Image, dict]:
+    """(the texture with its brightness spread lifted to `target`, a report). Tripo's colour maps are flatter than vanilla's
+    (a light tank's texture spreads its brightness by 0.43 to 0.64 of the mean, a Smart Mesh tank's by under 0.2), so at map
+    size the model is a flat slab. The lift stretches the brightness about its median by `target` over the measured spread
+    (at most `CONTRAST_MAX_GAIN`, colour kept), then darkens the foot of the model and lightens its top by up to
+    `CONTRAST_HEIGHT`, the way vanilla's light falls on a tank. `heights` is one value per vertex. A texture at or over the
+    target is left as it is."""
+
+    work = min(ANALYSIS_SIZE, image.width)
+    base = image.convert("RGB").resize((work, work), Image.Resampling.LANCZOS) if image.width != work else image.convert("RGB")
+    rgb = np.asarray(base, dtype=float)
+    covered = covered_texels(uv, triangles, work)
+    before = luma_spread(rgb, covered)
+    report = {"spread_before": round(before, 3), "target": round(float(target), 3)}
+    if before >= target or not covered.any():
+        report["spread_after"] = report["spread_before"]
+        return base, report
+    luma = rgb @ LUMA
+    median = float(np.median(luma[covered]))
+    gain = float(min(CONTRAST_MAX_GAIN, target / max(before, 1e-6)))
+    stretched = median + (luma - median) * gain
+    span = max(float(np.ptp(heights)), 1e-9)
+    height = _height_map(uv, (heights - float(heights.min())) / span, triangles, work)
+    ramp = 1.0 + CONTRAST_HEIGHT * (2.0 * np.nan_to_num(height, nan=0.5) - 1.0)
+    wanted = np.clip(stretched, 4.0, 250.0) * ramp
+    scale = np.where(covered, np.clip(wanted / np.maximum(luma, 4.0), 0.4, 2.5), 1.0)
+    fixed = np.clip(rgb * scale[..., None], 0, 255)
+    report.update({"gain": round(gain, 3), "spread_after": round(luma_spread(fixed, covered), 3)})
+    return Image.fromarray(np.uint8(np.round(fixed)), "RGB"), report
