@@ -74,7 +74,7 @@ KIND_NOTES = {
 def close_review(folder: Path, kind: str, out: Path, notes: List[str]) -> List[Path]:
     # the disc is the game's ground (a ship's water) at z = 0, where the route puts it
     # a ship's water is see-through (60 % opaque), so the hull under it shows as it sinks
-    sheets = review_unit.render(folder, None, out, None, frames=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0,
+    sheets = review_unit.render(folder, None, out, None, review_unit.REVIEW_STEP, count=5, size=512, diagnostics=True, notes=KIND_NOTES[kind] + notes, checklist=True, ground_z=0.0,
                                 ground_alpha=WATER_ALPHA if kind == "ship" else 1.0,
                                 texture_anim_speed=(sk.kind_contract(kind).get("rules", {}).get("tracks") or {}).get("texture_anim_speed"), sun_shadow=False)
     mesh = sorted(folder.glob("*.mesh"))[0]

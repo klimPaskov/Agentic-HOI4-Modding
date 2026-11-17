@@ -165,7 +165,8 @@ class ReviewLightingTests(unittest.TestCase):
         # as painted texture in a tank's review; the static sheets turn the sun's shadow off
         from tripo import static_sheets
 
-        with mock.patch.object(static_sheets.review_unit, "render", side_effect=SystemExit("stop")) as render:
+        # autospec: the call must match render's signature (a renamed argument once broke every static sheet)
+        with mock.patch.object(static_sheets.review_unit, "render", autospec=True, side_effect=SystemExit("stop")) as render:
             with self.assertRaises(SystemExit):
                 static_sheets.close_review(Path("model"), "vehicle", Path("out"), [])
         self.assertIs(render.call_args.kwargs.get("sun_shadow"), False)
