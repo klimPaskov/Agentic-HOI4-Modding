@@ -144,15 +144,24 @@ class LoadedPoses(unittest.TestCase):
         self.assertAlmostEqual(_degrees(flee, "Front_Left_Upper"), _degrees(trot, "Front_Left_Upper"), places=6)
         self.assertLessEqual(_degrees(flee, "Neck_01"), abs(_degrees(trot, "Neck_01")) + 1e-9, "the head is not raised into a load")
 
-    def test_the_defend_sweeps_both_ways_steps_and_ends_where_it_began(self) -> None:
-        layout = ql.build_layout(_landmarks(True))
+    def test_the_defend_is_a_braced_guard_turned_one_way_with_planted_feet(self) -> None:
+        layout = ql.build_layout(_landmarks(True, load=True))
         total = ql.frame_count("quadruped_brace")
-        yaws = [_degrees(ql.pose_at("quadruped_brace", frame, layout), "__root_yaw__", ql.Z_AXIS) for frame in range(total)]
-        self.assertAlmostEqual(max(yaws), ql.BRACE_SWEEP, delta=0.5)
-        self.assertAlmostEqual(min(yaws), -ql.BRACE_SWEEP, delta=0.5)
-        self.assertEqual(ql.pose_at("quadruped_brace", 0, layout), ql.pose_at("quadruped_brace", total - 1, layout))
-        swinging = max(range(total), key=lambda frame: abs(yaws[min(frame + 1, total - 1)] - yaws[frame]))
-        self.assertGreater(_degrees(ql.pose_at("quadruped_brace", swinging, layout), "Front_Left_Cannon"), 20.0, "the forefeet step across")
+        poses = [ql.pose_at("quadruped_brace", frame, layout) for frame in range(total)]
+        yaws = [_degrees(pose, "__root_yaw__", ql.Z_AXIS) for pose in poses]
+        self.assertAlmostEqual(yaws[0], 0.0, places=6)
+        self.assertAlmostEqual(yaws[-1], 0.0, places=6)
+        self.assertLessEqual(max(yaws), 1e-9, "it turns to one side only, away from the retreat's turn")
+        self.assertGreater(-min(yaws), ql.GUARD_TURN)
+        self.assertLess(-min(yaws), ql.GUARD_TURN + ql.GUARD_SWEEP + 1e-6)
+        for pose in poses:
+            for side in ("Left", "Right"):
+                self.assertFalse(pose.get(f"Front_{side}_Cannon"), "no forefoot steps")
+        held = poses[total // 2]
+        self.assertGreater(_degrees(held, "Neck_01"), 0.0, "the head is lowered")
+        self.assertLess(_degrees(held, "Front_Left_Upper"), 0.0, "the forefeet are set forward")
+        self.assertNotEqual(_degrees(held, "Front_Left_Upper", ql.Y_AXIS), 0.0, "and spread")
+        self.assertEqual(_degrees(held, "Front_Left_Upper", ql.Y_AXIS), -_degrees(held, "Front_Right_Upper", ql.Y_AXIS))
 
     def test_a_pillar_hip_and_shoulder_turn_no_farther_than_a_walk(self) -> None:
         heavy, light = ql.build_layout(_landmarks(True)), ql.build_layout(_landmarks(False))

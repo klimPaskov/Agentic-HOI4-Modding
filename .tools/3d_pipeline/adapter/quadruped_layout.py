@@ -463,8 +463,10 @@ HEAVY_REACH = 0.6
 REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
 RETREAT_TURN = 30.0  # degrees a heavy animal's retreat turns its forequarters away about the hind feet in the middle of its two strides
 WALK_SWAY = 10.0  # degrees a heavy walk sways its forequarters to each side about the hind feet, once a stride
-BRACE_SWEEP = 14.0  # degrees the defend swings the forequarters to each side about the hind feet
-BRACE_REACH = 6.0  # degrees the defend sets its forelegs forward at the shoulder, the rest of PILLAR_SWING goes to each step
+GUARD_TURN = 20.0  # degrees the defend's guard turns the forequarters about the hind feet, to the side away from the retreat's turn
+GUARD_SWEEP = 5.0  # degrees of the guard's short tusk sweep while it holds
+GUARD_REACH = 10.0  # degrees the guard sets the forelegs forward at the shoulder (within PILLAR_SWING)
+GUARD_SPREAD = 6.0  # degrees the guard spreads the forelegs apart at the shoulder
 # A pillar leg's hip and shoulder turn no farther than a runner's walk swings them. The trot's 22 degrees at the hip stretched the
 # war elephant's hind thigh and flank against the held torso in its retreat (TRIPO-LEG-ROOT-STRETCH 2.4%), and the defend's 25 degrees
 # at the shoulder its foreleg's root (5.3%). At the walk's 16 degrees both measure 0.6% (offline on run 4's weights).
@@ -614,7 +616,6 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         pose["Head"] = [(X_AXIS, 8.0 * lunge)]
     elif style == "quadruped_brace":
         _brace(pose, t, has_tail)
-        free = {leg_name("Front", side, segment) for side in ("Left", "Right") for segment in ("Lower", "Cannon", "Hoof")}
     elif style == "quadruped_rear":
         _rear(pose, t, has_tail, stance["graviportal"])
         # A lifted foreleg carries no weight, so it folds as far as a runner's whatever its build.
@@ -674,35 +675,21 @@ def _gait(pose: Dict[str, List[Rotation]], gait: Gait, t: float, has_tail: bool)
 
 
 def _brace(pose: Dict[str, List[Rotation]], t: float, has_tail: bool) -> None:
-    """The defend of a graviportal animal: braced on its hind legs, it swings its forequarters to one side and the other, sweeping its
-    head and tusks across its front (BRACE_SWEEP degrees about the hind feet), and steps its forefeet across in each swing.
+    """The defend of a graviportal animal: a braced guard. It turns its forequarters GUARD_TURN degrees about the hind feet to the side away
+    from the retreat's turn, sets its forefeet forward and spread and its hind legs back, lowers its head with the tusks forward, and sweeps
+    the tusks a short GUARD_SWEEP while it holds, then comes back to its heading. No foot leaves the ground.
 
-    A small brace (legs apart, weight back, head low) read the same as the idle from the map camera (lib/map_read.py 0.01): only a turn about
-    the vertical changes the silhouette under a tall load (a rigid 10 degree yaw reads 0.17 there, a 10 degree pitch 0.04, a roll 0.06)."""
+    A small brace read the same as the idle from the map camera (lib/map_read.py 0.01): only a turn about the vertical changes the silhouette
+    under a tall load. A sweep to both sides with stepping forefeet read as a copy of the swaying walk, so the guard turns one way only."""
 
-    brace = _smooth(min(1.0, t / 0.15)) * (1 - _smooth(max(0.0, (t - 0.85) / 0.15)))
-    # Out to one side, across to the other, back to the middle: three moves, each with the forefeet off the ground.
-    moves = ((0.05, 0.25, 0.0, 1.0), (0.4, 0.6, 1.0, -1.0), (0.75, 0.95, -1.0, 0.0))
-    side, step = 0.0, 0.0
-    for start, stop, before, after in moves:
-        if t >= stop:
-            side = after
-        elif t > start:
-            share = (t - start) / (stop - start)
-            side, step = before + (after - before) * _smooth(share), math.sin(math.pi * share)
-            break
-        else:
-            side = before
-            break
-    pose["__root_yaw__"] = [(Z_AXIS, BRACE_SWEEP * side)]
-    for leg_side in ("Left", "Right"):
-        # A step: the forearm reaches forward and the foot folds back under it (a fold alone tipped the toe into the ground). The brace
-        # and the step together turn the shoulder no farther than PILLAR_SWING.
-        pose[leg_name("Front", leg_side, "Upper")] = [(X_AXIS, -BRACE_REACH * brace - (PILLAR_SWING - BRACE_REACH) * step)]
-        pose[leg_name("Front", leg_side, "Cannon")] = [(X_AXIS, 40.0 * step)]
-        pose[leg_name("Rear", leg_side, "Upper")] = [(X_AXIS, 8.0 * brace)]
-    pose["Neck_01"] = [(X_AXIS, 12.0 * brace)]
-    pose["Head"] = [(X_AXIS, 6.0 * brace)]  # the tail hangs: a review read a raised one as stiff
+    guard = _smooth(min(1.0, t / 0.25)) * (1 - _smooth(max(0.0, (t - 0.8) / 0.2)))
+    hold = min(1.0, max(0.0, (t - 0.25) / 0.55))
+    pose["__root_yaw__"] = [(Z_AXIS, -(GUARD_TURN + GUARD_SWEEP * math.sin(2 * math.pi * hold)) * guard)]
+    for leg_side, sign in (("Left", 1.0), ("Right", -1.0)):
+        pose[leg_name("Front", leg_side, "Upper")] = [(X_AXIS, -GUARD_REACH * guard), (Y_AXIS, -sign * GUARD_SPREAD * guard)]
+        pose[leg_name("Rear", leg_side, "Upper")] = [(X_AXIS, 6.0 * guard)]
+    pose["Neck_01"] = [(X_AXIS, 16.0 * guard)]
+    pose["Head"] = [(X_AXIS, 8.0 * guard)]  # the tail hangs: a review read a raised one as stiff
 
 
 def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:

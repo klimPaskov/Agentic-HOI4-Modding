@@ -28,7 +28,8 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   both reviews of run 3 its retreat (0.02 from the move) as the move. A retreat is judged against the defend too, at the same limit: run 4
   swung its retreat to both sides as its defend does (0.05 from the defend), and a review read them as one clip. A move is judged against
   the idle at the same 0.15, under the horse walk's 0.175 against its forward idle: run 5's heavy walk read 0.01, and a review could not
-  tell it from the idle at map size.
+  tell it from the idle at map size. A defend is judged against the move at 0.15 too: run 6 swayed its defend to both sides with
+  stepping forefeet, and a review read it as a copy of its swaying walk (0.05 from the move).
 - TRIPO-LOOP-HEADING: a move, attack, defend or retreat starts or ends turned more than `HEADING_LIMIT` degrees from the unit's rest
   heading (the best turn about the vertical from the rest pose's vertices, seen from above). Vanilla's horse and camel walk and charge
   start and end within 1.6 degrees and its infantry's move within 8.1, while its idles (the horse 43, the camel 45, the infantry 30) and
@@ -69,7 +70,8 @@ SEAM_PART_EDGES = 30  # a part beside the load is judged when this many seam edg
 MAP_READ_ROLES = {
     "move": (("idle", map_read.MIN_GAIT_READ, "under vanilla's horse walk against its idle, 0.175"),),
     "attack": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),),
-    "defend": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),),
+    "defend": (("idle", map_read.MIN_READ, "vanilla's horse charge against its idle"),
+               ("move", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk")),
     "retreat": (("move", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk"),
                 ("defend", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk")),
 }
