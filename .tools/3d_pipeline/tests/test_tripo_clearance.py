@@ -281,6 +281,17 @@ class Staged(unittest.TestCase):
         untouched = C.bridge_turns(turns, lambda frame, vector: False, [35.0])
         np.testing.assert_array_equal(untouched, turns)
 
+    def test_the_wrist_room_bridges_the_hands_jumps_before_the_easing_sees_them(self) -> None:
+        pivot = np.array([0.8, 0.0, 0.0])
+        frames = [stick(pivot, length=0.5, count=60)] * 4 + [stick(pivot + [0.9, 0, 0], length=0.5, count=60)] * 4
+        pivots = [pivot] * 4 + [pivot + [0.9, 0, 0]] * 4
+        loose = C.clear_clip_staged(frames, pivots, [self.vertices] * 8, self.triangles, 1.0)
+        bridged = C.clear_clip_staged(frames, pivots, [self.vertices] * 8, self.triangles, 1.0, wrist_room=[10.0] * 7)
+        steps = lambda r: max(C.turn_between(r["rotvecs"][i], r["rotvecs"][i + 1]) for i in range(7))
+        self.assertGreater(steps(loose), 10.0)
+        self.assertLessEqual(steps(bridged), 10.0 + 1e-6)
+        self.assertEqual(bridged["failed"], [])
+
     def test_no_arm_turn_puts_the_wrist_in_the_body(self) -> None:
         shoulder, elbow, wrist = np.array([0.8, 0.0, 0.9]), np.array([0.7, 0.0, 0.7]), np.array([0.6, 0.0, 0.52])
         points = stick(wrist, length=0.6, count=60)

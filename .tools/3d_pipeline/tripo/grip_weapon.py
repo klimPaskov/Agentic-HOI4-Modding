@@ -900,6 +900,7 @@ def soft_cloth_mask(c):
 
 
 CLEARANCE_PASSES = 3  # the clearance, then the easing of its turns, measured again: a frame the easing put back in the body is cleared again
+WRIST_ROOM_DEGREES = 4.0  # the least a frame's added wrist turn may differ from the next frame's (`clear_action`)
 
 
 def clear_weapon_from_body(c):
@@ -989,9 +990,10 @@ def clear_action(c, action, triangles, soft):
     use_action(arm, action)
     first, last = int(action.frame_range[0]), int(action.frame_range[1])
     frames_list = list(range(first, last + 1))
-    body_frames, weapon_frames, pivots, grips, hafts, shoulders, joints = [], [], [], [], [], [], []
+    body_frames, weapon_frames, pivots, grips, hafts, shoulders, joints, hand_keys = [], [], [], [], [], [], [], []
     for frame in frames_list:
         scene.frame_set(frame)
+        hand_keys.append(Quaternion(arm.pose.bones[hand_name].rotation_quaternion))
         body_frames.append(evaluated_coords(body))
         weapon_frames.append(evaluated_coords(weapon))
         pivots.append(np.array(arm.matrix_world @ arm.pose.bones[hand_name].head))
@@ -1004,8 +1006,12 @@ def clear_action(c, action, triangles, soft):
     if action.name in c.drop_clips:
         skip = int(c.hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
     can_roll = args.weapon_bone and action.name not in c.drop_clips and part_bone in arm.pose.bones
+    # the hand may turn no faster than the easing lets it (`ease_clip`'s trigger) beyond what the clip's own hand already turns, so the easing
+    # does not retime the turns and carry the weapon back in; at least `WRIST_ROOM_DEGREES` where the clip itself is that fast
+    own = [math.degrees(hand_keys[i].rotation_difference(hand_keys[i + 1]).angle) for i in range(len(hand_keys) - 1)]
+    room = [max(args.ease_snaps - step, WRIST_ROOM_DEGREES) for step in own]
     result = CL.clear_clip_staged(weapon_frames, pivots, body_frames, triangles, height, grips=grips if can_roll else None,
-                                  haft_axes=hafts if can_roll else None, shoulders=shoulders, arm_joints=joints, up_axis=2,
+                                  haft_axes=hafts if can_roll else None, shoulders=shoulders, arm_joints=joints, up_axis=2, wrist_room=room,
                                   skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre, soft=soft, soft_share=args.soft_share)
     rolled = can_roll and float(np.abs(result["rolls"]).max()) > 1e-6
     part_keyed = any(fcurve.data_path == f'pose.bones["{part_bone}"].rotation_quaternion' for fcurve, _c in action_fcurves(action))

@@ -522,12 +522,17 @@ def clear_clip_staged(
     shoulders: Optional[Sequence[np.ndarray]] = None,
     arm_joints: Optional[Sequence[np.ndarray]] = None,
     up_axis: int = 2,
+    wrist_room: Optional[Sequence[float]] = None,
     **options,
 ) -> Dict[str, object]:
     """`clear_clip` (the wrist), then for the frames it leaves over the limit the roll of the part about its haft (when `grips` and `haft_axes`,
     the grip point and the haft's direction per frame before any turn, are given), then the upper arm (when `shoulders` and `arm_joints`, the
     elbow and the wrist per frame, are given). Returns `clear_clip`'s result with "rolls" (radians per frame, about the haft as the wrist turn
-    carries it), "arm_rotvecs" (per frame, about the shoulder), "after" and "failed" over all three, and the frames each stage worked on."""
+    carries it), "arm_rotvecs" (per frame, about the shoulder), "after" and "failed" over all three, and the frames each stage worked on.
+
+    `wrist_room` (degrees per step between frames i and i + 1) bridges the wrist's turns first (`bridge_turns`), so the hand turns no faster
+    than that more than the clip already does: the grip stage passes what its easing allows, because the easing of a turn that snaps
+    retimes it and carries the weapon back into the body (the ogre's chop: 29% in frames 68 to 72 after an 85 degree snap)."""
 
     limit = options.get("limit", LIMIT)
     target = options.get("target", TARGET)
@@ -538,6 +543,12 @@ def clear_clip_staged(
     skip_from = options.get("skip_from")
     last = count if skip_from is None else min(skip_from, count)
     free = _clip_free_points(weapon_frames, pivots, height, options.get("rest_weapon"), options.get("rest_grip"))
+    if wrist_room is not None:
+        room = [float(wrist_room[i]) if i + 1 < last else np.inf for i in range(count - 1)]
+        result["rotvecs"] = bridge_turns(result["rotvecs"], lambda i, vector: deep_share(
+            (free[i] - pivots[i]) @ rotvec_matrix(vector).T + pivots[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE,
+            ground_axis=ground_axis) <= limit, room)
+        result["after"] = _clip_shares(free, pivots, result["rotvecs"], body_frames, body_triangles, height, last, ground_axis=ground_axis)
     wrist = [rotvec_matrix(result["rotvecs"][i]) for i in range(count)]
     turned = [(free[i] - pivots[i]) @ wrist[i].T + pivots[i] for i in range(count)]
     rolls = np.zeros((count, 3))  # the roll as a rotation vector about the haft as the wrist carries it, so it smooths like the others
