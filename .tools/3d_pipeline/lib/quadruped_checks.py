@@ -21,6 +21,8 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   0.5% of its 28,504 edges in its death (vanilla 4.2%) while the ear roots and the neck under the tower's front tore, and run 3 creased the
   top of the neck against the tower's front in its retreat while only 0.65% of the whole seam's edges stretched. Beside the head that
   crease is 16% of the edges (played offline on the round 9 mesh).
+- TRIPO-DEATH-LEGS-HANG: a death ends with the second lowest leg's lowest point more than `DEATH_LEG_REST` of the height above the ground: run 9's
+  rolled body had its lower pair 17% up, a review's major.
 - TRIPO-LOAD-NOT-DOWN: a death ends with the load's lowest point more than `LOAD_REST_LIMIT` of the height above the ground: a review read a
   tower sticking out sideways with its outer end in the air as a rigid block, not a fallen load.
 - TRIPO-MAP-READ: an attack or a defend changes the silhouette in the map camera from the idle's less than `map_read.MIN_READ`
@@ -50,7 +52,7 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -85,6 +87,7 @@ HEADING_LIMIT = 10.0  # degrees: vanilla's horse and camel walk and charge start
 LEG_ROOT_SHARE = 0.2  # a leg's root: skin with at least this weight on the torso (Pelvis, Spine, Chest) and on the leg's Upper bone
 LEG_ROOT_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (tripo_checks VANILLA_CLOAK_WORST, 1.97%), rounded
 DEATH_LEG_BEND = 25.0  # degrees
+DEATH_LEG_REST = 0.06  # of the height: how far above the ground the two lowest legs of a dead body may end
 
 
 def is_quadruped(mesh: pdx_deform.SkinnedMesh) -> bool:
@@ -291,7 +294,7 @@ def _load_findings(mesh, clip: str, posed: np.ndarray, edges: np.ndarray, load: 
     return out
 
 
-def _death_findings(mesh, clip: str, anim, posed: np.ndarray, torso: np.ndarray, row: dict) -> List[dict]:
+def _death_findings(mesh, clip: str, anim, posed: np.ndarray, torso: np.ndarray, row: dict, legs: Optional[Dict[str, np.ndarray]] = None) -> List[dict]:
     """TRIPO-DEATH-STIFF-LEGS and TRIPO-NOT-DOWN for a death clip; fills `row`."""
 
     out: List[dict] = []
@@ -299,6 +302,14 @@ def _death_findings(mesh, clip: str, anim, posed: np.ndarray, torso: np.ndarray,
     row["death_leg_bend_degrees"] = round(bend, 1)
     if bend < DEATH_LEG_BEND:
         out.append(_finding("TRIPO-DEATH-STIFF-LEGS", clip, f"the legs bend at most {bend:.0f} degrees (at least {DEATH_LEG_BEND:.0f}): the body falls as a block on straight legs", degrees=round(bend, 1)))
+    if legs:
+        floor = float(mesh.positions[:, 1].min())
+        heights = sorted((float(posed[-1][mask, 1].min() - floor) / max(mesh.height, 1e-6), leg) for leg, mask in legs.items() if mask.any())
+        if len(heights) >= 2:
+            share, leg = heights[1]
+            row["final_lower_legs_share"] = round(share, 4)
+            if share > DEATH_LEG_REST:
+                out.append(_finding("TRIPO-DEATH-LEGS-HANG", clip, f"the two lowest legs end up to {share:.0%} of the height above the ground ({leg} is the second, limit {DEATH_LEG_REST:.0%}): the lying legs hang in the air instead of resting on the ground", share=round(share, 4)))
     if torso.any():
         belly = float(posed[-1][torso, 1].min() - mesh.positions[:, 1].min()) / max(mesh.height, 1e-6)
         row["final_torso_lowest_share"] = round(belly, 4)
@@ -337,7 +348,7 @@ def quadruped_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform
                 frame = int(np.argmin(lowest))
                 out.append(_finding("TRIPO-FOOT-BELOW-GROUND", clip, f"a hoof sinks {-lowest.min():.2%} of the height under the ground in frame {frame} (limit {tripo_pose.FOOT_SINK_LIMIT:.1%})", share=round(float(-lowest.min()), 4), frame=frame))
         if role == "death":
-            out += _death_findings(mesh, clip, anim, posed, torso, row)
+            out += _death_findings(mesh, clip, anim, posed, torso, row, {prefix: np.array([name.startswith(prefix) for name in dominant]) for prefix in ("Front_Left", "Front_Right", "Rear_Left", "Rear_Right")})
         if role in HEADING_ROLES:
             out += _heading_findings(mesh, clip, posed, row)
         out += _load_findings(mesh, clip, posed, edges, load, seam, row)
