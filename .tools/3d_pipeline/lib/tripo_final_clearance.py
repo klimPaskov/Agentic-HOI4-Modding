@@ -28,6 +28,12 @@ from lib.pdx_binary import read
 UP_AXIS = 1  # the exported files' up axis
 GRIP_ZONE_SHARE = 0.12  # as the check (tripo/tripo_checks.WEAPON_GRIP_ZONE_SHARE): held points this near the part's own joint at rest are the grip
 MAX_POINTS = 600
+RAMP_DEGREES = 8.0  # the turn added to a hand grows or fades by at most this many degrees a frame (`ramped`), well under the spin rule's 37 and the route's 14 degree snap easing
+# The unit's spin check (UNIT-ANIM-SPIN) fails a joint that turns more than vanilla's fastest (37 degrees) in one frame. A turn that cannot be ramped
+# (the swing passes through the body in one frame and is clear in the next) is smoothed over more frames until no frame of the hand turns more than this;
+# the frames the smoothing leaves in the body are reported and judged by TRIPO-WEAPON-IN-BODY, which fails loudly where a run that stopped would hide it.
+MAX_HAND_STEP_DEGREES = 35.0
+SMOOTH_RADII = (0, 1, 2, 3, 4, 6, 8)
 MAX_PASSES = 2  # a hand turned for one part can move the other part's frames a little: one more pass
 
 
@@ -42,6 +48,7 @@ class PropClearance:
     worst_after: float = 0.0
     failed_frames: List[int] = field(default_factory=list)
     note: str = ""
+    smoothed_over: int = 0  # the radius (frames) the hand's added turn was smoothed over to stay under the spin limit
 
 
 def _frames_of(anim: pdx_deform.Animation) -> int:
@@ -94,6 +101,33 @@ def _rotation_vectors_to_quaternions(world: np.ndarray, parent: int, hand: int, 
     return out
 
 
+def ramped(rotvecs: np.ndarray, needed: Sequence[bool], step_degrees: float = RAMP_DEGREES, clear=None) -> np.ndarray:
+    """`rotvecs` with the turn extended into the frames that had none, fading by `step_degrees` a frame, so the hand's added turn never jumps.
+
+    The solve takes the smallest turn that clears each frame, and a turn that starts or ends at a frame (the prop sweeping into the body, or out of it)
+    is a step of tens of degrees in one frame, which the unit's own spin check fails (UNIT-ANIM-SPIN). The frames in `needed` (the prop is in the body
+    without a turn) keep their turn. Every other frame starts with none and takes the turn of the frame next to it at `step_degrees` less, frame after
+    frame, so long as `clear(frame, vector)` says the prop is out of the body with it (a share of that turn is tried when it is not, and none when no
+    share is)."""
+
+    step = np.radians(step_degrees)
+    out = np.array(rotvecs, float)
+    fixed = np.asarray(needed, bool)
+    out[~fixed] = 0.0
+    for order, side in ((range(1, len(out)), -1), (range(len(out) - 2, -1, -1), 1)):
+        for i in order:
+            j = i + side
+            size = float(np.linalg.norm(out[j]))
+            if fixed[i] or size <= step or float(np.linalg.norm(out[i])) >= size - step:
+                continue
+            wanted = out[j] * ((size - step) / size)
+            for share in (1.0, 0.75, 0.5, 0.25):
+                if clear is None or clear(i, wanted * share):
+                    out[i] = wanted * share
+                    break
+    return out
+
+
 def clear_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: str, others: Sequence[str], keyed: Sequence[str]):
     """(the clip with the hand's turns applied, the record). The clip itself when the part is clear in every frame."""
 
@@ -121,16 +155,31 @@ def clear_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: s
         weapon_frames.append(posed[indices][free])
         body_frames.append(posed[body])
         pivots.append(world[frame, hand, :3, 3])
-    result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, ground_axis=UP_AXIS)
+    result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, ground_axis=UP_AXIS, coherent=True)
     record.worst_before = float(max(result["before"]))
     record.worst_after = float(max(result["after"]))
     record.failed_frames = [int(i) for i in result["failed"]]
     if record.worst_before <= CL.TARGET:
         return anim, record
-    rotvecs = result["rotvecs"]
+    needed = [CL.deep_share(weapon_frames[i], body_frames[i], triangles, height, CL.CLEAR_MARGIN_SHARE, ground_axis=UP_AXIS) > CL.TARGET
+              for i in range(len(weapon_frames))]
+    rotvecs = ramped(result["rotvecs"], needed, clear=lambda frame, vector: CL.deep_share(
+        (weapon_frames[frame] - pivots[frame]) @ CL.rotvec_matrix(vector).T + pivots[frame], body_frames[frame], triangles, height,
+        CL.CLEAR_MARGIN_SHARE, ground_axis=UP_AXIS) <= CL.TARGET)
     q = anim.channels[hand_name]["q"]
+    for radius in SMOOTH_RADII:
+        turned = CL.smooth_rotations(rotvecs, radius=radius) if radius else rotvecs
+        new_q = _rotation_vectors_to_quaternions(world, int(mesh.parents[hand]), hand, q, turned)
+        steps = [tripo_pose.quaternion_turn(new_q[i], new_q[i + 1]) for i in range(len(new_q) - 1)]
+        if max(steps, default=0.0) <= MAX_HAND_STEP_DEGREES:
+            break
+    rotvecs = turned
+    after = CL._clip_shares(weapon_frames, pivots, rotvecs, body_frames, triangles, height, len(weapon_frames), ground_axis=UP_AXIS)
+    record.worst_after = float(max(after))
+    record.failed_frames = [i for i, share in enumerate(after) if share > CL.LIMIT]
+    record.smoothed_over = radius
     channels = {name: dict(channel) for name, channel in anim.channels.items()}
-    channels[hand_name] = dict(channels[hand_name], q=_rotation_vectors_to_quaternions(world, int(mesh.parents[hand]), hand, q, rotvecs))
+    channels[hand_name] = dict(channels[hand_name], q=new_q)
     record.changed = True
     record.frames_changed = int(result["frames_changed"])
     record.max_degrees = round(float(result["max_degrees"]), 1)

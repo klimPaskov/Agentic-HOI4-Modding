@@ -36,6 +36,11 @@ SOFT_SHARE = 0.04  # a weapon keeps this far (share of the height) from cloth th
 # in the body, so the wrist turns it out of the ground too. The round 4 orc's guard crouch held its axe 3.3% under the feet (TRIPO-WEAPON-BELOW-GROUND).
 # None switches it off. The drop after a release has its own ground rule.
 GROUND_AXIS: Optional[int] = 2
+# `clear_clip(coherent=True)`: a frame's solve tries the axes (of `COHERENT_AXES` spread over the sphere) within this cosine of the previous solved frame's axis
+# first, if that frame is at most `COHERENT_GAP` frames back.
+COHERENT_AXES = 120
+COHERENT_COSINE = 0.8
+COHERENT_GAP = 3
 
 
 def _clip_check():
@@ -218,9 +223,12 @@ def clear_clip(
     soft: Optional[np.ndarray] = None,
     soft_share: float = 0.0,
     ground_axis: Optional[int] = GROUND_AXIS,
+    coherent: bool = False,
 ) -> Dict[str, object]:
     """Solve a whole clip. Per frame i: `weapon_frames[i]` (all weapon points), `pivots[i]` (the wrist joint), `body_frames[i]` (the body's posed vertices).
 
+    With `coherent`, a frame's solve first tries only the axes within `COHERENT_CONE` of the previous solved frame's axis (and the full set when none of
+    them clears it), so the hand's added turn changes smoothly from frame to frame and does not fail a spin check where the axis flips.
     Frames from `skip_from` on (the weapon has been let go) are left alone. `soft` and `soft_share` (see `deep_share`) keep the weapon clear of
     swinging cloth: the solve aims at them, but only the hard test (the check's own) decides which frames "failed". Returns the rotation vector per frame ("rotvecs"), the deep share
     per frame before and after, the frames still over `limit` ("failed") and the largest angle used in degrees.
@@ -232,9 +240,19 @@ def clear_clip(
     before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, ground_axis=ground_axis) if i < last else 0.0 for i in range(count)]
     wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis) if i < last else 0.0 for i in range(count)]
     raw = np.zeros((count, 3))
+    previous, previous_at = None, -10
+    cone = fibonacci_axes(COHERENT_AXES)
     for i in range(last):
         if wanted[i] > target:
-            raw[i], _left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share, ground_axis=ground_axis)
+            near = None
+            if coherent and previous is not None and i - previous_at <= COHERENT_GAP:
+                near = cone[cone @ previous > COHERENT_COSINE]
+            raw[i], left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, near if near is not None and len(near) else None,
+                                       soft=soft, soft_share=soft_share, ground_axis=ground_axis)
+            if near is not None and len(near) and left > target:
+                raw[i], left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share, ground_axis=ground_axis)
+            if np.linalg.norm(raw[i]) > 0:
+                previous, previous_at = raw[i] / np.linalg.norm(raw[i]), i
     rotvecs = smooth_rotations(_hold_neighbours(raw, last), radius=1)
     # from the release on the weapon is free: the hand's rotation fades out over the next frames, so it does not snap back
     if skip_from is not None and 0 < last < count:
