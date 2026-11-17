@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from collections import deque
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -206,6 +206,30 @@ def delight(image: Image.Image, groups: np.ndarray) -> Tuple[Image.Image, dict]:
     return Image.fromarray(np.uint8(np.round(lifted)), "RGB"), report
 
 
+HOLE_PERCENTILE = 5.0  # a hole's colour: the darkest twentieth of the texels the model uses
+HOLE_SIZE = 256  # the side the dark patch is looked for at (the final textures' small mip levels)
+
+
+def hole_uv(image: Image.Image, groups: np.ndarray) -> dict:
+    """Where in the atlas a hole's dark interior is: the texel deepest inside the largest patch of the darkest texels
+    (`HOLE_PERCENTILE`) that the model's faces cover, so the colour holds when the texture is mipmapped. A face given
+    this UV at every corner is one flat dark colour, as the inside of a turret ring blown open.
+
+    `groups` is the group_map (any size, -1 off the model). Returns {"uv": [u, v] (glTF, v down), "luma", "ratio" (of
+    the covered texels' median), "depth" (texels at HOLE_SIZE)}."""
+
+    rgb = np.asarray(image.convert("RGB").resize((HOLE_SIZE, HOLE_SIZE), Image.Resampling.BOX), dtype=float)
+    covered = np.asarray(Image.fromarray(groups.astype(np.int32), "I").resize((HOLE_SIZE, HOLE_SIZE), Image.Resampling.NEAREST), dtype=np.int64) >= 0
+    luma = rgb @ LUMA
+    if not covered.any():
+        covered = np.ones_like(covered)
+    dark = covered & (luma <= np.percentile(luma[covered], HOLE_PERCENTILE))
+    depth = ndimage.distance_transform_edt(dark)
+    y, x = np.unravel_index(int(np.argmax(depth)), depth.shape)
+    return {"uv": [float((x + 0.5) / HOLE_SIZE), float((y + 0.5) / HOLE_SIZE)], "luma": round(float(luma[y, x]), 1),
+            "ratio": round(float(luma[y, x]) / max(float(np.median(luma[covered])), 1e-6), 3), "depth": round(float(depth[y, x]), 1)}
+
+
 # glTF and PDX readers ---------------------------------------------------------------------------------------------
 
 def glb_uv_geometry(path: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -246,8 +270,10 @@ def glb_groups(path: Path, size: int) -> np.ndarray:
     return group_map(uv, triangles, facet_labels(positions, triangles), size)
 
 
-def mesh_uv_geometry(mesh_path: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """(positions, uv, triangles) of the rendered streams of a PDX mesh (collision shapes left out)."""
+def mesh_uv_geometry(mesh_path: Path, diffuse: Optional[str] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """(positions, uv, triangles) of the rendered streams of a PDX mesh (collision shapes left out). With `diffuse` (a
+    file name), only the streams whose material names that colour texture, or names none: a tank's track runs are a
+    second stream on their own tread texture, and their UVs mean nothing on the atlas."""
 
     from lib import pdx_binary
 
@@ -258,6 +284,9 @@ def mesh_uv_geometry(mesh_path: Path) -> Tuple[np.ndarray, np.ndarray, np.ndarra
             material = stream.child("material")
             shader = (material.properties.get("shader") or [""])[0] if material is not None else ""
             if str(shader).lower() == "collision":
+                continue
+            named = (material.properties.get("diff") or [None])[0] if material is not None else None
+            if diffuse is not None and named is not None and str(named).lower() != diffuse.lower():
                 continue
             p = np.asarray(stream.properties.get("p", []), dtype=float).reshape(-1, 3)
             u = np.asarray(stream.properties.get("u0", []), dtype=float).reshape(-1, 2)
@@ -278,7 +307,7 @@ def shadow_findings(mesh_path: Path, diffuse_path: Path) -> List[Tuple[str, str,
 
     if not Path(diffuse_path).is_file():
         return []
-    positions, uv, triangles = mesh_uv_geometry(mesh_path)
+    positions, uv, triangles = mesh_uv_geometry(mesh_path, Path(diffuse_path).name)
     if not len(triangles):
         return []
     with Image.open(diffuse_path) as opened:

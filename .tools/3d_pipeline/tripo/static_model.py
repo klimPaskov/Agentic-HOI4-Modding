@@ -80,6 +80,18 @@ def delighted(source: Image.Image, glb: Path, report: dict) -> Image.Image:
     return lifted if found["regions"] else source
 
 
+def hole_texel(glb: Path, colour: Path) -> Optional[dict]:
+    """The atlas texel a blown-open turret ring takes (lib/static_delight.hole_uv), from the packed colour map and the
+    faces the GLB's UVs cover, or None when the GLB has no UVs."""
+
+    try:
+        with Image.open(colour) as opened:
+            image = opened.convert("RGB")
+        return static_delight.hole_uv(image, static_delight.glb_groups(glb, min(static_delight.ANALYSIS_SIZE, image.width)))
+    except (KeyError, ValueError):
+        return None
+
+
 def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None) -> Dict[str, dict]:
     """The GLB's base colour, normal and metallic-roughness maps as the kind's PDX diffuse, normal and specular DDS. The
     colour map is delighted first; `delight` (when given) receives what was lifted."""
@@ -281,10 +293,13 @@ def main(argv=None) -> int:
     delight: dict = {}
     textures = pack_textures(glb, contract, name, files, out / "textures", delight)
     motion, barrel_length = clip_motion(game, contract) if contract.get("clips") else ({}, None)
+    hole = hole_texel(glb, out / "textures" / f"{name}_diffuse.png") if kind == "vehicle" else None
     request = {
         "glb": str(glb), "name": name, "out": str(files), "contract": contract, "front": front,
         "textures": {role: entry["file"] for role, entry in textures.items()},
         "motion": motion, "vanilla_barrel_length": barrel_length,
+        # Blender's v runs up, glTF's down
+        "hole_uv": [hole["uv"][0], 1.0 - hole["uv"][1]] if hole else None,
         "report": str(out / "blender_report.json"), "blend": str(out / f"{name}.blend") if args.keep_blend else None,
     }
     request_path = out / "blender_request.json"
@@ -297,6 +312,7 @@ def main(argv=None) -> int:
     (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
     report["textures"] = textures
     report["delight"] = delight
+    report["hole"] = hole
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files

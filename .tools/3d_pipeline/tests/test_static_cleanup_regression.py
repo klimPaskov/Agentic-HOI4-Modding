@@ -1,4 +1,4 @@
-"""Run the static route's surface cleanup in Blender (tests/blender_static_cleanup_integration.py) where a supported
+"""Run the static route's surface cleanup and shading rule in Blender (tests/blender_static_cleanup_integration.py) where a supported
 Blender is installed; skip elsewhere (CI)."""
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ SCRIPT = PIPELINE / "tests" / "blender_static_cleanup_integration.py"
 
 @unittest.skipUnless(BLENDER and BLENDER.exists(), "no supported Blender installed")
 class StaticCleanup(unittest.TestCase):
-    def test_slivers_go_and_flat_cards_get_a_thickness(self) -> None:
+    def test_slivers_go_cards_get_a_thickness_and_shading_keeps_its_creases(self) -> None:
         completed = subprocess.run(
             [str(BLENDER), "--background", "--factory-startup", "--python-exit-code", "1", "--python", str(SCRIPT)],
             capture_output=True,

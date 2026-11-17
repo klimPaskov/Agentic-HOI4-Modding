@@ -12,10 +12,13 @@ motion relative to its parent (`lib.static_kinds.local_motion`), and where to wr
    and the cut is closed.
 2. Welds by position and collapse-decimates to the kind's triangle budget, checking the silhouettes (`lib.tripo_shape`).
 3. Cuts the rigid parts on planes found by rule (`turret_cut`, `barrel_cut`, `propeller_cut`), splits them apart and
-   closes each cut with a cap that takes its colours from the faces around it, so a turning turret shows no hole.
+   closes each cut with a cap that takes its colours from the faces around it, so a turning turret shows no hole. The
+   caps on a tank's turret cut (the ring on the hull, the turret's underside) are flat and take the atlas's darkest
+   patch (`hole_uv` from static_model.py), so the ring reads as a hole when the death blows the turret off.
 4. Builds the kind's skeleton (vanilla's bone names; rest places from the parts or from vanilla's shares of the box),
    binds each part rigidly to its bone, adds the `Collision` box and the locators, and gives every rendered shape the
-   kind's PDX material.
+   kind's PDX material. The shading is smooth only across faces within `CREASE_DEGREES` of each other, and no corner
+   leans further from its own face (`static_mesh_ops.crease_shading`).
 5. Keys each role: vanilla's motion about the model's own pivots, displacements scaled by size, plus the turn of a
    tank's turret before the shot and a propeller's spin; exports each at 30 frames a second and the mesh.
 
@@ -43,7 +46,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 from lib import static_kinds as sk
 from lib import static_slab
 from lib import tripo_shape
-from tripo.static_mesh_ops import CARD_GROUP, card_cost, remove_slivers, thicken_cards
+from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, remove_slivers, thicken_cards
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 # Faces within this angle of each other count as one flat plate in the first reduction step (kit rule: a degree or two
@@ -52,6 +55,7 @@ PLANAR_DEGREES = 3.0
 SMALL_HOLE_EDGES = 32
 SLIT_SHARE = 1e-3
 CUT_CLEARANCE = 5e-4
+RING_CAP = "ring_cap"  # a face attribute marking the caps on a tank's turret cut until they are shaded
 contract = request["contract"]
 kind = contract["kind"]
 name = request["name"]
@@ -433,9 +437,16 @@ for part in sorted({p for p in part_of.values() if p != "body"}):
 caps = 0
 if cuts:
     on_cut = lambda v: any(abs((v.co - co).dot(no)) < 1e-4 * size for co, no in cuts)
+    # the caps on a tank's turret cut are marked, so the ring can be told from a deck lying at the cut's height (the
+    # layer first: adding a layer reallocates the face data, which removes every face reference taken before)
+    ring_layer = bm.faces.layers.int.new(RING_CAP) if kind == "vehicle" else None
     rim = [e for e in bm.edges if e.is_boundary and all(on_cut(v) for v in e.verts)]
     filled = bmesh.ops.holes_fill(bm, edges=rim, sides=0)["faces"]
     caps = len(filled)
+    if ring_layer is not None:
+        for face in filled:
+            if abs(face.normal.z) > 0.99 and abs(centre(face).z - turret["cut_z"]) < 1e-4 * size:
+                face[ring_layer] = 1
     # holes_fill copies the rim's UVs across the cap, which smears the texture into a swirl a reviewer sees when the
     # turret is gone (the death clip): every corner of a cap takes one rim UV, so the cap is one flat colour
     uv = bm.loops.layers.uv.active
@@ -507,6 +518,12 @@ face_part = []
 for face in bm.faces:
     piece = votes.get(find(face.verts[0].index))
     face_part.append(max(set(piece), key=piece.count) if piece else region(centre(face)))
+# The caps on a tank's turret cut close the turret ring on the hull and the turret's underside. When the death blows the
+# turret off, the ring must read as a hole, not a neat lid: these faces are shaded flat and take one dark texel (below).
+ring_layer = bm.faces.layers.int.get(RING_CAP)
+ring_caps = [i for i, face in enumerate(bm.faces) if face[ring_layer]] if ring_layer is not None else []
+if RING_CAP in model.data.attributes:
+    model.data.attributes.remove(model.data.attributes[RING_CAP])
 # The clipped tops of hull fittings the turret cut sliced (pieces lying just above the cut) stay on the hull.
 if kind == "vehicle":
     turret_pieces = {}
@@ -585,20 +602,19 @@ while len(model.data.uv_layers) > 1:
     model.data.uv_layers.remove(model.data.uv_layers[-1])
 bpy.context.view_layer.objects.active = model
 model.select_set(True)
-bpy.ops.object.shade_smooth_by_angle(angle=math.radians(40))
-# A corner whose shading normal points against its own face shades as a pale facet (UNIT-NORMALS): it takes the
-# face's normal. Folded or very thin parts of a generated mesh leave a few.
+bpy.ops.object.shade_smooth_by_angle(angle=math.radians(CREASE_DEGREES))
 mesh = model.data
-corner = [Vector(c.vector) for c in mesh.corner_normals]
-flipped = 0
-for polygon in mesh.polygons:
-    for index in polygon.loop_indices:
-        if corner[index].dot(polygon.normal) <= 0.0:
-            corner[index] = polygon.normal.copy()
-            flipped += 1
-if flipped:
-    mesh.normals_split_custom_set(corner)
-report["normals_set_to_face"] = flipped
+# The shading keeps every face within the crease angle of its own normal (static_mesh_ops.crease_shading); the ring
+# caps are flat.
+report["shading"] = crease_shading(mesh, CREASE_DEGREES, flat=ring_caps)
+if ring_caps:
+    hole = request.get("hole_uv")
+    uv = mesh.uv_layers.active.data
+    if hole:
+        for p in ring_caps:
+            for loop_index in mesh.polygons[p].loop_indices:
+                uv[loop_index].uv = (float(hole[0]), float(hole[1]))
+    parts_report["ring_caps"] = {"faces": len(ring_caps), "hole_uv": hole}
 if slab is not None:
     report["slab"]["faces_shaded_flat"] = static_slab.shade_flat(mesh, slab)  # a corner shared with its sides must not lean
 

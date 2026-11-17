@@ -4,12 +4,14 @@
 - `thicken_cards`: flat one-sided cards (`lib.static_kinds.flat_cards`) are solidified, centred on the sheet, as thick as
   `lib.static_kinds.card_thickness` allows, and marked in the deform layer's group `CARD_GROUP`.
 - `card_cost`: the triangles `thicken_cards` will add, for the triangle budget.
+- `crease_shading`: on the Blender mesh, shading normals that never lean past the crease angle from their own face.
 
 `size` is the model's size (its largest side). The rules themselves are in `lib/static_kinds.py`, where the tests reach them.
 """
 
 from __future__ import annotations
 
+import math
 import sys
 from pathlib import Path
 
@@ -24,6 +26,7 @@ if str(PIPELINE_ROOT) not in sys.path:
 from lib import static_kinds as sk
 
 CARD_GROUP = 0  # the vertex group index that marks thickened cards until the last reduction
+CREASE_DEGREES = 40.0  # faces meeting at more than this shade apart (kit rule, the route's smooth-by-angle limit)
 
 
 def bm_arrays(bm):
@@ -106,6 +109,75 @@ def thicken_cards(bm, size):
     bmesh.ops.triangulate(bm, faces=bm.faces[:])
     points, triangles = bm_arrays(bm)
     return {"cards": done, "thickened": sum(1 for c in done if c["thickness"] > 0), "open_edges_after": sk.open_edge_count(triangles)}
+
+
+def _corner_leans(mesh, limit):
+    """Per polygon, whether any of its corners' shading normals leans more than `limit` (a cosine) from its normal."""
+
+    corner = mesh.corner_normals
+    return [any(corner[i].vector.dot(p.normal) < limit for i in p.loop_indices) for p in mesh.polygons]
+
+
+def _clear_custom_normals(mesh):
+    """Drop custom split normals (a glTF import sets the file's own normals as custom ones). True when there were any."""
+
+    if not mesh.has_custom_normals:
+        return False
+    layer = mesh.attributes.get("custom_normal")
+    if layer is not None:
+        mesh.attributes.remove(layer)
+    if mesh.has_custom_normals:
+        mesh.normals_split_custom_set([(0.0, 0.0, 0.0)] * len(mesh.loops))  # zero keeps Blender's own normal
+    return True
+
+
+def crease_shading(mesh, degrees=CREASE_DEGREES, flat=()):
+    """Shading normals that never lean past the crease angle from their own face, on a mesh shaded smooth by angle.
+
+    0. The normals the GLB brought (a glTF import keeps them as custom normals) are dropped. Tripo writes one smooth
+       normal a vertex, averaged across hard corners, and the weld averaged them further: on a Smart Mesh tank, factory
+       and landmark 75 to 82 % of the exported surface had a corner leaning past 45 degrees from its face.
+    1. An edge is sharp where its faces meet at more than `degrees`, and wherever smoothing across it is not defined:
+       an edge with one face or more than two, or one of whose faces has no area.
+    2. A face with a corner whose normal still leans more than `degrees` from the face (a smooth fan that wraps round a
+       tip or a fold, mixing faces that point apart) is shaded flat: its edges are sharp and its corners take its
+       normal. So are the `flat` polygons (indices).
+    A reviewer saw such leaning corners as smeared streaks and an X across a plain wall (the Smart Mesh factory's annex)
+    and as a cone on a flat lid (a tank's empty turret ring). Returns what was found and changed."""
+
+    limit = math.cos(math.radians(degrees))
+    # the GLB's own normals (Tripo writes one smooth normal a vertex, averaged across hard corners) go first
+    imported_leaning = int(sum(_corner_leans(mesh, limit))) if mesh.has_custom_normals else 0
+    imported = _clear_custom_normals(mesh)
+    polygons = mesh.polygons
+    tiny = 1e-12 * max(1.0, max((p.area for p in polygons), default=1.0))
+    faces_of = {}
+    for p in polygons:
+        for key in p.edge_keys:
+            faces_of.setdefault(key, []).append(p.index)
+    sharp = set()
+    for key, faces in faces_of.items():
+        if len(faces) != 2 or any(polygons[f].area <= tiny for f in faces) or polygons[faces[0]].normal.dot(polygons[faces[1]].normal) < limit:
+            sharp.add(key)
+    for edge in mesh.edges:
+        edge.use_edge_sharp = tuple(sorted(edge.vertices)) in sharp
+    mesh.update()
+    leaning = _corner_leans(mesh, limit)
+    flat_faces = set(int(i) for i in flat) | {i for i, lean in enumerate(leaning) if lean}
+    keys = {key for i in flat_faces for key in polygons[i].edge_keys}
+    for edge in mesh.edges:
+        if tuple(sorted(edge.vertices)) in keys:
+            edge.use_edge_sharp = True
+    mesh.update()
+    corner = [c.vector.copy() for c in mesh.corner_normals]
+    for i in flat_faces:
+        for loop in polygons[i].loop_indices:
+            corner[loop] = polygons[i].normal.copy()
+    mesh.normals_split_custom_set(corner)
+    after = _corner_leans(mesh, limit)
+    return {"crease_degrees": degrees, "imported_normals_cleared": imported, "faces_leaning_imported": imported_leaning,
+            "sharp_edges": sum(1 for e in mesh.edges if e.use_edge_sharp), "faces_leaning": int(sum(leaning)),
+            "faces_shaded_flat": len(flat_faces), "faces_leaning_after": int(sum(after))}
 
 
 def card_cost(bm, size):

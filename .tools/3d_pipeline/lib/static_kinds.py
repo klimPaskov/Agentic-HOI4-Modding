@@ -1403,6 +1403,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     - STATIC-PART-GAP: in every frame of every clip (deaths excepted), each rigid part stays on the part it is mounted on
       (no gap wider than `rigid.max_gap_share` of the main measure opens between them).
     - STATIC-LANDING: at a death's last frame a part blown off its mount lies flat on its base on the ground.
+    - STATIC-PART-CLIP: in no frame of any clip does a part mounted on the body (a turret with its gun) pass into it.
     - STATIC-TRACK-GROUND: in every clip but a death a tank's tracks and wheels stay on the ground (within vanilla's
       hull bob on its suspension); only the hull may bob.
     - STATIC-SHADOW: the colour texture has no cast shadow painted into it (`lib/static_delight.py`).
@@ -1449,6 +1450,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
         findings += _part_gaps(mesh, visible, anims, contract, measure)
         findings += _landing(mesh, visible, anims, contract)
         findings += _track_ground(mesh, visible, anims, contract)
+        findings += _part_clips(mesh, visible, anims, contract)
     return findings
 
 
@@ -1489,12 +1491,41 @@ def _surface_findings(mesh_path: Path, mesh, visible: np.ndarray, kind: str) -> 
     from lib import static_delight, static_slab
 
     findings = static_delight.shadow_findings(mesh_path, mesh_path.with_name(f"{mesh_path.stem}_diffuse.dds"))
+    if len(mesh.normals) == len(mesh.positions):
+        rendered = mesh.triangles[visible[mesh.triangles].all(axis=1)]
+        share = leaning_share(mesh.positions, mesh.normals, rendered)
+        if share > SHADING_FAIL_SHARE:
+            findings.append(("STATIC-SHADING", "error", f"{share:.1%} of the surface has a corner whose shading normal leans more than {SHADING_LEAN_DEGREES:g} degrees from its own face "
+                             f"(at most {SHADING_FAIL_SHARE:.0%}); such corners smear plain faces with streaks and make a flat lid look like a cone"))
     if kind in ("building", "landmark") and len(mesh.normals) == len(mesh.positions):
         points = np.array([to_blender(p) for p in mesh.positions])
         normals = np.array([to_blender(p) for p in mesh.normals])
         triangles = mesh.triangles[visible[mesh.triangles].all(axis=1)]
         findings += static_slab.slab_findings(points, triangles, normals)
     return findings
+
+
+SHADING_LEAN_DEGREES = 45.0  # the route's crease angle (40 degrees) and a margin
+SHADING_FAIL_SHARE = 0.01  # STATIC-SHADING fails when corners leaning further cover more than this share of the surface
+
+
+def leaning_share(positions: np.ndarray, normals: np.ndarray, triangles: np.ndarray, degrees: float = SHADING_LEAN_DEGREES) -> float:
+    """The share of the surface (by area) on triangles with a corner whose stored normal leans more than `degrees` from
+    the triangle's own normal ((p1 - p0) x (p2 - p0), the side `pdx_deform.surface_report` calls outward). The route
+    shades smooth only across faces within its crease angle, so no corner of a face should lean further."""
+
+    p, t = np.asarray(positions, float), np.asarray(triangles, np.int64).reshape(-1, 3)
+    if not len(t):
+        return 0.0
+    face = np.cross(p[t[:, 1]] - p[t[:, 0]], p[t[:, 2]] - p[t[:, 0]])
+    area = np.linalg.norm(face, axis=1)
+    keep = area > 1e-12 * max(float(area.max()), 1e-30)
+    face = face[keep] / area[keep, None]
+    stored = np.asarray(normals, float)[t[keep]]
+    stored = stored / np.maximum(np.linalg.norm(stored, axis=2, keepdims=True), 1e-12)
+    worst = np.einsum("tk,tjk->tj", face, stored).min(axis=1)
+    leaning = worst < math.cos(math.radians(degrees))
+    return float(area[keep][leaning].sum() / max(float(area[keep].sum()), 1e-30))
 
 
 LANDING_TILT_DEGREES = 5.0  # a blown-off part lies flat within this (kit rule, "a few degrees")
@@ -1584,6 +1615,96 @@ def _part_gaps(mesh, visible, anims: Sequence[Path], contract: dict, measure: fl
                     worst = (gap, part, f)
         if worst[0] > limit:
             findings.append(("STATIC-PART-GAP", "error", f"{anim_path.name} frame {worst[2]}: the {worst[1]} lifts {worst[0]:.3f} off the part it is mounted on (limit {limit:.3f}, {contract['rigid']['max_gap_share']:.0%} of the {contract['size']['measure']})"))
+    return findings
+
+
+def _edges_of(triangles: np.ndarray) -> np.ndarray:
+    triangles = np.asarray(triangles, dtype=np.int64).reshape(-1, 3)
+    return np.unique(np.sort(np.concatenate([triangles[:, [0, 1]], triangles[:, [1, 2]], triangles[:, [2, 0]]]), axis=1), axis=0)
+
+
+def edge_crossings(points: np.ndarray, edges: np.ndarray, corners: np.ndarray, eps: float = 1e-6) -> int:
+    """How many of the segments (`points[edges]`) pass through the inside of any triangle (`corners`, (T, 3, 3)): the
+    Moller-Trumbore test, ends and rims excluded by `eps`, so a part resting on another (touching) does not count."""
+
+    if not len(edges) or not len(corners):
+        return 0
+    v0 = corners[:, 0]
+    e1, e2 = corners[:, 1] - v0, corners[:, 2] - v0
+    hits = np.zeros(len(edges), dtype=bool)
+    for start in range(0, len(edges), 256):
+        chunk = edges[start : start + 256]
+        a, b = points[chunk[:, 0]], points[chunk[:, 1]]
+        direction = b - a
+        h = np.cross(direction[:, None, :], e2[None])
+        det = np.einsum("tk,etk->et", e1, h)
+        ok = np.abs(det) > 1e-14
+        inv = np.where(ok, 1.0 / np.where(ok, det, 1.0), 0.0)
+        s = a[:, None, :] - v0[None]
+        u = inv * np.einsum("etk,etk->et", s, h)
+        q = np.cross(s, e1[None])
+        v = inv * np.einsum("ek,etk->et", direction, q)
+        t = inv * np.einsum("tk,etk->et", e2, q)
+        hits[start : start + 256] = (ok & (u > eps) & (v > eps) & (u + v < 1 - eps) & (t > eps) & (t < 1 - eps)).any(axis=1)
+    return int(hits.sum())
+
+
+def part_crossings(moving: np.ndarray, moving_triangles: np.ndarray, base: np.ndarray, base_triangles: np.ndarray) -> int:
+    """Edges of either part that pass through the other's surface: a part that clips into the other (a turret's gun
+    or fitting through the hull) has at least one; two parts that only touch or stand apart have none."""
+
+    return (edge_crossings(moving, _edges_of(moving_triangles), base[np.asarray(base_triangles).reshape(-1, 3)])
+            + edge_crossings(base, _edges_of(base_triangles), moving[np.asarray(moving_triangles).reshape(-1, 3)]))
+
+
+def _mounted_on(part: str, mounts: Dict[str, str]) -> set:
+    """The part and every part mounted on it, through any number of mounts (a barrel on a turret)."""
+
+    found = {part}
+    changed = True
+    while changed:
+        changed = False
+        for child, base in mounts.items():
+            if base in found and child not in found:
+                found.add(child)
+                changed = True
+    return found
+
+
+def _part_clips(mesh, visible, anims: Sequence[Path], contract: dict) -> List[Tuple[str, str, str]]:
+    """STATIC-PART-CLIP: in no frame of any clip does a part mounted on the body (a tank's turret, with the gun on it)
+    pass into the body: no edge of either goes through the other's surface. The frames are sampled (at most 24 a
+    clip); a death counts too, so a turret blown off clears the hull on its way."""
+
+    from lib import pdx_deform
+
+    mounts = contract.get("mounts", {})
+    body = (contract.get("parts") or {}).get("body")
+    if not mounts or body not in mesh.bones:
+        return []
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+    rendered = mesh.triangles[visible[mesh.triangles].all(axis=1)]
+    owner = dominant[rendered[:, 0]]
+    inverse = np.array([ib if abs(np.linalg.det(ib)) > 1e-9 else np.eye(4) for ib in mesh.inverse_bind])
+    skinnable = type(mesh)(**{**mesh.__dict__, "inverse_bind": inverse})
+    findings = []
+    groups = [(part, sorted(index[b] for b in _mounted_on(part, mounts) if b in index)) for part, base in mounts.items() if base == body and part in index]
+    base_triangles = rendered[owner == index[body]]
+    for anim_path in anims:
+        matrices = pdx_deform.skinning_matrices(skinnable, pdx_deform.load_anim(anim_path))
+        for part, bones in groups:
+            moving_triangles = rendered[np.isin(owner, bones)]
+            if not len(moving_triangles) or not len(base_triangles):
+                continue
+            worst = (0, 0)
+            for f in range(0, matrices.shape[0], max(1, -(-matrices.shape[0] // 24))):
+                posed = pdx_deform.skin(skinnable, matrices[f])
+                crossings = part_crossings(posed, moving_triangles, posed, base_triangles)
+                if crossings > worst[0]:
+                    worst = (crossings, f)
+            if worst[0]:
+                findings.append(("STATIC-PART-CLIP", "error", f"{anim_path.name} frame {worst[1]}: {worst[0]} edges of the {part} and the {body} pass through each other; nothing mounted on the {body} may clip into it"))
     return findings
 
 

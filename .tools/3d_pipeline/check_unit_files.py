@@ -93,6 +93,8 @@ Model-kind rules (with `--model-kind building|landmark|ship|vehicle|plane`, for 
 - STATIC-BONES, STATIC-LOCATORS, STATIC-COLLISION: the bones, locators and `Collision` box vanilla's entity and clips use.
 - STATIC-RIGID: every rendered vertex follows one bone wholly, so no part bends.
 - STATIC-PART-GAP: no rigid part lifts off the part it is mounted on in any frame (deaths excepted).
+- STATIC-PART-CLIP: no part mounted on the body (a turret with its gun) passes into it in any frame of any clip.
+- STATIC-SHADING: no more than 1 % of the surface has a corner whose shading normal leans past the crease angle.
 
 The roles are the kind's clips, and the surface and motion limits are the kind's group (`vehicle` for tanks,
 buildings and landmarks, `air_naval` for planes and ships; vanilla buildings are not calibrated, and a static hard
