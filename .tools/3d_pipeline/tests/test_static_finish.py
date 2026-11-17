@@ -139,6 +139,79 @@ class RingSeamTests(unittest.TestCase):
         self.assertIn("skipped", report)
 
 
+class SmallPieceTests(unittest.TestCase):
+    def test_small_pieces_are_the_separate_shells_under_the_size_share(self):
+        big = annulus(0.9, 1.45, 0.0, rings=2, sectors=8)
+        cube = np.array([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]], dtype=float) * 0.1 + [3, 0, 0]
+        faces = np.array([[0, 2, 1], [0, 3, 2], [4, 5, 6], [4, 6, 7], [0, 1, 5], [0, 5, 4], [1, 2, 6], [1, 6, 5], [2, 3, 7], [2, 7, 6], [3, 0, 4], [3, 4, 7]])
+        points = np.concatenate([big[0], cube])
+        triangles = np.concatenate([big[1], faces + len(big[0])])
+        pieces = sk.small_pieces(points, triangles, 0.1)
+        self.assertEqual(len(pieces), 1)
+        self.assertEqual(sorted(pieces[0].tolist()), list(range(len(big[1]), len(triangles))))
+
+
+class InsideOutWallTests(unittest.TestCase):
+    def box(self, flip_back):
+        """A closed box 0..2 each way, outward faces, except that the back wall (y = 2) faces inward when `flip_back`."""
+
+        p = np.array([[x, y, z] for x in (0, 2) for y in (0, 2) for z in (0, 2)], dtype=float)
+        idx = lambda x, y, z: x * 4 + y * 2 + z
+        quads = {"front": ([0, 1, 0], [(0, 0, 0), (1, 0, 0), (1, 0, 1), (0, 0, 1)]), "back": ([0, 1, 0], [(0, 1, 0), (0, 1, 1), (1, 1, 1), (1, 1, 0)]),
+                 "bottom": ([0, 0, 1], [(0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0)]), "top": ([0, 0, 1], [(0, 0, 1), (1, 0, 1), (1, 1, 1), (0, 1, 1)]),
+                 "left": ([1, 0, 0], [(0, 0, 0), (0, 0, 1), (0, 1, 1), (0, 1, 0)]), "right": ([1, 0, 0], [(1, 0, 0), (1, 1, 0), (1, 1, 1), (1, 0, 1)])}
+        triangles, names = [], []
+        for name, (_axis, corners) in quads.items():
+            q = [idx(*c) for c in corners]
+            tri = [[q[0], q[1], q[2]], [q[0], q[2], q[3]]]
+            normal = np.cross(p[tri[0][1]] - p[tri[0][0]], p[tri[0][2]] - p[tri[0][0]])
+            centre = p[tri[0]].mean(axis=0)
+            outward = float(normal @ (centre - np.array([1.0, 1.0, 1.0]))) > 0
+            if outward == (name == "back" and flip_back):
+                tri = [t[::-1] for t in tri]
+            triangles += tri
+            names += [name] * 2
+        return p, np.array(triangles), names
+
+    def test_a_wall_facing_into_the_model_is_found_and_the_others_are_not(self):
+        p, t, names = self.box(flip_back=True)
+        found = sk.inside_out_walls(p, t, share=0.01)
+        self.assertEqual(sorted(names[i] for i in found), ["back", "back"])
+        p, t, _names = self.box(flip_back=False)
+        self.assertEqual(sk.inside_out_walls(p, t, share=0.01), [])
+
+    def test_a_thin_one_sided_plate_is_left_alone(self):
+        p = np.array([[0, 0, 0], [2, 0, 0], [2, 0, 2], [0, 0, 2]], dtype=float)
+        self.assertEqual(sk.inside_out_walls(p, np.array([[0, 1, 2], [0, 2, 3]]), share=0.01), [])
+
+
+class TreadToneTests(unittest.TestCase):
+    def run_tread(self, colour):
+        import tempfile
+
+        from tripo import static_model
+
+        contract = sk.kind_contract("vehicle")
+        with tempfile.TemporaryDirectory() as folder:
+            work, files = Path(folder) / "w", Path(folder) / "f"
+            work.mkdir()
+            files.mkdir()
+            Image.new("RGB", (8, 8), colour).save(work / "t_diffuse.png")
+            report = {"tracks": True, "track_atlas_uvs": [[0.5, 0.5]]}
+            written = static_model.tread_textures(report, contract, "t", files, work)
+        return written, report, contract["rules"]["tracks"]["tone"]["luma"]
+
+    def test_a_run_painted_in_a_light_colour_is_darkened_to_vanillas_tread(self):
+        written, report, tone = self.run_tread((200, 200, 120))
+        self.assertIn("track_tone", report)
+        self.assertLess(max(written["colour"]), 200)
+
+    def test_a_run_already_darker_than_vanillas_tread_is_left_alone(self):
+        written, report, _tone = self.run_tread((60, 60, 40))
+        self.assertNotIn("track_tone", report)
+        self.assertEqual(written["colour"], [60.0, 60.0, 40.0])
+
+
 class ContrastTests(unittest.TestCase):
     def scene(self, amplitude):
         """A quad rising from height 0 to 3, its texture a horizontal gradient of the given brightness swing."""

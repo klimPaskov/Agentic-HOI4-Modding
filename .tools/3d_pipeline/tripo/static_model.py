@@ -317,6 +317,14 @@ def tread_textures(report: dict, contract: dict, name: str, files: Path, work: P
     samples = [pixels[min(height - 1, int((1.0 - v) * height)) % height, min(width - 1, int(u * width)) % width] for u, v in report.get("track_atlas_uvs", [])]
     colour = np.median(np.array(samples), axis=0) if samples else np.array([70.0, 70.0, 65.0])
     images = sk.tread_images(colour, rule["links"], tuple(rule["texture_size"]))
+    tone = (rule.get("tone") or {}).get("luma")
+    if tone:
+        # no brighter than vanilla's light tanks' treads (their texture's mean luma): a run painted in a light hull colour is darkened to it
+        luma = float((images["diffuse"][..., :3].astype(float) @ np.array([0.299, 0.587, 0.114])).mean())
+        if luma > tone:
+            colour = colour * tone / luma
+            images = sk.tread_images(colour, rule["links"], tuple(rule["texture_size"]))
+            report["track_tone"] = {"luma_before": round(luma, 1), "luma_after": round(tone, 1)}
     written = {}
     for role, array in images.items():
         staged = work / f"{name}_tracks_{role}.png"

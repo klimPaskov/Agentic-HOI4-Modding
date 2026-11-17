@@ -46,7 +46,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 from lib import static_kinds as sk
 from lib import static_slab
 from lib import tripo_shape
-from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, remove_slivers, thicken_cards
+from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, double_inside_out_walls, hull_crumpled_pieces, remove_slivers, thicken_cards
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 # Faces within this angle of each other count as one flat plate in the first reduction step (kit rule: a degree or two
@@ -375,6 +375,12 @@ assert model.vertex_groups["thickened_cards"].index == CARD_GROUP
 report["cards"] = thicken_cards(bm, size)
 report["cards"]["triangles_kept_back"] = cards_cost
 report["winding_after_cards"] = consistent_winding(bm)
+# A tank's small fittings that the reduction crumpled into lumps become their convex hull (static_mesh_ops.hull_crumpled_pieces)
+if kind == "vehicle":
+    report["crumpled_pieces"] = hull_crumpled_pieces(bm)
+    report["winding_after_hulls"] = consistent_winding(bm)
+    # A wall that faces into the hull (nothing behind its back) shows the inside through it from outside: it gets a reversed copy
+    report["inside_out_walls"] = double_inside_out_walls(bm)
 bm.to_mesh(model.data)
 bm.free()
 report["small_holes_closed"] = len(closed)

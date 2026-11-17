@@ -67,6 +67,73 @@ def remove_slivers(bm, size):
             "triangles_after": len(triangles), "open_edges_before": open_before, "open_edges_after": sk.open_edge_count(triangles)}
 
 
+HULL_PIECE_SHARE = 0.10  # a piece whose bounding box diagonal is at most this share of the model's is small (kit rule: a bolt, a hook, a fitting)
+HULL_PIECE_CONVEX = (0.9, 1.05)  # a small closed piece whose volume is outside this share of its convex hull's is crumpled (kit rule)
+
+
+def hull_crumpled_pieces(bm):
+    """Small separate pieces whose surface is crumpled (their volume is not within `HULL_PIECE_CONVEX` of their convex
+    hull's, or they are not closed) become their convex hull, in the colour they had. A Smart Mesh tank's small fittings
+    (tow hooks, brackets) come out of the reduction as lumps of scattered facets: a reviewer saw "a crumpled blob under the
+    rear deck". The hull's faces take the UV (one texel) of the nearest of the piece's own faces facing the same way.
+    Returns what was replaced."""
+
+    points, triangles = bm_arrays(bm)
+    faces = list(bm.faces)
+    uv_layer = bm.loops.layers.uv.active
+    replaced = []
+    groups = [[faces[i] for i in piece] for piece in sk.small_pieces(points, triangles, HULL_PIECE_SHARE)]
+    for group in groups:
+        closed = all(len(e.link_faces) == 2 for f in group for e in f.edges)
+        if not closed:
+            continue  # an open sheet is not a crumpled solid
+        verts = list({v for f in group for v in f.verts})
+        scratch = bmesh.new()
+        copies = {v: scratch.verts.new(v.co) for v in verts}
+        hull = bmesh.ops.convex_hull(scratch, input=list(copies.values()))
+        for f in [g for g in hull["geom_interior"] if isinstance(g, bmesh.types.BMFace)]:
+            scratch.faces.remove(f)
+        hull_faces = [f for f in scratch.faces]
+        if not hull_faces:
+            scratch.free()
+            continue
+        hull_volume = abs(scratch.calc_volume(signed=False)) if hasattr(scratch, "calc_volume") else 0.0
+        scratch.free()
+        own_volume = abs(sum(f.calc_area() * (f.calc_center_median().dot(f.normal)) for f in group)) / 3.0
+        ratio = own_volume / hull_volume if hull_volume > 1e-12 else 1.0
+        low, high = HULL_PIECE_CONVEX
+        if low <= ratio <= high:
+            continue
+        samples = [(f.calc_center_median().copy(), f.normal.copy(), np.mean([l[uv_layer].uv[:] for l in f.loops], axis=0) if uv_layer else None) for f in group]
+        bmesh.ops.delete(bm, geom=group, context="FACES_ONLY")
+        made = bmesh.ops.convex_hull(bm, input=verts)
+        bmesh.ops.delete(bm, geom=[g for g in made["geom_interior"] if isinstance(g, bmesh.types.BMVert)], context="VERTS")
+        bmesh.ops.delete(bm, geom=[e for e in {e for v in verts if v.is_valid for e in v.link_edges} if not e.link_faces], context="EDGES")
+        for f in {f for v in verts if v.is_valid for f in v.link_faces}:
+            centre, normal = f.calc_center_median(), f.normal
+            best = min(samples, key=lambda s: (s[0] - centre).length * (1.0 if s[1].dot(normal) > 0 else 4.0))
+            if uv_layer and best[2] is not None:
+                for loop in f.loops:
+                    loop[uv_layer].uv = (float(best[2][0]), float(best[2][1]))
+        replaced.append({"triangles": len(group), "volume_share": round(float(ratio), 3)})
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
+    return {"pieces": len(replaced), "replaced": replaced}
+
+
+def double_inside_out_walls(bm):
+    """Each wall that faces into the model (`sk.inside_out_walls`) gets a reversed copy, so it shows from the outside too.
+    Returns the count."""
+
+    points, triangles = bm_arrays(bm)
+    found = sk.inside_out_walls(points, triangles)
+    faces = list(bm.faces)
+    walls = [faces[i] for i in found]
+    if walls:
+        copies = [g for g in bmesh.ops.duplicate(bm, geom=walls)["geom"] if isinstance(g, bmesh.types.BMFace)]
+        bmesh.ops.reverse_faces(bm, faces=copies)
+    return {"walls": len(walls)}
+
+
 def thicken_cards(bm, size):
     """Flat one-sided cards (`sk.flat_cards`: a drive sprocket, a bogie arm modelled as one open sheet) are given a
     thickness (`sk.card_thickness`, bounded by the gap to their neighbours), centred on the sheet, so they are no
