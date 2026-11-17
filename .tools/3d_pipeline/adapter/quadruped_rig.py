@@ -361,12 +361,9 @@ def _spot_keeper(meshes: List[bpy.types.Object], pose_frame):
 
 
 def _body_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
-    """The whole body's turn: a walk rocks side to side about the long axis through the Root, a rear pitches and a defend's sweep turns about the hind hooves, and a fall rolls about the edge of the side
+    """The whole body's turn: a rear pitches and a defend's sweep turns about the hind hooves, and a fall rolls about the edge of the side
     it falls toward, so the body lies where it stood."""
 
-    if "__root_rock__" in pose:
-        turn = _rotation(pose["__root_rock__"]).to_matrix().to_4x4()
-        return Matrix.Translation(root_pivot) @ turn @ Matrix.Translation(-root_pivot)
     if "__root_pitch__" in pose or "__root_yaw__" in pose:
         turn = _rotation(pose.get("__root_pitch__", []) + pose.get("__root_yaw__", [])).to_matrix().to_4x4()
         return Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)

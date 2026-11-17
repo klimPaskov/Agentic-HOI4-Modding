@@ -40,17 +40,17 @@ ALIGN_PIXELS = 6  # a tenth of the height: the largest bob or slide that is not 
 READ_PERCENTILE = 90.0
 MIN_READ = 0.18
 MIN_GAIT_READ = 0.15
-# A unit under a tall load (a war elephant's howdah tower) shows its legs and body little in the map camera, which looks down at 55 degrees.
-# Played offline on the war elephant of run 7 (2026-11-17) against its idle: the legs' stride and fold alone read 0.01 to 0.014 (a vanilla
-# horse's walk 0.175), a body pitch of 8 degrees (the most that keeps the forefeet on the ground) 0.03, a rock of the whole body of 12 degrees
-# 0.09, a sway of the whole body about the vertical of 10 degrees 0.17 (two reviews read that as veering off the heading) and a neck swing
-# of 30 degrees 0.12. The neck cannot swing: the tower's front is one skin with the head and neck, and 10 degrees at the first neck bone
-# tears 29% of the seam's edges (TRIPO-LOAD-SEAM, limit 2%). With the head bone alone (30 degrees keeps the seam at 1.6%), the spread
-# forelegs, a rock of 8 degrees and the 8 degree pitch, the clips read 0.06 (move), 0.10 (defend) and 0.09 and 0.05 (retreat from the move
-# and the defend). So no yaw-free clip of a loaded unit that keeps its skin reaches the horse's limits, and `loaded_limit` takes
-# LOADED_SHARE of them: 0.045 for the move and the gait pairs, 0.054 for an attack or a defend from the idle. Reviewers failed 0.01 (run 5,
-# the idle at map size) and read 0.17 as veering, and no review has yet seen a clip between, so run 8's reviews are what confirms the share.
-LOADED_SHARE = 0.3
+# A unit under a tall load (a war elephant's howdah tower) is judged against vanilla's own large units, not against the horse, whose legs show
+# in the map camera. Measured with this module on vanilla's gfx (2026-11-17), the clip against the unit's idle: the wheeled mechanized
+# vehicles (`GER_mechanized_01`, `SOV_mechanized_01`, `US_mechanized_01`) move 0.000 and attack 0.000, `FIN_mechanized_vehicle_2` moves 0.001,
+# the guns `artillery` and `ENG_artillery` move 0.002 and 0.003 (`ENG_anti_tank` 0.003) and attack 0.35 and 0.24, `generic_railway_gun` moves
+# 0.000 and attacks 0.034, the locomotive moves 0.02. (Tracked tanks 0.4 to 0.9 and the motorbike 0.33 turn their tracks or wheels, which a
+# loaded animal does not. The camel idles lying, so its clips are no reference.) A large unit of vanilla's moves almost without changing its
+# silhouette, so a heavy loaded unit's move is held to `LOADED_MOVE_READ`, the artillery's 0.002, and its attack, defend and the gap between
+# its clips to `LOADED_READ`, the railway gun's attack, 0.034. The tall load hides the legs: the war elephant's stride and fold read 0.014.
+# A yaw reads 0.17 on the elephant and two reviews read it as veering, so no limit is taken from that unit's own result.
+LOADED_MOVE_READ = 0.002
+LOADED_READ = 0.034
 MAX_FRAMES = 30  # frames sampled per clip (evenly), and per idle
 
 
@@ -174,7 +174,8 @@ def clip_reading(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, idle:
     return read_against_idle(camera, camera.frames(anim), camera.frames(idle))
 
 
-def loaded_limit(limit: float, loaded: bool) -> float:
-    """The least reading of a unit that carries a tall load: LOADED_SHARE of the horse's limit."""
+def loaded_limit(limit: float, loaded: bool, move: bool = False) -> float:
+    """The least reading of a unit that carries a tall load: vanilla's own large units' (`LOADED_MOVE_READ` for a move from the idle,
+    `LOADED_READ` for the rest), never more than the horse's `limit`."""
 
-    return round(LOADED_SHARE * limit, 4) if loaded else limit
+    return min(limit, LOADED_MOVE_READ if move else LOADED_READ) if loaded else limit

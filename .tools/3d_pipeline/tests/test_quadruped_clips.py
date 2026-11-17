@@ -69,7 +69,7 @@ class ChooseCollapse(unittest.TestCase):
         self.assertLessEqual(max(abs(lift) for lift in ql.NECK_LIFTS), 30.0)
 
     def test_both_sides_are_capped_by_the_load(self) -> None:
-        self.assertEqual(ql.roll_limits(_landmarks(True, load=True)), (70.0, -64.0))
+        self.assertEqual(ql.roll_limits(_landmarks(True, load=True)), (70.0 + ql.LOAD_ROLL_EXTRA, -(64.0 + ql.LOAD_ROLL_EXTRA)), "the search starts past the rest-pose limit")
         self.assertEqual(ql.roll_limits(_landmarks(True)), (ql.COLLAPSE_ROLL, -ql.COLLAPSE_ROLL))
 
 
@@ -277,18 +277,19 @@ class MapReading(unittest.TestCase):
 
 
 class LoadedMapReading(unittest.TestCase):
-    def test_a_loaded_unit_is_held_to_a_share_of_the_horses_limits(self) -> None:
+    def test_a_loaded_unit_is_held_to_vanillas_large_units(self) -> None:
         self.assertEqual(map_read.loaded_limit(map_read.MIN_READ, False), map_read.MIN_READ)
-        self.assertAlmostEqual(map_read.loaded_limit(map_read.MIN_READ, True), map_read.LOADED_SHARE * map_read.MIN_READ, places=4)
-        self.assertLess(map_read.LOADED_SHARE, 1.0)
-        self.assertGreater(map_read.LOADED_SHARE * map_read.MIN_GAIT_READ, 0.03, "four times run 5's walk, which a review read as the idle (0.01)")
+        self.assertEqual(map_read.loaded_limit(map_read.MIN_READ, True), map_read.LOADED_READ)
+        self.assertEqual(map_read.loaded_limit(map_read.MIN_GAIT_READ, True, move=True), map_read.LOADED_MOVE_READ)
+        self.assertLess(map_read.LOADED_READ, map_read.MIN_GAIT_READ)
+        self.assertGreater(map_read.LOADED_READ, 0.01, "above run 5's walk, which a review read as the idle")
 
     def test_the_check_judges_a_loaded_unit_by_the_loaded_limits(self) -> None:
         mesh = towered_animal()
-        small = turning(12, yaw=9.0)
+        small = turning(12, yaw=6.0)
         idle = turning(12)
         reading = map_read.clip_reading(mesh, small, idle)
-        self.assertGreater(reading, map_read.loaded_limit(map_read.MIN_READ, True))
+        self.assertGreater(reading, map_read.LOADED_READ)
         self.assertLess(reading, map_read.MIN_READ)
         anims = {"unit_idle": idle, "unit_attack": small}
         self.assertEqual([item["subject"] for item in quadruped_checks._map_findings(mesh, anims, {})], ["unit_attack"], "a plain unit fails")

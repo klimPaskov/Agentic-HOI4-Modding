@@ -21,6 +21,8 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   0.5% of its 28,504 edges in its death (vanilla 4.2%) while the ear roots and the neck under the tower's front tore, and run 3 creased the
   top of the neck against the tower's front in its retreat while only 0.65% of the whole seam's edges stretched. Beside the head that
   crease is 16% of the edges (played offline on the round 9 mesh).
+- TRIPO-LOAD-NOT-DOWN: a death ends with the load's lowest point more than `LOAD_REST_LIMIT` of the height above the ground: a review read a
+  tower sticking out sideways with its outer end in the air as a rigid block, not a fallen load.
 - TRIPO-MAP-READ: an attack or a defend changes the silhouette in the map camera from the idle's less than `map_read.MIN_READ`
   (`lib/map_read.py`: the share of the idle's silhouette that changes shape at the size a player sees the unit, at the clip's 90th
   percentile frame), or a retreat from the move's less than `map_read.MIN_GAIT_READ`. The limits are vanilla's horse charge against its
@@ -30,8 +32,8 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   the idle at the same 0.15, under the horse walk's 0.175 against its forward idle: run 5's heavy walk read 0.01, and a review could not
   tell it from the idle at map size. A defend is judged against the move at 0.15 too: run 6 swayed its defend to both sides with
   stepping forefeet, and a review read it as a copy of its swaying walk (0.05 from the move).
-  A unit under a tall load (a load bone) is held to `map_read.LOADED_SHARE` of those limits: no yaw-free clip of the war elephant reaches the
-  horse's (see `lib/map_read.py`), and a clip that turns the whole body reads as veering.
+  A unit under a tall load (a load bone) is held to vanilla's own large units' readings (`map_read.LOADED_MOVE_READ`, `LOADED_READ`, measured
+  in `lib/map_read.py`): the tower hides the legs, and a clip that turns the whole body reads as veering.
 - TRIPO-LOOP-HEADING: a move, attack, defend or retreat starts or ends turned more than `HEADING_LIMIT` degrees from the unit's rest
   heading (the best turn about the vertical from the rest pose's vertices, seen from above). Vanilla's horse and camel walk and charge
   start and end within 1.6 degrees and its infantry's move within 8.1, while its idles (the horse 43, the camel 45, the infantry 30) and
@@ -66,6 +68,7 @@ LOAD_BONE = "Load"
 DOWN_BELLY_SHARE = 0.05
 LOAD_SINK_LIMIT = 0.01
 LOAD_STRETCH_LIMIT = 0.005
+LOAD_REST_LIMIT = 0.02  # of the height: how far above the ground a dead body's load may end (run 8's tower stuck out 5.9% up, a review's major)
 LOAD_SEAM_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (tripo_checks VANILLA_CLOAK_WORST, 1.97%), rounded
 SEAM_PART_EDGES = 30  # a part beside the load is judged when this many seam edges follow it
 # role: (the role it must not look like, the least reading, the vanilla clip that reading comes from)
@@ -190,9 +193,9 @@ def _map_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Anim
             frames = camera.frames(anim) if frames is None else frames
             reading = map_read.read_against_idle(camera, frames, references[other])
             numbers.setdefault(clip, {}).setdefault("map_read", {})[other] = reading
-            limit = map_read.loaded_limit(limit, loaded)
+            limit = map_read.loaded_limit(limit, loaded, move=role == "move")
             if reading < limit:
-                out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.1%}, {what}{", times " + str(map_read.LOADED_SHARE) + " for a unit under a tall load" if loaded else ""}): it reads as the {other} at map size", share=reading, against=other))
+                out.append(_finding("TRIPO-MAP-READ", clip, f"from the map camera the {role} changes {reading:.0%} of the {other}'s silhouette (at least {limit:.1%}, {what}{", vanilla's large units for a unit under a tall load" if loaded else ""}): it reads as the {other} at map size", share=reading, against=other))
     return out
 
 
@@ -273,6 +276,8 @@ def _load_findings(mesh, clip: str, posed: np.ndarray, edges: np.ndarray, load: 
         if sink.min() < -LOAD_SINK_LIMIT:
             frame = int(np.argmin(sink))
             out.append(_finding("TRIPO-LOAD-BELOW-GROUND", clip, f"the load goes {-sink.min():.1%} of the height under the ground in frame {frame} (limit {LOAD_SINK_LIMIT:.0%})", share=round(float(-sink.min()), 4), frame=frame))
+        if tripo_pose.role_of(clip) == "death" and row["load_lowest_share"] > LOAD_REST_LIMIT:
+            out.append(_finding("TRIPO-LOAD-NOT-DOWN", clip, f"the dead body's load ends {row['load_lowest_share']:.1%} of the height above the ground (limit {LOAD_REST_LIMIT:.0%}): it sticks out in the air instead of resting on the ground", share=row["load_lowest_share"]))
         share, frame = T.region_stretch_share(mesh.positions, posed, edges, load, mesh.height)
         row["load_stretch_share"] = round(share, 4)
         if share > LOAD_STRETCH_LIMIT:

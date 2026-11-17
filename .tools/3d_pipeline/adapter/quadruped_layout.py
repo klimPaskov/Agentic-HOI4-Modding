@@ -468,9 +468,8 @@ REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
 # the seam's edges (TRIPO-LOAD-SEAM, limit 2%) where the head bone alone turns 30 degrees for 1.6%. So the head bone does the nodding,
 # raising and shaking, the neck bones turn a few degrees, and the numbers below are nominal (the stance's neck share, 0.55 on that elephant,
 # scales them).
-WALK_HEAD_SWING = 44.0  # degrees the walk swings the head to each side once a stride
-WALK_NOD = 14.0  # degrees of the head's nod, twice a stride
-WALK_ROCK = 8.0  # degrees the walk rocks the whole body about its long axis to each side once a stride (a graviportal animal's weight shift)
+WALK_HEAD_SWING = 22.0  # degrees the walk swings the head to each side once a stride (44 with a body rock read as turning 25 to 30 degrees)
+WALK_NOD = 8.0  # degrees of the head's nod, twice a stride
 GUARD_PITCH = 8.0  # degrees the defend rocks the body back about the hind feet (more lifts the forefeet off the ground)
 GUARD_HEAD_UP = 54.0  # degrees the defend raises the head, and then lowers it GUARD_HEAD_DOWN with the tusks forward
 GUARD_HEAD_DOWN = 45.0
@@ -488,6 +487,8 @@ PILLAR_SWING = GAITS["quadruped_walk"].swing_degrees
 NECK_REFERENCE = 0.3  # a runner's neck (withers to poll) over its body length; a shorter neck bends that much less
 COLLAPSE_ROLL = 82.0
 COLLAPSE_ROLL_STEP = 6.0
+LOAD_ROLL_EXTRA = 24.0  # degrees past the load's roll limit the search for a lying tower starts
+LOAD_ROLL_MOST = 110.0
 COLLAPSE_RELAX = 0.5  # share of the shoulders', hips' and elbows' bend a dead body relaxes once it lies
 COLLAPSE_HIND_FOLD = 0.5  # the hind legs' fold in a death as a share of the forelegs'
 DOWN_TOLERANCE = 0.01  # of the body's height: how much lower than the torso another part may end in a death
@@ -595,13 +596,12 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
     if style in GAITS:
         _gait(pose, _pillar_gait(GAITS[style], stance), t, has_tail)
         if style == "quadruped_walk" and stance["graviportal"]:
-            # A heavy walk swings the head to each side once a stride, nods it twice and rocks the body side to side, and its lifted feet fold fully (they carry no
+            # A heavy walk swings the head to each side once a stride, nods it twice, and its lifted feet fold fully (they carry no
             # weight). The body keeps its heading. Under a tall load the feet barely change the map silhouette, so a plain walk read as the
             # idle (TRIPO-MAP-READ 0.01), and a sway of the whole forequarters read as veering.
             swing = math.sin(2 * math.pi * t)
             pose["Head"] = pose["Head"] + [(Z_AXIS, WALK_HEAD_SWING * swing), (X_AXIS, WALK_NOD * math.sin(4 * math.pi * t + 0.8))]
             pose["Neck_01"] = []
-            pose["__root_rock__"] = [(Y_AXIS, WALK_ROCK * swing)]
             free = {leg_name(end, side, segment) for end, side in LEGS for segment in ("Lower", "Cannon", "Hoof")}
     elif style == "quadruped_flee":
         # Two trot strides run backward: the legs step back, the head rises in alarm and shakes (a turn about the vertical, held or not,
@@ -729,7 +729,12 @@ def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:
     if not load:
         return COLLAPSE_ROLL, -COLLAPSE_ROLL
     first = float(load.get("roll_limit", COLLAPSE_ROLL))
-    return first, float(load.get("roll_limit_other_side", -first))
+    other = float(load.get("roll_limit_other_side", -first))
+    # The limit is where the tower first reaches lower than the torso on the rest pose. The dead body's folded legs and settled torso end it
+    # higher: run 8's tower stuck out sideways with its outer end 5.9% of the height in the air (a review: major). The search starts
+    # LOAD_ROLL_EXTRA degrees past the limit, and `choose_collapse` steps down to the largest roll that keeps no part lower than the torso
+    # by more than DOWN_TOLERANCE, so the tower rests on the ground.
+    return min(first + LOAD_ROLL_EXTRA, LOAD_ROLL_MOST), max(other - LOAD_ROLL_EXTRA, -LOAD_ROLL_MOST)
 
 
 def choose_collapse(evaluate, start_rolls: Sequence[float]) -> Dict[str, object]:
