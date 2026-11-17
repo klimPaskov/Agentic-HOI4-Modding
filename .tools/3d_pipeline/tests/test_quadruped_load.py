@@ -177,7 +177,7 @@ class PillarLegs(unittest.TestCase):
         stance = ql.leg_stance(heavy)
         self.assertTrue(stance["graviportal"])
         self.assertAlmostEqual(stance["flex"], ql.FLEX_REFERENCE / 0.25, places=3)
-        self.assertEqual(ql.stance_style("quadruped_gallop", heavy), "quadruped_trot")
+        self.assertEqual(ql.stance_style("quadruped_gallop", heavy), "quadruped_flee")
         self.assertEqual(ql.stance_style("quadruped_trot", heavy), "quadruped_walk")
         self.assertEqual(ql.stance_style("quadruped_charge", heavy), "quadruped_rear")
         self.assertEqual(ql.stance_style("quadruped_rear", heavy), "quadruped_brace")
@@ -191,7 +191,7 @@ class PillarLegs(unittest.TestCase):
         for frame in range(0, 20, 4):
             a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)
             self.assertAlmostEqual(b["Front_Left_Cannon"][0][1], a["Front_Left_Cannon"][0][1] * stance["flex"], places=6)
-            self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1], places=6)
+            self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1] * ql.PILLAR_SWING / ql.GAITS["quadruped_trot"].swing_degrees, places=6)
 
 
 class MountSize(unittest.TestCase):

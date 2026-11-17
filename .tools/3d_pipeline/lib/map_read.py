@@ -18,6 +18,10 @@ Measured with this module (2026-11-16) on vanilla `cavalry_horse.mesh` against i
 walk and the charge start from): walk 0.175, charge 0.188, charge_2 0.187. The war elephant of round 9: attack 0.149, defend 0.008, move
 0.011, retreat 0.030. `MIN_READ` is the horse's charge, vanilla's mount attack, rounded down: an attack or a defend must change the
 silhouette at least as much as a vanilla horse's charge does. (Vanilla's camel idles lying down, so its clips are not a reference.)
+
+Against the horse's walk instead of its idle, its charge reads 0.159 and charge_2 0.167. `MIN_GAIT_READ` is the charge's, rounded down: a
+retreat must differ from the move at least as much as a vanilla horse's charge differs from its walk. Run 3 of the war elephant trotted to
+retreat and walked to move, and its retreat read 0.016 against the move (offline on the round 9 mesh), the same gait to two reviewers.
 """
 
 from __future__ import annotations
@@ -35,6 +39,7 @@ MAP_PIXELS = 60
 ALIGN_PIXELS = 6  # a tenth of the height: the largest bob or slide that is not a new pose
 READ_PERCENTILE = 90.0
 MIN_READ = 0.18
+MIN_GAIT_READ = 0.15
 MAX_FRAMES = 30  # frames sampled per clip (evenly), and per idle
 
 
