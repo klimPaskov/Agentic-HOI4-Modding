@@ -55,6 +55,7 @@ PLANAR_DEGREES = 3.0
 SMALL_HOLE_EDGES = 32
 SLIT_SHARE = 1e-3
 CUT_CLEARANCE = 5e-4
+HULL_LEVEL = "hull_level"  # a face attribute marking the faces of hull roof the turret cut only clipped (they stay on the hull)
 RING_CAP = "ring_cap"  # a face attribute marking the caps on a tank's turret cut until they are shaded
 contract = request["contract"]
 kind = contract["kind"]
@@ -403,6 +404,7 @@ def centre(face):
     return face.calc_center_median()
 
 
+hull_layer = bm.faces.layers.int.new(HULL_LEVEL) if kind == "vehicle" else None  # (before the cuts: a new layer removes the face references)
 if kind == "vehicle":
     turret = sk.turret_cut(samples, contract["rules"]["turret"])
     barrel = sk.barrel_cut(samples, turret["cut_z"], contract["rules"]["barrel"])
@@ -413,12 +415,41 @@ if kind == "vehicle":
     for face in bm.faces:
         c = centre(face)
         part_of[face] = "body" if c.z <= turret["cut_z"] else ("barrel" if c.y < barrel["cut_y"] else "turret")
+    # Hull roof the cut only clipped (a Smart Mesh's roof plates and bolts lie a hair above it, outside the turret's ring)
+    # is not the turret's: carried off with it, it leaves a hole in the roof and hangs beside the flying turret.
+    above = samples[(samples[:, 2] >= turret["cut_z"]) & (samples[:, 1] >= barrel["cut_y"])]
+    axis = (above.min(axis=0) + above.max(axis=0)) / 2
+    ring_radius = sk.ring_footprint(positions, triangles, turret["cut_z"], axis)
+    bm.verts.index_update()
+    link = list(range(len(bm.verts)))
+
+    def root(i):
+        while link[i] != i:
+            link[i] = link[link[i]]
+            i = link[i]
+        return i
+
+    roof_faces = [f for f in bm.faces if part_of[f] != "body"]
+    for face in roof_faces:
+        for v in face.verts[1:]:
+            link[root(v.index)] = root(face.verts[0].index)
+    shells = {}
+    for face in roof_faces:
+        shells.setdefault(root(face.verts[0].index), []).append(face)
+    shell_faces = list(shells.values())
+    shell_points = [np.array([v.co[:] for v in {v for f in fs for v in f.verts}]) for fs in shell_faces]
+    flat = sk.hull_level_pieces(shell_points, turret["cut_z"], float(samples[:, 2].max()), axis, ring_radius)
+    for k in flat:
+        for face in shell_faces[k]:
+            part_of[face] = "body"
+            face[hull_layer] = 1
+    parts_report_hull = {"ring_radius": round(float(ring_radius), 4), "pieces": len(flat), "faces": sum(len(shell_faces[k]) for k in flat)}
     above = samples[samples[:, 2] >= turret["cut_z"]]
     above = above[above[:, 1] >= barrel["cut_y"]]
     pivots["turret"] = [float((above[:, 0].min() + above[:, 0].max()) / 2), float((above[:, 1].min() + above[:, 1].max()) / 2), turret["cut_z"]]
     pivots["barrel_base"] = barrel["pivot"]
     pivots["barrel_tip"] = barrel["pivot"]
-    parts_report = {"turret_cut": turret, "barrel_cut": barrel}
+    parts_report = {"turret_cut": turret, "barrel_cut": barrel, "hull_level_roof": parts_report_hull}
 elif kind == "plane":
     propeller = sk.propeller_cut(samples, contract["rules"]["propeller"])
     bisect(bm.faces[:], (0, propeller["cut_y"], 0), (0, 1, 0))
@@ -510,14 +541,23 @@ for face in bm.faces:
     first = face.verts[0].index
     for v in face.verts[1:]:
         parent[find(v.index)] = find(first)
+hull_layer = bm.faces.layers.int.get(HULL_LEVEL)
+
+
+def region_of(face):
+    return "body" if hull_layer is not None and face[hull_layer] else region(centre(face))
+
+
 votes = {}
 for face in bm.faces:
     if not on_cut_plane(face):
-        votes.setdefault(find(face.verts[0].index), []).append(region(centre(face)))
+        votes.setdefault(find(face.verts[0].index), []).append(region_of(face))
 face_part = []
 for face in bm.faces:
     piece = votes.get(find(face.verts[0].index))
-    face_part.append(max(set(piece), key=piece.count) if piece else region(centre(face)))
+    face_part.append("body" if hull_layer is not None and face[hull_layer] else (max(set(piece), key=piece.count) if piece else region(centre(face))))
+if HULL_LEVEL in model.data.attributes:
+    model.data.attributes.remove(model.data.attributes[HULL_LEVEL])
 # The caps on a tank's turret cut close the turret ring on the hull and the turret's underside. When the death blows the
 # turret off, the ring must read as a hole, not a neat lid: these faces are shaded flat and take one dark texel (below).
 ring_layer = bm.faces.layers.int.get(RING_CAP)

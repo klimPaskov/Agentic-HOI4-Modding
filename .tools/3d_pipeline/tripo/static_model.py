@@ -80,6 +80,77 @@ def delighted(source: Image.Image, glb: Path, report: dict) -> Image.Image:
     return lifted if found["regions"] else source
 
 
+def placed_geometry(glb: Path, contract: dict, front: Optional[str]) -> tuple:
+    """(placed vertices in Blender space, UVs, triangles, the plan) of a vehicle's GLB, the way the Blender stage places it
+    (`lib/static_kinds.plan`)."""
+
+    positions, uv, triangles = static_delight.glb_uv_geometry(glb)
+    blender = np.stack([positions[:, 0], -positions[:, 2], positions[:, 1]], axis=1)
+    arrays = sk.read_glb_geometry(glb)
+    plan = sk.plan(arrays[0], arrays[1], contract, front)
+    placed = sk.rotate_quarter_turns(blender, plan["quarter_turns"]) * plan["scale"] + np.asarray(plan["offset"])
+    return placed, uv, triangles, plan
+
+
+def ring_seamed(source: Image.Image, glb: Path, contract: dict, front: Optional[str], report: dict) -> Image.Image:
+    """A tank's colour map with the band round its turret ring matched to the hull roof (lib/static_delight.ring_seam), or
+    as it is for any other kind. The report says what was found."""
+
+    if contract["kind"] != "vehicle":
+        return source
+    try:
+        placed, uv, triangles, plan = placed_geometry(glb, contract, front)
+        cut = plan["turret_cut"]["cut_z"]
+        above = placed[(placed[:, 2] >= cut) & (placed[:, 1] >= plan["barrel_cut"]["cut_y"])]
+        centre = (above.min(axis=0) + above.max(axis=0)) / 2
+        radius = sk.ring_footprint(placed, triangles, cut, centre)
+        fixed, found = static_delight.ring_seam(source, uv, placed, triangles, cut, float(placed[:, 2].max()), centre, radius)
+    except (KeyError, ValueError) as error:
+        report["ring_seam"] = {"skipped": str(error)}
+        return source
+    report["ring_seam"] = found
+    return fixed if "off_after" in found and found["off_after"] != found["off_before"] else source
+
+
+def vanilla_spread(game: Path, contract: dict) -> list:
+    """The brightness spread (`static_delight.luma_spread`) of each reference model's colour texture."""
+
+    spreads = []
+    for rel in contract.get("references", []):
+        mesh = game / rel
+        diffuse = mesh.with_name(mesh.stem + "_diffuse.dds")
+        if not mesh.is_file() or not diffuse.is_file():
+            continue
+        try:
+            _p, uv, triangles = static_delight.mesh_uv_geometry(mesh)
+            with Image.open(diffuse) as opened:
+                spreads.append(static_delight.texture_spread(opened, uv, triangles))
+        except (OSError, KeyError, ValueError):
+            continue
+    return spreads
+
+
+def contrasted(source: Image.Image, glb: Path, contract: dict, front: Optional[str], game: Optional[Path], report: dict) -> Image.Image:
+    """A tank's colour map with its brightness spread lifted to the flattest quarter of vanilla's light tanks
+    (lib/static_delight.contrast_lift), or as it is for any other kind or a texture already that lively."""
+
+    if contract["kind"] != "vehicle" or game is None:
+        return source
+    spreads = vanilla_spread(game, contract)
+    if len(spreads) < 3:
+        report["contrast"] = {"skipped": f"only {len(spreads)} vanilla textures to measure"}
+        return source
+    try:
+        placed, uv, triangles, _plan = placed_geometry(glb, contract, front)
+        fixed, found = static_delight.contrast_lift(source, uv, placed[:, 2], triangles, float(np.percentile(spreads, 25)))
+    except (KeyError, ValueError) as error:
+        report["contrast"] = {"skipped": str(error)}
+        return source
+    found["vanilla_spreads"] = [round(v, 3) for v in sorted(spreads)]
+    report["contrast"] = found
+    return fixed if found["spread_after"] != found["spread_before"] else source
+
+
 def hole_texel(glb: Path, colour: Path) -> Optional[dict]:
     """The atlas texel a blown-open turret ring takes (lib/static_delight.hole_uv), from the packed colour map and the
     faces the GLB's UVs cover, or None when the GLB has no UVs."""
@@ -92,7 +163,7 @@ def hole_texel(glb: Path, colour: Path) -> Optional[dict]:
         return None
 
 
-def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None) -> Dict[str, dict]:
+def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None, front: Optional[str] = None, game: Optional[Path] = None) -> Dict[str, dict]:
     """The GLB's base colour, normal and metallic-roughness maps as the kind's PDX diffuse, normal and specular DDS. The
     colour map is delighted first; `delight` (when given) receives what was lifted."""
 
@@ -103,7 +174,10 @@ def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path,
         raise SystemExit(f"{glb.name} has {len(images['diffuse'])} base colour maps; the route packs one atlas")
     size = int(contract["texture_size"])
     work.mkdir(parents=True, exist_ok=True)
-    colour = _resize(delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, delight if delight is not None else {}).convert("RGBA"), size)
+    found = delight if delight is not None else {}
+    lifted = delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, found)
+    lifted = ring_seamed(lifted, glb, contract, front, found)
+    colour = _resize(contrasted(lifted, glb, contract, front, game, found).convert("RGBA"), size)
     colour = Image.merge("RGBA", (*colour.split()[:3], Image.new("L", (size, size), 255)))
     if images["normal"]:
         source = _resize(Image.open(io.BytesIO(images["normal"][0])).convert("RGB"), size)
@@ -291,7 +365,7 @@ def main(argv=None) -> int:
         shutil.rmtree(files)
     files.mkdir(parents=True)
     delight: dict = {}
-    textures = pack_textures(glb, contract, name, files, out / "textures", delight)
+    textures = pack_textures(glb, contract, name, files, out / "textures", delight, front, game)
     motion, barrel_length = clip_motion(game, contract) if contract.get("clips") else ({}, None)
     hole = hole_texel(glb, out / "textures" / f"{name}_diffuse.png") if kind == "vehicle" else None
     request = {

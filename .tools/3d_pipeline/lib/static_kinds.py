@@ -453,6 +453,45 @@ def slice_areas(points: np.ndarray, edges: np.ndarray, cell: float) -> np.ndarra
 SLICES = 80
 
 
+HULL_LEVEL_SHARE = 0.1  # of the turret's height above its cut: the band of hull roof the cut leaves just above itself (kit rule)
+RING_PERCENTILE = 5.0  # the ring's radius: the closest crossings of the cut plane, which are the turret's own wall (hull fittings lie farther out)
+
+
+def ring_footprint(positions: np.ndarray, triangles: np.ndarray, cut_z: float, centre: np.ndarray) -> float:
+    """The radius of a turret's ring on its hull: the lowest twentieth of the distances, from the turret's axis, at which
+    the model's edges cross the cut plane. The turret's wall is the closest thing to cross it; fittings and fenders cross
+    farther out. `positions` are in the model's placed Blender space."""
+
+    corners = np.asarray(positions)[np.asarray(triangles)]
+    crossings = []
+    for k in range(3):
+        p, q = corners[:, k], corners[:, (k + 1) % 3]
+        straddle = (p[:, 2] - cut_z) * (q[:, 2] - cut_z) < 0
+        p, q = p[straddle], q[straddle]
+        share = ((cut_z - p[:, 2]) / (q[:, 2] - p[:, 2]))[:, None]
+        crossings.append((p + share * (q - p))[:, :2])
+    if not sum(len(c) for c in crossings):
+        raise ValueError("nothing crosses the turret's cut plane")
+    distance = np.linalg.norm(np.concatenate(crossings) - np.asarray(centre, dtype=float)[:2], axis=1)
+    return float(np.percentile(distance, RING_PERCENTILE))
+
+
+def hull_level_pieces(piece_points, cut_z: float, top_z: float, centre: np.ndarray, radius: float, share: float = HULL_LEVEL_SHARE) -> List[int]:
+    """The pieces above a turret's cut that are hull roof the cut only clipped: pieces (each an array of its vertices) that
+    lie wholly within `share` of the turret's height above the cut and wholly outside the ring, so nothing of them is
+    over the turret's seat. A Smart Mesh's roof plates and bolts lie a hair above the cut: carried off with the turret they
+    leave a hole in the hull roof and hang in the air beside the blown-off turret. They stay on the hull."""
+
+    reach = cut_z + share * max(top_z - cut_z, 1e-9)
+    centre = np.asarray(centre, dtype=float)[:2]
+    keep = []
+    for k, points in enumerate(piece_points):
+        points = np.asarray(points, dtype=float)
+        if len(points) and float(points[:, 2].max()) <= reach and float(np.linalg.norm(points[:, :2] - centre, axis=1).min()) >= radius:
+            keep.append(k)
+    return keep
+
+
 def turret_cut(points: np.ndarray, rule: dict) -> dict:
     """Where a tank's turret sits on its hull, from the plan-view area of its height slices.
 
@@ -1404,6 +1443,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
       (no gap wider than `rigid.max_gap_share` of the main measure opens between them).
     - STATIC-LANDING: at a death's last frame a part blown off its mount lies flat on its base on the ground.
     - STATIC-PART-CLIP: in no frame of any clip does a part mounted on the body (a turret with its gun) pass into it.
+    - STATIC-DEATH-RIGID: in every frame of a death, a part blown off its mount flies with everything mounted on it as one rigid body (no two points change their distance).
     - STATIC-TRACK-GROUND: in every clip but a death a tank's tracks and wheels stay on the ground (within vanilla's
       hull bob on its suspension); only the hull may bob.
     - STATIC-SHADOW: the colour texture has no cast shadow painted into it (`lib/static_delight.py`).
@@ -1451,6 +1491,7 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
         findings += _landing(mesh, visible, anims, contract)
         findings += _track_ground(mesh, visible, anims, contract)
         findings += _part_clips(mesh, visible, anims, contract)
+        findings += _death_rigid(mesh, visible, anims, contract, measure)
     return findings
 
 
@@ -1748,6 +1789,62 @@ def _part_clips(mesh, visible, anims: Sequence[Path], contract: dict) -> List[Tu
                     worst = (crossings, f)
             if worst[0]:
                 findings.append(("STATIC-PART-CLIP", "error", f"{anim_path.name} frame {worst[1]}: {worst[0]} edges of the {part} and the {body} pass through each other; nothing mounted on the {body} may clip into it"))
+    return findings
+
+
+DEATH_RIGID_SHARE = 0.001  # of the main measure: a mounted part's pieces move apart by at most this in a death frame (kit rule: a tenth of a pixel at game size)
+
+
+def rigid_drift(rest: np.ndarray, posed: np.ndarray, sample: int = 300) -> float:
+    """The most any two of a part's points (a sample of them) have moved apart or together from the rest pose to a posed
+    one: 0 for a part that moves as one rigid body."""
+
+    rest, posed = np.asarray(rest, dtype=float), np.asarray(posed, dtype=float)
+    step = max(1, len(rest) // sample)
+    rest, posed = rest[::step], posed[::step]
+    if len(rest) < 2:
+        return 0.0
+    before = np.linalg.norm(rest[:, None, :] - rest[None, :, :], axis=2)
+    after = np.linalg.norm(posed[:, None, :] - posed[None, :, :], axis=2)
+    return float(np.abs(after - before).max())
+
+
+def _death_rigid(mesh, visible, anims: Sequence[Path], contract: dict, measure: float) -> List[Tuple[str, str, str]]:
+    """STATIC-DEATH-RIGID: in every frame of a death, a part blown off its mount (a turret) and everything mounted on it
+    (its gun, its hatches and fittings) fly as one rigid body: no two of their points change their distance from each
+    other (within `DEATH_RIGID_SHARE` of the main measure). A piece with a channel of its own in the clip, or a part left
+    on the hull, hangs in the air apart from the turret."""
+
+    from lib import pdx_deform
+
+    mounts = contract.get("mounts", {})
+    body = (contract.get("parts") or {}).get("body")
+    if not mounts or body not in mesh.bones:
+        return []
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    dominant = mesh.joints[np.arange(len(mesh.joints)), np.argmax(mesh.weights, axis=1)]
+    inverse = np.array([ib if abs(np.linalg.det(ib)) > 1e-9 else np.eye(4) for ib in mesh.inverse_bind])
+    skinnable = type(mesh)(**{**mesh.__dict__, "inverse_bind": inverse})
+    findings = []
+    for anim_path in anims:
+        if not anim_path.stem.endswith("_death"):
+            continue
+        matrices = pdx_deform.skinning_matrices(skinnable, pdx_deform.load_anim(anim_path))
+        for part, base in mounts.items():
+            if base != body or part not in index:
+                continue
+            bones = sorted(index[b] for b in _mounted_on(part, mounts) if b in index)
+            members = visible & np.isin(dominant, bones)
+            if members.sum() < 2:
+                continue
+            rest = np.asarray(mesh.positions, float)[members]
+            worst = (0.0, 0)
+            for f in range(matrices.shape[0]):
+                drift = rigid_drift(rest, pdx_deform.skin(skinnable, matrices[f])[members])
+                if drift > worst[0]:
+                    worst = (drift, f)
+            if worst[0] > DEATH_RIGID_SHARE * measure:
+                findings.append(("STATIC-DEATH-RIGID", "error", f"{anim_path.name} frame {worst[1]}: the pieces of the {part} (and what is mounted on it) move {worst[0]:.3f} apart from each other (limit {DEATH_RIGID_SHARE * measure:.3f}); a blown-off {part} flies as one rigid body"))
     return findings
 
 
