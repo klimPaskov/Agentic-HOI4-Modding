@@ -3770,17 +3770,48 @@ def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
             "note": lift.note}
 
 
-def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = ()) -> Dict[str, Any]:
+def job_has_plates(spec: Dict[str, Any]) -> bool:
+    """Whether the job's tripo block asks for armour plates (a chain with the region `plates`)."""
+
+    return any((chain or {}).get("region") == "plates" for chain in ((spec.get("tripo") or {}).get("chains") or []))
+
+
+def job_has_cloak(spec: Dict[str, Any]) -> bool:
+    """Whether the job has a cape (TRIPO-CLOAK-STRETCH runs for it, as `tripo/tripo_checks.job_regions` reads it): `cape: true` or a `cloak` chain."""
+
+    chains = {chain.get("region") if isinstance(chain, dict) else str(chain) for chain in ((spec.get("tripo") or {}).get("chains") or [])}
+    return bool(spec.get("cape")) or "cloak" in chains
+
+
+def ease_staged_cloak_bends(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
+    """The spine ease for a stretched back (lib/tripo_cloak_bend.py) on every staged clip of a humanoid unit with a cape or cloak chain, recorded
+    with the clip's file (the dwarf, which has none, kept its pose: its back region is not a cloak). `"ease_cloak_bend": false` in the job's tripo
+    block switches it off."""
+
+    from lib import tripo_cloak_bend
+
+    if tripo_quadruped(spec) or not job_has_cloak(spec) or (spec.get("tripo") or {}).get("ease_cloak_bend", True) is False:
+        return
+    stem = spec["runtime_stem"]
+    for role in roles:
+        name = f"{stem}_{role}.anim"
+        bend = tripo_cloak_bend.ease_cloak_bend(staged / f"{stem}.mesh", staged / name, staged / name, role)
+        records[name]["cloak_bend"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in bend.__dict__.items()}
+        records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
+def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
     """The Tripo route's weight rule on the staged mesh (lib/stretch_smooth.py): smooth the weights where the unit's own clips stretch or
     squash edges, at the strength that lowers that most without making any clip worse. A held weapon's bone is locked, so it stays rigid,
     and so are the chain stage's cloak and wing bones, whose weights that stage sets by its own rule."""
 
-    from lib import stretch_smooth, tripo_chains
+    from lib import pdx_deform, stretch_smooth, tripo_chains, weight_fit
 
     mesh = staged / f"{stem}.mesh"
+    mask = weight_fit.plate_vertices(pdx_deform.load_mesh(mesh)) if plates else None  # the armour plates keep their weights, as in the fit
     result = stretch_smooth.smooth(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
                                    locked_bones=held_bones(_parts(weapon)) + list(locked),
-                                   locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()))
+                                   locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()), locked_mask=mask)
     totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
     return {"changed": result.changed, "passes": result.passes, "seed_vertices": result.seeds, "region_vertices": result.region,
             "vertices_changed": result.vertices_changed, "deformed_edges_before": totals["before"], "deformed_edges_after": totals["after"],
@@ -4115,15 +4146,17 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         if (spec.get("tripo") or {}).get("smooth_weights", True) is not False:
             # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
             load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
-            records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones)
+            records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones,
+                                                                                 job_has_plates(spec))
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
         # plates locked. `"fit_weights": false` in the job's tripo block switches it off.
         if (spec.get("tripo") or {}).get("fit_weights", True) is not False:
             load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
-            plates = any((chain or {}).get("region") == "plates" for chain in ((spec.get("tripo") or {}).get("chains") or []))
-            records[f"{stem}.mesh"]["weight_fit"] = fit_clip_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones, plates)
+            records[f"{stem}.mesh"]["weight_fit"] = fit_clip_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones, job_has_plates(spec))
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        # A hard torso bend the weights cannot keep whole is eased in the pose (lib/tripo_cloak_bend.py, TRIPO-CLOAK-STRETCH).
+        ease_staged_cloak_bends(job, staged, spec, sorted(exports["animations"]), records)
         # Then the mesh the game loads decides where the ground is.
         for role in sorted(exports["animations"]):
             records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,

@@ -312,11 +312,14 @@ def smooth_dense(dense: np.ndarray, edges: np.ndarray, region: np.ndarray, passe
 
 
 def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_bones: Sequence[str] = (),
-           steps: Sequence[int] = PASS_STEPS, locked_prefixes: Sequence[str] = ()) -> SmoothResult:
+           steps: Sequence[int] = PASS_STEPS, locked_prefixes: Sequence[str] = (),
+           locked_mask: Optional[np.ndarray] = None) -> SmoothResult:
     """Write `out_path` (the mesh, its weights smoothed where `anim_paths` deform it by the rule above) and return what changed.
 
     `locked_prefixes` locks every bone whose name starts with one of them (the chain stage's `Cloak` and `Wing` bones: their weights are
-    set by that stage's own rule, and smoothed on the orc they let the dying cloak sink into the body past TRIPO-CHAIN-IN-BODY)."""
+    set by that stage's own rule, and smoothed on the orc they let the dying cloak sink into the body past TRIPO-CHAIN-IN-BODY).
+    `locked_mask` (V,) marks further vertices that keep their weights: the armour plates, which the check judges on the mesh the game loads (the
+    round-4 dwarf's chest plate had 0% of its edges stretched before the smoothing and 2.1% after it, 2026-11-17)."""
 
     mesh = pdx_deform.load_mesh(mesh_path)
     data = Path(mesh_path).read_bytes()
@@ -336,6 +339,10 @@ def smooth(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_b
 
     dense = dense_weights(mesh)
     locked = locked_vertices(mesh, dense, canon, locked_bones, locked_prefixes)
+    if locked_mask is not None:
+        extra = np.asarray(locked_mask, bool).copy()
+        np.logical_or.at(extra, canon, extra.copy())
+        locked |= extra[canon]
     unskinned = dense.sum(axis=1) == 0
     bad_any = np.zeros(len(edges), bool)
     for stretched, squashed, _growth in clips.masks.values():

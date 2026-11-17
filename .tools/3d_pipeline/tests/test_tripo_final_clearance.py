@@ -136,5 +136,37 @@ class Stage(unittest.TestCase):
         self.assertNotIn("clear_props", off["u_idle.anim"])
 
 
+class Drop(unittest.TestCase):
+    def test_a_weapon_has_landed_where_its_centre_stops_moving(self) -> None:
+        centres = np.zeros((40, 3))
+        centres[:12, 0] = np.linspace(1.0, 0.1, 12)  # in the air until frame 12
+        centres[12:, 0] = 0.0
+        self.assertEqual(F.landing_frame(centres, 1.0), 12)
+
+    def test_a_weapon_that_never_moves_has_landed_at_the_start(self) -> None:
+        self.assertEqual(F.landing_frame(np.ones((10, 3)), 1.0), 0)
+
+    def test_the_shift_is_eased_in_and_then_held(self) -> None:
+        ramp = F._smoothstep(20, 5, 13)
+        self.assertEqual(float(ramp[5]), 0.0)
+        self.assertEqual(float(ramp[13]), 1.0)
+        self.assertTrue(np.all(np.diff(ramp) >= 0.0))
+        self.assertTrue(np.all(ramp[13:] == 1.0))
+
+    def test_the_final_solve_may_turn_past_the_grip_stages_sixty_degrees_by_the_smallest_angle_first(self) -> None:
+        angles = list(CL.ANGLES_DEGREES)
+        self.assertEqual(angles, sorted(angles))
+        self.assertGreaterEqual(angles[-1], F.MAX_TURN_DEGREES)
+        self.assertEqual(CL.MAX_ANGLE_DEGREES, 60.0, "the grip stage keeps its own cap")
+
+    def test_a_part_without_location_keys_is_left_alone(self) -> None:
+        mesh = SimpleNamespace(bones=["Hand", "Weapon"], parents=[-1, 0])
+        anim = object()
+        out, record, weights = F.clear_dropped_part(mesh, anim, "Weapon", [], [])
+        self.assertIs(out, anim)
+        self.assertFalse(record.changed)
+        self.assertIsNone(weights)
+
+
 if __name__ == "__main__":
     unittest.main()

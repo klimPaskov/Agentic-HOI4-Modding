@@ -248,6 +248,23 @@ class Pieces(unittest.TestCase):
         out = gather(np.array([[1.0], [10.0], [100.0]], np.float32))
         np.testing.assert_allclose(out[:, 0], [1.0 - 100.0, 10.0 - 1.0, 0.0])
 
+    def test_a_clips_most_deformed_frames_join_the_even_samples_and_weigh_more(self) -> None:
+        from types import SimpleNamespace
+
+        frames = 100
+        stretched = np.zeros((frames, 4), bool)
+        stretched[66, :3] = True  # the one hard frame, between the even samples
+        stretched[10, :1] = True
+        clips = SimpleNamespace(matrices={"attack": np.zeros((frames, 2, 4, 4))},
+                                masks={"attack": (stretched, np.zeros_like(stretched), np.zeros((frames, 4)))})
+        out, caps, weights = W.sampled_matrices(clips, {"attack": {"worst": 0.1}})
+        self.assertEqual(len(out), len(caps))
+        self.assertEqual(len(out), len(weights))
+        pick = np.unique(np.concatenate([np.linspace(0, frames - 1, W.FRAMES_PER_CLIP).round().astype(int), [66, 10]]))
+        self.assertEqual(len(out), len(pick))
+        self.assertAlmostEqual(float(weights.mean()), 1.0)
+        self.assertEqual(int(np.argmax(weights)), int(np.nonzero(pick == 66)[0][0]), "the hardest frame weighs most")
+
 
 if __name__ == "__main__":
     unittest.main()
