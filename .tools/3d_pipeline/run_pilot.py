@@ -3735,6 +3735,28 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
     return record
 
 
+def clear_held_props(mesh: Path, anim: Path, role: str, weapon: Any) -> Dict[str, Any]:
+    """The Tripo route's last pose step (lib/tripo_final_clearance.py): every held weapon and shield kept out of the body in every frame of the exported
+    clip, by the same solve as the grip stage, on the mesh the game loads. A part the unit lets go of in this role is left to its fall."""
+
+    from lib import tripo_final_clearance
+
+    parts = [{"bone": part["bone"], "release_roles": part.get("release_roles") or []} for part in _parts(weapon) if part.get("bone")]
+    return tripo_final_clearance.clear_clip_file(mesh, anim, anim, parts, role) if parts else {}
+
+
+def clear_staged_props(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any, records: Dict[str, Any]) -> None:
+    """`clear_held_props` on every staged clip of an armed unit, recorded with the clip's file (`"clear_props": false` in the tripo block: none)."""
+
+    stem = spec["runtime_stem"]
+    if not weapon or (spec.get("tripo") or {}).get("clear_props", True) is False:
+        return
+    for role in roles:
+        name = f"{stem}_{role}.anim"
+        records[name]["clear_props"] = clear_held_props(staged / f"{stem}.mesh", staged / name, role, weapon)
+        records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
 def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
     """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
     past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
@@ -4107,6 +4129,9 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
                                                                                 humanoid=not tripo_quadruped(spec))
             records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
+        # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
+        # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
+        clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)
     findings, facts = check_unit_files.check_files(staged, unit, profile, weapon_bones=weapon_bones)
     errors = [item.__dict__ for item in findings if item.severity == "error"]
     shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []
