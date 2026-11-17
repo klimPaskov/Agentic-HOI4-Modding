@@ -8,7 +8,15 @@ forearm held 30% to 90% of the upper spine's weight, the blend ring of the chest
 
 1. Region: the vertices of every edge the kit's measure (UNIT-ANIM-STRETCH, `lib/pdx_deform`: 1.5 times and 0.5% of the height) counts
    as stretched or squashed in some frame of some clip, grown `RINGS` edge rings. Locked vertices never change: weight on a locked bone
-   (a held weapon), on a chain prefix (`stretch_smooth.locked_vertices`), or a vertex in `locked_mask` (the plates rule's armour plates).
+   (a held weapon), at least `FIT_PREFIX_LOCK_SHARES` of the weight on a chain prefix's bones (`stretch_smooth.locked_vertices`), or a
+   vertex in `locked_mask` (the plates rule's armour plates). The cloak's blend into the body (less than 0.7 of the weight on the cloak's
+   bones) is fitted: the smoothing keeps any cloak vertex whole, and on the orc (2026-11-16) the skin of the right flank, where 1,626
+   of 2,206 vertices carry some cloak weight, sheared between the thigh, the chest and the cloak under the raised axe arm in the attack
+   and the retreat. Fitted again with the blend free, the orc's exported mesh went from 4,450 deformed edges (the fit run again with
+   the cloak locked) to 3,098, the flank's worst attack frame from 291 to 158 by the kit's measure and its retreat from 278 to 141, the
+   cloak's own stretch fell in every clip (defend 4.8% to 3.7%), and every Tripo check still passed. At 0.5 the flank fell less (228,
+   197); at 0.9 about as far (133, 149) with the cloak's own sheet nearly free. Capping the thigh's weight above the hip joint instead
+   (moved to the spine or the pelvis, faded in over a quarter to the whole thigh's length) made every clip worse.
 2. Candidates: each region vertex may take the `CANDIDATES` bones most weighted within two edge rings of it, of its own shape's skeleton.
    A locked bone it does not already hold is never added.
 3. Fit: `FRAMES_PER_CLIP` evenly spaced frames of every clip. The penalty is the squared log strain of every edge the region touches,
@@ -79,6 +87,9 @@ GUARD_ROUNDS = 6
 MAX_ROUNDS = 3
 ROUND_GAIN = 0.10
 MAX_INFLUENCES = stretch_smooth.MAX_INFLUENCES
+# A vertex with at least this share of its weight on one chain prefix's bones is locked from the fit; under it, the chain's blend into the
+# body is fitted with the rest (its chain bones may change, never be added).
+FIT_PREFIX_LOCK_SHARES = {"Cloak": 0.7, "Wing": stretch_smooth.PREFIX_LOCK_SHARES["Wing"]}
 
 
 @dataclass
@@ -273,7 +284,7 @@ def fit(mesh_path: Path, anim_paths: Sequence[Path], out_path: Path, locked_bone
     clips = stretch_smooth._Clips(mesh, anims, edges)
     before = {name: clips.summary(name) for name in anims}
     dense = stretch_smooth.dense_weights(mesh)
-    locked = stretch_smooth.locked_vertices(mesh, dense, canon, locked_bones, locked_prefixes)
+    locked = stretch_smooth.locked_vertices(mesh, dense, canon, locked_bones, locked_prefixes, FIT_PREFIX_LOCK_SHARES)
     if locked_mask is not None:
         extra = np.asarray(locked_mask, bool).copy()
         np.logical_or.at(extra, canon, extra.copy())

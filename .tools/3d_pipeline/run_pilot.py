@@ -3716,8 +3716,8 @@ def _parts(held: Any) -> List[Dict[str, Any]]:
 def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoid: bool = True) -> Dict[str, Any]:
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
-    weapon or shield the unit has let go of never deciding where it is. A death whose boots hang above the ground has its legs settled first, judged on
-    the body as the ground pass will lift it. `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
+    weapon or shield the unit has let go of never deciding where it is. A death whose boots hang above the ground has its legs settled first, and one
+    whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
 
     from lib import pdx_ground, tripo_pose
 
@@ -3727,6 +3727,9 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
         legs = tripo_pose.settle_death_legs(mesh, anim, anim, exclude_bones=released)
         record["legs"] = {"changed": legs.changed, "joints": list(legs.joints), "share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
                           "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
+        upper = tripo_pose.settle_death_upper(mesh, anim, anim, exclude_bones=released)
+        record["upper_body"] = {"changed": upper.changed, "turns_degrees": upper.turns, "from_frame": upper.from_frame, "ramp_frames": upper.frames,
+                                "heights_before": upper.heights_before, "heights_after": upper.heights_after, "note": upper.note}
     fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=released)
     record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
     return record

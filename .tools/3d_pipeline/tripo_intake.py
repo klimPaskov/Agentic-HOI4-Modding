@@ -32,7 +32,7 @@ long clip to at most that many frames, ending on the frame closest to frame 0 so
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
-`untwist` (default every role, `false` or a shorter list to limit it) turns the spine back where the shoulders twist against the hips past vanilla's worst for the role (`lib/tripo_pose.py`).
+`untwist` (default every role, `false` or a shorter list to limit it) turns the spine back where the shoulders twist against the standing feet past vanilla's worst for the role (`lib/tripo_pose.py`, the stance twist).
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
 it per role by fixed rules (`tripo/chain_stage.py`, `lib/tripo_chains.py`), so a cloak no longer follows the thighs and wings no longer follow the arms.
