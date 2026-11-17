@@ -121,6 +121,7 @@ def solve_frame(
     axes: Optional[np.ndarray] = None,
     soft: Optional[np.ndarray] = None,
     soft_share: float = 0.0,
+    ground_axis: Optional[int] = GROUND_AXIS,
 ) -> Tuple[np.ndarray, float]:
     """The smallest rotation about `pivot` (a rotation vector, radians) that brings the weapon's deep share to `target` or less, and the share left.
 
@@ -129,7 +130,7 @@ def solve_frame(
     """
 
     axes = fibonacci_axes() if axes is None else axes
-    start = deep_share(weapon_points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS)
+    start = deep_share(weapon_points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
     if start <= target:
         return np.zeros(3), start
     best = (start, np.zeros(3))
@@ -141,7 +142,7 @@ def solve_frame(
         found = None
         for axis in axes:
             moved = offsets @ rotation_matrix(axis, angle).T + pivot
-            share = deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS)
+            share = deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
             if share < best[0]:
                 best = (share, axis * angle)
             if share <= target and (found is None or share < found[0]):
@@ -188,7 +189,7 @@ def _hold_neighbours(raw, last):
     return held
 
 
-def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, last, soft=None, soft_share=0.0):
+def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, last, soft=None, soft_share=0.0, ground_axis=GROUND_AXIS):
     """The deep share per frame with each frame's rotation applied; frames from `last` on (the weapon let go) count 0."""
 
     out = []
@@ -197,7 +198,7 @@ def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, las
             out.append(0.0)
             continue
         moved = (free[i] - pivots[i]) @ rotvec_matrix(vectors[i]).T + pivots[i]
-        out.append(deep_share(moved, body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS))
+        out.append(deep_share(moved, body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis))
     return out
 
 
@@ -216,6 +217,7 @@ def clear_clip(
     rest_grip: Optional[np.ndarray] = None,
     soft: Optional[np.ndarray] = None,
     soft_share: float = 0.0,
+    ground_axis: Optional[int] = GROUND_AXIS,
 ) -> Dict[str, object]:
     """Solve a whole clip. Per frame i: `weapon_frames[i]` (all weapon points), `pivots[i]` (the wrist joint), `body_frames[i]` (the body's posed vertices).
 
@@ -227,12 +229,12 @@ def clear_clip(
     count = len(weapon_frames)
     last = count if skip_from is None else min(skip_from, count)
     free = _clip_free_points(weapon_frames, pivots, height, rest_weapon, rest_grip)
-    before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, ground_axis=GROUND_AXIS) if i < last else 0.0 for i in range(count)]
-    wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, GROUND_AXIS) if i < last else 0.0 for i in range(count)]
+    before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, ground_axis=ground_axis) if i < last else 0.0 for i in range(count)]
+    wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis) if i < last else 0.0 for i in range(count)]
     raw = np.zeros((count, 3))
     for i in range(last):
         if wanted[i] > target:
-            raw[i], _left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share)
+            raw[i], _left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share, ground_axis=ground_axis)
     rotvecs = smooth_rotations(_hold_neighbours(raw, last), radius=1)
     # from the release on the weapon is free: the hand's rotation fades out over the next frames, so it does not snap back
     if skip_from is not None and 0 < last < count:
@@ -240,7 +242,7 @@ def clear_clip(
             rotvecs[last + k] = rotvecs[last - 1] * max(0.0, 1.0 - (k + 1) / 5.0)
     else:
         rotvecs[last:] = 0.0
-    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share)
+    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share, ground_axis)
     cap = np.radians(max_angle)
     for _ in range(rounds):
         over = [i for i in range(last) if after[i] > limit]
@@ -253,14 +255,14 @@ def clear_clip(
             if size > cap:
                 rotvecs[i] *= cap / size
         rotvecs = smooth_rotations(rotvecs, radius=1)
-        after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share)
+        after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share, ground_axis)
     # What smoothing could not keep: a frame takes its own solved rotation (frames are independent, so it passes if its own solve did).
     for i in [i for i in range(last) if after[i] > limit]:
         if np.linalg.norm(raw[i]) > 0:
             rotvecs[i] = raw[i]
-    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last)  # the check's own test, soft cloth left out
+    after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, ground_axis=ground_axis)  # the check's own test, soft cloth left out
     failed = [i for i in range(last) if after[i] > limit]
-    soft_after = after if soft is None else _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share)
+    soft_after = after if soft is None else _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share, ground_axis)
     return {
         "rotvecs": rotvecs, "before": before, "after": after, "failed": failed, "soft_after": soft_after,
         "max_degrees": float(np.degrees(np.linalg.norm(rotvecs, axis=1).max())) if count else 0.0,

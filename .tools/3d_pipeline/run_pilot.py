@@ -3732,6 +3732,16 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
     return record
 
 
+def clear_held_props(mesh: Path, anim: Path, role: str, weapon: Any) -> Dict[str, Any]:
+    """The Tripo route's last pose step (lib/tripo_final_clearance.py): every held weapon and shield kept out of the body in every frame of the exported
+    clip, by the same solve as the grip stage, on the mesh the game loads. A part the unit lets go of in this role is left to its fall."""
+
+    from lib import tripo_final_clearance
+
+    parts = [{"bone": part["bone"], "release_roles": part.get("release_roles") or []} for part in _parts(weapon) if part.get("bone")]
+    return tripo_final_clearance.clear_clip_file(mesh, anim, anim, parts, role) if parts else {}
+
+
 def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
     """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
     past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
@@ -4099,6 +4109,11 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             plates = any((chain or {}).get("region") == "plates" for chain in ((spec.get("tripo") or {}).get("chains") or []))
             records[f"{stem}.mesh"]["weight_fit"] = fit_clip_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones, plates)
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        # Then, on the files as they are now, no held weapon or shield is left in the body in any frame (the retarget and the export put back
+        # what the grip stage cleared). `"clear_props": false` in the job's tripo block switches it off.
+        if weapon_cfg and (spec.get("tripo") or {}).get("clear_props", True) is not False:
+            for role in sorted(exports["animations"]):
+                records[f"{stem}_{role}.anim"]["clear_props"] = clear_held_props(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg)
         # Then the mesh the game loads decides where the ground is.
         for role in sorted(exports["animations"]):
             records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
