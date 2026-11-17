@@ -745,54 +745,33 @@ def step_degrees(a, b):
     return 2.0 * math.degrees(math.acos(min(1.0, abs(a.dot(b)))))
 
 
-def turn_rates(values, frames):
-    """Degrees per frame between neighbouring keys."""
-
-    return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
-
-
 def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16):
     """Keep every bone's quaternions on one hemisphere and ease a snap over more frames.
 
-    A step faster than `trigger_degrees` per frame is replaced by a slerp between the keys `w` frames before and
-    after it, with the smallest `w` (up to `max_window`) that brings every step in the range to `target_degrees`
-    per frame or less. Returns what was found: flips fixed, and per bone the fastest step before and after
-    (degrees per frame) for the bones that had a flip or a step over the trigger.
+    A step faster than `trigger_degrees` per frame is retimed along the bone's own path over a window of keys (`lib/tripo_ease.ease_turns`,
+    the grip stage's rule): the smallest window, up to `max_window` keys either side, in which every step comes to `target_degrees` per
+    frame or less. The bone passes through the same poses, so the raise or the end of a swing inside the window stays. Returns what was
+    found: flips fixed, and per bone the fastest step before and after (degrees per frame) for the bones that had a flip or a step over
+    the trigger.
     """
+
+    from lib import tripo_ease
 
     out = {"flips_fixed": 0, "snaps_eased": {}}
     for bone, curves in rotation_curves(action).items():
-        quats = key_quaternions(curves)
         frames = [kp.co.x for kp in curves[0].keyframe_points]
-
-        flips = 0
-        for k in range(1, len(quats)):
-            if quats[k].dot(quats[k - 1]) < 0:
-                quats[k].negate()
-                flips += 1
-        before = max(turn_rates(quats, frames), default=0.0)
+        quats, flips = tripo_ease.one_hemisphere([np.array(q) for q in key_quaternions(curves)])
+        before = max(tripo_ease.turn_rates(quats, frames), default=0.0)
         eased = []
         # The grip stage eases the weapon bone itself and keys a counter-turn against the hand. Easing it again
         # here breaks that counter-turn, and a dropped weapon bounced for three frames after landing.
-        k = len(quats) if bone.replace(PREFIX, "") in OPTIONAL_BONES else 1
-        while k < len(quats):
-            if turn_rates(quats, frames)[k - 1] > trigger_degrees:
-                for window in range(2, max_window + 1):
-                    a, b = max(k - window, 0), min(k + window - 1, len(quats) - 1)
-                    trial = list(quats)
-                    for m in range(a, b + 1):
-                        trial[m] = quats[a].slerp(quats[b], (frames[m] - frames[a]) / max(frames[b] - frames[a], 1e-6))
-                    if max(turn_rates(trial, frames)[max(a - 1, 0): b + 1], default=0.0) <= target_degrees or (a == 0 and b == len(quats) - 1):
-                        quats = trial
-                        eased.append([int(frames[a]), int(frames[b])])
-                        k = b
-                        break
-            k += 1
-        after = max(turn_rates(quats, frames), default=0.0)
+        if bone.replace(PREFIX, "") not in OPTIONAL_BONES:
+            quats, eased = tripo_ease.ease_turns(quats, frames, trigger_degrees, target_degrees, max_window)
+        after = max(tripo_ease.turn_rates(quats, frames), default=0.0)
         out["flips_fixed"] += flips
         if flips or eased or before > trigger_degrees:
             out["snaps_eased"][bone.replace(PREFIX, "")] = {"flips": flips, "per_frame_before": round(before, 1), "per_frame_after": round(after, 1), "eased_frames": eased}
-        write_quaternions(curves, quats)
+        write_quaternions(curves, [Quaternion([float(v) for v in q]) for q in quats])
     return out
 
 
@@ -841,14 +820,16 @@ def settle_to_first(action):
     return {"frames_added": count, "turn_degrees": round(worst_turn, 1), "worst_bone": worst_bone, "rate_degrees_per_frame": round(tripo_trim.settle_rate(steps), 2)}
 
 
-def held_weapon_hand(armature, args):
-    """(weapon bone, hand bone, other held bones) of a unit whose weapon has its own bone under a hand, else None."""
+def held_parts(armature, args):
+    """[(part bone, hand bone, the other held bones)] for each held part (the weapon, then the shield) with its own bone under a hand."""
 
     bones = {item.partition("=")[2] for item in args.rigid_part}
-    weapon = next((b for b in sorted(bones) if b == "Weapon" and b in armature.data.bones), None)
-    if weapon is None or armature.data.bones[weapon].parent is None:
-        return None
-    return weapon, armature.data.bones[weapon].parent.name, sorted(b for b in bones if b != weapon and b in armature.data.bones)
+    out = []
+    for part in [b for b in ("Weapon", "Shield") if b in bones and b in armature.data.bones]:
+        parent = armature.data.bones[part].parent
+        if parent is not None:
+            out.append((part, parent.name, sorted(b for b in bones if b != part and b in armature.data.bones)))
+    return out
 
 
 def held_and_body(body, weapon_bone, others):
@@ -885,15 +866,31 @@ def evaluated_world(body) -> np.ndarray:
 
 
 def clear_settled_weapon(armature, body, action, first_frame, last_frame, args):
-    """Keep the held weapon out of the body in the frames `settle_to_first` appended (lib/tripo_clearance.py, the grip stage's rule).
+    """Keep every held part out of the body in the frames `settle_to_first` appended: `clear_settled_part` for the weapon, then the shield.
+    Returns the weapon's record (with the shield's under "Shield"), or None when the unit holds no part on its own bone."""
+
+    records = {}
+    for found in held_parts(armature, args):
+        record = clear_settled_part(armature, body, action, first_frame, last_frame, found)
+        if record is not None:
+            records[found[0]] = record
+    if not records:
+        return None
+    first = dict(records.pop(next(iter(records))))
+    first.update(records)
+    return first
+
+
+def clear_settled_part(armature, body, action, first_frame, last_frame, found):
+    """Keep one held part out of the body in the frames `settle_to_first` appended (lib/tripo_clearance.py, the grip stage's rule).
 
     The grip stage cleared the clip as Tripo made it. The settle then blends every bone, the hand included, from the last pose to the first, and
     the straight blend of two clear poses swings the weapon through the torso (the round 4 ogre's club: 9 frames, up to 9.1% of its points).
-    So the clearance runs again on the frames from the clip's old end on, and turns the hand about the wrist where the weapon is inside the body.
-    Returns the record, or None when the unit holds no weapon on its own bone."""
+    So the clearance runs again on the frames from the clip's old end on, and turns the hand about the wrist where the part is inside the body.
+    A shield needs it as much as a weapon: the round 4 dwarf's attack kept its shield 4.9% in the body in the last settled frame.
+    `found` is (part bone, hand bone, the other held bones). Returns the record, or None when the part has under 50 vertices."""
 
-    found = held_weapon_hand(armature, args)
-    if found is None or last_frame <= first_frame:
+    if last_frame <= first_frame:
         return None
     weapon_bone, hand, others = found
     from lib import tripo_clearance as CL

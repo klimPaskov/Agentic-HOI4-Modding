@@ -207,6 +207,38 @@ def _clip_shares(free, pivots, vectors, body_frames, body_triangles, height, las
     return out
 
 
+def _solve_frames(free, pivots, body_frames, body_triangles, height, wanted, last, target, max_angle, coherent, soft, soft_share, ground_axis) -> np.ndarray:
+    """Each frame's own solve (`solve_frame`) where the part is in the body; with `coherent`, the axes near the frame before's first."""
+
+    raw = np.zeros((len(free), 3))
+    previous, previous_at = None, -10
+    cone = fibonacci_axes(COHERENT_AXES)
+    for i in range(last):
+        if wanted[i] <= target:
+            continue
+        near = cone[cone @ previous > COHERENT_COSINE] if coherent and previous is not None and i - previous_at <= COHERENT_GAP else None
+        near = near if near is not None and len(near) else None
+        raw[i], left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, near,
+                                   soft=soft, soft_share=soft_share, ground_axis=ground_axis)
+        if near is not None and left > target:
+            raw[i], left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share, ground_axis=ground_axis)
+        if np.linalg.norm(raw[i]) > 0:
+            previous, previous_at = raw[i] / np.linalg.norm(raw[i]), i
+    return raw
+
+
+def _cut_back(points, pivot, vector, body_positions, body_triangles, height, limit, soft, soft_share, ground_axis) -> np.ndarray:
+    """A frame clear without a turn of its own that the turn held in from its neighbours puts in the body: the largest share of that turn
+    that keeps it clear (the round 4 dwarf's shield, clear without a turn in the attack's frames 20 to 24, was turned 63 to 81 degrees into
+    the torso by the turn its frames 14 to 17 needed)."""
+
+    for share in (0.75, 0.5, 0.25):
+        moved = (points - pivot) @ rotvec_matrix(vector * share).T + pivot
+        if deep_share(moved, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis) <= limit:
+            return vector * share
+    return vector * 0.0
+
+
 def clear_clip(
     weapon_frames: Sequence[np.ndarray],
     pivots: Sequence[np.ndarray],
@@ -239,20 +271,7 @@ def clear_clip(
     free = _clip_free_points(weapon_frames, pivots, height, rest_weapon, rest_grip)
     before = [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, ground_axis=ground_axis) if i < last else 0.0 for i in range(count)]
     wanted = before if soft is None else [deep_share(free[i], body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis) if i < last else 0.0 for i in range(count)]
-    raw = np.zeros((count, 3))
-    previous, previous_at = None, -10
-    cone = fibonacci_axes(COHERENT_AXES)
-    for i in range(last):
-        if wanted[i] > target:
-            near = None
-            if coherent and previous is not None and i - previous_at <= COHERENT_GAP:
-                near = cone[cone @ previous > COHERENT_COSINE]
-            raw[i], left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, near if near is not None and len(near) else None,
-                                       soft=soft, soft_share=soft_share, ground_axis=ground_axis)
-            if near is not None and len(near) and left > target:
-                raw[i], left = solve_frame(free[i], pivots[i], body_frames[i], body_triangles, height, target, max_angle, soft=soft, soft_share=soft_share, ground_axis=ground_axis)
-            if np.linalg.norm(raw[i]) > 0:
-                previous, previous_at = raw[i] / np.linalg.norm(raw[i]), i
+    raw = _solve_frames(free, pivots, body_frames, body_triangles, height, wanted, last, target, max_angle, coherent, soft, soft_share, ground_axis)
     rotvecs = smooth_rotations(_hold_neighbours(raw, last), radius=1)
     # from the release on the weapon is free: the hand's rotation fades out over the next frames, so it does not snap back
     if skip_from is not None and 0 < last < count:
@@ -262,22 +281,29 @@ def clear_clip(
         rotvecs[last:] = 0.0
     after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share, ground_axis)
     cap = np.radians(max_angle)
+
+    def cut_back(i, vector):
+        return _cut_back(free[i], pivots[i], vector, body_frames[i], body_triangles, height, limit, soft, soft_share, ground_axis)
+
     for _ in range(rounds):
         over = [i for i in range(last) if after[i] > limit]
         if not over:
             break
         for i in over:
-            # smoothing took away some of what the frame needed: ask for what its own solve found, a quarter more
-            rotvecs[i] = raw[i] if np.linalg.norm(raw[i]) > 0 else rotvecs[i] * 1.25
+            if np.linalg.norm(raw[i]) > 0:
+                # smoothing took away some of what the frame needed: ask for what its own solve found
+                rotvecs[i] = raw[i]
+            else:
+                rotvecs[i] = cut_back(i, rotvecs[i])
             size = float(np.linalg.norm(rotvecs[i]))
             if size > cap:
                 rotvecs[i] *= cap / size
         rotvecs = smooth_rotations(rotvecs, radius=1)
         after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share, ground_axis)
-    # What smoothing could not keep: a frame takes its own solved rotation (frames are independent, so it passes if its own solve did).
+    # What smoothing could not keep: a frame takes its own solved rotation (frames are independent, so it passes if its own solve did), and a
+    # frame that needed none has the turn carried into it cut back.
     for i in [i for i in range(last) if after[i] > limit]:
-        if np.linalg.norm(raw[i]) > 0:
-            rotvecs[i] = raw[i]
+        rotvecs[i] = raw[i] if np.linalg.norm(raw[i]) > 0 else cut_back(i, rotvecs[i])
     after = _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, ground_axis=ground_axis)  # the check's own test, soft cloth left out
     failed = [i for i in range(last) if after[i] > limit]
     soft_after = after if soft is None else _clip_shares(free, pivots, rotvecs, body_frames, body_triangles, height, last, soft, soft_share, ground_axis)
@@ -286,6 +312,297 @@ def clear_clip(
         "max_degrees": float(np.degrees(np.linalg.norm(rotvecs, axis=1).max())) if count else 0.0,
         "frames_changed": int((np.linalg.norm(rotvecs, axis=1) > 1e-6).sum()),
     }
+
+
+# ---- the order of the turns: the weapon in the hand first, the arm last, and a raised hand is never lowered ----------------------
+#
+# `clear_clip` turns the hand about the wrist. A frame it cannot clear within its cap goes on to two more turns, in this order, each only
+# for the frames the turns before it left in the body (`clear_clip_staged`):
+#
+# 1. the roll: the held part turns about its own long axis (the haft, the shield's bar) through the grip, as a fist turns a bar it holds
+#    (`roll_frame`). It moves nothing of the arm. A club's head is round about its haft, so this does little for a club, and much for a
+#    shield, whose crescent reaches out sideways from the bar;
+# 2. the arm: the upper arm turns about the shoulder (`arm_frame`), the smallest turn up to `ARM_MAX_DEGREES` that clears the part. It is
+#    the last resort because it changes the clip's own motion. A hand the clip raises above the shoulder is never lowered by it (a turn
+#    that would bring the wrist down more than `RAISE_KEEP_SHARE` of the height is not taken), and no turn may put the elbow or the wrist
+#    inside the body.
+#
+# The dwarf's crescent shield (2026-11-17) stayed 4.9% in the body in the attack with the wrist at its cap (84 degrees and four passes
+# on the exported files reached only 10% less), because a turn about the wrist swings the crescent round the fist and through the torso
+# again: it is the roll that moves it out.
+
+ROLL_ANGLES_DEGREES = (15.0, 30.0, 45.0, 60.0, 75.0, 90.0, 120.0, 150.0, 180.0)
+ARM_ANGLES_DEGREES = (4.0, 8.0, 12.0, 17.0, 23.0, 30.0)
+ARM_MAX_DEGREES = 30.0
+ARM_AXES = 60
+RAISE_KEEP_SHARE = 0.01
+STAGE_RAMP_DEGREES = 8.0  # a roll or an arm turn grows and fades by at most this much a frame (`ramp_turns`), as the final clearance's hand turn
+
+
+def roll_frame(points: np.ndarray, grip: np.ndarray, axis: np.ndarray, body_positions: np.ndarray, body_triangles: np.ndarray, height: float,
+               target: float = TARGET, soft: Optional[np.ndarray] = None, soft_share: float = 0.0, ground_axis: Optional[int] = GROUND_AXIS,
+               prefer: float = 1.0) -> Tuple[float, float]:
+    """(the smallest turn of the held part about its own long `axis` through `grip`, radians, signed; the deep share left) that brings the
+    part to `target`, or the best one found. `points` are the part's free points as the wrist turn left them. At each angle the `prefer`
+    side (the sign the frame before took) is taken when it clears, so the roll does not flip from one side to the other between frames."""
+
+    start = deep_share(points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
+    if start <= target:
+        return 0.0, start
+    best = (start, 0.0)
+    offsets = np.asarray(points, float) - grip
+    for degrees in ROLL_ANGLES_DEGREES:
+        found = None
+        for sign in ((1.0, -1.0) if prefer >= 0 else (-1.0, 1.0)):
+            angle = sign * np.radians(degrees)
+            share = deep_share(offsets @ rotation_matrix(axis, angle).T + grip, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
+            if share < best[0]:
+                best = (share, angle)
+            if share <= target and found is None:
+                found = (share, angle)
+        if found is not None:
+            return found[1], found[0]
+    return best[1], best[0]
+
+
+def arm_frame(points: np.ndarray, shoulder: np.ndarray, joints: np.ndarray, body_positions: np.ndarray, body_triangles: np.ndarray, height: float,
+              up_axis: int, raised: bool, target: float = TARGET, soft: Optional[np.ndarray] = None, soft_share: float = 0.0,
+              ground_axis: Optional[int] = GROUND_AXIS, axes: Optional[np.ndarray] = None) -> Tuple[np.ndarray, float]:
+    """(the smallest turn of the upper arm about `shoulder`, a rotation vector; the deep share left) that brings the part to `target`, or the
+    best one found. `joints` are the elbow and the wrist (the wrist last): no turn may put either inside the body, and when the hand is
+    `raised` (above the shoulder in the clip) no turn may lower the wrist by more than `RAISE_KEEP_SHARE` of the height. `axes` are tried
+    first when given (those near the frame before's axis, as `clear_clip(coherent=True)` does), then every axis."""
+
+    cc = _clip_check()
+    start = deep_share(points, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
+    if start <= target:
+        return np.zeros(3), start
+    every = fibonacci_axes(ARM_AXES)
+    best = (start, np.zeros(3))
+    offsets = np.asarray(points, float) - shoulder
+    joint_offsets = np.asarray(joints, float) - shoulder
+    wrist_up = float(joints[-1][up_axis])
+    for degrees in ARM_ANGLES_DEGREES:
+        found = None
+        for axis in (every if axes is None or not len(axes) else np.concatenate([axes, every])):
+            if found is not None:
+                break
+            rotation = rotation_matrix(axis, np.radians(degrees))
+            moved_joints = joint_offsets @ rotation.T + shoulder
+            if raised and moved_joints[-1][up_axis] < wrist_up - RAISE_KEEP_SHARE * height:
+                continue
+            if cc.points_inside_mesh(moved_joints, body_positions[body_triangles]).any():
+                continue
+            share = deep_share(offsets @ rotation.T + shoulder, body_positions, body_triangles, height, CLEAR_MARGIN_SHARE, soft, soft_share, ground_axis)
+            if share < best[0]:
+                best = (share, axis * np.radians(degrees))
+            if share <= target and (found is None or share < found[0]):
+                found = (share, axis * np.radians(degrees))
+        if found is not None:
+            return found[1], found[0]
+    return best[1], best[0]
+
+
+def staged_points(points: np.ndarray, pivot: np.ndarray, wrist: np.ndarray, grip: Optional[np.ndarray] = None, roll: Optional[np.ndarray] = None,
+                  shoulder: Optional[np.ndarray] = None, arm: Optional[np.ndarray] = None) -> np.ndarray:
+    """The part's points after the three turns, as `clear_clip_staged` composes them: the wrist (`wrist`, a rotation vector about `pivot`),
+    the roll (`roll`, a world rotation vector about the grip as the wrist turn carries it: `grip` is the grip before any turn) and the upper
+    arm (`arm`, about `shoulder`). Applied in that order to the pose, each about the joint as the turns before it left it, the arm last."""
+
+    turn = rotvec_matrix(wrist)
+    out = (np.asarray(points, float) - pivot) @ turn.T + pivot
+    if roll is not None and grip is not None and float(np.linalg.norm(roll)) > 1e-12:
+        carried = turn @ (np.asarray(grip, float) - pivot) + pivot
+        out = (out - carried) @ rotvec_matrix(roll).T + carried
+    if arm is not None and shoulder is not None and float(np.linalg.norm(arm)) > 1e-12:
+        out = (out - shoulder) @ rotvec_matrix(arm).T + shoulder
+    return out
+
+
+def ramp_turns(rotvecs: np.ndarray, step_degrees: float = STAGE_RAMP_DEGREES, clear=None, last: Optional[int] = None) -> np.ndarray:
+    """Per-frame turns (rotation vectors) with each one carried into the frames around it, fading by `step_degrees` a frame, wherever a
+    frame has less: a solved turn grows in and fades out instead of starting and ending in one frame, which the unit's spin check
+    fails (UNIT-ANIM-SPIN). A frame keeps at least its own turn. `clear(frame, vector)` says whether the part stays out of the body with a
+    carried turn (a share of it is tried when not). Frames from `last` on keep none."""
+
+    step = np.radians(step_degrees)
+    out = np.array(rotvecs, float)
+    end = len(out) if last is None else min(last, len(out))
+    for order, side in ((range(1, end), -1), (range(end - 2, -1, -1), 1)):
+        for i in order:
+            j = i + side
+            size = float(np.linalg.norm(out[j]))
+            if size <= step or float(np.linalg.norm(out[i])) >= size - step:
+                continue
+            wanted = out[j] * ((size - step) / size)
+            for share in (1.0, 0.75, 0.5, 0.25):
+                if float(np.linalg.norm(wanted * share)) <= float(np.linalg.norm(out[i])):
+                    break
+                if clear is None or clear(i, wanted * share):
+                    out[i] = wanted * share
+                    break
+    out[end:] = 0.0
+    return out
+
+
+def turn_between(a: np.ndarray, b: np.ndarray) -> float:
+    """Degrees between two turns given as rotation vectors."""
+
+    relative = rotvec_matrix(a).T @ rotvec_matrix(b)
+    return float(np.degrees(np.arccos(np.clip((np.trace(relative) - 1.0) / 2.0, -1.0, 1.0))))
+
+
+BRIDGE_SWEEPS = 4
+BRIDGE_AXES = 60
+
+
+def matrix_rotvec(matrix: np.ndarray) -> np.ndarray:
+    """The rotation vector of a rotation matrix."""
+
+    angle = float(np.arccos(np.clip((np.trace(matrix) - 1.0) / 2.0, -1.0, 1.0)))
+    if angle < 1e-9:
+        return np.zeros(3)
+    if angle > np.pi - 1e-6:
+        values, vectors = np.linalg.eigh((matrix + matrix.T) / 2.0)
+        return vectors[:, int(np.argmax(values))] * angle
+    axis = np.array([matrix[2, 1] - matrix[1, 2], matrix[0, 2] - matrix[2, 0], matrix[1, 0] - matrix[0, 1]]) / (2.0 * np.sin(angle))
+    return axis * angle
+
+
+def _near_turns(keep: np.ndarray, own: np.ndarray, step: float) -> List[np.ndarray]:
+    """Turns within `step` degrees of `keep`, nearest to `own` first: the straight line toward `own` and turns about every axis."""
+
+    out = [keep + (own - keep) * t for t in np.linspace(1.0, 0.0, 9)]
+    base = rotvec_matrix(keep)
+    for share in (1.0, 0.75, 0.5, 0.25):
+        for axis in fibonacci_axes(BRIDGE_AXES):
+            out.append(matrix_rotvec(rotation_matrix(axis, np.radians(step * share)) @ base))
+    out = [v for v in out if turn_between(v, keep) <= step + 1e-6]
+    return sorted(out, key=lambda v: turn_between(v, own))
+
+
+def bridge_turns(rotvecs: np.ndarray, clear, max_steps: Sequence[float], sweeps: int = BRIDGE_SWEEPS) -> np.ndarray:
+    """Per-frame turns with every jump between neighbouring frames brought under `max_steps[i]` degrees (the step from frame i to i + 1)
+    where a frame can take a turn nearer its neighbour's and stay clear (`clear(frame, vector)`).
+
+    For a jump, one frame keeps its turn and the other takes the turn within the step of it that is nearest its own and clear: on the
+    straight line toward its own, or about another axis when the straight way sweeps the part through the body. The frame whose own turn is
+    smaller moves first (it needed less), then the other, and a moved frame can pass the jump on to the next. A jump no move clears is
+    left, for the smoothing after it. The dwarf's shield needed 68 degrees of wrist in the attack's frame 19 and none in frame 20, where the
+    same turn put it back in the torso: one frame of 62 degrees, which the spin rule smoothed over five frames, and three frames went back
+    in the body. The straight way between the two turns is 11% in the body halfway."""
+
+    out = np.array(rotvecs, float)
+    for _ in range(sweeps):
+        moved = False
+        for i in range(len(out) - 1):
+            if turn_between(out[i], out[i + 1]) <= max_steps[i]:
+                continue
+            order = (i, i + 1) if np.linalg.norm(out[i]) <= np.linalg.norm(out[i + 1]) else (i + 1, i)
+            for move in order:
+                keep = i + 1 if move == i else i
+                found = next((v for v in _near_turns(out[keep], out[move], max_steps[i]) if clear(move, v)), None)
+                if found is not None:
+                    out[move] = found
+                    moved = True
+                    break
+        if not moved:
+            break
+    return out
+
+
+def clear_clip_staged(
+    weapon_frames: Sequence[np.ndarray],
+    pivots: Sequence[np.ndarray],
+    body_frames: Sequence[np.ndarray],
+    body_triangles: np.ndarray,
+    height: float,
+    grips: Optional[Sequence[np.ndarray]] = None,
+    haft_axes: Optional[Sequence[np.ndarray]] = None,
+    shoulders: Optional[Sequence[np.ndarray]] = None,
+    arm_joints: Optional[Sequence[np.ndarray]] = None,
+    up_axis: int = 2,
+    **options,
+) -> Dict[str, object]:
+    """`clear_clip` (the wrist), then for the frames it leaves over the limit the roll of the part about its haft (when `grips` and `haft_axes`,
+    the grip point and the haft's direction per frame before any turn, are given), then the upper arm (when `shoulders` and `arm_joints`, the
+    elbow and the wrist per frame, are given). Returns `clear_clip`'s result with "rolls" (radians per frame, about the haft as the wrist turn
+    carries it), "arm_rotvecs" (per frame, about the shoulder), "after" and "failed" over all three, and the frames each stage worked on."""
+
+    limit = options.get("limit", LIMIT)
+    target = options.get("target", TARGET)
+    soft, soft_share = options.get("soft"), options.get("soft_share", 0.0)
+    ground_axis = options.get("ground_axis", GROUND_AXIS)
+    result = clear_clip(weapon_frames, pivots, body_frames, body_triangles, height, **options)
+    count = len(weapon_frames)
+    skip_from = options.get("skip_from")
+    last = count if skip_from is None else min(skip_from, count)
+    free = _clip_free_points(weapon_frames, pivots, height, options.get("rest_weapon"), options.get("rest_grip"))
+    wrist = [rotvec_matrix(result["rotvecs"][i]) for i in range(count)]
+    turned = [(free[i] - pivots[i]) @ wrist[i].T + pivots[i] for i in range(count)]
+    rolls = np.zeros((count, 3))  # the roll as a rotation vector about the haft as the wrist carries it, so it smooths like the others
+    arm = np.zeros((count, 3))
+
+    def rolled(i, vector):
+        return staged_points(free[i], pivots[i], result["rotvecs"][i], grips[i] if grips is not None else None, vector)
+
+    def armed(i, roll_vector, arm_vector):
+        return staged_points(free[i], pivots[i], result["rotvecs"][i], grips[i] if grips is not None else None, roll_vector,
+                             shoulders[i] if shoulders is not None else None, arm_vector)
+
+    def stage_share(i, roll_vector, arm_vector):
+        return deep_share(armed(i, roll_vector, arm_vector), body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE, ground_axis=ground_axis)
+
+    def arm_allowed(i, vector):
+        """A carried arm turn keeps the arm's own rules: a raised wrist is not lowered, the elbow and the wrist stay out of the body."""
+
+        joints = np.asarray(arm_joints[i], float)
+        moved = (joints - shoulders[i]) @ rotvec_matrix(vector).T + shoulders[i]
+        if float(joints[-1][up_axis]) > float(np.asarray(shoulders[i])[up_axis]) and moved[-1][up_axis] < joints[-1][up_axis] - RAISE_KEEP_SHARE * height:
+            return False
+        return not bool(_clip_check().points_inside_mesh(moved, body_frames[i][body_triangles]).any())
+
+    def shares(roll_vectors, arm_vectors, with_soft=False):
+        return [deep_share(armed(i, roll_vectors[i], arm_vectors[i]), body_frames[i], body_triangles, height, CLEAR_MARGIN_SHARE,
+                           soft if with_soft else None, soft_share if with_soft else 0.0, ground_axis) if i < last else 0.0 for i in range(count)]
+
+    after = list(result["after"])
+    rolled_frames, armed_frames = [], []
+    if grips is not None and haft_axes is not None and any(after[i] > limit for i in range(last)):
+        raw = np.zeros((count, 3))
+        prefer = 1.0
+        for i in [i for i in range(last) if after[i] > limit]:
+            axis = wrist[i] @ G.unit(haft_axes[i])
+            grip = wrist[i] @ (grips[i] - pivots[i]) + pivots[i]
+            angle, _left = roll_frame(turned[i], grip, axis, body_frames[i], body_triangles, height, target, soft, soft_share, ground_axis, prefer)
+            raw[i] = axis * angle
+            if angle:
+                rolled_frames.append(i)
+                prefer = float(np.sign(angle))
+        rolls = ramp_turns(raw, clear=lambda i, vector: stage_share(i, vector, arm[i]) <= limit, last=last)
+        after = shares(rolls, arm)
+    if shoulders is not None and arm_joints is not None and any(after[i] > limit for i in range(last)):
+        raw = np.zeros((count, 3))
+        cone, previous = fibonacci_axes(COHERENT_AXES), None
+        for i in [i for i in range(last) if after[i] > limit]:
+            joints = np.asarray(arm_joints[i], float)
+            raised = float(joints[-1][up_axis]) > float(np.asarray(shoulders[i])[up_axis])
+            near = cone[cone @ previous > COHERENT_COSINE] if previous is not None else None
+            raw[i], _left = arm_frame(rolled(i, rolls[i]), shoulders[i], joints, body_frames[i], body_triangles, height, up_axis, raised, target,
+                                      soft, soft_share, ground_axis, near)
+            if float(np.linalg.norm(raw[i])) > 0:
+                armed_frames.append(i)
+                previous = raw[i] / np.linalg.norm(raw[i])
+        arm = ramp_turns(raw, clear=lambda i, vector: stage_share(i, rolls[i], vector) <= limit and arm_allowed(i, vector), last=last)
+        after = shares(rolls, arm)
+    result.update({
+        "rolls": rolls, "arm_rotvecs": arm, "after": after, "failed": [i for i in range(last) if after[i] > limit],
+        "soft_after": after if soft is None else shares(rolls, arm, with_soft=True),
+        "rolled_frames": rolled_frames, "armed_frames": armed_frames,
+        "max_roll_degrees": float(np.degrees(np.linalg.norm(rolls, axis=1).max())) if count else 0.0,
+        "max_arm_degrees": float(np.degrees(np.linalg.norm(arm, axis=1).max())) if count else 0.0,
+    })
+    return result
 
 
 # ---- the drop: a weapon is let go at the first frame of a fall and laid on the ground clear of the body --------------------------

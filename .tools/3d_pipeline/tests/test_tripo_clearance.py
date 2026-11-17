@@ -184,6 +184,112 @@ class Clip(unittest.TestCase):
 
 
 
+
+def plate(grip, reach=0.5, half=0.2, count=15):
+    """A flat part held at `grip` by a bar along z, reaching `reach` toward -x (a shield's crescent beside its bar)."""
+
+    return np.array([grip + np.array([-reach * i / (count - 1), 0.0, half * (2.0 * j / (count - 1) - 1.0)]) for i in range(count) for j in range(count)])
+
+
+class Staged(unittest.TestCase):
+    """The order of the turns: the wrist, then the part about its own haft, then the upper arm, which never lowers a raised hand."""
+
+    def setUp(self) -> None:
+        self.vertices, self.triangles = box()
+
+    def test_a_part_the_wrist_cannot_clear_is_rolled_about_its_bar(self) -> None:
+        grip, wrist = np.array([0.8, 0.0, 0.0]), np.array([0.95, 0.0, 0.0])
+        frames = [plate(grip)] * 3
+        result = C.clear_clip_staged(frames, [wrist] * 3, [self.vertices] * 3, self.triangles, 1.0, grips=[grip] * 3,
+                                     haft_axes=[np.array([0.0, 0.0, 1.0])] * 3, max_angle=4.0)
+        self.assertGreater(max(result["before"]), 0.3)
+        self.assertEqual(result["failed"], [])
+        self.assertEqual(result["rolled_frames"], [0, 1, 2])
+        self.assertGreater(result["max_roll_degrees"], 45.0)
+        self.assertEqual(result["armed_frames"], [])
+        # the roll turns about the bar: its direction is the bar's
+        roll = result["rolls"][1] / np.linalg.norm(result["rolls"][1])
+        self.assertAlmostEqual(abs(float(roll[2])), 1.0, places=6)
+
+    def test_the_arm_turns_last_and_only_where_the_hand_and_the_roll_could_not(self) -> None:
+        shoulder, elbow, wrist = np.array([1.0, 0.0, 0.9]), np.array([1.0, 0.0, 0.65]), np.array([0.9, 0.0, 0.42])
+        frames = [stick(wrist, length=0.6, count=60)] * 3
+        result = C.clear_clip_staged(frames, [wrist] * 3, [self.vertices] * 3, self.triangles, 1.0, shoulders=[shoulder] * 3,
+                                     arm_joints=[np.array([elbow, wrist])] * 3, max_angle=4.0)
+        self.assertGreater(max(result["before"]), 0.3)
+        self.assertEqual(result["failed"], [])
+        self.assertEqual(result["armed_frames"], [0, 1, 2])
+        self.assertLessEqual(result["max_arm_degrees"], C.ARM_MAX_DEGREES + 1e-6)
+
+    def test_a_clear_clip_turns_nothing_but_the_wrist(self) -> None:
+        wrist = np.array([1.5, 0.0, 0.0])
+        result = C.clear_clip_staged([stick(wrist)] * 2, [wrist] * 2, [self.vertices] * 2, self.triangles, 1.0, grips=[wrist] * 2,
+                                     haft_axes=[np.array([1.0, 0.0, 0.0])] * 2, shoulders=[wrist + [0, 0, 0.4]] * 2,
+                                     arm_joints=[np.array([wrist + [0, 0, 0.2], wrist])] * 2)
+        self.assertEqual(float(np.abs(result["rolls"]).max()), 0.0)
+        self.assertEqual(float(np.abs(result["arm_rotvecs"]).max()), 0.0)
+
+    def test_the_arm_never_lowers_a_raised_hand(self) -> None:
+        shoulder, elbow, wrist = np.array([1.0, 0.0, 0.2]), np.array([1.0, 0.0, 0.32]), np.array([0.9, 0.0, 0.42])
+        points = stick(wrist, length=0.6, count=60)
+        free = points[np.linalg.norm(points - wrist, axis=1) > C.GRIP_RADIUS_SHARE]
+        for raised in (True, False):
+            vector, _share = C.arm_frame(free, shoulder, np.array([elbow, wrist]), self.vertices, self.triangles, 1.0, 2, raised)
+            moved = C.rotvec_matrix(vector) @ (wrist - shoulder) + shoulder
+            if raised:
+                self.assertGreaterEqual(moved[2], wrist[2] - C.RAISE_KEEP_SHARE - 1e-9)
+
+    def test_a_stage_turn_grows_in_and_fades_out_and_keeps_every_solved_frame(self) -> None:
+        turns = np.zeros((20, 3))
+        turns[9, 2] = np.radians(60.0)
+        turns[10, 2] = np.radians(15.0)
+        out = C.ramp_turns(turns)
+        sizes = np.degrees(np.linalg.norm(out, axis=1))
+        self.assertTrue(np.all(np.abs(np.diff(sizes)) <= C.STAGE_RAMP_DEGREES + 1e-6))
+        self.assertGreaterEqual(sizes[9], 60.0 - 1e-6)
+        self.assertGreater(sizes[10], 15.0, "a solved frame is raised toward its neighbour, never lowered")
+        self.assertEqual(C.ramp_turns(turns, last=9)[12:].tolist(), np.zeros((8, 3)).tolist())
+        refused = C.ramp_turns(turns, clear=lambda frame, vector: False)
+        np.testing.assert_array_equal(refused, turns)
+
+    def test_the_roll_keeps_the_side_the_frame_before_took(self) -> None:
+        grip, wrist = np.array([0.8, 0.0, 0.0]), np.array([0.95, 0.0, 0.0])
+        points = plate(grip)
+        free = points[np.linalg.norm(points - wrist, axis=1) > C.GRIP_RADIUS_SHARE]
+        up, down = (C.roll_frame(free, grip, np.array([0.0, 0.0, 1.0]), self.vertices, self.triangles, 1.0, prefer=sign)[0] for sign in (1.0, -1.0))
+        self.assertGreater(up, 0.0)
+        self.assertLess(down, 0.0)
+
+    def test_rotation_vectors_come_back_from_their_matrices(self) -> None:
+        for vector in (np.zeros(3), np.array([0.3, -0.2, 0.9]), np.array([0.0, np.pi - 1e-3, 0.0])):
+            np.testing.assert_allclose(C.rotvec_matrix(C.matrix_rotvec(C.rotvec_matrix(vector))), C.rotvec_matrix(vector), atol=1e-6)
+        self.assertAlmostEqual(C.turn_between(np.zeros(3), np.array([0.0, 0.0, np.radians(40.0)])), 40.0, places=6)
+
+    def test_a_jump_is_bridged_round_the_way_that_stays_clear(self) -> None:
+        # frame 0 needs a turn of 60 degrees about z, frame 1 none; the straight way between them is blocked (any turn about z between 10 and
+        # 50 degrees is "in the body"), so the bridge takes frame 1 round another axis, within the step of frame 0
+        turns = np.array([[0.0, 0.0, np.radians(60.0)], [0.0, 0.0, 0.0]])
+
+        def clear(frame, vector):
+            about_z = abs(float(vector[2])) / max(float(np.linalg.norm(vector)), 1e-12) > 0.99
+            return not (about_z and np.radians(10.0) < np.linalg.norm(vector) < np.radians(50.0))
+
+        out = C.bridge_turns(turns, clear, [35.0])
+        self.assertLessEqual(C.turn_between(out[0], out[1]), 35.0 + 1e-6)
+        self.assertTrue(clear(1, out[1]))
+        np.testing.assert_allclose(out[0], turns[0])
+        untouched = C.bridge_turns(turns, lambda frame, vector: False, [35.0])
+        np.testing.assert_array_equal(untouched, turns)
+
+    def test_no_arm_turn_puts_the_wrist_in_the_body(self) -> None:
+        shoulder, elbow, wrist = np.array([0.8, 0.0, 0.9]), np.array([0.7, 0.0, 0.7]), np.array([0.6, 0.0, 0.52])
+        points = stick(wrist, length=0.6, count=60)
+        free = points[np.linalg.norm(points - wrist, axis=1) > C.GRIP_RADIUS_SHARE]
+        vector, _share = C.arm_frame(free, shoulder, np.array([elbow, wrist]), self.vertices, self.triangles, 1.0, 2, False)
+        moved = C.rotvec_matrix(vector) @ (wrist - shoulder) + shoulder
+        self.assertFalse(bool(np.all(np.abs(moved) < 0.5)))
+
+
 def pelvis_series() -> list:
     """Standing at 0.5, a crouch that comes back up (frames 8 to 14), a steady fall from frame 30 to a stagger and a rest at 0.05."""
 

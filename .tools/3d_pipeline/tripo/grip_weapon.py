@@ -60,7 +60,6 @@ import argparse
 import json
 import math
 import sys
-from functools import partial
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -287,64 +286,87 @@ def write_quaternions(curves, quaternions):
         fcurve.update()
 
 
-def step_degrees(a, b):
-    return 2.0 * math.degrees(math.acos(min(1.0, abs(a.dot(b)))))
-
-
-def step_rates(values, frames):
-    """Degrees per frame between neighbouring keys."""
-
-    return [step_degrees(values[k - 1], values[k]) / max(frames[k] - frames[k - 1], 1e-6) for k in range(1, len(values))]
-
-
 def normalise_rotation_keys(action, trigger_degrees=20.0, target_degrees=15.0, max_window=16, skip=()):
     """Keep every bone's quaternions on one hemisphere and ease a snap over more frames.
 
-    A step faster than `trigger_degrees` per frame is replaced by a slerp between the keys `w` frames before and
-    after it, with the smallest `w` (up to `max_window`) that brings every step in the range to `target_degrees`
-    per frame or less. Returns what was found: flips fixed, and per bone the fastest step before and after
-    (degrees per frame) for the bones that had a flip or a step over the trigger. Bones named in `skip` are left as they are (a later
-    stage leaves alone the weapon bone an earlier one keyed against its hand).
+    A step faster than `trigger_degrees` per frame is retimed along the bone's own path over a window of keys (`lib/tripo_ease.ease_turns`):
+    the smallest window, up to `max_window` keys either side, in which every step can be brought to `target_degrees` per frame or less by
+    moving time from the slow steps to the fast one. The bone passes through the same poses, so a raise or the end of a swing inside the
+    window stays (a straight slerp across the window took the ogre's overhead raise away). Returns what was found: flips fixed, and per
+    bone the fastest step before and after (degrees per frame) for the bones that had a flip or a step over the trigger. Bones named in
+    `skip` are left as they are (a later stage leaves alone the weapon bone an earlier one keyed against its hand).
     """
+
+    from lib import tripo_ease
 
     out = {"flips_fixed": 0, "snaps_eased": {}}
     for bone, curves in rotation_curves(action).items():
         if bone in skip:
             continue
-        quats = key_quaternions(curves)
         frames = [kp.co.x for kp in curves[0].keyframe_points]
-        rates = partial(step_rates, frames=frames)
-        flips = 0
-        for k in range(1, len(quats)):
-            if quats[k].dot(quats[k - 1]) < 0:
-                quats[k].negate()
-                flips += 1
-        before = max(rates(quats), default=0.0)
-        eased = []
-        k = 1
-        while k < len(quats):
-            if rates(quats)[k - 1] > trigger_degrees:
-                for window in range(2, max_window + 1):
-                    a, b = max(k - window, 0), min(k + window - 1, len(quats) - 1)
-                    trial = list(quats)
-                    for m in range(a, b + 1):
-                        trial[m] = quats[a].slerp(quats[b], (frames[m] - frames[a]) / max(frames[b] - frames[a], 1e-6))
-                    if max(rates(trial)[max(a - 1, 0): b + 1], default=0.0) <= target_degrees or (a == 0 and b == len(quats) - 1):
-                        quats = trial
-                        eased.append([int(frames[a]), int(frames[b])])
-                        k = b
-                        break
-            k += 1
-        after = max(rates(quats), default=0.0)
+        quats, flips = tripo_ease.one_hemisphere([np.array(q) for q in key_quaternions(curves)])
+        before = max(tripo_ease.turn_rates(quats, frames), default=0.0)
+        quats, eased = tripo_ease.ease_turns(quats, frames, trigger_degrees, target_degrees, max_window)
+        after = max(tripo_ease.turn_rates(quats, frames), default=0.0)
         out["flips_fixed"] += flips
         if flips or eased or before > trigger_degrees:
             out["snaps_eased"][bone.replace(PREFIX, "")] = {"flips": flips, "per_frame_before": round(before, 1), "per_frame_after": round(after, 1), "eased_frames": eased}
-        write_quaternions(curves, quats)
+        write_quaternions(curves, [Quaternion([float(v) for v in q]) for q in quats])
     return out
 
 
 ARM_SCALES = (0.3, 1.0, 1.0, 1.0)  # how much of the solved rotation each of shoulder, arm, forearm and hand takes
 FOUR = ("Index", "Middle", "Ring", "Pinky")
+
+
+RAISE_LOST_SHARE = 0.03  # a hand the clip raises above its shoulder may end at most this share of the height lower at its highest
+
+
+def hand_raise(c):
+    """Per clip: the holding hand's highest point above the chest joint (`Spine2`) and above its own shoulder, as shares of the height.
+
+    The stage's steps may move the arm (the hold, the easing of fast turns, the clearance's arm turn) but must keep a raise the clip makes:
+    the ogre's chop raised its club hand 0.27 of the height above the chest, and the old easing of its strike left 0.04 (`raise_lost`)."""
+
+    arm, hand = c.arm, c.hand
+    chest = next((PREFIX + n for n in ("Spine2", "Spine02", "Spine1") if PREFIX + n in arm.pose.bones), None)
+    shoulder = PREFIX + hand.replace("Hand", "Arm")
+    out = {}
+    for action in bpy.data.actions:
+        use_action(arm, action)
+        f0, f1 = int(action.frame_range[0]), int(action.frame_range[1])
+        above_chest, above_shoulder = [], []
+        for frame in range(f0, f1 + 1):
+            c.scene.frame_set(frame)
+            z = float((arm.matrix_world @ arm.pose.bones[PREFIX + hand].head).z)
+            above_chest.append(z - float((arm.matrix_world @ arm.pose.bones[chest].head).z) if chest else 0.0)
+            above_shoulder.append(z - float((arm.matrix_world @ arm.pose.bones[shoulder].head).z))
+        top = int(np.argmax(above_chest))
+        out[action.name] = {"above_chest": round(max(above_chest) / c.height, 3), "frame": f0 + top,
+                            "above_shoulder": round(max(above_shoulder) / c.height, 3)}
+    arm.animation_data.action = None
+    for pb in arm.pose.bones:
+        pb.rotation_quaternion = (1, 0, 0, 0)
+        pb.location = (0, 0, 0)
+        pb.scale = (1, 1, 1)
+    bpy.context.view_layer.update()
+    return out
+
+
+def raise_lost(c):
+    """Clips whose hand the raw clip raises above the shoulder and the stage's result holds more than `RAISE_LOST_SHARE` lower at its highest.
+    The report gets both numbers per clip (`hand_raise`)."""
+
+    after = hand_raise(c)
+    rows, lost = {}, {}
+    for name, raw in c.raw_raise.items():
+        if name not in after:
+            continue
+        rows[name] = {"raw": raw, "final": after[name]}
+        if raw["above_shoulder"] > 0 and after[name]["above_chest"] < raw["above_chest"] - RAISE_LOST_SHARE:
+            lost[name] = f"the hand rises {after[name]['above_chest']:.2f} of the height above the chest, the clip {raw['above_chest']:.2f}"
+    c.report["hand_raise"] = rows
+    return lost
 
 
 def load_body(c):
@@ -369,6 +391,7 @@ def load_body(c):
     c.report["body_height"] = round(c.height, 4)
     c.report["finger_rotation_in_clips_degrees"] = finger_activity(arm, hand)
     c.report["hand_vs_shoulder_in_clips"] = hand_positions(arm, hand)
+    c.raw_raise = hand_raise(c)
     arm.animation_data_create()
     arm.animation_data.action = None
     for pb in arm.pose.bones:
@@ -876,53 +899,150 @@ def soft_cloth_mask(c):
     return mask if mask.any() else None
 
 
+CLEARANCE_PASSES = 3  # the clearance, then the easing of its turns, measured again: a frame the easing put back in the body is cleared again
+
+
 def clear_weapon_from_body(c):
-    """The clearance rule: turn the hand about the wrist, frame by frame, until the weapon leaves the body (lib/tripo_clearance.py).
+    """The clearance rule: turn the weapon out of the body, frame by frame, the weapon in the hand first and the arm last (lib/tripo_clearance.py).
 
     A general rule for every armed unit: a frame in which more than 0.25% of the weapon's free points are deeper than 1% of the height inside
-    the body gets the smallest rotation of the hand about the wrist joint (cap 60 degrees) that clears it, smoothed over time. Frames from
-    the release of a release clip on are left to the fall. A frame that cannot be cleared inside the cap is reported and the run exits 3 after
-    writing its files (--clearance-allow-fail to go on): the clip then fails TRIPO-WEAPON-IN-BODY, loudly.
+    the body gets the smallest rotation of the hand about the wrist joint (cap 60 degrees) that clears it, smoothed over time. A frame the wrist
+    cannot clear gets the roll of the part about its own haft through the grip (with `--weapon-bone`, not in a clip that lets the part go:
+    its bone is keyed for the fall there), and a frame still not clear the smallest turn of the upper arm about the shoulder, which never lowers
+    a hand the clip raises above the shoulder (`clear_clip_staged`). Frames from the release of a release clip on are left to the fall.
+
+    The turns are then eased as the intake eases every joint (`ease_clip`), and the easing can carry the weapon back in: on the ogre's chop
+    the hand turned 85 degrees in one frame where a solved frame met an unsolved one, and the eased clip had the club 29% in the body in
+    frames 68 to 72 with the report clean. So the clip is measured again after the easing and cleared again, up to `CLEARANCE_PASSES` times,
+    and the report gives the share the last easing left. A frame that cannot be cleared is reported and the run exits 3 after writing its
+    files (--clearance-allow-fail to go on): the clip then fails TRIPO-WEAPON-IN-BODY, loudly.
     """
 
-    args, arm, scene, height, weapon, body = c.args, c.arm, c.scene, c.height, c.weapon, c.body
-    clearance = {}
-    hand_name = PREFIX + c.hand
-    triangles = body_triangles(body)
+    args = c.args
+    clearance, eased = {}, {}
+    triangles = body_triangles(c.body)
     soft = None if args.no_clearance else soft_cloth_mask(c)
     if not args.no_clearance:
         wanted = [resolve_clip_name(n, c.action_names) for n in args.clearance_clips.split(",") if n]
         for action in [a for a in bpy.data.actions if not wanted or a.name in wanted]:
-            use_action(arm, action)
-            first, last = int(action.frame_range[0]), int(action.frame_range[1])
-            frames_list = list(range(first, last + 1))
-            body_frames, weapon_frames, pivots = [], [], []
-            for frame in frames_list:
-                scene.frame_set(frame)
-                body_frames.append(evaluated_coords(body))
-                weapon_frames.append(evaluated_coords(weapon))
-                pivots.append(np.array(arm.matrix_world @ arm.pose.bones[hand_name].head))
-            skip = None
-            if action.name in c.drop_clips:
-                skip = int(c.hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
-            result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre,
-                                soft=soft, soft_share=args.soft_share)
-            for index, frame in enumerate(frames_list):
-                vector = result["rotvecs"][index]
-                angle = float(np.linalg.norm(vector))
-                if angle < 1e-6:
-                    continue
-                scene.frame_set(frame)
-                set_pose_matrix(arm, hand_name, vector / angle, angle, pivots[index])
-                arm.pose.bones[hand_name].keyframe_insert("rotation_quaternion", frame=frame)
-            clearance[action.name] = {
-                "frames": len(frames_list), "frames_changed": result["frames_changed"], "max_degrees": round(result["max_degrees"], 1),
-                "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
-                "worst_share_with_soft_cloth_after": round(max(result["soft_after"]), 4),
-                "failed_frames": [frames_list[i] for i in result["failed"]], "released_from_frame": None if skip is None else first + skip,
-            }
+            row = None
+            for number in range(CLEARANCE_PASSES):
+                result = clear_action(c, action, triangles, soft)
+                if row is None:
+                    row = result
+                elif max(result["before_shares"]) > CL.LIMIT:
+                    row["passes"] = number + 1
+                    row["worst_share_after_easing"][-1] = round(max(result["before_shares"]), 4)
+                    row["failed_frames"] = result["failed_frames"]
+                    for key in ("rolled_frames", "arm_turned_frames"):
+                        row[key] = sorted(set(row[key]) | set(result[key]))
+                    for key in ("max_degrees", "max_roll_degrees", "max_arm_degrees"):
+                        row[key] = max(row[key], result[key])
+                eased[action.name] = ease_clip(c, action)  # the hand turns are eased as the intake eases them
+                left = measure_action(c, action, triangles)
+                row.setdefault("worst_share_after_easing", []).append(round(max(left), 4))
+                if max(left) <= CL.LIMIT:
+                    break
+            row.pop("before_shares", None)
+            row["passes"] = row.get("passes", 1)
+            clearance[action.name] = row
+    for action in bpy.data.actions:
+        if action.name not in eased:
+            eased[action.name] = ease_clip(c, action)
     c.report["clearance"] = clearance
+    c.report["rotation_keys_after_clearance"] = eased
     c.clearance_failed = {name: row["failed_frames"] for name, row in clearance.items() if row["failed_frames"]}
+
+
+def measure_action(c, action, triangles):
+    """The weapon's deep share in the body per frame of `action` as it is keyed now (the check's own test, frames from a release on count 0)."""
+
+    arm, scene, height = c.arm, c.scene, c.height
+    use_action(arm, action)
+    first, last = int(action.frame_range[0]), int(action.frame_range[1])
+    skip = last + 1
+    if action.name in c.drop_clips:
+        skip = int(c.hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1)
+    keep = None
+    out = []
+    for frame in range(first, last + 1):
+        if frame >= skip:
+            out.append(0.0)
+            continue
+        scene.frame_set(frame)
+        points = evaluated_coords(c.weapon)
+        if keep is None:
+            indices = np.linspace(0, len(c.placed) - 1, min(CL.MAX_POINTS, len(c.placed))).astype(int)
+            keep = indices[np.linalg.norm(np.asarray(c.placed)[indices] - c.haft_centre, axis=1) > CL.GRIP_RADIUS_SHARE * height]
+        out.append(CL.deep_share(points[keep], evaluated_coords(c.body), triangles, height, CL.CLEAR_MARGIN_SHARE, ground_axis=CL.GROUND_AXIS))
+    return out
+
+
+def clear_action(c, action, triangles, soft):
+    """One pass of the clearance on one clip: solve the turns on the clip as it is keyed now and key them. Returns the report row."""
+
+    args, arm, scene, height, weapon, body = c.args, c.arm, c.scene, c.height, c.weapon, c.body
+    hand_name = PREFIX + c.hand
+    upper_name = PREFIX + c.hand.replace("Hand", "Arm")
+    elbow_name = PREFIX + c.hand.replace("Hand", "ForeArm")
+    part_bone = PREFIX + bone_name(c)
+    use_action(arm, action)
+    first, last = int(action.frame_range[0]), int(action.frame_range[1])
+    frames_list = list(range(first, last + 1))
+    body_frames, weapon_frames, pivots, grips, hafts, shoulders, joints = [], [], [], [], [], [], []
+    for frame in frames_list:
+        scene.frame_set(frame)
+        body_frames.append(evaluated_coords(body))
+        weapon_frames.append(evaluated_coords(weapon))
+        pivots.append(np.array(arm.matrix_world @ arm.pose.bones[hand_name].head))
+        grip, haft = haft_now(c)
+        grips.append(grip)
+        hafts.append(haft)
+        shoulders.append(np.array(arm.matrix_world @ arm.pose.bones[upper_name].head))
+        joints.append(np.array([arm.matrix_world @ arm.pose.bones[elbow_name].head, arm.matrix_world @ arm.pose.bones[hand_name].head]))
+    skip = None
+    if action.name in c.drop_clips:
+        skip = int(c.hold["clips"].get(action.name, {}).get("faded_out_by_frame") or last + 1) - first
+    can_roll = args.weapon_bone and action.name not in c.drop_clips and part_bone in arm.pose.bones
+    result = CL.clear_clip_staged(weapon_frames, pivots, body_frames, triangles, height, grips=grips if can_roll else None,
+                                  haft_axes=hafts if can_roll else None, shoulders=shoulders, arm_joints=joints, up_axis=2,
+                                  skip_from=skip, rest_weapon=c.placed, rest_grip=c.haft_centre, soft=soft, soft_share=args.soft_share)
+    rolled = can_roll and float(np.abs(result["rolls"]).max()) > 1e-6
+    part_keyed = any(fcurve.data_path == f'pose.bones["{part_bone}"].rotation_quaternion' for fcurve, _c in action_fcurves(action))
+    for index, frame in enumerate(frames_list):
+        scene.frame_set(frame)
+        vector = result["rotvecs"][index]
+        angle = float(np.linalg.norm(vector))
+        if angle >= 1e-6:
+            set_pose_matrix(arm, hand_name, vector / angle, angle, pivots[index])
+            arm.pose.bones[hand_name].keyframe_insert("rotation_quaternion", frame=frame)
+        if rolled:
+            part = arm.pose.bones[part_bone]
+            part.rotation_mode = "QUATERNION"
+            if not part_keyed:
+                # the part's bone has no keys of its own yet: every frame is keyed, so a roll does not hold into the frames without one
+                part.rotation_quaternion = Quaternion()
+                bpy.context.view_layer.update()
+            roll = result["rolls"][index]
+            size = float(np.linalg.norm(roll))
+            if size >= 1e-6:
+                set_pose_matrix(arm, part_bone, roll / size, size, haft_now(c)[0])
+            if size >= 1e-6 or not part_keyed:
+                part.keyframe_insert("rotation_quaternion", frame=frame)
+        turn = result["arm_rotvecs"][index]
+        size = float(np.linalg.norm(turn))
+        if size >= 1e-6:
+            set_pose_matrix(arm, upper_name, turn / size, size, shoulders[index])
+            arm.pose.bones[upper_name].keyframe_insert("rotation_quaternion", frame=frame)
+    return {
+        "frames": len(frames_list), "frames_changed": result["frames_changed"], "max_degrees": round(result["max_degrees"], 1),
+        "worst_share_before": round(max(result["before"]), 4), "worst_share_after": round(max(result["after"]), 4),
+        "worst_share_with_soft_cloth_after": round(max(result["soft_after"]), 4),
+        "failed_frames": [frames_list[i] for i in result["failed"]], "released_from_frame": None if skip is None else first + skip,
+        "rolled_frames": [frames_list[i] for i in result["rolled_frames"]], "max_roll_degrees": round(result["max_roll_degrees"], 1),
+        "arm_turned_frames": [frames_list[i] for i in result["armed_frames"]], "max_arm_degrees": round(result["max_arm_degrees"], 1),
+        "before_shares": list(result["before"]),
+    }
 
 
 def attached_and_body(c, action):
@@ -1212,18 +1332,20 @@ def main():
     # quaternion keys (before the fall of the weapon, which is keyed against the final motion of the hand): one hemisphere per bone
     # (a flip makes Blender turn the long way), and the biggest steps
     c.report["rotation_keys"] = {action.name: ease_clip(c, action) for action in bpy.data.actions}
-    clear_weapon_from_body(c)
-    c.report["rotation_keys_after_clearance"] = {action.name: ease_clip(c, action) for action in bpy.data.actions}  # its hand turns are eased too
+    clear_weapon_from_body(c)  # its turns are eased too, and the clip measured again after the easing
     release_clips(c)
     check_fingers(c)
     dropped = drop_failures(c)
+    lowered = raise_lost(c)
     export_glb(c)
     failed = c.clearance_failed
-    if (failed or dropped) and not args.clearance_allow_fail:
+    if (failed or dropped or lowered) and not args.clearance_allow_fail:
         if failed:
             print("CLEARANCE_FAILED " + json.dumps(failed), file=sys.stderr)
         if dropped:
             print("DROP_FAILED " + json.dumps(dropped), file=sys.stderr)
+        if lowered:
+            print("RAISE_LOST " + json.dumps(lowered), file=sys.stderr)
         raise SystemExit(3)
 
 
