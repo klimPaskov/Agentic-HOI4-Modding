@@ -100,6 +100,26 @@ class RingSeamTests(unittest.TestCase):
         self.assertLess(abs(float(pixel[0]) - 106.0), 16.0)
         self.assertLess(abs(float(pixel[2]) - 68.0), 12.0)
 
+    def test_a_big_roof_triangle_along_the_ring_is_matched_by_its_texels_not_its_centre(self):
+        """Four big triangles fan out from the turret's axis: each one's centre is far outside the band, but its edge runs along the
+        ring, so its texels near the axis lie in the band (a Smart Mesh's big roof plates: the bright arc outside a turret base)."""
+
+        z = CUT - 0.01
+        fan_p = np.array([[0, 0, z], [5, 0, z], [0, 5, z], [-5, 0, z], [0, -5, z]], dtype=float)
+        fan_t = np.array([[0, 1, 2], [0, 2, 3], [0, 3, 4], [0, 4, 1]])
+        band_p, band_t = annulus(0.9, 1.45, z, sectors=32)
+        wedge = band_t[:3]  # the only band triangles: a small wedge by the +x axis
+        positions = np.concatenate([fan_p, band_p])
+        triangles = np.concatenate([fan_t, wedge + len(fan_p)])
+        roof_p, roof_t = annulus(1.6, 2.5, z)
+        triangles = np.concatenate([triangles, roof_t + len(positions)])
+        positions = np.concatenate([positions, roof_p])
+        uv = positions[:, :2] / 8.0 + 0.5
+        fixed, report = sd.ring_seam(roof_texture((178, 184, 60)), uv, positions, triangles, CUT, CUT + 1.25, np.zeros(3), 1.0)
+        self.assertGreater(report["band_texels_from_points"], 1000)
+        pixel = np.asarray(fixed.resize((SIZE, SIZE)))[SIZE // 2 + 44, SIZE // 2]  # a band texel (1.4 from the axis) far from the wedge
+        self.assertLess(abs(float(pixel[0]) - 106.0), 16.0)
+
     def test_the_roof_itself_is_not_touched(self):
         source = roof_texture((178, 184, 60))
         fixed, _ = self.run_seam(source)
