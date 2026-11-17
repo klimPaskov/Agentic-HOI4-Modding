@@ -13,8 +13,11 @@ skeleton to 22 bones and merges the fingers into the hand:
    point (`--grip`, the share of its length from the butt) goes into the palm of `--hand`. The haft lies
    diagonally across the palm, from the base of the little finger to the web between thumb and index finger,
    with the head toward `--head-toward` and the blade plane turned `--roll` degrees about the haft (0: the blade
-   spreads along the normal of the palm). `--head-toward auto` (the default) points the head to the side where it leads the strike of
-   the attack (`--hold-fade-clips`), so the blow lands with the head and not the butt (`lib/tripo_swing.py`, TRIPO-WEAPON-HEAD-LEAD). Where the line starts and ends and how deep it sits is searched, so the
+   spreads along the normal of the palm). `--head-toward auto` points the head to the side where it leads the strike of the attack
+   (`--hold-fade-clips`, after the hold has faded), so the blow lands with the head and not the butt (`lib/tripo_swing.py`,
+   TRIPO-WEAPON-HEAD-LEAD). It is not the default: on the orc (2026-11-17) the other side put the axe into the body in the attack's
+   follow-through, 6.3% of its points, beyond what the clearance's 60 degree wrist turn clears, and the hold missed its grip point twice
+   as far. Where the line starts and ends and how deep it sits is searched, so the
    palm pad touches it and the fingers wrap it.
 2. Close the hand as a power grip (broom handle). Each of the four fingers wraps the haft with all three joints bent
    (about 70, 90 and 50 degrees, fitted to the measured radius, `lib/tripo_grip.solve_finger`) with nothing of
@@ -91,7 +94,7 @@ def parse_args():
     parser.add_argument("--grip", type=float, default=0.60)
     parser.add_argument("--length-ratio", type=float, default=1.06)
     parser.add_argument("--roll", type=float, default=0.0)
-    parser.add_argument("--head-toward", choices=("auto", "index", "pinky"), default="auto",
+    parser.add_argument("--head-toward", choices=("auto", "index", "pinky"), default="index",
                         help="which end of the haft line across the palm the head points to; auto: the side whose head leads the strike of the "
                              "--hold-fade-clips (the attack, lib/tripo_swing.py), index when there is none")
     parser.add_argument("--hold-clips", default="")
@@ -547,12 +550,13 @@ def choose_head_side(c):
         action = bpy.data.actions[name]
         use_action(arm, action)
         positions, directions = [], []
+        faded = hold_fade_frame(c, action, False) - int(action.frame_range[0])  # the hold rules the frames before; the strike comes after
         for frame in range(int(action.frame_range[0]), int(action.frame_range[1]) + 1):
             scene.frame_set(frame)
             carried = np.array(arm.matrix_world @ arm.pose.bones[PREFIX + hand].matrix) @ np.linalg.inv(hand_rest)
             positions.append(carried[:3, :3] @ c.haft_centre + carried[:3, 3])
             directions.append(carried[:3, :3] @ c.axis_direction)
-        frame, cosine = tripo_swing.head_lead(np.array(positions), np.array(directions))
+        frame, cosine = tripo_swing.head_lead(np.array(positions), np.array(directions), start=faded)
         votes += cosine
         record[name] = {"strike_frame": int(action.frame_range[0]) + frame, "index_side_cosine": round(cosine, 3)}
     arm.animation_data.action = None

@@ -12,7 +12,8 @@ same functions on joint tracks.
   chop (frames 24 to 32). With the axe the other way round in the same fist it is +0.75 to +0.89.
 - The grip side (`lead_side`): the grip stage lays the haft across the palm and the head may point toward the index finger or toward the
   little finger, the same line in the same fist. With `--head-toward auto` it takes the side whose head leads the strike of the clips
-  that fade the hold (the attack). The hold puts the head up at the first frame of every held clip either way.
+  that fade the hold (the attack), judged after the hold has faded. The hold puts the head up at the first frame of every held clip
+  either way. It is not the grip stage's default: on the orc the other side could not be cleared from the body in the follow-through.
 - The head end (`head_end_mask`) of a weapon mesh is the end whose last slab is widest across the haft: the blade or the club's knob.
 """
 
