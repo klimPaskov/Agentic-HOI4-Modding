@@ -88,7 +88,8 @@ class DeathLegs(unittest.TestCase):
         fallen, final = ql.pose_at("quadruped_collapse", 30, layout), ql.pose_at("quadruped_collapse", last, layout)
         for name in ("Front_Right_Upper", "Front_Left_Lower", "Rear_Left_Upper"):
             self.assertAlmostEqual(_degrees(final, name), _degrees(fallen, name) * (1 - ql.COLLAPSE_RELAX), places=6, msg=name)
-            self.assertEqual(_degrees(final, name, ql.Y_AXIS), 0.0, "no leg turns down at the shoulder or hip")
+            if name.endswith("Upper"):
+                self.assertLessEqual(abs(_degrees(final, name, ql.Y_AXIS)), ql.DEATH_LEG_DROP["Upper"] + 1e-9, "no leg turns far down at the shoulder or hip")
         self.assertAlmostEqual(_degrees(fallen, "Rear_Left_Lower"), _degrees(fallen, "Front_Left_Lower") * ql.COLLAPSE_HIND_FOLD, places=6)
         loaded = ql.build_layout({**_landmarks(True, load=True), "death": {"roll": 60.0, "neck_lift": 0.0}})
         for name in ("Neck_02", "Head"):
@@ -301,6 +302,36 @@ class LoadedMapReading(unittest.TestCase):
             self.assertEqual([item["subject"] for item in quadruped_checks._map_findings(mesh, flat, {})], ["unit_attack"], "but not as the idle")
         finally:
             quadruped_checks.load_mask = original
+
+
+class LyingLegs(unittest.TestCase):
+    def test_a_rolled_body_turns_its_legs_back_toward_the_ground_below_the_hip(self) -> None:
+        layout = ql.build_layout(_landmarks(True, load=True))
+        last = ql.frame_count("quadruped_collapse") - 1
+        for roll in (-98.0, 98.0):
+            layout.landmarks["death"] = {"roll": roll, "neck_lift": 0.0}
+            pose = ql.pose_at("quadruped_collapse", last, layout)
+            lower, upper = ("Right", "Left") if roll < 0 else ("Left", "Right")
+            for end in ("Front", "Rear"):
+                low = _degrees(pose, ql.leg_name(end, lower, "Lower"), ql.Y_AXIS)
+                high = _degrees(pose, ql.leg_name(end, upper, "Lower"), ql.Y_AXIS)
+                self.assertGreater(abs(low), 20.0, "the lower pair is bent toward the ground")
+                self.assertAlmostEqual(high, low * ql.DEATH_LEG_HANG_SHARE, places=6)
+                self.assertGreater(low * -roll, 0.0, "against the roll")
+                self.assertLess(abs(_degrees(pose, ql.leg_name(end, lower, "Upper"), ql.Y_AXIS)), 15.0, "the hip turns little: its root stretches")
+
+    def test_the_check_fails_a_death_whose_lower_legs_hang_in_the_air(self) -> None:
+        names = ["Root", "Front_Left_Hoof", "Front_Right_Hoof", "Rear_Left_Hoof", "Rear_Right_Hoof"]
+        mesh = P.SkinnedMesh(positions=np.array([[0.0, 0.0, 0.0], [1.0, 0, 0], [2.0, 0, 0], [3.0, 0, 0], [4.0, 0, 0]]), triangles=np.zeros((0, 3), int),
+                             joints=np.array([[i, -1, -1, -1] for i in range(5)]), weights=np.array([[1.0, 0, 0, 0]] * 5), bones=names,
+                             parents=[-1, 0, 0, 0, 0], inverse_bind=np.tile(np.eye(4), (5, 1, 1)))
+        mesh.positions[0, 1] = 10.0
+        legs = {name[:-5]: np.arange(5) == i for i, name in enumerate(names) if i}
+        for second, failing in ((0.0, False), (3.0, True)):
+            posed = np.zeros((2, 5, 3))
+            posed[-1, :, 1] = [10.0, 0.0, second, 5.0, 5.0]
+            heights = sorted(float(posed[-1][mask, 1].min()) / 10.0 for mask in legs.values())
+            self.assertEqual(heights[1] > quadruped_checks.DEATH_LEG_REST, failing)
 
 
 def seamed_mount():

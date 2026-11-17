@@ -470,7 +470,7 @@ REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
 # scales them).
 WALK_HEAD_SWING = 22.0  # degrees the walk swings the head to each side once a stride (44 with a body rock read as turning 25 to 30 degrees)
 WALK_NOD = 8.0  # degrees of the head's nod, twice a stride
-GUARD_PITCH = 8.0  # degrees the defend rocks the body back about the hind feet (more lifts the forefeet off the ground)
+GUARD_PITCH = 0.0  # degrees the defend rocks the body back about the hind feet: any lifts the forefeet (4 degrees 4% of the height), and a review read the lift as a small rear
 GUARD_HEAD_UP = 54.0  # degrees the defend raises the head, and then lowers it GUARD_HEAD_DOWN with the tusks forward
 GUARD_HEAD_DOWN = 45.0
 GUARD_NECK = 0.0  # degrees the neck's two bones turn with it (5 with the head tore the seam, 14%)
@@ -489,6 +489,13 @@ COLLAPSE_ROLL = 82.0
 COLLAPSE_ROLL_STEP = 6.0
 LOAD_ROLL_EXTRA = 24.0  # degrees past the load's roll limit the search for a lying tower starts
 LOAD_ROLL_MOST = 110.0
+# A body rolled past 90 degrees (the tower resting on the ground) points its legs sideways, locked in two stiff pairs, the lower pair 17% of
+# the height in the air (run 9, a review's major). Gravity drops them: each leg bends back toward the ground about the body's long axis, the
+# lower pair (on the ground side) by DEATH_LEG_DROP at the hip, knee, ankle and foot and the upper pair by DEATH_LEG_HANG_SHARE of that. Offline
+# on the run 8 mesh at a roll of 98 degrees the lower pair's lowest point falls from 0.17 to 0.05 of the height. The turn is made below the hip: at
+# the hip alone 16 degrees stretched 3.5% of the leg roots (TRIPO-LEG-ROOT-STRETCH, limit 2%), here 1.4%.
+DEATH_LEG_DROP = {"Upper": 10.0, "Lower": 42.0, "Cannon": 42.0, "Hoof": 22.0}
+DEATH_LEG_HANG_SHARE = 0.5
 COLLAPSE_RELAX = 0.5  # share of the shoulders', hips' and elbows' bend a dead body relaxes once it lies
 COLLAPSE_HIND_FOLD = 0.5  # the hind legs' fold in a death as a share of the forelegs'
 DOWN_TOLERANCE = 0.01  # of the body's height: how much lower than the torso another part may end in a death
@@ -812,6 +819,13 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
         pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold * ease)]
         pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.3 * settle))]
     pose["__root_roll__"] = [(Y_AXIS, roll * fall)]
+    sign = -math.copysign(1.0, roll)  # the turn back toward the ground, against the roll
+    lower = "Right" if roll < 0 else "Left"
+    for end, side in LEGS:
+        share = 1.0 if side == lower else DEATH_LEG_HANG_SHARE
+        for segment, degrees in DEATH_LEG_DROP.items():
+            name = leg_name(end, side, segment)
+            pose[name] = pose.get(name, []) + [(Y_AXIS, sign * degrees * share * min(1.0, abs(roll) / 90.0) * fall)]
     nod = 0.0 if loaded else 1.0
     pose["Neck_01"] = [(X_AXIS, (25.0 * buckle - 30.0 * settle) * nod), (Y_AXIS, -neck_lift * fall)]
     pose["Neck_02"] = [(Z_AXIS, 20.0 * settle * nod)]
