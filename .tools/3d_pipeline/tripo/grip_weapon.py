@@ -13,7 +13,11 @@ skeleton to 22 bones and merges the fingers into the hand:
    point (`--grip`, the share of its length from the butt) goes into the palm of `--hand`. The haft lies
    diagonally across the palm, from the base of the little finger to the web between thumb and index finger,
    with the head toward `--head-toward` and the blade plane turned `--roll` degrees about the haft (0: the blade
-   spreads along the normal of the palm). Where the line starts and ends and how deep it sits is searched, so the
+   spreads along the normal of the palm). `--head-toward auto` points the head to the side where it leads the strike of the attack
+   (`--hold-fade-clips`, after the hold has faded), so the blow lands with the head and not the butt (`lib/tripo_swing.py`,
+   TRIPO-WEAPON-HEAD-LEAD). It is not the default: on the orc (2026-11-17) the other side put the axe into the body in the attack's
+   follow-through, 6.3% of its points, beyond what the clearance's 60 degree wrist turn clears, and the hold missed its grip point twice
+   as far. Where the line starts and ends and how deep it sits is searched, so the
    palm pad touches it and the fingers wrap it.
 2. Close the hand as a power grip (broom handle). Each of the four fingers wraps the haft with all three joints bent
    (about 70, 90 and 50 degrees, fitted to the measured radius, `lib/tripo_grip.solve_finger`) with nothing of
@@ -90,7 +94,9 @@ def parse_args():
     parser.add_argument("--grip", type=float, default=0.60)
     parser.add_argument("--length-ratio", type=float, default=1.06)
     parser.add_argument("--roll", type=float, default=0.0)
-    parser.add_argument("--head-toward", choices=("index", "pinky"), default="index")
+    parser.add_argument("--head-toward", choices=("auto", "index", "pinky"), default="index",
+                        help="which end of the haft line across the palm the head points to; auto: the side whose head leads the strike of the "
+                             "--hold-fade-clips (the attack, lib/tripo_swing.py), index when there is none")
     parser.add_argument("--hold-clips", default="")
     parser.add_argument("--hold-fade-clips", default="", help="clips that get the hold at full weight on their first frame, faded out as the arm starts to rise")
     parser.add_argument("--release-clips", default="", help="clips in which the weapon bone lets go of the hand and the weapon falls to the ground")
@@ -520,10 +526,48 @@ def search_grip(c):
     _total, c.best_l0, c.best_mu, c.best_delta, c.best_back = candidates[0]
     c.haft_centre, c.axis_direction = haft_line(c, c.best_l0, c.best_mu, c.best_delta * height, c.best_back * height)
     c.fit_cost, c.results = solve_four(c, c.haft_centre, c.axis_direction, 10.0)
-    c.head_dir = c.axis_direction if args.head_toward == "index" else -c.axis_direction
+    side = choose_head_side(c) if args.head_toward == "auto" else (1 if args.head_toward == "index" else -1)
+    c.head_dir = side * c.axis_direction
     c.blade = G.rodrigues(c.head_dir, np.radians(args.roll)) @ c.normal
     c.third = np.cross(c.head_dir, c.blade)
     c.placed = c.haft_centre + c.local[:, 0:1] * c.head_dir + c.local[:, 1:2] * c.blade + c.local[:, 2:3] * c.third
+
+
+def choose_head_side(c):
+    """`--head-toward auto`: +1 (toward the index finger) or -1 (toward the little finger), whichever puts the weapon's head ahead of the hand
+    at the strike of the clips that fade the hold (the attack): the haft line across the palm is carried by the hand through each clip and
+    `lib/tripo_swing.lead_side` picks the side. The hold faded out long before the strike, so the clip's own hand decides. +1 when there is
+    no such clip. The choice and the cosines go into the report (`head_side`)."""
+
+    from lib import tripo_swing
+
+    arm, scene, hand = c.arm, c.scene, c.hand
+    action_names = [a.name for a in bpy.data.actions]
+    clips = [resolve_clip_name(n, action_names) for n in c.args.hold_fade_clips.split(",") if n]
+    hand_rest = np.array(arm.matrix_world @ arm.data.bones[PREFIX + hand].matrix_local)
+    votes, record = 0.0, {}
+    for name in clips:
+        action = bpy.data.actions[name]
+        use_action(arm, action)
+        positions, directions = [], []
+        faded = hold_fade_frame(c, action, False) - int(action.frame_range[0])  # the hold rules the frames before; the strike comes after
+        for frame in range(int(action.frame_range[0]), int(action.frame_range[1]) + 1):
+            scene.frame_set(frame)
+            carried = np.array(arm.matrix_world @ arm.pose.bones[PREFIX + hand].matrix) @ np.linalg.inv(hand_rest)
+            positions.append(carried[:3, :3] @ c.haft_centre + carried[:3, 3])
+            directions.append(carried[:3, :3] @ c.axis_direction)
+        frame, cosine = tripo_swing.head_lead(np.array(positions), np.array(directions), start=faded)
+        votes += cosine
+        record[name] = {"strike_frame": int(action.frame_range[0]) + frame, "index_side_cosine": round(cosine, 3)}
+    arm.animation_data.action = None
+    for pb in arm.pose.bones:
+        pb.rotation_quaternion = (1, 0, 0, 0)
+        pb.location = (0, 0, 0)
+        pb.scale = (1, 1, 1)
+    bpy.context.view_layer.update()
+    side = 1 if votes >= 0 else -1
+    c.report["head_side"] = {"side": "index" if side > 0 else "pinky", "clips": record}
+    return side
 
 
 def close_thumb(c):

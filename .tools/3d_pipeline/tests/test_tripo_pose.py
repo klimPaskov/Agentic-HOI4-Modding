@@ -300,7 +300,7 @@ class WaistTwist(unittest.TestCase):
 
     def test_each_role_has_a_limit_a_quarter_over_vanillas_worst(self) -> None:
         self.assertEqual(set(P.WAIST_TWIST_LIMITS), {"idle", "move", "attack", "defend", "retreat", "death"})
-        self.assertAlmostEqual(P.WAIST_TWIST_LIMITS["retreat"], 29.0)
+        self.assertAlmostEqual(P.WAIST_TWIST_LIMITS["retreat"], 24.5)
 
 
 if __name__ == "__main__":

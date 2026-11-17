@@ -122,6 +122,58 @@ class Sheets(unittest.TestCase):
                 self.assertIn(str(sheet.resolve()), request)
 
 
+class Frames(unittest.TestCase):
+    """Every round shows the same frames of a clip: a fixed spread, with the flagged frames and the extremes on top (2026-11-16: the orc's
+    extremes moved between rounds, so two rounds showed different attack frames and one passed by luck)."""
+
+    def test_the_fixed_frames_depend_only_on_the_clips_length(self) -> None:
+        self.assertEqual(review_unit.spread_frames(146), [0, 15, 30, 45, 60, 75, 90, 105, 120, 135, 145])
+        self.assertEqual(review_unit.spread_frames(31), [0, 15, 30])
+        self.assertEqual(review_unit.spread_frames(1), [0])
+
+    def test_the_extremes_and_flagged_frames_come_on_top_of_the_fixed_ones_with_why(self) -> None:
+        sys.path.insert(0, str(PIPELINE / "tests"))
+        import test_deformation_checks as TD
+        from lib import pdx_deform
+
+        with tempfile.TemporaryDirectory() as folder:
+            mesh_path, anim_path = Path(folder) / "u.mesh", Path(folder) / "u_attack.anim"
+            positions, triangles, bones = TD.two_arm_strip()
+            TD.write_mesh(mesh_path, positions, triangles, bones)
+            TD.write_anim(anim_path, 40, lambda f: {"HandR": ((3.0 if f == 22 else 1.0, 0.0, 0.0), (0.0, 0.0, 0.0, 1.0))})
+            mesh = pdx_deform.load_mesh(mesh_path)
+            report = Path(folder) / "checks.json"
+            report.write_text(json.dumps({"findings": [{"rule": "TRIPO-WAIST-TWIST", "subject": "u_attack", "frame": 37},
+                                                       {"rule": "TRIPO-LOOP-POP", "subject": "u_idle", "frame": 5}]}), encoding="utf-8")
+            flagged = review_unit.flagged_frames([report], "u_attack")
+            self.assertEqual(flagged, {37: "TRIPO-WAIST-TWIST"})
+            frames, why = review_unit.review_frames(mesh, anim_path, flagged=flagged)
+            self.assertTrue(set(review_unit.spread_frames(40)) <= set(frames), "every fixed frame stays")
+            self.assertIn(37, frames)
+            self.assertEqual(why[37], "flagged TRIPO-WAIST-TWIST")
+            self.assertIn("worst stretch", why[22])
+            again, _ = review_unit.review_frames(mesh, anim_path)
+            self.assertTrue(set(review_unit.spread_frames(40)) <= set(again))
+
+    def test_a_long_clip_is_split_into_pages_and_an_extra_frame_says_why_it_is_shown(self) -> None:
+        with tempfile.TemporaryDirectory() as folder:
+            tiles = Path(folder) / "tiles"
+            tiles.mkdir()
+            rows = []
+            for frame in range(1, review_unit.SHEET_ROWS + 3):
+                names = {}
+                for view in review_unit.VIEWS:
+                    names[view] = f"u_attack_{frame:04d}_{view}.png"
+                    Image.new("RGB", (32, 32), (40, 40, 40)).save(tiles / names[view])
+                rows.append({"frame": frame, "tiles": names})
+            (tiles / "index.json").write_text(json.dumps({"clips": [{"name": "u_attack", "rows": rows}]}), encoding="utf-8")
+            sheets = review_unit.build_sheets(tiles, Path(folder) / "sheets", {"u_attack": {2: "worst stretch"}})
+            self.assertEqual([sheet.name for sheet in sheets], ["u_attack.png", "u_attack_p2.png"])
+            with Image.open(sheets[0]) as first, Image.open(sheets[1]) as second:
+                self.assertEqual(first.size[1], (32 + review_unit.LABEL_HEIGHT) * review_unit.SHEET_ROWS)
+                self.assertEqual(second.size[1], (32 + review_unit.LABEL_HEIGHT) * 2)
+
+
 CHECKED = "\nCHECKLIST:\n" + "\n".join(f"{number}: ok" for number in range(1, 8)) + "\n"
 
 

@@ -22,6 +22,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   (1.8 cm) is the lowest margin at which idle, walk and the retreat still pass (0 to 0.7% of points) while the orc's attack
   (6 to 13% from frame 28 of 24 fps, 35 of 30) and death (2 to 5% from frame 45 of 24 fps) fail, as a viewer saw them.
 - TRIPO-GRIP-ENCLOSURE: skin of the hand covers less than `MIN_ENCLOSURE_SHARE` of the haft's circumference at the grip.
+- TRIPO-WEAPON-HEAD-LEAD: in an attack the weapon's head trails the holding hand at the strike, so the blow lands butt first
+  (`lib/tripo_swing.py`, whose grip side the grip stage's `--head-toward auto` picks).
 - TRIPO-GRIP-THUMB: the thumb's tip is not on the other side of the haft than the fingertips (`MIN_THUMB_OPPOSITION_DEGREES`).
 - TRIPO-CLOAK-STRETCH: in a clip, more than `CLOAK_MAX_STRETCH_SHARE` of the edges of the cloak region (vertices behind
   the body, weighted to the torso, hips or thighs) are stretched past 1.5x or squashed under 0.5x. The limit is the worst
@@ -34,8 +36,11 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   standing height and the torso (hips to head) near horizontal (at most `MAX_TORSO_VERTICAL_SHARE` of its length vertical).
 - TRIPO-LOOP-POP: the last frame of an idle, move, attack, defend or retreat clip is more than 8 degrees from its first at some joint (vanilla's role
   clips reach 6.3), so the looped clip pops. TRIPO-FOOT-BELOW-GROUND: a foot or toe sinks more than 0.1% of the height in a clip that is not a death.
-  TRIPO-DEATH-FEET: in the last 15 frames of a death the boots hang more than 1% above the ground (vanilla's deaths end within 0.6%). All three are
-  `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, the grounding in `run_pilot`).
+  TRIPO-DEATH-FEET: in the last 15 frames of a death the boots hang more than 1% above the ground (vanilla's deaths end within 0.6%).
+  TRIPO-DEATH-REST: a death ends with the hips down and the chest, the head or a hand more than 10.2% of the height above the ground (vanilla's end
+  within 8.2%). TRIPO-WAIST-TWIST: the shoulders turn further against the standing feet than vanilla's worst for the role with a quarter added. All are
+  `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, `settle_death_upper`, the
+  grounding in `run_pilot`, the untwist in `tripo/prepare_tripo_unit.py`).
 - TRIPO-NECK-SUNK: in some frame of a humanoid's clip the head's base sits less than 74% of its rest height above the shoulder line, in the
   chest's own frame (vanilla's worst role clip keeps 79%, a rifle shouldered). The head sinks between the shoulders with no neck. `lib/tripo_neck.py`,
   whose lift `run_pilot` applies to the staged clips.
@@ -75,7 +80,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -864,6 +869,33 @@ def plate_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict]
     return out, numbers
 
 
+def head_lead_findings(mesh, anims: Dict[str, object], weapon_bone: str) -> (List[dict], dict):
+    """TRIPO-WEAPON-HEAD-LEAD on the attack clips: around the strike (the holding hand's fastest frame) the weapon's head must lead the hand
+    along its motion (`lib/tripo_swing.head_lead`), not trail it with the butt first."""
+
+    if weapon_bone not in mesh.bones or weapon_vertices(mesh, weapon_bone).sum() < 50:
+        return [], {}
+    hand = holding_hand(mesh, weapon_bone)
+    if hand not in mesh.bones:
+        return [], {}
+    weapon = weapon_vertices(mesh, weapon_bone)
+    head, _axis = tripo_swing.head_end_mask(mesh.positions[weapon])
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if not clip.endswith("_attack"):
+            continue
+        matrices = pdx_deform.skinning_matrices(mesh, anim)
+        joints = (matrices @ np.linalg.inv(mesh.inverse_bind)[None])[:, mesh.bones.index(hand), :3, 3]
+        heads = np.array([pdx_deform.skin(mesh, matrices[frame])[weapon][head].mean(axis=0) for frame in range(anim.frames)])
+        frame, cosine = tripo_swing.head_lead(joints, heads - joints)
+        numbers[clip] = {"strike_frame": frame, "head_lead_cosine": round(cosine, 3)}
+        if cosine < tripo_swing.HEAD_LEAD_MIN:
+            out.append(finding("TRIPO-WEAPON-HEAD-LEAD", clip,
+                               f"at the strike (frame {frame}, the hand's fastest) the weapon's head trails the hand (cosine {cosine:+.2f} of the hand-to-head line to the hand's motion, limit {tripo_swing.HEAD_LEAD_MIN:+.1f}): the blow lands butt first",
+                               frame=frame, cosine=round(cosine, 3)))
+    return out, numbers
+
+
 def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
     """The weapon and grip checks of a run: on the runtime files when the unit has a weapon bone, and the grip stage's GLB as a diagnostic.
 
@@ -876,6 +908,8 @@ def weapon_stage_findings(args, mesh, anims: Dict[str, object], numbers: dict) -
         found, numbers["weapon_runtime"] = weapon_runtime_findings(mesh, anims, args.weapon_bone, args.roles, (shield,))
         findings += found
         found, numbers["grip_runtime"] = grip_runtime_findings(mesh, args.weapon_bone)
+        findings += found
+        found, numbers["head_lead"] = head_lead_findings(mesh, anims, args.weapon_bone)
         findings += found
     if shield:
         found, numbers["shield_runtime"] = shield_runtime_findings(mesh, anims, shield, args.roles, args.weapon_bone)
@@ -911,7 +945,7 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
-def body_findings(mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
+def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = ()) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
     rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
 
@@ -922,7 +956,7 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict) -> List[dict]:
     else:
         found, numbers["death"] = death_findings(mesh, anims)
         findings += found
-        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims)
+        found, numbers["pose"] = tripo_pose.pose_findings(mesh, anims, [bone for bone in held_bones if bone in mesh.bones])
         findings += found
         found, numbers["neck"] = tripo_neck.neck_findings(mesh, anims)
         findings += found
@@ -960,7 +994,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
-    findings += body_findings(mesh, anims, numbers)
+    findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone])
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
         findings += found
