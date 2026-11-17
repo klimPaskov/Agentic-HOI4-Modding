@@ -3,7 +3,8 @@
 Run with the lock-selected Blender:
     blender --background --factory-startup --python-exit-code 1 --python .tools/3d_pipeline/tests/blender_static_cleanup_integration.py
 The model is a closed hull box with a closed thin barrel, an open wedge flake on its deck, a needle sliver hanging off an
-open plate, and a flat one-sided disc card beside it. It fails on the first unmet expectation.
+open plate, and a flat one-sided disc card beside it. Then the shading rule (`crease_shading`) runs on a box carrying
+smooth imported normals, a pointed cone and a sphere with one face asked flat. It fails on the first unmet expectation.
 """
 
 from __future__ import annotations
@@ -19,7 +20,7 @@ from mathutils import Matrix
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from tripo.static_mesh_ops import CARD_GROUP, bm_arrays, card_cost, remove_slivers, thicken_cards
+from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, bm_arrays, card_cost, crease_shading, remove_slivers, thicken_cards
 
 from lib import static_kinds as sk
 
@@ -95,7 +96,49 @@ def main() -> None:
     obj.vertex_groups.new(name="thickened_cards")
     weighted = sum(1 for v in mesh.vertices for g in v.groups if g.group == CARD_GROUP and g.weight > 0.5)
     expect(weighted == len(marked), "the marks reach the mesh's vertex group")
-    print("STATIC_CLEANUP_INTEGRATION_OK", sliver, cards["thickened"], round(thickness, 4))
+    shading = check_shading()
+    print("STATIC_CLEANUP_INTEGRATION_OK", sliver, cards["thickened"], round(thickness, 4), shading)
+
+
+def worst_lean(mesh) -> float:
+    """The largest angle in degrees between a corner's shading normal and its own face's normal."""
+
+    return max(math.degrees(math.acos(max(-1.0, min(1.0, mesh.corner_normals[i].vector.dot(p.normal))))) for p in mesh.polygons for i in p.loop_indices)
+
+
+def shaded(make, name):
+    bpy.ops.object.select_all(action="DESELECT")
+    make()
+    obj = bpy.context.active_object
+    obj.name = name
+    bpy.ops.object.shade_smooth_by_angle(angle=math.radians(CREASE_DEGREES))
+    return obj.data
+
+
+def check_shading() -> dict:
+    # a box with one smooth normal a vertex (as Tripo's GLB brings them): every corner 54.7 degrees off its face
+    box = shaded(lambda: bpy.ops.mesh.primitive_cube_add(size=1.0, location=(10, 0, 0)), "imported_box")
+    box.normals_split_custom_set_from_vertices([v.co.normalized() for v in box.vertices])
+    expect(worst_lean(box) > 50, f"the imported normals lean, got {worst_lean(box):.1f}")
+    found = crease_shading(box)
+    expect(found["imported_normals_cleared"] and found["faces_leaning_imported"] == 6, f"the imported normals are found and dropped, got {found}")
+    expect(worst_lean(box) < 1e-3, f"the box shades flat, got {worst_lean(box):.2f}")
+    # a pointed cone: neighbouring sides 30 degrees apart (smooth), but the fan round the tip spans all of them
+    cone = shaded(lambda: bpy.ops.mesh.primitive_cone_add(vertices=12, radius1=0.2, depth=3.0, location=(14, 0, 0)), "cone")
+    expect(worst_lean(cone) > CREASE_DEGREES, f"the tip's fan leans, got {worst_lean(cone):.1f}")
+    found = crease_shading(cone)
+    expect(found["faces_leaning"] >= 12 and found["faces_leaning_after"] == 0, f"the sides at the tip are made flat, got {found}")
+    expect(worst_lean(cone) <= CREASE_DEGREES + 1e-3, f"no corner leans past the crease, got {worst_lean(cone):.2f}")
+    # a smooth sphere stays smooth, but a face asked flat takes its own normal
+    sphere = shaded(lambda: bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, location=(18, 0, 0)), "sphere")
+    asked = 100
+    found = crease_shading(sphere, flat=[asked])
+    expect(found["faces_shaded_flat"] == 1, f"only the face asked is flat, got {found}")
+    face = sphere.polygons[asked]
+    expect(all(sphere.corner_normals[i].vector.dot(face.normal) > 0.9999 for i in face.loop_indices), "the face asked flat takes its normal")
+    other = sphere.polygons[asked + 30]
+    expect(any(sphere.corner_normals[i].vector.dot(other.normal) < 0.9999 for i in other.loop_indices), "the rest of the sphere stays smooth")
+    return {"box": round(worst_lean(box), 3), "cone": round(worst_lean(cone), 2), "sphere": round(worst_lean(sphere), 2)}
 
 
 main()
