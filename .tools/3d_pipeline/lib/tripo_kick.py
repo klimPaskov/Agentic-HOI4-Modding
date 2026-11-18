@@ -16,11 +16,11 @@ fell to 0.039, still there.
 The measure (`boot_heights`, `kick_numbers`): once the hips are down (`tripo_pose._lying_frame`), each leg's boot, the higher of its ankle and toe
 joints, above the ground as the ground pass will lift the body, as a share of the height, and its largest rise above the lowest it has been since
 the hips came down: a leg that has come down and goes up again. Vanilla's two deaths (death_rifle and death_mg on GER_infantry, _alt_0,
-ENG_infantry and _snow, 2026-11-18, the skeleton the same on all four) raise a boot at most 0.021 that way (death_mg's toe). The limit is that worst
-with a quarter added (`BOOT_RISE_LIMIT`). zombie_o's exported death reads 0.039 on the left leg. The boot's height itself is reported, not judged:
-vanilla's boots stay under 0.097 once its bodies lie on their backs, but a body landing on its front still has its shins up at the frame the hips
-come down (zombie_o's right boot 0.134 at frame 63) and lowers them, which is no kick. The knee is not judged: vanilla's knees rise 0.05 as a body
-on its back draws its legs up.
+ENG_infantry and _snow, 2026-11-18, the skeleton the same on all four) raise a boot at most 0.027 that way (death_mg's left boot on ENG_infantry,
+0.021 on _alt_0, 0.018 on GER_infantry). The limit is that worst with a quarter added (`BOOT_RISE_LIMIT`, 0.034). zombie_o's exported death reads
+0.039 on the left leg. The boot's height itself is reported, not judged: lifted out of the ground vanilla's own boots stand 0.13 to 0.22 of the
+height up at the frame the hips come down, and a body landing on its front still lowers its shins after that frame (zombie_o's right boot 0.134
+at frame 63), which is no kick. The knee is not judged: vanilla's knees rise 0.05 as a body on its back draws its legs up.
 
 Tried and dropped (offline on zombie_o's exported clip, 2026-11-18): turning the knee, the thigh or both toward the rest pose (the legs' settle's
 target) by a share, from the frame the hips come down; with the thigh rolled 170 to 250 degrees the turn toward rest unrolls it as well and swings
@@ -40,9 +40,9 @@ their ends (in the frame of the bone the leg hangs from), each then turned onto 
 one lying place to the next instead of round the thigh. The span grows `SPAN_STEP` frames at a time at its end while the rise is still over the
 target or a joint would turn faster than the settle rule allows (`tripo_trim.SETTLE_MAX_RATE`). A span is not taken when it makes the frames from
 its start worse than the clip before by the kit's rule (`stretch_smooth.worse`) or sinks the body further into the ground than the upper-body
-settle may lift it. Offline on zombie_o's clip it lays the left leg across frames 63 to 80: the rise falls from 0.039 to 0.013, the boot's peak
-from 0.156 to 0.120, the worst frame's counts from 265 stretched and 418 squashed to 270 and 423 (within the rule). The frames 70 to 76 squash
-more than before (355 against 283 at frame 70) while staying under the clip's worst frame.
+settle may lift it. Offline on zombie_o's clip it lays the left leg across frames 63 to 79: the rise falls from 0.039 to 0.016, the boot's peak
+from 0.156 to 0.122, and the kit's deformation report reads 266 stretched and 422 squashed edges against 265 and 418 before (within the rule).
+Frames 70 to 76 squash more than before (348 against 283 at frame 70) while staying under the clip's worst frame.
 
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
@@ -58,7 +58,7 @@ import numpy as np
 from . import pdx_deform, pdx_motion, stretch_smooth, tripo_ease, tripo_fall, tripo_pose, tripo_trim
 from .pdx_binary import read
 
-VANILLA_BOOT_RISE = 0.021
+VANILLA_BOOT_RISE = 0.027
 BOOT_RISE_LIMIT = round(1.25 * VANILLA_BOOT_RISE, 3)
 BOOT_RISE_TARGET = VANILLA_BOOT_RISE
 SPAN_STEP = 3
@@ -225,76 +225,96 @@ def kick_span(boots: np.ndarray, onset: int, target: float) -> Optional[Tuple[in
     return onset + low, onset + back
 
 
+@dataclass
+class _Guard:
+    """What a span is judged by: the mesh, its edges and rest lengths, the body that may not sink, and the clip's legs."""
+
+    mesh: pdx_deform.SkinnedMesh
+    legs: object
+    exclude_bones: Sequence[str]
+    edges: np.ndarray = None
+    rest_lengths: np.ndarray = None
+    body: np.ndarray = None
+
+    def __post_init__(self) -> None:
+        self.edges = pdx_deform.mesh_edges(self.mesh)
+        self.rest_lengths = np.linalg.norm(self.mesh.positions[self.edges[:, 0]] - self.mesh.positions[self.edges[:, 1]], axis=1)
+        self.body = _body_mask(self.mesh, self.exclude_bones)
+
+    def deformation(self, clip: pdx_deform.Animation, first: int) -> dict:
+        return tripo_pose._tail_deformation(self.mesh, clip, first, self.edges, self.rest_lengths)
+
+    def sink(self, clip: pdx_deform.Animation, first: int) -> float:
+        return float(_lifts(self.mesh, pdx_deform.skinning_matrices(self.mesh, clip), self.body)[first:].max()) / max(self.mesh.height, 1e-6)
+
+    def rise(self, clip: pdx_deform.Animation, key: str) -> float:
+        return kick_numbers(self.mesh, clip, self.exclude_bones, self.legs)["legs"][key]["rise"]
+
+
+def _lay_kick(guard: _Guard, current: pdx_deform.Animation, leg, key: str, span: Tuple[int, int], joints: Sequence[str],
+              target: float) -> Optional[Tuple[float, pdx_deform.Animation, int]]:
+    """(rise, clip, last frame) of the best span from `span`, grown at its end while the rise is over `target` or a joint turns too fast, or
+    None when no span is allowed (see the module text)."""
+
+    first, last = span
+    end = current.frames - 1
+    reference, sunk = guard.deformation(current, first), guard.sink(current, first)
+    best = None
+    while True:
+        trial = laid_across(guard.mesh, current, leg, first, last)
+        if _fastest_step(trial, joints, first, last) <= tripo_trim.SETTLE_MAX_RATE:
+            if stretch_smooth.worse(reference, guard.deformation(trial, first)) or guard.sink(trial, first) > sunk + tripo_pose.UPPER_SETTLE_LIFT:
+                break
+            rise = guard.rise(trial, key)
+            if best is None or rise < best[0] - 1e-4:
+                best = (rise, trial, last)
+            if rise <= target:
+                break
+        if last >= end:
+            break
+        last = min(last + SPAN_STEP, end)
+    return best
+
+
 def settle_death_kick(mesh_path: Path, anim_path: Path, out_path: Path, exclude_bones: Sequence[str] = (),
                       limit: float = BOOT_RISE_LIMIT, target: float = BOOT_RISE_TARGET) -> KickSettle:
-    """Write `out_path`: `anim_path` with each kick of a leg over `limit` cut out, the leg carried straight across it (see the module text).
-    Only that leg's rotation samples in the span change."""
+    """Write `out_path`: `anim_path` with each kick of a leg over `limit` laid across (`laid_across`, see the module text). Only that leg's
+    rotation samples inside the span change."""
 
     data = bytearray(Path(anim_path).read_bytes())
     mesh = pdx_deform.load_mesh(mesh_path)
     anim = pdx_deform.load_anim(anim_path)
     legs = _legs(mesh)
     before = kick_numbers(mesh, anim, exclude_bones, legs) if legs else None
-    if before is None:
+    if before is None or all(leg["rise"] <= limit for leg in before["legs"].values()):
         Path(out_path).write_bytes(bytes(data))
-        return KickSettle(False, note="no two legs found")
-    if all(leg["rise"] <= limit for leg in before["legs"].values()):
-        Path(out_path).write_bytes(bytes(data))
+        if before is None:
+            return KickSettle(False, note="no two legs found")
         return KickSettle(False, before["onset"], before=before, after=before, note="no boot kicks up once the hips are down")
     info = read(anim_path).child("info")
     keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
-    edges = pdx_deform.mesh_edges(mesh)
-    rest_lengths = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
-    body = _body_mask(mesh, exclude_bones)
-    height = max(mesh.height, 1e-6)
+    guard = _Guard(mesh, legs, exclude_bones)
     onset = before["onset"]
-
-    def sink(clip: pdx_deform.Animation, first: int) -> float:
-        return float(_lifts(mesh, pdx_deform.skinning_matrices(mesh, clip), body)[first:].max()) / height
-
     current, spans, changed = anim, {}, []
     for _ in range(MAX_PASSES):
         boots = boot_heights(mesh, current, exclude_bones, legs)
         numbers = kick_numbers(mesh, current, exclude_bones, legs)
-        failing = [(side, leg) for side, leg in enumerate(legs.legs) if numbers["legs"][_leg_key(mesh, leg, side)]["rise"] > limit]
-        if not failing:
-            break
         progressed = False
-        for side, leg in failing:
+        for side, leg in enumerate(legs.legs):
             key = _leg_key(mesh, leg, side)
-            span = kick_span(boots[:, side], onset, target)
+            span = kick_span(boots[:, side], onset, target) if numbers["legs"][key]["rise"] > limit else None
             joints = [j for j in _chain(mesh, leg) if j in keyed]
-            if span is None or not joints:
-                continue
-            first, last = span
-            reference = tripo_pose._tail_deformation(mesh, current, first, edges, rest_lengths)
-            sunk = sink(current, first)
-            best = None
-            while last <= anim.frames - 1:
-                trial = laid_across(mesh, current, leg, first, last)
-                if _fastest_step(trial, joints, first, last) > tripo_trim.SETTLE_MAX_RATE:
-                    last += SPAN_STEP
-                    continue
-                if stretch_smooth.worse(reference, tripo_pose._tail_deformation(mesh, trial, first, edges, rest_lengths)):
-                    break
-                if sink(trial, first) > sunk + tripo_pose.UPPER_SETTLE_LIFT:
-                    break
-                rise = kick_numbers(mesh, trial, exclude_bones, legs)["legs"][key]["rise"]
-                if best is None or rise < best[0] - 1e-4:
-                    best = (rise, trial, last)
-                if rise <= target or last == anim.frames - 1:
-                    break
-                last = min(last + SPAN_STEP, anim.frames - 1)
+            best = _lay_kick(guard, current, leg, key, span, joints, target) if span and joints else None
             if best is not None and best[0] < numbers["legs"][key]["rise"] - 1e-4:
                 current = best[1]
-                spans.setdefault(key, []).append([first, best[2]])
+                spans.setdefault(key, []).append([span[0], best[2]])
                 changed += [j for j in joints if j not in changed]
                 progressed = True
         if not progressed:
             break
     if not changed:
         Path(out_path).write_bytes(bytes(data))
-        return KickSettle(False, onset, before=before, after=before, note="no straight carry lowers the kick without stretching the clip more")
+        return KickSettle(False, onset, before=before, after=before, note="no span laid across lowers the kick without stretching the clip more")
     weights = np.zeros(anim.frames)
     for ranges in spans.values():
         for first, last in ranges:
