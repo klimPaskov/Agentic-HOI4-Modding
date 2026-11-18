@@ -680,12 +680,12 @@ ROLE_FRAMES.update(WINGED_FRAMES)
 LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # The retreat turns away from the unit's heading and back while it walks with beating wings: FLEE_TURN degrees about the vertical through the
 # body's middle, in over the first FLEE_TURN_IN of the clip and out over its last, so the clip starts and ends at the heading (TRIPO-LOOP-HEADING).
-FLEE_TURN = -30.0
+FLEE_TURN = -20.0
 FLEE_TURN_IN = 0.25
 # The attack: (degrees drawn back while cocked, degrees forward at the strike) at Neck_01, Neck_02 and Head (positive pitches a raised neck
 # forward), the head's snap down at the bite, and the share of the rear's pitch and lifted forelegs that comes down at the strike.
-STRIKE_NECK = {"Neck_01": (-18.0, 42.0), "Neck_02": (-10.0, 26.0), "Head": (-14.0, 10.0)}
-STRIKE_SNAP = 22.0
+STRIKE_NECK = {"Neck_01": (-18.0, 55.0), "Neck_02": (-10.0, 35.0), "Head": (-14.0, 15.0)}
+STRIKE_SNAP = 35.0
 STRIKE_DROP = 0.7
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
@@ -693,9 +693,10 @@ FORELEG_LIFT = 0.6
 # A dead winged quadruped's legs fold this share of a full fold (the elephant's DEATH_FOLD is 0.6): at 0.6 the Tripo dragon's legs bent 22
 # degrees in its death (TRIPO-DEATH-STIFF-LEGS, at least 25), at 0.8 32 (offline).
 WINGED_DEATH_FOLD = 0.8
+WINGED_LYING_RELAX = 0.6
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
-GUARD_NECK_LOW = {"Neck_01": 30.0, "Neck_02": 20.0, "Head": 0.0}
+GUARD_NECK_LOW = {"Neck_01": -60.0, "Neck_02": 90.0, "Head": 45.0}
 
 
 def frame_count(style: str) -> int:
@@ -791,9 +792,12 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
 
     roll = float(death.get("roll", COLLAPSE_ROLL))
     fall = _collapse_fall(t)
+    # the legs fold WINGED_DEATH_FOLD as they buckle, and once the body lies they relax WINGED_LYING_RELAX of that fold as the elephant's
+    # lying legs do: held at the full fold they read as legs curled up in a tangled mass (both fresh reviews of run 4)
+    lying = 1.0 - WINGED_LYING_RELAX * _smooth(max(0.0, (t - 0.65) / 0.35))
     for name in list(pose):
         if name.startswith(LEG_PREFIX_NAMES):
-            pose[name] = [(axis, degrees * WINGED_DEATH_FOLD / DEATH_FOLD) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[name]]
+            pose[name] = [(axis, degrees * WINGED_DEATH_FOLD / DEATH_FOLD * lying) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[name]]
     if tails:
         pose[tails[0]] = [(X_AXIS, float(death.get("tail_lift", 0.0)) * fall), (Y_AXIS, -roll * fall)]
         for name in tails[1:]:

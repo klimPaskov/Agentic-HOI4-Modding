@@ -67,6 +67,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
 - TRIPO-WING-ROOT-STRETCH: in a clip, more than `MAX_WING_ROOT_STRETCH` of the edges where the wings blend into the body stretch or squash.
+- TRIPO-WING-MIRROR: a winged quadruped's two wings do not mirror each other within `MAX_WING_MIRROR_DEGREES` (every clip but the death), or
+  in a beating clip one wing turns through less than `MIN_WING_BEAT_SHARE` of the other's range.
 - TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
   the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
 - TRIPO-HAND-BLEED: more than `MAX_HAND_BLEED_SHARE` of a shape's vertices lie outside a hand's own part (`lib/stretch_smooth.hand_parts`:
@@ -80,7 +82,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
@@ -142,6 +144,18 @@ MIN_MOVE_IDLE_MOTION_RATIO = 3.0
 # creased fold beside the shoulders, the pinched wing forearm), which measured 9.2% (move) to 18.7% (defend). No reviewed clip above 5.2%
 # passed. The limit lies just under the least a reviewer flagged.
 MAX_WING_ROOT_STRETCH = 0.05
+# A winged quadruped's beating clips (`QUADRUPED_BEATING`) are judged by TRIPO-WING-EDGE-ON as a humanoid's attack and retreat are: run 4's move
+# held its half-folded wings upright, and from the map camera one of the two read as a thin spike (0.27 of its face) while the other spread,
+# which both fresh reviews failed.
+QUADRUPED_BEATING = ("move", "attack", "retreat")
+# TRIPO-WING-MIRROR: a winged quadruped's two wings take mirrored poses in the body's frame in every clip but the death (it lies on one side).
+# In the Chest bone's frame the planes of the two wings, the right one mirrored, may differ by at most `MAX_WING_MIRROR_DEGREES` in any frame
+# (`wing_turns`). In a beating clip each wing must also turn through at least `MIN_WING_BEAT_SHARE` of the other's range. Calibrated on the
+# Tripo dragon's run 4: its mirrored clips' planes differ by at most 5.3 degrees, and its retreat, which both fresh reviews read as one wing
+# beating while the other stayed frozen upright, by 22 (the wing the retreat's turn carried forward swept back by the turn).
+MAX_WING_MIRROR_DEGREES = 15.0
+MIN_WING_BEAT_SHARE = 0.5
+WING_MIRROR_SKIP = ("death",)
 SILHOUETTE_CELL_SHARE = 0.02
 # An armour plate is rigid: it may stretch no more than vanilla's tailored clothing does at its worst.
 MAX_PLATE_STRETCH_SHARE = VANILLA_CLOAK_WORST
@@ -477,7 +491,8 @@ def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
             what = f"the {row['cover_judges']}" if "cover_judges" in row else ("the limbs and head" if side else "the body")
             out.append(finding("TRIPO-WING-FRONT", clip, f"the wings hide {share:.1%} of {what} in the {view} view; the limit is {limit:.0%}", view=view, share=share))
     rule = tripo_chains.WING_ROLES.get(clip_role(clip), {})
-    if row.get("face") and rule.get("flap", 0.0) >= EDGE_ON_FLAP:
+    beating = clip_role(clip) in QUADRUPED_BEATING if "cover_judges" in row else rule.get("flap", 0.0) >= EDGE_ON_FLAP
+    if row.get("face") and beating:
         for view, share in row["face"].items():
             if share < MIN_WING_FACE_SHARE:
                 out.append(finding("TRIPO-WING-EDGE-ON", clip, f"a beating wing shows {share:.0%} of its face in the {view} view (median over the clip; limit {MIN_WING_FACE_SHARE:.0%}): seen edge-on it reads as a spike", view=view, share=share))
@@ -486,6 +501,62 @@ def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
     if row["below_ground_worst_share"] > MAX_CHAIN_BELOW_GROUND_SHARE:
         out.append(finding("TRIPO-CHAIN-GROUND", clip, f"{row['below_ground_worst_share']:.1%} of the {name} vertices are more than {CHAIN_GROUND_MARGIN_SHARE:.0%} of the height below the ground in frame {row['below_ground_frame']} (limit {MAX_CHAIN_BELOW_GROUND_SHARE:.0%})", region=name, share=row["below_ground_worst_share"]))
     return out
+
+
+def _best_turn(rest: np.ndarray, posed: np.ndarray) -> np.ndarray:
+    """The rotation that best carries the centred `rest` points onto the centred `posed` ones (Kabsch)."""
+
+    a, b = rest - rest.mean(axis=0), posed - posed.mean(axis=0)
+    u, _s, vt = np.linalg.svd(a.T @ b)
+    flip = np.sign(np.linalg.det(vt.T @ u.T)) or 1.0
+    return vt.T @ np.diag([1.0, 1.0, flip]) @ u.T
+
+
+def _turn_degrees(r: np.ndarray) -> float:
+    return float(np.degrees(np.arccos(np.clip((np.trace(r) - 1.0) / 2.0, -1.0, 1.0))))
+
+
+def wing_turns(mesh, anim, sides, step: int = 2) -> Tuple[List[np.ndarray], List[np.ndarray], List[float]]:
+    """Per judged frame, each wing's turn from its rest pose in the Chest bone's frame (`_best_turn`), the right wing's mirrored across the
+    body's mid-plane (the mesh's X), and the angle between the two wings' planes once mirrored (degrees, their least principal axes). A
+    model's two wings may be modelled at different angles (the Tripo dragon's 15 to 20 degrees apart), so their turns from rest differ by that
+    much even when they pose alike: the planes are what must mirror."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    chest = index.get("Chest", 0)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    mirror = np.diag([-1.0, 1.0, 1.0])
+    left, right, planes = [], [], []
+    for frame in range(0, matrices.shape[0], step):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        inverse = np.linalg.inv(matrices[frame, chest])
+        local = posed @ inverse[:3, :3].T + inverse[:3, 3]
+        left.append(_best_turn(mesh.positions[sides[0]], local[sides[0]]))
+        right.append(mirror @ _best_turn(mesh.positions[sides[1]], local[sides[1]]) @ mirror)
+        normals = [T.principal_axes(local[mask])[1][2] for mask in sides]
+        planes.append(float(np.degrees(np.arccos(min(1.0, abs(float(normals[0] @ (mirror @ normals[1]))))))))
+    return left, right, planes
+
+
+def wing_mirror_findings(mesh, anims: Dict[str, object], sides, step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-MIRROR for a winged quadruped: its two wings' turns mirror each other within `MAX_WING_MIRROR_DEGREES`, and in a beating clip
+    each turns through at least `MIN_WING_BEAT_SHARE` of the other's range."""
+
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        role = clip_role(clip)
+        if role in WING_MIRROR_SKIP:
+            continue
+        left, right, planes = wing_turns(mesh, anim, sides, step)
+        worst = int(np.argmax(planes))
+        mismatch = planes[worst]
+        ranges = [max(_turn_degrees(turns[0].T @ turn) for turn in turns) for turns in (left, right)]
+        numbers[clip] = {"mismatch_degrees": round(mismatch, 1), "frame": worst * step, "beat_degrees": [round(value, 1) for value in ranges]}
+        if mismatch > MAX_WING_MIRROR_DEGREES:
+            out.append(finding("TRIPO-WING-MIRROR", clip, f"the two wings' poses differ by {mismatch:.0f} degrees once mirrored in frame {worst * step} (limit {MAX_WING_MIRROR_DEGREES:.0f}): one wing does not do what the other does", degrees=round(mismatch, 1)))
+        if role in QUADRUPED_BEATING and max(ranges) > 0 and min(ranges) < MIN_WING_BEAT_SHARE * max(ranges):
+            out.append(finding("TRIPO-WING-MIRROR", clip, f"one wing turns through {min(ranges):.0f} degrees and the other {max(ranges):.0f} (at least {MIN_WING_BEAT_SHARE:.0%} of it): only one wing beats", degrees=[round(value, 1) for value in ranges]))
+    return out, numbers
 
 
 def idle_move_findings(rows: Dict[str, dict]) -> List[dict]:
@@ -520,6 +591,9 @@ def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, ste
             out += chain_row_findings(clip, name, row)
     if wings:
         out += idle_move_findings(numbers["clips"])
+        if quadruped_checks.is_quadruped(mesh):
+            found, numbers["mirror"] = wing_mirror_findings(mesh, anims, sides)
+            out += found
     return out, numbers
 
 

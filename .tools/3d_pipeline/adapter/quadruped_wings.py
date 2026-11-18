@@ -46,7 +46,7 @@ WING_CHAINS = 4
 # The trailing chain (the first, by the flank) turns this share of the wing's every turn, beat and fold, so the membrane between the wing and
 # the flank it grows from follows the wing part of the way and bends across the fan's trailing quarter instead of along one seam: a fresh
 # review of run 3 saw it pinned to the flank, stretched into a dragged sheet when the wings rose.
-TRAIL_SHARE = 0.75
+TRAIL_SHARE = 0.7
 WING_BONES = 3
 
 
@@ -223,9 +223,9 @@ def target_frame(sweep: float, rise: float, roll: float, sign: float) -> np.ndar
     span = math.cos(e) * (math.cos(a) * sign * X + math.sin(a) * Y) + math.sin(e) * Z
     up = Z - (Z @ span) * span
     up = unit(up) if np.linalg.norm(up) > 1e-6 else unit(-Y - (-Y @ span) * span)
-    forward = unit(np.cross(span, up))
-    if forward @ -Y < 0:
-        forward = -forward
+    # the side's own sense (`sign`), never a test against the front: a span swept past straight ahead (the defend's crossing wings) flipped
+    # that test and turned the chord over in one frame (UNIT-ANIM-SPIN, 50 degrees in a frame in run 5)
+    forward = sign * unit(np.cross(span, up))
     chord = math.cos(r) * up + math.sin(r) * forward
     return np.stack([span, chord, sign * np.cross(span, chord)], axis=1)
 
@@ -238,9 +238,9 @@ def frame_angles(frame: np.ndarray, sign: float) -> Tuple[float, float, float]:
     sweep = math.degrees(math.atan2(float(span[1]), float(span[0]) * sign))
     up = Z - (Z @ span) * span
     up = unit(up)
-    forward = unit(np.cross(span, up))
-    if forward @ -Y < 0:
-        forward = -forward
+    # the side's own sense (`sign`), never a test against the front: a span swept past straight ahead (the defend's crossing wings) flipped
+    # that test and turned the chord over in one frame (UNIT-ANIM-SPIN, 50 degrees in a frame in run 5)
+    forward = sign * unit(np.cross(span, up))
     return sweep, rise, math.degrees(math.atan2(float(chord @ forward), float(chord @ up)))
 
 
@@ -421,19 +421,20 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # same share, and the kit's stretch measure counts an edge changed by 1.5 times, so 0.67 is the least), the bend of each bone past the
 # root (curl, positive toward the back of the wing) and how much more each further bone bends (curl_out).
 FOLDED = {"sweep": 70.0, "rise": 5.0, "roll": 0.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
-HALF = {"sweep": 55.0, "rise": 15.0, "roll": 0.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
+HALF = {"sweep": 55.0, "rise": 20.0, "roll": -40.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
-SHIELD = {"sweep": -50.0, "rise": 55.0, "roll": 40.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
-FLEE = {"sweep": 60.0, "rise": 30.0, "roll": -45.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
+SHIELD = {"sweep": -75.0, "rise": 20.0, "roll": -15.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
+FLEE = {"sweep": 55.0, "rise": 20.0, "roll": -70.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
 DEAD_UPPER_START = 0.6
+DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
 DEAD_UPPER = {**FOLDED, "sweep": 70.0, "rise": -15.0, "roll": 0.0}  # the wing on top of a dead body, folded and laid down along the flank
 LYING = {**FOLDED, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}  # the lying wing's direction comes from `lying_pose`
 # Beats: (degrees at the root, beats per clip, the wave's bend per bone past the root as a share of the root's beat, its lag per bone as a
 # share of a beat). The idle breathes: one slow rise and fall of the folded wings per loop.
 BREATH = (4.0, 1, 0.3, 0.12)
-WALK_BEAT = (14.0, 1, 0.35, 0.12)
+WALK_BEAT = (25.0, 1, 0.35, 0.12)
 ATTACK_BEAT = (30.0, 2, 0.35, 0.12)
-FLEE_BEAT = (24.0, 3, 0.35, 0.12)
+FLEE_BEAT = (20.0, 3, 0.35, 0.12)
 GUARD_BEAT = (6.0, 2, 0.3, 0.12)
 DEATH_LIFT = 25.0  # degrees the wings rise halfway between folded and lying
 DEATH_FOLD_END = 0.25  # the wings fold by this share of a death, then open and settle flat as the body lies
@@ -464,7 +465,7 @@ def _envelope(t: float, rise: float = 0.2, fall: float = 0.2) -> float:
 # at the bite, and recovers by the end.
 ATTACK_COCK_END = 0.32
 ATTACK_STRIKE_START, ATTACK_STRIKE_END = 0.3, 0.68
-ATTACK_SNAP = (0.4, 0.52)
+ATTACK_SNAP = (0.37, 0.5)  # its peak at 0.435 of the clip, on a review sheet frame (one every half second)
 ATTACK_LIFT = 15.0  # degrees the cocked wings rise
 ATTACK_DOWNSTROKE = 30.0  # degrees the wings beat down at the strike
 STRIKE_WINGS = {"sweep": 75.0, "rise": 20.0, "roll": 20.0, "spread": 1.0, "curl": 10.0, "curl_out": 0.0}  # swept back for the blow
@@ -523,17 +524,15 @@ def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = No
 
 
 def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[Tuple[Tuple[float, float, float], float]]]:
-    """Both wings' bone rows for a winged style at clip time t (`role_pose`, `wing_rows`). When the body turns about the vertical (`yaw`
-    degrees, positive turns the head toward its left), the wing on the side that comes forward sweeps back by the turn, as the humanoid
-    wing chains do: the review cameras stay put, and a wing carried forward by the turn crossed the head and neck in a side view (the
-    retreat's turn of 30 degrees hid 17% of the legs, neck and head, offline on the Tripo dragon)."""
+    """Both wings' bone rows for a winged style at clip time t (`role_pose`, `wing_rows`). The two wings always take mirrored poses in the
+    body's frame (`yaw` is kept for the caller's sake and turns nothing): run 4 swept the wing a retreat's turn carried forward back by the
+    turn, and both fresh reviews read it as one wing frozen upright while the other beat."""
 
     rows: Dict[str, List[Tuple[Tuple[float, float, float], float]]] = {}
     for side, plan in (layout.landmarks.get("wings") or {}).items():
         bones = np.asarray(plan["joints"]).shape[1] - 1
-        lying = lying_pose(plan, layout.landmarks) if style == "winged_collapse" and lies_under(plan, layout.landmarks) else None
+        lying = lying_pose(plan, layout.landmarks) if style == "winged_collapse" and (DEAD_UPPER_LIES or lies_under(plan, layout.landmarks)) else None
         pose = role_pose(style, t, bones, lying, upper=style == "winged_collapse" and lying is None)
-        pose["sweep"] = float(pose.get("sweep", 0.0)) + max(0.0, -float(plan["side_sign"]) * yaw)
         rows.update(wing_rows(plan, pose, side))
     return rows
 

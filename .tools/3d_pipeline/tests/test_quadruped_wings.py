@@ -178,6 +178,20 @@ class Poses(unittest.TestCase):
                 self.assertLess(qw.axis_angle(a @ b.T)[1], 1.0, f"{style} {name}")
             self.assertTrue(any(name.startswith("Wing") for name in first), style)
 
+    def test_the_two_wings_take_mirrored_poses(self) -> None:
+        _points, _triangles, landmarks, plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        for style in ("winged_walk", "winged_flee", "winged_guard"):
+            for t in (0.2, 0.5):
+                rows = qw.role_rows(style, t, layout, -30.0)
+                left, right = (qw.target_frame(0, 0, 0, sign) for sign in (1.0, -1.0))
+                turns = {side: rows[qw.wing_name(side, 1, 0)][1] for side in ("Left", "Right")}
+                mirror = np.diag([-1.0, 1.0, 1.0])
+                a = qw.rotation(*turns["Left"]) @ qw.rest_frame(plans["Left"])[0]
+                b = mirror @ qw.rotation(*turns["Right"]) @ qw.rest_frame(plans["Right"])[0]
+                self.assertTrue(np.allclose(a[:, :2], b[:, :2], atol=1e-6), f"{style} {t}")
+                del left, right
+
     def test_the_retreat_turns_away_and_back(self) -> None:
         _points, _triangles, landmarks, _plans, _masks = _found()
         layout = ql.build_layout(landmarks)
@@ -187,14 +201,10 @@ class Poses(unittest.TestCase):
         self.assertAlmostEqual(turns[-1], 0.0)
         self.assertAlmostEqual(abs(max(turns, key=abs)), abs(ql.FLEE_TURN), places=3)
 
-    def test_the_wing_carried_forward_by_a_turn_sweeps_back(self) -> None:
+    def test_a_turn_does_not_change_one_wing(self) -> None:
         _points, _triangles, landmarks, plans, _masks = _found()
         layout = ql.build_layout(landmarks)
-        still = qw.role_rows("winged_flee", 0.5, layout, 0.0)
-        turned = qw.role_rows("winged_flee", 0.5, layout, -30.0)
-        # a turn toward the right (negative) carries the left wing forward: only its rows change
-        self.assertNotEqual(still[qw.wing_name("Left", 0, 0)], turned[qw.wing_name("Left", 0, 0)])
-        self.assertEqual(still[qw.wing_name("Right", 0, 0)], turned[qw.wing_name("Right", 0, 0)])
+        self.assertEqual(qw.role_rows("winged_flee", 0.5, layout, 0.0), qw.role_rows("winged_flee", 0.5, layout, -30.0))
 
     def test_the_dead_wings_lie_level_with_the_rolled_body(self) -> None:
         _points, _triangles, landmarks, plans, _masks = _found()
@@ -225,7 +235,7 @@ class Round4(unittest.TestCase):
         cock, strike, snap = qw.attack_phases(0.15)
         self.assertGreater(cock, 0.5)
         self.assertLess(strike, 0.01)
-        cock, strike, snap = qw.attack_phases(0.46)
+        cock, strike, snap = qw.attack_phases(0.435)
         self.assertLess(cock, 0.01)
         self.assertGreater(strike, 0.9)
         self.assertGreater(snap, 0.9)
@@ -283,6 +293,17 @@ class QuadrupedViews(unittest.TestCase):
         finally:
             pdx_motion.rest_joints = original
         self.assertTrue(np.allclose(front, [0.0, 0.0, -1.0]))
+
+
+class Mirror(unittest.TestCase):
+    def test_the_best_turn_recovers_a_rotation(self) -> None:
+        from tripo import tripo_checks as TC
+
+        rng = np.random.default_rng(3)
+        points = rng.normal(size=(50, 3)) * np.array([3.0, 1.0, 0.1])
+        turn = qw.rotation((0.3, 0.2, 0.9), 40.0)
+        found = TC._best_turn(points, points @ turn.T + 5.0)
+        self.assertLess(TC._turn_degrees(found.T @ turn), 1e-6)
 
 
 class Size(unittest.TestCase):
