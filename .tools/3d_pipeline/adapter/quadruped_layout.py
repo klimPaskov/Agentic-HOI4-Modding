@@ -711,78 +711,94 @@ def choose_winged_rest(evaluate) -> Dict[str, float]:
     return chosen
 
 
-def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[str, List[Rotation]]:
-    """A winged quadruped's pose: the body of its WINGED_BASE style at the same point of the clip (strides at the gait's own pace), its
-    own neck, head and tail turns, and the wings (`quadruped_wings.role_rows`). A tail that lies on the ground only swings sideways or
-    lifts: any turn down would sink it and lift the whole body off its feet."""
-
-    import quadruped_wings as qw
+def _winged_time(style: str, frame: float) -> Tuple[float, float]:
+    """(clip time t from 0 to 1, the frame of the WINGED_BASE style at the same point of its clip, strides at the gait's own pace)."""
 
     total = frame_count(style)
-    loop = style in LOOPING
-    t = (frame % total) / total if loop else min(1.0, frame / max(total - 1, 1))
+    t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
     base = WINGED_BASE[style]
     base_total = frame_count(base)
     if base in GAITS:
-        base_frame = (t * WINGED_CYCLES.get(style, 1) * base_total) % base_total
-    elif base in LOOPING:
-        base_frame = t * base_total
-    else:
-        base_frame = t * (base_total - 1)
-    pose = dict(pose_at(base, base_frame, layout, ears=ears))
+        return t, (t * WINGED_CYCLES.get(style, 1) * base_total) % base_total
+    return t, t * base_total if base in LOOPING else t * (base_total - 1)
+
+
+def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str]) -> None:
+    """The attack's lunge at the top of the rear, the tail keeping its world pitch while the body rears about the hind feet (else it sinks
+    and the feet lift off)."""
+
+    lunge = _smooth(max(0.0, min(1.0, (t - LUNGE_START) / 0.15))) * (1 - _smooth(max(0.0, (t - LUNGE_END + 0.15) / 0.15)))
+    for name, degrees in LUNGE.items():
+        if name in names:
+            pose[name] = pose.get(name, []) + [(X_AXIS, degrees * lunge)]
+    pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
+    if tails:
+        pose[tails[0]] = [(X_AXIS, -pitch)]
+
+
+def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str], death: Dict[str, float]) -> None:
+    """The dead body lies on its side (the roll `quadruped_rig.tune_collapse` picks). The tail turns back against the roll so it lies as it
+    lay, turned at its root by `tail_lift`, the legs underneath drop `leg_drop` of the death's full drop, and the neck turns toward the
+    ground by `neck_drop` so the head lies on it (all from `choose_winged_rest`)."""
+
+    roll = float(death.get("roll", COLLAPSE_ROLL))
+    fall = _collapse_fall(t)
+    if tails:
+        pose[tails[0]] = [(X_AXIS, float(death.get("tail_lift", 0.0)) * fall), (Y_AXIS, -roll * fall)]
+        for name in tails[1:]:
+            pose[name] = [(X_AXIS, -0.5 * float(death.get("tail_lift", 0.0)) * fall)]
+    lower = "Right" if roll < 0 else "Left"
+    share = float(death.get("leg_drop", 1.0))
+    for end in ("Front", "Rear"):
+        for segment in LEG_SEGMENTS:
+            name = leg_name(end, lower, segment)
+            if name in pose:
+                pose[name] = [(axis, degrees * share) if tuple(axis) == Y_AXIS else (axis, degrees) for axis, degrees in pose[name]]
+    drop = math.copysign(float(death.get("neck_drop", 0.0)), roll) * fall
+    for name, part in (("Neck_01", 0.6), ("Neck_02", 0.4)):
+        if name in names:
+            pose[name] = pose.get(name, []) + [(Y_AXIS, part * drop)]
+
+
+def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None:
+    """The wings and the neck carry the guard: the legs stand planted (the brace's step back and leaning legs stretched the skin where the
+    dragon's heavy shoulders and thighs meet the torso, 2.2% of the edges in the offline play), and the neck crouches low."""
+
+    envelope = _brace_envelope(t)
+    pose.pop("__root_shift__", None)
+    pose.pop("__root_pitch__", None)
+    for end, side in LEGS:
+        for segment in LEG_SEGMENTS:
+            pose.pop(leg_name(end, side, segment), None)
+    for name, degrees in GUARD_NECK_LOW.items():
+        if name in names:
+            pose[name] = [(X_AXIS, degrees * envelope)]
+
+
+def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[str, List[Rotation]]:
+    """A winged quadruped's pose: the body of its WINGED_BASE style at the same point of the clip, its own neck, head and tail turns, and the
+    wings (`quadruped_wings.role_rows`). A tail that lies on the ground only swings sideways or lifts: any turn down would sink it and lift
+    the whole body off its feet."""
+
+    import quadruped_wings as qw
+
+    t, base_frame = _winged_time(style, frame)
+    pose = dict(pose_at(WINGED_BASE[style], base_frame, layout, ears=ears))
     names = set(layout.names())
     tails = [name for name in ("Tail_01", "Tail_02", "Tail_03") if name in names]
     if style in ("winged_walk", "winged_flee"):
+        cycles = WINGED_CYCLES.get(style, 1)
         for index, name in enumerate(tails):
-            pose[name] = [(Z_AXIS, (8.0 - 2.0 * index) * math.sin(2 * math.pi * t * WINGED_CYCLES.get(style, 1) - 0.6 * index))]
+            pose[name] = [(Z_AXIS, (8.0 - 2.0 * index) * math.sin(2 * math.pi * t * cycles - 0.6 * index))]
     if style == "winged_flee":
         turn = _smooth(min(1.0, t / FLEE_TURN_IN)) * (1 - _smooth(max(0.0, (t - 1 + FLEE_TURN_IN) / FLEE_TURN_IN)))
         pose["__root_turn__"] = [(Z_AXIS, FLEE_TURN * turn)]
-    if style == "winged_rear":
-        lunge = _smooth(max(0.0, min(1.0, (t - LUNGE_START) / 0.15))) * (1 - _smooth(max(0.0, (t - LUNGE_END + 0.15) / 0.15)))
-        for name, degrees in LUNGE.items():
-            if name in names:
-                pose[name] = pose.get(name, []) + [(X_AXIS, degrees * lunge)]
-        # the tail keeps its world pitch while the body rears about the hind feet (else it sinks and the feet lift off)
-        pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
-        if tails:
-            pose[tails[0]] = [(X_AXIS, -pitch)]
-    if style == "winged_collapse":
-        # The dead body lies on its side (the roll `quadruped_rig.tune_collapse` picks). The tail turns back against the roll so it lies
-        # flat as it lay, lifted at its root by `tail_lift` (the least turn that keeps it off the ground, `tune_winged_collapse`), and
-        # the neck turns toward the ground by `neck_drop` so the head lies on it.
-        death = layout.landmarks.get("death") or {}
-        roll = float(death.get("roll", COLLAPSE_ROLL))
-        fall = _collapse_fall(t)
-        if tails:
-            pose[tails[0]] = [(X_AXIS, float(death.get("tail_lift", 0.0)) * fall), (Y_AXIS, -roll * fall)]
-            for name in tails[1:]:
-                pose[name] = [(X_AXIS, -0.5 * float(death.get("tail_lift", 0.0)) * fall)]
-        # the legs underneath drop toward the ground only `leg_drop` of the death's full drop (`choose_winged_rest`)
-        lower = "Right" if roll < 0 else "Left"
-        share = float(death.get("leg_drop", 1.0))
-        for end in ("Front", "Rear"):
-            for segment in LEG_SEGMENTS:
-                name = leg_name(end, lower, segment)
-                if name in pose:
-                    pose[name] = [(axis, degrees * share) if tuple(axis) == Y_AXIS else (axis, degrees) for axis, degrees in pose[name]]
-        drop = math.copysign(float(death.get("neck_drop", 0.0)), roll) * fall
-        if "Neck_01" in names:
-            pose["Neck_01"] = pose.get("Neck_01", []) + [(Y_AXIS, 0.6 * drop)]
-        if "Neck_02" in names:
-            pose["Neck_02"] = pose.get("Neck_02", []) + [(Y_AXIS, 0.4 * drop)]
-    if style == "winged_guard":
-        envelope = _brace_envelope(t)
-        # The wings and the neck carry the guard: the legs stand planted (the brace's step back and leaning legs stretched the skin where
-        # the dragon's heavy shoulders and thighs meet the torso, 2.2% of the edges in the offline play).
-        pose.pop("__root_shift__", None)
-        pose.pop("__root_pitch__", None)
-        for end, side in LEGS:
-            for segment in LEG_SEGMENTS:
-                pose.pop(leg_name(end, side, segment), None)
-        for name, degrees in GUARD_NECK_LOW.items():
-            if name in names:
-                pose[name] = [(X_AXIS, degrees * envelope)]
+    elif style == "winged_rear":
+        _winged_rear(pose, t, names, tails)
+    elif style == "winged_collapse":
+        _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
+    elif style == "winged_guard":
+        _winged_guard(pose, t, names)
     yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
     pose.update(qw.role_rows(style, t, layout, yaw))
     return pose

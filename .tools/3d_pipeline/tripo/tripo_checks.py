@@ -80,7 +80,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_swing
+from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -171,7 +171,8 @@ def front_direction(mesh) -> np.ndarray:
         if f"{side}Foot" in names and f"{side}ToeBase" in names:
             vectors.append(joints[names[f"{side}ToeBase"]] - joints[names[f"{side}Foot"]])
     if not vectors:
-        return np.array([0.0, 0.0, 1.0])
+        # the kit's quadruped rig has hooves, not toes: it faces from its joints' middle toward its head
+        return map_read.front_of(mesh) if quadruped_checks.is_quadruped(mesh) else np.array([0.0, 0.0, 1.0])
     front = np.mean(vectors, axis=0)
     front[1] = 0.0
     return T.unit(front)
