@@ -239,7 +239,7 @@ def rebind_specks(obj, bm, bridges):
         ra, rb = find(a), find(b)
         if ra is rb:
             continue
-        for inner, outer, root, other in ((a, b, ra, rb), (b, a, rb, ra)):
+        for outer, root, other in ((b, ra, rb), (a, rb, ra)):
             if sizes[root] < limit <= sizes[other]:
                 across.setdefault(root, outer)
     rebound = 0

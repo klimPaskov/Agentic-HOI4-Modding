@@ -113,7 +113,8 @@ class FindWings(unittest.TestCase):
             self.assertLess(abs(plan["root"][0] * sign - 0.345), 0.1, "the root is where the wing leaves the body's side")
             self.assertEqual(np.asarray(plan["joints"]).shape, (qw.WING_CHAINS, qw.WING_BONES + 1, 3))
             self.assertGreater(plan["length"], 1.0)
-        self.assertEqual(len(ql.build_layout(landmarks).bones), 27 + 2 * qw.WING_CHAINS * qw.WING_BONES)
+        self.assertEqual(len(ql.build_layout(landmarks).bones), 26 + 2 * qw.WING_CHAINS * qw.WING_BONES)
+        self.assertLessEqual(len(ql.build_layout(landmarks).bones), 50)
 
     def test_no_wing_on_a_plain_quadruped(self) -> None:
         points, triangles = _dragon(0.3)
@@ -203,6 +204,41 @@ class Poses(unittest.TestCase):
             world = qw.rotation((0.0, 1.0, 0.0), -80.0) @ frame
             self.assertLess(world[2, 0], 0.05, f"{side}: the span does not rise from the ground")
             self.assertLess(abs(world[2, 1]), 0.05, f"{side}: the membrane lies flat")
+
+
+class Round4(unittest.TestCase):
+    def test_a_fold_turns_every_chain_about_one_line(self) -> None:
+        _points, _triangles, _landmarks, plans, _masks = _found()
+        plan = plans["Left"]
+        rows = qw.wing_rows(plan, {**qw.FOLDED, "sweep": 0.0, "rise": 0.0, "roll": 0.0}, "Left")
+        axes = {tuple(np.round(rows[qw.wing_name("Left", c, 1)][0][0], 6)) for c in range(qw.WING_CHAINS)}
+        self.assertEqual(len(axes), 1, "one fold line for all chains")
+
+    def test_the_trailing_chain_follows_part_of_the_turn(self) -> None:
+        _points, _triangles, _landmarks, plans, _masks = _found()
+        rows = qw.wing_rows(plans["Left"], dict(qw.FOLDED), "Left")
+        trailing = rows[qw.wing_name("Left", 0, 0)][1][1]
+        lead = rows[qw.wing_name("Left", qw.WING_CHAINS - 1, 0)][1][1]
+        self.assertAlmostEqual(trailing, qw.TRAIL_SHARE * lead, places=6)
+
+    def test_the_attack_cocks_then_strikes_then_recovers(self) -> None:
+        cock, strike, snap = qw.attack_phases(0.15)
+        self.assertGreater(cock, 0.5)
+        self.assertLess(strike, 0.01)
+        cock, strike, snap = qw.attack_phases(0.46)
+        self.assertLess(cock, 0.01)
+        self.assertGreater(strike, 0.9)
+        self.assertGreater(snap, 0.9)
+        self.assertEqual(qw.attack_phases(1.0), (0.0, 0.0, 0.0))
+
+    def test_the_wing_on_top_of_a_dead_body_stays_folded(self) -> None:
+        _points, _triangles, landmarks, plans, _masks = _found()
+        landmarks["death"] = {"roll": 82.0}
+        self.assertTrue(qw.lies_under(plans["Left"], landmarks))
+        self.assertFalse(qw.lies_under(plans["Right"], landmarks))
+        pose = qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, None, upper=True)
+        self.assertEqual(pose["curl"], qw.FOLDED["curl"])
+        self.assertNotIn("frame", pose)
 
 
 class Rest(unittest.TestCase):

@@ -401,7 +401,9 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
         # smoothing locks it without locking the torso.
         add(Bone(LOAD_BONE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), "Spine"))
         carrier = LOAD_BONE
-    add(Bone(SADDLE_NODE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), carrier, deform=False))
+    if landmarks.get("load") or not landmarks.get("wings"):
+        # a winged beast carries no rider, and its wing chains need the bone (the engine skins at most 50)
+        add(Bone(SADDLE_NODE, _t(saddle, g), _t(saddle + v([0.0, 0.1 * h, 0.0]), g), carrier, deform=False))
     return layout
 
 
