@@ -202,11 +202,24 @@ class Lever(Unit):
         after = pdx_deform.load_anim(path)
         self.assertTrue(ease.changed, ease.note or ease.tried)
         self.assertIn("LeftShoulder", ease.joints)
-        self.assertLessEqual(float(S.swelling(self.mesh, after, girdle=True).max()), S.GIRDLE_LIMIT + 1e-9)
+        self.assertLessEqual(float(S.swelling(self.mesh, after, girdle=True).max()), S.GIRDLE_TARGET + 1e-9)
         arm = self.mesh.bones.index("LeftArm")
         self.assertTrue(np.allclose(S._world_rotations(self.mesh, anim, [arm]), S._world_rotations(self.mesh, after, [arm]), atol=1e-4))
         self.assertLessEqual(S._max_step(after, ["LeftShoulder", "LeftArm"]), S.MAX_STEP_DEGREES)
         self.assertEqual(ease.hand_shift, 0.0)  # the fixture has no hand: the elbow moves with the arm root
+
+    def test_the_lever_aims_at_vanillas_worst_not_the_checks_limit(self) -> None:
+        # the review sheets still showed the ogre's armpit torn at 0.154 to 0.156, under the limit
+        self.assertEqual(S.GIRDLE_TARGET, S.VANILLA_GIRDLE_WORST)
+        self.assertLess(S.GIRDLE_TARGET, S.GIRDLE_LIMIT)
+        idle = self.clip("idle", 3, lambda f: {})
+        path = self.clip("defend", 21, lambda f: self.shrug(15.0 * math.sin(math.pi * f / 20)))
+        before = float(S.swelling(self.mesh, pdx_deform.load_anim(path), girdle=True).max())
+        # the fixture's tear moves in steps of a tenth: with the limit set above this clip, only the target can start the lever
+        with mock.patch.object(S, "GIRDLE_LIMIT", before + 0.05), mock.patch.object(S, "GIRDLE_TARGET", before - 0.05):
+            ease = S.ease_clavicles(self.mesh_path, path, path, "defend", idle)
+        self.assertTrue(ease.changed, ease.note or ease.tried)
+        self.assertLess(float(S.swelling(self.mesh, pdx_deform.load_anim(path), girdle=True).max()), before)
 
     def test_a_clip_under_both_limits_is_copied_byte_for_byte(self) -> None:
         path = self.clip("attack", 5, lambda f: self.shrug(2.0))

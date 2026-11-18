@@ -21,6 +21,21 @@ from lib import pdx_deform, tripo_pose as P, tripo_splay as S
 from test_tripo_pose_upper import NAMES, UNITS, Biped, lying, local, turn
 
 
+def lying_spread(degrees: float):
+    """`lying` (onto the back by frame 40, to frame 70) with the legs spread `degrees` apart along the ground over frames 40 to 50."""
+
+    base = lying()
+
+    def pose(frame: int):
+        share = min(max((frame - 40) / 10.0, 0.0), 1.0)
+        moved = base(frame)
+        moved["LeftUpLeg"] = (local("LeftUpLeg"), turn("z", -degrees / 2.0 * share))
+        moved["RightUpLeg"] = (local("RightUpLeg"), turn("z", degrees / 2.0 * share))
+        return moved
+
+    return pose
+
+
 def kneel(degrees: float):
     """The left thigh swung out sideways `degrees` and the shin hanging back down from the knee, ramped in over frames 0 to 20 and held to
     frame 40, the right leg straight: the thighs end `degrees` apart with the left foot under the knee."""
@@ -60,7 +75,8 @@ class Splay(Biped):
     def test_the_swing_closes_the_thighs_and_keeps_the_feet_where_they_stand(self) -> None:
         path = self.clip("death", 41, kneel(100.0))
         out = self.folder / "eased.anim"
-        result = S.close_death_legs(self.mesh_path, path, out)
+        with mock.patch.object(S, "CLOSE_PASSES", 0):  # the swing alone: the closing after it moves the feet
+            result = S.close_death_legs(self.mesh_path, path, out)
         self.assertTrue(result.changed, result)
         before, after = self.load(path), self.load(out)
         split = S.thigh_split(self.mesh, after)
@@ -104,7 +120,53 @@ class Splay(Biped):
         self.assertEqual(list(record)[0], "splay")
         self.assertLess(float(S.thigh_split(self.mesh, self.load(path)).max()), record["splay"]["worst_before"] - 30.0)
 
+    def test_a_lying_body_with_its_legs_spread_has_them_closed_along_the_ground(self) -> None:
+        path = self.clip("death", 70, lying_spread(100.0))
+        out = self.folder / "closed.anim"
+        before = self.load(path)
+        self.assertGreater(float(S.thigh_split(self.mesh, before).max()), 95.0)
+        result = S.close_death_legs(self.mesh_path, path, out)
+        self.assertTrue(result.changed, result)
+        self.assertTrue(result.closing, result)
+        after = self.load(out)
+        self.assertLessEqual(float(S.thigh_split(self.mesh, after).max()), S.SPLIT_LIMIT, result)
+        a, b = world(self.mesh, before), world(self.mesh, after)
+        for name in ("LeftFoot", "RightFoot", "LeftLeg", "RightLeg"):
+            # the legs slide together along the ground: every joint below the hip keeps its height
+            np.testing.assert_allclose(b[:, NAMES.index(name), 1, 3], a[:, NAMES.index(name), 1, 3], atol=0.01, err_msg=name)
+        self.assertLess(float(np.linalg.norm(b[-1, NAMES.index("LeftFoot"), :3, 3] - b[-1, NAMES.index("RightFoot"), :3, 3])),
+                        float(np.linalg.norm(a[-1, NAMES.index("LeftFoot"), :3, 3] - a[-1, NAMES.index("RightFoot"), :3, 3])) - 0.2)
+        gaps = S.leg_gaps(self.mesh, after, S._legs(self.mesh))
+        floor = S.LEG_CLEARANCE * S.leg_radii(self.mesh, S._legs(self.mesh)).sum(axis=0)
+        self.assertTrue((gaps >= floor[None] - 1e-6).all(), gaps.min(axis=0))
+        for joint in before.channels:
+            if joint not in ("LeftUpLeg", "RightUpLeg", "LeftFoot", "RightFoot"):
+                np.testing.assert_allclose(after.channels[joint]["q"], before.channels[joint]["q"], atol=1e-6, err_msg=joint)
+
+    def test_the_closing_never_brings_the_legs_through_each_other(self) -> None:
+        path = self.clip("death", 70, lying_spread(100.0))
+        out = self.folder / "closed.anim"
+        with mock.patch.object(S, "LEG_CLEARANCE", 1e3):  # no closing keeps legs this far apart
+            result = S.close_death_legs(self.mesh_path, path, out)
+        self.assertFalse(result.closing, result)
+
+    def test_a_body_bound_with_its_thighs_apart_is_judged_against_its_own_split(self) -> None:
+        self.assertEqual(S.rest_split(self.mesh), 0.0)
+        self.assertEqual(S.split_limit(self.mesh), S.SPLIT_LIMIT)  # a narrow body keeps vanilla's limit
+        self.assertEqual(S.split_target(self.mesh), S.SPLIT_TARGET)
+        with mock.patch.object(S, "rest_split", return_value=33.0):  # the round 4 ogre's rest pose
+            self.assertAlmostEqual(S.split_limit(self.mesh), round(33.0 + S.OPENING_LIMIT, 1))
+            self.assertAlmostEqual(S.split_target(self.mesh), round(33.0 + S.VANILLA_DEATH_OPENING, 1))
+            anim = self.load(self.clip("death", 41, kneel(55.0)))
+            found, numbers = S.splay_findings(self.mesh, {"unit_death": anim})
+            self.assertEqual(found, [], numbers)
+            self.assertEqual(numbers["unit_death"]["limit"], 57.8)
+        found, _numbers = S.splay_findings(self.mesh, {"unit_death": self.load(self.clip("death", 41, kneel(55.0)))})
+        self.assertEqual([item["rule"] for item in found], ["TRIPO-DEATH-SPLAY"])
+
     def test_the_limit_is_a_quarter_over_vanillas_worst_and_the_target_is_vanillas_worst(self) -> None:
+        self.assertAlmostEqual(S.VANILLA_DEATH_OPENING, round(S.VANILLA_DEATH_SPLIT - S.VANILLA_REST_SPLIT, 1))
+        self.assertAlmostEqual(S.OPENING_LIMIT, round(1.25 * S.VANILLA_DEATH_OPENING, 1))
         self.assertAlmostEqual(S.SPLIT_LIMIT, round(1.25 * S.VANILLA_DEATH_SPLIT, 1))
         self.assertEqual(S.SPLIT_TARGET, S.VANILLA_DEATH_SPLIT)
 
@@ -137,6 +199,12 @@ class VanillaCalibration(unittest.TestCase):
             for clip in ("death_mg", "death_rifle"):
                 worst = max(worst, float(S.thigh_split(mesh, pdx_deform.load_anim(UNITS / f"GER_infantry_{clip}.anim")).max()))
         self.assertAlmostEqual(worst, S.VANILLA_DEATH_SPLIT, delta=0.1)
+
+    def test_vanillas_rest_pose_holds_the_thighs_at_the_vanilla_rest_split_and_its_limit_stays(self) -> None:
+        for mesh_name in ("GER_infantry", "GER_infantry_alt_0", "ENG_infantry", "GER_infantry_snow"):
+            mesh = pdx_deform.load_mesh(UNITS / f"{mesh_name}.mesh")
+            self.assertAlmostEqual(S.rest_split(mesh), S.VANILLA_REST_SPLIT, delta=0.1, msg=mesh_name)
+            self.assertEqual(S.split_limit(mesh), S.SPLIT_LIMIT, mesh_name)
 
 
 if __name__ == "__main__":

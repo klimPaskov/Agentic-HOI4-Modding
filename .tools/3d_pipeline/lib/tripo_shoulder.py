@@ -83,6 +83,9 @@ ARM_WORDS = ("arm", "hand", "weapon", "shield")  # a vertex whose strongest bone
 GIRDLE_AREA_RATIO = 1.44  # 1.2 times along each side, where the review sheets turn yellow
 VANILLA_GIRDLE_WORST = 0.125
 GIRDLE_LIMIT = round(1.25 * VANILLA_GIRDLE_WORST, 4)
+# What the clavicle lever aims for and acts above: vanilla's worst, not the check's limit. The review sheets still showed the armpit torn at
+# 0.154 to 0.156 (ogre_o), where the check passed.
+GIRDLE_TARGET = VANILLA_GIRDLE_WORST
 
 
 @dataclass
@@ -522,10 +525,10 @@ def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, re
     ball = np.stack([swell.per_frame(p) for p in posed])
     allowed = np.logical_and.accumulate(np.stack([within(_frame_deformation(mesh, p, edges, rest), before_deformed) for p in posed]), axis=0)
     cap = SHARES[np.maximum(allowed.sum(axis=0) - 1, 0)]
-    under = (tear <= GIRDLE_LIMIT + 1e-9) & (ball <= SWELL_LIMIT + 1e-9) & allowed
-    lowest = SHARES[np.argmin(np.where(allowed, tear / GIRDLE_LIMIT + ball / SWELL_LIMIT, np.inf), axis=0)]
+    under = (tear <= GIRDLE_TARGET + 1e-9) & (ball <= SWELL_LIMIT + 1e-9) & allowed
+    lowest = SHARES[np.argmin(np.where(allowed, tear / GIRDLE_TARGET + ball / SWELL_LIMIT, np.inf), axis=0)]
     needed = np.where(under.any(axis=0), SHARES[np.argmax(under, axis=0)], lowest)
-    needed = np.where((tear[0] <= GIRDLE_LIMIT) & (ball[0] <= SWELL_LIMIT), 0.0, needed)
+    needed = np.where((tear[0] <= GIRDLE_TARGET) & (ball[0] <= SWELL_LIMIT), 0.0, needed)
     turn = max(tripo_pose.quaternion_turn(q, reference[j]) for j in joints for q in anim.channels[j]["q"])
     ramp = max(tripo_trim.settle_frames(turn * float(needed.max())), MIN_RAMP_FRAMES)
     weights = np.minimum(tripo_cloak_bend.spread(needed, ramp, loop), np.maximum(cap, needed))
@@ -534,7 +537,7 @@ def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, re
     written = list(joints) + [mesh.bones[a] for a in arms]
     record = {"girdle_after": round(after_tear, 4), "swell_after": round(after_ball, 4), "ramp_frames": int(ramp),
               "turn_added_degrees": round(tripo_neck.added_turn(anim, result, joints), 1),
-              "reaches_limits": bool(after_tear <= GIRDLE_LIMIT + 1e-9 and after_ball <= SWELL_LIMIT + 1e-9),
+              "reaches_limits": bool(after_tear <= GIRDLE_TARGET + 1e-9 and after_ball <= SWELL_LIMIT + 1e-9),
               "max_step_degrees": round(_max_step(result, written), 1)}
     why = ""
     if after_tear >= float(tear[0].max()) - 1e-4:
@@ -559,7 +562,7 @@ def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation,
     girdle, swell = Swelling(mesh, rig, girdle=True), Swelling(mesh, rig)
     tear0, ball0 = float(girdle.per_frame(anim).max()), float(swell.per_frame(anim).max())
     base = ClavicleEase(False, girdle_before=tear0, girdle_after=tear0, swell_before=ball0, swell_after=ball0)
-    if tear0 <= GIRDLE_LIMIT and ball0 <= SWELL_LIMIT:
+    if tear0 <= GIRDLE_TARGET and ball0 <= SWELL_LIMIT:
         base.note = "the shoulders pass both limits"
         return base, None, none, ()
     keyed = list(anim.channels) if keyed is None else list(keyed)
@@ -581,7 +584,7 @@ def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation,
             record["rejected"] = why
         base.tried[name] = record
         if not why:
-            score = record["turn_added_degrees"] if record["reaches_limits"] else record["girdle_after"] / GIRDLE_LIMIT + record["swell_after"] / SWELL_LIMIT
+            score = record["turn_added_degrees"] if record["reaches_limits"] else record["girdle_after"] / GIRDLE_TARGET + record["swell_after"] / SWELL_LIMIT
             plans.append((not record["reaches_limits"], not kept, score, order, name, joints, arms, record, result, weights))
     if not plans:
         base.note = "no clavicle lowers the girdle within the kit's rules"

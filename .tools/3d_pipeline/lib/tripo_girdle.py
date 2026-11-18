@@ -53,6 +53,20 @@ attack's girdle 0.198 to 0.197), and its export failed TRIPO-SHOULDER-TEAR in th
 stretched edges from 368 to 440 and the death's from 242 to 343 (the death now settles its split thighs, `lib/tripo_splay.py`). The two fits
 of the same start on nearly the same clips (ogre_l, ogre_m) differ by more than what the rule gains, so this rule is not yet the fix.
 
+Where the difference between fits comes from (2026-11-18, offline on ogre_o's repaired export and clips, the staging replayed step by step).
+The fit is deterministic: the stage replayed twice gives a mesh byte for byte the same as the run's (and as each other). Two runs differ only
+because their inputs differ (the clips after each run's pose rules, and the weights the fit starts from), and the fit's result is not a smooth
+function of them: the region is a threshold of the kit's deformed edges, a round keeps one of four blend steps, the guard halves rows, and a
+new round starts only after a 10% gain. Seeding the region also with every girdle triangle torn past 1.44 times gave nearly the same first
+round (1,941 deformed edges against 1,945) and then a second of 1,865 against 1,459, where the plain fit went on to a third round and the
+seeded one stopped. More rounds (6, at a 2% gain) converge (1,401 against 1,425) but leave the girdle where it was (attack 0.193, defend
+0.306 before the pose eases). The rule applied as a bound inside the fit (each upper arm held under the rule's smoothstep in every step of
+every round, the start confined) is reliable in that every fit keeps it, but it lowered nothing: 1,796 deformed edges after six rounds
+against 1,401, the attack's girdle 0.199 against 0.193 and the defend's 0.307 against 0.306 before the pose eases, 1,723 against 1,274
+edges and 0.150 and 0.156 after them. On these clips the girdle tears from the pose (the arm over the head, the guard arm across the chest),
+not from where the weights put the arm's skin, so no weight rule tried reaches 0.125. The route lowers it in the pose instead: the clavicle
+lever aims at vanilla's worst (`tripo_shoulder.GIRDLE_TARGET`), and the attack is picked by its tear after the route (`tripo/pose_check.py`).
+
 Only the `ix`, `w` and `bones` values of the `skin` blocks change (`stretch_smooth.write_weights`).
 """
 
