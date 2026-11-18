@@ -47,6 +47,12 @@ the ogre's defend from 0.154 to 0.057 (the spine, 0.8 of the way, 42 degrees add
 attack from 0.176 to 0.087 (the spine all the way: the rest is the club arm held over the head, whose weights reach the back, frozen arms take the
 attack to 0.037), the dwarf's attack from 0.090 to 0.061 (the spine, 0.2, 8 degrees). The deformed edges by the kit's measure fell in each.
 
+The next runs' exported files (ogre_k, dwarf_g, 2026-11-18): the ogre's defend 0.161 to 0.058, its attack 0.180 to 0.088 (still over the limit),
+the dwarf's attack 0.084 to 0.052. The review sheets show the ogre's defend more upright from frame 16, but the red over the guard-side flank
+(the skin lateral of the region, under the raised arm, stretched about 1.3 times along one side) is only a little smaller, and the attack's
+hunch after the strike is unchanged to the eye. What is left is the upper arm's and the clavicle's weights over the flank and the back, which no
+weight rule tried here could move without making a clip worse.
+
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
 
