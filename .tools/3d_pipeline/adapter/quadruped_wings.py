@@ -401,8 +401,8 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # front, the fan's spread as a share of its rest spread (a folded fan keeps 0.7 of it: the membrane between two chains shortens by the
 # same share, and the kit's stretch measure counts an edge changed by 1.5 times, so 0.67 is the least), the bend of each bone past the
 # root (curl, positive toward the back of the wing) and how much more each further bone bends (curl_out).
-FOLDED = {"sweep": 80.0, "rise": 10.0, "roll": -25.0, "spread": 0.7, "curl": 25.0, "curl_out": 0.5}
-HALF = {"sweep": 60.0, "rise": 22.0, "roll": -10.0, "spread": 0.85, "curl": 12.0, "curl_out": 0.5}
+FOLDED = {"sweep": 80.0, "rise": 10.0, "roll": -25.0, "spread": 0.8, "curl": 25.0, "curl_out": 0.5}
+HALF = {"sweep": 60.0, "rise": 22.0, "roll": -10.0, "spread": 0.9, "curl": 12.0, "curl_out": 0.5}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
 SHIELD = {"sweep": 5.0, "rise": 75.0, "roll": -60.0, "spread": 0.95, "curl": -30.0, "curl_out": 0.5}
 FLEE = {"sweep": 60.0, "rise": 30.0, "roll": -45.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}

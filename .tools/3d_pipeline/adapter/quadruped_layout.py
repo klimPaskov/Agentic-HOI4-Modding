@@ -807,6 +807,23 @@ def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None
             pose[name] = [(X_AXIS, degrees * envelope)]
 
 
+# A winged quadruped's legs swing from the hip and shoulder only WINGED_HIP_SHARE of the stride, reach or fold, and the joint below takes the
+# rest, so the foot goes where it went. Its thighs and shoulders are thick and sit beside the torso above the belly line, so the skin
+# between leg and torso is a short seam: at the full turn, 12% to 24% of each leg root's edges stretched in run 2 of the Tripo dragon
+# (TRIPO-LEG-ROOT-STRETCH, limit 2%).
+WINGED_HIP_SHARE = 0.4
+
+
+def _hip_to_knee(pose: Dict[str, List[Rotation]]) -> None:
+    for end, side in LEGS:
+        upper, lower = leg_name(end, side, "Upper"), leg_name(end, side, "Lower")
+        moved = sum(degrees for axis, degrees in pose.get(upper, []) if tuple(axis) == X_AXIS)
+        if not moved:
+            continue
+        pose[upper] = [(axis, degrees * WINGED_HIP_SHARE) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[upper]]
+        pose[lower] = pose.get(lower, []) + [(X_AXIS, moved * (1.0 - WINGED_HIP_SHARE))]
+
+
 def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[str, List[Rotation]]:
     """A winged quadruped's pose: the body of its WINGED_BASE style at the same point of the clip, its own neck, head and tail turns, and the
     wings (`quadruped_wings.role_rows`). A tail that lies on the ground only swings sideways or lifts: any turn down would sink it and lift
@@ -831,6 +848,7 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
         _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
     elif style == "winged_guard":
         _winged_guard(pose, t, names)
+    _hip_to_knee(pose)
     yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
     pose.update(qw.role_rows(style, t, layout, yaw))
     return pose

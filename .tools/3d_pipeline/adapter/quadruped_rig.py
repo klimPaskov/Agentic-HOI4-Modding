@@ -379,7 +379,9 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     thin = (EAR_PREFIX, WING_PREFIX, TAIL_PREFIX) if winged else (EAR_PREFIX,)
 
     def evaluate(roll: float, lift: float):
-        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift}
+        # a winged body's legs underneath start the search without their drop toward the ground (choose_winged_rest adds what fits): with
+        # it a hoof held the Tripo dragon's body up at every roll, and the fallback rolled it only 34 degrees, the torso 17% up
+        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0} if winged else {})}
         pose_frame(last, 0.0)
         lowest = {name: z for name, z in _lowest_by_group(meshes, dominant).items() if not name.startswith(thin)}
         torso = min(lowest.get(name, math.inf) for name in TORSO)
