@@ -425,6 +425,18 @@ def ease_shoulders(mesh_path: Path, anim_path: Path, out_path: Path, role: str, 
 
 
 # ---- the clavicle lever ------------------------------------------------------------------------------------------------
+#
+# Run by `run_pilot` right after the shoulder ease (`ease_clavicles`): a clip still over TRIPO-SHOULDER-TEAR or the swell limit has its left, right
+# or both clavicles turned toward the idle's first frame, each upper arm keeping its world direction (`keep_arms`), so the hand and the weapon
+# keep their path and only the arm's root moves (the weapon is on its own bone under the hand, so the grip itself does not change). Each frame
+# takes the smallest share that brings it under both limits while its deformed edges stay inside the kit's strict no-worse rule (`within`), spread
+# by a smoothstep, no written joint faster than `MAX_STEP_DEGREES` a frame. When keeping the arms cannot lower the girdle, the arm may follow its
+# clavicle, never lowering a hand's highest point above the chest by more than `RAISE_KEEP`. Measured (2026-11-18): frozen at the idle's stance
+# with the arm's direction kept, the clavicle that drives the ogre's tear (the left in its defend, the right in its attack) took the girdle from
+# 0.161 to 0.122 and from 0.191 to 0.115. As the rule on ogre_m's files the attack went from 0.181 to 0.156 (both clavicles, 0.4, the hands
+# 2.5% of the height) and the defend from 0.166 to 0.154 (the left, 0.4, 3.6%), and the same in the run ogre_o. On ogre_n's files, where the
+# shoulder ease had turned the clavicles 0.6 already, only the arm following lowered the attack (the right clavicle 0.1: 0.164 to 0.153, the hand
+# 1.4%). The orc and the zombie pass both limits.
 
 MAX_STEP_DEGREES = 35.0  # a written joint never turns further in one frame than this (UNIT-ANIM-SPIN: vanilla's fastest joint turns 37)
 RAISE_KEEP = 0.01  # an arm that follows its clavicle may lower a hand's highest point above the chest by at most this share of the height
