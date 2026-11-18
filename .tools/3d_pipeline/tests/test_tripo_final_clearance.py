@@ -54,6 +54,18 @@ class HandTurn(unittest.TestCase):
         self.assertGreater(float(out[0] @ q[0]), 0.0)
 
 
+class LocalSmoothing(unittest.TestCase):
+    def test_only_the_frames_round_a_fast_step_are_smoothed(self) -> None:
+        turns = np.zeros((30, 3))
+        turns[5:9, 2] = np.radians(60.0)  # a turn far from the fast step keeps its full size
+        turns[20, 2] = np.radians(80.0)
+        out = F._smoothed_near(turns, [20], 2)
+        np.testing.assert_array_equal(out[:15], turns[:15])
+        self.assertLess(out[20, 2], turns[20, 2])
+        self.assertGreater(out[19, 2], 0.0)
+        np.testing.assert_array_equal(F._smoothed_near(turns, [], 3), turns)
+
+
 class Ramp(unittest.TestCase):
     def test_a_turn_that_starts_and_ends_in_one_frame_fades_in_and_out_by_the_step(self) -> None:
         turns = np.zeros((20, 3))

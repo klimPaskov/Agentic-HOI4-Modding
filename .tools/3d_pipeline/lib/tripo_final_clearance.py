@@ -185,25 +185,40 @@ def _posed_frames(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, held
     return out
 
 
+def _smoothed_near(turns: np.ndarray, fast: Sequence[int], radius: int) -> np.ndarray:
+    """`turns` smoothed over `radius` frames only within `radius` frames of the fast steps (step i is from frame i to i + 1)."""
+
+    if not radius or not len(fast):
+        return turns
+    near = np.zeros(len(turns), bool)
+    for i in fast:
+        near[max(i - radius, 0) : i + radius + 2] = True
+    return np.where(near[:, None], CL.smooth_rotations(turns, radius=radius), turns)
+
+
 def _written_turns(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, world: np.ndarray, bones, names: Dict[str, str], turns):
     """(the channels with each bone's turn written, the smoothing radius): the turns of the hand, the roll and the arm, smoothed over the
-    fewest frames (`SMOOTH_RADII`) that keep every turned joint under `MAX_HAND_STEP_DEGREES` a frame."""
+    fewest frames (`SMOOTH_RADII`) that keep every turned joint under `MAX_HAND_STEP_DEGREES` a frame. Only the frames round a step over the
+    limit are smoothed: smoothing the whole clip took the turn away from frames that needed it all (the ogre's chop, 31% of the club back in
+    the body over five frames for one fast step)."""
 
     count = len(turns[0])
     channels = {name: dict(channel) for name, channel in anim.channels.items()}
+    fast: List[int] = []
     for radius in SMOOTH_RADII:
-        smooth = [CL.smooth_rotations(v, radius=radius) if radius else v for v in turns]
+        smooth = [_smoothed_near(np.asarray(v, float), fast, radius) for v in turns]
         # the roll is solved about the haft as the wrist carries it, and the part's bone hangs from the hand: its own turn is that roll
         # taken back through the wrist's turn
         local_roll = np.array([CL.rotvec_matrix(smooth[0][i]).T @ smooth[1][i] for i in range(count)])
         vectors = {names["hand"]: smooth[0], names["part"]: local_roll, names["upper"]: smooth[2]}
-        worst = 0.0
+        over = set()
         for name, index in bones:
             new_q = _rotation_vectors_to_quaternions(world, int(mesh.parents[index]), index, anim.channels[name]["q"], vectors[name])
             channels[name] = dict(anim.channels[name], q=new_q)
-            worst = max([worst] + [tripo_pose.quaternion_turn(new_q[i], new_q[i + 1]) for i in range(len(new_q) - 1)])
-        if worst <= MAX_HAND_STEP_DEGREES:
+            over |= {i for i in range(len(new_q) - 1) if tripo_pose.quaternion_turn(new_q[i], new_q[i + 1]) > MAX_HAND_STEP_DEGREES}
+        if not over:
             break
+        fast = sorted(set(fast) | over)
     return channels, smooth, radius
 
 
