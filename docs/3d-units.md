@@ -545,6 +545,18 @@ Round 4, runs 8 and 9, after two fresh reviews failed run 7 (the inner membrane 
 
 Run 8 failed TRIPO-WING-FRONT in the idle, attack, retreat and death (a folded wing raised to 20 degrees hid the neck from the side, 12.5% to 23.9%), the death's root limit (5.2%) and TRIPO-LEG-ROOT-STRETCH in the fall (2.8% at a tuck of 1.5). Run 9 passes every check: the wings hide at most 7.7% of the legs, neck and head, the roots stretch 1.3% to 3.4%, the wings mirror within 7.5 degrees and both beat. It has not been reviewed yet.
 
+Round 5, runs 10 to 12, after two fresh reviews failed run 9 (the defend opened the wings to the sides with the head exposed, the attack had no strike and read as the defend at map size, the folded wings framed the head as a box from the front, one wing stood as a spike from the game camera in the move and the retreat). The skirt was gone. The rules:
+
+- The folded wings lie along the back and flanks behind the shoulders with the membrane turned down. The half folded and retreat wings turn the membrane up toward the game camera.
+- The attack drives the neck forward and down with the rear fully gone at the blow, and the wings flare out and up as support. The head travels 20% of the body's length (9% in run 9).
+- The defend no longer shields. The dragon crouches over planted feet (`GUARD_CROUCH`) with the neck drawn back and the head down, under wings raised and folded tight as a hood on each side.
+- TRIPO-WING-HEAD-FRONT: in each clip's first frame the wings' front silhouette may share at most 25% of the head and neck's. TRIPO-WING-FRONT counts only wings nearer the camera, so it read 0 on run 9's box (96% here).
+- TRIPO-WING-SLIVER: from the game camera and its mirror, the thinner wing keeps at least 60% of its flat width over length (median over a beating clip). Run 9's move measured 0.57 and its retreat 0.52.
+- TRIPO-ATTACK-REACH (at least 15% of the body's length) and TRIPO-ATTACK-DEFEND-ALIKE (the wings at the attack's reach and the defend's middle fill at most 75% as much of the map view as each other, run 9 97%).
+- TRIPO-WING-EDGE-ON judges a winged quadruped from the game camera only, since level wings are edge-on to the low side cameras. TRIPO-WING-FLANK-HANG judges the move and the retreat between the ease from and back to the folded wings.
+
+Run 10 failed the wing roots in the move and retreat (5.9% and 5.2%, the membrane turned fully level), the retreat's side cover (18.9% at a 30 degree turn), TRIPO-WING-IDLE-MOVE (a stronger idle breath), TRIPO-ATTACK-DEFEND-ALIKE (91%), TRIPO-MAP-READ for the defend (4% against the idle) and a leg root in the fall. Run 11 failed only the attack (level flared wings hid 22% of the legs from the side, the alike share 77%). Run 12 passes every check: head and neck front share 7% to 20%, sliver 0.86 to 0.92, head reach 20%, the alike share 64%, the defend reads 19% against the idle, the roots stretch 3.6% to 4.4%. It has not been reviewed yet.
+
 ### Check the body before you rig it
 
 The body column names a body preset in `.tools/3d_pipeline/config/body_presets.json`. `measure_body.py` counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It measures the body only, not separate plates, a quiver or a weapon. It fails a model with pieces floating apart from the body, so you drop them before paying for the rig. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles, which is rigged and animated live in Blender. It reads files only.

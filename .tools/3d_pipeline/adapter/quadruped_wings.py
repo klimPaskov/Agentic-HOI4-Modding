@@ -451,18 +451,28 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # front, the fan's spread as a share of its rest spread (a folded fan keeps 0.7 of it: the membrane between two chains shortens by the
 # same share, and the kit's stretch measure counts an edge changed by 1.5 times, so 0.67 is the least), the bend of each bone past the
 # root (curl, positive toward the back of the wing) and how much more each further bone bends (curl_out).
-FOLDED = {"sweep": 80.0, "rise": 5.0, "roll": 15.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
-HALF = {"sweep": 55.0, "rise": 45.0, "roll": -20.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
+# Round 5 (fresh reviews of run 9): the folded wings lie along the back and flanks behind the shoulders, the membrane turned down
+# (roll -60) so from the front they stay below the head (offline the head's front silhouette under the wings' fell from 0.92 to 0). Held
+# up over the back they stood as a box framing the head, and this pose starts and ends every clip. The half folded and retreat wings
+# turn their membrane up toward the game camera: held upright one of the two read from it as a thin spike (its width over length on
+# the screen 0.31 of its flat shape's in run 9). Turned fully level (roll -80) they stretched the wing roots 5.9% (run 10, limit 5%).
+FOLDED = {"sweep": 85.0, "rise": 15.0, "roll": -60.0, "spread": 1.0, "curl": 20.0, "curl_out": 0.0}
+HALF = {"sweep": 60.0, "rise": 25.0, "roll": -55.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
-SHIELD = {"sweep": -75.0, "rise": 20.0, "roll": -15.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
-FLEE = {"sweep": 55.0, "rise": 50.0, "roll": -30.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
+# The defend no longer shields with the wings: spread forward they opened to the sides and left the head and neck exposed between them,
+# a wing display that read as the attack at map size (both fresh reviews of run 9). The dragon crouches with its head drawn back and
+# down (`quadruped_layout._winged_guard`) under wings half folded and mantled over the back.
+# Run 10 held them half folded low on the back and read as the idle from the map camera (TRIPO-MAP-READ 4%, at least 18%): they rise and
+# fold tight over the back as a hood that keeps to each wing's own side.
+SHIELD = {"sweep": 70.0, "rise": 60.0, "roll": -25.0, "spread": 1.0, "curl": 85.0, "curl_out": 0.0}
+FLEE = {"sweep": 50.0, "rise": 30.0, "roll": -55.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
 DEAD_UPPER_START = 0.6
 DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
 DEAD_UPPER = {**FOLDED, "sweep": 70.0, "rise": -15.0, "roll": 0.0}  # the wing on top of a dead body, folded and laid down along the flank
 LYING = {**FOLDED, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}  # the lying wing's direction comes from `lying_pose`
 # Beats: (degrees at the root, beats per clip, the wave's bend per bone past the root as a share of the root's beat, its lag per bone as a
 # share of a beat). The idle breathes: one slow rise and fall of the folded wings per loop.
-BREATH = (4.0, 1, 0.3, 0.12)
+BREATH = (4.0, 1, 0.3, 0.12)  # at 8 degrees the level wings of the move moved only 1.1 times as much at map size (TRIPO-WING-IDLE-MOVE, run 10)
 WALK_BEAT = (25.0, 1, 0.35, 0.12)
 ATTACK_BEAT = (30.0, 2, 0.35, 0.12)
 FLEE_BEAT = (20.0, 3, 0.35, 0.12)
@@ -499,7 +509,10 @@ ATTACK_STRIKE_START, ATTACK_STRIKE_END = 0.3, 0.68
 ATTACK_SNAP = (0.37, 0.5)  # its peak at 0.435 of the clip, on a review sheet frame (one every half second)
 ATTACK_LIFT = 15.0  # degrees the cocked wings rise
 ATTACK_DOWNSTROKE = 30.0  # degrees the wings beat down at the strike
-STRIKE_WINGS = {"sweep": 75.0, "rise": 20.0, "roll": 20.0, "spread": 1.0, "curl": 10.0, "curl_out": 0.0}  # swept back for the blow
+# The wings flare out and up as the head strikes, a support for the lunge: swept back for the blow they filled 91% as much of the map
+# view as the defend's (run 10, TRIPO-ATTACK-DEFEND-ALIKE), and level (rise 0) they hung beside the legs and hid 22% of them from the side
+# cameras (run 11, TRIPO-WING-FRONT).
+STRIKE_WINGS = {"sweep": 25.0, "rise": 25.0, "roll": -50.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
 
 
 def attack_phases(t: float) -> Tuple[float, float, float]:

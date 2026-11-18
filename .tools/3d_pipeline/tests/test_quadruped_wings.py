@@ -308,6 +308,29 @@ class Round5(unittest.TestCase):
         self.assertGreater(ql.WINGED_CYCLES["winged_flee"] / ql.frame_count("winged_flee"), ql.WINGED_CYCLES["winged_walk"] / ql.frame_count("winged_walk"))
 
 
+class Round6(unittest.TestCase):
+    def test_a_thin_spike_has_a_small_aspect(self) -> None:
+        sys.path.insert(0, str(PIPELINE / "tripo"))
+        import tripo_checks as tc
+        line = np.c_[np.linspace(0, 1, 50), 0.02 * np.sin(np.arange(50))]
+        square = np.random.default_rng(0).uniform(0, 1, (200, 2))
+        self.assertLess(tc._aspect(line), 0.1)
+        self.assertGreater(tc._aspect(square), 0.8)
+
+    def test_folded_wings_turn_their_membrane_down_and_open_wings_toward_the_sky(self) -> None:
+        self.assertLess(qw.FOLDED["roll"], -30.0, "folded wings lie along the back and flanks, below the head from the front")
+        for pose in (qw.HALF, qw.FLEE):
+            self.assertLess(pose["roll"], -30.0, "the membrane faces the game camera")
+
+    def test_the_defend_crouches_and_the_attack_lunges(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        middle = ql.pose_at("winged_guard", ql.frame_count("winged_guard") // 2, layout)
+        self.assertNotEqual(middle.get(ql.leg_name("Front", "Left", "Lower"), []), [], "the legs bend in the crouch")
+        reach = max(sum(d for _a, d in ql.pose_at("winged_rear", frame, layout).get("Neck_01", [])) for frame in range(ql.frame_count("winged_rear")))
+        self.assertGreaterEqual(reach, 0.9 * ql.STRIKE_NECK["Neck_01"][1], "the neck drives forward at the strike")
+
+
 class Rest(unittest.TestCase):
     def test_each_part_takes_its_least_change(self) -> None:
         def evaluate(leg_drop, wing_lift, tail_lift, neck_drop):

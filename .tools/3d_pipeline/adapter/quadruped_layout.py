@@ -683,14 +683,17 @@ LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # Round 4 turns it FLEE_TURN at mid-clip (in over the first half, out over the second) and runs it in three strides where the move takes
 # one in half the frames: with 20 degrees held over the middle half and the move's stride the retreat read as the move played again (both
 # fresh reviews of run 7). At 45 degrees the turned body's near wing hid 23.9% of the legs from the right camera, and a lowered neck went
-# behind the near wing (run 8, TRIPO-WING-FRONT, limit 10%).
-FLEE_TURN = -30.0
+# behind the near wing (run 8, TRIPO-WING-FRONT, limit 10%). At 30 degrees the level wings of round 5 hid 18.9% (run 10).
+FLEE_TURN = -25.0
 FLEE_TURN_IN = 0.5
 # The attack: (degrees drawn back while cocked, degrees forward at the strike) at Neck_01, Neck_02 and Head (positive pitches a raised neck
 # forward), the head's snap down at the bite, and the share of the rear's pitch and lifted forelegs that comes down at the strike.
-STRIKE_NECK = {"Neck_01": (-18.0, 55.0), "Neck_02": (-10.0, 35.0), "Head": (-14.0, 15.0)}
+# The strike drives the neck forward and down, and the rear's pitch and lifted forelegs go fully at the blow (STRIKE_DROP 1): at 55 and 35
+# degrees with 0.7 of the rear kept the head travelled 9% of the body's length forward and both fresh reviews of run 9 saw no strike
+# (TRIPO-ATTACK-REACH now asks for ATTACK_REACH_MIN, offline 0.21).
+STRIKE_NECK = {"Neck_01": (-18.0, 80.0), "Neck_02": (-10.0, 40.0), "Head": (-14.0, 10.0)}
 STRIKE_SNAP = 35.0
-STRIKE_DROP = 0.7
+STRIKE_DROP = 1.0
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
 FORELEG_LIFT = 0.6
@@ -706,7 +709,9 @@ WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 50.0}
 WINGED_FALL_TUCK = 1.0
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
-GUARD_NECK_LOW = {"Neck_01": -60.0, "Neck_02": 90.0, "Head": 45.0}
+GUARD_NECK_LOW = {"Neck_01": -20.0, "Neck_02": 70.0, "Head": 40.0}
+# A winged defend crouches: each leg bends this share of a death's buckle (`_collapse`), so the body sinks over planted feet.
+GUARD_CROUCH = 0.6
 
 
 def frame_count(style: str) -> int:
@@ -816,7 +821,7 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
     # the legs underneath swing in under the body while it falls (WINGED_FALL_TUCK of the drop's turn, the other way, at mid-fall) and back
     # to `leg_drop` as it lies: held out they carried the tipping body on their hooves, and it hung above the ground with the forelegs
     # dangling (both fresh reviews of run 7, frames 28 to 31)
-    share = float(death.get("leg_drop", 1.0)) - WINGED_FALL_TUCK * math.sqrt(math.sin(math.pi * fall))
+    share = float(death.get("leg_drop", 1.0)) - WINGED_FALL_TUCK * math.sin(math.pi * fall)
     for end in ("Front", "Rear"):
         for segment in LEG_SEGMENTS:
             name = leg_name(end, lower, segment)
@@ -841,6 +846,10 @@ def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None
     for end, side in LEGS:
         for segment in LEG_SEGMENTS:
             pose.pop(leg_name(end, side, segment), None)
+        fold = DEATH_FOLD * (1.0 if end == "Front" else COLLAPSE_HIND_FOLD) * GUARD_CROUCH * envelope
+        pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * fold)]
+        pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * fold)]
+        pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * fold)]
     for name, degrees in GUARD_NECK_LOW.items():
         if name in names:
             pose[name] = [(X_AXIS, degrees * envelope)]
