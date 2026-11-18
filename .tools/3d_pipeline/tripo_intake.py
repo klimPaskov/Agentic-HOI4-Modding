@@ -32,6 +32,9 @@ long clip to at most that many frames, ending on the frame closest to frame 0 so
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
+The move and the retreat are a looped gait and get the loop window instead (`lib/tripo_loop.py`): the clip is cut to its best whole number of strides, the window inside its
+striding phase whose end continues into its start best, and the seam is closed over the last frames with no stop. A preset walk that already loops keeps every frame.
+`trim` for a role wins, and `"loop_window": false` (or a list of roles) switches the rule off (or limits it), which gives the role the trim and the settle above.
 `untwist` (default every role, `false` or a shorter list to limit it) turns the spine back where the shoulders twist against the standing feet past vanilla's worst for the role (`lib/tripo_pose.py`, the stance twist).
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
@@ -56,13 +59,13 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import run_pilot
-from lib import tripo_pose, tripo_trim
+from lib import tripo_loop, tripo_pose, tripo_trim
 from lib.credits import append_entry, read_ledger
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
 from lib.tripo import inbox_file, uses_tripo
@@ -127,6 +130,37 @@ def default_task_id(files: Dict[str, Path]) -> str:
     return f"tripo-{sha256_file(main).lower()[:12]}"
 
 
+def loop_roles(config: Dict[str, Any], wanted: Sequence[str], explicit: Dict[str, Any]) -> List[str]:
+    """The roles that get the loop window (lib/tripo_loop.py): the move and the retreat, less the roles with a `trim` of their own and what
+    the job's `loop_window` switches off (`false`, or a list that names the roles to keep)."""
+
+    chosen = config.get("loop_window", list(tripo_loop.STRIDE_ROLES))
+    if not chosen:
+        return []
+    return [role for role in tripo_loop.STRIDE_ROLES if role in wanted and role not in explicit and (chosen is True or role in chosen)]
+
+
+def loop_arguments(config: Dict[str, Any], wanted: Sequence[str], explicit: Dict[str, Any], roles: Dict[str, str], rigged: Path):
+    """(the prepare stage's `--loop-window` and `--loop-close` arguments, {role: its window}) for the looped gaits of a job."""
+
+    looped = loop_roles(config, wanted, explicit)
+    windows = tripo_loop.auto_windows(rigged, roles, explicit=set(explicit), apply_to=looped) if looped else {}
+    arguments: List[str] = []
+    for role, found in windows.items():
+        if not found["whole"]:
+            arguments += ["--loop-window", f"{role}={found['first']}:{found['last']}"]
+        print(f"loop window: {role} ({found['clip'][:40]}) frames {found['first']} to {found['last']} of {found['from_frames']}"
+              + (" (the clip loops as it is)" if found["whole"] else f", striding from frame {found['phase'][0]} to {found['phase'][1]}")
+              + f", seam cost {found['cost']} of the height", file=sys.stderr)
+    for role in looped:
+        if role not in windows:
+            print(f"loop window: {role} never strides, so it keeps the trim and the settle (TRIPO-LOOP-STANDS will fail it)", file=sys.stderr)
+    looped = [role for role in looped if role in windows]
+    if looped:
+        arguments += ["--loop-close", *looped]
+    return arguments, windows
+
+
 def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path], out_dir: Path, report: Path) -> List[str]:
     """The headless Blender command that makes the base model and one GLB per role."""
 
@@ -150,10 +184,13 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     explicit = config.get("trim") or {}
     for role, frames in explicit.items():
         command += ["--trim", f"{role}={int(frames)}"]
+    # The looped gait (lib/tripo_loop.py): the move and the retreat are cut to their best whole strides and closed with no stop. A job's own trim wins.
+    looping, windows = loop_arguments(config, wanted, explicit, roles, files["rigged"])
+    command += looping
     # The rule for a clip that ends still (lib/tripo_trim.py): an attack, defend or retreat clip drops its trailing still part. A job's own trim wins.
     auto = config.get("auto_trim", list(tripo_trim.DEFAULT_ROLES))
     if auto:
-        for role, found in tripo_trim.auto_trims(files["rigged"], roles, explicit=set(explicit), apply_to=[role for role in tripo_trim.DEFAULT_ROLES if role in wanted and (auto is True or role in auto)]).items():
+        for role, found in tripo_trim.auto_trims(files["rigged"], roles, explicit=set(explicit), apply_to=[role for role in tripo_trim.DEFAULT_ROLES if role in wanted and role not in windows and (auto is True or role in auto)]).items():
             command += ["--trim-end", f"{role}={found['keep_frames']}"]
             print(f"auto trim: {role} ({found['clip'][:40]}) {found['from_frames']} -> {found['keep_frames']} frames, still from frame {found['still_from_frame']} "
                   f"(floor {found['floor_degrees']} degrees a frame, 5% of its peak {found['peak_degrees']})", file=sys.stderr)

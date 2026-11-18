@@ -49,7 +49,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images
-from lib import tripo_arms, tripo_pose, tripo_shape, tripo_trim
+from lib import tripo_arms, tripo_loop, tripo_pose, tripo_shape, tripo_trim
 from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name
 from tripo import chain_stage
 
@@ -88,6 +88,12 @@ def parse_args():
     parser.add_argument("--trim-end", action="append", default=[], metavar="ROLE=FRAMES",
                         help="cut a clip to exactly FRAMES frames (no loop point is searched): the end of a clip that goes still, "
                         "found by lib/tripo_trim.py")
+    parser.add_argument("--loop-window", action="append", default=[], metavar="ROLE=FIRST:LAST",
+                        help="cut a clip to the frames FIRST to LAST (offsets from its first frame): the window of whole strides whose end "
+                        "continues into its start, found by lib/tripo_loop.py")
+    parser.add_argument("--loop-close", nargs="*", default=[], metavar="ROLE",
+                        help="in these roles (a looped gait: move, retreat) close the seam by adding the last-to-first turn over the last frames "
+                        "on top of the motion, with no frames appended and no stop (lib/tripo_loop.py); it replaces --settle for them")
     parser.add_argument("--part-triangles", action="append", default=[], metavar="PART=N|auto",
                         help="reduce a part to about N triangles (weld, then Blender Decimate, UVs kept) before it is bound; "
                         "auto tries 1500, 2500, 4000 and keeps the first that passes the shape check")
@@ -669,6 +675,105 @@ def trimmed_copy(action, cap: int, exact: bool = False):
             if points[index].co.x > first + best + 1e-6:
                 points.remove(points[index])
     return cut, {"from_frames": int(action.frame_range[1] - first), "to_frames": best, "loop_pose_error": round(best_error, 6)}
+
+
+def windowed_copy(action, start: int, end: int):
+    """A copy of `action` cut to the frames `start` to `end` (offsets from its first frame) and moved to begin where the action began. Keys
+    outside the window are dropped, the two end frames of the window are keyed with the curve value there, and no other key is changed."""
+
+    first = int(round(action.frame_range[0]))
+    total = int(round(action.frame_range[1])) - first
+    start, end = max(int(start), 0), min(int(end), total)
+    if end - start < 2 or (start == 0 and end == total):
+        return action, None
+    cut = action.copy()
+    cut.name = action.name + ".loop"
+    low, high = first + start, first + end
+    for fcurve, _container in action_fcurves(cut):
+        ends = [(frame, fcurve.evaluate(frame)) for frame in (low, high)]
+        points = fcurve.keyframe_points
+        for index in reversed(range(len(points))):  # from the end: a removal invalidates later references
+            if points[index].co.x < low - 1e-6 or points[index].co.x > high + 1e-6:
+                points.remove(points[index])
+        for frame, value in ends:
+            if not any(abs(point.co.x - frame) < 1e-6 for point in fcurve.keyframe_points):
+                fcurve.keyframe_points.insert(frame, value, options={"FAST"}).interpolation = "LINEAR"
+        fcurve.update()  # sorts the keys by frame
+        for point in fcurve.keyframe_points:  # in rising order, so no key passes another on the way down
+            point.handle_left.x -= start
+            point.handle_right.x -= start
+            point.co.x -= start
+        fcurve.update()
+    return cut, {"from_frames": total, "to_frames": end - start, "window": [start, end]}
+
+
+def sampled_turns(curves, first: int, last: int):
+    """({bone: its quaternion at every frame}, the fastest bone turn at each frame step, the largest first-to-last turn, its bone)."""
+
+    steps = np.zeros(max(last - first, 0))
+    worst_turn, worst_bone, poses = 0.0, "", {}
+    for bone, c in curves.items():
+        q = [Quaternion([c[i].evaluate(first + k) for i in range(4)]).normalized() for k in range(last - first + 1)]
+        for k in range(1, len(q)):
+            steps[k - 1] = max(steps[k - 1], step_degrees(q[k - 1], q[k]))
+        poses[bone] = q
+        turn = step_degrees(q[0], q[-1])
+        if turn > worst_turn:
+            worst_turn, worst_bone = turn, bone
+    return poses, steps, worst_turn, worst_bone
+
+
+def add_closing_turn(c, q, weights, first: int, last: int) -> None:
+    """Key one bone's last `len(weights)` frames with its own pose times a growing share of the turn from its last pose to its first."""
+
+    start, end = q[0].copy(), q[-1]
+    if start.dot(end) < 0:
+        start.negate()
+    turn = end.inverted() @ start  # in the frame of the bone: the last pose times it is the first pose
+    if turn.w < 0:
+        turn.negate()
+    identity = Quaternion((1.0, 0.0, 0.0, 0.0))
+    for k, w in enumerate(weights, start=1):
+        frame = last - len(weights) + k
+        posed = q[frame - first] @ identity.slerp(turn, float(w))
+        if posed.dot(q[frame - first]) < 0:
+            posed.negate()
+        for i in range(4):
+            c[i].keyframe_points.insert(frame, posed[i], options={"FAST"}).interpolation = "LINEAR"
+
+
+def close_loop(action):
+    """Close the seam of a looped gait with no stop (rule and numbers: lib/tripo_loop.py). Over the last frames every bone gets a growing
+    share of the turn from its last pose to its first, on top of its own motion, and the hips get the same share of their offset, so the last
+    frame is the first pose and the stride runs through. No frame is added. Returns the record (0 frames when the clip already closes)."""
+
+    curves = rotation_curves(action)
+    if not curves:
+        return None
+    first = int(round(action.frame_range[0]))
+    last = int(round(action.frame_range[1]))
+    poses, steps, worst_turn, worst_bone = sampled_turns(curves, first, last)
+    rate = tripo_trim.settle_rate(steps)
+    count = tripo_loop.close_frames(worst_turn, rate, last - first)
+    place = [fcurve for fcurve, _container in action_fcurves(action) if fcurve.data_path.endswith(".location")]
+    offsets = [fcurve.evaluate(first) - fcurve.evaluate(last) for fcurve in place]
+    # The joints close but the hips end at another place (a bob cut mid-way): the shortest blend, when the offset is over 1% of the hips' largest travel along an axis.
+    spans = [max(fcurve.evaluate(first + k) for k in range(last - first + 1)) - min(fcurve.evaluate(first + k) for k in range(last - first + 1)) for fcurve in place]
+    if count == 0 and any(abs(offset) > 0.01 * max(spans) for offset in offsets):
+        count = min(tripo_trim.SETTLE_MIN_FRAMES, (last - first) // 2)
+    if count == 0:
+        return {"frames_blended": 0, "turn_degrees": round(worst_turn, 1)}
+    weights = tripo_loop.close_weights(count)
+    for bone, c in curves.items():
+        add_closing_turn(c, poses[bone], weights, first, last)
+    for fcurve, offset in zip(place, offsets):
+        values = [fcurve.evaluate(last - count + k) for k in range(1, count + 1)]
+        for k, w in enumerate(weights, start=1):
+            fcurve.keyframe_points.insert(last - count + k, values[k - 1] + offset * float(w), options={"FAST"}).interpolation = "LINEAR"
+    for fcurve, _container in action_fcurves(action):
+        fcurve.update()
+    return {"frames_blended": count, "turn_degrees": round(worst_turn, 1), "worst_bone": worst_bone, "rate_degrees_per_frame": round(rate, 2),
+            "first_blended_frame": last - count + 1 - first}
 
 
 def export_glb(path: Path, objects, active, *, animated: bool):
@@ -1291,13 +1396,27 @@ def export_base(armature, body, args, atlas):
     return textures, base_path
 
 
-def export_role(armature, body, args, role, clip, trims, stage, extras, trims_end=None):
-    """One GLB for a role: the mesh, the shared armature and exactly one clip, after the trim, the arm level, the chains and the snap
-    easing. What each step did goes into `extras` (keyed by step, then role). Returns the clip's record."""
+def close_gait(armature, body, action, args, role, extras, key):
+    """`close_loop` for a looped gait, then the clearance of a held weapon on the frames it turned (as after a settle)."""
 
-    action, trimmed, trims_end = bpy.data.actions[clip], None, trims_end or {}
+    extras[key][role] = close_loop(action)
+    if extras[key][role] and extras[key][role].get("frames_blended"):
+        last = int(round(action.frame_range[1]))
+        cleared = clear_settled_weapon(armature, body, action, last - extras[key][role]["frames_blended"], last, args)
+        if cleared is not None:
+            extras["settle_clearance"][role] = cleared
+
+
+def export_role(armature, body, args, role, clip, trims, stage, extras, trims_end=None, windows=None):
+    """One GLB for a role: the mesh, the shared armature and exactly one clip, after the trim or the loop window, the arm level, the chains
+    and the snap easing. What each step did goes into `extras` (keyed by step, then role). Returns the clip's record."""
+
+    action, trimmed, trims_end, windows = bpy.data.actions[clip], None, trims_end or {}, windows or {}
+    closes = role in args.loop_close and role not in trims
     if role in trims:
         action, trimmed = trimmed_copy(action, int(trims[role]))
+    elif role in windows:
+        action, trimmed = windowed_copy(action, *windows[role])
     elif role in trims_end:
         action, trimmed = trimmed_copy(action, int(trims_end[role]), exact=True)
     if role in args.arm_level:
@@ -1305,7 +1424,10 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
     if role in args.untwist:
         # Before the settle, so the clip settles back to its untwisted first pose.
         extras["untwist"][role] = untwist_waist(armature, action, role, body)
-    if role in args.settle:
+    if closes:
+        # A looped gait never settles: frames that ease into the first pose are a stop once per cycle (TRIPO-LOOP-STANDS).
+        close_gait(armature, body, action, args, role, extras, "loop_close")
+    elif role in args.settle:
         # After the arm level, before the chains: the cloth follows the settled body.
         end_before = int(round(action.frame_range[1]))
         extras["settle"][role] = settle_to_first(action)
@@ -1315,11 +1437,15 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
     if stage is not None:
         # Before the easing, so a chain bone pushed fast by a collision is eased like any other joint.
         extras["chains"][role] = chain_stage.bake_chains(armature, action, stage, role)
-        if role in args.settle:
+        if closes:
+            close_gait(armature, body, action, args, role, extras, "loop_close_chains")
+        elif role in args.settle:
             # The cloth lags the settled body, so it may end away from its first pose: a short second settle for what is left (none when it does not).
             extras["settle_chains"][role] = settle_to_first(action)
     if args.ease_snaps:
-        extras["ease_snaps"][role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
+        # The stride of a looped gait is not a snap (lib/tripo_loop.py): only a step past the kit's spin limit is eased there.
+        trigger = max(args.ease_snaps, tripo_loop.GAIT_SNAP_DEGREES) if closes else args.ease_snaps
+        extras["ease_snaps"][role] = dict(normalise_rotation_keys(action, trigger_degrees=trigger, target_degrees=0.75 * trigger), trigger_degrees=round(trigger, 1))
     assign_action(armature, action)
     role_path = args.out_dir / (args.role_name.format(role=role) + ".glb")
     export_glb(role_path, [armature, body], armature, animated=True)
@@ -1363,9 +1489,11 @@ def main():
     textures, base_path = export_base(armature, body, args, atlas)
 
     trims = dict(split_pair(item, "--trim") for item in args.trim)
-    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_clearance": {}, "settle_chains": {}, "untwist": {}}
+    extras = {"ease_snaps": {}, "arm_level": {}, "chains": {}, "settle": {}, "settle_clearance": {}, "settle_chains": {}, "untwist": {},
+              "loop_close": {}, "loop_close_chains": {}}
     trims_end = dict(split_pair(item, "--trim-end") for item in args.trim_end)
-    clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras, trims_end) for role, clip in roles.items()}
+    windows = {role: tuple(int(value) for value in span.split(":")) for role, span in (split_pair(item, "--loop-window") for item in args.loop_window)}
+    clips = {role: export_role(armature, body, args, role, clip, trims, stage, extras, trims_end, windows) for role, clip in roles.items()}
 
     report = {
         "tool": "prepare_tripo_unit",
@@ -1379,6 +1507,8 @@ def main():
         "settle": extras["settle"],
         "settle_clearance": extras["settle_clearance"],
         "settle_chains": extras["settle_chains"],
+        "loop_close": extras["loop_close"],
+        "loop_close_chains": extras["loop_close_chains"],
         "untwist": extras["untwist"],
         "bones_after": len(armature.data.bones),
         "bone_names": [b.name for b in armature.data.bones],

@@ -99,6 +99,33 @@ class LegKick(Biped):
         self.assertFalse(result.changed, result)
         self.assertEqual(path.read_bytes(), out.read_bytes())
 
+    def test_a_leg_goes_a_share_of_the_way_when_the_whole_lay_across_breaks_a_guard(self) -> None:
+        path = self.clip("death", 70, kicked())
+        whole = K.settle_death_kick(self.mesh_path, path, self.folder / "whole.anim")
+        before = self.load(path)
+        laid = self.load(self.folder / "whole.anim")
+        legs = K._legs(self.mesh)
+        leg = next(leg for side, leg in enumerate(legs.legs) if K._leg_key(self.mesh, leg, side) == "left")
+        half = K.part_way(self.mesh, before, laid, leg, 0.5)
+        np.testing.assert_allclose(K.part_way(self.mesh, before, laid, leg, 0.0).channels["LeftLeg"]["q"], before.channels["LeftLeg"]["q"], atol=1e-9)
+        np.testing.assert_allclose(np.abs((K.part_way(self.mesh, before, laid, leg, 1.0).channels["LeftLeg"]["q"] * laid.channels["LeftLeg"]["q"]).sum(axis=1)), 1.0, atol=1e-9)
+        np.testing.assert_allclose(half.channels["RightLeg"]["q"], before.channels["RightLeg"]["q"])
+        rise = K.kick_numbers(self.mesh, half, (), legs)["legs"]["left"]["rise"]
+        self.assertLess(rise, whole.before["legs"]["left"]["rise"])
+        self.assertGreater(rise, whole.after["legs"]["left"]["rise"])
+        # the guards refuse the whole lay across and pass a share of it: the settle takes the share
+        calls = {"count": 0}
+
+        def worse(_reference, _after):
+            calls["count"] += 1
+            return calls["count"] == 1
+
+        out = self.folder / "part.anim"
+        with mock.patch.object(K.stretch_smooth, "worse", side_effect=worse):
+            result = K.settle_death_kick(self.mesh_path, path, out)
+        self.assertTrue(result.changed, result)
+        self.assertLess(result.after["legs"]["left"]["rise"], result.before["legs"]["left"]["rise"])
+
     def test_the_run_pilot_grounding_settles_the_kick_after_the_legs(self) -> None:
         path = self.clip("death", 70, kicked())
         record = run_pilot.ground_exported_clip(self.mesh_path, path, "death", {})
