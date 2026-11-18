@@ -427,6 +427,7 @@ def ease_shoulders(mesh_path: Path, anim_path: Path, out_path: Path, role: str, 
 # ---- the clavicle lever ------------------------------------------------------------------------------------------------
 
 MAX_STEP_DEGREES = 35.0  # a written joint never turns further in one frame than this (UNIT-ANIM-SPIN: vanilla's fastest joint turns 37)
+RAISE_KEEP = 0.01  # an arm that follows its clavicle may lower a hand's highest point above the chest by at most this share of the height
 
 
 def _world_rotations(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, joints: Sequence[int]) -> np.ndarray:
@@ -457,6 +458,18 @@ def _max_step(anim: pdx_deform.Animation, joints: Sequence[str]) -> float:
     return max((tripo_pose.quaternion_turn(a, b) for j in joints for a, b in zip(anim.channels[j]["q"][:-1], anim.channels[j]["q"][1:])), default=0.0)
 
 
+def hand_raise(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> float:
+    """The highest any hand rises above the chest joint (`Spine02`, else the hips) in the clip, as a share of the height."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    hands = [i for name, i in index.items() if name.lower() in ("lefthand", "righthand")]
+    if not hands:
+        return 0.0
+    joints = pdx_motion.posed_joints(mesh, anim)
+    chest = joints[:, index.get("Spine02", index.get("Hips", 0)), 1]
+    return float((joints[:, hands, 1] - chest[:, None]).max() / max(mesh.height, 1e-6))
+
+
 def hand_shift(mesh: pdx_deform.SkinnedMesh, before: pdx_deform.Animation, after: pdx_deform.Animation) -> float:
     """The furthest any hand moves between the two clips in one frame, as a share of the height."""
 
@@ -485,9 +498,14 @@ class ClavicleEase:
 
 
 def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed, loop):
-    """(record, result, weights, why) for turning `joints` (clavicles) toward `reference` with the arms kept."""
+    """(record, result, weights, why) for turning `joints` (clavicles) toward `reference`, with the `arms` kept in their world direction (none:
+    the arms follow their clavicles)."""
 
-    posed = [keep_arms(mesh, anim, _turned(anim, joints, reference, np.full(anim.frames, s)), arms) for s in SHARES]
+    def posed_at(weights):
+        turned = _turned(anim, joints, reference, weights)
+        return keep_arms(mesh, anim, turned, arms) if arms else turned
+
+    posed = [posed_at(np.full(anim.frames, s)) for s in SHARES]
     tear = np.stack([girdle.per_frame(p) for p in posed])
     ball = np.stack([swell.per_frame(p) for p in posed])
     allowed = np.logical_and.accumulate(np.stack([within(_frame_deformation(mesh, p, edges, rest), before_deformed) for p in posed]), axis=0)
@@ -499,7 +517,7 @@ def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, re
     turn = max(tripo_pose.quaternion_turn(q, reference[j]) for j in joints for q in anim.channels[j]["q"])
     ramp = max(tripo_trim.settle_frames(turn * float(needed.max())), MIN_RAMP_FRAMES)
     weights = np.minimum(tripo_cloak_bend.spread(needed, ramp, loop), np.maximum(cap, needed))
-    result = keep_arms(mesh, anim, _turned(anim, joints, reference, weights), arms)
+    result = posed_at(weights)
     after_tear, after_ball = float(girdle.per_frame(result).max()), float(swell.per_frame(result).max())
     written = list(joints) + [mesh.bones[a] for a in arms]
     record = {"girdle_after": round(after_tear, 4), "swell_after": round(after_ball, 4), "ramp_frames": int(ramp),
@@ -513,6 +531,8 @@ def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, re
         why = "a joint would turn faster than the spin rule allows"
     elif stretch_smooth.worse(before_deformed, summary(_frame_deformation(mesh, result, edges, rest))):
         why = "makes the clip's deformation worse"
+    elif not arms and hand_raise(mesh, result) < hand_raise(mesh, anim) - RAISE_KEEP:
+        why = "lowers the raised hand"
     return record, result, weights, why
 
 
@@ -537,11 +557,12 @@ def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation,
     before_deformed = summary(_frame_deformation(mesh, anim, edges, rest))
     sides = [(mesh.bones[c], arm) for c, arm in zip(rig.clavicles, (rig.left, rig.right)) if mesh.bones[c] in keyed and mesh.bones[arm] in keyed]
     groups = [(name, [pair]) for name, pair in zip(("left clavicle", "right clavicle"), sides)] + [("both clavicles", sides)]
+    groups = [(name, pairs, True) for name, pairs in groups] + [(name + ", arm follows", pairs, False) for name, pairs in groups]
     plans = []
-    for order, (name, pairs) in enumerate(groups):
+    for order, (name, pairs, kept) in enumerate(groups):
         if not pairs:
             continue
-        joints, arms = [c for c, _a in pairs], [a for _c, a in pairs]
+        joints, arms = [c for c, _a in pairs], [a for _c, a in pairs] if kept else []
         record, result, weights, why = _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed,
                                                       role in tripo_pose.LOOP_ROLES)
         if why:
@@ -549,11 +570,12 @@ def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation,
         base.tried[name] = record
         if not why:
             score = record["turn_added_degrees"] if record["reaches_limits"] else record["girdle_after"] / GIRDLE_LIMIT + record["swell_after"] / SWELL_LIMIT
-            plans.append((not record["reaches_limits"], score, order, name, joints, arms, record, result, weights))
+            plans.append((not record["reaches_limits"], not kept, score, order, name, joints, arms, record, result, weights))
     if not plans:
         base.note = "no clavicle lowers the girdle within the kit's rules"
         return base, None, none, ()
-    _, _, _, name, joints, arms, record, result, weights = min(plans, key=lambda plan: plan[:3])
+    # A plan that reaches both limits first, then one whose arms keep their direction, then the least turn (or the lowest measures).
+    _, _, _, _, name, joints, arms, record, result, weights = min(plans, key=lambda plan: plan[:4])
     written = tuple(joints) + tuple(mesh.bones[a] for a in arms)
     return ClavicleEase(True, name, tuple(joints), round(float(weights.max()), 3), int((weights > 0).sum()), record["ramp_frames"], tear0,
                         record["girdle_after"], ball0, record["swell_after"], round(hand_shift(mesh, anim, result), 4), tried=base.tried), result, weights, written
