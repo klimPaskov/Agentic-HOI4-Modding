@@ -414,6 +414,7 @@ WALK_BEAT = (14.0, 1, 0.35, 0.12)
 ATTACK_BEAT = (30.0, 2, 0.35, 0.12)
 FLEE_BEAT = (24.0, 3, 0.35, 0.12)
 GUARD_BEAT = (6.0, 2, 0.3, 0.12)
+DEATH_LIFT = 25.0  # degrees the wings rise halfway between folded and lying
 DEATH_FOLD_END = 0.25  # the wings fold by this share of a death, then open and settle flat as the body lies
 
 
@@ -458,6 +459,9 @@ def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = No
     if style == "winged_collapse":
         settle = float(_smooth(np.array(max(0.0, (t - DEATH_FOLD_END) / (1.0 - DEATH_FOLD_END)))))
         out = _blend(FOLDED, LYING, settle)
+        # on the way down the wings lift off the falling body (offline on the Tripo dragon, the straight turn to the lying pose put 4.5% of
+        # the wing points inside the body halfway, TRIPO-CHAIN-IN-BODY's limit)
+        out["rise"] = out.get("rise", 0.0) + DEATH_LIFT * math.sin(math.pi * settle)
         if lying is not None:
             out.update(frame=lying, frame_share=settle)
         return out
@@ -483,8 +487,11 @@ def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[
 # A dead dragon's wings lie flat on the ground beyond its back: the wing underneath swept LYING_SWEEP_LOWER toward the head, the one on
 # top LYING_SWEEP_UPPER toward the tail so the two do not lie in one another, each sloping down from its root just enough that its far end
 # reaches the ground (the root's height after the roll over the wing's length).
-LYING_SWEEP_LOWER = -20.0
-LYING_SWEEP_UPPER = 35.0
+LYING_SWEEP_LOWER = 60.0
+# The wing on top slopes this much less than down to the torso's level, so it lies over the back instead of sinking into it (offline on the
+# Tripo dragon 4.3% of the wing points ended inside the body without it, TRIPO-CHAIN-IN-BODY's limit is 4.5%).
+UPPER_CLEAR = 8.0
+LYING_SWEEP_UPPER = 40.0
 
 
 def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object]) -> np.ndarray:
@@ -508,7 +515,7 @@ def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object]) -> np.ndar
     lowest = min(float((body @ (point - edge))[2]) for point in torso)
     height = float((body @ (root - edge))[2]) - lowest
     length = max(float(plan["length"]), 1e-9)
-    droop = math.degrees(math.asin(max(0.0, min(1.0, height / length)))) - (float(death.get("wing_lift", 0.0)) if lower else 0.0)
+    droop = math.degrees(math.asin(max(0.0, min(1.0, height / length)))) - (float(death.get("wing_lift", 0.0)) if lower else UPPER_CLEAR)
     back = body @ Z
     out = unit(back - (back @ Z) * Z)
     sweep = math.radians(LYING_SWEEP_LOWER if lower else LYING_SWEEP_UPPER)

@@ -80,7 +80,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_swing
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -170,9 +170,14 @@ def front_direction(mesh) -> np.ndarray:
     for side in ("Left", "Right"):
         if f"{side}Foot" in names and f"{side}ToeBase" in names:
             vectors.append(joints[names[f"{side}ToeBase"]] - joints[names[f"{side}Foot"]])
+    if not vectors and quadruped_checks.is_quadruped(mesh):
+        # the kit's quadruped rig has hooves, not toes: it faces from its hind hooves toward its fore hooves. From its joints' middle
+        # toward its head the Tripo dragon faced 21 degrees off, the curled tail and the wing chains pulling the middle aside.
+        fore = np.mean([joints[names[f"Front_{side}_Hoof"]] for side in ("Left", "Right")], axis=0)
+        hind = np.mean([joints[names[f"Rear_{side}_Hoof"]] for side in ("Left", "Right")], axis=0)
+        vectors.append(fore - hind)
     if not vectors:
-        # the kit's quadruped rig has hooves, not toes: it faces from its joints' middle toward its head
-        return map_read.front_of(mesh) if quadruped_checks.is_quadruped(mesh) else np.array([0.0, 0.0, 1.0])
+        return np.array([0.0, 0.0, 1.0])
     front = np.mean(vectors, axis=0)
     front[1] = 0.0
     return T.unit(front)
@@ -304,15 +309,21 @@ def quadruped_parts(mesh, wings: np.ndarray, role: str) -> np.ndarray:
 
 
 def quadruped_upright(mesh, anim, step: int) -> np.ndarray:
-    """Per judged frame, how high the Chest joint stands over its rest height (1 standing, toward 0 lying on the side)."""
+    """Per judged frame, how level the body stands across: one less the vertical share of the line between the two shoulders and between
+    the two hips (1 standing, 0 lying on its side). A height measure read a dragon lying on its side as standing, because its legs hold
+    the lying torso up a little."""
 
     index = {name: i for i, name in enumerate(mesh.bones)}
     joints = pdx_motion.posed_joints(mesh, anim)[::step]
-    if "Chest" not in index:
+    pairs = [(f"{end}_Left_Upper", f"{end}_Right_Upper") for end in ("Front", "Rear")]
+    pairs = [(index[a], index[b]) for a, b in pairs if a in index and b in index]
+    if not pairs:
         return np.ones(len(joints))
-    ground = float(mesh.positions[:, 1].min())
-    rest = float(pdx_motion.rest_joints(mesh)[index["Chest"], 1]) - ground
-    return np.clip((joints[:, index["Chest"], 1] - ground) / max(rest, 1e-9), 0.0, 1.0)
+    shares = []
+    for a, b in pairs:
+        across = joints[:, a] - joints[:, b]
+        shares.append(np.abs(across[:, 1]) / np.maximum(np.linalg.norm(across, axis=1), 1e-9))
+    return 1.0 - np.mean(shares, axis=0)
 
 
 def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[np.ndarray] = None, role: str = "") -> Dict[str, float]:
@@ -321,8 +332,9 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
     while the torso lies (`UPRIGHT_SHARE`). A winged quadruped is judged in every view on its legs, neck and head (`quadruped_parts`)."""
 
     if quadruped_checks.is_quadruped(mesh):
-        parts = quadruped_parts(mesh, wings, role)
-        return wing_cover_points(frames, parts, wings, parts, front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height, death, upright)
+        # the whole body hides what lies behind it, the legs, neck and head are judged
+        return wing_cover_points(frames, ~wings, wings, quadruped_parts(mesh, wings, role), front_direction(mesh), np.array([0.0, 1.0, 0.0]),
+                                 mesh.height, death, upright, limbs_everywhere=True)
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
@@ -331,9 +343,9 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
 
 
 def wing_cover_points(frames, body: np.ndarray, wings: np.ndarray, limbs: np.ndarray, front: np.ndarray, up: np.ndarray, height: float,
-                      death: bool, upright: Optional[np.ndarray] = None) -> Dict[str, float]:
+                      death: bool, upright: Optional[np.ndarray] = None, limbs_everywhere: bool = False) -> Dict[str, float]:
     """`wing_cover` on posed points in any frame (`up` the world's up): `body` the vertices judged in the front and map views, `limbs` those
-    judged in the side views. `tripo/chain_replay.py` measures with it in Blender's Z-up world."""
+    judged in the side views (in every view with `limbs_everywhere`). `tripo/chain_replay.py` measures with it in Blender's Z-up world."""
 
     upright = np.ones(len(frames)) if upright is None else np.asarray(upright, float)
     out = {}
@@ -345,7 +357,7 @@ def wing_cover_points(frames, body: np.ndarray, wings: np.ndarray, limbs: np.nda
         if not judged:
             continue
         direction = tripo_chains.review_view(front, up, azimuth, elevation)
-        out[view] = round(max(tripo_chains.front_cover_share(posed, body, wings, direction, up, height, judged=limbs if side else None) for posed in judged), 4)
+        out[view] = round(max(tripo_chains.front_cover_share(posed, body, wings, direction, up, height, judged=limbs if side or limbs_everywhere else None) for posed in judged), 4)
     return out
 
 

@@ -216,6 +216,10 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
     hooves = np.concatenate(feet) if feet else p[:0]
     if len(hooves) < 8:
         raise LandmarkError("fewer than 8 vertices near the ground; the legs may not reach it")
+    if dragged and len(feet) == 4:
+        # A tail lying on the ground curls wide to one side and moves the box's middle: the Tripo dragon's sat 0.08 of its length off the
+        # feet's, so its left legs straddled the mid-plane and their radii read 0.007 against 0.054. The feet set the mid-plane.
+        cx = float(np.mean([foot[:, 0].mean() for foot in feet]))
     split_y = _largest_gap_split(hooves[:, 1])
     hoof_centres = _hoof_centres(hooves, split_y, cx)
     front_y = float((hoof_centres["Front_Left"][1] + hoof_centres["Front_Right"][1]) / 2)
@@ -291,6 +295,11 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         joints["top"] = np.array([joints["upper"][0], joints["upper"][1] + (0.02 * length if end == "Rear" else 0.0), (belly_z + back_z) / 2])
         joints["radius"] = np.asarray(_leg_radius(leg_points, joints, height, width))
         legs[key] = joints
+    # A leg that stands across the mid-plane (the Tripo dragon's stepping foreleg) loses most of its points to the other side's band, and its
+    # radius reads far too small (0.007 against 0.054 for the other foreleg): no leg is thinner than half the legs' median.
+    floor = 0.5 * float(np.median([float(joints["radius"]) for joints in legs.values()]))
+    for joints in legs.values():
+        joints["radius"] = np.asarray(max(float(joints["radius"]), floor))
 
     return {
         "ground_offset": ground,
@@ -492,7 +501,9 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             lying = q[:, 1] > float(lm["tail_ground_y"]) if lm.get("tail_ground_y") is not None else np.zeros(len(q), bool)
             allowed[:, index] = (q[:, 1] > tail_root_y - 0.02 * length) & (in_body | lying)
         elif name in {"Neck_01", "Neck_02", "Head"}:
-            allowed[:, index] = q[:, 1] < front_y + 0.06 * length
+            # skin within a leg's reach is the leg's: the Tripo dragon's chest runs down between its forelegs, and a foreleg's skin that took
+            # the neck tore from it (UNIT-BRIDGE, 33 edges, the bridge repair cut a claw loose)
+            allowed[:, index] = (q[:, 1] < front_y + 0.06 * length) & ~near_leg.any(axis=1)
         elif name == "Pelvis":
             allowed[:, index] = in_body & (q[:, 1] > mid_y - 0.12 * length)
         elif name == "Chest":
@@ -659,6 +670,10 @@ FLEE_TURN_IN = 0.25
 # raised neck forward), between LUNGE_START and LUNGE_END of the clip.
 LUNGE = {"Neck_01": 28.0, "Neck_02": 18.0, "Head": 12.0}
 LUNGE_START, LUNGE_END = 0.3, 0.8
+# A dead winged quadruped's legs fold this share of a full fold (the elephant's DEATH_FOLD is 0.6): at 0.6 the Tripo dragon's legs bent 22
+# degrees in its death (TRIPO-DEATH-STIFF-LEGS, at least 25), at 0.8 32 (offline).
+WINGED_DEATH_FOLD = 0.8
+LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
 GUARD_NECK_LOW = {"Neck_01": 30.0, "Neck_02": 20.0, "Head": 0.0}
 
@@ -743,6 +758,9 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
 
     roll = float(death.get("roll", COLLAPSE_ROLL))
     fall = _collapse_fall(t)
+    for name in list(pose):
+        if name.startswith(LEG_PREFIX_NAMES):
+            pose[name] = [(axis, degrees * WINGED_DEATH_FOLD / DEATH_FOLD) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[name]]
     if tails:
         pose[tails[0]] = [(X_AXIS, float(death.get("tail_lift", 0.0)) * fall), (Y_AXIS, -roll * fall)]
         for name in tails[1:]:
