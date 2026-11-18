@@ -94,6 +94,24 @@ def _box_corners(mid, axes, spans):
     return [mid + np.array([x, y, z]) @ axes for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
 
 
+def _gear_test(points, triangles, wheel_rule):
+    """A function telling whether a piece (its bmesh vertices) is moving gear: a track run, or a piece mostly made of a wheel's
+    vertices and lying within 1.5 radii of its axle (`sk.running_gear`). Without a rule nothing is."""
+
+    if not wheel_rule:
+        return lambda verts: False
+    found = sk.running_gear(points, triangles, wheel_rule)
+    wheels = [({int(i) for i in w["vertices"]}, np.array(w["centre"][1:]), float(w["radius"])) for w in found["wheels"]]
+    tracks = {int(i) for i in found["tracks"]}
+
+    def moving(verts):
+        index = {v.index for v in verts}
+        centre = np.array([[v.co.y, v.co.z] for v in verts]).mean(axis=0)
+        return index <= tracks or any(len(index & ws) * 2 >= len(index) and np.linalg.norm(centre - c) <= 1.5 * r for ws, c, r in wheels)
+
+    return moving
+
+
 def hull_crumpled_pieces(bm, wheel_rule=None):
     """Small separate pieces whose surface is crumpled (their volume is not within `HULL_PIECE_CONVEX` of their convex
     hull's, or they are not closed) become their convex hull, in the colour they had. A Smart Mesh tank's small fittings
@@ -105,11 +123,7 @@ def hull_crumpled_pieces(bm, wheel_rule=None):
     Returns what was replaced."""
 
     points, triangles = bm_arrays(bm)
-    wheels, tracks = [], set()
-    if wheel_rule:
-        found = sk.running_gear(points, triangles, wheel_rule)
-        wheels = [({int(i) for i in w["vertices"]}, np.array(w["centre"][1:]), float(w["radius"])) for w in found["wheels"]]
-        tracks = {int(i) for i in found["tracks"]}
+    is_moving = _gear_test(points, triangles, wheel_rule)
     faces = list(bm.faces)
     uv_layer = bm.loops.layers.uv.active
     replaced = []
@@ -119,12 +133,7 @@ def hull_crumpled_pieces(bm, wheel_rule=None):
         if not closed:
             continue  # an open sheet is not a crumpled solid
         verts = list({v for f in group for v in f.verts})
-        # A wheel, sprocket or idler piece, or a track run, is moving gear: never boxed
-        moving = False
-        index = {v.index for v in verts}
-        centre_yz = np.array([[v.co.y, v.co.z] for v in verts]).mean(axis=0)
-        if index <= tracks or any(len(index & ws) * 2 >= len(index) and np.linalg.norm(centre_yz - c) <= 1.5 * r for ws, c, r in wheels):
-            moving = True
+        moving = is_moving(verts)
         scratch = bmesh.new()
         copies = {v: scratch.verts.new(v.co) for v in verts}
         hull = bmesh.ops.convex_hull(scratch, input=list(copies.values()))
