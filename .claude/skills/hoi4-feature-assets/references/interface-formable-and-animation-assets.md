@@ -16,7 +16,7 @@ For UI panels, investigation windows, ledgers, and similar assets, separate artw
 
 Use `hoi4.image_interface` (family `gui_texture` or `super_event`, with the canvas the mod defines) for illustrated background panels, thematic decorations, symbolic seals, propaganda visuals and report board elements.
 Use normal UI editing for exact layout slicing, cropping, button states, state variants, meter fills and final export preparation.
-Do not let generated art decide exact interactive layout; the implementation still follows HOI4 UI rules and existing repo patterns.
+Do not let generated art decide exact interactive layout; the implementation still follows HOI4 UI rules and existing repo patterns. For a surface judged by eye as a whole, draw concept pictures of it first as design targets, never assets ([concept pictures](generation-and-review.md)).
 Before a multi-window interface pass, use the assembled-screen mockup that `hoi4-scripted-gui` requires as the shared target for every window's art.
 
 ## Decision category and scripted GUI visual packs

@@ -27,4 +27,6 @@ Use `hoi4-imagegen` (MCP tools `hoi4.image_*`) for generated artwork. HOI4 Mod S
 
 For animated visual assets, use `hoi4-frame-animation` in addition to `hoi4-feature-assets` for frame-sheet animation. Use `hoi4-3d-model-pipeline` for skeletal unit or entity actions. Final animation assets must be built from real planned frames or real exported skeletal actions and must not be transform-only mockups.
 
+Before building or rebuilding anything judged by eye as a whole (a window, the top bar, map markers, a map look), draw concept pictures of the whole surface over a real capture, following the concept round in `hoi4-feature-assets` (`references/generation-and-review.md`). A concept is a design target, never an asset. For GUI work this comes before the first layout edit, then `hoi4.gui_render` previews compare against it.
+
 Use `hoi4-subagents` for detailed asset routing. Native advisor and high-command cards use the `65x67` contract in `hoi4-feature-assets`.
