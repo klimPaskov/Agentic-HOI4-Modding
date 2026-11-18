@@ -241,24 +241,20 @@ def _turned(anim: pdx_deform.Animation, joints: Sequence[str], rest: dict, weigh
     return tripo_pose._turned_toward_rest(anim, joints, rest, 1.0, np.asarray(weights, float))
 
 
-def lift_neck(mesh_path: Path, anim_path: Path, out_path: Path, role: str, limit: float = NECK_LIMIT, target: float = NECK_TARGET) -> NeckLift:
-    """Write `out_path`: `anim_path` with the neck or the clavicles turned toward the rest pose where the visible neck is under `limit`
-    (see the module text). Unchanged, and copied as it is, when the clip passes or no group lifts it."""
+def lift_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, role: str, keyed: Optional[Sequence[str]] = None,
+                   limit: float = NECK_LIMIT, target: float = NECK_TARGET) -> Tuple[NeckLift, Optional[pdx_deform.Animation], np.ndarray]:
+    """The lift of `lift_neck` on a clip in memory: (record, the lifted clip or None when unchanged, the per-frame weights). `keyed`: the joints
+    whose rotations the clip's file stores (all of the clip's channels when not given)."""
 
-    data = bytearray(Path(anim_path).read_bytes())
-    mesh = pdx_deform.load_mesh(mesh_path)
-    anim = pdx_deform.load_anim(anim_path)
+    none = np.zeros(anim.frames)
     rig = neck_rig(mesh)
     parts = neck_parts(mesh, anim, rig) if rig else None
     if parts is None or not len(parts.ratio):
-        Path(out_path).write_bytes(bytes(data))
-        return NeckLift(False, note="no neck rig")
+        return NeckLift(False, note="no neck rig"), None, none
     before = float(parts.ratio.min())
     if before >= limit:
-        Path(out_path).write_bytes(bytes(data))
-        return NeckLift(False, neck_before=before, neck_after=before, note="the neck is above the limit")
-    info = read(anim_path).child("info")
-    keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
+        return NeckLift(False, neck_before=before, neck_after=before, note="the neck is above the limit"), None, none
+    keyed = list(anim.channels) if keyed is None else list(keyed)
     bind = pdx_deform._bind_locals(mesh)
     rest = {mesh.bones[i]: tripo_pose._quaternion_from_matrix(bind[i]) for i in range(len(mesh.bones))}
     loop = role in tripo_pose.LOOP_ROLES
@@ -284,9 +280,21 @@ def lift_neck(mesh_path: Path, anim_path: Path, out_path: Path, role: str, limit
     # not the highest neck. A tie goes to the group the measurement blames.
     chosen = min(plans, key=lambda plan: plan[:3]) if plans else None
     if chosen is None or chosen[3] <= before + 1e-6:
-        Path(out_path).write_bytes(bytes(data))
-        return NeckLift(False, neck_before=before, neck_after=before, note="turning the neck or the clavicles toward rest does not lift the head", tried=tried)
+        return NeckLift(False, neck_before=before, neck_after=before, note="turning the neck or the clavicles toward rest does not lift the head",
+                        tried=tried), None, none
     _, _, _, after, name, joints, weights, result, ramp = chosen
-    tripo_pose._write_rotations(data, keyed, joints, result, weights)
+    return NeckLift(True, name, tuple(joints), round(float(weights.max()), 3), int(np.sum(weights > 0)), int(ramp), before, after,
+                    tried=tried), result, weights
+
+
+def lift_neck(mesh_path: Path, anim_path: Path, out_path: Path, role: str, limit: float = NECK_LIMIT, target: float = NECK_TARGET) -> NeckLift:
+    """Write `out_path`: `anim_path` with the neck or the clavicles turned toward the rest pose where the visible neck is under `limit`
+    (see the module text). Unchanged, and copied as it is, when the clip passes or no group lifts it."""
+
+    data = bytearray(Path(anim_path).read_bytes())
+    keyed = [joint.name for joint in read(anim_path).child("info").children if "q" in str((joint.properties.get("sa") or [""])[0])]
+    lift, result, weights = lift_animation(pdx_deform.load_mesh(mesh_path), pdx_deform.load_anim(anim_path), role, keyed, limit, target)
+    if result is not None:
+        tripo_pose._write_rotations(data, keyed, lift.joints, result, weights)
     Path(out_path).write_bytes(bytes(data))
-    return NeckLift(True, name, tuple(joints), round(float(weights.max()), 3), int(np.sum(weights > 0)), int(ramp), before, after, tried=tried)
+    return lift
