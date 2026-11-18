@@ -377,7 +377,7 @@ report["cards"]["triangles_kept_back"] = cards_cost
 report["winding_after_cards"] = consistent_winding(bm)
 # A tank's small fittings that the reduction crumpled into lumps become their convex hull (static_mesh_ops.hull_crumpled_pieces)
 if kind == "vehicle":
-    report["crumpled_pieces"] = hull_crumpled_pieces(bm)
+    report["crumpled_pieces"] = hull_crumpled_pieces(bm, contract["rules"].get("wheels"))
     report["winding_after_hulls"] = consistent_winding(bm)
     # A wall that faces into the hull (nothing behind its back) shows the inside through it from outside: it gets a reversed copy
     report["inside_out_walls"] = double_inside_out_walls(bm)
