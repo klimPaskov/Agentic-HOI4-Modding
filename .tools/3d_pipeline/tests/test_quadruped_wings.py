@@ -308,7 +308,11 @@ class Round5(unittest.TestCase):
         layout = ql.build_layout(landmarks)
         total = ql.frame_count("winged_flee")
         turns = [sum(d for _a, d in ql.pose_at("winged_flee", frame, layout).get("__root_turn__", [])) for frame in range(total)]
-        self.assertEqual(int(np.argmax(np.abs(turns))), total // 2)
+        peak = max(abs(value) for value in turns)
+        self.assertAlmostEqual(peak, abs(ql.FLEE_TURN), places=3, msg="it turns its full turn")
+        held = [frame for frame, value in enumerate(turns) if abs(value) > peak - 1e-6]
+        self.assertTrue(held[0] <= total // 2 <= held[-1], "and holds it over mid-clip")
+        self.assertLess(abs(turns[0]), 1e-6)
         self.assertGreater(ql.WINGED_CYCLES["winged_flee"] / ql.frame_count("winged_flee"), ql.WINGED_CYCLES["winged_walk"] / ql.frame_count("winged_walk"))
 
 
@@ -426,15 +430,16 @@ class Round8(unittest.TestCase):
         self.assertGreater(sum(d for _a, d in middle["Tail_01"]), 0.0, "the tail lifts as the body sinks")
         self.assertAlmostEqual(sum(d for _a, d in middle["Tail_01"]) + sum(d for _a, d in middle["Tail_02"]), 0.0, places=6)
         neck = {name: sum(d for _a, d in middle[name] if tuple(_a) == ql.X_AXIS) for name in ("Neck_01", "Neck_02", "Head")}
-        self.assertGreater(neck["Neck_01"], 0.0, "the neck arcs forward and down from the shoulders, carrying the head low")
+        self.assertLess(neck["Neck_01"], 0.0, "the neck's root draws back")
+        self.assertGreater(neck["Neck_02"], 0.0, "its upper half bends forward, so the head is drawn back over the chest")
         self.assertLess(neck["Head"], 0.0, "and the head turns up at its end")
         self.assertAlmostEqual(sum(neck.values()), ql.GUARD_NECK_S["Head"], places=6, msg="so it faces the enemy as GUARD_NECK_S says")
         for frame in (0, total - 1):
             self.assertAlmostEqual(sum(d for _a, d in ql.pose_at("winged_guard", frame, layout)["__root_shift__"]), 0.0, places=6)
 
     def test_the_wings_held_back_keep_the_fold(self) -> None:
-        for pose in (qw.MANTLE, qw.FLEE):
-            self.assertEqual((pose["curl"], pose["spread"], pose["roll"]), (qw.FOLDED["curl"], qw.FOLDED["spread"], qw.FOLDED["roll"]),
+        for pose in (qw.MANTLE, qw.FLEE, qw.STRIKE_WINGS):
+            self.assertEqual((pose["curl"], pose["spread"]), (qw.FOLDED["curl"], qw.FOLDED["spread"]),
                              "the fold's own bend: unbent, the trailing half of the fan stood out to the side (run 15)")
             self.assertGreaterEqual(pose["sweep"], qw.FOLDED["sweep"], "behind the shoulders, never further out than the fold")
         self.assertGreater(qw.MANTLE["rise"], qw.FOLDED["rise"], "the mantle raises the fold over the back, so it does not read as the idle")
@@ -447,7 +452,7 @@ class Round8(unittest.TestCase):
     def test_the_down_stroke_of_the_attack_ends_before_the_wings_fold(self) -> None:
         for t in (qw.ATTACK_DOWN_END, 0.85, 1.0):
             self.assertAlmostEqual(qw.role_pose("winged_rear", t, qw.WING_BONES)["flap"], 0.0, places=6)
-        self.assertGreater(qw.role_pose("winged_rear", 0.45, qw.WING_BONES)["flap"], 0.5 * qw.ATTACK_DOWNSTROKE)
+        self.assertGreaterEqual(qw.role_pose("winged_rear", 0.45, qw.WING_BONES)["flap"], 0.5 * qw.ATTACK_DOWNSTROKE)
 
     def test_a_winged_death_starts_to_roll_early(self) -> None:
         _points, _triangles, landmarks, _plans, _masks = _found()
@@ -512,6 +517,32 @@ class AimedHead(unittest.TestCase):
             pose = ql.pose_at("winged_rear", frame, layout)
             facing = sum(d for name in ("__root_pitch__",) + ql.HEAD_CARRIERS + ("Head",) for a, d in pose.get(name, []) if tuple(a) == ql.X_AXIS)
             self.assertLessEqual(abs(facing), 40.0, f"frame {frame}: run 15 turned the snout 108 degrees, back at the chest")
+
+
+class Lunge(unittest.TestCase):
+    def test_the_attack_gathers_back_and_lunges_forward_over_planted_feet(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        lunge = ql.planted_crouch(landmarks, ql.ATTACK_HIP, ql.ATTACK_BEND, forward=True)
+        back, sink = lunge["travel"]
+        self.assertLess(back, 0.0, "forward")
+        self.assertGreater(sink, 0.0, "and down")
+        total = ql.frame_count("winged_rear")
+        shifts = [sum(d for _a, d in ql.pose_at("winged_rear", frame, layout).get("__root_shift__", [])) for frame in range(total)]
+        self.assertGreater(max(shifts), 0.0, "it gathers back first")
+        self.assertLess(min(shifts), 0.0, "then lunges forward")
+        self.assertLess(shifts.index(max(shifts)), shifts.index(min(shifts)))
+        self.assertAlmostEqual(shifts[-1], 0.0, places=6, msg="and ends where it started: the game loops the attack")
+        for end, side in ql.LEGS:
+            pose = ql.pose_at("winged_rear", shifts.index(min(shifts)), layout)
+            turns = [sum(d for _a, d in pose[ql.leg_name(end, side, segment)]) for segment in ("Upper", "Lower", "Cannon")]
+            self.assertAlmostEqual(sum(turns), 0.0, places=6, msg="the foot stays flat")
+
+    def test_the_blow_closes_the_wings(self) -> None:
+        cock, strike, _snap = qw.attack_phases(0.45)
+        self.assertGreater(strike, 0.9)
+        pose = qw.role_pose("winged_rear", 0.45, qw.WING_BONES)
+        self.assertGreaterEqual(pose["sweep"], qw.FOLDED["sweep"], "swept back along the body, not opened as a display")
 
 
 class DeathEnd(unittest.TestCase):

@@ -479,7 +479,10 @@ def held_back(**where: float) -> Dict[str, float]:
     return {**FOLDED, **where}
 
 
-MANTLE = held_back(sweep=95.0, rise=35.0)
+# Round 9: the mantle turns the fold's membrane up toward the game camera (roll -30, the fold -60), so the defend's silhouette from the
+# game camera differs from the idle's (TRIPO-GAME-READ 0.30, 0.20 with the fold's roll, offline on run 17's files). Turned down (roll -85)
+# the trailing edge swings out past the idle's reach (TRIPO-WING-SIDE-REACH 1.15).
+MANTLE = held_back(sweep=95.0, rise=35.0, roll=-30.0)
 # Round 7: the retreat runs with its wings half folded and swept back, beating little (FLEE, FLEE_BEAT). Held half open and beating hard
 # (swept 50 degrees, raised 30, a 20 degree beat) it read as the move (fresh reviews of runs 9 and 12).
 FLEE = held_back(sweep=85.0, rise=20.0)
@@ -536,14 +539,20 @@ ATTACK_SNAP = (0.37, 0.5)  # its peak at 0.435 of the clip, on a review sheet fr
 # Round 8: 0.3 of the way (0.35 in round 7, whose wings both fresh reviews of run 15 saw open as wide as the move's and hiding the head
 # from the game camera). Less (0.2) and the attack reads as the idle from the map camera (TRIPO-MAP-READ 17%, at least 18%, offline).
 ATTACK_OPEN = 0.3
-ATTACK_FLARE = 0.0
-ATTACK_LIFT = 15.0  # degrees the cocked wings rise
-ATTACK_DOWNSTROKE = 27.0  # degrees the wings beat down at the strike
+# Round 9: the wings open only while the attack gathers and close low along the back for the blow (ATTACK_FLARE of the way to
+# STRIKE_WINGS), with no down-stroke, so the head's travel is the largest change from the game camera. Both fresh reviews of run 17 saw
+# only the wings move: they rose 15 degrees and beat down 27 at the strike.
+ATTACK_FLARE = 1.0
+ATTACK_LIFT = 5.0  # degrees the cocked wings rise
+ATTACK_DOWNSTROKE = 0.0  # degrees the wings beat down at the strike
 ATTACK_DOWN_END, ATTACK_DOWN_EASE = 0.75, 0.15  # the clip time the down-stroke is over by, and how long it takes to ease off
 # The wings flare out and up as the head strikes, a support for the lunge: swept back for the blow they filled 91% as much of the map
 # view as the defend's (run 10, TRIPO-ATTACK-DEFEND-ALIKE), and level (rise 0) they hung beside the legs and hid 22% of them from the side
 # cameras (run 11, TRIPO-WING-FRONT).
-STRIKE_WINGS = {"sweep": 25.0, "rise": 25.0, "roll": -50.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
+# Round 9: for the blow the fold sweeps past straight back and lies low (raised 10), its membrane turned 15 degrees up from the fold's.
+# Held in the fold the attack read 0.09 of the idle's silhouette (TRIPO-MAP-READ, at least 0.18), lowered to 5 below level it hung
+# 9% of its points under the belly (TRIPO-WING-THROUGH-BODY), and this pose reads 0.33 (offline on run 17's files).
+STRIKE_WINGS = held_back(sweep=100.0, rise=10.0, roll=-45.0)
 
 
 def attack_phases(t: float) -> Tuple[float, float, float]:

@@ -675,7 +675,8 @@ Rotation = Tuple[Tuple[float, float, float], float]
 WINGED_FRAMES = {"winged_idle": 72, "winged_walk": 32, "winged_rear": 56, "winged_guard": 48, "winged_flee": 64, "winged_collapse": 64}
 WINGED_BASE = {"winged_idle": "quadruped_idle", "winged_walk": "quadruped_walk", "winged_rear": "quadruped_rear",
                "winged_guard": "quadruped_brace", "winged_flee": "quadruped_walk", "winged_collapse": "quadruped_collapse"}
-WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 3}  # gait strides per clip
+# gait strides per clip. Round 9: the retreat runs four strides (three in round 8, whose gait one fresh review of run 17 read as a walk)
+WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 4}
 ROLE_FRAMES.update(WINGED_FRAMES)
 LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # The retreat turns away from the unit's heading and back while it walks with beating wings: FLEE_TURN degrees about the vertical through the
@@ -684,8 +685,10 @@ LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # one in half the frames: with 20 degrees held over the middle half and the move's stride the retreat read as the move played again (both
 # fresh reviews of run 7). At 45 degrees the turned body's near wing hid 23.9% of the legs from the right camera, and a lowered neck went
 # behind the near wing (run 8, TRIPO-WING-FRONT, limit 10%). At 30 degrees the level wings of round 5 hid 18.9% (run 10).
-FLEE_TURN = -25.0
-FLEE_TURN_IN = 0.5
+# Round 9: 45 degrees, held over the middle 0.3 of the clip. At 25 degrees one fresh review of run 17 saw no turn. With the wings held back
+# in the fold the near wing hides the legs no more than TRIPO-WING-FRONT allows (offline on run 17's files).
+FLEE_TURN = -45.0
+FLEE_TURN_IN = 0.35
 # The attack: (degrees drawn back while cocked, degrees forward at the strike) at Neck_01, Neck_02 and Head (positive pitches a raised neck
 # forward), the head's snap down at the bite, and the share of the rear's pitch and lifted forelegs that comes down at the strike.
 # The strike drives the neck forward and down, and the rear's pitch and lifted forelegs go fully at the blow (STRIKE_DROP 1): at 55 and 35
@@ -696,15 +699,26 @@ FLEE_TURN_IN = 0.5
 # facing, turned back toward the chest (both fresh reviews of run 15 saw the neck coil into a hook with the throat kinked).
 # The head faces its rest facing through the strike and dips only at the bite: aimed 10 degrees lower the snout led by 9.8% of the
 # body's length on run 16 (TRIPO-ATTACK-HEAD-LEAD, at least 10%), at its rest facing 11.3% (offline).
-STRIKE_NECK = {"Neck_01": (-8.0, 50.0), "Neck_02": (-5.0, 50.0), "Head": (-10.0, 0.0)}
+# Round 9: the neck's root drives forward 75 degrees and its upper half 30, so the head ends below the shoulders and ahead of the forefeet.
+# At 50 and 50 both fresh reviews of run 17 saw the head stay at its rest height with the upper neck curled back. The neck, head and
+# chest deform more (the whole clip's edges past 1.5 times 1.5%, run 17 1.0%), within DEFORM_PASSED_BOUND (D-83).
+STRIKE_NECK = {"Neck_01": (-10.0, 75.0), "Neck_02": (-5.0, 30.0), "Head": (-10.0, 0.0)}
 STRIKE_SNAP = 15.0
 # The share of the shared rear (`_rear`: the body pitched 32 degrees up about the hind feet, the forelegs lifted) the attack keeps while it
 # gathers. The whole rear lifted the head 8% of the height and drew it back 37% before the blow, and both fresh reviews of run 15 read a rear,
 # not a strike.
-ATTACK_REAR = 0.3
+ATTACK_REAR = 0.0
+# Round 9: the attack gathers back and lunges forward over planted feet (`planted_crouch`): the shares of the crouch's full travel, and the
+# hip and knee limits the crouch is solved within.
+# The lunge carries the body 9% of the height forward and 3% down (the gather 0.6 of the defend's 9% back). At a hip turn of 12 degrees
+# a front leg's root stretched 4.4% of its edges (TRIPO-LEG-ROOT-STRETCH, limit 2%).
+ATTACK_GATHER = 0.6
+ATTACK_LUNGE = 1.0
+ATTACK_HIP = 8.0
+ATTACK_BEND = 48.0
 # No neck joint bends more than STRIKE_JOINT_MAX degrees in the strike: at 80 degrees at the neck's root and a 35 degree snap at the head the
 # upper neck kinked behind the head and read as squashed (fresh reviews of run 12). The forward turn is spread over the neck instead.
-STRIKE_JOINT_MAX = 50.0
+STRIKE_JOINT_MAX = 75.0
 STRIKE_DROP = 1.0
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
@@ -740,9 +754,12 @@ LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # half 90 degrees forward, and its head turn of -50 was a turn of the head bone, carried by the neck's 80: the head pointed 86 degrees
 # below level, straight down, 0.77 of the height up (0.90 at rest, the withers 0.71), and both fresh reviews of run 15 saw a tall S with
 # the head high.
-GUARD_NECK_S = {"Neck_01": 45.0, "Neck_02": 30.0, "Head": -30.0}
-GUARD_HIP = 8.0  # degrees the hips and shoulders may turn in the crouch (`planted_crouch` says why)
-GUARD_BEND = 48.0  # degrees the joint below them may bend
+# Round 9: the neck's root draws back 30 degrees and its upper half bends forward 100, so the head is drawn back over the chest (8% of the
+# height behind its rest place) and faces the enemy, and the body sinks further (the hips may turn 12 degrees, 5% of the height down at
+# the shoulders). One fresh review of run 17 read the idle, the defend and the retreat as one silhouette from the game camera.
+GUARD_NECK_S = {"Neck_01": -30.0, "Neck_02": 100.0, "Head": -30.0}
+GUARD_HIP = 12.0  # degrees the hips and shoulders may turn in the crouch (`planted_crouch` says why)
+GUARD_BEND = 60.0  # degrees the joint below them may bend
 CROUCH_MATCH = 0.005  # of the height: how near the hind feet's travel must come to the forefeet's before it is matched exactly
 
 
@@ -806,23 +823,43 @@ def _winged_time(style: str, frame: float) -> Tuple[float, float]:
     return t, t * base_total if base in LOOPING else t * (base_total - 1)
 
 
-def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str]) -> None:
-    """The attack strikes (`quadruped_wings.attack_phases`): the body rears and the neck draws back, then the forequarters come down as
-    the neck and head lunge forward and the head snaps down, and it recovers. The rear's pitch and the lifted forelegs ease off by
-    STRIKE_DROP of themselves at the strike, so the blow lands forward and the forelegs keep their rest shape. The tail keeps its world
-    pitch while the body rears about the hind feet (else it sinks and the feet lift off). A fresh review of run 3 read a rear with a slow
-    lunge as a threat display, not an attack."""
+def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str], landmarks: Dict[str, object]) -> None:
+    """The attack strikes (`quadruped_wings.attack_phases`): the body gathers back over planted feet as the neck draws back, then lunges
+    forward and down over them (`planted_crouch`, forward) while the neck drives forward and down and the head, aimed (`aim_head`), snaps
+    down at the bite, and it recovers. The shared rear's pitch and lifted forelegs are kept only ATTACK_REAR of themselves while it gathers.
+    Round 9: the head's travel must be the clip's largest change from the game camera, so the body carries it forward and down."""
 
     import quadruped_wings as qw
 
     cock, strike, snap = qw.attack_phases(t)
     keep = (1.0 - STRIKE_DROP * strike) * ATTACK_REAR
     pose["__root_pitch__"] = [(axis, degrees * keep) for axis, degrees in pose.get("__root_pitch__", [])]
-    for side in ("Left", "Right"):
-        for segment in LEG_SEGMENTS:
-            name = leg_name("Front", side, segment)
-            if name in pose:
-                pose[name] = [(axis, degrees * keep * FORELEG_LIFT) for axis, degrees in pose[name]]
+    gather = planted_crouch(landmarks, ATTACK_HIP, ATTACK_BEND) if ATTACK_GATHER > 0 else {}
+    lunge = planted_crouch(landmarks, ATTACK_HIP, ATTACK_BEND, forward=True) if ATTACK_LUNGE > 0 else {}
+    if gather or lunge:
+        a, b = ATTACK_GATHER * cock, ATTACK_LUNGE * strike
+        for end, side in LEGS:
+            for segment in LEG_SEGMENTS:
+                pose.pop(leg_name(end, side, segment), None)
+            upper = a * (gather or {}).get(end, (0.0, 0.0))[0] + b * (lunge or {}).get(end, (0.0, 0.0))[0]
+            lower = a * (gather or {}).get(end, (0.0, 0.0))[1] + b * (lunge or {}).get(end, (0.0, 0.0))[1]
+            pose[leg_name(end, side, "Upper")] = [(X_AXIS, upper)]
+            pose[leg_name(end, side, "Lower")] = [(X_AXIS, lower)]
+            pose[leg_name(end, side, "Cannon")] = [(X_AXIS, -(upper + lower))]
+        shift = a * (gather or {}).get("travel", (0.0, 0.0))[0] + b * (lunge or {}).get("travel", (0.0, 0.0))[0]
+        sink = a * (gather or {}).get("travel", (0.0, 0.0))[1] + b * (lunge or {}).get("travel", (0.0, 0.0))[1]
+        pose["__root_shift__"] = [(Y_AXIS, shift)]
+        if "Tail_02" in names:
+            lift = tail_lift(landmarks, sink)
+            pose["Tail_01"] = [(X_AXIS, lift)]
+            pose["Tail_02"] = [(X_AXIS, -lift)]
+    else:
+        for side in ("Left", "Right"):
+            for segment in LEG_SEGMENTS:
+                name = leg_name("Front", side, segment)
+                if name in pose:
+                    pose[name] = [(axis, degrees * keep * FORELEG_LIFT) for axis, degrees in pose[name]]
+        _hip_to_knee(pose)
     for name, (back, forward) in STRIKE_NECK.items():
         if name in names and name != "Head":
             turn = back * cock + forward * strike
@@ -831,7 +868,7 @@ def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: L
     back, forward = STRIKE_NECK.get("Head", (0.0, 0.0))
     aim_head(pose, names, back * cock + forward * strike + STRIKE_SNAP * snap)
     pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
-    if tails:
+    if tails and not (gather or lunge):
         pose[tails[0]] = [(X_AXIS, -pitch)]
 
 
@@ -893,7 +930,7 @@ def _foot_travel(joints: Dict[str, np.ndarray], upper: float, lower: float) -> n
 _CROUCHES: Dict[tuple, Dict[str, Tuple[float, float]]] = {}
 
 
-def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float) -> Dict[str, Tuple[float, float]]:
+def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float, forward: bool = False) -> Dict[str, Tuple[float, float]]:
     """A crouch that shifts the body back and sinks it over planted feet: per leg end the X turns (Upper, Lower), and under "travel" how far
     the body shifts back and sinks (model units). The hip and shoulder turn at most `hip` degrees and the joint below at most `bend`, and
     the Cannon turns back by both so the foot stays flat (`_foot_travel`). Of all such bends of the forelegs (whole degrees) for which the
@@ -902,10 +939,12 @@ def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float) -> Dic
 
     The limits are the skin's: the Tripo dragon's thick thighs are one skin with the flank, and a hip turned 12 degrees stretched 1.6% of
     a leg root's edges, 16 degrees 7.8% and the 39 degrees of an unbounded crouch 41.8% (offline, TRIPO-LEG-ROOT-STRETCH, limit 2%).
-    Bent at the Cannon instead of the hip, its paws tipped onto their heels and the unit was set up on them, every hoof in the air."""
+    Bent at the Cannon instead of the hip, its paws tipped onto their heels and the unit was set up on them, every hoof in the air.
+
+    `forward` asks for a lunge instead: the body shifts forward and sinks (the attack's blow), and "travel" holds a negative shift back."""
 
     legs = landmarks.get("legs") or {}
-    key = (round(hip, 3), round(bend, 3), tuple((name, tuple(np.round(np.asarray(joints[joint], dtype=float), 5))) for name, joints in sorted(legs.items()) for joint in ("top", "upper", "middle")))
+    key = (round(hip, 3), round(bend, 3), forward, tuple((name, tuple(np.round(np.asarray(joints[joint], dtype=float), 5))) for name, joints in sorted(legs.items()) for joint in ("top", "upper", "middle")))
     if key in _CROUCHES:
         return _CROUCHES[key]
     ends = {end: [joints for name, joints in legs.items() if name.startswith(end)] for end in ("Front", "Rear")}
@@ -921,7 +960,8 @@ def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float) -> Dic
         for u, lower in turns:
             moved = travel("Front", u, lower)
             back, sink = -float(moved[0]), float(moved[1])
-            if back <= 0 or sink <= 0 or (best is not None and back + sink <= best[0]):
+            way = -back if forward else back
+            if way <= 0 or sink <= 0 or (best is not None and way + sink <= best[0]):
                 continue
             miss = np.linalg.norm(rear - moved, axis=1)
             nearest = int(np.argmin(miss))
@@ -935,7 +975,7 @@ def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float) -> Dic
                     break
                 values = values - np.clip(np.linalg.solve(jacobian, base), -2.0, 2.0)
             if abs(values[0]) <= hip + 1.0 and abs(values[1]) <= bend + 2.0 and float(np.abs(travel("Rear", *values) - moved).max()) < 1e-3 * height:
-                best = (back + sink, {"Front": (u, lower), "Rear": (float(values[0]), float(values[1])), "travel": (back, sink)})
+                best = (way + sink, {"Front": (u, lower), "Rear": (float(values[0]), float(values[1])), "travel": (back, sink)})
         if best is not None:
             out = best[1]
     _CROUCHES[key] = out
@@ -1057,14 +1097,14 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
         turn = _smooth(min(1.0, t / FLEE_TURN_IN)) * (1 - _smooth(max(0.0, (t - 1 + FLEE_TURN_IN) / FLEE_TURN_IN)))
         pose["__root_turn__"] = [(Z_AXIS, FLEE_TURN * turn)]
     elif style == "winged_rear":
-        _winged_rear(pose, t, names, tails)
+        _winged_rear(pose, t, names, tails, layout.landmarks)
     elif style == "winged_collapse":
         _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
     elif style == "winged_guard":
         _winged_guard(pose, t, names, layout.landmarks)
     # a death folds its legs whole (TRIPO-DEATH-STIFF-LEGS read 23 degrees with the hip's turn moved down), and a defend's crouch is solved
     # for the hip and the joint below it as they stand (`planted_crouch`)
-    if style not in ("winged_collapse", "winged_guard"):
+    if style not in ("winged_collapse", "winged_guard", "winged_rear"):
         _hip_to_knee(pose)
     yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
     pose.update(qw.role_rows(style, t, layout, yaw))

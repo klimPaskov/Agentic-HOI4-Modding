@@ -104,7 +104,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_swing
+from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -233,12 +233,26 @@ SIDE_REACH_PERCENTILE = 99.0
 # turns carried a head bone turned on its own: run 15's attack turned the snout 131 degrees from its rest facing, back at the chest (both
 # fresh reviews saw a hook, the throat kinked to a right angle), its defend 30 (75 below level). Its idle, move and retreat stay within 10.
 MAX_HEAD_FACING_TURN = 40.0
-# TRIPO-ATTACK-HEAD-LEAD: at the frame its snout reaches furthest forward, a winged quadruped's attack has moved the snout at least
-# ATTACK_SNOUT_REACH of the body's length ahead of where it started and lower than it started (by ATTACK_SNOUT_DROP of the height). On run
-# 15 the head's points travelled 18% (TRIPO-ATTACK-REACH passed) while the snout never came ahead of its first frame, turned back toward
-# the chest, and both fresh reviews saw no strike.
-ATTACK_SNOUT_REACH = 0.1
-ATTACK_SNOUT_DROP = 0.05
+# TRIPO-ATTACK-HEAD-LEAD: a winged quadruped's attack drops its snout on the game camera's screen (the map view's projection, `lib/map_read`)
+# by at least ATTACK_SNOUT_DROP of the height from its first frame, and at that frame the snout lies below the shoulders (the Neck_01 joint
+# at rest) and ahead of the fore hooves. Round 9 measures it as reviewers see it: the blows reviewers accepted, the hand of the orc's chop
+# (orc_k) and of the ogre's (ogre_l), drop 0.174 and 0.236 of their height on that screen. Run 17's snout dropped 0.154 and both fresh
+# reviews saw no strike, while round 8's form of the check (12% of the body's length ahead, 12.5% of the height lower, in the world) passed it.
+ATTACK_SNOUT_DROP = 0.17
+# TRIPO-GAME-READ: a winged quadruped's attack, defend and retreat each change at least MIN_GAME_READ of the idle's silhouette from the game
+# camera (`map_read.clip_reading`, its 90th percentile frame). The units reviewers passed (orc_k, ogre_l, dwarf_f) read 0.276 to 0.445 in
+# those clips, but for the ogre's defend (0.143, a guard close to its idle stance). Run 17 read 0.21 (attack) and 0.183 (defend), and
+# fresh reviews read its attack as no strike and its defend as the idle (one review).
+MIN_GAME_READ = 0.27
+GAME_READ_ROLES = ("attack", "defend", "retreat")
+# TRIPO-DEFORM-PASSED-BOUND: no clip of a winged quadruped deforms more of its edges (stretched or squashed 1.5 times and by 0.5% of the
+# height, `pdx_deform`, its worst frame) than the worst clip of a unit reviewers passed: orc_k's retreat, 2.40% (its other clips 0.25% to
+# 2.38%, ogre_l's at most 1.55%, dwarf_f's at most 2.05%, measured 2026-11-18). Under D-83 a change that makes a clip read at game size
+# may deform more than the clip did before, as long as it stays within this bound (the kit's no-worse rule does not block it).
+DEFORM_PASSED_BOUND = 0.024
+# TRIPO-ATTACK-DEFEND-ALIKE is judged only when one of the two clips holds its wings larger in the map view than WINGS_OPEN_SHARE times the
+# idle's fold: the check caught two wing displays (run 9), and a blow with the wings closed along the back is no display.
+WINGS_OPEN_SHARE = 1.1
 # TRIPO-DEATH-SIDE: a winged quadruped's death ends with the torso (the Chest bone's up axis) rolled DEATH_ROLL_RANGE degrees from upright:
 # on its side, not on its belly or its back. Run 15 ended at 82 degrees.
 DEATH_ROLL_RANGE = (60.0, 120.0)
@@ -938,19 +952,26 @@ def torso_roll(matrix_frame: np.ndarray, chest: int) -> float:
 
 
 def _snout_lead(mesh, clip: str, matrices, c: dict, row: dict) -> List[dict]:
-    """TRIPO-ATTACK-HEAD-LEAD: the snout's furthest travel ahead of its first frame, and its drop there."""
+    """TRIPO-ATTACK-HEAD-LEAD: the snout's largest drop on the game camera's screen from its first frame, and where it lies at that frame
+    against the shoulders and the fore hooves."""
 
     snout = c["snout"]
+    right, up = map_read.map_axes(c["front"])
     start = pdx_deform.skin(mesh, matrices[0])[snout]
-    ahead, drop, best = -np.inf, 0.0, 0
+    drop, best = -np.inf, 0
     for frame in range(matrices.shape[0]):
         point = pdx_deform.skin(mesh, matrices[frame])[snout]
-        forward = float((point - start) @ c["front"]) / c["length"]
-        if forward > ahead:
-            ahead, drop, best = forward, float(start[1] - point[1]) / mesh.height, frame
-    row.update(snout_reach=round(ahead, 3), snout_drop=round(drop, 3), snout_frame=best)
-    if ahead < ATTACK_SNOUT_REACH or drop < ATTACK_SNOUT_DROP:
-        return [finding("TRIPO-ATTACK-HEAD-LEAD", clip, f"at its furthest (frame {best}) the snout is {ahead:.0%} of the body's length ahead of its start and {drop:.0%} of the height below it (at least {ATTACK_SNOUT_REACH:.0%} ahead and {ATTACK_SNOUT_DROP:.0%} below): the head does not lead the strike forward and down", reach=round(ahead, 3), drop=round(drop, 3), frame=best)]
+        value = float((start - point) @ up) / mesh.height
+        if value > drop:
+            drop, best = value, frame
+    posed = pdx_deform.skin(mesh, matrices[best])
+    ground = float(mesh.positions[:, 1].min())
+    below = float(c["shoulder"] - posed[snout][1]) / mesh.height if c.get("shoulder") is not None else 0.0
+    ahead = float(posed[snout] @ c["front"] - (posed[c["fore_hooves"]] @ c["front"]).max()) / mesh.height if c["fore_hooves"].any() else 0.0
+    row.update(snout_screen_drop=round(drop, 3), snout_frame=best, snout_below_shoulders=round(below, 3), snout_ahead_of_forefeet=round(ahead, 3),
+               snout_height=round(float(posed[snout][1] - ground) / mesh.height, 3))
+    if drop < ATTACK_SNOUT_DROP or below <= 0 or ahead <= 0:
+        return [finding("TRIPO-ATTACK-HEAD-LEAD", clip, f"at its lowest on the game camera's screen (frame {best}) the snout has dropped {drop:.0%} of the height (at least {ATTACK_SNOUT_DROP:.0%}, the orc's and the ogre's blows 17% and 24%), lies {below:+.0%} below the shoulders and {ahead:+.0%} ahead of the forefeet (both must be above 0): the head does not drive the strike forward and down", drop=round(drop, 3), below=round(below, 3), ahead=round(ahead, 3), frame=best)]
     return []
 
 
@@ -1002,30 +1023,77 @@ def quadruped_view_findings(mesh, anims: Dict[str, object], sides) -> (List[dict
     chest = mesh.bones.index("Chest") if "Chest" in mesh.bones else None
     head_bone = mesh.bones.index("Head") if "Head" in mesh.bones and head.any() else None
     snout = int(np.flatnonzero(head)[np.argmax(mesh.positions[head] @ front)]) if head_bone is not None else None
-    context = dict(wings=wings, head=head, head_neck=head_neck, front=front, length=length, cell=cell, flat=flat, edges=edges, rest=rest,
-                   torso=torso_only, hooves=hooves, sides=sides, chest=chest, head_bone=head_bone, snout=snout)
+    shoulder = float(np.linalg.inv(mesh.inverse_bind[mesh.bones.index("Neck_01")])[1, 3]) if "Neck_01" in mesh.bones else None
+    fore_hooves = np.isin(named, ["Front_Left_Hoof", "Front_Right_Hoof"])
+    context = dict(all_edges=pdx_deform.mesh_edges(mesh), wings=wings, head=head, head_neck=head_neck, front=front, length=length, cell=cell, flat=flat, edges=edges, rest=rest,
+                   torso=torso_only, hooves=hooves, sides=sides, chest=chest, head_bone=head_bone, snout=snout, shoulder=shoulder,
+                   fore_hooves=fore_hooves)
     for clip, anim in anims.items():
         found, row, peak = _winged_clip_findings(mesh, clip, anim, context)
         out += found
         numbers[clip] = row
         if peak is not None:
             peaks[clip_role(clip)] = peak
-    idle = next((row["side_reach"] for clip, row in numbers.items() if clip_role(clip) == "idle" and "side_reach" in row), None)
-    for clip, row in numbers.items():
-        if idle is None or clip_role(clip) not in SIDE_REACH_ROLES or "side_reach" not in row:
-            continue
-        ratios = [reach / max(base, 1e-6) for reach, base in zip(row["side_reach"], idle)]
-        row["side_reach_over_idle"] = [round(value, 3) for value in ratios]
-        if max(ratios) > MAX_SIDE_REACH_OVER_IDLE:
-            out.append(finding("TRIPO-WING-SIDE-REACH", clip, f"a wing reaches {max(ratios):.2f} times as far to its side as in the idle's fold (at most {MAX_SIDE_REACH_OVER_IDLE:.2f}): the wings held back stand out to the sides", ratio=round(max(ratios), 3)))
-    if len(peaks) == 2:
-        ratio = min(peaks.values()) / max(max(peaks.values()), 1)
-        numbers["attack_defend_wings"] = round(ratio, 3)
-        if ratio > MAX_ATTACK_DEFEND_WINGS:
-            clip = next(clip for clip in anims if clip_role(clip) == "attack")
-            out.append(finding("TRIPO-ATTACK-DEFEND-ALIKE", clip, f"at the attack's farthest reach and the defend's middle the wings fill {ratio:.0%} as much of the map view as each other (at most {MAX_ATTACK_DEFEND_WINGS:.0%}): at map size the two clips read alike", share=round(ratio, 3)))
+    out += _pair_findings(mesh, anims, numbers, peaks, context)
     return out, numbers
 
+
+def _pair_findings(mesh, anims: Dict[str, object], numbers: dict, peaks: Dict[str, int], c: dict) -> List[dict]:
+    """The findings that compare a winged quadruped's clips: TRIPO-WING-SIDE-REACH and TRIPO-GAME-READ against the idle, TRIPO-ATTACK-
+    DEFEND-ALIKE between the attack and the defend, and TRIPO-DEFORM-PASSED-BOUND per clip."""
+
+    out: List[dict] = []
+    idle_clip = next((clip for clip in anims if clip_role(clip) == "idle"), None)
+    idle = numbers.get(idle_clip, {}).get("side_reach") if idle_clip else None
+    for clip, row in numbers.items():
+        if not isinstance(row, dict):
+            continue
+        role = clip_role(clip)
+        if idle is not None and role in SIDE_REACH_ROLES and "side_reach" in row:
+            ratios = [reach / max(base, 1e-6) for reach, base in zip(row["side_reach"], idle)]
+            row["side_reach_over_idle"] = [round(value, 3) for value in ratios]
+            if max(ratios) > MAX_SIDE_REACH_OVER_IDLE:
+                out.append(finding("TRIPO-WING-SIDE-REACH", clip, f"a wing reaches {max(ratios):.2f} times as far to its side as in the idle's fold (at most {MAX_SIDE_REACH_OVER_IDLE:.2f}): the wings held back stand out to the sides", ratio=round(max(ratios), 3)))
+        if idle_clip is not None and role in GAME_READ_ROLES:
+            read = map_read.clip_reading(mesh, anims[clip], anims[idle_clip])
+            row["game_read"] = round(read, 3)
+            if read < MIN_GAME_READ:
+                out.append(finding("TRIPO-GAME-READ", clip, f"from the game camera the {role} changes {read:.0%} of the idle's silhouette (at least {MIN_GAME_READ:.0%}, the clips of the units reviewers passed 28% to 45%): at game size it reads as the idle", share=round(read, 3)))
+        share = deformed_share(mesh, anims[clip], c["all_edges"])
+        row["deformed_share"] = round(share, 4)
+        if share > DEFORM_PASSED_BOUND:
+            out.append(finding("TRIPO-DEFORM-PASSED-BOUND", clip, f"{share:.1%} of the edges stretch or squash 1.5 times in the worst frame (at most {DEFORM_PASSED_BOUND:.1%}, the worst clip of a unit reviewers passed)", share=round(share, 4)))
+    if len(peaks) == 2:
+        ratio = min(peaks.values()) / max(max(peaks.values()), 1)
+        fold = len(_cells(pdx_deform.skin(mesh, pdx_deform.skinning_matrices(mesh, anims[idle_clip])[0])[c["wings"]], _view_axes(mesh, "map"), c["cell"])) if idle_clip else 0
+        numbers["attack_defend_wings"] = round(ratio, 3)
+        numbers["wings_over_fold"] = round(max(peaks.values()) / max(fold, 1), 3) if fold else None
+        opened = not fold or max(peaks.values()) > WINGS_OPEN_SHARE * fold
+        if ratio > MAX_ATTACK_DEFEND_WINGS and opened:
+            clip = next(clip for clip in anims if clip_role(clip) == "attack")
+            out.append(finding("TRIPO-ATTACK-DEFEND-ALIKE", clip, f"at the attack's farthest reach and the defend's middle the wings fill {ratio:.0%} as much of the map view as each other (at most {MAX_ATTACK_DEFEND_WINGS:.0%}): at map size the two clips read alike", share=round(ratio, 3)))
+    return out
+
+
+def deformed_share(mesh, anim, edges: np.ndarray) -> float:
+    """TRIPO-DEFORM-PASSED-BOUND's measure: the most, over the clip's frames, of the share of the mesh's edges stretched or squashed past
+    `pdx_deform`'s ratio (1.5) and by its significant share of the height (0.5%)."""
+
+    rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
+    usable = rest > 1e-9
+    if not usable.any():
+        return 0.0
+    height = max(mesh.height, 1e-6)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    worst = 0.0
+    for frame in range(matrices.shape[0]):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        length = np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1)
+        ratio = length[usable] / rest[usable]
+        growth = (length[usable] - rest[usable]) / height
+        bad = ((ratio > pdx_deform.STRETCH_RATIO) & (growth > pdx_deform.SIGNIFICANT_SHARE)) | ((ratio < pdx_deform.SQUASH_RATIO) & (-growth > pdx_deform.SIGNIFICANT_SHARE))
+        worst = max(worst, float(bad.mean()))
+    return worst
 
 def idle_move_findings(rows: Dict[str, dict]) -> List[dict]:
     """TRIPO-WING-IDLE-MOVE: the move's wings move at map size at least `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's."""
