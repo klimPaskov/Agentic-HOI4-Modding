@@ -163,6 +163,32 @@ class RealExport(unittest.TestCase):
         self.assertEqual(plan["moved"], sum(sum(target.values()) for target in plan["targets"].values()))
 
 
+class ReadersBeforeBlender(unittest.TestCase):
+    """The intake's Python-side readers of the rig (the hips travel, the loop windows, the still tails) run before Blender and must read an
+    export that carries `neutral_bone` as they read any other."""
+
+    ROLES = {"idle": "idle", "move": "walk", "attack": "box_01", "defend": "hit_to_body_01", "retreat": "flee_01", "death": "fall"}
+
+    @unittest.skipUnless(REAL_EXPORT.is_file(), "the real Tripo export that carries neutral_bone is not on this machine")
+    def test_the_real_export_is_read_by_the_intake_before_blender(self) -> None:
+        from lib import glb_root, tripo_loop, tripo_trim
+
+        self.assertEqual(glb_root.travelling_clips(REAL_EXPORT, self.ROLES.values()), {})
+        windows = tripo_loop.auto_windows(REAL_EXPORT, self.ROLES)
+        self.assertEqual(sorted(windows), ["move", "retreat"])
+        trims = tripo_trim.auto_trims(REAL_EXPORT, self.ROLES)
+        self.assertLessEqual(set(trims), {"attack", "defend", "retreat"})
+
+    def test_the_synthetic_export_is_read_the_same_way(self) -> None:
+        from lib import glb_root
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "unit__rigged.glb"
+            rig_glb.write_rig_glb(path)
+            self.assertEqual(glb_root.travelling_clips(path, ["idle", "walk"]), {})
+            self.assertEqual(sorted(glb_root.root_travel(path)), ["idle", "walk"])
+
+
 class BlenderStageWiring(unittest.TestCase):
     """prepare_tripo_unit.py runs only inside Blender, so its use of the rule is read from its source."""
 
