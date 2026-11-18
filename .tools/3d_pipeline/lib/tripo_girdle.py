@@ -46,6 +46,13 @@ edges 210 to 239 (within the floor), every other count lower or within the bound
 checks, so the rule is not tried. Forced on them it changed the orc's edges from 3,207 to 3,210 (its plates and cloak are locked) and took the
 zombie's from 758 to 639, no clip past the bound.
 
+The run ogre_m (ogre_l's clips, 2026-11-18) tried the rule before the shoulder ease, where it could not lower what the ease then left (the
+attack's girdle 0.198 to 0.197), and its export failed TRIPO-SHOULDER-TEAR in the attack (0.181, frame 20) and the defend (0.166, frame 28).
+`run_pilot.girdle_trial` now runs after the pose eases. On ogre_m's files that trial lowered the girdle (attack 0.197 to 0.156, defend 0.210 to
+0.177, each swell about halved) but the trade refused it: the unit's deformed edges rose from 1,591 to 1,719, the attack's worst-frame
+stretched edges from 368 to 440 and the death's from 242 to 343 (the death now settles its split thighs, `lib/tripo_splay.py`). The two fits
+of the same start on nearly the same clips (ogre_l, ogre_m) differ by more than what the rule gains, so this rule is not yet the fix.
+
 Only the `ix`, `w` and `bones` values of the `skin` blocks change (`stretch_smooth.write_weights`).
 """
 

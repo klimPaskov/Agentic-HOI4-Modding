@@ -48,6 +48,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-SHOULDER-SWELL: in some frame of a humanoid's clip more than 7.75% of a shoulder region's skin (the torso between the midline and the
   upper arm's joint, down to 1.5 upper arm lengths below it) has grown past 1.69 times its rest area (vanilla's worst clip 6.2%). The shoulder and
   the upper back swell into one ball. `lib/tripo_shoulder.py`, whose ease `run_pilot` applies to the staged clips.
+- TRIPO-SHOULDER-TEAR: in some frame of a humanoid's clip more than 15.6% of a shoulder girdle's skin (the shoulder region and the torso under
+  the arm) has grown past 1.44 times its rest area (vanilla's worst 12.5%). The raised arm tears the armpit and the side of the chest.
+  `lib/tripo_shoulder.py`, with the weight rule of `lib/tripo_girdle.py`.
 - TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are more than 47.9 degrees apart (vanilla's deaths split them 38.3
   at most). The crotch and the raised thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing `run_pilot`
   applies to the exported death before its settles.

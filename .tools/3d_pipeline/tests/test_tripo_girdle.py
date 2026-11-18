@@ -82,14 +82,30 @@ class Trade(unittest.TestCase):
 
 
 class Pilot(unittest.TestCase):
-    def test_a_quadruped_or_the_switch_off_gets_only_the_smoothing_and_the_fit(self) -> None:
+    def test_a_quadruped_or_the_switch_off_keeps_no_start_and_gets_no_trial(self) -> None:
+        import tempfile
+
         for spec, quadruped in (({"runtime_stem": "u", "tripo": {"girdle_weights": False}}, False), ({"runtime_stem": "u"}, True)):
-            with mock.patch.object(run_pilot, "_smooth_and_fit", return_value={"weight_fit": {}}) as fit, \
-                    mock.patch.object(run_pilot, "tripo_quadruped", return_value=quadruped), mock.patch.object(G, "measures") as measures:
-                out = run_pilot.fit_staged_weights(Path("job"), Path("staged"), spec, ["attack"], [])
+            with tempfile.TemporaryDirectory() as folder, mock.patch.object(run_pilot, "_smooth_and_fit", return_value={"weight_fit": {}}) as fit,                     mock.patch.object(run_pilot, "tripo_quadruped", return_value=quadruped), mock.patch.object(G, "measures") as measures:
+                job = Path(folder)
+                out = run_pilot.fit_staged_weights(job, job, spec, ["attack"], [])
+                self.assertIsNone(run_pilot.girdle_trial(job, job, spec, ["attack"], []))
+                self.assertFalse((job / "validation" / "girdle_trial").exists())
             fit.assert_called_once()
             measures.assert_not_called()
-            self.assertNotIn("girdle_weights", out)
+            self.assertEqual(out, {"weight_fit": {}})
+
+    def test_a_humanoid_that_passes_keeps_its_weights_and_the_trial_folder_is_removed(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as folder, mock.patch.object(run_pilot, "_smooth_and_fit", return_value={}),                 mock.patch.object(run_pilot, "tripo_quadruped", return_value=False),                 mock.patch.object(G, "measures", return_value={"u_attack": {"girdle": 0.01, "swell": 0.01}, "_edges": 10}):
+            job = Path(folder)
+            (job / "u.mesh").write_bytes(b"mesh")
+            run_pilot.fit_staged_weights(job, job, {"runtime_stem": "u"}, ["attack"], [])
+            self.assertTrue((job / "validation" / "girdle_trial" / "start.mesh").is_file())
+            record = run_pilot.girdle_trial(job, job, {"runtime_stem": "u"}, ["attack"], [])
+            self.assertEqual(record["failing_before"], [])
+            self.assertFalse((job / "validation" / "girdle_trial").exists())
 
 
 if __name__ == "__main__":

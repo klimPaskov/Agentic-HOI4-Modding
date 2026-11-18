@@ -3866,46 +3866,64 @@ def _smooth_and_fit(staged: Path, stem: str, roles: List[str], weapon: Any, spec
     return out
 
 
-def fit_staged_weights(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Dict[str, Any]:
-    """The smoothing and the fit on the staged mesh. For a humanoid whose clips still fail TRIPO-SHOULDER-SWELL or TRIPO-SHOULDER-TEAR after
-    them, the girdle rule (lib/tripo_girdle.py) runs on the weights the fit started from, in a trial folder, followed by the same smoothing and
-    fit, and its result replaces the staged mesh when the bounded trade accepts it. Recorded under `girdle_weights`."""
+def _girdle_on(spec: Dict[str, Any]) -> bool:
+    return not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("girdle_weights", True) is not False
 
-    from lib import tripo_chains, tripo_girdle, weight_fit, pdx_deform
+
+def fit_staged_weights(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Dict[str, Any]:
+    """The smoothing and the fit on the staged mesh. For a humanoid the weights they start from are kept for the girdle trial
+    (`girdle_trial`), which runs after the pose eases."""
 
     stem = spec["runtime_stem"]
-    mesh = staged / f"{stem}.mesh"
-    trial = job / "validation" / "girdle_trial"
-    use = not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("girdle_weights", True) is not False
-    if use:
+    if _girdle_on(spec):
+        trial = job / "validation" / "girdle_trial"
         shutil.rmtree(trial, ignore_errors=True)
         trial.mkdir(parents=True)
-        shutil.copy2(mesh, trial / mesh.name)
-    out = _smooth_and_fit(staged, stem, roles, weapon, spec)
-    if not use:
-        return out
+        shutil.copy2(staged / f"{stem}.mesh", trial / "start.mesh")
+    return _smooth_and_fit(staged, stem, roles, weapon, spec)
+
+
+def girdle_trial(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Optional[Dict[str, Any]]:
+    """The girdle rule (lib/tripo_girdle.py), after the pose eases, for a humanoid whose clips still fail TRIPO-SHOULDER-SWELL or
+    TRIPO-SHOULDER-TEAR. From the weights the fit started from, two trials smooth and fit against the eased clips, one with the rule and one
+    without, and the rule's weights replace the staged mesh when the bounded trade accepts them against the other. The rule is judged on the
+    clips as they leave the route: tried before the shoulder ease, it could not lower what the ease left (the ogre's attack 0.198 to 0.197)."""
+
+    from lib import pdx_deform, tripo_chains, tripo_girdle, weight_fit
+
+    trial = job / "validation" / "girdle_trial"
+    stem = spec["runtime_stem"]
+    if not _girdle_on(spec) or not (trial / "start.mesh").is_file():
+        return None
+    mesh = staged / f"{stem}.mesh"
     anims = [staged / f"{stem}_{role}.anim" for role in roles]
-    before = tripo_girdle.measures(mesh, anims)
-    failing = [n for n, m in before.items() if not n.startswith("_") and (m["girdle"] > tripo_girdle.tripo_shoulder.GIRDLE_LIMIT
-                                                                         or m["swell"] > tripo_girdle.tripo_shoulder.SWELL_LIMIT)]
+    now = tripo_girdle.measures(mesh, anims)
+    failing = [n for n, m in now.items() if not n.startswith("_") and (m["girdle"] > tripo_girdle.tripo_shoulder.GIRDLE_LIMIT
+                                                                      or m["swell"] > tripo_girdle.tripo_shoulder.SWELL_LIMIT)]
     record: Dict[str, Any] = {"failing_before": failing}
-    if failing:
+    if not failing:
+        shutil.rmtree(trial, ignore_errors=True)
+        return dict(record, note="every clip passes the shoulder checks")
+    results = {}
+    for name in ("without", "with"):
+        folder = trial / name
+        folder.mkdir()
+        shutil.copy2(trial / "start.mesh", folder / mesh.name)
         for anim in anims:
-            shutil.copy2(anim, trial / anim.name)
-        plates = weight_fit.plate_vertices(pdx_deform.load_mesh(trial / mesh.name)) if job_has_plates(spec) else None
-        record["rule"] = tripo_girdle.confine_arm_weights(trial / mesh.name, trial / mesh.name, held_bones(_parts(weapon)),
-                                                          tuple(tripo_chains.REGION_PREFIX.values()), plates)
-        record["trial"] = _smooth_and_fit(trial, stem, roles, weapon, spec)
-        result = tripo_girdle.trade(before, tripo_girdle.measures(trial / mesh.name, [trial / a.name for a in anims]))
-        record.update({"accepted": result.accepted, "deformed_edges_before": result.deformed_before, "deformed_edges_after": result.deformed_after,
-                       "reasons": result.reasons, "clips": result.clips})
-        if result.accepted:
-            shutil.copy2(trial / mesh.name, mesh)
-    else:
-        record["note"] = "every clip passes the shoulder checks"
+            shutil.copy2(anim, folder / anim.name)
+        if name == "with":
+            plates = weight_fit.plate_vertices(pdx_deform.load_mesh(folder / mesh.name)) if job_has_plates(spec) else None
+            record["rule"] = tripo_girdle.confine_arm_weights(folder / mesh.name, folder / mesh.name, held_bones(_parts(weapon)),
+                                                              tuple(tripo_chains.REGION_PREFIX.values()), plates)
+        _smooth_and_fit(folder, stem, roles, weapon, spec)
+        results[name] = tripo_girdle.measures(folder / mesh.name, [folder / a.name for a in anims])
+    result = tripo_girdle.trade(results["without"], results["with"])
+    record.update({"accepted": result.accepted, "deformed_edges_before": result.deformed_before, "deformed_edges_after": result.deformed_after,
+                   "reasons": result.reasons, "clips": result.clips})
+    if result.accepted:
+        shutil.copy2(trial / "with" / mesh.name, mesh)
     shutil.rmtree(trial, ignore_errors=True)
-    out["girdle_weights"] = record
-    return out
+    return record
 
 
 def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
@@ -4252,12 +4270,13 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
-        # plates locked. `"fit_weights": false` in the job's tripo block switches it off. A humanoid whose shoulders still fail gets the girdle
-        # rule tried as well (lib/tripo_girdle.py, `"girdle_weights": false` to switch it off).
+        # plates locked. `"fit_weights": false` in the job's tripo block switches it off.
         records[f"{stem}.mesh"].update(fit_staged_weights(job, staged, spec, sorted(exports["animations"]), weapon_cfg))
         records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
-        # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder.
+        # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder. Then the girdle
+        # rule is tried on the weights (lib/tripo_girdle.py, `"girdle_weights": false` to switch it off).
         ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
+        records[f"{stem}.mesh"]["girdle_weights"] = girdle_trial(job, staged, spec, sorted(exports["animations"]), weapon_cfg)
         # Then the mesh the game loads decides where the ground is.
         for role in sorted(exports["animations"]):
             records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
