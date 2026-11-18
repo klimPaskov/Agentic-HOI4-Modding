@@ -102,13 +102,27 @@ def retime_window(quats: Sequence[np.ndarray], frames: Sequence[float], a: int, 
     return out
 
 
+def straight_window(quats: Sequence[np.ndarray], frames: Sequence[float], a: int, b: int) -> List[np.ndarray]:
+    """The keys `a` to `b` replaced by a straight slerp from key `a` to key `b` (the old rule, for a turn too long to retime)."""
+
+    out = [np.array(q, float) for q in quats]
+    for m in range(a + 1, b):
+        out[m] = slerp(quats[a], quats[b], (float(frames[m]) - float(frames[a])) / max(float(frames[b]) - float(frames[a]), 1e-6))
+    return out
+
+
 def ease_turns(quats: Sequence[np.ndarray], frames: Sequence[float], trigger: float, target: float,
                max_window: int = MAX_WINDOW) -> Tuple[List[np.ndarray], List[List[int]]]:
     """(the keys with every step faster than `trigger` degrees per frame retimed, the windows eased as [first frame, last frame]).
 
     The keys must be on one hemisphere (`one_hemisphere`). For a fast step at key k the window grows from two keys either side to
     `max_window`, and the first that `retime_window` fits to `target` is taken. When the window has grown to the whole clip and still
-    does not fit, the clip's turn is spread evenly over it. A step no window fits is left as it is."""
+    does not fit, the clip's turn is spread evenly over it.
+
+    A path too long for any window is a joint that snaps out and back (the round 4 dwarf's glaive hand turned 98 degrees in one frame and
+    116 back four frames later, where a clearance turn started and ended): retimed it still cannot slow down, so the old rule takes it,
+    the straight slerp across the smallest window that brings every step to `target`, which cuts the excursion out. A step neither
+    rule fits is left as it is."""
 
     quats = [np.array(q, float) for q in quats]
     eased: List[List[int]] = []
@@ -116,16 +130,24 @@ def ease_turns(quats: Sequence[np.ndarray], frames: Sequence[float], trigger: fl
     k = 1
     while k < count:
         if turn_rates(quats[k - 1 : k + 1], frames[k - 1 : k + 1])[0] > trigger:
+            found = None
             for window in range(2, max_window + 1):
                 a, b = max(k - window, 0), min(k + window - 1, count - 1)
-                whole = a == 0 and b == count - 1
                 trial = retime_window(quats, frames, a, b, target)
-                if trial is None and whole:
+                if trial is None and a == 0 and b == count - 1:
                     trial = retime_window(quats, frames, a, b, target, fit=False)
                 if trial is not None:
-                    quats = trial
-                    eased.append([int(frames[a]), int(frames[b])])
-                    k = b
+                    found = (trial, a, b)
                     break
+            for window in range(2, max_window + 1) if found is None else ():
+                a, b = max(k - window, 0), min(k + window - 1, count - 1)
+                trial = straight_window(quats, frames, a, b)
+                if max(turn_rates(trial[max(a - 1, 0) : b + 2], frames[max(a - 1, 0) : b + 2]), default=0.0) <= target or (a == 0 and b == count - 1):
+                    found = (trial, a, b)
+                    break
+            if found is not None:
+                quats, a, b = found
+                eased.append([int(frames[a]), int(frames[b])])
+                k = b
         k += 1
     return quats, eased

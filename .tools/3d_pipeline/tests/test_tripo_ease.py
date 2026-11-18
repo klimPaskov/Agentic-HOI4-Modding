@@ -91,6 +91,18 @@ class Retime(unittest.TestCase):
         self.assertTrue(windows)
         self.assertLessEqual(max(E.turn_rates(eased, frames)), 10.5 + 1e-6)
 
+    def test_a_snap_out_and_back_too_long_to_retime_is_cut_out(self) -> None:
+        # a turn of 100 degrees out in one frame and back four frames later (a clearance turn that starts and ends): no window can slow a path
+        # of 200 degrees to 10.5 a frame, so the straight slerp of the old rule takes it
+        angles = [2.0 * k for k in range(20)]
+        angles[10:14] = [angles[9] + 100.0] * 4
+        quats = [about_x(a) for a in angles]
+        frames = list(range(20))
+        eased, windows = E.ease_turns(quats, frames, trigger=14.0, target=10.5, max_window=6)
+        self.assertTrue(windows)
+        self.assertLessEqual(max(E.turn_rates(eased, frames)), 10.5 + 1e-6)
+        self.assertLess(max(angle_of(q) for q in eased), 60.0)
+
     def test_flips_are_put_on_one_hemisphere(self) -> None:
         quats = [about_x(10.0), -about_x(12.0), about_x(14.0)]
         fixed, flips = E.one_hemisphere(quats)
