@@ -3738,12 +3738,17 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
     weapon or shield the unit has let go of never deciding where it is. A death whose thighs split apart past vanilla's deaths has its knees swung together first (lib/tripo_splay.py, TRIPO-DEATH-SPLAY), one whose hips hold themselves up while it falls has them brought down in a free fall first (lib/tripo_fall.py, TRIPO-DEATH-HOVER), one whose boots hang above the ground has its legs settled next, one
-    whose boot kicks up again once the hips are down has that leg laid across the kick (lib/tripo_kick.py, TRIPO-DEATH-LEG-KICK), and one whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
+    whose boot kicks up again once the hips are down has that leg laid across the kick (lib/tripo_kick.py, TRIPO-DEATH-LEG-KICK), and one whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. In a death the wing chains never decide where the body is, and each wing sunk under the ground is turned up about its root last (lib/tripo_chain_lift.py). `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
 
     from lib import pdx_ground, tripo_fall, tripo_kick, tripo_pose, tripo_splay
 
     released = released_bones(_parts(weapon), role)
     record: Dict[str, Any] = {}
+    if role == "death":
+        # a death's wing chains never decide where the body is: they are lifted off the ground instead (lib/tripo_chain_lift.py)
+        from lib import pdx_deform, tripo_chain_lift
+
+        released = list(released) + [name for name in tripo_chain_lift.chain_bones(pdx_deform.load_mesh(mesh)) if name not in released]
     if role == "death" and humanoid:
         splay = tripo_splay.close_death_legs(mesh, anim, anim, exclude_bones=released)
         record["splay"] = dict(splay.__dict__)
@@ -3758,6 +3763,10 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
         upper = tripo_pose.settle_death_upper(mesh, anim, anim, exclude_bones=released)
         record["upper_body"] = {"changed": upper.changed, "turns_degrees": upper.turns, "from_frame": upper.from_frame, "ramp_frames": upper.frames,
                                 "heights_before": upper.heights_before, "heights_after": upper.heights_after, "note": upper.note}
+    if role == "death":
+        lift = tripo_chain_lift.lift_death_chains(mesh, anim, anim)
+        if lift.changed or lift.sunk_before:
+            record["chain_lift"] = dict(lift.__dict__)
     fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=released)
     record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
     return record

@@ -455,6 +455,40 @@ class Regions(unittest.TestCase):
         rest_world = relative[0][:3, :3] @ relative[1][:3, :3]
         np.testing.assert_allclose(world, turns[1] @ rest_world, atol=1e-6)
 
+    def test_a_capped_rise_keeps_the_heading_and_only_lowers(self) -> None:
+        rest = C.unit(np.array([-1.0, 0.0, 0.3]))
+        steep = C.unit(np.array([-0.3, 0.5, 1.0]))
+        capped = C.capped_rise(steep, rest, UP, 10.0)
+        limit = math.degrees(math.asin(float(rest @ UP))) + 10.0
+        self.assertAlmostEqual(math.degrees(math.asin(float(capped @ UP))), limit, places=6)
+        level, capped_level = steep - (steep @ UP) * UP, capped - (capped @ UP) * UP
+        np.testing.assert_allclose(C.unit(capped_level), C.unit(level), atol=1e-9)  # same heading
+        low = C.unit(np.array([-1.0, 0.2, 0.1]))
+        np.testing.assert_allclose(C.capped_rise(low, rest, UP, 10.0), low)  # a bone under the cap is left alone
+
+    def test_a_leaning_torso_does_not_stand_a_beating_wing_upright(self) -> None:
+        # a torso leaning 40 degrees forward under a swept-back wing lifted it toward the vertical (the demon's box_01): no bone of a
+        # standing wing now rises more than WING_RISE_MAX above its rest elevation, while a dying wing keeps its own rules
+        rest, _lateral = self.wing_chain()
+        lengths = np.array([0.1, 0.1, 0.1])
+        relative = chain_rest(lengths, start=(0.1, 0.0, 1.4), direction=rest[0])
+        plan = {"lengths": lengths, "wing": dict(self.WING, side=37.0, droop=0.0), "side": "L", "rest_directions": np.array([rest[0]] * 3),
+                "parent_rest": np.eye(4), "chain_u": 0.5, "rest_relative": relative}
+        stage = {"up": UP, "front": FRONT, "ground": -10.0, "height": 2.0}
+        lean = np.eye(4)
+        lean[:3, :3] = C.axis_angle_matrix(np.cross(UP, FRONT), math.radians(40.0))  # the top of the torso toward the front
+        self.assertGreater(float((lean[:3, :3] @ UP) @ FRONT), 0.5)
+        parents = np.stack([lean] * 9)
+        limit = math.sin(math.asin(float(rest[0] @ UP)) + math.radians(C.WING_RISE_MAX)) + 1e-6
+        for role in ("attack", "defend", "retreat"):
+            quaternions = C.wing_quaternions(plan, parents, role, stage)
+            for f in range(len(parents)):
+                world = lean.copy()
+                for k in range(3):
+                    world = world @ relative[k]
+                    world[:3, :3] = world[:3, :3] @ C.matrix_from_quaternion(quaternions[f, k])
+                    self.assertLessEqual(float(C.unit(world[:3, 1]) @ UP), limit, (role, f, k))
+
     def test_the_attack_and_the_retreat_turn_their_face(self) -> None:
         for role, rule in C.WING_ROLES.items():
             beating = rule.get("flap", 0.0) >= 20.0

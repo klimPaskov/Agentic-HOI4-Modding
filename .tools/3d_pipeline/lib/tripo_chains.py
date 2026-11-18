@@ -1470,6 +1470,33 @@ def mirror_directions(directions: np.ndarray, lateral: np.ndarray) -> np.ndarray
     return directions - 2.0 * np.outer(directions @ lateral, lateral)
 
 
+# No bone of a standing wing points more than this many degrees above its own rest elevation in the world. The torso carries the wing, and
+# a wing swung back (the side floor, the twist, the face turn) rises when the torso leans forward or sideways over it: the demon's box_01
+# leans the upper spine 24 degrees forward and 22 sideways at the punch, and both wings' mean direction rose from 16 to 44 degrees above
+# level (sine 0.28 to 0.70), hit_to_body_01 to 40 (0.64), flee_01 to 41 (0.65). At map size each read as a wing stood upright, a spike,
+# and a fresh review failed the attack for it. The reviewed idle and move rise at most 4 degrees (0.28 to 0.35). Capped at 10 degrees, root
+# included (tripo/chain_replay.py on run demon_a, 2026-11-18), the three peaks fell to 0.29, 0.39 and 0.31, with the side cover, the face
+# shares and the root stretch unchanged within a point. A capped bone is turned down in its own vertical plane, so it keeps its heading.
+WING_RISE_MAX = 10.0
+
+
+def capped_rise(direction: np.ndarray, rest_direction: np.ndarray, up: np.ndarray, degrees: Optional[float]) -> np.ndarray:
+    """`direction` turned down in its own vertical plane so it rises at most `degrees` above `rest_direction`'s elevation (no cap: None)."""
+
+    if degrees is None:
+        return direction
+    up = unit(up)
+    direction = unit(direction)
+    rest_angle = math.asin(float(np.clip(unit(rest_direction) @ up, -1.0, 1.0)))
+    limit = min(math.radians(89.0), rest_angle + math.radians(degrees))
+    if math.asin(float(np.clip(direction @ up, -1.0, 1.0))) <= limit:
+        return direction
+    level = direction - (direction @ up) * up
+    if np.linalg.norm(level) < 1e-9:
+        return direction
+    return unit(math.cos(limit) * unit(level) + math.sin(limit) * up)
+
+
 def side_twist(carry: np.ndarray, up: np.ndarray, front: np.ndarray, side: str) -> float:
     """Degrees the torso has turned about the vertical (the upper spine's front against the rest front, seen from above) toward bringing
     wing `side` ("L" or "R") forward, 0 when it turns the other way. The side views are fixed in the world: a torso that twists 36 degrees
@@ -1549,6 +1576,7 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
     for k in range(bones):
         chained = chained @ plan["rest_relative"][k]
         bone_rest.append(orthonormal(chained)[:3, :3])
+    rise_cap = None if "fold_end" in WING_ROLES.get(role, {}) else WING_RISE_MAX  # a dying wing has its own rules
     if float(np.max(pose["face"])) > 0:
         most = max(FACE_SWEEP_MAX, float(wing["sweep"]))
         floors = np.array([min(wing.get("side", 0.0) + side_twist(c, stage["up"], stage["front"], plan["side"]), most) for c in carries])
@@ -1578,6 +1606,7 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             capsules = [] if capsule_axes is None else [(axis[0], axis[1], float(plan["radii"][k, c])) for c, axis in enumerate(capsule_axes[f])]
             wanted = unit(carry @ posed[k])
             direction = collide_direction(head, wanted, float(plan["lengths"][k]), capsules, stage["ground"], stage["up"], outward, along=True)
+            direction = capped_rise(direction, rest[k], stage["up"], rise_cap)
             if whole and k > 0:
                 # a bone past the root of a face-turned wing takes the pose's whole turn, roll included: turned by the shortest arc onto
                 # its direction alone, the bones of neighbouring chains rolled apart under the compound swing and tilt and twisted the
