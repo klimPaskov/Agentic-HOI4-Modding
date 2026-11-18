@@ -76,6 +76,13 @@ SWELL_TARGET = VANILLA_SWELL_WORST
 SHARES = np.round(np.arange(0.0, 1.0001, 0.1), 2)
 MIN_RAMP_FRAMES = 6
 SPINE = ("Spine", "Spine01", "Spine02")
+# The girdle measure (TRIPO-SHOULDER-TEAR): the shoulder region with the side of the chest under the arm, and a lower growth.
+UNDER_ACROSS = (0.6, 1.6)  # the side under the arm: this share of the way from the midline to the arm joint (past it at 1)
+UNDER_DROP = (-0.3, 2.0)  # from 0.3 upper arm lengths above the arm joint to 2 below it
+ARM_WORDS = ("arm", "hand", "weapon", "shield")  # a vertex whose strongest bone carries one of these is the limb, not the torso
+GIRDLE_AREA_RATIO = 1.44  # 1.2 times along each side, where the review sheets turn yellow
+VANILLA_GIRDLE_WORST = 0.125
+GIRDLE_LIMIT = round(1.25 * VANILLA_GIRDLE_WORST, 4)
 
 
 @dataclass
@@ -124,17 +131,52 @@ def shoulder_regions(mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = 
     return out
 
 
-class Swelling:
-    """The shoulder regions' triangles of one mesh, to measure clip after clip (only the regions' vertices are skinned)."""
+def under_arm_regions(mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None) -> Dict[str, np.ndarray]:
+    """(V,) masks of the torso skin under each arm: `UNDER_ACROSS` of the way from the midline to the arm joint, `UNDER_DROP` upper arm lengths
+    round the joint's height, and not the limb itself (the vertex's strongest bone is no arm, hand or held part, `ARM_WORDS`)."""
 
-    def __init__(self, mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None):
+    rig = rig or shoulder_rig(mesh)
+    if rig is None:
+        return {}
+    joints = pdx_motion.rest_joints(mesh)
+    left, right = joints[rig.left], joints[rig.right]
+    middle = 0.5 * (left + right)
+    dominant = pdx_deform.dominant_bones(mesh)
+    limb = np.array([any(word in name.lower() for word in ARM_WORDS) for name in mesh.bones])
+    torso = ~limb[np.clip(dominant, 0, None)]
+    out = {}
+    for side, arm, joint in (("left", rig.left, left), ("right", rig.right, right)):
+        forearm = _forearm(mesh, arm)
+        width = float(np.linalg.norm(joint - middle))
+        if forearm < 0 or width <= 1e-9:
+            continue
+        length = float(np.linalg.norm(joints[forearm] - joint))
+        u = (mesh.positions - middle) @ ((joint - middle) / width) / width
+        drop = (joint[1] - mesh.positions[:, 1]) / max(length, 1e-9)
+        out[side] = (u >= UNDER_ACROSS[0]) & (u <= UNDER_ACROSS[1]) & (drop >= UNDER_DROP[0]) & (drop <= UNDER_DROP[1]) & torso
+    return out
+
+
+def girdle_regions(mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None) -> Dict[str, np.ndarray]:
+    """(V,) masks of each side's shoulder girdle: the shoulder region and the torso under the arm."""
+
+    shoulders, under = shoulder_regions(mesh, rig), under_arm_regions(mesh, rig)
+    return {side: shoulders[side] | under.get(side, False) for side in shoulders}
+
+
+class Swelling:
+    """The shoulder regions' triangles of one mesh, to measure clip after clip (only the regions' vertices are skinned). `girdle` measures
+    the girdle regions at `GIRDLE_AREA_RATIO` (TRIPO-SHOULDER-TEAR) instead."""
+
+    def __init__(self, mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None, girdle: bool = False):
         self.mesh = mesh
+        self.ratio = GIRDLE_AREA_RATIO if girdle else AREA_RATIO
         triangles = mesh.triangles
         keep = ~mesh.collision[triangles].any(axis=1) if len(mesh.collision) == len(mesh.positions) else np.ones(len(triangles), bool)
         rest = _areas(mesh.positions, triangles)
         self.sides = []
         used = np.zeros(len(mesh.positions), bool)
-        for mask in shoulder_regions(mesh, rig).values():
+        for mask in (girdle_regions if girdle else shoulder_regions)(mesh, rig).values():
             inside = mask[triangles].all(axis=1) & keep & (rest > 0)
             if inside.any():
                 self.sides.append(inside)
@@ -157,7 +199,7 @@ class Swelling:
         for frame in range(matrices.shape[0]):
             posed = stretch_smooth._skin_subset(points, joints, weights, matrices[frame])
             for triangles, rest in zip(self.triangles, self.rest):
-                grown = _areas(posed, triangles) > AREA_RATIO * rest
+                grown = _areas(posed, triangles) > self.ratio * rest
                 out[frame] = max(out[frame], float(rest[grown].sum() / rest.sum()))
         return out
 
@@ -167,10 +209,10 @@ def _areas(points: np.ndarray, triangles: np.ndarray) -> np.ndarray:
     return 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
 
 
-def swelling(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> np.ndarray:
-    """(frames,) the shoulder swelling of `anim` on `mesh` (see the module text)."""
+def swelling(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, girdle: bool = False) -> np.ndarray:
+    """(frames,) the shoulder swelling of `anim` on `mesh` (see the module text), or with `girdle` the girdle's tear."""
 
-    return Swelling(mesh).per_frame(anim)
+    return Swelling(mesh, girdle=girdle).per_frame(anim)
 
 
 # ---- the check ---------------------------------------------------------------------------------------------------------
@@ -181,7 +223,7 @@ def shoulder_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.
     rig = shoulder_rig(mesh)
     if rig is None:
         return [], {"note": "no head and two upper arms under one chest"}
-    measure = Swelling(mesh, rig)
+    measure, girdle = Swelling(mesh, rig), Swelling(mesh, rig, girdle=True)
     out: List[dict] = []
     numbers: dict = {}
     for clip, anim in anims.items():
@@ -189,13 +231,22 @@ def shoulder_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.
         frame = int(np.argmax(shares))
         worst = float(shares[frame])
         over = int(np.sum(shares > SWELL_LIMIT))
-        numbers[clip] = {"worst_share": round(worst, 4), "frame": frame, "frames_over_limit": over}
+        tear = girdle.per_frame(anim)
+        tear_frame = int(np.argmax(tear))
+        numbers[clip] = {"worst_share": round(worst, 4), "frame": frame, "frames_over_limit": over,
+                         "girdle_share": round(float(tear[tear_frame]), 4), "girdle_frame": tear_frame}
         if worst > SWELL_LIMIT:
             out.append({"rule": "TRIPO-SHOULDER-SWELL", "subject": clip,
                         "message": f"{worst:.1%} of the shoulder region's skin has grown past 1.69 times its area in frame {frame} (limit {SWELL_LIMIT:.1%}, "
                                    f"vanilla's worst {VANILLA_SWELL_WORST:.1%}), {over} of {len(shares)} frames over the limit: the shoulder and the upper "
                                    "back swell into one ball",
                         "share": round(worst, 4), "frame": frame})
+        if tear[tear_frame] > GIRDLE_LIMIT:
+            out.append({"rule": "TRIPO-SHOULDER-TEAR", "subject": clip,
+                        "message": f"{tear[tear_frame]:.1%} of the shoulder girdle's skin (the shoulder and the side of the chest under the arm) has grown "
+                                   f"past 1.44 times its area in frame {tear_frame} (limit {GIRDLE_LIMIT:.1%}, vanilla's worst {VANILLA_GIRDLE_WORST:.1%}): "
+                                   "the raised arm tears the armpit and the side of the chest",
+                        "share": round(float(tear[tear_frame]), 4), "frame": tear_frame})
     return out, numbers
 
 
