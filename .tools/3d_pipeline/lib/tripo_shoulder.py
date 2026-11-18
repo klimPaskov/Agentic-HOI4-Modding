@@ -317,29 +317,22 @@ def _plan(clip: _Clip, joints: List[str]):
     return record, why, weights, result, after, added
 
 
-def ease_shoulders(mesh_path: Path, anim_path: Path, out_path: Path, role: str, idle_path: Optional[Path] = None,
-                   limit: float = SWELL_LIMIT, target: float = SWELL_TARGET) -> ShoulderEase:
-    """Write `out_path`: `anim_path` with the spine or the clavicles turned toward the unit's stance where its shoulders swell past `limit`
-    (see the module text). Unchanged, and copied as it is, when the clip passes or no group lowers it."""
+def ease_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, role: str, idle: Optional[pdx_deform.Animation] = None,
+                   keyed: Optional[Sequence[str]] = None, limit: float = SWELL_LIMIT,
+                   target: float = SWELL_TARGET) -> Tuple[ShoulderEase, Optional[pdx_deform.Animation], np.ndarray]:
+    """The ease of `ease_shoulders` on a clip in memory: (record, the eased clip or None when unchanged, the per-frame weights). `keyed`: the
+    joints whose rotations the clip's file stores (all of the clip's channels when not given)."""
 
-    data = bytearray(Path(anim_path).read_bytes())
-    mesh = pdx_deform.load_mesh(mesh_path)
-    anim = pdx_deform.load_anim(anim_path)
+    none = np.zeros(anim.frames)
     rig = shoulder_rig(mesh)
-
-    def unchanged(note: str, before: float = 0.0, tried: Optional[dict] = None) -> ShoulderEase:
-        Path(out_path).write_bytes(bytes(data))
-        return ShoulderEase(False, worst_before=before, worst_after=before, note=note, tried=tried or {})
-
     if rig is None:
-        return unchanged("no head and two upper arms under one chest")
+        return ShoulderEase(False, note="no head and two upper arms under one chest"), None, none
     measure = Swelling(mesh, rig)
     before = measure.per_frame(anim)
     worst = float(before.max()) if len(before) else 0.0
     if worst <= limit:
-        return unchanged("the shoulders are under the limit", worst)
-    idle = pdx_deform.load_anim(idle_path) if idle_path is not None and Path(idle_path).is_file() else None
-    keyed = [joint.name for joint in read(anim_path).child("info").children if "q" in str((joint.properties.get("sa") or [""])[0])]
+        return ShoulderEase(False, worst_before=worst, worst_after=worst, note="the shoulders are under the limit"), None, none
+    keyed = list(anim.channels) if keyed is None else list(keyed)
     edges = pdx_deform.mesh_edges(mesh)
     rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
     neck_rig = tripo_neck.neck_rig(mesh)
@@ -358,9 +351,23 @@ def ease_shoulders(mesh_path: Path, anim_path: Path, out_path: Path, role: str, 
             reaches = record["reaches_target"]
             plans.append((not reaches, added if reaches else after, order, after, name, joints, weights, result, record["ramp_frames"]))
     if not plans:
-        return unchanged("no group lowers the swelling within the kit's rules", worst, tried)
+        return ShoulderEase(False, worst_before=worst, worst_after=worst, note="no group lowers the swelling within the kit's rules",
+                            tried=tried), None, none
     _, _, _, after, name, joints, weights, result, ramp = min(plans, key=lambda plan: plan[:3])
-    tripo_pose._write_rotations(data, keyed, joints, result, weights)
-    Path(out_path).write_bytes(bytes(data))
     return ShoulderEase(True, name, tuple(joints), round(float(weights.max()), 3), int((weights > 0).sum()), int(ramp), worst, after,
-                        "idle's first frame" if idle is not None else "rest pose", tried=tried)
+                        "idle's first frame" if idle is not None else "rest pose", tried=tried), result, weights
+
+
+def ease_shoulders(mesh_path: Path, anim_path: Path, out_path: Path, role: str, idle_path: Optional[Path] = None,
+                   limit: float = SWELL_LIMIT, target: float = SWELL_TARGET) -> ShoulderEase:
+    """Write `out_path`: `anim_path` with the spine or the clavicles turned toward the unit's stance where its shoulders swell past `limit`
+    (see the module text). Unchanged, and copied as it is, when the clip passes or no group lowers it."""
+
+    data = bytearray(Path(anim_path).read_bytes())
+    keyed = [joint.name for joint in read(anim_path).child("info").children if "q" in str((joint.properties.get("sa") or [""])[0])]
+    idle = pdx_deform.load_anim(idle_path) if idle_path is not None and Path(idle_path).is_file() else None
+    ease, result, weights = ease_animation(pdx_deform.load_mesh(mesh_path), pdx_deform.load_anim(anim_path), role, idle, keyed, limit, target)
+    if result is not None:
+        tripo_pose._write_rotations(data, keyed, ease.joints, result, weights)
+    Path(out_path).write_bytes(bytes(data))
+    return ease
