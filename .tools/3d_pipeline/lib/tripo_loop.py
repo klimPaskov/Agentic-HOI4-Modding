@@ -316,8 +316,16 @@ def rig_gait_joints(rig) -> Optional[Tuple[Tuple[int, int], int, float]]:
     """((left ankle, right ankle), pelvis, height) of a Tripo humanoid rig by its joint names, the height the rest joints' vertical extent.
     None when it has not those joints."""
 
+    from . import tripo_rig
+
+    try:
+        names = tripo_rig.RigNames(rig.joint_names)
+    except tripo_rig.RigError:
+        return None
+
     def find(name: str) -> int:
-        return next((index for index, joint in enumerate(rig.joint_names) if joint.split(":")[-1] == name), -1)
+        actual = names.actual(name)
+        return rig.joint_names.index(actual) if actual in rig.joint_names else -1
 
     feet, pelvis = (find(FEET[0]), find(FEET[1])), find(PELVIS)
     if min(feet) < 0 or pelvis < 0:

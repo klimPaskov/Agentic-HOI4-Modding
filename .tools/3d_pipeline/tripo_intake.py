@@ -115,14 +115,14 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
 
     roles = (spec.get("tripo") or {}).get("roles") or {}
     try:
-        travelling = glb_root.travelling_clips(rigged, roles.values())
+        travelling = glb_root.travelling_clips(rigged, [clip for role, clip in roles.items() if role != "death"], deaths=[roles["death"]] if roles.get("death") else None)
     except ValueError:  # not a binary glTF: the Blender stage reads it and says what is wrong
         return
     if travelling:
         listed = ", ".join(f"{clip.strip()} {travel:.2f}" for clip, travel in sorted(travelling.items()))
         raise ValueError(
             f"{rigged.name}: these role clips move the hips across the ground ({listed} times the hip height, limit "
-            f"{glb_root.MAX_ROOT_TRAVEL_SHARE}). Export again from Tripo with \"Animation in Place\" switched on.")
+            f"{glb_root.MAX_ROOT_TRAVEL_SHARE}, a death {glb_root.DEATH_TRAVEL_LIMIT}). Export again from Tripo with \"Animation in Place\" switched on.")
 
 
 def default_task_id(files: Dict[str, Path]) -> str:

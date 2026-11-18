@@ -7,7 +7,7 @@ swells the shoulders (TRIPO-SHOULDER-SWELL, `lib/tripo_shoulder.py`) or sinks th
 route makes. Those depend on the route's weights, which only an earlier run of the same body has. This tool reads that run's exported `.mesh`
 (the skeleton and the fitted weights) and each clip of the rigged GLB, and plays the clip on the mesh:
 
-1. The GLB's rest joints are matched to the mesh's by name (Tripo's `mixamorig:` names to the kit's, as `prepare_tripo_unit.KIT_BONES`), and
+1. The GLB's rest joints are matched to the mesh's by name (Tripo's Mixamo names or its newer rig's to the kit's, through `lib/tripo_rig.py`), and
    the axes and scale between the two files are solved from the rest joint positions (orthogonal Procrustes with scale).
 2. Per frame (30 a second, as the export), each mapped joint's world rotation away from its rest is carried to the mesh's joint in the mesh's
    axes, and the root's travel is scaled. The joints' lengths are the mesh's. Bones the GLB has not (the weapon's) follow their parents.
@@ -52,12 +52,22 @@ from lib import pdx_deform, pdx_motion, tripo_cloak_bend, tripo_loop, tripo_neck
 
 FRAME_RATE = 30.0
 MIN_ATTACK_SCORE = 0.2  # docs/3d-units.md, the attack's raise or reach plus the pelvis's travel
-PREFIX = "mixamorig:"
-KIT_TO_MIXAMO = {"Spine01": "Spine1", "Spine02": "Spine2", "neck": "Neck"}
-
-
 def glb_name(kit: str) -> str:
-    return PREFIX + KIT_TO_MIXAMO.get(kit, kit)
+    """A kit bone's name in Tripo's Mixamo rig (`Spine01` is `mixamorig:Spine1`)."""
+
+    from lib import tripo_rig
+
+    canonical = {v: k for k, v in tripo_rig.KIT_FROM_CANONICAL.items()}.get(kit, kit)
+    return "mixamorig:" + canonical
+
+
+def glb_names(rig: clip_check.Rig) -> dict:
+    """{kit bone: the GLB joint index} through lib/tripo_rig.py (Mixamo's rig and the newer Tripo rig)."""
+
+    from lib import tripo_rig
+
+    names = tripo_rig.RigNames(rig.joint_names)
+    return {kit: k for k, name in enumerate(rig.joint_names) if (kit := names.kit(name)) is not None}
 
 
 def _rotations(matrices: np.ndarray) -> np.ndarray:
@@ -82,7 +92,8 @@ class Transfer:
 
     def __init__(self, rig: clip_check.Rig, mesh: pdx_deform.SkinnedMesh):
         self.rig, self.mesh = rig, mesh
-        self.pairs = [(b, rig.joint_names.index(glb_name(name))) for b, name in enumerate(mesh.bones) if glb_name(name) in rig.joint_names]
+        joints = glb_names(rig)
+        self.pairs = [(b, joints[name]) for b, name in enumerate(mesh.bones) if name in joints]
         rest = rig.joint_worlds({})
         bind = np.linalg.inv(mesh.inverse_bind)
         mapped = [b for b, _ in self.pairs]
