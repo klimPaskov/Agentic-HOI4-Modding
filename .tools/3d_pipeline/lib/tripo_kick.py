@@ -44,6 +44,13 @@ settle may lift it. Offline on zombie_o's clip it lays the left leg across frame
 from 0.156 to 0.122, and the kit's deformation report reads 266 stretched and 422 squashed edges against 265 and 418 before (within the rule).
 Frames 70 to 76 squash more than before (348 against 283 at frame 70) while staying under the clip's worst frame.
 
+A share of the way (2026-11-18). The route fits the weights to the unit's own clips, so another retreat or attack changes the skin the death
+is judged on. With the loop window's retreat (zombie_s) the same death's worst frame squashed 288 edges where zombie_p's squashed 418, and the
+full lay across (297 squashed, the body 1.2% into the ground) broke both guards that zombie_p's passed: the kick stayed at 0.0385 and failed the
+check. Where the full lay across breaks a guard, the leg is carried a share of the way instead (`part_way`): each of its joints a slerp from
+its own rotation toward the laid one, in steps of `SHARE_STEP` down from the whole, and the share that passes both guards with the lowest rise
+is taken. On zombie_s half the way passes (294 squashed, 0.4% into the ground) with the rise at 0.028.
+
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
 
@@ -62,6 +69,7 @@ VANILLA_BOOT_RISE = 0.027
 BOOT_RISE_LIMIT = round(1.25 * VANILLA_BOOT_RISE, 3)
 BOOT_RISE_TARGET = VANILLA_BOOT_RISE
 SPAN_STEP = 3
+SHARE_STEP = 0.1
 MAX_PASSES = 3
 
 
@@ -205,6 +213,17 @@ def laid_across(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, leg, f
     return pdx_deform.Animation(anim.fps, anim.frames, channels)
 
 
+def part_way(mesh: pdx_deform.SkinnedMesh, current: pdx_deform.Animation, laid: pdx_deform.Animation, leg, share: float) -> pdx_deform.Animation:
+    """`current` with the leg's joints carried `share` of the way to their rotations in `laid` (a slerp per frame, each joint the short way)."""
+
+    channels = {name: dict(channel) for name, channel in current.channels.items()}
+    for name in _chain(mesh, leg):
+        if name in channels and name in laid.channels:
+            own, other = current.channels[name]["q"], laid.channels[name]["q"]
+            channels[name]["q"] = np.array([tripo_pose.slerp(own[f], other[f], share) for f in range(len(own))])
+    return pdx_deform.Animation(current.fps, current.frames, channels)
+
+
 def _fastest_step(anim: pdx_deform.Animation, joints: Sequence[str], first: int, last: int) -> float:
     return max((tripo_ease.step_degrees(anim.channels[j]["q"][f - 1], anim.channels[j]["q"][f]) for j in joints for f in range(first + 1, last + 1)), default=0.0)
 
@@ -260,10 +279,21 @@ def _lay_kick(guard: _Guard, current: pdx_deform.Animation, leg, key: str, span:
     end = current.frames - 1
     reference, sunk = guard.deformation(current, first), guard.sink(current, first)
     best = None
+
+    def allowed(clip: pdx_deform.Animation) -> bool:
+        return not (stretch_smooth.worse(reference, guard.deformation(clip, first)) or guard.sink(clip, first) > sunk + tripo_pose.UPPER_SETTLE_LIFT)
+
     while True:
         trial = laid_across(guard.mesh, current, leg, first, last)
         if _fastest_step(trial, joints, first, last) <= tripo_trim.SETTLE_MAX_RATE:
-            if stretch_smooth.worse(reference, guard.deformation(trial, first)) or guard.sink(trial, first) > sunk + tripo_pose.UPPER_SETTLE_LIFT:
+            if not allowed(trial):
+                # The whole lay across breaks a guard: the leg goes a share of the way, the share with the lowest rise that passes.
+                for share in np.arange(1.0 - SHARE_STEP, SHARE_STEP / 2, -SHARE_STEP):
+                    part = part_way(guard.mesh, current, trial, leg, float(share))
+                    if allowed(part):
+                        rise = guard.rise(part, key)
+                        if best is None or rise < best[0] - 1e-4:
+                            best = (rise, part, last)
                 break
             rise = guard.rise(trial, key)
             if best is None or rise < best[0] - 1e-4:

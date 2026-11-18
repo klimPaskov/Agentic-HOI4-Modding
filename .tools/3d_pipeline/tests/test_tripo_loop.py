@@ -108,16 +108,17 @@ class StrideSpeed(unittest.TestCase):
 
     def test_a_seam_that_jerks_fails_and_a_seam_that_flows_passes(self) -> None:
         flowing = numbers(phases(0, 2, 0))
-        self.assertLess(flowing["seam_speed_change"], L.MAX_SEAM_SPEED_CHANGE)
+        self.assertLess(flowing["seam_share"], L.MAX_SEAM_SHARE)
         # cut a quarter of a stride early: the last step still swings forward, the first step starts from the middle of the other swing
         cut = numbers(phases(0, 2, 0)[: 2 * PERIOD - PERIOD // 4], reach=0.3)
         self.assertEqual(cut["still_steps"], 0)
-        self.assertGreater(cut["seam_speed_change"], L.MAX_SEAM_SPEED_CHANGE)
+        self.assertGreater(cut["seam_share"], L.MAX_SEAM_SHARE)
+        self.assertAlmostEqual(cut["seam_share"], cut["seam_speed_change"] / cut["inner_speed_change"], delta=0.01)
         self.assertIn("jerks once per cycle", L.stands_reason(cut, "retreat"))
 
     def test_the_limits_are_vanillas_worst_less_or_plus_a_quarter(self) -> None:
         self.assertAlmostEqual(L.MIN_STRIDE_SPEED, L.VANILLA_MIN_STRIDE_SPEED / 1.25, delta=0.005)
-        self.assertAlmostEqual(L.MAX_SEAM_SPEED_CHANGE, L.VANILLA_SEAM_SPEED_CHANGE * 1.25, delta=0.005)
+        self.assertAlmostEqual(L.MAX_SEAM_SHARE, L.VANILLA_SEAM_SHARE * 1.25, delta=0.005)
 
 
 class Window(unittest.TestCase):
@@ -174,6 +175,11 @@ class Close(unittest.TestCase):
         self.assertTrue(np.all(np.diff(weights) > 0))
         self.assertLess(weights[0], 0.06)
         self.assertLess(1.0 - weights[-2], 0.06)
+
+    def test_a_gaits_stride_is_eased_only_past_the_kits_spin_limit(self) -> None:
+        self.assertAlmostEqual(L.GAIT_SNAP_DEGREES, 0.75 * 37.0 * 30.0 / 24.0, delta=0.05)
+        self.assertGreater(L.GAIT_SNAP_DEGREES, 31.9 * 30.0 / 24.0 * 0.75, "vanilla's charge knee would not be eased")
+        self.assertLess(L.GAIT_SNAP_DEGREES * 24.0 / 30.0, L.SPIN_LIMIT_DEGREES)
 
     def test_the_close_takes_the_settles_count_but_never_over_half_the_window(self) -> None:
         self.assertEqual(L.close_frames(0.5, 10.0, 17), 0)
@@ -373,7 +379,7 @@ class VanillaCalibration(unittest.TestCase):
 
     def test_vanillas_slowest_stride_and_worst_seam_are_the_recorded_ones(self) -> None:
         self.assertAlmostEqual(min(row["slowest"] for row in self.rows.values()), L.VANILLA_MIN_STRIDE_SPEED, delta=0.002)
-        self.assertAlmostEqual(max(row["seam_speed_change"] for row in self.rows.values()), L.VANILLA_SEAM_SPEED_CHANGE, delta=0.01)
+        self.assertAlmostEqual(max(row["seam_share"] for row in self.rows.values()), L.VANILLA_SEAM_SHARE, delta=0.01)
 
     def test_every_vanilla_locomotion_clip_passes(self) -> None:
         for clip, row in self.rows.items():

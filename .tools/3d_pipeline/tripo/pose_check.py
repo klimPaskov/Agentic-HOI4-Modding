@@ -24,8 +24,8 @@ attack candidates that pass, the largest raise or reach plus the pelvis's travel
 holds the arms out reaches as far as a blow, so the reach alone picked the zombie's static lunge three times (zombie_i, zombie_k, zombie_o).
 A clip named with `--gait` (a candidate for the move or the retreat) is judged as a looped gait (`lib/tripo_loop.py`, TRIPO-LOOP-STANDS): the
 loop window the route would cut (frames of this tool's 30 a second), the share of the whole clip's steps that stand, and on the window the
-slowest stride and the speed change across its seam before the route closes it. It fails when the clip never strides (no window) or the
-window stands or jerks past the check's limits. `flee_01` on the zombie: 21% of the whole clip's steps stand, and the window is one stride (frames 31 to 53).
+slowest stride. It fails when the clip never strides (no window) or the window stands. The seam is not judged here: the route closes it
+into the frames before the window. `flee_01` on the zombie: 21% of the whole clip's steps stand, and the window is one stride (frames 31 to 53).
 The weights stay the earlier run's, which the route fits again to the new clips, and the grip stage and the clearance are not run, so the
 numbers estimate the route's result. Checked on the round 4 ogre: the clips the run ogre_k exported measured as here within 0.003 (the
 defend `hit_to_body_01` 0.161, the chop's raise 0.267). Plain numpy, no Blender.
@@ -188,10 +188,9 @@ def gait(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[d
         return out
     cut = tripo_loop.gait_numbers(joints[window["first"] : window["last"] + 1], feet, legs.pelvis, mesh.height, fps)
     out.update(window=[window["first"], window["last"]], whole=window["whole"], cost=window["cost"], slowest=cut["slowest"],
-               still_share=cut["still_share"], seam_speed_change=cut["seam_speed_change"])
-    reason = tripo_loop.stands_reason(cut, "clip")
-    if reason:
-        out["reasons"].append("loop window: " + reason)
+               still_share=cut["still_share"])
+    if cut["still_steps"]:
+        out["reasons"].append("loop window: " + tripo_loop.stands_reason(cut, "clip"))
     return out
 
 
@@ -241,7 +240,7 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
     return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "unarmed": unarmed, "scale": round(transfer.scale, 4),
             "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
                        "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE,
-                       "stride_speed": tripo_loop.MIN_STRIDE_SPEED, "seam_speed_change": tripo_loop.MAX_SEAM_SPEED_CHANGE},
+                       "stride_speed": tripo_loop.MIN_STRIDE_SPEED},
             "clips": report, "attack_pick": pick_attack(report)}
 
 
@@ -258,7 +257,7 @@ def print_table(result: dict) -> None:
         found = c.get("gait")
         if found and found["window"]:
             print(f"gait {name[:36]}: the whole clip stands in {100 * found['whole_still_share']:.0f}% of its steps; loop window frames {found['window'][0]} to "
-                  f"{found['window'][1]}" + (" (the whole clip)" if found["whole"] else "") + f", slowest stride {found['slowest']:.2f}, seam speed change {found['seam_speed_change']:.2f}")
+                  f"{found['window'][1]}" + (" (the whole clip)" if found["whole"] else "") + f", slowest stride {found['slowest']:.2f}")
         elif found:
             print(f"gait {name[:36]}: the whole clip stands in {100 * found['whole_still_share']:.0f}% of its steps and has no loop window")
 

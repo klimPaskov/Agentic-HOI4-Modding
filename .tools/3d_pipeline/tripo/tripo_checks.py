@@ -58,7 +58,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
 - TRIPO-LOOP-STANDS: in a humanoid's move or retreat the feet stop striding in some frame step (one ankle moves against the other slower than
   0.14 heights a second, smoothed over a sixth of a second around the loop; vanilla's slowest locomotion clip keeps 0.179), or the last step does
-  not flow into the first (a joint's speed against the pelvis changes by more than 1.56 heights a second across the seam, vanilla's worst 1.25).
+  not flow into the first (across the seam a joint's speed against the pelvis changes by more than 1.2 times the largest change between two
+  steps inside the clip, vanilla's worst 0.96).
   The game loops both clips in place, so the unit would stop and stand, or jerk, once per cycle. `lib/tripo_loop.py`, whose loop window the
   intake finds and `tripo/prepare_tripo_unit.py` cuts and closes.
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the

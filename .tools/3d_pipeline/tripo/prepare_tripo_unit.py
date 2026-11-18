@@ -757,9 +757,9 @@ def close_loop(action):
     count = tripo_loop.close_frames(worst_turn, rate, last - first)
     place = [fcurve for fcurve, _container in action_fcurves(action) if fcurve.data_path.endswith(".location")]
     offsets = [fcurve.evaluate(first) - fcurve.evaluate(last) for fcurve in place]
-    # The joints close but the hips end at another place (a bob cut mid-way): the shortest blend, when the offset is over 1% of the curve's range.
+    # The joints close but the hips end at another place (a bob cut mid-way): the shortest blend, when the offset is over 1% of the hips' largest travel along an axis.
     spans = [max(fcurve.evaluate(first + k) for k in range(last - first + 1)) - min(fcurve.evaluate(first + k) for k in range(last - first + 1)) for fcurve in place]
-    if count == 0 and any(abs(offset) > 0.01 * span and abs(offset) > 1e-9 for offset, span in zip(offsets, spans)):
+    if count == 0 and any(abs(offset) > 0.01 * max(spans) for offset in offsets):
         count = min(tripo_trim.SETTLE_MIN_FRAMES, (last - first) // 2)
     if count == 0:
         return {"frames_blended": 0, "turn_degrees": round(worst_turn, 1)}
@@ -1443,7 +1443,9 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
             # The cloth lags the settled body, so it may end away from its first pose: a short second settle for what is left (none when it does not).
             extras["settle_chains"][role] = settle_to_first(action)
     if args.ease_snaps:
-        extras["ease_snaps"][role] = normalise_rotation_keys(action, trigger_degrees=args.ease_snaps, target_degrees=0.75 * args.ease_snaps)
+        # The stride of a looped gait is not a snap (lib/tripo_loop.py): only a step past the kit's spin limit is eased there.
+        trigger = max(args.ease_snaps, tripo_loop.GAIT_SNAP_DEGREES) if closes else args.ease_snaps
+        extras["ease_snaps"][role] = dict(normalise_rotation_keys(action, trigger_degrees=trigger, target_degrees=0.75 * trigger), trigger_degrees=round(trigger, 1))
     assign_action(armature, action)
     role_path = args.out_dir / (args.role_name.format(role=role) + ".glb")
     export_glb(role_path, [armature, body], armature, animated=True)

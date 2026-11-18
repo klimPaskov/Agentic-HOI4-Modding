@@ -15,15 +15,18 @@ The measure (`gait_numbers`), on the exported `.mesh` and `.anim` as the game lo
 - A frame step has no stride when that speed is under `MIN_STRIDE_SPEED`. The clip stands when any step has none (`still_share` above 0).
 - The seam: the velocity of every skinning joint against the pelvis in the first step and in the last one, and the largest difference between the
   two over the joints, in heights a second (`seam_speed_change`). A clip cut out of a run and not closed ends its last step moving one way and
-  starts its first moving another. The pose itself at the seam is TRIPO-LOOP-POP's (`lib/tripo_pose.loop_seam`, 8 degrees).
+  starts its first moving another. It is judged against the clip itself: as a share of the largest such change between two steps next to
+  each other inside the clip (`seam_share`), because a sprint changes its joints' speeds several times as hard as a march does from one step
+  to the next. The pose itself at the seam is TRIPO-LOOP-POP's (`lib/tripo_pose.loop_seam`, 8 degrees).
 
 Calibration (2026-11-18, vanilla's GER infantry on GER_infantry.mesh, whose clips every western infantry mesh plays, the files under
 `gfx/models/units`). The eight looped locomotion clips: moving_rifle and _mg, march_rifle and _mg, retreat_rifle and _mg, charge_rifle and _mg.
 
 - Slowest smoothed stride speed: moving 0.63 and 0.56, march 0.73, charge 1.25, retreat_rifle 0.21, retreat_mg 0.18 (`VANILLA_MIN_STRIDE_SPEED`,
   a slow jog looking back). None has a step without stride. The limit is that slowest less a quarter, as the kit's other vanilla limits.
-- Seam speed change: moving 0.85 and 0.39, march 1.25 (`VANILLA_SEAM_SPEED_CHANGE`: its last frame repeats the first at the turn of a swing),
-  retreat 0.57 and 0.32, charge 0.90. The limit `MAX_SEAM_SPEED_CHANGE` is that worst with a quarter added.
+- Seam speed change and its share of the largest change inside the clip: moving 0.85 of 1.09 (0.78) and 0.39 of 1.07 (0.37), march 1.25 of
+  1.45 (0.86), retreat_rifle 0.57 of 0.60 (0.96, `VANILLA_SEAM_SHARE`), retreat_mg 0.32 of 0.74 (0.44), charge 0.90 of 1.95 (0.46). No vanilla
+  seam is rougher than the roughest step inside its clip. The limit `MAX_SEAM_SHARE` is that worst share with a quarter added.
 - Vanilla's idle and standing attack never reach the limit (idle_rifle 0.00 to 0.01, attack_stand_rifle under 0.11), so a stand cannot pass as
   a gait.
 
@@ -46,7 +49,18 @@ The fix (`loop_window`, run by `tripo_intake.py` on the rigged GLB, cut and clos
    its cost is within a quarter of the best. A clip that already loops (a preset walk) keeps every frame: its whole length is the best window.
 4. The stage cuts the clip to the window and closes the remaining seam without a stop: over the last frames each bone gets a growing share of
    the turn from the last pose to the first, added on top of its own motion (`close_weights`), so the feet keep striding through the seam. The
-   number of frames is the settle's rule (`tripo_trim.settle_frames`), at most half the window.
+   number of frames is the settle's rule (`tripo_trim.settle_frames`), at most half the window. Tried and dropped (offline on the zombie's
+   `flee_01`, 2026-11-18): blending the last frames into the frames that led up to the window's start. The window starts at a foot strike,
+   whose own change of speed (3.8 heights a second) is rougher than any step inside the window (2.6), so that seam measured 1.3 of the
+   roughest inner step against 0.56 for the turn added on top.
+5. The stride of a gait is not a snap. The intake's snap easing (`tripo/prepare_tripo_unit.py --ease-snaps`, 14 degrees a frame) retimes each
+   bone on its own, and where a clip turns its legs faster than that for the whole cycle it spreads each bone's turn evenly over the clip:
+   a run's knee, thigh and foot then turn at one constant rate each and no longer together. The first run with the window (zombie_s) eased
+   six leg bones that way over frames 0 to 17, and the seam's speed changed 6.52 heights a second at a toe, 1.67 times the roughest inner
+   step. In a looped gait only a step past `GAIT_SNAP_DEGREES` is eased: the kit's spin limit (UNIT-ANIM-SPIN, vanilla's fastest joint, 37
+   degrees a frame at 30 frames a second) is 46 degrees a frame at Tripo's 24, and the trigger is three quarters of that, as the easing's
+   own target is three quarters of its trigger. Vanilla's charge turns a knee 31.9 degrees a frame at 30. `flee_01` turns one 38.1 at 24
+   (29.9 at 30): that one step is eased over five frames and the stride keeps its timing (offline: the seam 0.56 of the roughest inner step).
 
 No number comes from one unit: the limits are vanilla's, and the window is measured on the clip. A job's own `tripo.trim` for a role wins, and
 `"loop_window": false` (or a list of roles) switches the rule off (or limits it). What makes a retreat read as a retreat (the arms, the lean of
@@ -65,11 +79,13 @@ STRIDE_ROLES = ("move", "retreat")
 SMOOTH_SECONDS = 1.0 / 6.0  # 5 steps at 30 frames a second
 VANILLA_MIN_STRIDE_SPEED = 0.179
 MIN_STRIDE_SPEED = 0.14
-VANILLA_SEAM_SPEED_CHANGE = 1.25
-MAX_SEAM_SPEED_CHANGE = 1.56
+VANILLA_SEAM_SHARE = 0.96
+MAX_SEAM_SHARE = 1.2
 LEAD_SHARE = 0.5
 LONGER_WITHIN = 1.25
 FPS = 24.0  # the frame rate Blender imports a Tripo clip at; a window counts frames of the imported action
+SPIN_LIMIT_DEGREES = 37.0  # UNIT-ANIM-SPIN at 30 frames a second (config/deformation_calibration.json, infantry turn_per_frame 37.19)
+GAIT_SNAP_DEGREES = round(0.75 * SPIN_LIMIT_DEGREES * 30.0 / FPS, 1)
 FEET = ("LeftFoot", "RightFoot")
 PELVIS = "Hips"
 
@@ -135,11 +151,12 @@ def gait_numbers(joints: np.ndarray, feet: Tuple[int, int], pelvis: int, height:
     placed = in_place(joints, pelvis, height)
     if moving is not None:
         placed = placed[:, list(moving)]
-    if len(placed) >= 3:
-        change = np.linalg.norm((placed[1] - placed[0]) - (placed[-1] - placed[-2]), axis=1) * fps
-        out["seam_speed_change"] = round(float(change.max()), 3)
-    else:
-        out["seam_speed_change"] = 0.0
+    out.update(seam_speed_change=0.0, inner_speed_change=0.0, seam_share=0.0)
+    if len(placed) >= 4:
+        velocity = np.diff(placed, axis=0) * fps
+        seam = float(np.linalg.norm(velocity[0] - velocity[-1], axis=1).max())
+        inner = float(np.linalg.norm(np.diff(velocity, axis=0), axis=2).max())
+        out.update(seam_speed_change=round(seam, 3), inner_speed_change=round(inner, 3), seam_share=round(seam / max(inner, 1e-9), 3) if seam > 1e-9 else 0.0)
     return out
 
 
@@ -150,9 +167,10 @@ def stands_reason(numbers: dict, role: str) -> Optional[str]:
         return (f"the feet stop striding in {numbers['still_steps']} of {numbers['frames'] - 1} frame steps ({100 * numbers['still_share']:.0f}%, from frame "
                 f"{numbers['first_still_frame']}): one ankle moves against the other at {numbers['slowest']:.2f} heights a second at its slowest (at least "
                 f"{MIN_STRIDE_SPEED}, vanilla's slowest locomotion clip {VANILLA_MIN_STRIDE_SPEED}): the looped {role} stops and stands once per cycle")
-    if numbers["seam_speed_change"] > MAX_SEAM_SPEED_CHANGE:
+    if numbers["seam_share"] > MAX_SEAM_SHARE:
         return (f"the last step does not flow into the first: a joint's speed against the pelvis changes by {numbers['seam_speed_change']:.2f} heights a second "
-                f"across the seam (limit {MAX_SEAM_SPEED_CHANGE}, vanilla's worst {VANILLA_SEAM_SPEED_CHANGE}): the looped {role} jerks once per cycle")
+                f"across the seam, {numbers['seam_share']:.2f} times the largest change between two steps inside the clip ({numbers['inner_speed_change']:.2f}; "
+                f"limit {MAX_SEAM_SHARE}, vanilla's worst {VANILLA_SEAM_SHARE}): the looped {role} jerks once per cycle")
     return None
 
 
@@ -185,7 +203,7 @@ def loop_findings(mesh, anims: Dict[str, object], roles: Sequence[str] = STRIDE_
         reason = stands_reason(row, role)
         if reason:
             out.append({"rule": "TRIPO-LOOP-STANDS", "subject": clip, "message": reason, "still_share": row["still_share"], "slowest": row["slowest"],
-                        "seam_speed_change": row["seam_speed_change"], "frame": row["first_still_frame"]})
+                        "seam_speed_change": row["seam_speed_change"], "seam_share": row["seam_share"], "frame": row["first_still_frame"]})
     return out, numbers
 
 
