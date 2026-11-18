@@ -691,8 +691,11 @@ FLEE_TURN_IN = 0.5
 # The strike drives the neck forward and down, and the rear's pitch and lifted forelegs go fully at the blow (STRIKE_DROP 1): at 55 and 35
 # degrees with 0.7 of the rear kept the head travelled 9% of the body's length forward and both fresh reviews of run 9 saw no strike
 # (TRIPO-ATTACK-REACH now asks for ATTACK_REACH_MIN, offline 0.21).
-STRIKE_NECK = {"Neck_01": (-18.0, 80.0), "Neck_02": (-10.0, 40.0), "Head": (-14.0, 10.0)}
-STRIKE_SNAP = 35.0
+STRIKE_NECK = {"Neck_01": (-18.0, 50.0), "Neck_02": (-10.0, 50.0), "Head": (-14.0, 10.0)}
+STRIKE_SNAP = 20.0
+# No neck joint bends more than STRIKE_JOINT_MAX degrees in the strike: at 80 degrees at the neck's root and a 35 degree snap at the head the
+# upper neck kinked behind the head and read as squashed (fresh reviews of run 12). The forward turn is spread over the neck instead.
+STRIKE_JOINT_MAX = 50.0
 STRIKE_DROP = 1.0
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
@@ -707,6 +710,13 @@ WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 50.0}
 # Offline on the Tripo dragon the torso's height over the lowest point at frame 28 of 64 fell from 0.20 to 0.08 of the height at 1.5, which
 # stretched 2.8% of the leg underneath's root edges in run 8 (TRIPO-LEG-ROOT-STRETCH, limit 2%).
 WINGED_FALL_TUCK = 1.0
+# The roll a winged quadruped's death starts its search from (`roll_limits`) and how far its legs turn out at the hip as it lies. Run 13 laid
+# the Tripo dragon on its belly (roll 0, legs turned out 65 degrees, both wings spread flat to their own sides by `quadruped_wings.lying_pose`,
+# which a fresh review of run 12 asked for): its thick thighs are one skin with the flank, so the turn tore 44.5% of the rear left leg's
+# root edges (TRIPO-LEG-ROOT-STRETCH), and the belly still ended 7% of the height up with two legs hanging (TRIPO-NOT-DOWN,
+# TRIPO-DEATH-LEGS-HANG). The death stays on its side until the rig can lay such legs flat.
+WINGED_DEATH_ROLL = 82.0
+WINGED_DEATH_SPLAY = 0.0
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
 GUARD_NECK_LOW = {"Neck_01": -20.0, "Neck_02": 70.0, "Head": 40.0}
@@ -794,6 +804,7 @@ def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: L
     for name, (back, forward) in STRIKE_NECK.items():
         if name in names:
             turn = back * cock + forward * strike + (STRIKE_SNAP * snap if name == "Head" else 0.0)
+            turn = max(-STRIKE_JOINT_MAX, min(STRIKE_JOINT_MAX, turn))
             pose[name] = [(X_AXIS, turn)]
     pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
     if tails:
@@ -834,6 +845,11 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
     for name, degrees in WINGED_DEAD_NECK.items():
         if name in names:
             pose[name] = pose.get(name, []) + [(X_AXIS, degrees * fall)]
+    for end in ("Front", "Rear"):
+        for side, outward in (("Left", -1.0), ("Right", 1.0)):
+            name = leg_name(end, side, "Upper")
+            if name in pose:
+                pose[name] = pose[name] + [(Y_AXIS, outward * WINGED_DEATH_SPLAY * fall)]
 
 
 def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None:
@@ -860,6 +876,9 @@ def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None
 # between leg and torso is a short seam: at the full turn, 12% to 24% of each leg root's edges stretched in run 2 of the Tripo dragon
 # (TRIPO-LEG-ROOT-STRETCH, limit 2%).
 WINGED_HIP_SHARE = 0.4
+# A winged quadruped's gait swings its legs WINGED_STRIDE times the shared walk's: under the wings the move read as the wings alone moving
+# from the game camera (a fresh review of run 12; the feet travelled 0.24 of the body's length there, offline).
+WINGED_STRIDE = 1.3
 
 
 def _hip_to_knee(pose: Dict[str, List[Rotation]]) -> None:
@@ -884,6 +903,9 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
     names = set(layout.names())
     tails = [name for name in ("Tail_01", "Tail_02", "Tail_03") if name in names]
     if style in ("winged_walk", "winged_flee"):
+        for name in list(pose):
+            if name.startswith(LEG_PREFIX_NAMES):
+                pose[name] = [(axis, degrees * WINGED_STRIDE) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[name]]
         cycles = WINGED_CYCLES.get(style, 1)
         for index, name in enumerate(tails):
             pose[name] = [(Z_AXIS, (8.0 - 2.0 * index) * math.sin(2 * math.pi * t * cycles - 0.6 * index))]
@@ -1196,6 +1218,8 @@ def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:
     load (quadruped_load.roll_limit, `roll_limit` and `roll_limit_other_side` in the landmarks' `load`)."""
 
     load = landmarks.get("load") or {}
+    if landmarks.get("wings"):
+        return WINGED_DEATH_ROLL, -WINGED_DEATH_ROLL
     if not load:
         return COLLAPSE_ROLL, -COLLAPSE_ROLL
     first = float(load.get("roll_limit", COLLAPSE_ROLL))

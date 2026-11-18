@@ -557,6 +557,15 @@ Round 5, runs 10 to 12, after two fresh reviews failed run 9 (the defend opened 
 
 Run 10 failed the wing roots in the move and retreat (5.9% and 5.2%, the membrane turned fully level), the retreat's side cover (18.9% at a 30 degree turn), TRIPO-WING-IDLE-MOVE (a stronger idle breath), TRIPO-ATTACK-DEFEND-ALIKE (91%), TRIPO-MAP-READ for the defend (4% against the idle) and a leg root in the fall. Run 11 failed only the attack (level flared wings hid 22% of the legs from the side, the alike share 77%). Run 12 passes every check: head and neck front share 7% to 20%, sliver 0.86 to 0.92, head reach 20%, the alike share 64%, the defend reads 19% against the idle, the roots stretch 3.6% to 4.4%. It has not been reviewed yet.
 
+Round 6, runs 13 and 14, after two fresh reviews failed run 12 (a crumpled defend fold, a heap of a death with a sail wing, a finger through the forelegs in the attack, a squashed neck, legs that barely stepped). New checks on every winged quadruped clip:
+
+- TRIPO-WING-CRUSH: at most 6% of the membrane's edges squashed or stretched 1.3 times in any frame. Run 12's defend 9.6%, the poses the reviews passed 2.9% to 4.5%.
+- TRIPO-WING-THROUGH-BODY: at most 0.5% of the wing points more than 2% of the height below the belly (the death excepted). Run 12's attack 4.5%.
+- TRIPO-DEATH-WING-HIGH: at the end no wing stands more than 20% of the height over where it joins the body (run 12 28%). TRIPO-DEATH-HEAD-HIDDEN: at least half the head's top view outside the body and wings.
+- TRIPO-STEP-READ: from the game camera the hooves travel at least 30% of the body's length (run 12's move 24%).
+
+The defend opens the wings halfway, mantled down on each side, over a crouch (crush 3.6%). The attack opens them only 0.35 of the way and lets the head lead, with no neck joint past 50 degrees (reach 19%). The gait strides 1.3 times the shared walk (steps 32% and 38%). Run 13 laid the dead dragon on its belly with the legs turned out 65 degrees: the thick thighs tore 44.5% of a leg root's edges and the belly still ended 7% up, so the death is on its side again. Run 14 fails three checks: the attack's recovery puts 0.6% of the wing points below the belly, the dead lower wing stands 28% over its join, and a front leg root stretches 2.3% in the fall. It has not been reviewed.
+
 ### Check the body before you rig it
 
 The body column names a body preset in `.tools/3d_pipeline/config/body_presets.json`. `measure_body.py` counts the feet on the ground and measures the torso and the reach of the lower body, then says which preset the model fits and how sure it is. It measures the body only, not separate plates, a quiver or a weapon. It fails a model with pieces floating apart from the body, so you drop them before paying for the rig. It passes when the job's unit type uses that preset. It fails when they disagree, for example a `beast_biped` job whose model came out on four legs, and names the unit types that fit. It escalates when no preset fits, for example a body with wings, extra arms or tentacles, which is rigged and animated live in Blender. It reads files only.

@@ -464,7 +464,9 @@ SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0
 # down (`quadruped_layout._winged_guard`) under wings half folded and mantled over the back.
 # Run 10 held them half folded low on the back and read as the idle from the map camera (TRIPO-MAP-READ 4%, at least 18%): they rise and
 # fold tight over the back as a hood that keeps to each wing's own side.
-SHIELD = {"sweep": 70.0, "rise": 60.0, "roll": -25.0, "spread": 1.0, "curl": 85.0, "curl_out": 0.0}
+# Round 6: folded tight over the head the membranes crushed into creased lumps (TRIPO-WING-CRUSH 9.6% of the wing's edges on run 12, the
+# poses reviewers passed 2.9% to 4.5%). Half open and mantled down on each side they stay flat (4.5% offline) and above the belly.
+SHIELD = {"sweep": 45.0, "rise": 10.0, "roll": -40.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
 FLEE = {"sweep": 50.0, "rise": 30.0, "roll": -55.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
 DEAD_UPPER_START = 0.6
 DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
@@ -507,6 +509,8 @@ def _envelope(t: float, rise: float = 0.2, fall: float = 0.2) -> float:
 ATTACK_COCK_END = 0.32
 ATTACK_STRIKE_START, ATTACK_STRIKE_END = 0.3, 0.68
 ATTACK_SNAP = (0.37, 0.5)  # its peak at 0.435 of the clip, on a review sheet frame (one every half second)
+ATTACK_OPEN = 0.35
+ATTACK_FLARE = 0.0
 ATTACK_LIFT = 15.0  # degrees the cocked wings rise
 ATTACK_DOWNSTROKE = 30.0  # degrees the wings beat down at the strike
 # The wings flare out and up as the head strikes, a support for the lunge: swept back for the blow they filled 91% as much of the map
@@ -537,7 +541,9 @@ def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = No
     if style == "winged_rear":
         cock, strike, _snap = attack_phases(t)
         envelope = _envelope(t, 0.25, 0.25)
-        pose = _blend(_blend(FOLDED, SPREAD, envelope), STRIKE_WINGS, strike)
+        # the wings open ATTACK_OPEN of the way to the spread pose and flare as the head lands, so the head's travel leads (a fresh review of
+        # run 12 read the full spread as a wing display)
+        pose = _blend(_blend(FOLDED, SPREAD, ATTACK_OPEN * envelope), STRIKE_WINGS, ATTACK_FLARE * strike)
         pose["flap"] = pose.get("flap", 0.0) - ATTACK_LIFT * cock + ATTACK_DOWNSTROKE * strike
         for b in range(1, bones):
             pose[f"wave_{b}"] = 0.35 * (ATTACK_DOWNSTROKE * strike - ATTACK_LIFT * cock)
@@ -593,6 +599,7 @@ LYING_SWEEP_LOWER = 25.0
 # Tripo dragon 4.3% of the wing points ended inside the body without it, TRIPO-CHAIN-IN-BODY's limit is 4.5%).
 UPPER_CLEAR = 8.0
 LYING_SWEEP_UPPER = 80.0
+LYING_SWEEP_SIDE = 30.0
 
 
 def lies_under(plan: Dict[str, object], landmarks: Dict[str, object]) -> bool:
@@ -626,6 +633,12 @@ def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object]) -> np.ndar
     back = body @ Z
     out = unit(back - (back @ Z) * Z)
     sweep = math.radians(LYING_SWEEP_LOWER if lower else LYING_SWEEP_UPPER)
+    side = body @ (sign * X)
+    if float(np.linalg.norm(side - (side @ Z) * Z)) > 0.5:
+        # a body lying on its belly or slightly rolled spreads each wing flat out to its own side, swept LYING_SWEEP_SIDE toward the tail
+        out = unit(side - (side @ Z) * Z)
+        sweep = math.radians(LYING_SWEEP_SIDE)
+        droop = math.degrees(math.asin(max(0.0, min(1.0, height / length))))
     # turn the outward direction toward the tail (+Y) by the sweep, whichever side it points to
     turn = rotation(Z, math.degrees(sweep) * (1.0 if out[0] > 0 else -1.0))
     span = unit(math.cos(math.radians(droop)) * (turn @ out) - math.sin(math.radians(droop)) * Z)
