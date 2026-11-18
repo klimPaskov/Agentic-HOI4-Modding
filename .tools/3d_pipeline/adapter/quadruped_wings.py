@@ -40,7 +40,7 @@ WING_PREFIX = "Wing"  # lib/tripo_chains.REGION_PREFIX["wings"]: the weight smoo
 WING_REACH = 1.15
 WING_MIN_SHARE = 0.02  # of the model's vertices: a smaller piece is a spike or a claw, not a wing
 ROOT_FRONT_SHARE = 0.25  # the wing turns about the front quarter of its root line, the shoulder
-ROOT_BLEND_SHARE = 0.10  # of the wing's length: the wing's weights rise from the body's over this surface distance
+ROOT_BLEND_SHARE = 0.20  # of the wing's length: the wing's weights rise from the body's over this surface distance
 LEAD_PERCENTILE = 92.0  # the leading edge's angle in the fan, over the wing's outer half (lib/tripo_chains.LEADING_EDGE_PERCENTILE is 90)
 WING_CHAINS = 4
 # The trailing chain (the first, by the flank) turns this share of the wing's every turn, beat and fold, so the membrane between the wing and
