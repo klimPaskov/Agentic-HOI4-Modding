@@ -54,6 +54,11 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are more than 47.9 degrees apart (vanilla's deaths split them 38.3
   at most). The crotch and the raised thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing `run_pilot`
   applies to the exported death before its settles.
+- TRIPO-DEATH-LEG-KICK: once the hips of a humanoid's death are down, a boot rises more than 3.4% of the height above where it had come down
+  (vanilla's deaths 2.7%): a leg kicks up from the lying body. `lib/tripo_kick.py`, whose settle `run_pilot` applies after the legs' settle.
+- TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the
+  height against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
+  pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on). A head whose thinnest spread is above `MAX_FACE_FLATNESS` of its middle one (a club, a
   mace: no broad face) is not judged, and the numbers carry its `head_flatness`.
@@ -93,7 +98,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_swing
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -1123,6 +1128,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         findings += found
         found, numbers["death_splay"] = tripo_splay.splay_findings(mesh, anims)
         findings += found
+        found, numbers["death_kick"] = tripo_kick.kick_findings(mesh, anims)
+        findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
 
@@ -1160,6 +1167,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone])
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
+        findings += found
+    if not quadruped_checks.is_quadruped(mesh):
+        strike_hand = holding_hand(mesh, args.weapon_bone) if args.weapon_bone and args.weapon_bone in mesh.bones else ""
+        found, numbers["strike"] = tripo_strike.strike_findings(mesh, anims, strike_hand)
         findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)

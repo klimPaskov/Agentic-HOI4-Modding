@@ -236,6 +236,50 @@ class DeathFeet(Unit):
         self.assertNotIn("legs", run_pilot.ground_exported_clip(self.mesh_path, other, "attack", {}))
 
 
+class TurnedToward(unittest.TestCase):
+    """A turn toward a target keeps its way from frame to frame (`turned_toward`). The zombie's knee passed half a turn from rest during the
+    legs' settle (zombie_n, 2026-11-18) and the short-way slerp turned it 120 degrees in one frame."""
+
+    @staticmethod
+    def steps(track) -> list:
+        return [P.quaternion_turn(track[i], track[i + 1]) for i in range(len(track) - 1)]
+
+    def crossing(self):
+        # a knee turning 8 degrees a frame from 100 to 260 degrees off rest: it passes the far side of rest at frame 10
+        track = np.array([about_x(100.0 + 8.0 * f) for f in range(21)])
+        amounts = 0.4 * tripo_trim.settle_weights(21)
+        return track, amounts
+
+    def test_a_track_that_passes_half_a_turn_from_the_target_turns_no_faster_than_the_clip_and_the_ramp(self) -> None:
+        track, amounts = self.crossing()
+        short = np.array([P.slerp(q, np.array(IDENTITY), a) for q, a in zip(track, amounts)])
+        self.assertGreater(max(self.steps(short)), 60.0)  # the old rule's jump
+        turned = P.turned_toward(track, np.array(IDENTITY), amounts)
+        self.assertLess(max(self.steps(turned)), 8.0 + 0.4 * 360.0 / 21 * 2)
+
+    def test_the_frame_with_the_largest_amount_and_the_frames_on_its_side_turn_the_short_way(self) -> None:
+        track, amounts = self.crossing()
+        turned = P.turned_toward(track, np.array(IDENTITY), amounts)
+        for f in range(11, 21):
+            self.assertLess(P.quaternion_turn(turned[f], P.slerp(track[f], np.array(IDENTITY), amounts[f])), 1e-4, f)
+
+    def test_a_track_with_no_crossing_turns_exactly_as_a_slerp(self) -> None:
+        track = np.array([about_x(10.0 + 5.0 * f) for f in range(20)])
+        track[7] = -track[7]  # a key on the other hemisphere keeps its sign
+        amounts = np.linspace(0.0, 0.5, 20)
+        turned = P.turned_toward(track, np.array(about_x(-30.0)), amounts)
+        for f in range(20):
+            expected = P.slerp(track[f], np.array(about_x(-30.0)), amounts[f])
+            self.assertLess(P.quaternion_turn(turned[f], expected), 1e-4, f)
+            self.assertGreaterEqual(float(turned[f] @ track[f]), 0.0)
+
+    def test_frames_with_no_amount_are_left_as_they_are(self) -> None:
+        track, amounts = self.crossing()
+        amounts[:5] = 0.0
+        turned = P.turned_toward(track, np.array(IDENTITY), amounts)
+        self.assertTrue(np.allclose(turned[:5], track[:5]))
+
+
 class GameSizeSheet(unittest.TestCase):
     """The captions under the tiles of `game_size.png` were drawn over each other because the tiles are only about 70 px wide."""
 

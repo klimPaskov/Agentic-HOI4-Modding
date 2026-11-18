@@ -9,13 +9,14 @@ bind joints onto the mesh's (a mirror: the exporter flips the forward axis), the
 ground pass does). On the zombie (zombie_k, 2026-11-18) defeat_03 carried this way puts every joint within 0.2% of the height of the exported clip
 up to frame 74, where no route rule had yet acted, and its deformed edges read 185 and 185 against the export's 182 and 189. The mesh's weights
 are the route's, so a mesh from an earlier run of the same unit judges the candidates on the skin the next run will have. The route's death
-settles (the knee swing, the free fall, the legs and the upper body) are not applied to the first row of each candidate. With `--settled` a
+settles (the knee swing, the free fall, the legs, the kick and the upper body) are not applied to the first row of each candidate. With `--settled` a
 second row measures it after them and the ground pass (`run_pilot.ground_exported_clip`), as the next run will export it, and the pick is made
 on those rows.
 
 The measures, with the route's limits: the thigh split (TRIPO-DEATH-SPLAY, `lib/tripo_splay.py`), the hips holding themselves up (TRIPO-DEATH-HOVER,
 `lib/tripo_fall.py`), the end pose lying down (TRIPO-NOT-DOWN) and no limb inside the torso (TRIPO-LIMB-IN-TORSO, `tripo_checks.death_findings`),
-the chest, head and hands resting on the ground (TRIPO-DEATH-REST, `lib/tripo_pose.py`), and the kit's deformation over the clip (the worst
+the chest, head and hands resting on the ground (TRIPO-DEATH-REST, `lib/tripo_pose.py`), no boot kicking up once the hips are down
+(TRIPO-DEATH-LEG-KICK, `lib/tripo_kick.py`), and the kit's deformation over the clip (the worst
 frame's stretched and squashed edges, `pdx_deform.deformation_report`). The pick (`pick`) is the candidate that passes every limit with the fewest
 deformed edges. When none passes, the one with the fewest failed rules, then the fewest deformed edges, is named as the closest.
 """
@@ -39,7 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
 import tripo_checks
-from lib import pdx_deform, tripo_fall, tripo_pose, tripo_splay
+from lib import pdx_deform, tripo_fall, tripo_kick, tripo_pose, tripo_splay
 
 FPS = 30.0
 
@@ -172,6 +173,9 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, clip: str)
     found += tripo_fall.hover_findings(mesh, anim, stem, hover_row)
     row["hover_peak_share"] = hover_row.get("fall_hover_peak_share")
     row["hover_ratio"] = hover_row.get("fall_ratio")
+    kick, kick_numbers = tripo_kick.kick_findings(mesh, {stem: anim})
+    found += kick
+    row["boot_rise"] = max((leg["rise"] for leg in (kick_numbers.get(stem) or {}).get("legs", {}).values()), default=None)
     death, death_numbers = tripo_checks.death_findings(mesh, {stem: anim})
     found += death
     numbers = death_numbers.get(stem, {})

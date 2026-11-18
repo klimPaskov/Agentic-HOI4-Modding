@@ -348,7 +348,7 @@ def _plan(clip: _Clip, joints: List[str]):
     lowest = SHARES[np.argmin(np.where(allowed, swell, np.inf), axis=0)]
     needed = np.where(reached.any(axis=0), SHARES[np.argmax(reached, axis=0)], lowest)
     needed = np.where(clip.before <= clip.target, 0.0, needed)
-    turn = max(tripo_pose.quaternion_turn(q, clip.reference[j]) for j in joints for q in anim.channels[j]["q"])
+    turn = max(tripo_pose.turn_to_target_degrees(anim.channels[j]["q"], clip.reference[j]) for j in joints)
     ramp = max(tripo_trim.settle_frames(turn * float(needed.max())), MIN_RAMP_FRAMES)
     weights = np.minimum(tripo_cloak_bend.spread(needed, ramp, clip.loop), np.maximum(cap, needed))
     result = _turned(anim, joints, clip.reference, weights)

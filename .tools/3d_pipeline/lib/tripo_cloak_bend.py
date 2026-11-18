@@ -137,7 +137,7 @@ def ease_cloak_bend(mesh_path: Path, anim_path: Path, out_path: Path, role: str,
     needed = np.where(reached.any(axis=0), SHARES[np.argmax(reached, axis=0)], SHARES[np.argmin(stack, axis=0)])
     needed = np.where(before <= target, 0.0, needed)
     tried = {str(s): round(float(stack[i].max()), 4) for i, s in enumerate(SHARES)}
-    turn = max(tripo_pose.quaternion_turn(q, rest[j]) for j in joints for q in anim.channels[j]["q"])
+    turn = max(tripo_pose.turn_to_target_degrees(anim.channels[j]["q"], rest[j]) for j in joints)
     loop = role in tripo_pose.LOOP_ROLES
     ramp = max(tripo_trim.settle_frames(turn * float(needed.max())), MIN_RAMP_FRAMES)
     weights = spread(needed, ramp, loop)
