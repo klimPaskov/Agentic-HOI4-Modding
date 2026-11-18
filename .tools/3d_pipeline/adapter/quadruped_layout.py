@@ -539,6 +539,11 @@ DEATH_HIND_DROP = {"Upper": 10.0, "Lower": 30.0, "Cannon": 42.0, "Hoof": 22.0}
 DEATH_LEG_HANG_SHARE = 0.5
 COLLAPSE_RELAX = 0.5  # share of the shoulders', hips' and elbows' bend a dead body relaxes once it lies
 COLLAPSE_HIND_FOLD = 0.5  # the hind legs' fold in a death as a share of the forelegs'
+# A dead body's legs buckle this share of a full fold: two fresh reviews of run 13 saw the shoulder, hip, thighs and knees puff up and turn
+# lumpy where the legs folded under the lying body. Offline on its exported mesh the skin of the legs and torso changed by 1.3 times or
+# more over the lying frames covers 7.4 square units at a full fold and 2.2 at 0.6, the lower legs still on the ground (5.2% of the
+# height up, limit 6%).
+DEATH_FOLD = 0.6
 DOWN_TOLERANCE = 0.01  # of the body's height: how much lower than the torso another part may end in a death
 # The death turns the neck back against the roll only when the head or neck is what holds the dead body up, and at most this far. Round 9
 # turned it 60 degrees against an 82 degree roll to gain 0.8% of the height while the tower held the body up: the neck and the ear roots
@@ -810,16 +815,16 @@ def _head_turn(pose: Dict[str, List[Rotation]], chain: Sequence[str] = EAR_HEAD_
 
 
 def _ear_turn(style: str, t: float, ear: Dict[str, object], roll: float = 0.0) -> float:
-    """An ear's own turn about its hinge (degrees, positive closes it back against the head). In a death the ear on top of the lying body
-    falls onto the head and neck: it closes as far as its room, instead of standing up like a fin (two fresh reviews of run 11). The ear
-    underneath stays: the ground holds it (a turn either way pushed the war elephant's lower ear deeper or tore it, offline on run 11's
-    mesh), and a thin flap never holds the body up (`quadruped_rig.tune_collapse` leaves the ears out). In a defend each ear spreads
-    forward GUARD_EAR_SPREAD (no farther than its room)."""
+    """An ear's own turn about its hinge (degrees, positive closes it back against the head). In a death both ears close as far as their
+    room: the ear on top of the lying body falls onto the head and neck instead of standing up like a fin (two fresh reviews of run 11),
+    and the ear underneath folds back off the ground. Run 13 left the lower ear where it stood, and a fresh review saw it hang below the
+    lying torso to the ground (1.3% of the height below it). Its room of 10 degrees lifts it level with the torso, while a spread forward
+    tore its root (54 edges by 1.3 times or more at 60 degrees, offline on run 13's mesh). A thin flap never holds the body up
+    (`quadruped_rig.tune_collapse` leaves the ears out). In a defend each ear spreads forward GUARD_EAR_SPREAD (no farther than its room)."""
 
     close = float(ear.get("close_sign", 1.0))
     if style == "quadruped_collapse":
-        upper = (float(ear.get("side_sign", 1.0)) > 0) == (roll < 0)
-        return close * float(ear.get("close_room", 0.0)) * _collapse_fall(t) if upper else 0.0
+        return close * float(ear.get("close_room", 0.0)) * _collapse_fall(t)
     if style == "quadruped_brace":
         return -close * min(GUARD_EAR_SPREAD, float(ear.get("spread_room", 0.0))) * _brace_envelope(t)
     return 0.0
@@ -936,7 +941,7 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
     settle = _smooth(max(0.0, (t - 0.65) / 0.35))
     ease = 1.0 - COLLAPSE_RELAX * settle
     for end, side in LEGS:
-        fold = 1.0 if end == "Front" else COLLAPSE_HIND_FOLD
+        fold = DEATH_FOLD * (1.0 if end == "Front" else COLLAPSE_HIND_FOLD)
         pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold * ease)]
         pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold * ease)]
         pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.3 * settle))]

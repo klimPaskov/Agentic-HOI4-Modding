@@ -17,7 +17,7 @@ run 11). The rules:
 4. Room. How far the ear may close back against the head and neck before its outer half (`ROOM_REACH`) enters the body: the
    largest turn about the hinge, in `EAR_CLOSE_STEP` steps, that leaves at most `EAR_INSIDE_SHARE` of those points inside the rest of the
    mesh (winding number over one half), less one step. The same the other way gives the room it may spread forward. The ear hangs from
-   the bone its root skin follows most (`assign_parents`).
+   the bone in the middle of its root skin's weight down the neck (`assign_parents`).
 5. Weights. Along the ear the two bones share linearly between their middles. The ear takes them whole from `EAR_ROOT_BLEND` of its length
    out from the root and blends into the body's own weights inside that, so the root bends where an ear bends. The skin a load rests on
    (any weight on the load's bone, quadruped_load.bind_load) keeps its weights, and the ear's rise from it over the load's ring of surface
@@ -45,6 +45,7 @@ ROOM_SAMPLES = 60  # outer ear points the room is measured on
 ROOM_REACH = 0.5
 TORSO_PERCENTILE = 98.0
 TIP_SHARE = 0.1
+EAR_PARENT_ORDER = ("Pelvis", "Spine", "Chest", "Neck_01", "Neck_02", "Head")  # from the torso to the head
 LOAD_BONE = "Load"  # quadruped_layout.LOAD_BONE
 # The ear's weights rise from the skin the load rests on over this many of the load's rings (surface distance). Over one ring, about two
 # edges of the war elephant's coarse mesh, its walk stretched 2.8% of the seam beside the neck and its retreat 9.1% (TRIPO-LOAD-SEAM, limit
@@ -264,10 +265,13 @@ def _root_zone(points: np.ndarray, mask: np.ndarray, ear: Dict[str, object]) -> 
 
 
 def assign_parents(points: np.ndarray, landmarks: Dict[str, object], ears: Dict[str, Dict[str, object]], masks: Dict[str, np.ndarray]) -> None:
-    """Hang each ear from the bone its root skin follows most (`parent` in its chain): the skin weights of the rig without ears, summed over
-    the ear's root zone, the load's bone left out. A war elephant's ear set far back grows from the neck and shoulder skin, and an ear
-    hung from the Head there stretched its root whenever the head turned against the neck (offline on run 11's mesh: 80 edges changed by
-    1.3 times or more in the walk)."""
+    """Hang each ear (`parent` in its chain) from the bone in the middle of its root skin's weight down the neck: the skin weights of the rig
+    without ears, summed per bone over the ear's root zone (the load's bone left out), taken in EAR_PARENT_ORDER from the torso to the head,
+    and the bone where the running sum passes half. A war elephant's ear set far back grows from the neck and shoulder skin. Hung from the
+    Head there it stretched its root whenever the head turned against the neck (offline on run 11's mesh: 80 edges changed by 1.3 times or
+    more in the walk), and hung from the bone its root follows most (the Head, 36% of a root that is 64% neck and shoulder) it turned with
+    the head's whole raise and toss in the retreat while its root did not: two fresh reviews of run 13 saw a red crease where the ear meets
+    the head. From the middle bone (the second neck bone) 2 edges, against 56 (offline on run 13's mesh)."""
 
     import quadruped_layout as ql
 
@@ -277,13 +281,25 @@ def assign_parents(points: np.ndarray, landmarks: Dict[str, object], ears: Dict[
     indices, weights = ql.skin_weights(points, layout)
     for side, mask in masks.items():
         _s, zone = _root_zone(points, mask, ears[side])
-        totals: Dict[str, float] = {}
+        totals = {name: 0.0 for name in EAR_PARENT_ORDER}
         for row in np.flatnonzero(zone if zone.any() else mask):
             for slot in range(indices.shape[1]):
                 name = names[int(indices[row, slot])]
-                if name != ql.LOAD_BONE:
-                    totals[name] = totals.get(name, 0.0) + float(weights[row, slot])
-        ears[side]["parent"] = max(totals, key=totals.get) if totals else "Head"
+                if name in totals:
+                    totals[name] += float(weights[row, slot])
+        ears[side]["parent"] = median_bone(totals)
+
+
+def median_bone(totals: Dict[str, float]) -> str:
+    """The bone in EAR_PARENT_ORDER where the running sum of `totals` first reaches half of their sum (the Head when they are empty)."""
+
+    whole = sum(totals.values())
+    running = 0.0
+    for name in EAR_PARENT_ORDER:
+        running += totals.get(name, 0.0)
+        if whole > 0 and running >= 0.5 * whole:
+            return name
+    return "Head"
 
 
 def _mix(row_i: np.ndarray, row_w: np.ndarray, extra: Dict[int, float], keep: float, slots: int) -> Tuple[List[int], List[float]]:

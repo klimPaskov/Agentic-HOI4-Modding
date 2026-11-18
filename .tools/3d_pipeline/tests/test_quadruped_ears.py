@@ -102,7 +102,8 @@ class FindEars(unittest.TestCase):
         for row in np.flatnonzero(zone):
             for bone, weight in zip(plain_i[row], plain_w[row]):
                 carried[plain[bone]] = carried.get(plain[bone], 0.0) + weight
-        self.assertEqual(ears["Left"]["parent"], max(carried, key=carried.get), "the bone the root skin follows most")
+        self.assertEqual(ears["Left"]["parent"], qe.median_bone({name: carried.get(name, 0.0) for name in qe.EAR_PARENT_ORDER}),
+                         "the bone in the middle of the root skin's weight down the neck")
         self.assertEqual(layout.bone("Ear_Left_01").parent, ears["Left"]["parent"])
         indices, weights = ql.skin_weights(points, layout)
         out_i, out_w = qe.ear_weights(points, triangles, layout, masks, indices, weights, ring=0.05)
@@ -132,17 +133,24 @@ def _degrees(pose: dict, name: str, axis) -> float:
     return sum(degrees for row_axis, degrees in pose.get(name, []) if np.allclose(row_axis, axis))
 
 
+class EarParent(unittest.TestCase):
+    def test_an_ear_hangs_from_the_middle_of_its_root_weight_down_the_neck(self) -> None:
+        self.assertEqual(qe.median_bone({"Head": 0.36, "Neck_02": 0.28, "Neck_01": 0.22, "Chest": 0.12}), "Neck_02")
+        self.assertEqual(qe.median_bone({"Chest": 0.33, "Neck_01": 0.32, "Neck_02": 0.29}), "Neck_01")
+        self.assertEqual(qe.median_bone({"Head": 0.9, "Neck_02": 0.1}), "Head")
+        self.assertEqual(qe.median_bone({}), "Head")
+
+
 class EarMotion(unittest.TestCase):
-    def test_in_a_death_the_upper_ear_closes_onto_the_head_and_the_lower_stays(self) -> None:
+    def test_in_a_death_both_ears_close_as_far_as_their_room(self) -> None:
         layout = _eared_layout()
         last = ql.frame_count("quadruped_collapse") - 1
-        for roll, upper, lower in ((-98.0, "Left", "Right"), (98.0, "Right", "Left")):
+        for roll in (-98.0, 98.0):
             layout.landmarks["death"] = {"roll": roll, "neck_lift": 0.0}
             pose = ql.pose_at("quadruped_collapse", last, layout)
-            ear = layout.landmarks["ears"][upper]
-            turn = _degrees(pose, f"Ear_{upper}_01", ear["hinge"]) + _degrees(pose, f"Ear_{upper}_02", ear["hinge"])
-            self.assertAlmostEqual(turn, ear["close_sign"] * ear["close_room"], places=6)
-            self.assertAlmostEqual(_degrees(pose, f"Ear_{lower}_01", layout.landmarks["ears"][lower]["hinge"]), 0.0, places=6)
+            for side, ear in layout.landmarks["ears"].items():
+                turn = _degrees(pose, f"Ear_{side}_01", ear["hinge"]) + _degrees(pose, f"Ear_{side}_02", ear["hinge"])
+                self.assertAlmostEqual(turn, ear["close_sign"] * ear["close_room"], places=6)
 
     def test_in_a_defend_the_ears_spread_forward_within_their_room(self) -> None:
         layout = _eared_layout()
