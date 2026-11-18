@@ -40,7 +40,8 @@ WING_PREFIX = "Wing"  # lib/tripo_chains.REGION_PREFIX["wings"]: the weight smoo
 WING_REACH = 1.15
 WING_MIN_SHARE = 0.02  # of the model's vertices: a smaller piece is a spike or a claw, not a wing
 ROOT_FRONT_SHARE = 0.25  # the wing turns about the front quarter of its root line, the shoulder
-ROOT_BLEND_SHARE = 0.10  # of the wing's length: the wing's weights rise from the body's over this surface distance
+ROOT_BLEND_SHARE = 0.10  # of the wing's length: the wing's weights rise from the body's over this surface distance (without a membrane test)
+MEMBRANE_BLEND_SHARE = 0.2  # of the wing's length: the membrane's share of the wing rises over this from where the thick body begins
 LEAD_PERCENTILE = 92.0  # the leading edge's angle in the fan, over the wing's outer half (lib/tripo_chains.LEADING_EDGE_PERCENTILE is 90)
 WING_CHAINS = 3
 WING_BONES = 3
@@ -262,6 +263,19 @@ def rotation(axis: Sequence[float], degrees: float) -> np.ndarray:
     return np.eye(3) + math.sin(t) * k + (1 - math.cos(t)) * k @ k
 
 
+def fold_line(joints: np.ndarray, bone: int, normal: np.ndarray, span: np.ndarray) -> np.ndarray:
+    """The axis every chain's `bone` turns about when the wing folds: the line through that bone's joints across the fan (from the first
+    chain's to the last's), in the wing's plane, signed so a positive turn carries the outer wing toward the back of the normal. One axis for
+    all chains folds the membrane between them like paper along that line: a turn about each chain's own cross axis sheared it, and the folded
+    wings creased and bunched at the wrist and elbow (a fresh review of run 3)."""
+
+    line = np.asarray(joints[-1, bone], float) - np.asarray(joints[0, bone], float)
+    line = unit(line - (line @ normal) * normal)
+    if float(np.cross(line, span) @ normal) > 0:
+        line = -line
+    return line
+
+
 def wing_rows(plan: Dict[str, object], pose: Dict[str, float], side: str) -> Dict[str, List[Tuple[Tuple[float, float, float], float]]]:
     """The wing bones' rotations (armature-space (axis, degrees) rows, `quadruped_layout.pose_at`'s format) for a pose:
 
@@ -296,8 +310,7 @@ def wing_rows(plan: Dict[str, object], pose: Dict[str, float], side: str) -> Dic
         carried = whole_matrix @ rotation(fan_axis, fan_degrees)
         wave_axis = unit(carried.T @ stroke)
         for b in range(1, joints.shape[1] - 1):
-            direction = unit(joints[c, b + 1] - joints[c, b])
-            hinge = unit(np.cross(rest[:, 2], direction))
+            hinge = fold_line(joints, b, rest[:, 2], rest[:, 0])
             bend = pose.get("curl", 0.0) * (1.0 + pose.get("curl_out", 0.0) * (b - 1))
             rows[wing_name(side, c, b)] = [(tuple(float(v) for v in hinge), bend),
                                            (tuple(float(v) for v in wave_axis), pose.get(f"wave_{b}", 0.0))]
@@ -354,8 +367,52 @@ def root_blend(points: np.ndarray, edges: np.ndarray, canon: np.ndarray, mask: n
     return share[canon]
 
 
+MEMBRANE_PROBE = 0.04  # of the height: membrane is thinner than this (quadruped_ears.EAR_PROBE, the same flap test)
+MEMBRANE_REACH = 0.5  # of the feet's reach from the mid-plane: thin skin farther out than this on a wing's side may be its membrane
+
+
+def thin_mask(points: np.ndarray, triangles: np.ndarray, candidates: np.ndarray) -> np.ndarray:
+    """The candidate vertices that are on a thin sheet: the points `MEMBRANE_PROBE` of the height along the normal on both sides lie outside
+    the mesh (`quadruped_ears`' flap test). Every copy of a welded vertex."""
+
+    height = float(np.ptp(points[:, 2])) or 1.0
+    canon = qears.weld(points, 1e-6 * height)
+    triangles = np.asarray(triangles, int)
+    normals = qears.vertex_normals(points, triangles, canon)
+    soup = points[triangles]
+    probe = MEMBRANE_PROBE * height
+    pick = np.flatnonzero(np.asarray(candidates, bool) & (canon == np.arange(len(points))))
+    thin = np.zeros(len(points), bool)
+    if len(pick):
+        thin[pick] = (qears.winding_numbers(points[pick] + probe * normals[pick], soup) <= 0.5) & (
+            qears.winding_numbers(points[pick] - probe * normals[pick], soup) <= 0.5)
+    return thin[canon]
+
+
+def membrane_blend(points: np.ndarray, edges: np.ndarray, canon: np.ndarray, mask: np.ndarray, membrane: np.ndarray, reach: float) -> np.ndarray:
+    """How far into the wing each vertex lies when the wing's membrane runs on to the body (0 to 1, `wing_weights` smooths it into the
+    chains' share): over the wing and the thin membrane joined to it (`membrane`), from none where the thick body begins to
+    one at `reach` (surface distance); the thick body keeps its own weights. The membrane between the wing and the shoulder follows the wing, and the bend is spread over the membrane instead of pulling
+    the flank's skin: blended from the wing's own border into the body, it stayed pinned to the flank and stretched into a dragged sheet
+    when the wings rose (a fresh review of run 3)."""
+
+    n = len(points)
+    wing = np.zeros(n, bool)
+    wing[canon[mask]] = True
+    sheet = np.zeros(n, bool)
+    sheet[canon[np.asarray(membrane, bool)]] = True
+    region = wing | sheet
+    labels = qears.components(n, edges, region & (canon == np.arange(n)))
+    joined = region & np.isin(labels, np.unique(labels[wing & (labels >= 0)]))
+    core = ~joined & (canon == np.arange(n))
+    distance = qears.surface_distance(points, edges, core, reach)
+    share = np.where(joined, np.clip(np.where(np.isfinite(distance), distance / reach, 1.0), 0.0, 1.0), 0.0)
+    return share[canon]
+
+
 def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str], plans: Dict[str, Dict[str, object]],
-                 masks: Dict[str, np.ndarray], indices: np.ndarray, weights: np.ndarray, centre_x: float, belly_z: float) -> Tuple[np.ndarray, np.ndarray]:
+                 masks: Dict[str, np.ndarray], indices: np.ndarray, weights: np.ndarray, centre_x: float, belly_z: float,
+                 feet_reach: Optional[float] = None) -> Tuple[np.ndarray, np.ndarray]:
     """Bind each wing to its chains (`sheet_rows`) and blend it into the body's own weights at its root (`root_blend`, over
     `ROOT_BLEND_SHARE` of the wing's length). `indices`, `weights` as `quadruped_layout.skin_weights` returns them, rewritten."""
 
@@ -370,7 +427,11 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
         mask = masks[side]
         sign = float(plan["side_sign"])
         side_ok = ((points[:, 0] - centre_x) * sign > 0) & (points[:, 2] > belly_z)
-        share = root_blend(points, edges, canon, mask, side_ok, ROOT_BLEND_SHARE * float(plan["length"]))
+        if feet_reach is not None:
+            candidates = side_ok & ((points[:, 0] - centre_x) * sign > MEMBRANE_REACH * feet_reach) & ~mask
+            share = membrane_blend(points, edges, canon, mask, thin_mask(points, triangles, candidates), MEMBRANE_BLEND_SHARE * float(plan["length"]))
+        else:
+            share = root_blend(points, edges, canon, mask, side_ok, ROOT_BLEND_SHARE * float(plan["length"]))
         rows_at = np.flatnonzero(share > 1e-4)
         first, second, _normal = (np.asarray(row, float) for row in plan["plane"])
         rel = points[rows_at] - np.asarray(plan["root"], float)
@@ -378,7 +439,8 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
         s = np.hypot(rel @ first, rel @ second)
         sheet = sheet_rows(u, s, np.asarray(plan["angles"], float), np.asarray(plan["stations"], float))
         for row, cells in zip(rows_at, sheet):
-            alpha = float(share[row])
+            x = float(share[row])
+            alpha = float(_smooth(np.array(x))) if feet_reach is not None else x
             dense: Dict[int, float] = {}
             for bone, weight in zip(out_i[row], out_w[row]):
                 if weight > 0:
@@ -401,11 +463,13 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # front, the fan's spread as a share of its rest spread (a folded fan keeps 0.7 of it: the membrane between two chains shortens by the
 # same share, and the kit's stretch measure counts an edge changed by 1.5 times, so 0.67 is the least), the bend of each bone past the
 # root (curl, positive toward the back of the wing) and how much more each further bone bends (curl_out).
-FOLDED = {"sweep": 80.0, "rise": 10.0, "roll": -25.0, "spread": 0.8, "curl": 25.0, "curl_out": 0.5}
-HALF = {"sweep": 60.0, "rise": 22.0, "roll": -10.0, "spread": 0.9, "curl": 12.0, "curl_out": 0.5}
+FOLDED = {"sweep": 80.0, "rise": 20.0, "roll": -45.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
+HALF = {"sweep": 60.0, "rise": 25.0, "roll": -25.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
-SHIELD = {"sweep": 5.0, "rise": 75.0, "roll": -60.0, "spread": 0.95, "curl": -30.0, "curl_out": 0.5}
+SHIELD = {"sweep": -50.0, "rise": 55.0, "roll": 40.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
 FLEE = {"sweep": 60.0, "rise": 30.0, "roll": -45.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
+DEAD_UPPER_START = 0.6
+DEAD_UPPER = {**FOLDED, "sweep": 70.0, "rise": -40.0, "roll": 0.0}  # the wing on top of a dead body, folded and laid down along the flank
 LYING = {**FOLDED, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}  # the lying wing's direction comes from `lying_pose`
 # Beats: (degrees at the root, beats per clip, the wave's bend per bone past the root as a share of the root's beat, its lag per bone as a
 # share of a beat). The idle breathes: one slow rise and fall of the folded wings per loop.
@@ -438,7 +502,28 @@ def _envelope(t: float, rise: float = 0.2, fall: float = 0.2) -> float:
     return up * (1.0 - down)
 
 
-def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = None) -> Dict[str, object]:
+# The attack's timing (shares of the clip): it cocks (rears, neck drawn back, wings spread and raised) up to ATTACK_COCK_END, strikes (neck
+# lunges, forequarters come down, wings sweep back with a down-stroke) from ATTACK_STRIKE_START to ATTACK_STRIKE_END, snaps the head down
+# at the bite, and recovers by the end.
+ATTACK_COCK_END = 0.32
+ATTACK_STRIKE_START, ATTACK_STRIKE_END = 0.3, 0.68
+ATTACK_SNAP = (0.4, 0.52)
+ATTACK_LIFT = 15.0  # degrees the cocked wings rise
+ATTACK_DOWNSTROKE = 30.0  # degrees the wings beat down at the strike
+STRIKE_WINGS = {"sweep": 75.0, "rise": 30.0, "roll": 0.0, "spread": 1.0, "curl": 10.0, "curl_out": 0.0}  # swept back for the blow
+
+
+def attack_phases(t: float) -> Tuple[float, float, float]:
+    """(cock, strike, snap) of the attack at clip time t, each 0 to 1."""
+
+    cock = float(_smooth(np.array(t / 0.2))) * (1.0 - float(_smooth(np.array((t - ATTACK_COCK_END) / 0.08))))
+    strike = float(_smooth(np.array((t - ATTACK_STRIKE_START) / 0.08))) * (1.0 - float(_smooth(np.array((t - ATTACK_STRIKE_END) / 0.25))))
+    low, high = ATTACK_SNAP
+    snap = math.sin(math.pi * (t - low) / (high - low)) if low <= t <= high else 0.0
+    return cock, strike, snap
+
+
+def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = None, upper: bool = False) -> Dict[str, object]:
     """The wing pose (`wing_rows`' keys) of a winged style at clip time t (0 to 1): idle folded and breathing, move half folded with a slow
     beat per stride, attack spread wide with two strong beats, defend raised as a shield, retreat beating hard, death folding and then
     settling flat. Clips the game loops start and end folded."""
@@ -448,14 +533,26 @@ def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = No
     if style == "winged_walk":
         return _beat(HALF, t, WALK_BEAT, bones)
     if style == "winged_rear":
+        cock, strike, _snap = attack_phases(t)
         envelope = _envelope(t, 0.25, 0.25)
-        return _beat(_blend(FOLDED, SPREAD, envelope), t, ATTACK_BEAT, bones, envelope)
+        pose = _blend(_blend(FOLDED, SPREAD, envelope), STRIKE_WINGS, strike)
+        pose["flap"] = pose.get("flap", 0.0) - ATTACK_LIFT * cock + ATTACK_DOWNSTROKE * strike
+        for b in range(1, bones):
+            pose[f"wave_{b}"] = 0.35 * (ATTACK_DOWNSTROKE * strike - ATTACK_LIFT * cock)
+        return pose
     if style == "winged_guard":
         envelope = _envelope(t, 0.25, 0.25)
         return _beat(_blend(FOLDED, SHIELD, envelope), t, GUARD_BEAT, bones, envelope)
     if style == "winged_flee":
         envelope = _envelope(t, 0.15, 0.15)
         return _beat(_blend(FOLDED, FLEE, envelope), t, FLEE_BEAT, bones, envelope)
+    if style == "winged_collapse" and upper:
+        # the wing on top stays folded at its joints along the upper flank: spread over the back it wadded into a crumpled bundle on the
+        # dead body (a fresh review of run 3)
+        # it lies down only once the body has rolled (`quadruped_layout._collapse_fall` ends at 0.65 of the clip): lowered while the body
+        # still turned, it swept through the flank (7% of its points inside the body halfway, offline)
+        settle = float(_smooth(np.array(max(0.0, (t - DEAD_UPPER_START) / (1.0 - DEAD_UPPER_START)))))
+        return _blend(FOLDED, DEAD_UPPER, settle)
     if style == "winged_collapse":
         settle = float(_smooth(np.array(max(0.0, (t - DEATH_FOLD_END) / (1.0 - DEATH_FOLD_END)))))
         out = _blend(FOLDED, LYING, settle)
@@ -477,8 +574,8 @@ def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[
     rows: Dict[str, List[Tuple[Tuple[float, float, float], float]]] = {}
     for side, plan in (layout.landmarks.get("wings") or {}).items():
         bones = np.asarray(plan["joints"]).shape[1] - 1
-        lying = lying_pose(plan, layout.landmarks) if style == "winged_collapse" else None
-        pose = role_pose(style, t, bones, lying)
+        lying = lying_pose(plan, layout.landmarks) if style == "winged_collapse" and lies_under(plan, layout.landmarks) else None
+        pose = role_pose(style, t, bones, lying, upper=style == "winged_collapse" and lying is None)
         pose["sweep"] = float(pose.get("sweep", 0.0)) + max(0.0, -float(plan["side_sign"]) * yaw)
         rows.update(wing_rows(plan, pose, side))
     return rows
@@ -492,6 +589,12 @@ LYING_SWEEP_LOWER = 60.0
 # Tripo dragon 4.3% of the wing points ended inside the body without it, TRIPO-CHAIN-IN-BODY's limit is 4.5%).
 UPPER_CLEAR = 8.0
 LYING_SWEEP_UPPER = 40.0
+
+
+def lies_under(plan: Dict[str, object], landmarks: Dict[str, object]) -> bool:
+    """Whether the wing is the one underneath the dead body (a positive roll lays the body on its left side)."""
+
+    return (float((landmarks.get("death") or {}).get("roll", 82.0)) > 0) == (float(plan["side_sign"]) > 0)
 
 
 def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object]) -> np.ndarray:

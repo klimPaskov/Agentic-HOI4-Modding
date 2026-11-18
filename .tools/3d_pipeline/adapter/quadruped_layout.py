@@ -680,10 +680,14 @@ LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # body's middle, in over the first FLEE_TURN_IN of the clip and out over its last, so the clip starts and ends at the heading (TRIPO-LOOP-HEADING).
 FLEE_TURN = -30.0
 FLEE_TURN_IN = 0.25
-# The attack: at the top of the rear the neck and head lunge forward and down (degrees at Neck_01, Neck_02 and Head, positive pitches a
-# raised neck forward), between LUNGE_START and LUNGE_END of the clip.
-LUNGE = {"Neck_01": 28.0, "Neck_02": 18.0, "Head": 12.0}
-LUNGE_START, LUNGE_END = 0.3, 0.8
+# The attack: (degrees drawn back while cocked, degrees forward at the strike) at Neck_01, Neck_02 and Head (positive pitches a raised neck
+# forward), the head's snap down at the bite, and the share of the rear's pitch and lifted forelegs that comes down at the strike.
+STRIKE_NECK = {"Neck_01": (-18.0, 42.0), "Neck_02": (-10.0, 26.0), "Head": (-14.0, 10.0)}
+STRIKE_SNAP = 22.0
+STRIKE_DROP = 0.7
+# The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
+# fresh review of run 3).
+FORELEG_LIFT = 0.6
 # A dead winged quadruped's legs fold this share of a full fold (the elephant's DEATH_FOLD is 0.6): at 0.6 the Tripo dragon's legs bent 22
 # degrees in its death (TRIPO-DEATH-STIFF-LEGS, at least 25), at 0.8 32 (offline).
 WINGED_DEATH_FOLD = 0.8
@@ -753,13 +757,26 @@ def _winged_time(style: str, frame: float) -> Tuple[float, float]:
 
 
 def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str]) -> None:
-    """The attack's lunge at the top of the rear, the tail keeping its world pitch while the body rears about the hind feet (else it sinks
-    and the feet lift off)."""
+    """The attack strikes (`quadruped_wings.attack_phases`): the body rears and the neck draws back, then the forequarters come down as
+    the neck and head lunge forward and the head snaps down, and it recovers. The rear's pitch and the lifted forelegs ease off by
+    STRIKE_DROP of themselves at the strike, so the blow lands forward and the forelegs keep their rest shape. The tail keeps its world
+    pitch while the body rears about the hind feet (else it sinks and the feet lift off). A fresh review of run 3 read a rear with a slow
+    lunge as a threat display, not an attack."""
 
-    lunge = _smooth(max(0.0, min(1.0, (t - LUNGE_START) / 0.15))) * (1 - _smooth(max(0.0, (t - LUNGE_END + 0.15) / 0.15)))
-    for name, degrees in LUNGE.items():
+    import quadruped_wings as qw
+
+    cock, strike, snap = qw.attack_phases(t)
+    keep = 1.0 - STRIKE_DROP * strike
+    pose["__root_pitch__"] = [(axis, degrees * keep) for axis, degrees in pose.get("__root_pitch__", [])]
+    for side in ("Left", "Right"):
+        for segment in LEG_SEGMENTS:
+            name = leg_name("Front", side, segment)
+            if name in pose:
+                pose[name] = [(axis, degrees * keep * FORELEG_LIFT) for axis, degrees in pose[name]]
+    for name, (back, forward) in STRIKE_NECK.items():
         if name in names:
-            pose[name] = pose.get(name, []) + [(X_AXIS, degrees * lunge)]
+            turn = back * cock + forward * strike + (STRIKE_SNAP * snap if name == "Head" else 0.0)
+            pose[name] = [(X_AXIS, turn)]
     pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
     if tails:
         pose[tails[0]] = [(X_AXIS, -pitch)]
@@ -848,7 +865,8 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
         _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
     elif style == "winged_guard":
         _winged_guard(pose, t, names)
-    _hip_to_knee(pose)
+    if style != "winged_collapse":  # a death folds its legs whole (TRIPO-DEATH-STIFF-LEGS read 23 degrees with the hip's turn moved down)
+        _hip_to_knee(pose)
     yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
     pose.update(qw.role_rows(style, t, layout, yaw))
     return pose
