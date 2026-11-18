@@ -34,7 +34,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -42,7 +41,7 @@ from typing import Dict, List, Optional
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import stage_verdict
+from lib import heavy_job, stage_verdict
 from lib.model_dds import write_dxt5
 from pack_pdx_material import ensure_gltf_metallic_roughness_map, pack_pdx_normal_map, pack_pdx_specular_map
 from review_unit import find_blender, owned_anims
@@ -123,7 +122,7 @@ def fit(args: argparse.Namespace) -> dict:
     }
     out.mkdir(parents=True, exist_ok=True)
     (out / "fit_request.json").write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-    completed = subprocess.run(
+    completed = heavy_job.run(
         [str(find_blender()), "-b", "--python", str(BLENDER_SCRIPT), "--", str(out / "fit_request.json")],
         capture_output=True,
         text=True,
@@ -213,7 +212,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--ground-weight", type=float, default=10.0, help="how much a point below the ground counts against a grip")
     parser.add_argument("--size", type=int, default=1024, help="prop texture size")
     parser.add_argument("--gamma", type=float, default=1.0, help="gamma on the prop's diffuse, to match the unit's (the job's runtime_diffuse_gamma)")
+    heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
+    heavy_job.apply(args)
     report = fit(args)
     payload = verdict_for(report, args)
     stage_verdict.write(payload, args.out / "verdict.json")

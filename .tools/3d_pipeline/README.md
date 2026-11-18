@@ -54,6 +54,17 @@ request that verifies the key) and the rest of the start gates are in the
 [production guide](../../.claude/skills/hoi4-3d-model-pipeline/references/production-guide.md#hard-start-gates).
 `meshy_client.py` enforces the reviewed route.
 
+## Waiting for the machine
+
+Blender is the heavy step, so every kit command that starts it calls `lib/heavy_job.py` first. It takes an operating system file lock
+(`hoi4-kit-heavy-job.lock` in the temporary folder, freed by itself when its holder ends), waits while the free RAM is under a floor
+(`HOI4_KIT_MIN_FREE_RAM_GB`, 4 by default), prints one line for each reason it waits, and gives up after `HOI4_KIT_HEAVY_WAIT_MINUTES`
+(360 by default). `--skip-heavy-check` or `HOI4_KIT_SKIP_HEAVY_CHECK=1` skips it, and a kit command started by a holder does not wait for it
+(`HOI4_KIT_HEAVY_JOB_HELD`). The callers are the bootstrap, `tripo_intake.py`, the adapter calls of `blender_client.py` (so `run_pilot.py`),
+`review_unit.py`, `repair_unit.py`, `check_holes.py`, `fit_prop.py` and four `tripo/` sheet and model tools. A Blender command typed by hand goes
+through `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py -- <command>`. `tests/test_heavy_job.py` fails when a tool starts Blender with a bare
+`subprocess` call.
+
 ## Generation model, credits and recovery
 
 The generation model is the profile's `generation.ai_model` in
