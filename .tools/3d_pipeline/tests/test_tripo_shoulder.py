@@ -230,6 +230,37 @@ class Lever(Unit):
         self.assertEqual(out.read_bytes(), data)
 
 
+class Strike(unittest.TestCase):
+    """The attack's strike that the shoulder ease and the clavicle lever keep (`strike`, `strike_kept`), on the biped with hands."""
+
+    def setUp(self) -> None:
+        import test_tripo_pose_upper as PU
+
+        self.PU = PU
+        self.biped = PU.Biped("setUp")
+        self.biped.setUp()
+        self.addCleanup(self.biped.doCleanups)
+
+    def swing(self, name: str, peak: int, degrees: float = 120.0):
+        PU = self.PU
+
+        def pose(frame: int):
+            share = 1.0 / (1.0 + math.exp(-(frame - peak) * 1.5))  # fastest at `peak`
+            return {"RightArm": (PU.local("RightArm"), PU.turn("z", degrees * share))}
+
+        return self.biped.load(self.biped.clip(name, 30, pose))
+
+    def test_a_blow_moved_to_another_frame_or_slowed_under_the_strike_rule_is_not_kept(self) -> None:
+        mesh = self.biped.mesh
+        before = S.strike(mesh, self.swing("attack", 20))
+        self.assertLessEqual(abs(before[1] - 20), 1)
+        self.assertEqual(mesh.bones[before[0]], "RightHand")
+        self.assertTrue(S.strike_kept(mesh, before, self.swing("same", 21)))
+        self.assertFalse(S.strike_kept(mesh, before, self.swing("early", 8)))
+        self.assertFalse(S.strike_kept(mesh, before, self.swing("slow", 20, degrees=2.0)))
+        self.assertTrue(S.strike_kept(mesh, None, self.swing("other", 8)))
+
+
 class Pilot(Unit):
     def test_every_role_is_eased_with_the_idle_last_and_recorded(self) -> None:
         records = {"u_idle.anim": {}, "u_attack.anim": {}, "u_defend.anim": {}}

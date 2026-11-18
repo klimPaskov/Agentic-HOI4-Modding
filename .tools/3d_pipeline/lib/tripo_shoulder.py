@@ -313,6 +313,45 @@ def within(frames: np.ndarray, before: Dict[str, float]) -> np.ndarray:
             & (frames[:, 2] <= max(before["worst"], 0.0) * (1 + share) + 1e-6))
 
 
+# An attack keeps its blow: a plan may not move the striking hand's fastest frame (the strike the head-lead check reads, `tripo_swing`)
+# further than `tripo_swing.STRIKE_WINDOW` frames, nor slow it under TRIPO-ATTACK-NO-STRIKE's speed (`tripo_strike.MIN_SPEED`). On the ogre's
+# poleaxe attack (ogre_q, 2026-11-18) the spine turned toward the stance slowed the blow (frame 23) under the wind-up (frame 9), and the check
+# then judged the raise, which leads with the butt. The clavicles alone keep the blow at frame 23 (1.85 heights a second against 2.05).
+
+
+def strike(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[Tuple[int, int, float]]:
+    """(hand joint, frame, speed) of the faster hand's fastest frame in the world, or None without hands."""
+
+    from . import tripo_swing
+
+    hands = [i for i, name in enumerate(mesh.bones) if name.lower() in ("lefthand", "righthand")]
+    if not hands or anim.frames < 3:
+        return None
+    joints = pdx_motion.posed_joints(mesh, anim)
+    best = None
+    for hand in hands:
+        frame = tripo_swing.strike_frame(joints[:, hand])
+        speed = float(np.linalg.norm(np.gradient(joints[:, hand], axis=0), axis=1)[frame])
+        if best is None or speed > best[2]:
+            best = (hand, frame, speed)
+    return best
+
+
+def strike_kept(mesh: pdx_deform.SkinnedMesh, before: Optional[Tuple[int, int, float]], anim: pdx_deform.Animation) -> bool:
+    """Whether `anim` keeps the attack's strike `before` (see the note above `strike`). True when there is none to keep."""
+
+    from . import tripo_strike, tripo_swing
+
+    if before is None:
+        return True
+    hand, frame, speed = before
+    track = pdx_motion.posed_joints(mesh, anim)[:, hand]
+    now = tripo_swing.strike_frame(track)
+    peak = float(np.linalg.norm(np.gradient(track, axis=0), axis=1)[now])
+    fast = peak * float(anim.fps or 30.0) / max(mesh.height, 1e-6) >= tripo_strike.MIN_SPEED
+    return abs(now - frame) <= tripo_swing.STRIKE_WINDOW and fast
+
+
 def ease_groups(rig: ShoulderRig, mesh: pdx_deform.SkinnedMesh) -> List[Tuple[str, Tuple[str, ...]]]:
     spine = tuple(name for name in SPINE if name in mesh.bones)
     clavicles = tuple(mesh.bones[j] for j in rig.clavicles)
@@ -336,6 +375,7 @@ class _Clip:
     target: float
     neck_rig: object = None
     neck_floor: Optional[float] = None
+    strike: Optional[Tuple[int, int, float]] = None  # an attack's strike to keep (`strike_kept`)
 
 
 def _plan(clip: _Clip, joints: List[str]):
@@ -366,6 +406,8 @@ def _plan(clip: _Clip, joints: List[str]):
         why = "sinks the neck"
     elif stretch_smooth.worse(clip.deformed, summary(_frame_deformation(mesh, result, clip.edges, clip.rest))):
         why = "makes the clip's deformation worse"
+    elif not strike_kept(mesh, clip.strike, result):
+        why = "moves or slows the attack's strike"
     if why:
         record["rejected"] = why
     return record, why, weights, result, after, added
@@ -393,7 +435,8 @@ def ease_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
     neck_before = tripo_neck.visible_neck(mesh, anim, neck_rig)
     clip = _Clip(mesh, anim, measure, before, stance(mesh, idle), edges, rest, summary(_frame_deformation(mesh, anim, edges, rest)),
                  role in tripo_pose.LOOP_ROLES, target, neck_rig,
-                 min(tripo_neck.NECK_LIMIT, float(neck_before.min())) if neck_before is not None and len(neck_before) else None)
+                 min(tripo_neck.NECK_LIMIT, float(neck_before.min())) if neck_before is not None and len(neck_before) else None,
+                 strike(mesh, anim) if role == "attack" else None)
     plans, tried = [], {}
     for order, (name, group) in enumerate(ease_groups(rig, mesh)):
         joints = [j for j in group if j in keyed]
@@ -512,7 +555,7 @@ class ClavicleEase:
     tried: Dict[str, dict] = field(default_factory=dict)
 
 
-def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed, loop):
+def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed, loop, blow=None):
     """(record, result, weights, why) for turning `joints` (clavicles) toward `reference`, with the `arms` kept in their world direction (none:
     the arms follow their clavicles)."""
 
@@ -548,6 +591,8 @@ def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, re
         why = "makes the clip's deformation worse"
     elif not arms and hand_raise(mesh, result) < hand_raise(mesh, anim) - RAISE_KEEP:
         why = "lowers the raised hand"
+    elif not strike_kept(mesh, blow, result):
+        why = "moves or slows the attack's strike"
     return record, result, weights, why
 
 
@@ -570,6 +615,7 @@ def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation,
     edges = pdx_deform.mesh_edges(mesh)
     rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
     before_deformed = summary(_frame_deformation(mesh, anim, edges, rest))
+    blow = strike(mesh, anim) if role == "attack" else None
     sides = [(mesh.bones[c], arm) for c, arm in zip(rig.clavicles, (rig.left, rig.right)) if mesh.bones[c] in keyed and mesh.bones[arm] in keyed]
     groups = [(name, [pair]) for name, pair in zip(("left clavicle", "right clavicle"), sides)] + [("both clavicles", sides)]
     groups = [(name, pairs, True) for name, pairs in groups] + [(name + ", arm follows", pairs, False) for name, pairs in groups]
@@ -579,7 +625,7 @@ def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation,
             continue
         joints, arms = [c for c, _a in pairs], [a for _c, a in pairs] if kept else []
         record, result, weights, why = _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed,
-                                                      role in tripo_pose.LOOP_ROLES)
+                                                      role in tripo_pose.LOOP_ROLES, blow)
         if why:
             record["rejected"] = why
         base.tried[name] = record
