@@ -3809,7 +3809,7 @@ def job_has_cloak(spec: Dict[str, Any]) -> bool:
 
 def ease_staged_cloak_bends(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
     """The spine ease for a stretched back (lib/tripo_cloak_bend.py) on every staged clip of a humanoid unit with a cape or cloak chain, recorded
-    with the clip's file (the dwarf, which has none, kept its pose: its back region is not a cloak). `"ease_cloak_bend": false` in the job's tripo
+    with the clip's file. A job without a cape keeps its pose. `"ease_cloak_bend": false` in the job's tripo
     block switches it off."""
 
     from lib import tripo_cloak_bend
@@ -3822,6 +3822,32 @@ def ease_staged_cloak_bends(job: Path, staged: Path, spec: Dict[str, Any], roles
         bend = tripo_cloak_bend.ease_cloak_bend(staged / f"{stem}.mesh", staged / name, staged / name, role)
         records[name]["cloak_bend"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in bend.__dict__.items()}
         records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
+def ease_staged_shoulders(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
+    """The shoulder ease (lib/tripo_shoulder.py, TRIPO-SHOULDER-SWELL) on every staged clip of a humanoid unit, after the weight fit: where the
+    shoulder and the upper back swell, the spine or the clavicles turn toward the unit's own stance (the idle's first frame). The idle is
+    eased last, so every clip is judged against the stance it had. `"ease_shoulders": false` in the job's tripo block switches it off."""
+
+    from lib import tripo_shoulder
+
+    if tripo_quadruped(spec) or (spec.get("tripo") or {}).get("ease_shoulders", True) is False:
+        return
+    stem = spec["runtime_stem"]
+    idle = staged / f"{stem}_idle.anim"
+    for role in sorted(roles, key=lambda name: name == "idle"):
+        name = f"{stem}_{role}.anim"
+        ease = tripo_shoulder.ease_shoulders(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
+        records[name]["shoulder_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in ease.__dict__.items()}
+        records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
+def ease_staged_poses(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
+    """The pose eases after the weight fit, in order: the spine under a cloak (lib/tripo_cloak_bend.py, TRIPO-CLOAK-STRETCH), then a swollen
+    shoulder (lib/tripo_shoulder.py, TRIPO-SHOULDER-SWELL), which judges the clips the first left."""
+
+    ease_staged_cloak_bends(job, staged, spec, roles, records)
+    ease_staged_shoulders(job, staged, spec, roles, records)
 
 
 def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
@@ -4179,8 +4205,8 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
             records[f"{stem}.mesh"]["weight_fit"] = fit_clip_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones, job_has_plates(spec))
             records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
-        # A hard torso bend the weights cannot keep whole is eased in the pose (lib/tripo_cloak_bend.py, TRIPO-CLOAK-STRETCH).
-        ease_staged_cloak_bends(job, staged, spec, sorted(exports["animations"]), records)
+        # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder.
+        ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
         # Then the mesh the game loads decides where the ground is.
         for role in sorted(exports["animations"]):
             records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
