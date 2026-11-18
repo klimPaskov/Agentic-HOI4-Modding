@@ -1072,6 +1072,8 @@ def stance_tracks(armature, frames, height, up=2):
     shoulders = {name: [] for name in SHOULDER_JOINTS}
     rotations = {foot: [] for foot, _toe in FEET}
     lifts = {foot: [] for foot, _toe in FEET}
+    torso = []  # the hips to the chest: a body lying down has no stance (`tripo_pose.STANCE_UPRIGHT`)
+    chest = "Spine02" if "Spine02" in bones else None
     rest_frames = {foot: (world @ bones[foot].matrix_local).to_3x3().normalized().inverted() for foot, _toe in FEET}
     for frame in frames:
         scene.frame_set(frame)
@@ -1081,10 +1083,12 @@ def stance_tracks(armature, frames, height, up=2):
             posed = (world @ armature.pose.bones[foot].matrix).to_3x3().normalized()
             rotations[foot].append(np.array(posed @ rest_frames[foot]))
             lifts[foot].append(min(joint_head(armature, foot)[up] - rest[foot][up], joint_head(armature, toe)[up] - rest[toe][up]))
+        if chest and "Hips" in bones:
+            torso.append(np.asarray(joint_head(armature, chest)) - np.asarray(joint_head(armature, "Hips")))
     return tripo_pose.stance_twist_tracks(
         np.array(shoulders["LeftArm"]), np.array(shoulders["RightArm"]), rest["LeftArm"], rest["RightArm"],
         [np.array(rotations[foot]) for foot, _toe in FEET], [rest[toe] - rest[foot] for foot, toe in FEET],
-        [np.array(lifts[foot]) for foot, _toe in FEET], up, height)
+        [np.array(lifts[foot]) for foot, _toe in FEET], up, height, np.array(torso) if torso else None)
 
 
 def untwist_waist(armature, action, role, body, up=2):

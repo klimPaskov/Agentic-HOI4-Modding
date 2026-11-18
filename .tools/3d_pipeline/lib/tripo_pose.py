@@ -803,13 +803,14 @@ def _wrap(degrees: np.ndarray) -> np.ndarray:
 
 def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, rest_left: np.ndarray, rest_right: np.ndarray,
                         foot_rotations: Sequence[np.ndarray], foot_headings: Sequence[np.ndarray], foot_lifts: Sequence[np.ndarray],
-                        up: int, height: float) -> np.ndarray:
+                        up: int, height: float, torso: Optional[np.ndarray] = None) -> np.ndarray:
     """Per frame, the shoulder line's turn about the `up` axis against the way the standing feet point, less the rest pose's (degrees);
     NaN in a frame where not every foot stands (the rule in the module docstring).
 
     `shoulder_left` and `shoulder_right` are (F, 3) joint tracks and `rest_left`, `rest_right` their rest positions. Per foot:
     `foot_rotations` (F, 3, 3) the ankle's turn from the rest pose, `foot_headings` (3,) its rest heading (the ankle to the toe), and
-    `foot_lifts` (F,) how far its lower end sits above its rest height. Blender (Z up) and the exported files (Y up) call this alike."""
+    `foot_lifts` (F,) how far its lower end sits above its rest height. `torso` (F, 3), the hips joint to the chest joint: a frame whose torso
+    leans further than `STANCE_UPRIGHT` from upright gives no reading. Blender (Z up) and the exported files (Y up) call this alike."""
 
     shoulders = _wrap(_yaw(np.asarray(shoulder_right) - np.asarray(shoulder_left), up) - _yaw(np.asarray(rest_right) - np.asarray(rest_left), up))
     frames = len(shoulders)
@@ -827,6 +828,9 @@ def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, r
         turns.append(_wrap(_yaw(posed, up) - _yaw(flat, up)))
     lifts = np.asarray(foot_lifts, float)
     standing = np.all(level, axis=0) & (lifts.max(axis=0) - lifts.min(axis=0) <= STANCE_PLANTED * height)
+    if torso is not None:
+        torso = np.asarray(torso, float)
+        standing &= torso[:, up] / np.maximum(np.linalg.norm(torso, axis=1), 1e-12) >= STANCE_UPRIGHT
     radians = np.radians(np.asarray(turns))
     feet = np.degrees(np.arctan2(np.sin(radians).sum(axis=0), np.cos(radians).sum(axis=0)))
     return np.where(standing, _wrap(shoulders - feet), np.nan)
@@ -856,14 +860,9 @@ def stance_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Op
         if leg.toe >= 0:
             lift = np.minimum(lift, posed[:, leg.toe, 1] - rest[leg.toe, 1])
         lifts.append(lift)
-    twist = stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height)
-    # a body lying down has no stance, though its feet can lie level side by side (the ogre's death lay on its belly with its soles up)
     names = {name: i for i, name in enumerate(mesh.bones)}
-    if "Hips" not in names or "Spine02" not in names:
-        return twist
-    torso = posed[:, names["Spine02"]] - posed[:, names["Hips"]]
-    upright = torso[:, 1] / np.maximum(np.linalg.norm(torso, axis=1), 1e-12)
-    return np.where(upright >= STANCE_UPRIGHT, twist, np.nan)
+    torso = posed[:, names["Spine02"]] - posed[:, names["Hips"]] if "Hips" in names and "Spine02" in names else None
+    return stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height, torso)
 
 
 def twist_excess(twist: np.ndarray, target: float) -> np.ndarray:
