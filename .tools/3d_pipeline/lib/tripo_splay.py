@@ -39,6 +39,11 @@ the whole body; turning the thighs toward each other about the axis square to bo
 but pushed the planted left foot 1.7% into the ground at a third of the way. The swing keeps the foot planted. Half the way it takes frame 74
 from 1,533 edges past 1.3 times to 1,182, and the raised thigh reads as a knee up in front with the foot planted.
 
+The next run (zombie_l, 2026-11-18, the same job and clips): the swing went 0.6 of the way at most (35 degrees), the worst split from 107 to 93
+degrees (frame 72), still over the limit, so TRIPO-DEATH-SPLAY reports it. The edges past 1.3 times fell from 1,533 to 1,256 at frame 74 and from
+1,388 to 1,217 at frame 100, the kit's worst-frame counts from 182 stretched and 189 squashed to 145 and 181. The diagnostics show far less red
+over the raised thigh and the crotch. What stops it is the squash it adds at the inner thigh in the frames before the kneel (frame 66).
+
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
 
