@@ -48,6 +48,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-SHOULDER-SWELL: in some frame of a humanoid's clip more than 7.75% of a shoulder region's skin (the torso between the midline and the
   upper arm's joint, down to 1.5 upper arm lengths below it) has grown past 1.69 times its rest area (vanilla's worst clip 6.2%). The shoulder and
   the upper back swell into one ball. `lib/tripo_shoulder.py`, whose ease `run_pilot` applies to the staged clips.
+- TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are more than 47.9 degrees apart (vanilla's deaths split them 38.3
+  at most). The crotch and the raised thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing `run_pilot`
+  applies to the exported death before its settles.
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on). A head whose thinnest spread is above `MAX_FACE_FLATNESS` of its middle one (a club, a
   mace: no broad face) is not judged, and the numbers carry its `head_flatness`.
@@ -85,7 +88,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_shoulder, tripo_swing
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -1040,6 +1043,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         found, numbers["neck"] = tripo_neck.neck_findings(mesh, anims)
         findings += found
         found, numbers["shoulders"] = tripo_shoulder.shoulder_findings(mesh, anims)
+        findings += found
+        found, numbers["death_splay"] = tripo_splay.splay_findings(mesh, anims)
         findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found

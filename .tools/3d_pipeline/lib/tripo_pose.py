@@ -44,7 +44,10 @@ ENG_infantry and GER_infantry_snow, 2026-11-15):
   arm toward the ground (`UPPER_SETTLE_GROUPS`), each by the smallest turn that brings its parts within `DEATH_REST_TARGET` of the ground,
   judged after the ground pass's lift, never so far that the lift raises the body by more than `UPPER_SETTLE_LIFT`. Each turn is ramped
   in, like the legs' settle, once the hips are down and the chest, the head and the hands have stopped moving. On the orc: spine 22,
-  left arm 6 and right arm 40 degrees, chest 2.1%, head 3.2%, hands 3.4% and 4.0%.
+  left arm 6 and right arm 40 degrees, chest 2.1%, head 3.2%, hands 3.4% and 4.0%. A turn is also not taken when it makes the frames it
+  changes worse than the clip before by the kit's rule (`stretch_smooth.worse`): two reviewers of the zombie's prone pose (zombie_k,
+  2026-11-18) saw the flank and the shoulder of the reaching arm stretched, and a settle that lays the chest and the arms down must not add
+  to that.
 """
 
 from __future__ import annotations
@@ -555,16 +558,48 @@ def _write_translations(data: bytearray, keyed: List[str], joints: Sequence[str]
             struct.pack_into("<3f", data, position, *[float(v) for v in result.channels[joint]["t"][frame]])
 
 
+def _tail_deformation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, first: int, edges: np.ndarray, rest: np.ndarray) -> dict:
+    """The kit's worst-frame counts and growth (`stretch_smooth.worse`'s form) over the frames from `first` on."""
+
+    from . import stretch_smooth
+
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    out = {"stretched": 0, "squashed": 0, "worst": 0.0}
+    for frame in range(first, matrices.shape[0]):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        s, q, g = stretch_smooth._deformed(rest, np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1), max(mesh.height, 1e-6))
+        out = {"stretched": max(out["stretched"], int(s.sum())), "squashed": max(out["squashed"], int(q.sum())), "worst": max(out["worst"], float(g.max()))}
+    return out
+
+
+def _stretch_guard(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, first: int) -> tuple:
+    """(first frame, edges, rest lengths, the clip's deformation from that frame on): what `_smallest_turn` judges a turn's added stretch by."""
+
+    edges = pdx_deform.mesh_edges(mesh)
+    rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
+    return first, edges, rest, _tail_deformation(mesh, anim, first, edges, rest)
+
+
 def _smallest_turn(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, body: UpperBody, joints: Sequence[int], end: np.ndarray,
-                   full: np.ndarray, heights: dict, judged: Sequence[str], target: float, exclude_bones: Sequence[str]) -> float:
+                   full: np.ndarray, heights: dict, judged: Sequence[str], target: float, exclude_bones: Sequence[str],
+                   stretch: Optional[tuple] = None) -> float:
     """Degrees: the smallest turn of `joints` toward the ground (`UPPER_SETTLE_STEP` steps) that brings the `judged` parts under `target`
-    without the lift growing by more than `UPPER_SETTLE_LIFT`, else the one that brings them lowest. 0.0 when no turn lowers them."""
+    without the lift growing by more than `UPPER_SETTLE_LIFT`, else the one that brings them lowest. 0.0 when no turn lowers them. With
+    `stretch` (first frame, edges, rest lengths, the clip's deformation before any settle), a turn that makes the frames from the first on
+    worse than the clip before by the kit's rule (`stretch_smooth.worse`) is not taken either: the settle may not stretch the flank and the
+    shoulder it lays down (TRIPO-DEATH-REST, the zombie's prone pose, 2026-11-18)."""
 
     best, best_value = 0.0, max(heights[name] for name in judged)
     for degrees in np.arange(UPPER_SETTLE_STEP, UPPER_SETTLE_MAX + 1e-9, UPPER_SETTLE_STEP):
         trial = death_rest_heights(mesh, _turned_down(mesh, anim, joints, end, degrees * full), exclude_bones, body=body)
         if trial is None or trial["lift"] > heights["lift"] + UPPER_SETTLE_LIFT:
             break
+        if stretch is not None:
+            from . import stretch_smooth
+
+            first, edges, rest, before = stretch
+            if stretch_smooth.worse(before, _tail_deformation(mesh, _turned_down(mesh, anim, joints, end, degrees * full), first, edges, rest)):
+                break
         value = max(trial[name] for name in judged)
         if value < best_value - 1e-4:
             best, best_value = float(degrees), value
@@ -607,6 +642,7 @@ def settle_death_upper(mesh_path: Path, anim_path: Path, out_path: Path, exclude
     turns, ramps, changed = {}, {}, []
     full = np.zeros(anim.frames)
     full[onset:] = 1.0
+    stretch = _stretch_guard(mesh, anim, onset)
     for group in UPPER_SETTLE_GROUPS:
         joints, judged, far = _group_joints(body, group)
         joints = [j for j in joints if mesh.bones[j] in keyed]
@@ -616,7 +652,7 @@ def settle_death_upper(mesh_path: Path, anim_path: Path, out_path: Path, exclude
         if far not in masks:
             continue
         end = _end_track(mesh, current, masks[far])
-        best = _smallest_turn(mesh, current, body, joints, end, full, heights, judged, target, exclude_bones)
+        best = _smallest_turn(mesh, current, body, joints, end, full, heights, judged, target, exclude_bones, stretch)
         if best == 0.0:
             continue
         length = int(min(max(tripo_trim.settle_frames(best / len(joints)), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
