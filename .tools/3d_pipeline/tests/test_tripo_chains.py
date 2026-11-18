@@ -489,6 +489,29 @@ class Regions(unittest.TestCase):
                     world[:3, :3] = world[:3, :3] @ C.matrix_from_quaternion(quaternions[f, k])
                     self.assertLessEqual(float(C.unit(world[:3, 1]) @ UP), limit, (role, f, k))
 
+    def test_a_wing_swung_back_stands_up_the_map_screen(self) -> None:
+        lateral = np.cross(UP, FRONT)  # the unit's left
+        self.assertLess(C.map_screen_angle(C.unit(lateral), FRONT, UP), 30.0, "a wing spread to the side lies across the screen")
+        self.assertGreater(C.map_screen_angle(C.unit(-FRONT + 0.2 * lateral), FRONT, UP), 70.0, "swung straight back it stands up the screen")
+        self.assertAlmostEqual(C.map_screen_angle(C.unit(lateral + 0.5 * UP), FRONT, UP), C.map_screen_angle(C.unit(-lateral + 0.5 * UP), FRONT, UP), places=6)
+
+    def test_the_screen_share_changes_slowly_and_never_rises_over_a_need(self) -> None:
+        shares = C.limited_shares(np.array([1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0]))
+        self.assertEqual(float(shares[3]), 0.0)
+        self.assertLessEqual(float(np.abs(np.diff(shares)).max()), C.SCREEN_SHARE_RATE + 1e-9)
+        self.assertEqual(float(C.screen_share_steps()[0]), 1.0)
+        self.assertEqual(float(C.screen_share_steps()[-1]), -1.0)
+
+    def test_a_share_lowers_the_back_swing_and_tilt_only(self) -> None:
+        rest, _lateral = self.wing_chain()
+        wing = dict(self.WING, side=40.0)
+        full = dict(self.pose(), face=1.0, face_back=60.0, face_tilt=30.0, twist=20.0)
+        none = C.wing_pose_rotations(rest, 0.5, wing, UP, FRONT, dict(full, back_share=0.0), np.zeros(3))
+        np.testing.assert_allclose(none, np.stack([np.eye(3)] * len(rest)), atol=1e-9)  # no back swing and no tilt: the wing as spread at rest
+        half = C.wing_pose_rotations(rest, 0.5, wing, UP, FRONT, dict(full, back_share=0.5), np.zeros(3))
+        for turn in half:
+            self.assertAlmostEqual(float(np.linalg.det(turn)), 1.0, places=9)
+
     def test_the_attack_and_the_retreat_turn_their_face(self) -> None:
         for role, rule in C.WING_ROLES.items():
             beating = rule.get("flap", 0.0) >= 20.0

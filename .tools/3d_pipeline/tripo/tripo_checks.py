@@ -994,10 +994,10 @@ def shield_bone(args) -> str:
     return ""
 
 
-def split_advisory(findings: List[dict], rules: set) -> (List[dict], List[dict]):
-    """(the findings that fail the unit, the ones only reported)."""
+def split_advisory(findings: List[dict], rules: set, reported: Sequence[dict] = ()) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the ones only reported, `reported` among them)."""
 
-    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules]
+    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules] + list(reported)
 
 
 def job_regions(args) -> (bool, bool, bool):
@@ -1116,6 +1116,74 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
+def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-SCREEN: in a clip whose wings are spread (a role that folds them less than fully, not a death), each wing's mean direction
+    from its root may rise at most `tripo_chains.SCREEN_MAX` above the screen's level in the review sheets' map view, the game's camera, on
+    either side of the unit, in every judged frame. Past it a wing swung back stands up the screen as a spike (lib/tripo_chains.py says how
+    the bound was measured). Wings are the vertices bound mostly to `Wing` chain bones, each side's root the first bone of its chains."""
+
+    dominant = pdx_deform.dominant_bones(mesh)
+    names = mesh.bones
+    sides = {}
+    for side in ("L", "R"):
+        bones = [i for i, name in enumerate(names) if name.startswith(f"Wing{side}")]
+        roots = [i for i in bones if mesh.parents[i] < 0 or not names[mesh.parents[i]].startswith("Wing")]
+        if bones and roots:
+            sides[side] = (np.isin(dominant, bones), roots)
+    if len(sides) != 2:
+        return [], {}
+    front = front_direction(mesh)
+    up = np.array([0.0, 1.0, 0.0])
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        rule = tripo_chains.WING_ROLES.get(clip_role(clip))
+        if rule is None or "fold_end" in rule or float(rule.get("fold", 0.0)) >= 1.0:
+            continue
+        matrices = pdx_deform.skinning_matrices(mesh, anim)
+        joints = pdx_motion.posed_joints(mesh, anim)
+        worst, worst_frame = 0.0, 0
+        for frame in range(0, anim.frames, step):
+            posed = pdx_deform.skin(mesh, matrices[frame])
+            for mask, roots in sides.values():
+                direction = posed[mask].mean(axis=0) - joints[frame, roots].mean(axis=0)
+                angle = tripo_chains.map_screen_angle(direction, front, up)
+                if angle > worst:
+                    worst, worst_frame = angle, frame
+        numbers[clip] = {"screen_angle_worst": round(worst, 1), "frame": worst_frame}
+        if worst > tripo_chains.SCREEN_MAX:
+            out.append(finding("TRIPO-WING-SCREEN", clip, f"a wing rises {worst:.0f} degrees above the screen's level in the game's camera in frame {worst_frame} (limit "
+                               f"{tripo_chains.SCREEN_MAX:g}, the reviewed move's 51 with a tenth added): swung back it stands up as a spike at map size", degrees=round(worst, 1), frame=worst_frame))
+    return out, numbers
+
+
+# For a winged humanoid's attack and defend the game camera decides (D-83): their wings aim at it (lib/tripo_chains.SCREEN_ROLES), so the
+# side views' cover and edge-on rules only report there. They block in the map view, and in the side views of every other clip.
+SIDE_ADVISORY_RULES = ("TRIPO-WING-FRONT", "TRIPO-WING-EDGE-ON")
+
+
+def side_view_advisory(findings: List[dict], mesh) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the side-view wing findings of a winged humanoid's attack and defend, which only report)."""
+
+    if quadruped_checks.is_quadruped(mesh):
+        return findings, []
+    keep, report = [], []
+    for item in findings:
+        advisory = item["rule"] in SIDE_ADVISORY_RULES and item.get("view") in SIDE_VIEWS and clip_role(item["subject"]) in tripo_chains.SCREEN_ROLES
+        (report if advisory else keep).append(item)
+    return keep, report
+
+
+def wing_checks(mesh, anims: Dict[str, object], wings: bool, cape: bool, numbers: dict) -> (List[dict], List[dict]):
+    """The chain checks and, for wings, TRIPO-WING-SCREEN: (the findings that fail the unit, the side-view ones that only report)."""
+
+    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    found, advisory = side_view_advisory(found, mesh)
+    if wings:
+        screen, numbers["wing_screen"] = wing_screen_findings(mesh, anims)
+        found += screen
+    return found, advisory
+
+
 def burn_split(folder: Path, mesh, anims: Dict[str, object], numbers: dict):
     """A death that burns away (lib/tripo_burn.py, its plan beside the files): (its BURN findings and clip, the clips with that death cut at
     the burn's start for every other check). The lying-body rules are dropped for it (`tripo_burn.LYING_RULES`). (None, anims) without one."""
@@ -1192,7 +1260,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         findings += found
     else:
         numbers["cloak"] = "not run: the job's anatomy has no cape"
-    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    found, side_advisory = wing_checks(mesh, anims, wings, cape, numbers)
     findings += found
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
@@ -1210,7 +1278,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         findings += found
     findings += weapon_stage_findings(args, mesh, anims, numbers)
     findings = burn_filtered(findings, burn)
-    findings, advisory = split_advisory(findings, advisory_rules(args))
+    findings, advisory = split_advisory(findings, advisory_rules(args), side_advisory)
     report = {"findings": findings, "advisory": advisory, "numbers": numbers}
     if args.json:
         args.json.write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
