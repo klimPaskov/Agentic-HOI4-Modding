@@ -9,7 +9,8 @@ The rig has 27 bones (the engine skins at most 50): a non-deforming Root on the
 ground, Pelvis, Spine, Chest, two neck bones, Head, three tail bones when the
 model has a tail, four bones per leg (upper, lower, cannon, hoof) and the
 non-deforming Saddle_Node a rider entity attaches to, as vanilla
-`cavalry_horse.mesh` does.
+`cavalry_horse.mesh` does. A load adds its `Load` bone, and ears that stand
+out beside the head (`quadruped_ears.py`) two bones each, children of the Head.
 """
 
 from __future__ import annotations
@@ -56,6 +57,10 @@ class Layout:
 
 def leg_name(end: str, side: str, segment: str) -> str:
     return f"{end}_{side}_{segment}"
+
+
+def ear_name(side: str, segment: int) -> str:
+    return f"Ear_{side}_{segment:02d}"
 
 
 def _largest_gap_split(values: np.ndarray) -> float:
@@ -241,7 +246,7 @@ def _t(vector: np.ndarray, ground: float) -> Tuple[float, float, float]:
 
 
 def build_layout(landmarks: Dict[str, object]) -> Layout:
-    """Place the 27 bones from the landmarks, back in the model's own coordinates."""
+    """Place the bones from the landmarks, back in the model's own coordinates."""
 
     g = float(landmarks["ground_offset"])
     h = float(landmarks["height"])
@@ -269,6 +274,11 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
             name = f"Tail_{index + 1:02d}"
             add(Bone(name, _t(np.asarray(tail[index]), g), _t(np.asarray(tail[index + 1]), g), parent))
             parent = name
+    for side, ear in (landmarks.get("ears") or {}).items():
+        # an ear's chain (quadruped_ears.detect_ears) is in the model's own coordinates already
+        joints = [tuple(float(value) for value in ear[key]) for key in ("root", "middle", "tip")]
+        add(Bone(ear_name(side, 1), joints[0], joints[1], str(ear.get("parent", "Head"))))
+        add(Bone(ear_name(side, 2), joints[1], joints[2], ear_name(side, 1)))
     for end, side in LEGS:
         joints = landmarks["legs"][f"{end}_{side}"]
         chain = [joints["top"], joints["upper"], joints["middle"], joints["lower"], joints["ground"]]
@@ -461,6 +471,18 @@ HEAVY_PITCH = 0.6
 # at HEAVY_PITCH 0.6 stretched the skin of the elbow against the chest (offline on the round 9 war elephant: 30 deformed edges, 14 at 0.6).
 HEAVY_REACH = 0.6
 REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
+# The lifted foreleg of a rear reaches forward from the elbow and folds back at the knee as vanilla's horse attack does: in
+# `cavalry_horse_charge` the leading forearm reaches 74 degrees forward of the body's down direction with the knee bent 59 degrees
+# (measured on the game's files). The shoulder takes REAR_SHOULDER of the reach and the elbow the rest, and a pillar leg reaches HEAVY_REACH
+# as far. Run 11 folded the cannon 85 degrees back under a forearm held upright, and a fresh review read the raised forelegs as short stubs.
+# Offline on its exported mesh the whole horse reach on the pillar leg stretched 2.1% of the near foreleg's root (TRIPO-LEG-ROOT-STRETCH) and
+# 25 edges by the kit's measure, HEAVY_REACH of it 0.4% and 3. The knee's bend is counted from the leg's own rest fold (knee_rest_fold): the
+# war elephant's cannon slants 21 degrees forward of its forearm at rest, so run 12's fold of 35 degrees bent its knee only 14 from straight
+# and the leg still read as a stub. The whole 59 from straight on the pillar leg stretched 126 edges at the knee by 1.3 times or more and 19
+# by the kit's measure (offline on run 12's mesh), HEAVY_REACH of it 32 and 6.
+HORSE_FOREARM_REACH = 74.0
+HORSE_KNEE_FOLD = 59.0
+REAR_SHOULDER = 55.0
 # No whole-body turn about the vertical in a heavy move, defend or retreat: two fresh reviews of run 7 read the walk's 10 degree sway as the
 # unit veering off its heading, the defend's held turn as a turn in place and the retreat's turn away and back as a turn. Under a tall load
 # only the head, the forelegs and a rock of the whole body show in the map camera (lib/map_read.py has the readings). The neck cannot show
@@ -471,11 +493,26 @@ REAR_HEAD = -10.0  # the head's turn at the top of a rear (negative raises it)
 WALK_HEAD_SWING = 22.0  # degrees the walk swings the head to each side once a stride (44 with a body rock read as turning 25 to 30 degrees)
 WALK_NOD = 8.0  # degrees of the head's nod, twice a stride
 GUARD_PITCH = 0.0  # degrees the defend rocks the body back about the hind feet: any lifts the forefeet (4 degrees 4% of the height), and a review read the lift as a small rear
-GUARD_HEAD_UP = 54.0  # degrees the defend raises the head, and then lowers it GUARD_HEAD_DOWN with the tusks forward
+# The defend raises the head GUARD_HEAD_UP and then lowers it GUARD_HEAD_DOWN with the tusks forward, held through most of the clip: a fresh
+# review of run 11 could not tell a toss up and down from the idle at map size.
+GUARD_HEAD_UP = 30.0
 GUARD_HEAD_DOWN = 45.0
 GUARD_NECK = 0.0  # degrees the neck's two bones turn with it (5 with the head tore the seam, 14%)
 GUARD_SPREAD = 20.0  # degrees the defend spreads the forelegs apart at the shoulder
-GUARD_REAR = 6.0  # degrees the defend sets the hind legs back at the hip
+# The forequarters step back over planted feet: the body shifts back and every leg leans forward this far at the shoulder and hip, with
+# the hoof turned back so it stays flat: as far as a pillar hip or shoulder turns (PILLAR_SWING, a runner's walk). On run 12's war elephant
+# 12 degrees read 0.097 from the idle in the map camera and 16 0.107, with no leg root stretched.
+GUARD_LEAN = GAITS["quadruped_walk"].swing_degrees
+# degrees the defend spreads each ear forward about its root (no farther than its room, quadruped_ears.ear_room). Run 12 spread them 30
+# degrees and tore 2.4% of the seam where the tower meets the swept-back ear (TRIPO-LOAD-SEAM, limit 2%), 20 none, for the same map reading.
+GUARD_EAR_SPREAD = 20.0
+# Ears (quadruped_ears.py) follow the head with a little lag: the outer bone turns back toward where the head was EAR_LAG_FRAMES ago by
+# EAR_LAG_SHARE of the difference. A lag at the root (both bones) stretched the ear's root skin (offline on run 11's mesh: 121 edges changed
+# by 1.3 times or more in the retreat).
+EAR_LAG_FRAMES = 3  # an eighth of a second at the rig's 24 frames a second
+EAR_LAG_SHARE = 0.5
+EAR_HEAD_CHAIN = ("__root_pitch__", "Neck_01", "Neck_02", "Head")
+EAR_ROOT_SHARE = 0.6  # of an ear's turn made at its root, the rest at its middle
 RETREAT_HEAD = 40.0  # degrees the retreat raises the head in alarm, held while the legs step backward
 RETREAT_TOSS = 36.0  # degrees the raised head shakes to each side, twice in the clip
 RETREAT_NECK = 0.0  # degrees the neck's first bone lifts with it (any turn with the head tore the seam)
@@ -495,9 +532,18 @@ LOAD_ROLL_MOST = 110.0
 # on the run 8 mesh at a roll of 98 degrees the lower pair's lowest point falls from 0.17 to 0.05 of the height. The turn is made below the hip: at
 # the hip alone 16 degrees stretched 3.5% of the leg roots (TRIPO-LEG-ROOT-STRETCH, limit 2%), here 1.4%.
 DEATH_LEG_DROP = {"Upper": 10.0, "Lower": 42.0, "Cannon": 42.0, "Hoof": 22.0}
+# The hind legs fold half as far (COLLAPSE_HIND_FOLD) and reach the ground with less turn at the thigh: a fresh review of run 11 saw the
+# hind thigh and hip squash into a lumpy mass. Offline on its exported mesh the hind skin strained by 1.3 times or more over the lying
+# frames covers 2.1 square units with the thigh at 30 degrees against 3.2 at 42, and the lower hind leg ends 5.4% of the height up (limit 6%).
+DEATH_HIND_DROP = {"Upper": 10.0, "Lower": 30.0, "Cannon": 42.0, "Hoof": 22.0}
 DEATH_LEG_HANG_SHARE = 0.5
 COLLAPSE_RELAX = 0.5  # share of the shoulders', hips' and elbows' bend a dead body relaxes once it lies
 COLLAPSE_HIND_FOLD = 0.5  # the hind legs' fold in a death as a share of the forelegs'
+# A dead body's legs buckle this share of a full fold: two fresh reviews of run 13 saw the shoulder, hip, thighs and knees puff up and turn
+# lumpy where the legs folded under the lying body. Offline on its exported mesh the skin of the legs and torso changed by 1.3 times or
+# more over the lying frames covers 7.4 square units at a full fold and 2.2 at 0.6, the lower legs still on the ground (5.2% of the
+# height up, limit 6%).
+DEATH_FOLD = 0.6
 DOWN_TOLERANCE = 0.01  # of the body's height: how much lower than the torso another part may end in a death
 # The death turns the neck back against the roll only when the head or neck is what holds the dead body up, and at most this far. Round 9
 # turned it 60 degrees against an 82 degree roll to gain 0.8% of the height while the tower held the body up: the neck and the ear roots
@@ -586,8 +632,9 @@ def _bent(pose: Dict[str, List[Rotation]], flex: float, neck: float = 1.0, load:
     return {name: [(axis, degrees * share(name)) for axis, degrees in rows] for name, rows in pose.items()}
 
 
-def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]:
-    """Each bone's armature-space rotations (axis, degrees) at `frame`; the key `__root_offset__` moves the Root.
+def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[str, List[Rotation]]:
+    """Each bone's armature-space rotations (axis, degrees) at `frame`; the keys `__root_pitch__`, `__root_yaw__` and `__root_roll__` turn
+    the whole body and `__root_shift__` moves it ((axis, distance) rows in the model's units). `ears` adds the ear bones' turns (`_ear_pose`).
 
     Looping styles return the same pose at frame 0 and at `frame_count(style)`.
     """
@@ -646,9 +693,9 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
         pose["Neck_02"] = [(X_AXIS, 10.0 * lunge)]
         pose["Head"] = [(X_AXIS, 8.0 * lunge)]
     elif style == "quadruped_brace":
-        _brace(pose, t, has_tail)
+        free = _brace(pose, t, has_tail, (float(layout.landmarks["belly_z"]) + float(layout.landmarks["back_z"])) / 2)
     elif style == "quadruped_rear":
-        _rear(pose, t, has_tail, stance["graviportal"])
+        _rear(pose, t, has_tail, stance["graviportal"], layout.landmarks.get("legs") or {})
         # A lifted foreleg carries no weight, so it folds as far as a runner's whatever its build.
         free = {leg_name("Front", side, segment) for side in ("Left", "Right") for segment in ("Lower", "Cannon", "Hoof")}
     elif style == "quadruped_collapse":
@@ -664,20 +711,36 @@ def pose_at(style: str, frame: int, layout: Layout) -> Dict[str, List[Rotation]]
     # whole share of the neck's bend, not LOADED_NECK of it (TRIPO-LOAD-SEAM judges the result).
     display = stance["graviportal"] and style in DISPLAY_STYLES
     neck = stance["neck"] * (LOADED_NECK if load and not display else 1.0)
-    return _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, flex, neck, load, free), load)
+    out = _held_back(_bent({name: rows for name, rows in pose.items() if name in names or name.startswith("__")}, flex, neck, load, free), load)
+    return _ear_pose(out, style, frame, t, layout) if ears and layout.landmarks.get("ears") else out
 
 
-def _rear(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, heavy: bool) -> None:
+def knee_rest_fold(joints: Dict[str, np.ndarray]) -> float:
+    """How far a leg's knee is folded back at rest (degrees in the side view, negative when the cannon slants forward of the forearm, as
+    a pillar leg's often does): the forearm's forward angle from straight down less the cannon's."""
+
+    if not all(key in joints for key in ("upper", "middle", "lower")):
+        return 0.0
+    forearm = np.asarray(joints["middle"], dtype=float) - np.asarray(joints["upper"], dtype=float)
+    cannon = np.asarray(joints["lower"], dtype=float) - np.asarray(joints["middle"], dtype=float)
+    return math.degrees(math.atan2(-forearm[1], -forearm[2]) - math.atan2(-cannon[1], -cannon[2]))
+
+
+def _rear(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, heavy: bool, legs: Dict[str, Dict[str, np.ndarray]]) -> None:
     """The rear: the body pitches up about the hind feet and the forelegs lift. A heavy animal's is the whole rear at HEAVY_PITCH with the
-    forelegs reaching HEAVY_REACH as far (a fresh review read the full foreleg lift under a small pitch as the elephant falling on its face)."""
+    forelegs reaching HEAVY_REACH as far (a fresh review read the full foreleg lift under a small pitch as the elephant falling on its face).
+    At the top each knee is bent HORSE_KNEE_FOLD from straight (HEAVY_REACH of it on a pillar leg), counted from the leg's own rest fold."""
 
-    rise = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3))) * (HEAVY_PITCH if heavy else 1.0)
+    shape = _smooth(min(1.0, t / 0.35)) * (1 - _smooth(max(0.0, (t - 0.7) / 0.3)))
+    rise = shape * (HEAVY_PITCH if heavy else 1.0)
     pose["__root_pitch__"] = [(X_AXIS, -32.0 * rise)]
     for side in ("Left", "Right"):
         kick = 1 + 0.25 * math.sin(6 * math.pi * t + (0 if side == "Left" else 1.5))
-        pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -55.0 * rise * kick * (HEAVY_REACH if heavy else 1.0))]
-        pose[leg_name("Front", side, "Lower")] = [(X_AXIS, 40.0 * rise)]
-        pose[leg_name("Front", side, "Cannon")] = [(X_AXIS, 85.0 * rise)]
+        reach = HEAVY_REACH if heavy else 1.0
+        pose[leg_name("Front", side, "Upper")] = [(X_AXIS, -REAR_SHOULDER * reach * rise * kick)]
+        pose[leg_name("Front", side, "Lower")] = [(X_AXIS, -(HORSE_FOREARM_REACH - REAR_SHOULDER) * reach * rise * kick)]
+        fold = HORSE_KNEE_FOLD * reach - knee_rest_fold(legs.get(f"Front_{side}", {}))
+        pose[leg_name("Front", side, "Cannon")] = [(X_AXIS, fold * shape)]
         pose[leg_name("Rear", side, "Upper")] = [(X_AXIS, 32.0 * rise - 12.0 * rise)]
         pose[leg_name("Rear", side, "Lower")] = [(X_AXIS, 15.0 * rise)]
         pose[leg_name("Rear", side, "Cannon")] = [(X_AXIS, -15.0 * rise)]
@@ -708,24 +771,84 @@ def _gait(pose: Dict[str, List[Rotation]], gait: Gait, t: float, has_tail: bool)
         pose["Tail_02"] = [(Z_AXIS, 6.0 * math.sin(2 * math.pi * t - 0.6))]
 
 
-def _brace(pose: Dict[str, List[Rotation]], t: float, has_tail: bool) -> None:
-    """The defend of a graviportal animal, an elephant's threat display: the body rocks back GUARD_PITCH degrees about the hind feet, the
-    head rises and then lowers with the tusks forward, the forelegs spread apart and set into the ground and the hind legs set back. The
-    body keeps its heading and the forefeet stay on the ground (a pitch of more than about 8 degrees lifts them).
+def _brace_envelope(t: float) -> float:
+    return _smooth(min(1.0, t / 0.25)) * (1 - _smooth(max(0.0, (t - 0.8) / 0.2)))
 
-    A held turn read as a turn in place, not a guard (run 7), and a small brace read as the idle from the map camera (0.01): the pitch,
-    the head's rise and fall and the spread forelegs are what show over a tall load (the neck cannot turn far, see WALK_HEAD_SWING)."""
 
-    envelope = _smooth(min(1.0, t / 0.25)) * (1 - _smooth(max(0.0, (t - 0.8) / 0.2)))
-    raised = _smooth(min(1.0, t / 0.3)) * (1 - _smooth(max(0.0, (t - 0.3) / 0.25)))
-    lowered = _smooth(max(0.0, min(1.0, (t - 0.45) / 0.25))) * (1 - _smooth(max(0.0, (t - 0.8) / 0.2)))
+def _brace(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, lean_length: float) -> set:
+    """The defend of a graviportal animal, an elephant's threat display: the head rises briefly and then lowers with the tusks forward and
+    stays low, the ears spread forward (`_ear_pose`), the forelegs spread apart and the forequarters step back over planted feet (the body
+    shifts back `lean_length` times the sine of GUARD_LEAN and every leg leans forward that far, its hoof turned back to stay flat). The
+    body keeps its heading and the forefeet stay on the ground (a pitch of more than about 8 degrees lifts them). Returns the joints that
+    turn whatever the build (the hooves).
+
+    A held turn read as a turn in place, not a guard (run 7), a small brace read as the idle from the map camera (0.01), and a toss of the
+    head up and down could not be told from the idle at map size (run 11): the head held low, the spread ears and the forelegs are what
+    show over a tall load (the neck cannot turn far, see WALK_HEAD_SWING)."""
+
+    envelope = _brace_envelope(t)
+    raised = _smooth(min(1.0, t / 0.15)) * (1 - _smooth(max(0.0, (t - 0.15) / 0.15)))
+    lowered = _smooth(max(0.0, min(1.0, (t - 0.25) / 0.2))) * (1 - _smooth(max(0.0, (t - 0.85) / 0.15)))
     pose["__root_pitch__"] = [(X_AXIS, -GUARD_PITCH * envelope)]
+    pose["__root_shift__"] = [(Y_AXIS, lean_length * math.sin(math.radians(GUARD_LEAN)) * envelope)]
     pose["Neck_01"] = [(X_AXIS, GUARD_NECK * (-0.5 * raised + 0.5 * lowered))]
     pose["Neck_02"] = [(X_AXIS, GUARD_NECK * (-raised + lowered))]
     pose["Head"] = [(X_AXIS, -GUARD_HEAD_UP * raised + GUARD_HEAD_DOWN * lowered)]
     for leg_side, sign in (("Left", 1.0), ("Right", -1.0)):
-        pose[leg_name("Front", leg_side, "Upper")] = [(Y_AXIS, -sign * GUARD_SPREAD * envelope)]
-        pose[leg_name("Rear", leg_side, "Upper")] = [(X_AXIS, GUARD_REAR * envelope)]
+        pose[leg_name("Front", leg_side, "Upper")] = [(X_AXIS, -GUARD_LEAN * envelope), (Y_AXIS, -sign * GUARD_SPREAD * envelope)]
+        pose[leg_name("Rear", leg_side, "Upper")] = [(X_AXIS, -GUARD_LEAN * envelope)]
+    for end, side in LEGS:
+        pose[leg_name(end, side, "Hoof")] = [(X_AXIS, GUARD_LEAN * envelope)]
+    return {leg_name(end, side, "Hoof") for end, side in LEGS}
+
+
+def _parent_chain(parent: str) -> Tuple[str, ...]:
+    """The keys whose turns carry an ear hung from `parent`: EAR_HEAD_CHAIN down to it (the body's pitch alone for a torso bone)."""
+
+    return EAR_HEAD_CHAIN[:EAR_HEAD_CHAIN.index(parent) + 1] if parent in EAR_HEAD_CHAIN else EAR_HEAD_CHAIN[:1]
+
+
+def _head_turn(pose: Dict[str, List[Rotation]], chain: Sequence[str] = EAR_HEAD_CHAIN) -> Dict[Tuple[float, float, float], float]:
+    """The turn about each armature axis summed down `chain` (degrees, small-angle)."""
+
+    return {axis: sum(degrees for key in chain for row, degrees in pose.get(key, []) if tuple(row) == axis) for axis in (X_AXIS, Y_AXIS, Z_AXIS)}
+
+
+def _ear_turn(style: str, t: float, ear: Dict[str, object], roll: float = 0.0) -> float:
+    """An ear's own turn about its hinge (degrees, positive closes it back against the head). In a death both ears close as far as their
+    room: the ear on top of the lying body falls onto the head and neck instead of standing up like a fin (two fresh reviews of run 11),
+    and the ear underneath folds back off the ground. Run 13 left the lower ear where it stood, and a fresh review saw it hang below the
+    lying torso to the ground (1.3% of the height below it). Its room of 10 degrees lifts it level with the torso, while a spread forward
+    tore its root (54 edges by 1.3 times or more at 60 degrees, offline on run 13's mesh). A thin flap never holds the body up
+    (`quadruped_rig.tune_collapse` leaves the ears out). In a defend each ear spreads forward GUARD_EAR_SPREAD (no farther than its room)."""
+
+    close = float(ear.get("close_sign", 1.0))
+    if style == "quadruped_collapse":
+        return close * float(ear.get("close_room", 0.0)) * _collapse_fall(t)
+    if style == "quadruped_brace":
+        return -close * min(GUARD_EAR_SPREAD, float(ear.get("spread_room", 0.0))) * _brace_envelope(t)
+    return 0.0
+
+
+def _ear_pose(pose: Dict[str, List[Rotation]], style: str, frame: int, t: float, layout: Layout) -> Dict[str, List[Rotation]]:
+    """Add the ear bones: an ear turns about its hinge (`_ear_turn`), EAR_ROOT_SHARE of it at the root and the rest at its middle, so it curls
+    rather than swinging stiff, and its outer half follows the head with a little lag (EAR_LAG_FRAMES, EAR_LAG_SHARE)."""
+
+    names = set(layout.names())
+    total = frame_count(style)
+    before = (frame - EAR_LAG_FRAMES) % total if style in LOOPING else max(0, frame - EAR_LAG_FRAMES)
+    lagged = (pose, pose_at(style, before, layout, ears=False))
+    roll = float((layout.landmarks.get("death") or {}).get("roll", 0.0))
+    for side, ear in (layout.landmarks.get("ears") or {}).items():
+        if ear_name(side, 1) not in names:
+            continue
+        chain = _parent_chain(str(ear.get("parent", "Head")))
+        now, past = _head_turn(lagged[0], chain), _head_turn(lagged[1], chain)
+        hinge = tuple(float(value) for value in np.asarray(ear["hinge"], dtype=float))
+        turn = _ear_turn(style, t, ear, roll)
+        pose[ear_name(side, 1)] = [(hinge, EAR_ROOT_SHARE * turn)]
+        pose[ear_name(side, 2)] = [(axis, EAR_LAG_SHARE * (past[axis] - now[axis])) for axis in now] + [(hinge, (1 - EAR_ROOT_SHARE) * turn)]
+    return pose
 
 
 def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:
@@ -795,6 +918,10 @@ def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict
     return {name: rows for name, rows in pose.items() if not (load and name in LOADED_STILL)}
 
 
+def _collapse_fall(t: float) -> float:
+    return _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
+
+
 def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float, neck_lift: float = 0.0, loaded: bool = False) -> None:
     """The death: the legs buckle and fold, the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit),
     and once it lies the shoulders, hips and elbows relax `COLLAPSE_RELAX` of their bend while the knees and hocks stay bent.
@@ -810,11 +937,11 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
     shoulder, hip and elbow, and the hind legs folding half as far as the forelegs."""
 
     buckle = _smooth(min(1.0, t / 0.3))
-    fall = _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
+    fall = _collapse_fall(t)
     settle = _smooth(max(0.0, (t - 0.65) / 0.35))
     ease = 1.0 - COLLAPSE_RELAX * settle
     for end, side in LEGS:
-        fold = 1.0 if end == "Front" else COLLAPSE_HIND_FOLD
+        fold = DEATH_FOLD * (1.0 if end == "Front" else COLLAPSE_HIND_FOLD)
         pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold * ease)]
         pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold * ease)]
         pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.3 * settle))]
@@ -823,7 +950,7 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
     lower = "Right" if roll < 0 else "Left"
     for end, side in LEGS:
         share = 1.0 if side == lower else DEATH_LEG_HANG_SHARE
-        for segment, degrees in DEATH_LEG_DROP.items():
+        for segment, degrees in (DEATH_LEG_DROP if end == "Front" else DEATH_HIND_DROP).items():
             name = leg_name(end, side, segment)
             pose[name] = pose.get(name, []) + [(Y_AXIS, sign * degrees * share * min(1.0, abs(roll) / 90.0) * fall)]
     nod = 0.0 if loaded else 1.0

@@ -1,7 +1,8 @@
 """Blender side of the `quadruped` creature rig family.
 
-`author_rig` measures the working meshes, builds the 27-bone rig from
-`quadruped_layout`, binds every vertex with region-limited distance weights and
+`author_rig` measures the working meshes, builds the rig from `quadruped_layout`
+(27 bones, a load's bone and two bones per ear that stands out beside the head,
+`quadruped_ears`), binds every vertex with region-limited distance weights and
 saves a checkpoint. `author_action` keys one action every frame from the
 layout's gait poses and then lifts the Root each frame so the lowest vertex
 touches the ground. `h` is the worker's namespace (its helpers).
@@ -18,6 +19,7 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 
+import quadruped_ears as qears
 import quadruped_layout as ql
 import quadruped_load as qload
 
@@ -218,6 +220,7 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     ground = float(points[:, 2].min())
     landmarks = _landmarks_from_payload(body, payload, back_z=(load.cut_z - ground) if load is not None else None)
     load_report = _seat_on_load(points, triangles, load, landmarks, options) if load is not None else {}
+    ear_masks = _find_ears(points, triangles, landmarks, load)
     layout = ql.build_layout(landmarks)
     if len(layout.bones) > 50:
         raise RuntimeError(f"The quadruped rig has {len(layout.bones)} bones; the engine skins at most 50.")
@@ -251,6 +254,7 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     if load is not None:
         indices, weights, bound = qload.bind_load(points, load.mask, indices, weights, layout.names(), qload.RING_SHARE * float(landmarks["height"]))
         load_report.update(bound)
+    indices, weights = qears.ear_weights(points, triangles, layout, ear_masks, indices, weights, ring=qload.RING_SHARE * float(landmarks["height"]))
     per_bone, unweighted = _bind(owners, layout, indices, weights, rig)
     if unweighted:
         raise RuntimeError(f"{unweighted} vertices received no bone weight.")
@@ -271,8 +275,20 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "turned_quarter_to_lie_along_y": quarter,
         "load": load_report or None,
         "weighting": "region-limited inverse fourth power of the distance to each bone segment"
-        + ("; the load bound wholly to the Spine, fading into the body over a ring" if load is not None else ""),
+        + ("; the load bound wholly to the Spine, fading into the body over a ring" if load is not None else "")
+        + ("; each ear on its own two bones, blending into the head at its root" if ear_masks else ""),
+        "ears": {side: {"vertices": int(mask.sum())} for side, mask in ear_masks.items()},
     }
+
+
+def _find_ears(points: np.ndarray, triangles: np.ndarray, landmarks: Dict[str, Any], load: Any) -> Dict[str, np.ndarray]:
+    """Find the ears beside the head (`quadruped_ears.detect_ears`), record their chains in `landmarks` and return their vertex masks."""
+
+    ears, masks = qears.detect_ears(points, triangles, landmarks, exclude=load.mask if load is not None else None)
+    if ears:
+        qears.assign_parents(points, landmarks, ears, masks)
+        landmarks["ears"] = ears
+    return masks
 
 
 def _rotation(rows: List[ql.Rotation]) -> Quaternion:
@@ -283,6 +299,7 @@ def _rotation(rows: List[ql.Rotation]) -> Quaternion:
 
 
 TORSO = ("Pelvis", "Spine", "Chest")
+EAR_PREFIX = "Ear_"
 
 
 def _dominant_groups(meshes: List[bpy.types.Object]) -> List[np.ndarray]:
@@ -316,7 +333,7 @@ def _lowest_by_group(meshes: List[bpy.types.Object], dominant: List[np.ndarray])
 def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground: float) -> Dict[str, Any]:
     """Pick the death's side, roll and neck lift on its final pose (`quadruped_layout.choose_collapse`), so the body ends lying on its torso:
     neither a dropped head nor a load on the back may hold the dead body off the ground, and the neck turns against the roll only when
-    the head or neck is what holds it up."""
+    the head or neck is what holds it up. An ear is a thin flap that folds against the ground, so it is left out of the parts that hold it."""
 
     dominant = _dominant_groups(meshes)
     height = float(layout.landmarks["height"])
@@ -324,7 +341,7 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     def evaluate(roll: float, lift: float):
         layout.landmarks["death"] = {"roll": roll, "neck_lift": lift}
         pose_frame(last, 0.0)
-        lowest = _lowest_by_group(meshes, dominant)
+        lowest = {name: z for name, z in _lowest_by_group(meshes, dominant).items() if not name.startswith(EAR_PREFIX)}
         torso = min(lowest.get(name, math.inf) for name in TORSO)
         return (torso - min(lowest.values())) / height, min(lowest, key=lowest.get)
 
@@ -362,17 +379,18 @@ def _spot_keeper(meshes: List[bpy.types.Object], pose_frame):
 
 def _body_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
     """The whole body's turn: a rear pitches and a defend's sweep turns about the hind hooves, and a fall rolls about the edge of the side
-    it falls toward, so the body lies where it stood."""
+    it falls toward, so the body lies where it stood. A defend's step back (`__root_shift__`) moves it."""
 
+    shift = Matrix.Translation(sum((Vector(axis) * distance for axis, distance in pose.get("__root_shift__", [])), Vector((0.0, 0.0, 0.0))))
     if "__root_pitch__" in pose or "__root_yaw__" in pose:
         turn = _rotation(pose.get("__root_pitch__", []) + pose.get("__root_yaw__", [])).to_matrix().to_4x4()
-        return Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
+        return shift @ Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
     if "__root_roll__" in pose:
         degrees = pose["__root_roll__"][0][1]
         edge = root_pivot + Vector((math.copysign(0.5 * width, degrees), 0.0, 0.0))
         turn = _rotation(pose["__root_roll__"]).to_matrix().to_4x4()
-        return Matrix.Translation(edge) @ turn @ Matrix.Translation(-edge)
-    return Matrix.Identity(4)
+        return shift @ Matrix.Translation(edge) @ turn @ Matrix.Translation(-edge)
+    return shift
 
 
 def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:

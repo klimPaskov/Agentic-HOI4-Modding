@@ -112,7 +112,10 @@ class LoadedPoses(unittest.TestCase):
         self.assertLess(_degrees(pose, "Head"), 0.0, "the head rises with the forequarters")
         self.assertLess(_degrees(pose, "__root_pitch__"), 0.0, "the body pitches up")
         runner = ql.pose_at("quadruped_rear", 20, light)
-        self.assertAlmostEqual(_degrees(pose, "Front_Left_Cannon"), _degrees(runner, "Front_Left_Cannon") * ql.HEAVY_PITCH, places=6)
+        rest = ql.knee_rest_fold(heavy.landmarks["legs"]["Front_Left"])
+        shape = _degrees(runner, "Front_Left_Cannon") / (ql.HORSE_KNEE_FOLD - ql.knee_rest_fold(light.landmarks["legs"]["Front_Left"]))
+        self.assertAlmostEqual(_degrees(pose, "Front_Left_Cannon"), (ql.HORSE_KNEE_FOLD * ql.HEAVY_REACH - rest) * shape, places=6,
+                               msg="a pillar knee bends HEAVY_REACH of the horse's fold from straight, counted from its rest fold")
 
     def _yaw_free(self, style: str, layout: ql.Layout) -> None:
         for frame in range(ql.frame_count(style) + 1):
