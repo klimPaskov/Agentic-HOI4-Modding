@@ -129,7 +129,7 @@ def hover_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, cli
         return []
     legs = pdx_motion.find_legs(mesh)
     lying = tripo_pose._lying_frame(mesh, anim, legs.pelvis)
-    spans = [(s, e, p, fall_ratio(s, e, p)) for s, e, p in hover_spans(track) if s < lying and e - s + 1 >= HOVER_FRAMES_MIN]
+    spans = [(s, e, p, fall_ratio(s, e, p)) for s, e, p in hover_spans(track) if s < lying and e - s + 1 >= HOVER_FRAMES_MIN and p >= HOVER_PEAK_MIN]
     if spans:
         worst = max(spans, key=lambda item: item[3])
         row["fall_hover_peak_share"] = round(worst[2], 4)

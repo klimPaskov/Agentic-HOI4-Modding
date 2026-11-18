@@ -370,6 +370,8 @@ Tested in November 2026 on the round-4 dwarf (glaive in the left hand, the cresc
 
 The death rule follows from the last row. Kept in the fist, the shield ends standing on its edge beside the fallen body, and the wrist turn cannot lay it flat. Dropped, it lands flat, 4.3% of the height clear of the body. The outer-edge target of the hold brought the outer edge from 56.5 degrees off the side (the idle) to under 1.5 degrees in every held clip, and the grip moved 8 to 14% of the height from the hold point instead of 5 to 9%. The attack fails as the weapon's does, because Tripo's attack holds both hands on one haft before the body, and needs a clip made for a shield.
 
+The death fall (2026-11-18). The zombie's death held its hips about 17 frames over a seat of air, its feet 27% of the height in front of its pelvis, and the demon's knelt on its wing tips. The body's lowest vertex is on the ground in both, so the old checks passed them. TRIPO-DEATH-HOVER measures the pelvis and the legs and settles the hips in a free fall. On the zombie the span fell from 6.0 times a free fall to 1.6, with the feet kept where they stand and nothing pushed through the ground (run `chaos_zombie_r4i`, 0 findings). A sampled frame in the middle of the drop still shows the hips low but not yet down. The demon is flagged (2.5 times) but not settled, because its wing tips prop the body and lowering the hips would push them through the ground, which the ground pass undoes. Wings need their own handling.
+
 ## Tripo settings
 
 These gave the best result for the price in the kit's own tests (an orc and a zombie, November 2026). They are a starting point, not a law.
