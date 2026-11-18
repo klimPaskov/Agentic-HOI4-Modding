@@ -68,6 +68,9 @@ def remove_slivers(bm, size):
 
 
 HULL_PIECE_SHARE = 0.10  # a piece whose bounding box diagonal is at most this share of the model's is small (kit rule: a bolt, a hook, a fitting)
+HULL_BOX_FILL = 0.6  # a hull filling less than this share of the piece's oriented bounding box is a wedge, so the box stands in (kit rule: fittings are boxes)
+HULL_PLATE_FLAT = 0.2  # a piece thinner than this share of its longest side is a plate: its hull (a slanted wedge) stands in only above HULL_PLATE_FILL
+HULL_PLATE_FILL = 0.75
 HULL_PIECE_CONVEX = (0.9, 1.05)  # a small closed piece whose volume is outside this share of its convex hull's is crumpled (kit rule)
 
 
@@ -98,6 +101,13 @@ def hull_crumpled_pieces(bm):
             scratch.free()
             continue
         hull_volume = abs(scratch.calc_volume(signed=False)) if hasattr(scratch, "calc_volume") else 0.0
+        hv = np.array([v.co[:] for v in verts])
+        mid = hv.mean(axis=0)
+        axes = np.linalg.svd(hv - mid, full_matrices=False)[2]
+        spans = (hv - mid) @ axes.T
+        extent = spans.max(axis=0) - spans.min(axis=0)
+        obb_volume = float(np.prod(extent))
+        centre_at = [round(float(x), 3) for x in mid]
         scratch.free()
         own_volume = abs(sum(f.calc_area() * (f.calc_center_median().dot(f.normal)) for f in group)) / 3.0
         ratio = own_volume / hull_volume if hull_volume > 1e-12 else 1.0
@@ -106,6 +116,14 @@ def hull_crumpled_pieces(bm):
             continue
         samples = [(f.calc_center_median().copy(), f.normal.copy(), np.mean([l[uv_layer].uv[:] for l in f.loops], axis=0) if uv_layer else None) for f in group]
         bmesh.ops.delete(bm, geom=group, context="FACES_ONLY")
+        fill = hull_volume / obb_volume if obb_volume > 1e-12 else 1.0
+        flat = bool(extent.min() < HULL_PLATE_FLAT * extent.max())
+        boxed = bool(fill < HULL_BOX_FILL or (flat and fill < HULL_PLATE_FILL))
+        if boxed:
+            lo, hi = spans.min(axis=0), spans.max(axis=0)
+            corners = [mid + np.array([x, y, z]) @ axes for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
+            bmesh.ops.delete(bm, geom=[v for v in verts if v.is_valid], context="VERTS")
+            verts = [bm.verts.new(Vector(c.tolist())) for c in corners]
         made = bmesh.ops.convex_hull(bm, input=verts)
         bmesh.ops.delete(bm, geom=[g for g in made["geom_interior"] if isinstance(g, bmesh.types.BMVert)], context="VERTS")
         bmesh.ops.delete(bm, geom=[e for e in {e for v in verts if v.is_valid for e in v.link_edges} if not e.link_faces], context="EDGES")
@@ -115,7 +133,7 @@ def hull_crumpled_pieces(bm):
             if uv_layer and best[2] is not None:
                 for loop in f.loops:
                     loop[uv_layer].uv = (float(best[2][0]), float(best[2][1]))
-        replaced.append({"triangles": len(group), "volume_share": round(float(ratio), 3)})
+        replaced.append({"triangles": len(group), "volume_share": round(float(ratio), 3), "box": boxed, "hull_volume": float(hull_volume), "obb_volume": obb_volume, "own_volume": float(own_volume), "centre": centre_at, "extent": [round(float(x), 4) for x in extent]})
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     return {"pieces": len(replaced), "replaced": replaced}
 
