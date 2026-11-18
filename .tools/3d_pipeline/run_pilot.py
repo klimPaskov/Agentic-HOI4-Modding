@@ -1814,6 +1814,9 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
     if size and (spec.get("tripo") or {}).get("load"):
         # The load is found and bound by rule; the rider's height in this model's units places the Saddle_Node on its floor.
         rig_options = {"load": True, "rider_height": size["rider_height_in_mount_mesh"], "rider_footprint": size.get("rider_footprint")}
+    if tripo_winged(spec):
+        # The wings are found by rule and get their own chains (adapter/quadruped_wings.py).
+        rig_options["wings"] = True
     rig = blender.author_creature_rig(
         slug,
         component_checkpoint,
@@ -3133,6 +3136,12 @@ def tripo_quadruped(spec: Dict[str, Any]) -> bool:
     return uses_tripo(spec) and bool(name) and load_unit_types().get(name, {}).get("rig") == "blender_quadruped"
 
 
+def tripo_winged(spec: Dict[str, Any]) -> bool:
+    """A Tripo quadruped whose unit type has wings (`winged_quadruped`): the rig finds the wings and gives them chains by rule."""
+
+    return tripo_quadruped(spec) and bool(load_unit_types().get(spec.get("unit_type") or "", {}).get("wings"))
+
+
 def tripo_mount_size(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Size a Tripo quadruped by the measured rule of `lib/mount_size.py` and set its `blender_target_height_m`.
 
@@ -3150,6 +3159,18 @@ def tripo_mount_size(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]
     glb = job / read_json(manifest)["file"]["relative_path"]
     config = spec.get("tripo") or {}
     rider = spec.get("rider") or {}
+    if tripo_winged(spec):
+        # A winged quadruped has no species withers to measure against a horse: its body (wings left out) is as long on the map as
+        # vanilla's longest land unit, times the job's `size_vs_longest_land_unit` (1 by default, its reason in `size_reason`).
+        size = mount_size.longest_land_size(glb, float(spec.get("runtime_entity_scale", 0.8)), float(spec.get("size_vs_longest_land_unit", 1.0)))
+        size["size_reason"] = spec.get("size_reason", "")
+        if spec.get("_explicit_target_height"):
+            size["overridden_by_job"] = spec["blender_target_height_m"]
+        else:
+            spec["blender_target_height_m"] = size["target_height_m"]
+        check_runtime_scale(spec)
+        write_json(job / "blender" / "reports" / "mount_size.json", size)
+        return size
     size = mount_size.mount_size(glb, float(spec.get("runtime_entity_scale", 0.8)), float(spec.get("size_vs_horse", 1.0)),
                                  bool(config.get("load")), rider.get("mesh_height"))
     size["size_vs_horse_reason"] = spec.get("size_vs_horse_reason", "")

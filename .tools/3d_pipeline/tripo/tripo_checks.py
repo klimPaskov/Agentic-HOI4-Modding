@@ -212,9 +212,28 @@ def cloak_bones(mesh) -> tuple:
     return CLOAK_BONES + tuple(tripo_chains.chain_bones(mesh.bones, "cloak"))
 
 
-def wing_sides(mesh) -> (np.ndarray, np.ndarray):
-    """(left, right) wing masks by the chain stage's rule (`lib/tripo_chains.wing_masks`)."""
+def quadruped_wing_sides(mesh) -> Optional[tuple]:
+    """(left, right) wing masks of the kit's winged quadruped rig (`adapter/quadruped_wings.py`): the vertices with at least half their weight
+    on that side's `WingLeft_` or `WingRight_` chain bones. None when the mesh has no such bones."""
 
+    names = np.array(mesh.bones)
+    out = []
+    for side in ("Left", "Right"):
+        chain = np.char.startswith(names.astype(str), f"Wing{side}_")
+        if not chain.any():
+            return None
+        share = np.where(mesh.joints >= 0, mesh.weights * chain[np.clip(mesh.joints, 0, None)], 0.0).sum(axis=1)
+        out.append(share >= 0.5)
+    return tuple(out)
+
+
+def wing_sides(mesh) -> (np.ndarray, np.ndarray):
+    """(left, right) wing masks by the chain stage's rule (`lib/tripo_chains.wing_masks`), or a winged quadruped's by its wing bones."""
+
+    if quadruped_checks.is_quadruped(mesh):
+        found = quadruped_wing_sides(mesh)
+        if found is not None:
+            return found
     names = np.array(mesh.bones)
     dominant = pdx_deform.dominant_bones(mesh)
     dominant_names = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
@@ -226,14 +245,14 @@ def wing_sides(mesh) -> (np.ndarray, np.ndarray):
 def chain_regions(mesh, wings: bool, cloak: bool) -> Dict[str, np.ndarray]:
     """Vertex masks of the regions a chain stage moves, by the same rules that stage selects them with."""
 
-    names = np.array(mesh.bones)
-    dominant = pdx_deform.dominant_bones(mesh)
-    dominant_names = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
-    index = {name: i for i, name in enumerate(mesh.bones)}
-    hips = pdx_motion.rest_joints(mesh)[index["Hips"]] if "Hips" in index else mesh.positions.mean(axis=0)
-    front = front_direction(mesh)
     regions = {}
     if cloak:
+        names = np.array(mesh.bones)
+        dominant = pdx_deform.dominant_bones(mesh)
+        dominant_names = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
+        index = {name: i for i, name in enumerate(mesh.bones)}
+        hips = pdx_motion.rest_joints(mesh)[index["Hips"]] if "Hips" in index else mesh.positions.mean(axis=0)
+        front = front_direction(mesh)
         regions["cloak"] = T.cloak_region(mesh.positions, dominant_names, hips, front, mesh.height, cloak_bones(mesh))
     if wings:
         left, right = wing_sides(mesh)
@@ -268,11 +287,41 @@ def upright_series(mesh, anim, step: int) -> np.ndarray:
     return np.abs(axis[:, 1]) / np.maximum(np.linalg.norm(axis, axis=1), 1e-9)
 
 
-def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[np.ndarray] = None) -> Dict[str, float]:
+# A winged quadruped's wings grow from its back, so from every review camera their roots cover some of the back, as from the side on a
+# humanoid. Every view judges its legs, neck and head (`QUADRUPED_PARTS`) at the side views' limit. Its defend raises the wings as a shield
+# in front of the head and neck (the role's intent, decision D-76), so the defend judges the legs alone. On the Tripo dragon, played
+# offline: the shield hides 25% of the legs, neck and head from the side and none of the legs.
+QUADRUPED_PARTS = ("Front_", "Rear_", "Neck_", "Head")
+QUADRUPED_SHIELD_PARTS = ("Front_", "Rear_")
+
+
+def quadruped_parts(mesh, wings: np.ndarray, role: str) -> np.ndarray:
+    names = np.array(mesh.bones + [""])
+    dominant = names[pdx_deform.dominant_bones(mesh)].astype(str)
+    parts = QUADRUPED_SHIELD_PARTS if role == "defend" else QUADRUPED_PARTS
+    return np.array([name.startswith(parts) for name in dominant.tolist()], dtype=bool) & ~wings
+
+
+def quadruped_upright(mesh, anim, step: int) -> np.ndarray:
+    """Per judged frame, how high the Chest joint stands over its rest height (1 standing, toward 0 lying on the side)."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    joints = pdx_motion.posed_joints(mesh, anim)[::step]
+    if "Chest" not in index:
+        return np.ones(len(joints))
+    ground = float(mesh.positions[:, 1].min())
+    rest = float(pdx_motion.rest_joints(mesh)[index["Chest"], 1]) - ground
+    return np.clip((joints[:, index["Chest"], 1] - ground) / max(rest, 1e-9), 0.0, 1.0)
+
+
+def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[np.ndarray] = None, role: str = "") -> Dict[str, float]:
     """The worst share of the body each review view loses behind the wings over the frames: the front and map views judge all of the body
     but the wings and the weapon, the side views the limbs and the head (`side_parts`). A death skips the front view, and the side views
-    while the torso lies (`UPRIGHT_SHARE`)."""
+    while the torso lies (`UPRIGHT_SHARE`). A winged quadruped is judged in every view on its legs, neck and head (`quadruped_parts`)."""
 
+    if quadruped_checks.is_quadruped(mesh):
+        parts = quadruped_parts(mesh, wings, role)
+        return wing_cover_points(frames, parts, wings, parts, front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height, death, upright)
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
@@ -356,7 +405,7 @@ def wing_root_zone(mesh) -> np.ndarray:
     return tripo_chains.root_zone(share, pdx_deform.mesh_edges(mesh))
 
 
-def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False, sides=None, root=None) -> dict:
+def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False, sides=None, root=None, role: str = "") -> dict:
     """One clip's worst in-body share and below-ground share per region; for the wings also the worst stretch, the worst stretch of the
     root zone (with `root`, `wing_root_zone`), the cover per review view, the face shares (with `sides`, the left and right wing masks)
     and the map-view motion."""
@@ -372,9 +421,13 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False
                "below_ground_worst_share": round(max(below), 4), "below_ground_frame": int(np.argmax(below)) * step}
         if name == "wings":
             share, frame = T.region_stretch_share(mesh.positions, frames, edges, mask, mesh.height)
+            quadruped = quadruped_checks.is_quadruped(mesh)
+            upright = (quadruped_upright(mesh, anim, step) if quadruped else upright_series(mesh, anim, step)) if death else None
             row.update(stretch_worst_share=round(share, 4), stretch_frame=frame * step,
-                       cover=wing_cover(mesh, frames, mask, death, upright_series(mesh, anim, step) if death else None),
+                       cover=wing_cover(mesh, frames, mask, death, upright, role),
                        map_motion=wing_map_motion(mesh, frames, mask))
+            if quadruped:
+                row["cover_judges"] = "legs" if role == "defend" else "legs, neck and head"
             if sides is not None:
                 row["face"] = wing_face_shares(mesh, frames[::2], sides)
             if root is not None and np.any(root):
@@ -389,10 +442,10 @@ def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
     if row.get("stretch_worst_share", 0.0) > MAX_WING_STRETCH_SHARE:
         out.append(finding("TRIPO-WING-STRETCH", clip, f"{row['stretch_worst_share']:.1%} of the wing region's edges are stretched or squashed in frame {row['stretch_frame']}; the limit is {MAX_WING_STRETCH_SHARE:.0%}", share=row["stretch_worst_share"]))
     for view, share in (row.get("cover") or {}).items():
-        side = view in SIDE_VIEWS
+        side = view in SIDE_VIEWS or "cover_judges" in row
         limit = MAX_WING_SIDE_COVER if side else MAX_WING_COVER_SHARE
         if share > limit:
-            what = "the limbs and head" if side else "the body"
+            what = f"the {row['cover_judges']}" if "cover_judges" in row else ("the limbs and head" if side else "the body")
             out.append(finding("TRIPO-WING-FRONT", clip, f"the wings hide {share:.1%} of {what} in the {view} view; the limit is {limit:.0%}", view=view, share=share))
     rule = tripo_chains.WING_ROLES.get(clip_role(clip), {})
     if row.get("face") and rule.get("flap", 0.0) >= EDGE_ON_FLAP:
@@ -432,7 +485,7 @@ def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, ste
     body = ~np.any(np.stack(list(regions.values())), axis=0) & ~weapon
     out, numbers = [], {"region_vertices": {name: int(mask.sum()) for name, mask in regions.items()}, "clips": {}}
     for clip, anim in anims.items():
-        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"), sides=sides, root=root)
+        rows = chain_clip_numbers(mesh, anim, regions, body, step, death=clip.endswith("death"), sides=sides, root=root, role=clip_role(clip))
         numbers["clips"][clip] = rows
         for name, row in rows.items():
             out += chain_row_findings(clip, name, row)

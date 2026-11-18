@@ -151,3 +151,54 @@ def mount_size(glb: Path, entity_scale: float, size_vs_horse: float, load: bool,
         "rider_entity_scale": round(rider_scale, 4),
         "rider_height_in_mount_mesh": round(rider_mesh * rider_scale, 4),
     }
+
+
+# Vanilla's longest land unit on the map: `GER_super_heavy_railway_gun.mesh`, 27.86 units long under entity scale 0.35, so 9.75 units on the
+# map (measured 2026-11-18 over every mesh under gfx/models/units with an entity: next come generic_super_heavy_railway_gun 9.10,
+# generic_super_heavy_artillery 9.07, the camel 7.56 and the heavy tanks 5.6 to 6.6). The kit has no large-creature reference of its own.
+VANILLA_LONGEST_LAND_MESH = "gfx/models/units/railway_guns/GER_super_heavy_railway_gun.mesh"
+VANILLA_LONGEST_LAND_MAP = 9.75
+
+
+def winged_body(points: np.ndarray, triangles: np.ndarray) -> Tuple[np.ndarray, Dict[str, Any]]:
+    """The model turned so its four feet stand along Y (as the rig turns it), and the mask of its body without its wings
+    (`quadruped_wings.detect_wings`)."""
+
+    import quadruped_wings as qwings
+
+    along_x = ql.feet_axis_along_x(points)
+    if along_x:
+        centre = np.array([(points[:, 0].min() + points[:, 0].max()) / 2, (points[:, 1].min() + points[:, 1].max()) / 2, 0.0])
+        q = points - centre
+        points = np.c_[-q[:, 1], q[:, 0], q[:, 2]] + centre
+    first = ql.detect_landmarks(points)
+    feet, _dragged = ql.ground_contacts(points)
+    _plans, masks = qwings.detect_wings(points, triangles, first, feet)
+    wing = np.zeros(len(points), bool)
+    for mask in masks.values():
+        wing |= mask
+    return points, {"body": ~wing, "wing_vertices": int(wing.sum())}
+
+
+def longest_land_size(glb: Path, entity_scale: float, share: float = 1.0) -> Dict[str, Any]:
+    """The mesh height (`blender_target_height_m`) that makes a winged quadruped's body (all of it but its wings, from its nose to the tip of
+    its tail along its length) `share` times as long on the map as vanilla's longest land unit."""
+
+    points, triangles = read_glb(glb)
+    turned, found = winged_body(points, triangles)
+    body = turned[found["body"]]
+    length = float(np.ptp(body[:, 1]))
+    height = float(np.ptp(turned[:, 2]))
+    target = VANILLA_LONGEST_LAND_MAP * float(share) / entity_scale * height / length
+    return {
+        "rule": "body length on the map (wings left out) = vanilla's longest land unit's length on the map x size_vs_longest_land_unit",
+        "reference": VANILLA_LONGEST_LAND_MESH,
+        "reference_map_length": VANILLA_LONGEST_LAND_MAP,
+        "size_vs_longest_land_unit": float(share),
+        "body_length_share": round(length / height, 4),
+        "wing_vertices": found["wing_vertices"],
+        "target_height_m": round(target, 4),
+        "map_height": round(target * entity_scale, 4),
+        "map_length": round(VANILLA_LONGEST_LAND_MAP * float(share), 4),
+        "entity_scale": float(entity_scale),
+    }
