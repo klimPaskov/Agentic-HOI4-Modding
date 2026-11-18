@@ -52,3 +52,6 @@
 # Machine-local settings written by HOI4 Mod Setup or `check.py doctor --save-game-dir`, and task scratch space.
 /.tools/local_settings.json
 /.tmp/
+
+# Blender adapter config written by the bootstrap (machine paths)
+/.tools/3d_pipeline/config/blender_hoi4_adapter.json

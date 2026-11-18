@@ -11,17 +11,21 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 
-if not os.environ.get("MESHY_API_KEY", "").strip():
-    print(
-        "MESHY_API_KEY is missing or blank. Stop. Run this PowerShell command, "
-        "then restart the shell or Codex:\n\n"
-        '[Environment]::SetEnvironmentVariable(\n'
-        '    "MESHY_API_KEY",\n'
-        '    "msy_your_actual_key_here",\n'
-        '    "User"\n'
-        ")\n"
-    )
-    raise SystemExit(2)
+def require_meshy_key() -> None:
+    """Meshy jobs need the key; a Tripo job (`"provider": "tripo"`) never calls Meshy."""
+
+    if not os.environ.get("MESHY_API_KEY", "").strip():
+        print(
+            "MESHY_API_KEY is missing or blank. Stop. Run this PowerShell command, "
+            "then restart the shell or Codex:\n\n"
+            '[Environment]::SetEnvironmentVariable(\n'
+            '    "MESHY_API_KEY",\n'
+            '    "msy_your_actual_key_here",\n'
+            '    "User"\n'
+            ")\n"
+        )
+        raise SystemExit(2)
+
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
@@ -223,6 +227,7 @@ def initialize_one(spec: Dict[str, Any], *, require_review: bool = True) -> Dict
         "asset_id": spec["asset_id"],
         "asset_slug": slug,
         "status": status,
+        "provider": spec.get("provider") or "meshy",
         "profile": spec["profile"],
         "asset_kind": spec["asset_kind"],
         "creature_rig_family": spec.get("creature_rig_family"),
@@ -308,6 +313,10 @@ def initialize_one(spec: Dict[str, Any], *, require_review: bool = True) -> Dict
         },
         "created_at": utc_now(),
     }
+    if job["provider"] == "tripo":
+        # A Tripo job has no Meshy plan: its files come from an inbox (tripo_intake.py) and it is paid in Tripo's app.
+        job["input_gate"] = job.pop("meshy_input_gate")
+        job["provider_plan"] = {"ai_model": "tripo", "mode": "manual_export", "paid_attempts": 1, "estimated_credits": {}}
     if job_file.exists():
         existing = read_job_document(job_file)
         for field in (
@@ -468,6 +477,9 @@ def main() -> int:
     jobs = payload.get("jobs", payload.get("pilots"))
     if not isinstance(jobs, dict) or not jobs:
         raise ValueError("--jobs-config must contain a non-empty jobs mapping.")
+    chosen = [args.record_visual_review] if args.record_visual_review else (list(jobs) if args.all or not args.jobs else args.jobs)
+    if any(str(jobs.get(name, {}).get("provider") or "meshy").lower() != "tripo" for name in chosen):
+        require_meshy_key()
     if args.record_visual_review:
         if args.record_visual_review not in jobs:
             raise KeyError(f"Unknown configured 3D job: {args.record_visual_review}")

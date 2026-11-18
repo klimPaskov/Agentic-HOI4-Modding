@@ -35,8 +35,12 @@ STATE_SETS = {
 NON_LOOPING = {"attack", "death"}
 
 
-def pdxmesh_block(stem: str, model_folder: str, shape_names: List[str], roles: List[str], states: Optional[List[str]] = None) -> str:
-    lines = ["\tpdxmesh = {", f'\t\tname = "{stem}_mesh"', f'\t\tfile = "{model_folder}/{stem}.mesh"']
+def pdxmesh_block(stem: str, model_folder: str, shape_names: List[str], roles: List[str], states: Optional[List[str]] = None,
+                  role_map: Optional[Dict[str, str]] = None, mesh_name: str = "") -> str:
+    """`role_map` (a rider's): the clip each entity role plays, such as the rider's idle while the mount moves. `mesh_name` names the
+    block when the files already belong to another unit (a rider made from a foot unit), so the two never share a name."""
+
+    lines = ["\tpdxmesh = {", f'\t\tname = "{mesh_name or stem + "_mesh"}"', f'\t\tfile = "{model_folder}/{stem}.mesh"']
     for index, shape in enumerate(shape_names):
         lines += [
             "\t\tmeshsettings = {",
@@ -49,8 +53,9 @@ def pdxmesh_block(stem: str, model_folder: str, shape_names: List[str], roles: L
             "\t\t}",
         ]
     for state, role in STATE_TO_ROLE.items():
-        if role in roles:
-            lines.append(f'\t\tanimation = {{ id = "{state}" type = "{stem}_{role}_animation" }}')
+        clip = (role_map or {}).get(role, role)
+        if clip in roles:
+            lines.append(f'\t\tanimation = {{ id = "{state}" type = "{stem}_{clip}_animation" }}')
     lines.append("\t}")
     return "\n".join(lines)
 
@@ -69,8 +74,9 @@ def entity_block(
     attach: Optional[Dict[str, str]] = None,
     move_sound: str = "",
     states: Optional[List[str]] = None,
+    mesh_name: str = "",
 ) -> str:
-    lines = ["entity = {", f'\tname = "{name}"', f'\tpdxmesh = "{stem}_mesh"', '\tdefault_state = "idle"']
+    lines = ["entity = {", f'\tname = "{name}"', f'\tpdxmesh = "{mesh_name or stem + "_mesh"}"', '\tdefault_state = "idle"']
     for state in states or STATE_SETS["infantry"]:
         role = STATE_TO_ROLE[state]
         if role not in roles:
@@ -115,17 +121,21 @@ def registration_text(
         "```",
         pdxmesh_block(stem, model_folder, shapes, roles, STATE_SETS[state_set]),
     ]
+    rider_map = dict(rider.get("role_map") or {}) if rider else {}  # type: ignore[union-attr]
+    rider_mesh = str(rider.get("mesh_name") or "") if rider else ""  # type: ignore[union-attr]
     if rider:
-        parts.append(pdxmesh_block(str(rider["stem"]), str(rider["model_folder"]), list(rider["shapes"]), list(rider["roles"]), STATE_SETS[state_set]))  # type: ignore[arg-type]
+        parts.append(pdxmesh_block(str(rider["stem"]), str(rider["model_folder"]), list(rider["shapes"]), list(rider["roles"]), STATE_SETS[state_set], rider_map, rider_mesh))  # type: ignore[arg-type]
     parts += ["```", "", f"## `{model_folder}/{stem}.asset`", "", "```", animation_blocks(stem, roles), "```"]
     if rider:
         parts += ["", f"## `{rider['model_folder']}/{rider['stem']}.asset`", "", "```", animation_blocks(str(rider["stem"]), list(rider["roles"])), "```"]  # type: ignore[arg-type]
     parts += ["", "## Entities (`gfx/entities/<mod>_units.asset`)", "", "```"]
     if template == "mount" and rider:
-        rider_entity = f"{rider['stem']}_entity"
+        rider_entity = str(rider.get("entity") or f"{rider['stem']}_entity")
         parts.append(entity_block(unit_entity, stem, roles, scale, attach={"Saddle_Node": rider_entity}, move_sound=move_sound, states=STATE_SETS[state_set]))
         parts.append("")
-        parts.append(entity_block(rider_entity, str(rider["stem"]), list(rider["roles"]), float(rider.get("scale", 1.0)), states=STATE_SETS[state_set]))  # type: ignore[arg-type]
+        # The rider entity's scale multiplies the mount's (lib/mount_size.py); its states are the mount's, each playing the rider's mapped clip.
+        rider_roles = sorted({role for role in roles if rider_map.get(role, role) in list(rider["roles"])})  # type: ignore[arg-type]
+        parts.append(entity_block(rider_entity, str(rider["stem"]), rider_roles, float(rider.get("scale", 1.0)), states=STATE_SETS[state_set], mesh_name=rider_mesh))  # type: ignore[arg-type]
     else:
         parts.append(entity_block(unit_entity, stem, roles, scale, move_sound=move_sound, states=STATE_SETS[state_set]))
     parts += [

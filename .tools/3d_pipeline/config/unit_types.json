@@ -786,6 +786,40 @@
           "loop": false
         }
       }
+    },
+    "winged_quadruped": {
+      "description": "Four-legged creature with two membrane wings and no rider: dragons, wyverns on four legs, griffins. The kit's quadruped rig plus wing chains found by rule (adapter/quadruped_wings.py). Sized by its length against vanilla's longest land unit (lib/mount_size.py)",
+      "body": "winged_quadruped",
+      "profile": "nonhumanoid_creature",
+      "rig": "blender_quadruped",
+      "entity_template": "infantry",
+      "wings": true,
+      "roles": {
+        "idle": {
+          "blender": "winged_idle",
+          "loop": true
+        },
+        "move": {
+          "blender": "winged_walk",
+          "loop": true
+        },
+        "attack": {
+          "blender": "winged_rear",
+          "loop": false
+        },
+        "defend": {
+          "blender": "winged_guard",
+          "loop": false
+        },
+        "retreat": {
+          "blender": "winged_flee",
+          "loop": true
+        },
+        "death": {
+          "blender": "winged_collapse",
+          "loop": false
+        }
+      }
     }
   }
 }

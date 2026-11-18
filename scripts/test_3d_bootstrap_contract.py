@@ -142,6 +142,77 @@ class CredentialBoundaryTests(unittest.TestCase):
             self.assertFalse(root.exists())
 
 
+class BlenderOnlyBootstrapTests(unittest.TestCase):
+    """The Tripo route needs the Blender stage only: no Meshy key, balance check, Node or Meshy runtime."""
+
+    STEPS = (
+        "find_blender", "ensure_uv", "verify_generation_profiles", "resolve_blender_mcp", "ensure_blender_mcp",
+        "resolve_io_pdx_mesh", "ensure_io_pdx_mesh", "materialize_hoi4_adapter", "resolve_blender_bridge_settings",
+        "ensure_blender_mcp_addon", "ensure_blender_bridge", "register_claude_routes",
+    )
+
+    def run_main(self, root: Path, arguments: list, environment: dict) -> int:
+        (root / ".tools/3d_pipeline").mkdir(parents=True)
+        (root / ".tools/3d_pipeline/bootstrap_3d_workflow.py").write_text("", encoding="utf-8")
+        patches = [mock.patch.object(BOOTSTRAP, name, return_value={"id": name, "port": 1, "host": "h"}) for name in self.STEPS]
+        self.keys_seen_by_children = []
+
+        def find_blender(_pipeline_root):
+            self.keys_seen_by_children.append(os.environ.get("MESHY_API_KEY"))
+            return Path("blender.exe"), None, "5.2.2"
+
+        patches.append(mock.patch.object(BOOTSTRAP, "find_blender", side_effect=find_blender))
+        patches.append(mock.patch.object(BOOTSTRAP, "ensure_uv", return_value=Path("uv.exe")))
+        patches.append(mock.patch.object(BOOTSTRAP, "ensure_blender_mcp", return_value=Path("project")))
+        patches.append(mock.patch.object(BOOTSTRAP, "register_claude_routes", return_value="skipped"))
+        forbidden = {
+            name: mock.patch.object(BOOTSTRAP, name, side_effect=AssertionError(f"{name} must not run without Meshy"))
+            for name in ("ensure_npx", "ensure_meshy_runtime", "verify_meshy_key")
+        }
+        started = [patch.start() for patch in patches + list(forbidden.values())]
+        self.addCleanup(mock.patch.stopall)
+        with mock.patch.dict(os.environ, environment, clear=False), mock.patch.object(
+            BOOTSTRAP.sys, "argv", [str(SCRIPT), "--project-root", str(root), "--quiet", *arguments]
+        ):
+            return BOOTSTRAP.main()
+
+    def test_without_a_meshy_key_the_blender_stage_is_set_up_and_meshy_is_recorded_unverified(self) -> None:
+        environment = {key: value for key, value in os.environ.items() if key != "MESHY_API_KEY"}
+        with tempfile.TemporaryDirectory() as temporary, mock.patch.dict(os.environ, environment, clear=True):
+            root = Path(temporary) / "project"
+            self.assertEqual(self.run_main(root, [], {}), 0)
+            lock = BOOTSTRAP.json.loads((root / ".tools/3d_pipeline/config/dependencies.lock.json").read_text(encoding="utf-8"))
+            self.assertIs(lock["routes"]["meshy_mcp"]["verified"], False)
+            self.assertIn("blender_hoi4_adapter", lock["routes"])
+            runtime = BOOTSTRAP.json.loads((root / ".tools/3d_pipeline/config/runtime.json").read_text(encoding="utf-8"))
+            self.assertIsNone(runtime["npx_executable"])
+            config = (root / ".codex/config.toml").read_text(encoding="utf-8")
+            self.assertNotIn("mcp_servers.meshy", config)
+            self.assertIn("mcp_servers.blender_hoi4", config)
+
+    def test_the_flag_skips_meshy_even_with_a_key_and_the_key_is_not_inherited(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            self.assertEqual(self.run_main(root, ["--without-meshy"], {"MESHY_API_KEY": "msy_test_value"}), 0)
+            self.assertEqual(self.keys_seen_by_children, [None])
+
+    def test_a_blender_only_config_passes_its_own_review_and_not_the_full_one(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            config = BOOTSTRAP.materialize_config(root, None, with_meshy=False)
+            self.assertEqual(BOOTSTRAP.verify_reviewed_config(root, with_meshy=False), config)
+            with self.assertRaisesRegex(BOOTSTRAP.SetupError, "mcp_servers.meshy"):
+                BOOTSTRAP.verify_reviewed_config(root)
+
+    def test_the_normal_mode_still_needs_the_launcher_and_the_key(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "project"
+            root.mkdir()
+            with self.assertRaisesRegex(BOOTSTRAP.SetupError, "trusted-launcher"):
+                BOOTSTRAP.materialize_config(root, None)
+
+
 class DependencyBoundaryTests(unittest.TestCase):
     def test_blender_resolution_is_immutable_and_does_not_resolve_mutable_refs(self) -> None:
         with mock.patch.object(BOOTSTRAP, "run") as run:

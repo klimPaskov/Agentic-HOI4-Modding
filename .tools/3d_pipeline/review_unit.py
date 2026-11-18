@@ -7,8 +7,9 @@ Usage (from the repository root):
 
 The first form imports the `.mesh` and every `.anim` of the unit into Blender with io_pdx_mesh,
 renders each clip from six views (front, left, back, right, the HOI4 map camera, below) at
-evenly spaced frames plus the clip's worst-stretch and worst-ground frames, and writes one
-contact sheet per clip to `<out>/sheets/`. Back faces are culled as in the game and the
+fixed frames, one every `REVIEW_STEP` frames (half a second) and the last, plus the frames a kit check
+flagged (`--findings`) and the clip's worst-stretch and worst-ground frames, and writes the contact
+sheets of each clip to `<out>/sheets/` (`SHEET_ROWS` frames a page: `<clip>.png`, `<clip>_p2.png`). Back faces are culled as in the game and the
 background is magenta, so holes show. It also writes `<out>/REVIEW_REQUEST.md`: the reviewer
 prompt from `config/visual_review_prompt.md` with the sheet paths filled in.
 
@@ -35,7 +36,12 @@ gets the same request:
   and judged. Use it after changing some clips. A unit is accepted only after a full round, without
   `--clips`, by a new reviewer. The round is recorded in `<out>/review_scope.json` and in the verdict.
 
-The camera angles are fixed (`VIEWS`), so every round shows the same views.
+The camera angles are fixed (`VIEWS`), so every round shows the same views. The frames are fixed too: the
+spread depends only on the clip's length, so every round shows the same frames of each clip. The frames a
+check flagged and the measured extremes (worst stretch, lowest, highest) come on top, captioned with why
+they are there, never in place of a fixed frame: the extremes move with small changes (the orc's lowest
+attack frame moved from 18 to 38 between two rounds after a grounding change), so a round that showed only
+them was not comparable with the one before (2026-11-16).
 """
 
 from __future__ import annotations
@@ -49,10 +55,12 @@ import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
+
+import numpy as np
 
 from lib import pdx_binary, pdx_deform, stage_verdict
 
@@ -61,6 +69,8 @@ BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "review_render.py"
 VIEWS = ["front", "left", "back", "right", "hoi4", "below"]
 DIAGNOSTIC_VIEWS = ["front", "left", "hoi4"]
 LABEL_HEIGHT = 18
+REVIEW_STEP = 15  # the fixed frames: one every half second at the game's 30 frames a second
+SHEET_ROWS = 6  # frames a sheet page, so a long clip's tiles keep their size
 LEGEND = "grey fine | yellow to red stretched or squashed 1.3x to 1.5x+ | cyan open edge | blue below ground | magenta hole or back face"
 
 
@@ -90,6 +100,9 @@ def diffuse_maps(mesh_path: Path, gfx_texts: List[str]) -> Dict[str, str]:
                 continue
             for settings in re.finditer(r"meshsettings\s*=\s*\{(.*?)\}", body, re.S):
                 name = re.search(r'name\s*=\s*"([^"]+)"', settings.group(1))
+                index = re.search(r"\bindex\s*=\s*(\d+)", settings.group(1))
+                if index and int(index.group(1)) != 0:
+                    continue  # a shape's later stream (a tank's scrolling tracks) names its own maps in its mesh material
                 texture = re.search(r'texture_diffuse\s*=\s*"([^"]+)"', settings.group(1))
                 if name and texture and (mesh_path.parent / Path(texture.group(1)).name).exists():
                     maps[name.group(1)] = str(mesh_path.parent / Path(texture.group(1)).name)
@@ -97,6 +110,41 @@ def diffuse_maps(mesh_path: Path, gfx_texts: List[str]) -> Dict[str, str]:
     if fallback:
         maps["*"] = str(fallback[0])
     return maps
+
+
+def specular_maps(mesh_path: Path) -> Dict[str, str]:
+    """The packed specular map beside the mesh (`<stem>_specular.dds`, `_spec.dds`, or any `*spec*.dds`), for the PBR review tiles."""
+
+    for pattern in (f"{mesh_path.stem}_specular.dds", f"{mesh_path.stem}_spec.dds", f"{mesh_path.stem}*spec*.dds", "*spec*.dds"):
+        found = sorted(mesh_path.parent.glob(pattern))
+        if found:
+            return {"*": str(found[0])}
+    return {}
+
+
+def rider_attach(rider: Optional[Path], rider_stem: Optional[str], scale: float, roles: Dict[str, str], clip_names: List[str], node: str = "Saddle_Node") -> Optional[Dict[str, object]]:
+    """The `attach` block of a render request: the rider entity's mesh, maps and one clip per mount clip, drawn on the mount's node.
+
+    An attached entity's scale multiplies its parent's (lib/mount_size.py), so in the mount's mesh units the rider is scaled by its own
+    entity scale. `roles` maps a mount role to the rider role it plays then (a rider's idle while the mount moves); a role not named plays
+    the rider's clip of the same role, or its idle."""
+
+    if rider is None:
+        return None
+    meshes = sorted(rider.glob("*.mesh"))
+    mesh = next((m for m in meshes if m.stem == rider_stem), meshes[0] if meshes else None)
+    if mesh is None:
+        raise SystemExit(f"no rider .mesh in {rider}")
+    anims = {anim.stem[len(mesh.stem) + 1:]: anim for anim in owned_anims(rider, mesh.stem, [m.stem for m in meshes])}
+    clips = {}
+    for name in clip_names:
+        role = name.rsplit("_", 1)[-1]
+        wanted = roles.get(role, role)
+        anim = anims.get(wanted) or anims.get("idle")
+        if anim is not None:
+            clips[name] = str(anim.resolve())
+    return {"mesh": str(mesh.resolve()), "node": node, "scale": float(scale), "diffuse": diffuse_maps(mesh.resolve(), []),
+            "specular": specular_maps(mesh.resolve()), "clips": clips}
 
 
 def gfx_texts(mod_root: Optional[Path]) -> List[str]:
@@ -113,15 +161,84 @@ def gfx_texts(mod_root: Optional[Path]) -> List[str]:
 
 
 def pick_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, count: int) -> List[int]:
-    """Evenly spaced sample indices plus the worst-stretch frame and the lowest and highest frames."""
+    """Evenly spaced sample indices plus the worst-stretch frame, the lowest and highest frames, and the frame where a bone
+    moves furthest from its first-frame place (`peak_motion_frame`)."""
 
     anim = pdx_deform.load_anim(anim_path)
     last = max(anim.frames - 1, 0)
     frames = {round(last * k / max(count - 1, 1)) for k in range(count)}
+    peak = peak_motion_frame(anim)
+    if peak is not None:
+        frames.add(peak)
     if mesh.skinned and anim.frames:
         report = pdx_deform.deformation_report(mesh, anim)
         frames.update((report.worst_frame, report.lowest_frame, report.highest_frame))
     return sorted(frame for frame in frames if 0 <= frame <= last)
+
+
+def spread_frames(frames: int, step: int = REVIEW_STEP) -> List[int]:
+    """The fixed frames of a clip of `frames` samples: 0, `step`, 2 x `step` and so on, and the last."""
+
+    last = max(frames - 1, 0)
+    return sorted(set(range(0, last + 1, max(step, 1))) | {last})
+
+
+def flagged_frames(findings_files: List[Path], clip: str) -> Dict[int, str]:
+    """{sample frame: the rules} of the findings in the JSON reports (`{"findings": [...]}`, as `tripo/tripo_checks.py --json` writes)
+    whose subject is `clip` (or its role) and that name a frame."""
+
+    out: Dict[int, List[str]] = {}
+    role = clip.rsplit("_", 1)[-1]
+    for path in findings_files:
+        for item in json.loads(Path(path).read_text(encoding="utf-8")).get("findings", []):
+            frame = item.get("frame")
+            if isinstance(frame, int) and str(item.get("subject")) in (clip, role):
+                rules = out.setdefault(frame, [])
+                if str(item.get("rule")) not in rules:
+                    rules.append(str(item.get("rule")))
+    return {frame: " ".join(rules) for frame, rules in out.items()}
+
+
+def review_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path, step: int = REVIEW_STEP, flagged: Optional[Dict[int, str]] = None,
+                  count: Optional[int] = None) -> Tuple[List[int], Dict[int, str]]:
+    """(sample frames, {frame: why it is shown}) of one clip: the fixed spread (`spread_frames`, or `count` evenly spaced frames), then
+    the frames a check flagged, the frame a bone moves furthest (`peak_motion_frame`) and the worst-stretch, lowest and highest frames on
+    top. A fixed frame is labelled only when a check flagged it or it is an extreme too."""
+
+    anim = pdx_deform.load_anim(anim_path)
+    last = max(anim.frames - 1, 0)
+    fixed = sorted({round(last * k / max(count - 1, 1)) for k in range(count)}) if count else spread_frames(anim.frames, step)
+    labels: Dict[int, List[str]] = {}
+    for frame, rules in (flagged or {}).items():
+        if 0 <= frame <= last:
+            labels.setdefault(frame, []).append(f"flagged {rules}")
+    peak = peak_motion_frame(anim)
+    if peak is not None and 0 <= peak <= last:
+        labels.setdefault(peak, []).append("furthest move")
+    if mesh.skinned and anim.frames:
+        report = pdx_deform.deformation_report(mesh, anim)
+        for frame, why in ((report.worst_frame, "worst stretch"), (report.lowest_frame, "lowest"), (report.highest_frame, "highest")):
+            if 0 <= frame <= last:
+                labels.setdefault(frame, []).append(why)
+    frames = sorted(set(fixed) | set(labels))
+    return frames, {frame: ", ".join(labels[frame]) for frame in frames if frame in labels}
+
+
+def peak_motion_frame(anim) -> Optional[int]:
+    """The frame where one bone's translation is furthest from its first frame, or None when nothing moves.
+
+    A tank's gun recoil peaks at frame 4 of a 149-frame attack and lasts about 20 frames, so evenly spaced frames missed it
+    and two fresh reviewers saw no shot fired."""
+
+    best, frame = 1e-6, None
+    for channel in anim.channels.values():
+        moves = np.asarray(channel.get("t", []), dtype=float)
+        if moves.ndim != 2 or len(moves) < 2:
+            continue
+        distance = np.linalg.norm(moves - moves[0], axis=1)
+        if float(distance.max()) > best:
+            best, frame = float(distance.max()), int(distance.argmax())
+    return frame
 
 
 def diagnostic_frames(mesh: pdx_deform.SkinnedMesh, anim_path: Path) -> List[int]:
@@ -146,8 +263,9 @@ def find_blender() -> Path:
     return executable
 
 
-def build_sheets(render_dir: Path, sheet_dir: Path) -> List[Path]:
-    """One sheet per clip: a row per frame, a column per view, each tile labelled."""
+def build_sheets(render_dir: Path, sheet_dir: Path, labels: Optional[Dict[str, Dict[int, str]]] = None) -> List[Path]:
+    """The sheets of each clip: a row per frame, a column per view, each tile labelled, at most `SHEET_ROWS` rows a page. `labels`
+    ({clip: {sample frame: why}}) adds why a frame is shown to the first caption of its row (a frame of the fixed spread has none)."""
 
     from PIL import Image, ImageDraw
 
@@ -155,19 +273,23 @@ def build_sheets(render_dir: Path, sheet_dir: Path) -> List[Path]:
     sheet_dir.mkdir(parents=True, exist_ok=True)
     sheets = []
     for clip in index["clips"]:
-        rows = clip["rows"]
-        views = list(rows[0]["tiles"])
-        width, height = Image.open(render_dir / rows[0]["tiles"][views[0]]).size
-        sheet = Image.new("RGB", (width * len(views), (height + LABEL_HEIGHT) * len(rows)), (30, 30, 30))
-        draw = ImageDraw.Draw(sheet)
-        for r, row in enumerate(rows):
-            for c, view in enumerate(views):
-                with Image.open(render_dir / row["tiles"][view]) as tile:
-                    sheet.paste(tile.convert("RGB"), (c * width, r * (height + LABEL_HEIGHT) + LABEL_HEIGHT))
-                draw.text((c * width + 4, r * (height + LABEL_HEIGHT) + 3), f"{clip['name']} f{row['frame']} {view}", fill=(230, 230, 230))
-        path = sheet_dir / f"{clip['name']}.png"
-        sheet.save(path)
-        sheets.append(path)
+        why = (labels or {}).get(clip["name"], {})
+        views = list(clip["rows"][0]["tiles"])
+        width, height = Image.open(render_dir / clip["rows"][0]["tiles"][views[0]]).size
+        for page, start in enumerate(range(0, len(clip["rows"]), SHEET_ROWS)):
+            rows = clip["rows"][start:start + SHEET_ROWS]
+            sheet = Image.new("RGB", (width * len(views), (height + LABEL_HEIGHT) * len(rows)), (30, 30, 30))
+            draw = ImageDraw.Draw(sheet)
+            for r, row in enumerate(rows):
+                note = why.get(int(row["frame"]) - 1)  # `.anim` sample k is Blender frame k + 1
+                for c, view in enumerate(views):
+                    with Image.open(render_dir / row["tiles"][view]) as tile:
+                        sheet.paste(tile.convert("RGB"), (c * width, r * (height + LABEL_HEIGHT) + LABEL_HEIGHT))
+                    caption = f"{clip['name']} f{row['frame']} {view}" + (f" ({note})" if note and c == 0 else "")
+                    draw.text((c * width + 4, r * (height + LABEL_HEIGHT) + 3), caption, fill=(230, 230, 230))
+            path = sheet_dir / (f"{clip['name']}.png" if page == 0 else f"{clip['name']}_p{page + 1}.png")
+            sheet.save(path)
+            sheets.append(path)
         if clip.get("diagnostic_rows"):
             sheets.append(build_diagnostic_sheet(render_dir, sheet_dir, clip))
     return sheets
@@ -328,12 +450,19 @@ def render(
     stem: Optional[str],
     out: Path,
     mod_root: Optional[Path],
-    frames: int,
+    step: int,
     size: int,
     diagnostics: bool = True,
     notes: Optional[List[str]] = None,
     checklist: bool = True,
     only: Optional[List[str]] = None,
+    ground_z: Optional[float] = None,
+    ground_alpha: float = 1.0,
+    attach: Optional[Dict[str, object]] = None,
+    texture_anim_speed: Optional[float] = None,
+    findings: Optional[List[Path]] = None,
+    count: Optional[int] = None,
+    sun_shadow: bool = True,
 ) -> List[Path]:
     meshes = sorted(folder.glob("*.mesh"))
     stems = [mesh.stem for mesh in meshes]
@@ -341,12 +470,14 @@ def render(
     if mesh_path is None:
         raise SystemExit(f"no .mesh in {folder}")
     mesh = pdx_deform.load_mesh(mesh_path)
-    clips = []
+    clips, labels = [], {}
     for anim in select_clips(owned_anims(folder, mesh_path.stem, stems), mesh_path.stem, only):
         try:
-            entry = {"name": anim.stem, "path": str(anim.resolve()), "frames": pick_frames(mesh, anim, frames)}
+            flagged = flagged_frames(list(findings or []), anim.stem)
+            frames, labels[anim.stem] = review_frames(mesh, anim, step, flagged, count)
+            entry = {"name": anim.stem, "path": str(anim.resolve()), "frames": frames}
             if diagnostics:
-                entry["diagnostic_frames"] = diagnostic_frames(mesh, anim)
+                entry["diagnostic_frames"] = sorted(set(diagnostic_frames(mesh, anim)) | {f for f in flagged if 0 <= f <= max(frames)})
             clips.append(entry)
         except (pdx_binary.PdxFormatError, ValueError, IndexError) as error:
             print(f"skipped {anim.name}: {error}")
@@ -355,11 +486,19 @@ def render(
         "out": str(tile_dir.resolve()),
         "mesh": str(mesh_path.resolve()),
         "diffuse": diffuse_maps(mesh_path.resolve(), gfx_texts(mod_root)),
+        "specular": specular_maps(mesh_path.resolve()),
         "clips": clips,
         "views": VIEWS,
         "diagnostic_views": DIAGNOSTIC_VIEWS if diagnostics else [],
         "size": size,
+        "ground_z": ground_z,
+        "ground_alpha": ground_alpha,
+        "texture_anim_speed": texture_anim_speed,
     }
+    if not sun_shadow:
+        request["sun_shadow"] = False
+    if attach:
+        request["attach"] = attach
     out.mkdir(parents=True, exist_ok=True)
     request_path = out / "render_request.json"
     request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
@@ -373,7 +512,7 @@ def render(
     (out / "blender.log").write_text(completed.stdout[-20000:] + completed.stderr[-20000:], encoding="utf-8")
     if "REVIEW_RENDERED" not in completed.stdout:
         raise SystemExit(f"Blender did not finish the renders; see {out / 'blender.log'}")
-    sheets = build_sheets(tile_dir, out / "sheets")
+    sheets = build_sheets(tile_dir, out / "sheets", labels)
     write_request(out, mesh_path.stem, sheets, tile_dir, notes, checklist, only)
     return sheets
 
@@ -384,7 +523,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--stem", help="review only <stem>.mesh and its animations (a mount and its rider share a folder)")
     parser.add_argument("--mod-root", type=Path, help="read the .gfx meshsettings for each shape's diffuse map")
     parser.add_argument("--out", type=Path, required=True, help="where the tiles, sheets, request and verdict go (outside gfx/)")
-    parser.add_argument("--frames", type=int, default=5, help="evenly spaced frames per clip, before the worst frames are added")
+    parser.add_argument("--step", type=int, default=REVIEW_STEP, help="the fixed frames: one every STEP frames of each clip and the last (default half a second)")
+    parser.add_argument("--frames", type=int, help="instead of --step, this many evenly spaced fixed frames per clip")
+    parser.add_argument("--findings", type=Path, action="append", default=[],
+                        help="a check report whose findings name a clip and a frame (tripo/tripo_checks.py --json): those frames are shown too (repeatable)")
     parser.add_argument("--size", type=int, default=384, help="tile size in pixels")
     parser.add_argument("--record", type=Path, help="record a reviewer's reply instead of rendering")
     parser.add_argument("--no-diagnostics", action="store_true", help="skip the flat-colour diagnostics sheets")
@@ -392,6 +534,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--note-file", type=Path, help="a file of fixed notes, one per line (keep it in the job folder so every round uses it)")
     parser.add_argument("--checklist", action=argparse.BooleanOptionalAction, default=True, help="ask for the quality bar item by item and fail a reply without it (default on)")
     parser.add_argument("--clips", nargs="+", metavar="CLIP", help="an intermediate round: render and judge only these clips (roles or file stems) and the rest pose")
+    parser.add_argument("--rider", type=Path, help="a mount's rider: the folder of the rider entity's .mesh and .anim files, drawn on the mount's Saddle_Node")
+    parser.add_argument("--rider-stem", help="the rider's file stem, when its folder holds several")
+    parser.add_argument("--rider-scale", type=float, default=1.0, help="the rider entity's scale (it multiplies the mount's, so it is the rider's size in the mount's mesh units)")
+    parser.add_argument("--rider-roles", nargs="*", default=[], metavar="ROLE=RIDER_ROLE", help="the rider clip each mount role plays, for example move=idle")
     args = parser.parse_args(argv)
     out = args.out
     unit = args.stem or next((mesh.stem for mesh in sorted(args.folder.glob("*.mesh"))), args.folder.name)
@@ -422,7 +568,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     notes = list(args.note)
     if args.note_file:
         notes += [line.strip().lstrip("-").strip() for line in args.note_file.read_text(encoding="utf-8").splitlines() if line.strip()]
-    sheets = render(args.folder, args.stem, out, args.mod_root, args.frames, args.size, not args.no_diagnostics, notes, args.checklist, args.clips)
+    attach = None
+    if args.rider:
+        mount = next((m for m in sorted(args.folder.glob("*.mesh")) if m.stem == (args.stem or m.stem)), None)
+        names = [anim.stem for anim in owned_anims(args.folder, mount.stem, [m.stem for m in sorted(args.folder.glob("*.mesh"))])] if mount else []
+        attach = rider_attach(args.rider, args.rider_stem, args.rider_scale, dict(pair.split("=", 1) for pair in args.rider_roles), names)
+    sheets = render(args.folder, args.stem, out, args.mod_root, args.step, args.size, not args.no_diagnostics, notes, args.checklist, args.clips,
+                    attach=attach, findings=args.findings, count=args.frames)
     request = out / "REVIEW_REQUEST.md"
     stage_verdict.write(
         stage_verdict.verdict(

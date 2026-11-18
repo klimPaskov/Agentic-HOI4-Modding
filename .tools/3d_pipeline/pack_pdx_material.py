@@ -11,12 +11,49 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Sequence
 
 from PIL import Image, ImageOps
 
 
 PDX_SPECULAR_LEVEL = 32
+
+
+def _percentile(channel: Image.Image, percent: float) -> int:
+    histogram = channel.convert("L").histogram()
+    target, running = sum(histogram) * percent / 100.0, 0
+    for level, count in enumerate(histogram):
+        running += count
+        if running >= target:
+            return level
+    return 255
+
+
+def remap_gloss_table(gloss: Image.Image, target_quantiles: Sequence[float]) -> list:
+    """A 256-entry table that maps a glossiness channel onto a target distribution (quantile matching).
+
+    Each level goes to the target value at its mid-rank among the non-zero pixels (zero stays zero: the empty
+    parts of an atlas are matte and must not count toward the unit's distribution). `target_quantiles` holds the
+    target's value at percentiles 0 to 100.
+    """
+
+    histogram = gloss.convert("L").histogram()
+    counted = sum(histogram[1:])
+    if counted <= 0:
+        return list(range(256))
+    target = list(target_quantiles)
+    table, running = [0] * 256, 0
+    for level in range(1, 256):
+        count = histogram[level]
+        if count:
+            rank = (running + count / 2.0) / counted
+            position = rank * (len(target) - 1)
+            low = int(position)
+            high = min(low + 1, len(target) - 1)
+            value = target[low] + (target[high] - target[low]) * (position - low)
+            table[level] = max(1, min(255, int(round(value))))
+        running += count
+    return table
 
 
 def _channel_stats(image: Image.Image) -> Dict[str, Dict[str, float]]:
@@ -56,8 +93,23 @@ PDX_METALLIC_SCALE = 0.35
 PDX_GLOSS_SCALE = 0.65
 
 
-def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]:
+def pack_pdx_specular_map(
+    job: Path,
+    specular_source_rel: str,
+    specular_level: int = PDX_SPECULAR_LEVEL,
+    gloss_scale: float = PDX_GLOSS_SCALE,
+    gloss_p95_limit: Optional[float] = None,
+    gloss_remap: Optional[Sequence[float]] = None,
+) -> Dict[str, Any]:
     """Pack Meshy metallic and roughness maps into the HOI4 PDX layout.
+
+    With `gloss_remap` (101 quantiles of a target glossiness distribution, `config/vanilla_gloss.json`) the unit's gloss is
+    remapped onto that distribution instead of scaled (`remap_gloss`); `gloss_scale` and `gloss_p95_limit` are then ignored.
+    With `gloss_p95_limit` the gloss scale is lowered, if need be, until the 95th percentile of the glossiness (alpha) is at
+    most that (the kit's UNIT-DDS-SHINY warns above about 140): a shiny unit then keeps vanilla's range.
+
+    `specular_level` (green) and `gloss_scale` (alpha) default to the Meshy values; a Tripo job passes its own
+    (`runtime_specular_level`, `runtime_gloss_scale`), because Tripo's maps are far more matte than Meshy's.
 
     The source must be the provider's ``metallic_roughness.png``. The sibling
     grayscale maps are authoritative because the glTF packed alpha channel is
@@ -94,13 +146,21 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
                 f"{metal_l.size} != {rough_l.size}"
             )
         zero = Image.new("L", metal_l.size, 0)
-        specular = Image.new("L", metal_l.size, PDX_SPECULAR_LEVEL)
+        specular = Image.new("L", metal_l.size, int(specular_level))
         # Meshy materials are far shinier than vanilla units, whose specular maps keep metalness
         # (blue) near 10-21 mean and 57-79 at the 95th percentile, and glossiness (alpha) near
         # 36-87 mean and 77-114 at the 95th percentile (ENG, FRA, FIN infantry, 1.19.4.1). Unscaled,
         # the ZIN knights rendered with white specular speckles in game, so both channels are scaled.
         metal_l = metal_l.point(lambda value: round(value * PDX_METALLIC_SCALE))
-        gloss_l = ImageOps.invert(rough_l).point(lambda value: round(value * PDX_GLOSS_SCALE))
+        raw_gloss = ImageOps.invert(rough_l)
+        if gloss_p95_limit is not None and gloss_remap is None:
+            raw_p95 = float(_percentile(raw_gloss, 95.0))
+            if raw_p95 > 0:
+                gloss_scale = min(gloss_scale, gloss_p95_limit / raw_p95)
+        if gloss_remap is not None:
+            gloss_l = raw_gloss.point(remap_gloss_table(raw_gloss, gloss_remap))
+        else:
+            gloss_l = raw_gloss.point(lambda value: min(255, round(value * gloss_scale)))
         packed = Image.merge("RGBA", (zero, specular, metal_l, gloss_l))
 
     output = source.with_name("pdx_specular.png")
@@ -110,10 +170,11 @@ def pack_pdx_specular_map(job: Path, specular_source_rel: str) -> Dict[str, Any]
         "status": "packed",
         "layout": {
             "red": "unused_mask_zero",
-            "green": f"specular_level_{PDX_SPECULAR_LEVEL}",
+            "green": f"specular_level_{int(specular_level)}",
             "blue": "metallic",
             "alpha": "glossiness_255_minus_roughness",
         },
+        "gloss_scale": round(gloss_scale, 4),
         "source": {
             "glTF_packed_map": _record(source, job) if source.is_file() else None,
             "metallic": _record(metal, job),

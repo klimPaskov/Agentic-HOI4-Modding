@@ -18,9 +18,9 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from blender_client import BlenderAdapterClient  # noqa: E402
-from lib.mcp_stdio import MCPRouteError  # noqa: E402
-from lib.paths import (  # noqa: E402
+from blender_client import BlenderAdapterClient
+from lib.mcp_stdio import MCPRouteError
+from lib.paths import (
     append_history,
     dds_converter,
     ensure_job_layout,
@@ -69,6 +69,7 @@ from lib.texture_lineage import (
     provider_texture_rels,
     verify_texture_lineage,
 )
+from lib.tripo import animation_source_kind, held_bones, held_parts, provider_name, released_bones, uses_tripo
 from lib.reuse import (
     block_message,
     copy_artifacts,
@@ -78,7 +79,7 @@ from lib.reuse import (
     reconcile_submission,
     unreconciled_submissions,
 )
-from meshy_client import (  # noqa: E402
+from meshy_client import (
     REQUIRED_KEY_MESSAGE,
     MeshyClient,
     MeshyTaskFailed,
@@ -92,7 +93,7 @@ from meshy_client import (  # noqa: E402
     status_from,
     task_id_from,
 )
-from pack_pdx_material import (  # noqa: E402
+from pack_pdx_material import (
     pack_pdx_normal_map,
     pack_pdx_specular_map,
     prepare_texture_source_rels,
@@ -169,6 +170,21 @@ def require_api_key() -> None:
 
     if not os.environ.get("MESHY_API_KEY", "").strip():
         print(REQUIRED_KEY_MESSAGE)
+        raise SystemExit(2)
+
+
+def require_meshy_bootstrap(lock_path: Path = PIPELINE_ROOT / "config" / "dependencies.lock.json") -> None:
+    """Refuse Meshy work when the last bootstrap ran without Meshy (the Blender-only mode)."""
+
+    try:
+        route = read_json(lock_path).get("routes", {}).get("meshy_mcp", {})
+    except (OSError, ValueError, AttributeError):
+        return
+    if isinstance(route, dict) and route.get("verified") is False:
+        print(
+            "The 3D workflow was bootstrapped without Meshy, so Meshy jobs are blocked. Set MESHY_API_KEY, "
+            "restart the shell, and run .tools/3d_pipeline/bootstrap_3d_workflow.py again (through HOI4 Mod Setup)."
+        )
         raise SystemExit(2)
 
 
@@ -252,6 +268,33 @@ def require_credit_budget(spec: Dict[str, Any]) -> int:
     return budget
 
 
+# A unit's height on the map (its mesh height times the entity scale) as a share of the vanilla reference's.
+# A giant may stand three times as tall as a soldier and a goblin half as tall. Outside that band the job's
+# height is almost always in the wrong unit: `target_height_m` is the mesh height in HOI4 units (vanilla
+# infantry is 7.35), not metres. Three Tripo jobs set 1.8 and came out a quarter of a soldier's height.
+MIN_RUNTIME_SCALE_SHARE = 0.5
+MAX_RUNTIME_SCALE_SHARE = 3.0
+
+
+def check_runtime_scale(spec: Dict[str, Any]) -> None:
+    """Refuse a job whose unit would be far smaller or larger on the map than its vanilla scale reference."""
+
+    reference = spec.get("vanilla_scale_reference") or {}
+    if spec.get("asset_kind") not in {"humanoid", "creature"} or not reference.get("runtime_height"):
+        return
+    height = float(spec.get("blender_target_height_m", spec.get("target_height_m", 0)) or 0)
+    runtime = height * float(spec.get("runtime_entity_scale", reference.get("entity_scale", 1.0)))
+    share = runtime / float(reference["runtime_height"])
+    if MIN_RUNTIME_SCALE_SHARE <= share <= MAX_RUNTIME_SCALE_SHARE:
+        return
+    raise ValueError(
+        f"{spec.get('asset_id', 'job')}: the unit would stand {runtime:.2f} units tall on the map, {share:.2f} times its vanilla "
+        f"reference ({float(reference['runtime_height']):.2f}). `target_height_m` is the mesh height in HOI4 units, not metres: "
+        f"use {float(reference.get('mesh_height', reference['runtime_height'])):.4g} for a unit as tall as the reference soldier, "
+        f"and scale it for a smaller or larger body."
+    )
+
+
 def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[str, Any]:
     """Fill in generation settings, price-table estimates and the job budget before any provider call.
 
@@ -262,11 +305,29 @@ def prepare_spec(spec: Dict[str, Any], *, require_budget: bool = True) -> Dict[s
     if spec.get("_credits_prepared"):
         return spec
     apply_unit_type(spec)
+    check_runtime_scale(spec)
     generation = resolve_generation(spec, load_profile(spec["profile"]))
     pricing = load_pricing()
     spec["generation"] = generation
     spec["meshy_ai_model"] = spec["resolved_meshy_ai_model"] = generation["ai_model"]
     spec["target_polycount"] = generation["target_polycount"]
+    if uses_tripo(spec):
+        # Tripo has no API and no credit estimates here; its credits are typed in at intake.
+        for key in ("image_to_3d", "remesh", "rig", "animation"):
+            spec[f"{key}_estimate_credits"] = 0
+        spec.setdefault("meshy_pose_mode", None)
+        # No diffuse gamma grade for Tripo: its basecolor is already inside vanilla infantry's luma and saturation range, and the grade desaturates it.
+        spec.setdefault("runtime_diffuse_gamma", 1.0)
+        # Tripo's glossiness differs from unit to unit (the orc's mean was 26 after the Meshy scale, the zombie's p95 reached 183), so
+        # a scale or a cap fits one and not the other. The unit's gloss is remapped onto vanilla infantry's distribution (ENG, GER, SOV:
+        # mean 60, 95th percentile 101, config/vanilla_gloss.json); the specular level (green) is 56, the SOV value.
+        spec.setdefault("runtime_specular_level", 56)
+        spec.setdefault("runtime_gloss_remap", "vanilla_infantry")
+        # Blender's glTF import adds a bone-shape Icosphere to every rigged file; it must not count as the unit's mesh.
+        spec.setdefault("excluded_provider_objects", ["Icosphere"])
+        spec["planned_total_credits"] = spec["credit_budget"] = 0
+        spec["_credits_prepared"] = True
+        return spec
     spec["image_to_3d_estimate_credits"] = generation_estimate(generation, pricing=pricing)
     for operation in ("remesh", "rig", "animation"):
         spec[f"{operation}_estimate_credits"] = operation_credits(operation, pricing=pricing)
@@ -1152,6 +1213,12 @@ def gate_texture_lineage(
     return report
 
 
+def load_vanilla_gloss() -> list:
+    """The 101 quantiles of vanilla infantry's glossiness (config/vanilla_gloss.json)."""
+
+    return json.loads((Path(__file__).resolve().parent / "config" / "vanilla_gloss.json").read_text(encoding="utf-8"))["quantiles"]
+
+
 def _finalize_pdx_runtime_texture(
     job: Path,
     spec: Dict[str, Any],
@@ -1162,10 +1229,11 @@ def _finalize_pdx_runtime_texture(
     packer: Any,
     report_key: str,
     layout: Dict[str, str],
+    packer_options: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Replace one extracted working map with its final PDX-layout DDS."""
 
-    pack_report = packer(job, source_rel)
+    pack_report = packer(job, source_rel, **(packer_options or {}))
     if pack_report.get("status") not in {"packed", "already_packed"}:
         return textures
     output_rel = pack_report["output"]["path"]
@@ -1352,7 +1420,10 @@ def compress_runtime_textures(job: Path, spec: Dict[str, Any], textures: Dict[st
         with Image.open(source) as image:
             if width and height and image.size != (width, height):
                 sized = job / "textures" / "processed" / f"{Path(png_rel).stem}_runtime.png"
-                image.convert("RGBA").resize((width, height), Image.Resampling.LANCZOS).save(sized, format="PNG")
+                # Per channel: Pillow's RGBA resize premultiplies by alpha, which ruins the colour channels of a map whose alpha is
+                # data (a specular map with glossiness near 26 lost a third of its green; a normal map's alpha is its tangent Y).
+                channels = [band.resize((width, height), Image.Resampling.LANCZOS) for band in image.convert("RGBA").split()]
+                Image.merge("RGBA", channels).save(sized, format="PNG")
         written[dds_rel] = write_dxt5(sized, job / dds_rel)
     textures["runtime_texture_format"] = {"format": "DXT5", "mips": "full chain", "files": written}
     return textures
@@ -1418,6 +1489,11 @@ def finalize_pdx_runtime_textures(
             source_rel=specular_rel,
             image_name=image_names["specular"],
             packer=pack_pdx_specular_map,
+            packer_options={
+                key: spec[name]
+                for key, name in (("specular_level", "runtime_specular_level"), ("gloss_scale", "runtime_gloss_scale"), ("gloss_p95_limit", "runtime_gloss_p95_limit"))
+                if spec.get(name) is not None
+            } | ({"gloss_remap": load_vanilla_gloss()} if spec.get("runtime_gloss_remap") == "vanilla_infantry" else {}),
             report_key="pdx_specular_pack",
             layout={
                 "red": "unused_mask_zero",
@@ -1473,10 +1549,35 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
     prepare_spec(spec)
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
-    client = MeshyClient(REPO_ROOT, job)
     blender = BlenderAdapterClient(REPO_ROOT)
     vanilla_reference = stage_vanilla_reference(job, spec)
     generation_stage = generation_stage_for(spec)
+    if uses_tripo(spec):
+        generation_id, generation_glb = tripo_generation(job, spec)
+        tripo_mount_size(job, spec)
+    else:
+        generation_id, generation_glb = meshy_generation(spec, job, MeshyClient(REPO_ROOT, job), generation_stage)
+    return prepare_generation_candidate(spec, slug, job, blender, vanilla_reference, generation_id, generation_glb)
+
+
+def tripo_generation(job: Path, spec: Dict[str, Any]) -> Tuple[str, Dict[str, Any]]:
+    """The generation task and base GLB `tripo_intake.py` placed in the job, with the maps it came with."""
+
+    task = existing_task(job, generation_stage_for(spec))
+    manifest = job / "provider" / "downloads" / f"{generation_download_name(spec, 'glb')}.manifest.json"
+    if not task or not manifest.is_file():
+        raise RuntimeError(
+            f"{spec['asset_id']} is a Tripo job with no intake yet. Export the files from Tripo into an inbox and run: "
+            f"py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <jobs.json> {job.name} --inbox <folder>"
+        )
+    glb = read_json(manifest)
+    select_geometry_textures(job, spec, glb["file"]["relative_path"])
+    return str(task["task_id"]), glb
+
+
+def meshy_generation(spec: Dict[str, Any], job: Path, client: MeshyClient, generation_stage: str) -> Tuple[str, Dict[str, Any]]:
+    """The paid (or reused) Meshy image-to-3D task and its GLB."""
+
     # The legacy unrecorded-task recovery scans response names that do not
     # contain a logical attempt id. Restrict it to the original stage so a
     # rejected response can never be mistaken for an explicitly authorised
@@ -1527,9 +1628,24 @@ def run_candidate(spec: Dict[str, Any]) -> Dict[str, Any]:
         format_name="fbx",
         filename=generation_download_name(spec, "fbx"),
     )
+    return generation_id, generation_glb
+
+
+def prepare_generation_candidate(
+    spec: Dict[str, Any],
+    slug: str,
+    job: Path,
+    blender: BlenderAdapterClient,
+    vanilla_reference: Optional[Dict[str, Any]],
+    generation_id: str,
+    generation_glb: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Prepare and gate the provider's generation GLB in Blender (Meshy and Tripo alike)."""
+
     profile = read_json(PIPELINE_ROOT / "config" / "asset_profiles.json")["profiles"][spec["profile"]]
     footprint_config = profile.get("footprint", {})
-    max_runtime_footprint_m = footprint_config.get("max_runtime_footprint_m")
+    # The footprint budget is a map building's; a quadruped unit is sized by its back (tripo_mount_size).
+    max_runtime_footprint_m = None if tripo_quadruped(spec) else footprint_config.get("max_runtime_footprint_m")
     runtime_footprint_policy = spec.get("runtime_footprint_policy", "reject")
     texture_sources = (
         prepare_pilot_texture_sources(
@@ -1693,6 +1809,14 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         component_prefix=f"{spec['runtime_stem']}_component",
     )
     rig_checkpoint = "blender/checkpoints/creature_rig_approved.blend"
+    rig_options: Dict[str, Any] = {}
+    size = tripo_mount_size(job, spec)
+    if size and (spec.get("tripo") or {}).get("load"):
+        # The load is found and bound by rule; the rider's height in this model's units places the Saddle_Node on its floor.
+        rig_options = {"load": True, "rider_height": size["rider_height_in_mount_mesh"], "rider_footprint": size.get("rider_footprint")}
+    if tripo_winged(spec):
+        # The wings are found by rule and get their own chains (adapter/quadruped_wings.py).
+        rig_options["wings"] = True
     rig = blender.author_creature_rig(
         slug,
         component_checkpoint,
@@ -1700,7 +1824,14 @@ def continue_creature(spec: Dict[str, Any]) -> Dict[str, Any]:
         creature_rig_family=str(spec["creature_rig_family"]),
         weight_mode="semantic",
         rig_name=f"{spec['runtime_stem']}_armature",
+        rig_options=rig_options or None,
     )
+    seat = ((rig.get("load") or {}).get("saddle") or {}) if rig_options else {}
+    if seat.get("rider_share"):
+        # The rider that fits the load (quadruped_load.fit_rider): its entity scale follows the share the rig found room for.
+        size.update(rider_share=seat["rider_share"], rider_entity_scale=round(size["rider_entity_scale"] * float(seat["rider_share"]), 4),
+                    saddle_room_load_vertices=seat.get("column_load_vertices"))
+        write_json(job / "blender" / "reports" / "mount_size.json", size)
     current_checkpoint = rig_checkpoint
     action_reports: Dict[str, Dict[str, Any]] = {}
     for action in spec["required_actions"]:
@@ -2998,6 +3129,65 @@ def load_job_configs(config_path: Path) -> Dict[str, Dict[str, Any]]:
     return jobs
 
 
+def tripo_quadruped(spec: Dict[str, Any]) -> bool:
+    """A Tripo job on a quadruped unit type (`mount`, `quadruped_beast`): Tripo's plain model, rigged and animated by the kit's quadruped rules."""
+
+    name = spec.get("unit_type")
+    return uses_tripo(spec) and bool(name) and load_unit_types().get(name, {}).get("rig") == "blender_quadruped"
+
+
+def tripo_winged(spec: Dict[str, Any]) -> bool:
+    """A Tripo quadruped whose unit type has wings (`winged_quadruped`): the rig finds the wings and gives them chains by rule."""
+
+    return tripo_quadruped(spec) and bool(load_unit_types().get(spec.get("unit_type") or "", {}).get("wings"))
+
+
+def tripo_mount_size(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Size a Tripo quadruped by the measured rule of `lib/mount_size.py` and set its `blender_target_height_m`.
+
+    The job states `size_vs_horse` (the species' withers height over a horse's, with its source in `size_vs_horse_reason`) and, for a
+    mount that carries a tower or howdah, `tripo.load: true`. A job's own `blender_target_height_m` wins. The rider is vanilla's rider
+    size on the map; `rider.mesh_height` names the rider's mesh height when it is not vanilla infantry's."""
+
+    if not tripo_quadruped(spec):
+        return None
+    from lib import mount_size
+
+    manifest = job / "provider" / "downloads" / f"{generation_download_name(spec, 'glb')}.manifest.json"
+    if not manifest.is_file():
+        return None
+    glb = job / read_json(manifest)["file"]["relative_path"]
+    config = spec.get("tripo") or {}
+    rider = spec.get("rider") or {}
+    if tripo_winged(spec):
+        # A winged quadruped has no species withers to measure against a horse: its body (wings left out) is as long on the map as
+        # vanilla's longest land unit, times the job's `size_vs_longest_land_unit` (1 by default, its reason in `size_reason`).
+        size = mount_size.longest_land_size(glb, float(spec.get("runtime_entity_scale", 0.8)), float(spec.get("size_vs_longest_land_unit", 1.0)))
+        size["size_reason"] = spec.get("size_reason", "")
+        if spec.get("_explicit_target_height"):
+            size["overridden_by_job"] = spec["blender_target_height_m"]
+        else:
+            spec["blender_target_height_m"] = size["target_height_m"]
+        check_runtime_scale(spec)
+        write_json(job / "blender" / "reports" / "mount_size.json", size)
+        return size
+    size = mount_size.mount_size(glb, float(spec.get("runtime_entity_scale", 0.8)), float(spec.get("size_vs_horse", 1.0)),
+                                 bool(config.get("load")), rider.get("mesh_height"))
+    size["size_vs_horse_reason"] = spec.get("size_vs_horse_reason", "")
+    if rider.get("folder"):
+        # The rider's room on the load is what its own clips sweep in plan (lib/mount_size.rider_footprint).
+        footprint = mount_size.rider_footprint(Path(rider["folder"]), str(rider.get("stem")), dict(rider.get("roles") or {}))
+        size["rider_reach_share"] = round(footprint["reach_share"], 4)
+        size["rider_footprint"] = {"cells": footprint["cells"], "cell": round(footprint["cell_share"] * size["rider_height_in_mount_mesh"], 5)}
+    if spec.get("_explicit_target_height"):
+        size["overridden_by_job"] = spec["blender_target_height_m"]
+    else:
+        spec["blender_target_height_m"] = size["target_height_m"]
+    check_runtime_scale(spec)
+    write_json(job / "blender" / "reports" / "mount_size.json", size)
+    return size
+
+
 def require_reference_approval(spec: Dict[str, Any]) -> None:
     """Block paid generation until the parent has accepted the exact provider image."""
 
@@ -3053,14 +3243,21 @@ def require_budget_headroom(pending: List[Dict[str, Any]], specs: List[Dict[str,
 def vet_spec(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Refuse a job before any provider call: route blockers, reference approval, then settings and budget."""
 
+    provider_name(spec)
     require_route_ready(spec)
     require_reference_approval(spec)
-    return prepare_spec(spec)
+    prepared = prepare_spec(spec)
+    if uses_tripo(spec) and spec["asset_kind"] not in STATIC_ASSET_KINDS | {"humanoid"} and not tripo_quadruped(spec):
+        raise RuntimeError(f"{spec['asset_id']}: Tripo jobs cover units on a humanoid or quadruped unit_type and static models, not {spec['asset_kind']}.")
+    if uses_tripo(spec) and spec["asset_kind"] == "humanoid" and not spec.get("unit_type"):
+        raise RuntimeError(f"{spec['asset_id']}: a Tripo unit job needs a unit_type.")
+    return prepared
 
 
 def preflight_selected_credits(specs: List[Dict[str, Any]], phase: str) -> None:
     """Check the full selected tranche before any paid provider call."""
 
+    specs = [spec for spec in specs if not uses_tripo(spec)]
     if not specs:
         return
     require_budget_headroom([item for spec in specs for item in pending_stages(spec, phase)], specs)
@@ -3347,11 +3544,13 @@ def apply_unit_type(spec: Dict[str, Any]) -> Dict[str, Any]:
         # Meshy's a-pose and t-pose are for humanoids only; a four-legged generation is sent without one.
         spec["meshy_pose_mode"] = None
         spec.setdefault("creature_rig_family", "quadruped")
-        # The raw generation is hundreds of loose pieces; the rig needs one closed surface.
-        spec.setdefault("creature_remesh", True)
+        # The raw Meshy generation is hundreds of loose pieces; the rig needs one closed surface. Tripo's model is one skin.
+        spec.setdefault("creature_remesh", not uses_tripo(spec))
         spec.setdefault("creature_remesh_polycount", 30000)
         # Vanilla cavalry_horse.mesh is 15.64 units to the head under pdxmesh scale 0.45 and entity
         # scale 0.65, so 4.57 on the map, smaller than vanilla infantry (5.89). A mount matches it.
+        # A Tripo quadruped is sized by its back instead (tripo_mount_size, lib/mount_size.py).
+        spec.setdefault("_explicit_target_height", "blender_target_height_m" in spec)
         spec.setdefault("blender_target_height_m", round(4.57 / float(spec.get("runtime_entity_scale", 0.8)), 4))
     else:
         spec.setdefault("asset_kind", "humanoid")
@@ -3499,7 +3698,8 @@ def write_animation_receipt(
     provider_name: str,
     source_rel: str,
     source_sha: str,
-    library_clip: Optional[Dict[str, Any]],
+    library_clip: Any,
+    source_kind: str = "meshy_animate",
 ) -> str:
     """Write the provenance receipt animation import requires, once per role, and return its job path."""
 
@@ -3510,7 +3710,7 @@ def write_animation_receipt(
         # A receipt from a failed attempt that named another clip is replaced, never reused.
         write_json(job / receipt_rel, {
             "verification_status": "verified",
-            "source_kind": "meshy_animate",
+            "source_kind": source_kind,
             "source_reference_id": task.get("task_id"),
             "source_action_name": scene_name,
             "provider_file_action_name": provider_name,
@@ -3519,9 +3719,257 @@ def write_animation_receipt(
             "library_clip": library_clip,
             "verified_by": "hoi4_3d_model_pipeline",
             "verified_at": utc_now(),
-            "basis": "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest.",
+            "basis": (
+                "Tripo's own animation exported from its app, intake-recorded with a checksum manifest."
+                if source_kind == "professional_source"
+                else "Completed Meshy animate task from this job's own rig task, downloaded with a checksum manifest."
+            ),
         })
     return receipt_rel
+
+
+def _parts(held: Any) -> List[Dict[str, Any]]:
+    """The held parts as a list: the job's weapon block alone (a dict) or `lib.tripo.held_parts` (the weapon and the shield)."""
+
+    return [part for part in (held if isinstance(held, list) else [held]) if part]
+
+
+def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoid: bool = True) -> Dict[str, Any]:
+    """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
+    second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
+    weapon or shield the unit has let go of never deciding where it is. A death whose thighs split apart past vanilla's deaths has its knees swung together first (lib/tripo_splay.py, TRIPO-DEATH-SPLAY), one whose hips hold themselves up while it falls has them brought down in a free fall first (lib/tripo_fall.py, TRIPO-DEATH-HOVER), one whose boots hang above the ground has its legs settled next, one
+    whose boot kicks up again once the hips are down has that leg laid across the kick (lib/tripo_kick.py, TRIPO-DEATH-LEG-KICK), and one whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
+
+    from lib import pdx_ground, tripo_fall, tripo_kick, tripo_pose, tripo_splay
+
+    released = released_bones(_parts(weapon), role)
+    record: Dict[str, Any] = {}
+    if role == "death" and humanoid:
+        splay = tripo_splay.close_death_legs(mesh, anim, anim, exclude_bones=released)
+        record["splay"] = dict(splay.__dict__)
+        fall = tripo_fall.settle_death_fall(mesh, anim, anim, exclude_bones=released)
+        record["fall"] = {"changed": fall.changed, "frames": fall.frames, "largest_drop": fall.largest_drop, "ratio_before": fall.ratio_before,
+                          "ratio_after": fall.ratio_after, "legs": fall.legs, "note": fall.note}
+        legs = tripo_pose.settle_death_legs(mesh, anim, anim, exclude_bones=released)
+        record["legs"] = {"changed": legs.changed, "joints": list(legs.joints), "share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
+                          "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
+        kick = tripo_kick.settle_death_kick(mesh, anim, anim, exclude_bones=released)
+        record["kick"] = {"changed": kick.changed, "onset": kick.onset, "spans": kick.spans, "before": kick.before, "after": kick.after, "note": kick.note}
+        upper = tripo_pose.settle_death_upper(mesh, anim, anim, exclude_bones=released)
+        record["upper_body"] = {"changed": upper.changed, "turns_degrees": upper.turns, "from_frame": upper.from_frame, "ramp_frames": upper.frames,
+                                "heights_before": upper.heights_before, "heights_after": upper.heights_after, "note": upper.note}
+    fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=released)
+    record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
+    return record
+
+
+def clear_held_props(mesh: Path, anim: Path, role: str, weapon: Any) -> Dict[str, Any]:
+    """The Tripo route's last pose step (lib/tripo_final_clearance.py): every held weapon and shield kept out of the body in every frame of the exported
+    clip, by the same solve as the grip stage, on the mesh the game loads. A part the unit lets go of in this role is left to its fall."""
+
+    from lib import tripo_final_clearance
+
+    parts = [{"bone": part["bone"], "release_roles": part.get("release_roles") or []} for part in _parts(weapon) if part.get("bone")]
+    return tripo_final_clearance.clear_clip_file(mesh, anim, anim, parts, role) if parts else {}
+
+
+def clear_staged_props(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any, records: Dict[str, Any]) -> None:
+    """`clear_held_props` on every staged clip of an armed unit, recorded with the clip's file (`"clear_props": false` in the tripo block: none)."""
+
+    stem = spec["runtime_stem"]
+    if not weapon or (spec.get("tripo") or {}).get("clear_props", True) is False:
+        return
+    for role in roles:
+        name = f"{stem}_{role}.anim"
+        records[name]["clear_props"] = clear_held_props(staged / f"{stem}.mesh", staged / name, role, weapon)
+        records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
+def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
+    """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
+    past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
+    brings the head's base back above the shoulder line. It runs before the weights are smoothed and fitted, so they fit the lifted clip."""
+
+    from lib import tripo_neck
+
+    lift = tripo_neck.lift_neck(mesh, anim, anim, role)
+    return {"changed": lift.changed, "group": lift.group, "joints": list(lift.joints), "share": lift.share, "frames_changed": lift.frames_changed,
+            "ramp_frames": lift.ramp_frames, "neck_before": round(lift.neck_before, 3), "neck_after": round(lift.neck_after, 3), "tried": lift.tried,
+            "note": lift.note}
+
+
+def job_has_plates(spec: Dict[str, Any]) -> bool:
+    """Whether the job's tripo block asks for armour plates (a chain with the region `plates`)."""
+
+    return any((chain or {}).get("region") == "plates" for chain in ((spec.get("tripo") or {}).get("chains") or []))
+
+
+def job_has_cloak(spec: Dict[str, Any]) -> bool:
+    """Whether the job has a cape (TRIPO-CLOAK-STRETCH runs for it, as `tripo/tripo_checks.job_regions` reads it): `cape: true` or a `cloak` chain."""
+
+    chains = {chain.get("region") if isinstance(chain, dict) else str(chain) for chain in ((spec.get("tripo") or {}).get("chains") or [])}
+    return bool(spec.get("cape")) or "cloak" in chains
+
+
+def ease_staged_cloak_bends(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
+    """The spine ease for a stretched back (lib/tripo_cloak_bend.py) on every staged clip of a humanoid unit with a cape or cloak chain, recorded
+    with the clip's file. A job without a cape keeps its pose. `"ease_cloak_bend": false` in the job's tripo
+    block switches it off."""
+
+    from lib import tripo_cloak_bend
+
+    if tripo_quadruped(spec) or not job_has_cloak(spec) or (spec.get("tripo") or {}).get("ease_cloak_bend", True) is False:
+        return
+    stem = spec["runtime_stem"]
+    for role in roles:
+        name = f"{stem}_{role}.anim"
+        bend = tripo_cloak_bend.ease_cloak_bend(staged / f"{stem}.mesh", staged / name, staged / name, role)
+        records[name]["cloak_bend"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in bend.__dict__.items()}
+        records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
+def ease_staged_shoulders(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
+    """The shoulder ease (lib/tripo_shoulder.py, TRIPO-SHOULDER-SWELL) on every staged clip of a humanoid unit, after the weight fit: where the
+    shoulder and the upper back swell, the spine or the clavicles turn toward the unit's own stance (the idle's first frame). The idle is
+    eased last, so every clip is judged against the stance it had. `"ease_shoulders": false` in the job's tripo block switches it off."""
+
+    from lib import tripo_shoulder
+
+    if tripo_quadruped(spec) or (spec.get("tripo") or {}).get("ease_shoulders", True) is False:
+        return
+    stem = spec["runtime_stem"]
+    idle = staged / f"{stem}_idle.anim"
+    for role in sorted(roles, key=lambda name: name == "idle"):
+        name = f"{stem}_{role}.anim"
+        ease = tripo_shoulder.ease_shoulders(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
+        records[name]["shoulder_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in ease.__dict__.items()}
+        # Then the clavicle that still tears the girdle turns toward the stance, the upper arm keeping its direction (TRIPO-SHOULDER-TEAR).
+        # `"ease_clavicles": false` switches it off.
+        if (spec.get("tripo") or {}).get("ease_clavicles", True) is not False:
+            lever = tripo_shoulder.ease_clavicles(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
+            records[name]["clavicle_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in lever.__dict__.items()}
+        records[name]["staged"] = file_record(staged / name, relative_to=job)
+
+
+def ease_staged_poses(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], records: Dict[str, Any]) -> None:
+    """The pose eases after the weight fit, in order: the spine under a cloak (lib/tripo_cloak_bend.py, TRIPO-CLOAK-STRETCH), then a swollen
+    shoulder (lib/tripo_shoulder.py, TRIPO-SHOULDER-SWELL), which judges the clips the first left."""
+
+    ease_staged_cloak_bends(job, staged, spec, roles, records)
+    ease_staged_shoulders(job, staged, spec, roles, records)
+
+
+def _smooth_and_fit(staged: Path, stem: str, roles: List[str], weapon: Any, spec: Dict[str, Any]) -> Dict[str, Any]:
+    """The smoothing (`"smooth_weights": false` switches it off) and then the fit (`"fit_weights": false`) on the staged mesh, recorded."""
+
+    tripo = spec.get("tripo") or {}
+    # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
+    load_bones = ["Load"] if tripo_quadruped(spec) and tripo.get("load") else []
+    out: Dict[str, Any] = {}
+    if tripo.get("smooth_weights", True) is not False:
+        out["stretch_smooth"] = smooth_stretched_weights(staged, stem, roles, weapon, load_bones, job_has_plates(spec))
+    if tripo.get("fit_weights", True) is not False:
+        out["weight_fit"] = fit_clip_weights(staged, stem, roles, weapon, load_bones, job_has_plates(spec))
+    return out
+
+
+def _girdle_on(spec: Dict[str, Any]) -> bool:
+    # Off unless the job asks for it: two fits of nearly the same clips differ by more than the rule gains (lib/tripo_girdle.py).
+    return not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("girdle_weights", False) is True
+
+
+def fit_staged_weights(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Dict[str, Any]:
+    """The smoothing and the fit on the staged mesh. For a humanoid the weights they start from are kept for the girdle trial
+    (`girdle_trial`), which runs after the pose eases."""
+
+    stem = spec["runtime_stem"]
+    if _girdle_on(spec):
+        trial = job / "validation" / "girdle_trial"
+        shutil.rmtree(trial, ignore_errors=True)
+        trial.mkdir(parents=True)
+        shutil.copy2(staged / f"{stem}.mesh", trial / "start.mesh")
+    return _smooth_and_fit(staged, stem, roles, weapon, spec)
+
+
+def girdle_trial(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Optional[Dict[str, Any]]:
+    """The girdle rule (lib/tripo_girdle.py), after the pose eases, for a humanoid whose clips still fail TRIPO-SHOULDER-SWELL or
+    TRIPO-SHOULDER-TEAR. From the weights the fit started from, two trials smooth and fit against the eased clips, one with the rule and one
+    without, and the rule's weights replace the staged mesh when the bounded trade accepts them against the other. The rule is judged on the
+    clips as they leave the route: tried before the shoulder ease, it could not lower what the ease left (the ogre's attack 0.198 to 0.197)."""
+
+    from lib import pdx_deform, tripo_chains, tripo_girdle, weight_fit
+
+    trial = job / "validation" / "girdle_trial"
+    stem = spec["runtime_stem"]
+    if not _girdle_on(spec) or not (trial / "start.mesh").is_file():
+        return None
+    mesh = staged / f"{stem}.mesh"
+    anims = [staged / f"{stem}_{role}.anim" for role in roles]
+    now = tripo_girdle.measures(mesh, anims)
+    failing = [n for n, m in now.items() if not n.startswith("_") and (m["girdle"] > tripo_girdle.tripo_shoulder.GIRDLE_LIMIT
+                                                                      or m["swell"] > tripo_girdle.tripo_shoulder.SWELL_LIMIT)]
+    record: Dict[str, Any] = {"failing_before": failing}
+    if not failing:
+        shutil.rmtree(trial, ignore_errors=True)
+        return dict(record, note="every clip passes the shoulder checks")
+    results = {}
+    for name in ("without", "with"):
+        folder = trial / name
+        folder.mkdir()
+        shutil.copy2(trial / "start.mesh", folder / mesh.name)
+        for anim in anims:
+            shutil.copy2(anim, folder / anim.name)
+        if name == "with":
+            plates = weight_fit.plate_vertices(pdx_deform.load_mesh(folder / mesh.name)) if job_has_plates(spec) else None
+            record["rule"] = tripo_girdle.confine_arm_weights(folder / mesh.name, folder / mesh.name, held_bones(_parts(weapon)),
+                                                              tuple(tripo_chains.REGION_PREFIX.values()), plates)
+        _smooth_and_fit(folder, stem, roles, weapon, spec)
+        results[name] = tripo_girdle.measures(folder / mesh.name, [folder / a.name for a in anims])
+    result = tripo_girdle.trade(results["without"], results["with"])
+    record.update({"accepted": result.accepted, "deformed_edges_before": result.deformed_before, "deformed_edges_after": result.deformed_after,
+                   "reasons": result.reasons, "clips": result.clips})
+    if result.accepted:
+        shutil.copy2(trial / "with" / mesh.name, mesh)
+    shutil.rmtree(trial, ignore_errors=True)
+    return record
+
+
+def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
+    """The Tripo route's weight rule on the staged mesh (lib/stretch_smooth.py): smooth the weights where the unit's own clips stretch or
+    squash edges, at the strength that lowers that most without making any clip worse. A held weapon's bone is locked, so it stays rigid,
+    and so are the chain stage's cloak and wing bones, whose weights that stage sets by its own rule."""
+
+    from lib import pdx_deform, stretch_smooth, tripo_chains, weight_fit
+
+    mesh = staged / f"{stem}.mesh"
+    mask = weight_fit.plate_vertices(pdx_deform.load_mesh(mesh)) if plates else None  # the armour plates keep their weights, as in the fit
+    result = stretch_smooth.smooth(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
+                                   locked_bones=held_bones(_parts(weapon)) + list(locked),
+                                   locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()), locked_mask=mask)
+    totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
+    return {"changed": result.changed, "passes": result.passes, "seed_vertices": result.seeds, "region_vertices": result.region,
+            "vertices_changed": result.vertices_changed, "deformed_edges_before": totals["before"], "deformed_edges_after": totals["after"],
+            "per_clip_after": result.after, "trials": result.trials, "note": result.note,
+            "hand_bleed_vertices": result.hand_bleed}
+
+
+def fit_clip_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
+    """The Tripo route's weight fit on the staged mesh (lib/weight_fit.py), after the smoothing: the weights where the unit's own clips
+    deform it are solved for the ones that keep its edges' lengths in those clips, at the strength that lowers the deformed edges most
+    without making any clip worse. The weapon, chain and load bones are locked as for the smoothing, and so are the armour plates."""
+
+    from lib import pdx_deform, tripo_chains, weight_fit
+
+    mesh = staged / f"{stem}.mesh"
+    mask = weight_fit.plate_vertices(pdx_deform.load_mesh(mesh)) if plates else None
+    result = weight_fit.fit_rounds(mesh, [staged / f"{stem}_{role}.anim" for role in roles], mesh,
+                            locked_bones=held_bones(_parts(weapon)) + list(locked),
+                            locked_prefixes=tuple(tripo_chains.REGION_PREFIX.values()), locked_mask=mask)
+    totals = {key: sum(clip["stretched"] + clip["squashed"] for clip in getattr(result, key).values()) for key in ("before", "after")}
+    return {"changed": result.changed, "step": result.step, "region_vertices": result.region, "vertices_changed": result.vertices_changed,
+            "plate_vertices_locked": int(mask.sum()) if mask is not None else 0, "deformed_edges_before": totals["before"],
+            "deformed_edges_after": totals["after"], "per_clip_after": result.after, "trials": result.trials, "note": result.note,
+            "rounds": result.rounds, "round_totals": list(result.round_totals)}
 
 
 def export_unit_roles(
@@ -3574,6 +4022,31 @@ def finish_unit_base(job: Path, slug: str, spec: Dict[str, Any], blender: Blende
     return textures
 
 
+def tripo_unit_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """What `humanoid_provider_stages` returns, read from the files `tripo_intake.py` placed: no provider call."""
+
+    slug = spec["asset_id"].rsplit(".", 1)[-1]
+    job = ensure_job_layout(resolve_job_root(slug))
+    tripo_generation(job, spec)  # binds the base model's texture maps, or says to run the intake
+    downloads: Dict[str, Dict[str, Any]] = {}
+    for action in spec["required_actions"]:
+        role = action.get("reuse_role") or action["role"]
+        if role in downloads:
+            continue
+        manifest = job / "provider" / "downloads" / f"{animation_download_name(spec, role, 'glb')}.manifest.json"
+        if not manifest.is_file() or not existing_task(job, animation_stage_for(spec, role)):
+            raise RuntimeError(f"The Tripo intake has no clip for the {role} role; add it to the job's tripo.roles and run the intake again.")
+        downloads[role] = read_json(manifest)
+    return {
+        "slug": slug,
+        "job": job,
+        "blender": BlenderAdapterClient(REPO_ROOT),
+        "vanilla_reference": stage_vanilla_reference(job, spec),
+        "rig_id": None,
+        "animation_downloads": downloads,
+    }
+
+
 def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
 
@@ -3586,8 +4059,9 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     unit = load_unit_types()[spec["unit_type"]]
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
-    library = verify_library_clips(spec, MeshyClient(REPO_ROOT, job))
-    stages = humanoid_provider_stages(spec)
+    tripo = uses_tripo(spec)
+    library = {} if tripo else verify_library_clips(spec, MeshyClient(REPO_ROOT, job))
+    stages = tripo_unit_stages(spec) if tripo else humanoid_provider_stages(spec)
     blender = stages["blender"]
     downloads = stages["animation_downloads"]
     profile = load_profile(spec["profile"])
@@ -3597,7 +4071,8 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     texture_sources = prepare_pilot_texture_sources(
         job,
         spec,
-        exported_rels=[item["file"]["relative_path"] for item in downloads.values()],
+        # A Tripo clip GLB carries no maps (as Meshy's rig GLBs): the base model they all share is the lineage source.
+        exported_rels=[spec["texture_lineage_model_rel"]] if tripo else [item["file"]["relative_path"] for item in downloads.values()],
         geometry_source_rel=spec.get("geometry_source_rel"),
     )
     prep = blender.prepare_candidate(
@@ -3638,12 +4113,18 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         scene_name = provider_name + (".001" if provider_name == base_clip else "")
         task = existing_task(job, animation_stage_for(spec, clip_role)) or {}
         source_sha = sha256_file(job / source_rel)
-        receipt_rel = write_animation_receipt(job, role, task, scene_name, provider_name, source_rel, source_sha, library.get(clip_role))
+        receipt_rel = write_animation_receipt(
+            job, role, task, scene_name, provider_name, source_rel, source_sha,
+            task.get("library_clip") if tripo else library.get(clip_role), animation_source_kind(spec),
+        )
         target = f"{stem}_{role}"
         imported_rel = f"blender/checkpoints/unit_{role}.blend"
+        # the weapon and the shield the unit lets go of in this role keep their own location keys (the drop's path)
+        location_bones = released_bones(held_parts(spec), role) or None
         imported = blender.import_animation_action(
             slug, chain, source_rel, receipt_rel, imported_rel, scene_name, armature, target,
-            "meshy_animate", str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
+            animation_source_kind(spec), str(task.get("task_id")), source_sha, root_scale_reference=UNIT_SCALE_REFERENCE,
+            location_bones=location_bones,
         )
         chain = imported_rel
         if unit.get("seated"):
@@ -3651,7 +4132,13 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, slump=bool(action.get("slump")))
         else:
             finished_rel = f"blender/checkpoints/unit_{role}_grounded.blend"
-            finishing = blender.correct_action_grounding(slug, chain, finished_rel, target, target_armature_name=armature)
+            # In a clip where the unit lets go of its weapon or shield (the job names the roles in tripo.weapon.release_roles and
+            # tripo.shield.release_roles), that bone never decides where the ground is: the body does.
+            let_go = released_bones(held_parts(spec), role)
+            finishing = blender.correct_action_grounding(
+                slug, chain, finished_rel, target, target_armature_name=armature,
+                excluded_contact_bones=let_go or None,
+            )
         chain = finished_rel
         roles[role] = {"action": target, "clip_role": clip_role, "receipt": receipt_rel, "import": imported, "finishing": finishing}
     return export_unit_roles(job, spec, blender, roles, mesh_rel, chain, library, mesh_export, textures)
@@ -3686,7 +4173,12 @@ def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, 
     result["credits_consumed"] = sum(int(row.get("consumed_credits") or 0) for row in ledger)
     result["credit_budget"] = spec.get("credit_budget")
     exports = document.get("exports") or {}
-    if not preflight.is_file() or read_json(preflight).get("status") != "passed":
+    if uses_tripo(spec) and not existing_task(job, generation_stage_for(spec)):
+        result["next"] = (
+            f"Export the files from Tripo into an inbox folder as {slug}__rigged.glb (a unit) or {slug}__model.glb "
+            f"(a building or prop), then: py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config {config} {slug} --inbox <folder>"
+        )
+    elif not preflight.is_file() or read_json(preflight).get("status") != "passed":
         result["next"] = (
             "Look at refs/original/meshy_input.png, answer the six visual checks in a JSON file, then: "
             f"py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config {config} --record-visual-review {slug} "
@@ -3713,6 +4205,41 @@ def job_status(slug: str, spec: Dict[str, Any], jobs_config: Path) -> Dict[str, 
     return result
 
 
+# Tripo meshes come with flipped triangles (UNIT-WINDING), small open loops (UNIT-HOLE) and stored normals that
+# disagree with the faces (UNIT-NORMALS) on every unit measured, so the unit route repairs them for free.
+TRIPO_DEFAULT_REPAIRS = ("winding", "holes", "normals")
+
+
+def default_repairs(spec: Dict[str, Any]) -> List[str]:
+    """The `repair_unit.py` repairs the unit route runs on its own export: Tripo's three, none for Meshy."""
+
+    if tripo_quadruped(spec):
+        # Tripo makes a quadruped and what it carries as one skin: a part fused to another that moves apart is cut and capped,
+        # and a join inside one skin (a hanging tail grown into a hind leg, a leg into the belly) gets blended weights (UNIT-BRIDGE).
+        return ["winding", "bridges", "holes", "weights", "normals"]
+    return list(TRIPO_DEFAULT_REPAIRS) if uses_tripo(spec) else []
+
+
+def tripo_default_repairs(job: Path, staged: Path, stem: str, unit: Optional[Dict[str, Any]], repairs: List[str]) -> Dict[str, Any]:
+    """Repair the staged mesh in place (the unrepaired export stays in export/mesh) and record the counts."""
+
+    import repair_unit
+
+    out = job / "validation" / "tripo_repair"
+    report = repair_unit.repair(staged, out, repairs, stem, 16, unit)
+    shutil.copy2(out / "files" / f"{stem}.mesh", staged / f"{stem}.mesh")
+    summary = {
+        "repairs": report["repairs"],
+        "rules_before": report["rules_before"],
+        "rules_after": report["rules_after"],
+        "mesh": {name: {key: value for key, value in entry.items()} for name, entry in report["blender"].get("objects", {}).items()},
+        "unrepaired_export": f"export/mesh/{stem}.mesh",
+    }
+    write_json(job / "runtime" / "tripo_repair.json", summary)
+    append_history(job, state="pdx_exported", event="tripo_default_repairs", actor="hoi4_3d_model_pipeline", details=summary)
+    return summary
+
+
 def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]) -> Dict[str, Any]:
     """Copy the selected exports into runtime/files under their final names, check them and write the registration."""
 
@@ -3735,11 +4262,43 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         records[name] = {"source": file_record(source, relative_to=job), "staged": file_record(staged / name, relative_to=job)}
     unit = load_unit_types().get(spec.get("unit_type") or "")
     profile = load_profile(spec["profile"])
-    findings, facts = check_unit_files.check_files(staged, unit, profile)
+    repairs = default_repairs(spec)
+    repaired = tripo_default_repairs(job, staged, stem, unit, repairs) if repairs else None
+    if repaired:
+        records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        records[f"{stem}.mesh"]["repairs"] = repaired["repairs"]
+    weapon_cfg = held_parts(spec)  # the weapon and the shield
+    weapon_bones = [part["bone"] for part in weapon_cfg if part.get("release_roles") and part.get("bone")]
+    if uses_tripo(spec):
+        # First a humanoid's sunk head is lifted back above the shoulders (lib/tripo_neck.py). `"lift_neck": false` in the job's tripo block
+        # switches it off.
+        if not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("lift_neck", True) is not False:
+            for role in sorted(exports["animations"]):
+                records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role)
+        # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
+        # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
+        # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
+        # plates locked. `"fit_weights": false` in the job's tripo block switches it off.
+        records[f"{stem}.mesh"].update(fit_staged_weights(job, staged, spec, sorted(exports["animations"]), weapon_cfg))
+        records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder. Then the girdle
+        # rule may be tried on the weights (lib/tripo_girdle.py, off unless the job sets `"girdle_weights": true`).
+        ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
+        records[f"{stem}.mesh"]["girdle_weights"] = girdle_trial(job, staged, spec, sorted(exports["animations"]), weapon_cfg)
+        # Then the mesh the game loads decides where the ground is.
+        for role in sorted(exports["animations"]):
+            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
+                                                                                humanoid=not tripo_quadruped(spec))
+            records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
+        # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
+        # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
+        clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)
+    findings, facts = check_unit_files.check_files(staged, unit, profile, weapon_bones=weapon_bones)
     errors = [item.__dict__ for item in findings if item.severity == "error"]
     shapes = next(iter(facts["meshes"].values()), {}).get("shapes", []) if facts["meshes"] else []
     roles = sorted(exports["animations"])
     folder = spec.get("runtime_model_folder") or f"gfx/models/units/{stem}"
+    rider = mount_rider_registration(job, spec) if (unit or {}).get("entity_template") == "mount" else None
     text = registration_text(
         unit_entity=f"{stem}_entity",
         model_folder=folder,
@@ -3749,6 +4308,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         scale=float(spec.get("runtime_entity_scale", 1.0)),
         template=(unit or {}).get("entity_template", "infantry"),
         state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
+        rider=rider,
     )
     (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
     report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
@@ -3756,6 +4316,33 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
     if errors:
         raise RuntimeError(f"The staged runtime files fail {len(errors)} check(s); see runtime/files.json: {errors[:3]}")
     return report
+
+
+def mount_rider_registration(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """The rider a mount job names (`rider`: the folder of an exported unit, its stem, a role map), for the registration.
+
+    Its entity scale is the one that makes it vanilla's rider size on the map (lib/mount_size.py), and its mesh and entity get names of
+    their own, so a foot unit's files can ride without clashing with that unit's own registration."""
+
+    rider = spec.get("rider") or {}
+    if not rider.get("folder"):
+        return None
+    from lib import pdx_binary
+
+    folder = Path(rider["folder"])
+    stem = str(rider.get("stem") or next(folder.glob("*.mesh")).stem)
+    size = read_json(job / "blender" / "reports" / "mount_size.json") if (job / "blender" / "reports" / "mount_size.json").is_file() else {}
+    summary = pdx_binary.summarize_mesh(pdx_binary.read(folder / f"{stem}.mesh"))
+    return {
+        "stem": stem,
+        "model_folder": str(rider.get("model_folder") or f"gfx/models/units/{stem}"),
+        "shapes": list(summary.shapes),
+        "roles": sorted(path.stem[len(stem) + 1:] for path in folder.glob(f"{stem}_*.anim")),
+        "role_map": dict(rider.get("roles") or {}),
+        "scale": float(rider.get("scale") or size.get("rider_entity_scale") or 1.0),
+        "mesh_name": f"{spec['runtime_stem']}_rider_mesh",
+        "entity": f"{spec['runtime_stem']}_rider_entity",
+    }
 
 
 def print_credits_report(location: str) -> int:
@@ -3791,7 +4378,7 @@ def run_file_only_command(args: argparse.Namespace, parser: argparse.ArgumentPar
     return 0
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs-config", type=Path, help="repository-owned job registry (required for provider work)")
     parser.add_argument(
@@ -3817,11 +4404,24 @@ def main() -> int:
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
     parser.add_argument("assets", nargs="*")
+    return parser
+
+
+def main() -> int:
+    parser = build_parser()
     args = parser.parse_args()
     handled = run_file_only_command(args, parser)
     if handled is not None:
         return handled
-    require_api_key()
+    try:
+        configs = load_job_configs(args.jobs_config)
+        selected = list(configs) if args.all or not args.assets else args.assets
+        needs_key = bool(args.shared_humanoid_batch) or any(not uses_tripo(configs.get(name, {})) for name in selected)
+    except (OSError, ValueError):
+        needs_key = True  # report the missing key first, as before
+    if needs_key:
+        require_api_key()
+        require_meshy_bootstrap()
     configs = load_job_configs(args.jobs_config)
     if args.shared_humanoid_batch:
         batch_id = args.shared_humanoid_batch
