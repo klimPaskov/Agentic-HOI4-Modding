@@ -675,13 +675,17 @@ Rotation = Tuple[Tuple[float, float, float], float]
 WINGED_FRAMES = {"winged_idle": 72, "winged_walk": 32, "winged_rear": 56, "winged_guard": 48, "winged_flee": 64, "winged_collapse": 64}
 WINGED_BASE = {"winged_idle": "quadruped_idle", "winged_walk": "quadruped_walk", "winged_rear": "quadruped_rear",
                "winged_guard": "quadruped_brace", "winged_flee": "quadruped_walk", "winged_collapse": "quadruped_collapse"}
-WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 2}  # gait strides per clip
+WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 3}  # gait strides per clip
 ROLE_FRAMES.update(WINGED_FRAMES)
 LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # The retreat turns away from the unit's heading and back while it walks with beating wings: FLEE_TURN degrees about the vertical through the
 # body's middle, in over the first FLEE_TURN_IN of the clip and out over its last, so the clip starts and ends at the heading (TRIPO-LOOP-HEADING).
-FLEE_TURN = -20.0
-FLEE_TURN_IN = 0.25
+# Round 4 turns it FLEE_TURN at mid-clip (in over the first half, out over the second) and runs it in three strides where the move takes
+# one in half the frames: with 20 degrees held over the middle half and the move's stride the retreat read as the move played again (both
+# fresh reviews of run 7). At 45 degrees the turned body's near wing hid 23.9% of the legs from the right camera, and a lowered neck went
+# behind the near wing (run 8, TRIPO-WING-FRONT, limit 10%).
+FLEE_TURN = -30.0
+FLEE_TURN_IN = 0.5
 # The attack: (degrees drawn back while cocked, degrees forward at the strike) at Neck_01, Neck_02 and Head (positive pitches a raised neck
 # forward), the head's snap down at the bite, and the share of the rear's pitch and lifted forelegs that comes down at the strike.
 STRIKE_NECK = {"Neck_01": (-18.0, 55.0), "Neck_02": (-10.0, 35.0), "Head": (-14.0, 15.0)}
@@ -694,6 +698,12 @@ FORELEG_LIFT = 0.6
 # degrees in its death (TRIPO-DEATH-STIFF-LEGS, at least 25), at 0.8 32 (offline).
 WINGED_DEATH_FOLD = 0.8
 WINGED_LYING_RELAX = 0.6
+# A dead winged quadruped lays its neck forward as it falls (X turns in degrees at full fall, positive forward): its rest neck rises over the
+# back, so a body on its side held the head out beyond the back among the lying wings (both fresh reviews of run 7).
+WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 50.0}
+# Offline on the Tripo dragon the torso's height over the lowest point at frame 28 of 64 fell from 0.20 to 0.08 of the height at 1.5, which
+# stretched 2.8% of the leg underneath's root edges in run 8 (TRIPO-LEG-ROOT-STRETCH, limit 2%).
+WINGED_FALL_TUCK = 1.0
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
 GUARD_NECK_LOW = {"Neck_01": -60.0, "Neck_02": 90.0, "Head": 45.0}
@@ -803,7 +813,10 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
         for name in tails[1:]:
             pose[name] = [(X_AXIS, -0.5 * float(death.get("tail_lift", 0.0)) * fall)]
     lower = "Right" if roll < 0 else "Left"
-    share = float(death.get("leg_drop", 1.0))
+    # the legs underneath swing in under the body while it falls (WINGED_FALL_TUCK of the drop's turn, the other way, at mid-fall) and back
+    # to `leg_drop` as it lies: held out they carried the tipping body on their hooves, and it hung above the ground with the forelegs
+    # dangling (both fresh reviews of run 7, frames 28 to 31)
+    share = float(death.get("leg_drop", 1.0)) - WINGED_FALL_TUCK * math.sqrt(math.sin(math.pi * fall))
     for end in ("Front", "Rear"):
         for segment in LEG_SEGMENTS:
             name = leg_name(end, lower, segment)
@@ -813,6 +826,9 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
     for name, part in (("Neck_01", 0.6), ("Neck_02", 0.4)):
         if name in names:
             pose[name] = pose.get(name, []) + [(Y_AXIS, part * drop)]
+    for name, degrees in WINGED_DEAD_NECK.items():
+        if name in names:
+            pose[name] = pose.get(name, []) + [(X_AXIS, degrees * fall)]
 
 
 def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None:

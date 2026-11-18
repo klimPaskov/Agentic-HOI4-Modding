@@ -69,6 +69,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-WING-ROOT-STRETCH: in a clip, more than `MAX_WING_ROOT_STRETCH` of the edges where the wings blend into the body stretch or squash.
 - TRIPO-WING-MIRROR: a winged quadruped's two wings do not mirror each other within `MAX_WING_MIRROR_DEGREES` (every clip but the death), or
   in a beating clip one wing turns through less than `MIN_WING_BEAT_SHARE` of the other's range.
+- TRIPO-WING-FLANK-HANG: in a winged quadruped's clip (every one but the death), more than `MAX_WING_FLANK_HANG` of a wing hangs over the
+  flank below the lowest point where it joins the body (`wing_flank_shares`).
 - TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
   the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
 - TRIPO-HAND-BLEED: more than `MAX_HAND_BLEED_SHARE` of a shape's vertices lie outside a hand's own part (`lib/stretch_smooth.hand_parts`:
@@ -148,6 +150,13 @@ MAX_WING_ROOT_STRETCH = 0.05
 # held its half-folded wings upright, and from the map camera one of the two read as a thin spike (0.27 of its face) while the other spread,
 # which both fresh reviews failed.
 QUADRUPED_BEATING = ("move", "attack", "retreat")
+# TRIPO-WING-FLANK-HANG: a wing's points near the flank (within FLANK_REACH times the hooves' reach of the mid-plane) more than
+# FLANK_HANG_MARGIN of the height below where the wing joins the body, in the Chest bone's frame. Offline on the Tripo dragon the round 3 poses
+# that both fresh reviews of run 7 read as a crumpled skirt over the flank and the hind leg measured 0.19 (move) to 0.36 (retreat), the
+# round 4 poses that carry the folded wing over the back 0.03 at most, and the rest pose none.
+FLANK_REACH = 1.6
+FLANK_HANG_MARGIN = 0.02
+MAX_WING_FLANK_HANG = 0.1
 # TRIPO-WING-MIRROR: a winged quadruped's two wings take mirrored poses in the body's frame in every clip but the death (it lies on one side).
 # In the Chest bone's frame the planes of the two wings, the right one mirrored, may differ by at most `MAX_WING_MIRROR_DEGREES` in any frame
 # (`wing_turns`). In a beating clip each wing must also turn through at least `MIN_WING_BEAT_SHARE` of the other's range. Calibrated on the
@@ -559,6 +568,55 @@ def wing_mirror_findings(mesh, anims: Dict[str, object], sides, step: int = 2) -
     return out, numbers
 
 
+def wing_flank_shares(mesh, anim, sides, step: int = 2) -> List[float]:
+    """Per judged frame, the larger of the two wings' shares of points that hang over the flank: within `FLANK_REACH` times the hooves' reach
+    from the mid-plane and more than `FLANK_HANG_MARGIN` of the height below the lowest point where that wing joins the body, in the Chest
+    bone's frame (so a rear or a turn of the whole body does not count). Empty without hooves."""
+
+    names = np.array(mesh.bones).astype(str)
+    dominant = pdx_deform.dominant_bones(mesh)
+    hooves = np.isin(dominant, np.flatnonzero(np.char.endswith(names, "_Hoof")))
+    if not hooves.any():
+        return []
+    centre = float(np.median(mesh.positions[hooves, 0]))
+    reach = FLANK_REACH * float(np.abs(mesh.positions[hooves, 0] - centre).mean())
+    height = max(mesh.height, 1e-6)
+    joins = []
+    for mask in sides:
+        tm = mask[mesh.triangles]
+        border = np.zeros(len(mask), bool)
+        border[mesh.triangles[tm.any(1) & ~tm.all(1)].ravel()] = True
+        joins.append(float(mesh.positions[border & mask, 1].min()) if (border & mask).any() else -np.inf)
+    chest = {name: i for i, name in enumerate(mesh.bones)}.get("Chest", 0)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    out = []
+    for frame in range(0, matrices.shape[0], step):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        inverse = np.linalg.inv(matrices[frame, chest])
+        local = posed @ inverse[:3, :3].T + inverse[:3, 3]
+        near = np.abs(local[:, 0] - centre) < reach
+        out.append(max(float((mask & near & (local[:, 1] < join - FLANK_HANG_MARGIN * height)).sum()) / max(int(mask.sum()), 1)
+                       for mask, join in zip(sides, joins)))
+    return out
+
+
+def wing_flank_findings(mesh, anims: Dict[str, object], sides, step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-FLANK-HANG for a winged quadruped (`wing_flank_shares`), every clip but the death (its body lies on its side)."""
+
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if clip_role(clip) in WING_MIRROR_SKIP:
+            continue
+        shares = wing_flank_shares(mesh, anim, sides, step)
+        if not shares:
+            continue
+        worst = int(np.argmax(shares))
+        numbers[clip] = {"share": round(shares[worst], 4), "frame": worst * step}
+        if shares[worst] > MAX_WING_FLANK_HANG:
+            out.append(finding("TRIPO-WING-FLANK-HANG", clip, f"{shares[worst]:.0%} of a wing hangs over the flank below where it joins the body in frame {worst * step} (limit {MAX_WING_FLANK_HANG:.0%}): the inner membrane reads as a skirt pulled down to the body and the hind leg", share=round(shares[worst], 4), frame=worst * step))
+    return out, numbers
+
+
 def idle_move_findings(rows: Dict[str, dict]) -> List[dict]:
     """TRIPO-WING-IDLE-MOVE: the move's wings move at map size at least `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's."""
 
@@ -593,6 +651,8 @@ def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, ste
         out += idle_move_findings(numbers["clips"])
         if quadruped_checks.is_quadruped(mesh):
             found, numbers["mirror"] = wing_mirror_findings(mesh, anims, sides)
+            out += found
+            found, numbers["flank_hang"] = wing_flank_findings(mesh, anims, sides)
             out += found
     return out, numbers
 

@@ -152,7 +152,8 @@ class Poses(unittest.TestCase):
     def test_a_folded_wing_points_back(self) -> None:
         for sign in (1.0, -1.0):
             frame = qw.target_frame(qw.FOLDED["sweep"], qw.FOLDED["rise"], qw.FOLDED["roll"], sign)
-            self.assertGreater(frame[1, 0], 0.9, "the span points to the tail")
+            self.assertGreater(frame[1, 0], 0.85, "the span points to the tail")
+            self.assertGreater(frame[2, 0], 0.05, "the span rises over the back instead of hanging on the flank")
             self.assertGreater(frame[2, 1], 0.0, "the chord rises")
 
     def test_mirrored_poses_are_mirrored(self) -> None:
@@ -249,6 +250,62 @@ class Round4(unittest.TestCase):
         pose = qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, None, upper=True)
         self.assertEqual(pose["curl"], qw.FOLDED["curl"])
         self.assertNotIn("frame", pose)
+
+
+class Round5(unittest.TestCase):
+    def test_the_inner_web_runs_from_the_flank_to_the_trailing_chain(self) -> None:
+        line_s, line_u = np.array([0.1, 0.2, 0.3]), np.array([-1.0, -0.9, -0.8])
+        u = np.array([-1.0, -0.6, -0.2, 0.3, -0.9])
+        s = np.array([0.1, 0.1, 0.1, 0.1, 0.5])
+        share = qw.web_share(u, s, line_s, line_u, -0.2)
+        self.assertAlmostEqual(share[0], 0.0, places=6, msg="none on the flank line")
+        self.assertAlmostEqual(share[1], 0.5, places=6, msg="linear between the line and the chain")
+        self.assertAlmostEqual(share[2], 1.0, places=6, msg="all on the trailing chain")
+        self.assertEqual(share[3], 1.0, "ahead of the trailing chain the web plays no part")
+        self.assertAlmostEqual(share[4], (-0.9 + 1.0) / (-0.2 + 1.0), places=6, msg="beyond the line its far end anchors (running least angle)")
+        self.assertTrue(np.all(qw.web_share(u, s, np.zeros(0), np.zeros(0), -0.2) == 1.0), "no flank line: no web")
+
+    def test_the_flank_line_is_the_border_behind_the_trailing_chain(self) -> None:
+        points, triangles, _landmarks, plans, masks = _found()
+        plan = plans["Left"]
+        first, second, _normal = (np.asarray(row, float) for row in plan["plane"])
+        rel = points - np.asarray(plan["root"], float)
+        u, s = np.arctan2(rel @ second, rel @ first), np.hypot(rel @ first, rel @ second)
+        trailing = float(np.asarray(plan["angles"], float)[0])
+        line_s, line_u = qw.flank_line(points, triangles, masks["Left"], u, s, trailing)
+        self.assertTrue(np.all(np.diff(line_s) >= 0), "sorted by radius")
+        self.assertTrue(np.all(line_u < trailing))
+
+    def test_folded_wings_ride_over_the_back(self) -> None:
+        for pose in (qw.FOLDED, qw.HALF, qw.FLEE):
+            frame = qw.target_frame(pose["sweep"], pose["rise"], pose["roll"], 1.0)
+            self.assertGreater(frame[2, 0], 0.05, "the span rises over the back")
+
+    def test_the_dead_wings_lie_to_their_own_sides_of_the_shoulders(self) -> None:
+        self.assertGreaterEqual(qw.LYING_SWEEP_UPPER - qw.LYING_SWEEP_LOWER, 50.0, "the two fans, each wider than 100 degrees, apart")
+
+    def test_the_falling_body_tucks_its_lower_legs_and_lays_its_neck_forward(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        landmarks["death"] = {"roll": -82.0, "leg_drop": 0.0}
+        layout = ql.build_layout(landmarks)
+        total = ql.frame_count("winged_collapse")
+
+        def drop(frame: int) -> float:
+            pose = ql.pose_at("winged_collapse", frame, layout)
+            return sum(d for a, d in pose.get(ql.leg_name("Front", "Right", "Lower"), []) if tuple(a) == ql.Y_AXIS)
+        middle = max(range(total), key=lambda frame: abs(drop(frame)))
+        self.assertGreater(abs(drop(middle)), 1.0, "the leg underneath swings in mid-fall")
+        self.assertLess(abs(drop(total - 1)), 1e-6, "and back to leg_drop once the body lies")
+        neck = ql.pose_at("winged_collapse", total - 1, layout)["Neck_01"]
+        self.assertIn((ql.X_AXIS, ql.WINGED_DEAD_NECK["Neck_01"]), [(tuple(a), round(d, 6)) for a, d in neck])
+
+    def test_the_retreat_turns_away_at_mid_clip_and_runs(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        total = ql.frame_count("winged_flee")
+        turns = [sum(d for _a, d in ql.pose_at("winged_flee", frame, layout).get("__root_turn__", [])) for frame in range(total)]
+        self.assertEqual(int(np.argmax(np.abs(turns))), total // 2)
+        self.assertGreater(ql.WINGED_CYCLES["winged_flee"] / ql.frame_count("winged_flee"), ql.WINGED_CYCLES["winged_walk"] / ql.frame_count("winged_walk"))
 
 
 class Rest(unittest.TestCase):

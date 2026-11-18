@@ -47,6 +47,7 @@ WING_CHAINS = 4
 # the flank it grows from follows the wing part of the way and bends across the fan's trailing quarter instead of along one seam: a fresh
 # review of run 3 saw it pinned to the flank, stretched into a dragged sheet when the wings rose.
 TRAIL_SHARE = 0.7
+WEB = True  # the inner membrane behind the trailing chain is a web to the flank (`web_share`)
 WING_BONES = 3
 
 
@@ -372,6 +373,31 @@ def root_blend(points: np.ndarray, edges: np.ndarray, canon: np.ndarray, mask: n
     return share[canon]
 
 
+def flank_line(points: np.ndarray, triangles: np.ndarray, mask: np.ndarray, u: np.ndarray, s: np.ndarray, trailing: float) -> Tuple[np.ndarray, np.ndarray]:
+    """The inner membrane's line on the flank: the wing's border vertices with the body behind its trailing chain, as (radius, fan angle)
+    pairs sorted by radius. Empty when the wing meets the body only at its root."""
+
+    tm = mask[triangles]
+    border = np.zeros(len(points), bool)
+    border[triangles[tm.any(1) & ~tm.all(1)].ravel()] = True
+    border &= mask & (u < trailing)
+    order = np.argsort(s[border])
+    return s[border][order], u[border][order]
+
+
+def web_share(u: np.ndarray, s: np.ndarray, line_s: np.ndarray, line_u: np.ndarray, trailing: float) -> np.ndarray:
+    """The trailing chain's share of the inner membrane, a web between that chain and the flank line: none on the line, all on the chain,
+    linear in the fan angle between them at each radius (the line's angle at that radius, its end's beyond it). A linear share moves each
+    point on the straight line between its anchor on the flank and its place on the finger, so the web shortens without wadding: the
+    surface-distance blend let the far web follow the finger whole and bunched it into a skirt at the flank (fresh reviews of run 7)."""
+
+    if len(line_s) == 0:
+        return np.ones(len(u))
+    anchor = np.interp(s, line_s, np.minimum.accumulate(line_u))
+    width = np.maximum(trailing - anchor, 1e-6)
+    return np.where(u < trailing, np.clip((u - anchor) / width, 0.0, 1.0), 1.0)
+
+
 def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str], plans: Dict[str, Dict[str, object]],
                  masks: Dict[str, np.ndarray], indices: np.ndarray, weights: np.ndarray, centre_x: float, belly_z: float) -> Tuple[np.ndarray, np.ndarray]:
     """Bind each wing to its chains (`sheet_rows`) and blend it into the body's own weights at its root (`root_blend`, over
@@ -395,9 +421,14 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
         u = np.arctan2(rel @ second, rel @ first)
         s = np.hypot(rel @ first, rel @ second)
         sheet = sheet_rows(u, s, np.asarray(plan["angles"], float), np.asarray(plan["stations"], float))
-        for row, cells in zip(rows_at, sheet):
-            x = float(share[row])
-            alpha = x
+        trailing = float(np.asarray(plan["angles"], float)[0])
+        rel_all = points - np.asarray(plan["root"], float)
+        u_all = np.arctan2(rel_all @ second, rel_all @ first)
+        s_all = np.hypot(rel_all @ first, rel_all @ second)
+        line_s, line_u = flank_line(points, np.asarray(triangles, int), mask, u_all, s_all, trailing)
+        web = web_share(u, s, line_s, line_u, trailing) if WEB else np.ones(len(u))
+        for row, cells, g in zip(rows_at, sheet, web):
+            alpha = min(float(share[row]), float(g))
             dense: Dict[int, float] = {}
             for bone, weight in zip(out_i[row], out_w[row]):
                 if weight > 0:
@@ -420,11 +451,11 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # front, the fan's spread as a share of its rest spread (a folded fan keeps 0.7 of it: the membrane between two chains shortens by the
 # same share, and the kit's stretch measure counts an edge changed by 1.5 times, so 0.67 is the least), the bend of each bone past the
 # root (curl, positive toward the back of the wing) and how much more each further bone bends (curl_out).
-FOLDED = {"sweep": 70.0, "rise": 5.0, "roll": 0.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
-HALF = {"sweep": 55.0, "rise": 20.0, "roll": -40.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
+FOLDED = {"sweep": 80.0, "rise": 5.0, "roll": 15.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
+HALF = {"sweep": 55.0, "rise": 45.0, "roll": -20.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
 SHIELD = {"sweep": -75.0, "rise": 20.0, "roll": -15.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
-FLEE = {"sweep": 55.0, "rise": 20.0, "roll": -70.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
+FLEE = {"sweep": 55.0, "rise": 50.0, "roll": -30.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
 DEAD_UPPER_START = 0.6
 DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
 DEAD_UPPER = {**FOLDED, "sweep": 70.0, "rise": -15.0, "roll": 0.0}  # the wing on top of a dead body, folded and laid down along the flank
@@ -537,14 +568,18 @@ def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[
     return rows
 
 
-# A dead dragon's wings lie flat on the ground beyond its back: the wing underneath swept LYING_SWEEP_LOWER toward the head, the one on
-# top LYING_SWEEP_UPPER toward the tail so the two do not lie in one another, each sloping down from its root just enough that its far end
-# reaches the ground (the root's height after the roll over the wing's length).
-LYING_SWEEP_LOWER = 60.0
+# A dead dragon's wings lie flat on the ground beyond its back, each sloping down from its root just enough that its far end reaches the
+# ground (the root's height after the roll over the wing's length): the wing underneath out from the back (LYING_SWEEP_LOWER degrees
+# toward the tail), the one on top LYING_SWEEP_UPPER toward the tail along the hind body, so each lies to its own side of the
+# shoulders and the head lies forward of both. Round 3 swept them 60 and 40 degrees the same way, and the two fans, each wider than 100
+# degrees, lay in one another with the head between them (both fresh reviews of run 7). Offline the head's share of top view cells under a
+# wing fell from 0.94 to 0.46 with the neck laid forward and the map camera's TRIPO-WING-FRONT share from 0.11 to
+# 0.09 with the lower wing at 25 degrees (run 8 measured 10.5% at 0) (`quadruped_layout.WINGED_DEAD_NECK`).
+LYING_SWEEP_LOWER = 25.0
 # The wing on top slopes this much less than down to the torso's level, so it lies over the back instead of sinking into it (offline on the
 # Tripo dragon 4.3% of the wing points ended inside the body without it, TRIPO-CHAIN-IN-BODY's limit is 4.5%).
 UPPER_CLEAR = 8.0
-LYING_SWEEP_UPPER = 40.0
+LYING_SWEEP_UPPER = 80.0
 
 
 def lies_under(plan: Dict[str, object], landmarks: Dict[str, object]) -> bool:
