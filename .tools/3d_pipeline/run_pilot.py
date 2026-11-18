@@ -3841,6 +3841,11 @@ def ease_staged_shoulders(job: Path, staged: Path, spec: Dict[str, Any], roles: 
         name = f"{stem}_{role}.anim"
         ease = tripo_shoulder.ease_shoulders(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
         records[name]["shoulder_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in ease.__dict__.items()}
+        # Then the clavicle that still tears the girdle turns toward the stance, the upper arm keeping its direction (TRIPO-SHOULDER-TEAR).
+        # `"ease_clavicles": false` switches it off.
+        if (spec.get("tripo") or {}).get("ease_clavicles", True) is not False:
+            lever = tripo_shoulder.ease_clavicles(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
+            records[name]["clavicle_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in lever.__dict__.items()}
         records[name]["staged"] = file_record(staged / name, relative_to=job)
 
 
@@ -3867,7 +3872,8 @@ def _smooth_and_fit(staged: Path, stem: str, roles: List[str], weapon: Any, spec
 
 
 def _girdle_on(spec: Dict[str, Any]) -> bool:
-    return not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("girdle_weights", True) is not False
+    # Off unless the job asks for it: two fits of nearly the same clips differ by more than the rule gains (lib/tripo_girdle.py).
+    return not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("girdle_weights", False) is True
 
 
 def fit_staged_weights(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Dict[str, Any]:
@@ -4274,7 +4280,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         records[f"{stem}.mesh"].update(fit_staged_weights(job, staged, spec, sorted(exports["animations"]), weapon_cfg))
         records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder. Then the girdle
-        # rule is tried on the weights (lib/tripo_girdle.py, `"girdle_weights": false` to switch it off).
+        # rule may be tried on the weights (lib/tripo_girdle.py, off unless the job sets `"girdle_weights": true`).
         ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
         records[f"{stem}.mesh"]["girdle_weights"] = girdle_trial(job, staged, spec, sorted(exports["animations"]), weapon_cfg)
         # Then the mesh the game loads decides where the ground is.

@@ -82,10 +82,10 @@ class Trade(unittest.TestCase):
 
 
 class Pilot(unittest.TestCase):
-    def test_a_quadruped_or_the_switch_off_keeps_no_start_and_gets_no_trial(self) -> None:
+    def test_off_by_default_and_for_a_quadruped_no_start_and_no_trial(self) -> None:
         import tempfile
 
-        for spec, quadruped in (({"runtime_stem": "u", "tripo": {"girdle_weights": False}}, False), ({"runtime_stem": "u"}, True)):
+        for spec, quadruped in (({"runtime_stem": "u"}, False), ({"runtime_stem": "u", "tripo": {"girdle_weights": True}}, True)):
             with tempfile.TemporaryDirectory() as folder, mock.patch.object(run_pilot, "_smooth_and_fit", return_value={"weight_fit": {}}) as fit,                     mock.patch.object(run_pilot, "tripo_quadruped", return_value=quadruped), mock.patch.object(G, "measures") as measures:
                 job = Path(folder)
                 out = run_pilot.fit_staged_weights(job, job, spec, ["attack"], [])
@@ -101,9 +101,9 @@ class Pilot(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder, mock.patch.object(run_pilot, "_smooth_and_fit", return_value={}),                 mock.patch.object(run_pilot, "tripo_quadruped", return_value=False),                 mock.patch.object(G, "measures", return_value={"u_attack": {"girdle": 0.01, "swell": 0.01}, "_edges": 10}):
             job = Path(folder)
             (job / "u.mesh").write_bytes(b"mesh")
-            run_pilot.fit_staged_weights(job, job, {"runtime_stem": "u"}, ["attack"], [])
+            run_pilot.fit_staged_weights(job, job, {"runtime_stem": "u", "tripo": {"girdle_weights": True}}, ["attack"], [])
             self.assertTrue((job / "validation" / "girdle_trial" / "start.mesh").is_file())
-            record = run_pilot.girdle_trial(job, job, {"runtime_stem": "u"}, ["attack"], [])
+            record = run_pilot.girdle_trial(job, job, {"runtime_stem": "u", "tripo": {"girdle_weights": True}}, ["attack"], [])
             self.assertEqual(record["failing_before"], [])
             self.assertFalse((job / "validation" / "girdle_trial").exists())
 
