@@ -694,7 +694,9 @@ FLEE_TURN_IN = 0.5
 # Round 8: the Head entry is not a turn of the head bone but where the head faces (`aim_head`), in degrees below its rest facing (positive
 # down). Up to round 7 it was the head bone's own turn, carried by the neck's 100 degrees: the snout ended 110 degrees past its rest
 # facing, turned back toward the chest (both fresh reviews of run 15 saw the neck coil into a hook with the throat kinked).
-STRIKE_NECK = {"Neck_01": (-8.0, 50.0), "Neck_02": (-5.0, 50.0), "Head": (-10.0, 10.0)}
+# The head faces its rest facing through the strike and dips only at the bite: aimed 10 degrees lower the snout led by 9.8% of the
+# body's length on run 16 (TRIPO-ATTACK-HEAD-LEAD, at least 10%), at its rest facing 11.3% (offline).
+STRIKE_NECK = {"Neck_01": (-8.0, 50.0), "Neck_02": (-5.0, 50.0), "Head": (-10.0, 0.0)}
 STRIKE_SNAP = 15.0
 # The share of the shared rear (`_rear`: the body pitched 32 degrees up about the hind feet, the forelegs lifted) the attack keeps while it
 # gathers. The whole rear lifted the head 8% of the height and drew it back 37% before the blow, and both fresh reviews of run 15 read a rear,
