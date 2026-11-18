@@ -63,6 +63,15 @@ def ear_name(side: str, segment: int) -> str:
     return f"Ear_{side}_{segment:02d}"
 
 
+WING_PARENT = "Chest"
+
+
+def wing_name(side: str, chain: int, segment: int) -> str:
+    """A wing chain bone (quadruped_wings.wing_name): the `Wing` prefix the weight smoothing locks and the checks find the wings by."""
+
+    return f"Wing{side}_{chain + 1}_{segment + 1}"
+
+
 def _largest_gap_split(values: np.ndarray) -> float:
     ordered = np.sort(values)
     gaps = np.diff(ordered)
@@ -77,18 +86,82 @@ def faces_plus_y(points: np.ndarray) -> bool:
     rig turns such a model half a turn about the vertical before measuring it.
     """
 
-    ground = float(points[:, 2].min())
-    height = float(points[:, 2].max()) - ground
-    hooves = points[points[:, 2] < ground + 0.07 * height]
+    feet, _dragged = ground_contacts(points)
+    hooves = np.concatenate(feet) if feet else points[:0]
     if len(hooves) < 8:
         raise LandmarkError("fewer than 8 vertices near the ground; the legs may not reach it")
     low, high = float(hooves[:, 1].min()), float(hooves[:, 1].max())
     length = float(np.ptp(points[:, 1]))
     minus_end = points[points[:, 1] < low - 0.02 * length]
     plus_end = points[points[:, 1] > high + 0.02 * length]
+    ground = float(points[:, 2].min())
     top_minus = float(minus_end[:, 2].max()) if len(minus_end) else ground
     top_plus = float(plus_end[:, 2].max()) if len(plus_end) else ground
     return top_plus > top_minus
+
+
+# Ground contacts: pieces of the surface under GROUND_BAND of the height, joined in plan over cells CONTACT_CELL of the model's longest
+# horizontal side. A piece longer than CONTACT_ELONGATION times its width is a tail lying on the ground, not a foot: on the Tripo dragon
+# the dragging tail measures 4.3 and the four feet 1.2 to 1.4.
+GROUND_BAND = 0.07
+CONTACT_CELL = 0.02
+CONTACT_ELONGATION = 2.5
+
+
+def ground_contacts(points: np.ndarray) -> Tuple[List[np.ndarray], List[np.ndarray]]:
+    """(feet, dragged): the ground contacts as point arrays. Only when more than four pieces touch the ground and one beyond the four least
+    elongated is elongated (a tail on the ground, even one whose tip curls aside) are the four least elongated the feet and the rest
+    dragged, so a horse's long hoof is never dropped."""
+
+    ground = float(points[:, 2].min())
+    height = float(np.ptp(points[:, 2]))
+    low = points[points[:, 2] < ground + GROUND_BAND * height]
+    cell = CONTACT_CELL * float(max(np.ptp(points[:, 0]), np.ptp(points[:, 1])))
+    cells = np.floor(low[:, :2] / max(cell, 1e-12)).astype(np.int64)
+    keys = {tuple(item) for item in cells.tolist()}
+    label: Dict[Tuple[int, int], int] = {}
+    for key in sorted(keys):
+        if key in label:
+            continue
+        label[key] = len(set(label.values()))
+        stack = [key]
+        while stack:
+            a = stack.pop()
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    b = (a[0] + dx, a[1] + dy)
+                    if b in keys and b not in label:
+                        label[b] = label[key]
+                        stack.append(b)
+    labels = np.array([label[tuple(item)] for item in cells.tolist()]) if len(cells) else np.zeros(0, int)
+    pieces = [low[labels == value] for value in sorted(set(labels.tolist()))]
+    elongations = []
+    for piece in pieces:
+        spread = np.linalg.svd(piece[:, :2] - piece[:, :2].mean(axis=0), compute_uv=False) if len(piece) > 2 else np.zeros(2)
+        elongations.append(float(spread[0] / max(float(spread[1]), 1e-12)) if len(spread) > 1 else 1.0)
+    if len(pieces) <= 4:
+        return pieces, []
+    # more than four: the four least elongated are the feet, and the rest are dragged when elongated (a tail) or when the feet are four
+    order = np.argsort(elongations)
+    feet = [pieces[i] for i in order[:4]]
+    rest = [pieces[i] for i in order[4:]]
+    if any(elongations[i] > CONTACT_ELONGATION for i in order[4:]):
+        return feet, rest
+    return pieces, []
+
+
+def feet_axis_along_x(points: np.ndarray) -> Optional[bool]:
+    """Whether the four feet stand in a line along X (the front pair and the rear pair apart along X): the long axis of the feet's centres
+    in plan. None when the model does not stand on four feet or they stand in a square (the long spread under 1.2 times the short)."""
+
+    feet, _dragged = ground_contacts(points)
+    if len(feet) != 4:
+        return None
+    centres = np.array([foot[:, :2].mean(axis=0) for foot in feet])
+    values, vectors = np.linalg.eigh(np.cov((centres - centres.mean(axis=0)).T))
+    if values[1] < 1.44 * values[0]:
+        return None
+    return bool(abs(vectors[0, 1]) > abs(vectors[1, 1]))
 
 
 def _hoof_centres(hooves: np.ndarray, split_y: float, cx: float) -> Dict[str, np.ndarray]:
@@ -127,6 +200,22 @@ def _leg_radius(leg_points: np.ndarray, joints: Dict[str, np.ndarray], height: f
     return float(np.median(radii)) if radii else 0.1 * width
 
 
+def _mid_plane(cx: float, feet: List[np.ndarray], dragged: List[np.ndarray]) -> float:
+    """A tail lying on the ground curls wide to one side and moves the box's middle: the Tripo dragon's sat 0.08 of its length off the
+    feet's, so its left legs straddled the mid-plane and their radii read 0.007 against 0.054. With such a tail the feet set the mid-plane."""
+
+    return float(np.mean([foot[:, 0].mean() for foot in feet])) if dragged and len(feet) == 4 else cx
+
+
+def _floor_radii(legs: Dict[str, Dict[str, np.ndarray]]) -> None:
+    """A leg that stands across the mid-plane (the Tripo dragon's stepping foreleg) loses most of its points to the other side's band, and its
+    radius reads far too small: no leg is thinner than half the legs' median."""
+
+    floor = 0.5 * float(np.median([float(joints["radius"]) for joints in legs.values()]))
+    for joints in legs.values():
+        joints["radius"] = np.asarray(max(float(joints["radius"]), floor))
+
+
 def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict[str, object]:
     """Find the hooves, belly, back, head, tail and saddle of a standing quadruped.
 
@@ -145,9 +234,11 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         raise LandmarkError("the model is flat")
     cx = float((p[:, 0].min() + p[:, 0].max()) / 2)
 
-    hooves = p[p[:, 2] < 0.07 * height]
+    feet, dragged = ground_contacts(p)
+    hooves = np.concatenate(feet) if feet else p[:0]
     if len(hooves) < 8:
         raise LandmarkError("fewer than 8 vertices near the ground; the legs may not reach it")
+    cx = _mid_plane(cx, feet, dragged)
     split_y = _largest_gap_split(hooves[:, 1])
     hoof_centres = _hoof_centres(hooves, split_y, cx)
     front_y = float((hoof_centres["Front_Left"][1] + hoof_centres["Front_Right"][1]) / 2)
@@ -178,7 +269,8 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         muzzle = np.array([cx, front_y - 0.15 * length, back_z])
         poll = np.array([cx, front_y - 0.05 * length, back_z + 0.05 * height])
 
-    tail_region = p[(p[:, 1] > rear_y + 0.06 * length) & (p[:, 2] > 0.2 * height)]
+    # A tail that lies on the ground (a dragged contact) counts down to the ground behind the hindmost foot.
+    tail_region = p[(p[:, 1] > rear_y + 0.06 * length) & ((p[:, 2] > 0.2 * height) | (bool(dragged) & (p[:, 1] > float(hooves[:, 1].max()) + 0.02 * length)))]
     tail: Optional[List[np.ndarray]] = None
     if len(tail_region) >= 10:
         near = tail_region[tail_region[:, 1] < tail_region[:, 1].min() + 0.08 * length]
@@ -221,6 +313,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         joints["top"] = np.array([joints["upper"][0], joints["upper"][1] + (0.02 * length if end == "Rear" else 0.0), (belly_z + back_z) / 2])
         joints["radius"] = np.asarray(_leg_radius(leg_points, joints, height, width))
         legs[key] = joints
+    _floor_radii(legs)
 
     return {
         "ground_offset": ground,
@@ -238,6 +331,8 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         "tail": tail,
         "saddle": np.array([cx, saddle_y, saddle_z]),
         "legs": legs,
+        # behind this (Y) a tail lying on the ground is tail at any height (skin_weights)
+        "tail_ground_y": float(hooves[:, 1].max()) + 0.02 * length if dragged and tail else None,
     }
 
 
@@ -279,6 +374,15 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
         joints = [tuple(float(value) for value in ear[key]) for key in ("root", "middle", "tip")]
         add(Bone(ear_name(side, 1), joints[0], joints[1], str(ear.get("parent", "Head"))))
         add(Bone(ear_name(side, 2), joints[1], joints[2], ear_name(side, 1)))
+    for side, wing in (landmarks.get("wings") or {}).items():
+        # a wing's chains (quadruped_wings.detect_wings) fan from its root at the shoulder, in the model's own coordinates
+        joints = np.asarray(wing["joints"], dtype=float)
+        for chain in range(joints.shape[0]):
+            parent = WING_PARENT
+            for segment in range(joints.shape[1] - 1):
+                name = wing_name(side, chain, segment)
+                add(Bone(name, tuple(float(v) for v in joints[chain, segment]), tuple(float(v) for v in joints[chain, segment + 1]), parent))
+                parent = name
     for end, side in LEGS:
         joints = landmarks["legs"][f"{end}_{side}"]
         chain = [joints["top"], joints["upper"], joints["middle"], joints["lower"], joints["ground"]]
@@ -408,9 +512,12 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             allowed[:, index] = mask & near_leg[:, leg_keys.index(key)]
         elif name.startswith("Tail_"):
             tail_root_y = float(np.asarray(lm["tail"][0])[1]) if lm.get("tail") else rear_y
-            allowed[:, index] = (q[:, 1] > tail_root_y - 0.02 * length) & in_body
+            lying = q[:, 1] > float(lm["tail_ground_y"]) if lm.get("tail_ground_y") is not None else np.zeros(len(q), bool)
+            allowed[:, index] = (q[:, 1] > tail_root_y - 0.02 * length) & (in_body | lying)
         elif name in {"Neck_01", "Neck_02", "Head"}:
-            allowed[:, index] = q[:, 1] < front_y + 0.06 * length
+            # skin within a leg's reach is the leg's: the Tripo dragon's chest runs down between its forelegs, and a foreleg's skin that took
+            # the neck tore from it (UNIT-BRIDGE, 33 edges, the bridge repair cut a claw loose)
+            allowed[:, index] = (q[:, 1] < front_y + 0.06 * length) & ~near_leg.any(axis=1)
         elif name == "Pelvis":
             allowed[:, index] = in_body & (q[:, 1] > mid_y - 0.12 * length)
         elif name == "Chest":
@@ -561,8 +668,190 @@ DISPLAY_STYLES = ("quadruped_walk", "quadruped_brace", "quadruped_flee")
 Rotation = Tuple[Tuple[float, float, float], float]
 
 
+# A winged quadruped (a dragon, unit type `winged_quadruped`) plays its own styles: the body moves as the quadruped style it is built on
+# (WINGED_BASE) and the wings follow quadruped_wings.role_pose. Frames at the rig's 24 a second.
+WINGED_FRAMES = {"winged_idle": 72, "winged_walk": 32, "winged_rear": 56, "winged_guard": 48, "winged_flee": 64, "winged_collapse": 64}
+WINGED_BASE = {"winged_idle": "quadruped_idle", "winged_walk": "quadruped_walk", "winged_rear": "quadruped_rear",
+               "winged_guard": "quadruped_brace", "winged_flee": "quadruped_walk", "winged_collapse": "quadruped_collapse"}
+WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 2}  # gait strides per clip
+ROLE_FRAMES.update(WINGED_FRAMES)
+LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
+# The retreat turns away from the unit's heading and back while it walks with beating wings: FLEE_TURN degrees about the vertical through the
+# body's middle, in over the first FLEE_TURN_IN of the clip and out over its last, so the clip starts and ends at the heading (TRIPO-LOOP-HEADING).
+FLEE_TURN = -30.0
+FLEE_TURN_IN = 0.25
+# The attack: at the top of the rear the neck and head lunge forward and down (degrees at Neck_01, Neck_02 and Head, positive pitches a
+# raised neck forward), between LUNGE_START and LUNGE_END of the clip.
+LUNGE = {"Neck_01": 28.0, "Neck_02": 18.0, "Head": 12.0}
+LUNGE_START, LUNGE_END = 0.3, 0.8
+# A dead winged quadruped's legs fold this share of a full fold (the elephant's DEATH_FOLD is 0.6): at 0.6 the Tripo dragon's legs bent 22
+# degrees in its death (TRIPO-DEATH-STIFF-LEGS, at least 25), at 0.8 32 (offline).
+WINGED_DEATH_FOLD = 0.8
+LEG_PREFIX_NAMES = ("Front_", "Rear_")
+# The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
+GUARD_NECK_LOW = {"Neck_01": 30.0, "Neck_02": 20.0, "Head": 0.0}
+
+
 def frame_count(style: str) -> int:
     return GAITS[style].cycle_frames if style in GAITS else ROLE_FRAMES[style]
+
+
+# How a dead winged quadruped comes to rest on its side, chosen on its final pose (`choose_winged_rest`), one part at a time. Each part is
+# measured by its lowest point over the lying torso's lowest, as a share of the height:
+# - legs: the legs underneath bend toward the ground by the largest of LEG_DROP_SHARES of the death's leg drop (DEATH_LEG_DROP) that keeps them
+#   no lower than the torso (DOWN_TOLERANCE), so the body rests on its torso, not on a hoof;
+# - wings: the wing underneath lifts from the slope `quadruped_wings.lying_pose` gives it by the least of WING_LIFTS (degrees) that keeps its
+#   far bones (the last of each chain: a lift turns about the root, so the bones by the root go where the body goes) no lower than the torso,
+#   so a wing never holds the body up;
+# - tail: it turns at its root (degrees, positive lifts it) by the one of TAIL_LIFTS that brings its lowest point nearest the torso's without
+#   going under it, so it neither holds the body up nor hangs in the air;
+# - neck: it turns toward the ground by the least of NECK_DROPS that brings the head within HEAD_REST of the torso's lowest point.
+LEG_DROP_SHARES = (1.0, 0.75, 0.5, 0.25, 0.0)
+WING_LIFTS = tuple(float(value) for value in range(0, 65, 5))
+TAIL_LIFTS = tuple(float(value) for value in range(-40, 65, 5))
+NECK_DROPS = tuple(float(value) for value in range(0, 70, 10))
+HEAD_REST = 0.04
+
+
+def choose_winged_rest(evaluate) -> Dict[str, float]:
+    """The dead body's rest. `evaluate(**chosen)` poses the final frame with the death's `leg_drop`, `wing_lift`, `tail_lift` and `neck_drop`
+    and returns the lowest point over the torso's lowest of the `legs`, `wings`, `tail` and `head` (shares of the height)."""
+
+    chosen = {"leg_drop": LEG_DROP_SHARES[-1], "wing_lift": WING_LIFTS[-1], "tail_lift": 0.0, "neck_drop": 0.0}
+    for share in LEG_DROP_SHARES:
+        if evaluate(**{**chosen, "leg_drop": share, "wing_lift": WING_LIFTS[-1]})["legs"] >= -DOWN_TOLERANCE:
+            chosen["leg_drop"] = share
+            break
+    for lift in WING_LIFTS:
+        if evaluate(**{**chosen, "wing_lift": lift})["wings"] >= -DOWN_TOLERANCE:
+            chosen["wing_lift"] = lift
+            break
+    fits = [(gap, lift) for lift in TAIL_LIFTS for gap in (evaluate(**{**chosen, "tail_lift": lift})["tail"],) if gap >= -DOWN_TOLERANCE]
+    chosen["tail_lift"] = min(fits)[1] if fits else TAIL_LIFTS[-1]
+    best = None
+    for drop in NECK_DROPS:
+        head = evaluate(**{**chosen, "neck_drop": drop})["head"]
+        if best is None or abs(head) < best[0]:
+            best = (abs(head), drop)
+        if -DOWN_TOLERANCE <= head <= HEAD_REST:
+            best = (0.0, drop)
+            break
+    chosen["neck_drop"] = best[1]
+    return chosen
+
+
+def _winged_time(style: str, frame: float) -> Tuple[float, float]:
+    """(clip time t from 0 to 1, the frame of the WINGED_BASE style at the same point of its clip, strides at the gait's own pace)."""
+
+    total = frame_count(style)
+    t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
+    base = WINGED_BASE[style]
+    base_total = frame_count(base)
+    if base in GAITS:
+        return t, (t * WINGED_CYCLES.get(style, 1) * base_total) % base_total
+    return t, t * base_total if base in LOOPING else t * (base_total - 1)
+
+
+def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str]) -> None:
+    """The attack's lunge at the top of the rear, the tail keeping its world pitch while the body rears about the hind feet (else it sinks
+    and the feet lift off)."""
+
+    lunge = _smooth(max(0.0, min(1.0, (t - LUNGE_START) / 0.15))) * (1 - _smooth(max(0.0, (t - LUNGE_END + 0.15) / 0.15)))
+    for name, degrees in LUNGE.items():
+        if name in names:
+            pose[name] = pose.get(name, []) + [(X_AXIS, degrees * lunge)]
+    pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
+    if tails:
+        pose[tails[0]] = [(X_AXIS, -pitch)]
+
+
+def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str], death: Dict[str, float]) -> None:
+    """The dead body lies on its side (the roll `quadruped_rig.tune_collapse` picks). The tail turns back against the roll so it lies as it
+    lay, turned at its root by `tail_lift`, the legs underneath drop `leg_drop` of the death's full drop, and the neck turns toward the
+    ground by `neck_drop` so the head lies on it (all from `choose_winged_rest`)."""
+
+    roll = float(death.get("roll", COLLAPSE_ROLL))
+    fall = _collapse_fall(t)
+    for name in list(pose):
+        if name.startswith(LEG_PREFIX_NAMES):
+            pose[name] = [(axis, degrees * WINGED_DEATH_FOLD / DEATH_FOLD) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[name]]
+    if tails:
+        pose[tails[0]] = [(X_AXIS, float(death.get("tail_lift", 0.0)) * fall), (Y_AXIS, -roll * fall)]
+        for name in tails[1:]:
+            pose[name] = [(X_AXIS, -0.5 * float(death.get("tail_lift", 0.0)) * fall)]
+    lower = "Right" if roll < 0 else "Left"
+    share = float(death.get("leg_drop", 1.0))
+    for end in ("Front", "Rear"):
+        for segment in LEG_SEGMENTS:
+            name = leg_name(end, lower, segment)
+            if name in pose:
+                pose[name] = [(axis, degrees * share) if tuple(axis) == Y_AXIS else (axis, degrees) for axis, degrees in pose[name]]
+    drop = math.copysign(float(death.get("neck_drop", 0.0)), roll) * fall
+    for name, part in (("Neck_01", 0.6), ("Neck_02", 0.4)):
+        if name in names:
+            pose[name] = pose.get(name, []) + [(Y_AXIS, part * drop)]
+
+
+def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None:
+    """The wings and the neck carry the guard: the legs stand planted (the brace's step back and leaning legs stretched the skin where the
+    dragon's heavy shoulders and thighs meet the torso, 2.2% of the edges in the offline play), and the neck crouches low."""
+
+    envelope = _brace_envelope(t)
+    pose.pop("__root_shift__", None)
+    pose.pop("__root_pitch__", None)
+    for end, side in LEGS:
+        for segment in LEG_SEGMENTS:
+            pose.pop(leg_name(end, side, segment), None)
+    for name, degrees in GUARD_NECK_LOW.items():
+        if name in names:
+            pose[name] = [(X_AXIS, degrees * envelope)]
+
+
+# A winged quadruped's legs swing from the hip and shoulder only WINGED_HIP_SHARE of the stride, reach or fold, and the joint below takes the
+# rest, so the foot goes where it went. Its thighs and shoulders are thick and sit beside the torso above the belly line, so the skin
+# between leg and torso is a short seam: at the full turn, 12% to 24% of each leg root's edges stretched in run 2 of the Tripo dragon
+# (TRIPO-LEG-ROOT-STRETCH, limit 2%).
+WINGED_HIP_SHARE = 0.4
+
+
+def _hip_to_knee(pose: Dict[str, List[Rotation]]) -> None:
+    for end, side in LEGS:
+        upper, lower = leg_name(end, side, "Upper"), leg_name(end, side, "Lower")
+        moved = sum(degrees for axis, degrees in pose.get(upper, []) if tuple(axis) == X_AXIS)
+        if not moved:
+            continue
+        pose[upper] = [(axis, degrees * WINGED_HIP_SHARE) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[upper]]
+        pose[lower] = pose.get(lower, []) + [(X_AXIS, moved * (1.0 - WINGED_HIP_SHARE))]
+
+
+def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[str, List[Rotation]]:
+    """A winged quadruped's pose: the body of its WINGED_BASE style at the same point of the clip, its own neck, head and tail turns, and the
+    wings (`quadruped_wings.role_rows`). A tail that lies on the ground only swings sideways or lifts: any turn down would sink it and lift
+    the whole body off its feet."""
+
+    import quadruped_wings as qw
+
+    t, base_frame = _winged_time(style, frame)
+    pose = dict(pose_at(WINGED_BASE[style], base_frame, layout, ears=ears))
+    names = set(layout.names())
+    tails = [name for name in ("Tail_01", "Tail_02", "Tail_03") if name in names]
+    if style in ("winged_walk", "winged_flee"):
+        cycles = WINGED_CYCLES.get(style, 1)
+        for index, name in enumerate(tails):
+            pose[name] = [(Z_AXIS, (8.0 - 2.0 * index) * math.sin(2 * math.pi * t * cycles - 0.6 * index))]
+    if style == "winged_flee":
+        turn = _smooth(min(1.0, t / FLEE_TURN_IN)) * (1 - _smooth(max(0.0, (t - 1 + FLEE_TURN_IN) / FLEE_TURN_IN)))
+        pose["__root_turn__"] = [(Z_AXIS, FLEE_TURN * turn)]
+    elif style == "winged_rear":
+        _winged_rear(pose, t, names, tails)
+    elif style == "winged_collapse":
+        _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
+    elif style == "winged_guard":
+        _winged_guard(pose, t, names)
+    _hip_to_knee(pose)
+    yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
+    pose.update(qw.role_rows(style, t, layout, yaw))
+    return pose
 
 
 def _smooth(value: float) -> float:
@@ -639,6 +928,8 @@ def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[s
     Looping styles return the same pose at frame 0 and at `frame_count(style)`.
     """
 
+    if style in WINGED_FRAMES:
+        return _winged_pose(style, frame, layout, ears)
     names = set(layout.names())
     load = layout.landmarks.get("load") or {}
     stance = leg_stance(layout.landmarks)

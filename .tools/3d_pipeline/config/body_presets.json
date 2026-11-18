@@ -58,11 +58,27 @@
         "repairs_after_export": ["winding", "holes"],
         "review_focus": "Legs move in a gait, not a slide; the tail follows its own bones; a mount's saddle sits level."
       }
+    },
+    "winged_quadruped": {
+      "description": "Four legs and two membrane wings: dragons, griffins. Blender rigs it as a quadruped and gives each wing its own bone chains, found by rule.",
+      "anatomy": {"legs": 4, "arms": 0, "wings": true, "tail": null, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
+      "measured": {
+        "contacts": [3, 8],
+        "lower_length": [0.6, 2.2],
+        "centre_height": [0.38, 0.7]
+      },
+      "blender": {
+        "rig": "blender_quadruped",
+        "calibration_group": "organic",
+        "repairs_after_export": ["winding", "holes"],
+        "review_focus": "The wings fold, beat and lie down without tearing at the shoulders; the legs move in a gait; the neck and tail follow their bones."
+      }
     }
   },
   "calibration": {
     "humanoid": "Meshy t2.5 generations of a human infantryman and an elven archer (contacts 2, torso 0.31 to 0.37, lower 0.48 to 0.55); exported ZIN men, elves, orcs, revenant and riders (torso 0.35 to 0.57, lower 0.54 to 0.72); Chaos Redux zombies, guards, cadres, clones and robots (torso 0.21 to 0.54, lower 0.31 to 0.88 with props).",
     "large_biped": "Meshy yeti generations in A-pose and T-pose (torso 0.58 and 1.10, lower 0.86 and 0.49); exported ZIN yeti, giant, troll and ent (torso 0.55 to 0.78, lower 0.81 to 1.03); Chaos Redux gorilla and forest giants (torso 0.46 to 0.54, lower 0.79).",
+    "winged_quadruped": "The Tripo dragon of decision D-76 (contacts 5 with its tail on the ground, lower 1.96, centre 0.49), the quadruped ranges otherwise.",
     "quadruped": "Meshy t2.5 warhorse (contacts 4, lower 0.97); vanilla horse, camel and deer (contacts 4 to 5, lower 0.65 to 0.93); exported ZIN mounts (lower 0.94 to 0.99); Chaos Redux elephant, donkey and cave monster (lower 1.14 to 1.78)."
   }
 }
