@@ -4,7 +4,7 @@ This page is for modders who want their own 3D units on the HOI4 map: soldiers, 
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
-**What is proven.** Eight asset types have each gone the whole route below with at least one model and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe, a dwarf with a glaive and a shield), a large creature (an ogre with a club), a mount, a tank, a plane, a ship, a building and a landmark. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. An unarmed humanoid (a zombie soldier) still reads as an ordinary soldier at map size and is in progress. **Winged units are not proven yet**: neither a winged humanoid nor a winged beast such as a dragon has passed review, so do not plan a mod on them yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
+**What is proven.** Five asset types have each gone the whole route below with at least one model made from its full, detailed reference, and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe, a dwarf with a glaive and a shield), a large creature (an ogre with a club), a mount (a war elephant), a plane and a ship. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. **Not proven yet**: winged units (neither a winged humanoid nor a winged beast such as a dragon has passed review), tanks, buildings and landmarks (their earlier passes were on simplified redraws of the subject and do not count), and an unarmed zombie soldier, which still reads as an ordinary soldier at map size. Do not plan a mod on those yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
 
 ## How to use it
 
@@ -88,6 +88,12 @@ Tripo copies the picture's pose into the rig, so the picture must be ready for r
 - Every detail of your art kept: face, clothing, gear on the correct side.
 
 If your art is not like this, the agent redraws it in Tripo's image tool (**Image**, model Nano Banana 2, free within the quota) with an instruction that names every detail to keep and only the pose and hands to change. Name gear by the side of the picture ("on the viewer's left"), because "his left" gets swapped. Check the result against the original before you pay for a model. You approve the picture and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
+
+Three rules hold for every unit and asset, at every step:
+
+- **Never simplify the subject.** A model is made as designed and as drawn, with all its detail. A 3D-ready picture may change the pose and leave out what is not body or gear, nothing else. When a source mesh has defects, change the method (another Tripo mode or setting, more triangles, a repair step, separate parts) and keep the design. The same holds for pictures, clip choices, text and requirements: nothing is cut down to make a step easier or a check pass without the owner's consent. A result made from a simplified input is never reported as passed, and every reported pass names the reference it used.
+- **Never change a look with a filter.** A model's colours or look are never changed by a tint, filter or recolour over its existing texture. When the look must change, make a new reference picture and a new model from it.
+- **When the detailed version cannot be done,** stop and ask the owner, showing the detailed target and what would be lost.
 
 ### 2. Card and inbox
 
@@ -722,7 +728,7 @@ The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rule
 
 The notes below come from models made by hand before the [static route](#static-and-rigid-part-models). They still hold for a model made outside it.
 
-**Buildings and landmarks (proven on one model).**
+**Buildings and landmarks (not proven yet on a detailed subject).**
 
 - A tall and thin landmark (height over twice the larger side of its upper half) is sized on its height, but its base is bounded too. Vanilla's four (Big Ben, the Eiffel Tower, Hakko Ichiu, the Statue of Liberty) stand on bases of 0.17, 0.43, 0.88 and 0.82 times their height, so the contract's `size.tall_base.max_share` is 0.8757. A model whose largest horizontal side is wider than that share of the height it would get is sized on the base (largest side divided by 0.8757), so a wide paved plaza does not read as a larger monument than vanilla's. STATIC-SIZE measures the same way. An obelisk with a plaza 1.12 times its height wide came out as tall as the Statue of Liberty and 1.40 times as wide at its base. It is now 0.80 times as tall and 1.09 times as wide.
 - A building can be textured with no image: one joined mesh, procedural Blender materials, smart UV project and packed islands, then Cycles bakes colour, ambient occlusion, a tangent normal map and the specular maps, packed for the PDX shader. A whole castle baked in about 40 seconds.
