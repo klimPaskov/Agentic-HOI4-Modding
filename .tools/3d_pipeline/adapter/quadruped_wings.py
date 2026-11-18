@@ -468,10 +468,21 @@ SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0
 # poses reviewers passed 2.9% to 4.5%). Half open and mantled down on each side they stay flat (4.5% offline) and above the belly.
 # Round 7: the defend is a braced recoil, not a wing shield or a display. The wings open halfway and mantle low and back, behind the
 # shoulders (MANTLE): swept 45 degrees they stood out to the sides (run 14).
-MANTLE = {"sweep": 76.0, "rise": 6.0, "roll": -62.0, "spread": 1.0, "curl": 8.0, "curl_out": 0.0}
+# Round 8: the poses that hold the wings back (MANTLE, FLEE) keep the fold's own bend (`held_back`: FOLDED's curl and spread) and differ
+# from it only in where the folded wing points. `sweep` turns the middle of a fan about 120 degrees wide, so its trailing half points out
+# to the side whatever the sweep, and only the bend at the wrist and elbow lays it back. Round 7's mantle (curl 8, the fold's 20) and
+# retreat (14) unbent the wings out to the sides: on run 15 they reached 1.26 and 1.17 times as far to the side as the idle's fold
+# (TRIPO-WING-SIDE-REACH), and both fresh reviews saw the defend's wings stand straight out like a plank, wider than the idle. Closing the
+# fan instead (spread 0.7 to 0.35) crushes the membrane (TRIPO-WING-CRUSH 10% to 29%, offline). The mantle raises the fold over the back
+# and sweeps it past straight back (0.97 of the idle's reach, offline), the retreat raises it a little (1.05).
+def held_back(**where: float) -> Dict[str, float]:
+    return {**FOLDED, **where}
+
+
+MANTLE = held_back(sweep=95.0, rise=35.0)
 # Round 7: the retreat runs with its wings half folded and swept back, beating little (FLEE, FLEE_BEAT). Held half open and beating hard
 # (swept 50 degrees, raised 30, a 20 degree beat) it read as the move (fresh reviews of runs 9 and 12).
-FLEE = {"sweep": 78.0, "rise": 12.0, "roll": -58.0, "spread": 1.0, "curl": 14.0, "curl_out": 0.0}
+FLEE = held_back(sweep=85.0, rise=20.0)
 # A dead winged quadruped lies on its side with both wings in the idle's fold (FOLDED: its curl and its spread, kept from the first frame
 # to the last). Rounds 3 to 6 opened them as the body fell and laid them flat on the ground beyond the back: one stood up as a sail or
 # a tent, the other spread under the body, and the head lay among them (fresh reviews of runs 7, 9 and 12). Held as the idle holds them
@@ -522,7 +533,9 @@ def _envelope(t: float, rise: float = 0.2, fall: float = 0.2) -> float:
 ATTACK_COCK_END = 0.32
 ATTACK_STRIKE_START, ATTACK_STRIKE_END = 0.3, 0.68
 ATTACK_SNAP = (0.37, 0.5)  # its peak at 0.435 of the clip, on a review sheet frame (one every half second)
-ATTACK_OPEN = 0.35
+# Round 8: 0.3 of the way (0.35 in round 7, whose wings both fresh reviews of run 15 saw open as wide as the move's and hiding the head
+# from the game camera). Less (0.2) and the attack reads as the idle from the map camera (TRIPO-MAP-READ 17%, at least 18%, offline).
+ATTACK_OPEN = 0.3
 ATTACK_FLARE = 0.0
 ATTACK_LIFT = 15.0  # degrees the cocked wings rise
 ATTACK_DOWNSTROKE = 27.0  # degrees the wings beat down at the strike

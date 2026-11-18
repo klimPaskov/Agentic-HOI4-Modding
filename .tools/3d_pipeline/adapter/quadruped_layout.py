@@ -691,8 +691,15 @@ FLEE_TURN_IN = 0.5
 # The strike drives the neck forward and down, and the rear's pitch and lifted forelegs go fully at the blow (STRIKE_DROP 1): at 55 and 35
 # degrees with 0.7 of the rear kept the head travelled 9% of the body's length forward and both fresh reviews of run 9 saw no strike
 # (TRIPO-ATTACK-REACH now asks for ATTACK_REACH_MIN, offline 0.21).
-STRIKE_NECK = {"Neck_01": (-18.0, 50.0), "Neck_02": (-10.0, 50.0), "Head": (-14.0, 10.0)}
-STRIKE_SNAP = 20.0
+# Round 8: the Head entry is not a turn of the head bone but where the head faces (`aim_head`), in degrees below its rest facing (positive
+# down). Up to round 7 it was the head bone's own turn, carried by the neck's 100 degrees: the snout ended 110 degrees past its rest
+# facing, turned back toward the chest (both fresh reviews of run 15 saw the neck coil into a hook with the throat kinked).
+STRIKE_NECK = {"Neck_01": (-8.0, 50.0), "Neck_02": (-5.0, 50.0), "Head": (-10.0, 10.0)}
+STRIKE_SNAP = 15.0
+# The share of the shared rear (`_rear`: the body pitched 32 degrees up about the hind feet, the forelegs lifted) the attack keeps while it
+# gathers. The whole rear lifted the head 8% of the height and drew it back 37% before the blow, and both fresh reviews of run 15 read a rear,
+# not a strike.
+ATTACK_REAR = 0.3
 # No neck joint bends more than STRIKE_JOINT_MAX degrees in the strike: at 80 degrees at the neck's root and a 35 degree snap at the head the
 # upper neck kinked behind the head and read as squashed (fresh reviews of run 12). The forward turn is spread over the neck instead.
 STRIKE_JOINT_MAX = 50.0
@@ -726,7 +733,12 @@ LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend is a braced recoil (round 7). Degrees at Neck_01, Neck_02 and Head, positive forward and down: the neck's root draws back, its
 # upper half bends forward and the head turns up again, so the neck makes an S and the head ends low and level, facing the enemy. Round 6
 # crouched under wings mantled out to each side with the head turned down (40 degrees at the head, 90 from level in all).
-GUARD_NECK_S = {"Neck_01": -10.0, "Neck_02": 90.0, "Head": -50.0}
+# Round 8: the neck arcs forward and down from the shoulders and the head turns up at its end to face the enemy level, an S that carries the
+# head low. The Head entry is the head's facing below its rest facing (`aim_head`). Round 7 held the neck's root upright and bent its upper
+# half 90 degrees forward, and its head turn of -50 was a turn of the head bone, carried by the neck's 80: the head pointed 86 degrees
+# below level, straight down, 0.77 of the height up (0.90 at rest, the withers 0.71), and both fresh reviews of run 15 saw a tall S with
+# the head high.
+GUARD_NECK_S = {"Neck_01": 45.0, "Neck_02": 30.0, "Head": -30.0}
 GUARD_HIP = 8.0  # degrees the hips and shoulders may turn in the crouch (`planted_crouch` says why)
 GUARD_BEND = 48.0  # degrees the joint below them may bend
 CROUCH_MATCH = 0.005  # of the height: how near the hind feet's travel must come to the forefeet's before it is matched exactly
@@ -802,7 +814,7 @@ def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: L
     import quadruped_wings as qw
 
     cock, strike, snap = qw.attack_phases(t)
-    keep = 1.0 - STRIKE_DROP * strike
+    keep = (1.0 - STRIKE_DROP * strike) * ATTACK_REAR
     pose["__root_pitch__"] = [(axis, degrees * keep) for axis, degrees in pose.get("__root_pitch__", [])]
     for side in ("Left", "Right"):
         for segment in LEG_SEGMENTS:
@@ -810,10 +822,12 @@ def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: L
             if name in pose:
                 pose[name] = [(axis, degrees * keep * FORELEG_LIFT) for axis, degrees in pose[name]]
     for name, (back, forward) in STRIKE_NECK.items():
-        if name in names:
-            turn = back * cock + forward * strike + (STRIKE_SNAP * snap if name == "Head" else 0.0)
+        if name in names and name != "Head":
+            turn = back * cock + forward * strike
             turn = max(-STRIKE_JOINT_MAX, min(STRIKE_JOINT_MAX, turn))
             pose[name] = [(X_AXIS, turn)]
+    back, forward = STRIKE_NECK.get("Head", (0.0, 0.0))
+    aim_head(pose, names, back * cock + forward * strike + STRIKE_SNAP * snap)
     pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
     if tails:
         pose[tails[0]] = [(X_AXIS, -pitch)]
@@ -972,8 +986,28 @@ def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set, landmar
             pose["Tail_01"] = pose.get("Tail_01", []) + [(X_AXIS, lift)]
             pose["Tail_02"] = pose.get("Tail_02", []) + [(X_AXIS, -lift)]
     for name, degrees in GUARD_NECK_S.items():
-        if name in names:
+        if name in names and name != "Head":
             pose[name] = [(X_AXIS, degrees * envelope)]
+    aim_head(pose, names, GUARD_NECK_S.get("Head", 0.0) * envelope)
+
+
+# The bones whose turns about the body's cross axis carry the head (all about the armature's X, so their pitches add).
+HEAD_CARRIERS = ("Pelvis", "Spine", "Chest", "Neck_01", "Neck_02")
+
+
+def aim_head(pose: Dict[str, List[Rotation]], names: set, facing: float) -> None:
+    """Set the head's turn about the cross axis so it faces `facing` degrees below its rest facing (positive down), whatever the body and
+    the neck do: the pitches of the root and of every bone that carries the head add to the head's own turn, so the head takes the
+    difference. Its other turns are kept. A head turn written as the bone's own turn rode on the neck's: in round 7 the strike's 100 degrees
+    of neck turned the snout back toward the chest."""
+
+    if "Head" not in names:
+        return
+    carried = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
+    for name in HEAD_CARRIERS:
+        carried += sum(degrees for axis, degrees in pose.get(name, []) if tuple(axis) == X_AXIS)
+    others = [(axis, degrees) for axis, degrees in pose.get("Head", []) if tuple(axis) != X_AXIS]
+    pose["Head"] = [(X_AXIS, facing - carried)] + others
 
 
 # A winged quadruped's legs swing from the hip and shoulder only WINGED_HIP_SHARE of the stride, reach or fold, and the joint below takes the

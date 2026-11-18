@@ -341,7 +341,7 @@ class Round7(unittest.TestCase):
         layout = ql.build_layout(landmarks)
         for frame in range(ql.frame_count("winged_rear")):
             pose = ql.pose_at("winged_rear", frame, layout)
-            for name in ql.STRIKE_NECK:
+            for name in ("Neck_01", "Neck_02"):  # the head turns to face where it is aimed (`aim_head`), most often back into the neck's line
                 for _axis, degrees in pose.get(name, []):
                     self.assertLessEqual(abs(degrees), ql.STRIKE_JOINT_MAX + 1e-6, f"{name} frame {frame}")
 
@@ -425,19 +425,19 @@ class Round8(unittest.TestCase):
             self.assertNotIn(ql.leg_name(end, side, "Hoof"), middle)
         self.assertGreater(sum(d for _a, d in middle["Tail_01"]), 0.0, "the tail lifts as the body sinks")
         self.assertAlmostEqual(sum(d for _a, d in middle["Tail_01"]) + sum(d for _a, d in middle["Tail_02"]), 0.0, places=6)
-        neck = {name: sum(d for _a, d in middle[name]) for name in ("Neck_01", "Neck_02", "Head")}
-        self.assertLess(neck["Neck_01"], 0.0, "the root of the neck draws back")
-        self.assertGreater(neck["Neck_02"], 0.0, "its upper half bends forward: an S")
-        self.assertLess(neck["Head"], 0.0, "and the head turns up again")
-        self.assertLess(abs(sum(neck.values())), 45.0, "so it faces the enemy, not the ground")
+        neck = {name: sum(d for _a, d in middle[name] if tuple(_a) == ql.X_AXIS) for name in ("Neck_01", "Neck_02", "Head")}
+        self.assertGreater(neck["Neck_01"], 0.0, "the neck arcs forward and down from the shoulders, carrying the head low")
+        self.assertLess(neck["Head"], 0.0, "and the head turns up at its end")
+        self.assertAlmostEqual(sum(neck.values()), ql.GUARD_NECK_S["Head"], places=6, msg="so it faces the enemy as GUARD_NECK_S says")
         for frame in (0, total - 1):
             self.assertAlmostEqual(sum(d for _a, d in ql.pose_at("winged_guard", frame, layout)["__root_shift__"]), 0.0, places=6)
 
-    def test_the_wings_of_the_defend_mantle_low_and_back(self) -> None:
-        self.assertGreaterEqual(qw.MANTLE["sweep"], 60.0, "behind the shoulders, never in front of the head")
-        self.assertLess(qw.MANTLE["rise"], qw.SPREAD["rise"] / 2, "low, not raised as a display")
-        self.assertLess(qw.MANTLE["sweep"], qw.FOLDED["sweep"], "and open from the fold")
-        self.assertLess(qw.MANTLE["curl"], qw.FOLDED["curl"])
+    def test_the_wings_held_back_keep_the_fold(self) -> None:
+        for pose in (qw.MANTLE, qw.FLEE):
+            self.assertEqual((pose["curl"], pose["spread"], pose["roll"]), (qw.FOLDED["curl"], qw.FOLDED["spread"], qw.FOLDED["roll"]),
+                             "the fold's own bend: unbent, the trailing half of the fan stood out to the side (run 15)")
+            self.assertGreaterEqual(pose["sweep"], qw.FOLDED["sweep"], "behind the shoulders, never further out than the fold")
+        self.assertGreater(qw.MANTLE["rise"], qw.FOLDED["rise"], "the mantle raises the fold over the back, so it does not read as the idle")
 
     def test_the_retreat_holds_its_wings_folded_further_than_the_move(self) -> None:
         self.assertGreater(qw.FLEE["sweep"], qw.HALF["sweep"] + 10.0, "swept back")
@@ -491,6 +491,27 @@ def _lying(head_at: float, wing: str):
     mesh = P.SkinnedMesh(positions=positions, triangles=triangles, joints=joints, weights=weights, bones=["Root"], parents=[-1], inverse_bind=np.eye(4)[None])
     index = np.arange(count)
     return mesh, np.eye(4)[None, None], index >= first, (index >= len(torso)) & (index < first), index < len(torso)
+
+
+class AimedHead(unittest.TestCase):
+    def test_the_head_faces_where_its_style_says_whatever_the_neck_does(self) -> None:
+        names = {"Neck_01", "Neck_02", "Head", "Chest"}
+        pose = {"__root_pitch__": [(ql.X_AXIS, -10.0)], "Chest": [(ql.X_AXIS, 5.0)], "Neck_01": [(ql.X_AXIS, 50.0)],
+                "Neck_02": [(ql.X_AXIS, 50.0)], "Head": [(ql.Z_AXIS, 7.0), (ql.X_AXIS, 30.0)]}
+        ql.aim_head(pose, names, 20.0)
+        carried = -10.0 + 5.0 + 50.0 + 50.0
+        head = [degrees for axis, degrees in pose["Head"] if tuple(axis) == ql.X_AXIS]
+        self.assertEqual(len(head), 1)
+        self.assertAlmostEqual(carried + head[0], 20.0, places=6, msg="the carried pitches and the head's own add to the facing asked")
+        self.assertIn((ql.Z_AXIS, 7.0), pose["Head"], "the head's other turns are kept")
+
+    def test_the_strike_ends_facing_forward_and_down_not_back_at_the_chest(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        for frame in range(ql.frame_count("winged_rear")):
+            pose = ql.pose_at("winged_rear", frame, layout)
+            facing = sum(d for name in ("__root_pitch__",) + ql.HEAD_CARRIERS + ("Head",) for a, d in pose.get(name, []) if tuple(a) == ql.X_AXIS)
+            self.assertLessEqual(abs(facing), 40.0, f"frame {frame}: run 15 turned the snout 108 degrees, back at the chest")
 
 
 class DeathEnd(unittest.TestCase):
@@ -558,6 +579,52 @@ class Checks(unittest.TestCase):
         self.assertEqual(left.tolist(), [True, False, False, False])
         self.assertEqual(right.tolist(), [False, False, True, False])
         self.assertIsNone(TC.quadruped_wing_sides(SimpleNamespace(bones=["Root"], joints=joints, weights=weights)))
+
+
+class HeldPoseChecks(unittest.TestCase):
+    """TRIPO-HEAD-FACING, TRIPO-DEATH-SIDE and TRIPO-WING-SIDE-REACH on a few points (file frame: y up, facing -z)."""
+
+    @staticmethod
+    def _turn(axis, degrees: float) -> np.ndarray:
+        matrix = np.eye(4)
+        matrix[:3, :3] = qw.rotation(axis, degrees)
+        return matrix
+
+    def test_the_head_facing_counts_a_hook_and_not_a_nod(self) -> None:
+        from tripo import tripo_checks as TC
+
+        # bones Root, Chest, Head (joint at the origin); the snout 1 ahead and 1 below: 45 degrees down
+        mesh = SimpleNamespace(positions=np.array([[0.0, -1.0, -1.0]]), inverse_bind=np.stack([np.eye(4)] * 3))
+        front = np.array([0.0, 0.0, -1.0])
+        nod = np.stack([np.stack([np.eye(4), np.eye(4), self._turn((1, 0, 0), 20.0 * f)]) for f in range(3)])
+        turn, frame = TC.head_facing_turn(mesh, nod, 2, 0, 1, front)
+        self.assertAlmostEqual(turn, 40.0, places=4)
+        self.assertEqual(frame, 2)
+        hook = np.stack([np.stack([np.eye(4), np.eye(4), self._turn((1, 0, 0), sign * 110.0)]) for sign in (0.0, 1.0)])
+        turn, _frame = TC.head_facing_turn(mesh, hook, 2, 0, 1, front)
+        self.assertGreater(turn, TC.MAX_HEAD_FACING_TURN, "the snout turned back at the chest")
+
+    def test_the_dead_torso_lies_on_its_side(self) -> None:
+        from tripo import tripo_checks as TC
+
+        frame = np.stack([np.eye(4), self._turn((0, 0, 1), 82.0)])
+        self.assertAlmostEqual(TC.torso_roll(frame, 1), 82.0, places=4)
+        low, high = TC.DEATH_ROLL_RANGE
+        self.assertTrue(low <= 82.0 <= high)
+        self.assertFalse(low <= TC.torso_roll(np.stack([np.eye(4), self._turn((0, 0, 1), 170.0)]), 1) <= high, "on its back")
+
+    def test_the_side_reach_is_read_in_the_chest_frame(self) -> None:
+        from tripo import tripo_checks as TC
+
+        # a torso point on the midline, a left wing point 2 out and a right one 1 out; the chest (all one bone) yaws 40 degrees
+        positions = np.array([[0.0, 1.0, 0.0], [2.0, 1.0, 0.0], [-1.0, 1.0, 0.0]])
+        mesh = SimpleNamespace(positions=positions, joints=np.zeros((3, 1), int), weights=np.ones((3, 1)))
+        sides = [np.array([False, True, False]), np.array([False, False, True])]
+        torso = np.array([True, False, False])
+        matrices = np.stack([np.stack([self._turn((0, 1, 0), 40.0 * f)]) for f in range(2)])
+        reach = TC.side_reach(mesh, matrices, sides, torso, 0, np.array([0.0, 0.0, -1.0]))
+        self.assertAlmostEqual(reach[0], 2.0, places=6, msg="a turned body keeps its own sides")
+        self.assertAlmostEqual(reach[1], 1.0, places=6)
 
 
 class QuadrupedViews(unittest.TestCase):

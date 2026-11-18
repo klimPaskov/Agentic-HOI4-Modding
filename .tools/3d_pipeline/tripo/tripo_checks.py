@@ -93,6 +93,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -219,6 +220,28 @@ MIN_STEP_READ = 0.3
 # Tripo dragon's run 4: its mirrored clips' planes differ by at most 5.3 degrees, and its retreat, which both fresh reviews read as one wing
 # beating while the other stayed frozen upright, by 22 (the wing the retreat's turn carried forward swept back by the turn).
 MAX_WING_MIRROR_DEGREES = 15.0
+# TRIPO-WING-SIDE-REACH: a winged quadruped's defend and retreat hold the wings back, so in no frame may a wing reach further to its side
+# than MAX_SIDE_REACH_OVER_IDLE times the most it reaches in the idle's fold. The reach is the 99th percentile of the wing points' distance
+# from the torso's midline, in the Chest bone's frame (a body that turns keeps its own sides). On run 15 the idle's breath varied it by 4%,
+# the defend reached 1.26 times the idle (both fresh reviews: the wings stand straight out, wider than the idle) and the retreat 1.17 (one
+# review: one wing stretched out).
+SIDE_REACH_ROLES = ("defend", "retreat")
+MAX_SIDE_REACH_OVER_IDLE = 1.05
+SIDE_REACH_PERCENTILE = 99.0
+# TRIPO-HEAD-FACING: in every clip but the death the head (from its joint to its snout, the head's point furthest forward at rest) faces at
+# most MAX_HEAD_FACING_TURN degrees up or down from its rest facing, read in the vertical plane of the chest's forward direction. A neck's
+# turns carried a head bone turned on its own: run 15's attack turned the snout 131 degrees from its rest facing, back at the chest (both
+# fresh reviews saw a hook, the throat kinked to a right angle), its defend 30 (75 below level). Its idle, move and retreat stay within 10.
+MAX_HEAD_FACING_TURN = 40.0
+# TRIPO-ATTACK-HEAD-LEAD: at the frame its snout reaches furthest forward, a winged quadruped's attack has moved the snout at least
+# ATTACK_SNOUT_REACH of the body's length ahead of where it started and lower than it started (by ATTACK_SNOUT_DROP of the height). On run
+# 15 the head's points travelled 18% (TRIPO-ATTACK-REACH passed) while the snout never came ahead of its first frame, turned back toward
+# the chest, and both fresh reviews saw no strike.
+ATTACK_SNOUT_REACH = 0.1
+ATTACK_SNOUT_DROP = 0.05
+# TRIPO-DEATH-SIDE: a winged quadruped's death ends with the torso (the Chest bone's up axis) rolled DEATH_ROLL_RANGE degrees from upright:
+# on its side, not on its belly or its back. Run 15 ended at 82 degrees.
+DEATH_ROLL_RANGE = (60.0, 120.0)
 MIN_WING_BEAT_SHARE = 0.5
 WING_MIRROR_SKIP = ("death",)
 SILHOUETTE_CELL_SHARE = 0.02
@@ -835,7 +858,100 @@ def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], d
     if role in ("attack", "defend") and c["head"].any():
         out_reach, peak = _attack_reach(mesh, clip, role, matrices, c, row)
         out += out_reach
+    out += _held_pose_findings(mesh, clip, role, matrices, c, row)
     return out, row, peak
+
+
+def _held_pose_findings(mesh, clip: str, role: str, matrices, c: dict, row: dict) -> List[dict]:
+    """TRIPO-HEAD-FACING, TRIPO-ATTACK-HEAD-LEAD and TRIPO-DEATH-SIDE for one clip, and its wings' side reach for TRIPO-WING-SIDE-REACH."""
+
+    out: List[dict] = []
+    if c.get("chest") is None:
+        return out
+    row["side_reach"] = [round(value, 4) for value in side_reach(mesh, matrices, c["sides"], c["torso"], c["chest"], c["front"])]
+    if role != "death" and c.get("head_bone") is not None:
+        turn, frame = head_facing_turn(mesh, matrices, c["head_bone"], c["snout"], c["chest"], c["front"])
+        row.update(head_facing_turn=round(turn, 1), head_facing_frame=frame)
+        if turn > MAX_HEAD_FACING_TURN:
+            out.append(finding("TRIPO-HEAD-FACING", clip, f"in frame {frame} the head faces {turn:.0f} degrees off its rest facing (at most {MAX_HEAD_FACING_TURN:.0f}): the neck carries the head round into a hook or straight down", degrees=round(turn, 1), frame=frame))
+    if role == "attack" and c.get("head_bone") is not None:
+        out += _snout_lead(mesh, clip, matrices, c, row)
+    if role == "death":
+        roll = torso_roll(matrices[-1], c["chest"])
+        row["end_roll"] = round(roll, 1)
+        low, high = DEATH_ROLL_RANGE
+        if not low <= roll <= high:
+            out.append(finding("TRIPO-DEATH-SIDE", clip, f"the dead torso ends rolled {roll:.0f} degrees from upright ({low:.0f} to {high:.0f}): it does not lie on its side", degrees=round(roll, 1)))
+    return out
+
+
+def side_reach(mesh, matrices, sides, torso: np.ndarray, chest: int, front: np.ndarray) -> List[float]:
+    """TRIPO-WING-SIDE-REACH's measure per wing: the most, over the clip, of the wing points' 99th percentile distance to their own side
+    of the torso's midline, in the Chest bone's rest frame (the posed points taken back through the chest's turn)."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    across = tripo_chains.unit(np.cross(up, front))
+    middle = float(np.median(mesh.positions[torso] @ across)) if torso.any() else 0.0
+    signs = [1.0 if float(np.median(mesh.positions[mask] @ across)) > middle else -1.0 for mask in sides]
+    best = [0.0 for _ in sides]
+    for frame in range(matrices.shape[0]):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        turn, shift = matrices[frame][chest][:3, :3], matrices[frame][chest][:3, 3]
+        local = (posed - shift) @ turn  # each row R^T (p - t): back through the chest's turn
+        for index, mask in enumerate(sides):
+            if mask.any():
+                reach = float(np.percentile(signs[index] * (local[mask] @ across - middle), SIDE_REACH_PERCENTILE))
+                best[index] = max(best[index], reach)
+    return best
+
+
+def head_facing_turn(mesh, matrices, head_bone: int, snout: int, chest: int, front: np.ndarray) -> Tuple[float, int]:
+    """TRIPO-HEAD-FACING's measure: the most the head's facing (its joint to its snout, carried by the Head bone) turns from its rest facing
+    over the clip, in degrees within the vertical plane of the chest's forward direction, and the frame."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    joint = np.linalg.inv(mesh.inverse_bind[head_bone])[:3, 3]
+    rest_facing = mesh.positions[snout] - joint
+
+    def below(direction: np.ndarray, forward: np.ndarray) -> float:
+        ahead = forward - (forward @ up) * up
+        ahead = ahead / max(float(np.linalg.norm(ahead)), 1e-9)
+        return math.degrees(math.atan2(-float(direction @ up), float(direction @ ahead)))
+
+    rest = below(rest_facing, front)
+    worst, worst_frame = 0.0, 0
+    for frame in range(matrices.shape[0]):
+        facing = matrices[frame][head_bone][:3, :3] @ rest_facing
+        forward = matrices[frame][chest][:3, :3] @ front
+        turn = abs((below(facing, forward) - rest + 180.0) % 360.0 - 180.0)
+        if turn > worst:
+            worst, worst_frame = turn, frame
+    return worst, worst_frame
+
+
+def torso_roll(matrix_frame: np.ndarray, chest: int) -> float:
+    """Degrees the Chest bone's up axis lies from the vertical (0 upright, 90 on its side, 180 on its back)."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    carried = matrix_frame[chest][:3, :3] @ up
+    return math.degrees(math.acos(max(-1.0, min(1.0, float(carried @ up) / max(float(np.linalg.norm(carried)), 1e-9)))))
+
+
+def _snout_lead(mesh, clip: str, matrices, c: dict, row: dict) -> List[dict]:
+    """TRIPO-ATTACK-HEAD-LEAD: the snout's furthest travel ahead of its first frame, and its drop there."""
+
+    snout = c["snout"]
+    start = pdx_deform.skin(mesh, matrices[0])[snout]
+    ahead, drop, best = -np.inf, 0.0, 0
+    for frame in range(matrices.shape[0]):
+        point = pdx_deform.skin(mesh, matrices[frame])[snout]
+        forward = float((point - start) @ c["front"]) / c["length"]
+        if forward > ahead:
+            ahead, drop, best = forward, float(start[1] - point[1]) / mesh.height, frame
+    row.update(snout_reach=round(ahead, 3), snout_drop=round(drop, 3), snout_frame=best)
+    if ahead < ATTACK_SNOUT_REACH or drop < ATTACK_SNOUT_DROP:
+        return [finding("TRIPO-ATTACK-HEAD-LEAD", clip, f"at its furthest (frame {best}) the snout is {ahead:.0%} of the body's length ahead of its start and {drop:.0%} of the height below it (at least {ATTACK_SNOUT_REACH:.0%} ahead and {ATTACK_SNOUT_DROP:.0%} below): the head does not lead the strike forward and down", reach=round(ahead, 3), drop=round(drop, 3), frame=best)]
+    return []
 
 
 def _death_end_findings(mesh, clip: str, matrices, c: dict, row: dict) -> List[dict]:
@@ -864,7 +980,8 @@ def _attack_reach(mesh, clip: str, role: str, matrices, c: dict, row: dict) -> T
 
 def quadruped_view_findings(mesh, anims: Dict[str, object], sides) -> (List[dict], dict):
     """TRIPO-WING-SLIVER, TRIPO-WING-HEAD-FRONT, TRIPO-ATTACK-REACH, TRIPO-ATTACK-DEFEND-ALIKE, TRIPO-WING-CRUSH, TRIPO-WING-THROUGH-BODY,
-    TRIPO-DEATH-WING-HIGH, TRIPO-DEATH-HEAD-HIDDEN and TRIPO-STEP-READ for a winged quadruped."""
+    TRIPO-DEATH-WING-HIGH, TRIPO-DEATH-HEAD-HIDDEN, TRIPO-STEP-READ, TRIPO-WING-SIDE-REACH, TRIPO-HEAD-FACING, TRIPO-ATTACK-HEAD-LEAD and
+    TRIPO-DEATH-SIDE for a winged quadruped."""
 
     out, numbers = [], {}
     wings = sides[0] | sides[1]
@@ -882,14 +999,25 @@ def quadruped_view_findings(mesh, anims: Dict[str, object], sides) -> (List[dict
     named = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     torso_only = np.isin(named, ["Pelvis", "Spine", "Chest"]) & ~wings
     hooves = np.char.endswith(named, "_Hoof")
+    chest = mesh.bones.index("Chest") if "Chest" in mesh.bones else None
+    head_bone = mesh.bones.index("Head") if "Head" in mesh.bones and head.any() else None
+    snout = int(np.flatnonzero(head)[np.argmax(mesh.positions[head] @ front)]) if head_bone is not None else None
     context = dict(wings=wings, head=head, head_neck=head_neck, front=front, length=length, cell=cell, flat=flat, edges=edges, rest=rest,
-                   torso=torso_only, hooves=hooves, sides=sides)
+                   torso=torso_only, hooves=hooves, sides=sides, chest=chest, head_bone=head_bone, snout=snout)
     for clip, anim in anims.items():
         found, row, peak = _winged_clip_findings(mesh, clip, anim, context)
         out += found
         numbers[clip] = row
         if peak is not None:
             peaks[clip_role(clip)] = peak
+    idle = next((row["side_reach"] for clip, row in numbers.items() if clip_role(clip) == "idle" and "side_reach" in row), None)
+    for clip, row in numbers.items():
+        if idle is None or clip_role(clip) not in SIDE_REACH_ROLES or "side_reach" not in row:
+            continue
+        ratios = [reach / max(base, 1e-6) for reach, base in zip(row["side_reach"], idle)]
+        row["side_reach_over_idle"] = [round(value, 3) for value in ratios]
+        if max(ratios) > MAX_SIDE_REACH_OVER_IDLE:
+            out.append(finding("TRIPO-WING-SIDE-REACH", clip, f"a wing reaches {max(ratios):.2f} times as far to its side as in the idle's fold (at most {MAX_SIDE_REACH_OVER_IDLE:.2f}): the wings held back stand out to the sides", ratio=round(max(ratios), 3)))
     if len(peaks) == 2:
         ratio = min(peaks.values()) / max(max(peaks.values()), 1)
         numbers["attack_defend_wings"] = round(ratio, 3)
