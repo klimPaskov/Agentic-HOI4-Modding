@@ -4,7 +4,7 @@ This page is for modders who want their own 3D units on the HOI4 map: soldiers, 
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
-**What is proven.** An unarmed humanoid unit (a zombie soldier) went the whole route below and passed a fresh review in November 2026. That run used a wrong size (see Size in [The route step by step](#the-route-step-by-step)), so its size on the map is checked again after a rerun. Armed units with a separate weapon, winged units and other bodies are in progress. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits on them.
+**What is proven.** Eight asset types have each gone the whole route below with at least one model and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe, a dwarf with a glaive and a shield), a large creature (an ogre with a club), a mount, a tank, a plane, a ship, a building and a landmark. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. An unarmed humanoid (a zombie soldier) still reads as an ordinary soldier at map size and is in progress. **Winged units are not proven yet**: neither a winged humanoid nor a winged beast such as a dragon has passed review, so do not plan a mod on them yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
 
 ## How to use it
 
