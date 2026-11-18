@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5c3aabd1f1cd883709e5a9b1ff10cafd2f054508",
+  "generated_for_revision": "349186ec71af99ae2b2bef642156c87bffcd0493",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "a7eca6efe1e7a30bbac5ad02e6423ce582084212f72a8e58c03fee85f416b797",
-          "size": 15847
+          "sha256": "4040ab720390a81abdbe7b18847c666470a52e8a8e19c0c91058f8b54038f2cc",
+          "size": 15999
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "6747f632bd370c60cf84ef581c4e5445b4f6b78a6565d38c9fa58bfa4e39e7b6",
-          "size": 15847
+          "sha256": "41940502b13414749508210e809a101feeb06d309b5ecd25a17d1c21f34fefa2",
+          "size": 15999
         }
       ]
     },
@@ -6172,8 +6172,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "2711fcbfea9ef5661565aaecd53ac56a293b5efede9e72ed617ed22d2ef93da6",
-          "size": 5410
+          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
+          "size": 7464
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -6182,8 +6182,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "6ba2c89e43b1ccda1ce186d02085d6ce9ce48b8a097038c985b966127613ef4f",
-          "size": 7415
+          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
+          "size": 7569
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -6327,8 +6327,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-country-and-ui-planning.md",
-          "sha256": "37a4cd93dd1eb4073575b66e2137054de73f8b42608a1f34494ff18adc8ceba6",
-          "size": 5235
+          "sha256": "17c0d638a02f39adf1d210d601d9d8ac5f5d3da7fd9f07a9b7aebfb2a1b85923",
+          "size": 5407
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-tree-path-design.md",
@@ -6507,8 +6507,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
-          "size": 9458
+          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
+          "size": 9861
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -6627,8 +6627,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/content-integration.md",
-          "sha256": "daf2da6c6c27b35c6732d70cb7150545e350e500760fa547739126f4f194001d",
-          "size": 2774
+          "sha256": "d287854162c5daef8f1afd13745a1dbe91c96054c804b3af9648c1950d78dd0c",
+          "size": 3199
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/git.md",
@@ -6687,8 +6687,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
-          "size": 18325
+          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
+          "size": 19117
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -11626,8 +11626,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "2711fcbfea9ef5661565aaecd53ac56a293b5efede9e72ed617ed22d2ef93da6",
-          "size": 5410
+          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
+          "size": 7464
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -11636,8 +11636,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "6ba2c89e43b1ccda1ce186d02085d6ce9ce48b8a097038c985b966127613ef4f",
-          "size": 7415
+          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
+          "size": 7569
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -11781,8 +11781,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-country-and-ui-planning.md",
-          "sha256": "37a4cd93dd1eb4073575b66e2137054de73f8b42608a1f34494ff18adc8ceba6",
-          "size": 5235
+          "sha256": "17c0d638a02f39adf1d210d601d9d8ac5f5d3da7fd9f07a9b7aebfb2a1b85923",
+          "size": 5407
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-tree-path-design.md",
@@ -11961,8 +11961,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
-          "size": 9458
+          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
+          "size": 9861
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -12081,8 +12081,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/content-integration.md",
-          "sha256": "daf2da6c6c27b35c6732d70cb7150545e350e500760fa547739126f4f194001d",
-          "size": 2774
+          "sha256": "d287854162c5daef8f1afd13745a1dbe91c96054c804b3af9648c1950d78dd0c",
+          "size": 3199
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/git.md",
@@ -12141,8 +12141,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
-          "size": 18325
+          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
+          "size": 19117
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -24073,8 +24073,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "2711fcbfea9ef5661565aaecd53ac56a293b5efede9e72ed617ed22d2ef93da6",
-          "size": 5410
+          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
+          "size": 7464
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -24083,8 +24083,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "6ba2c89e43b1ccda1ce186d02085d6ce9ce48b8a097038c985b966127613ef4f",
-          "size": 7415
+          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
+          "size": 7569
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -24228,8 +24228,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-country-and-ui-planning.md",
-          "sha256": "37a4cd93dd1eb4073575b66e2137054de73f8b42608a1f34494ff18adc8ceba6",
-          "size": 5235
+          "sha256": "17c0d638a02f39adf1d210d601d9d8ac5f5d3da7fd9f07a9b7aebfb2a1b85923",
+          "size": 5407
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-tree-path-design.md",
@@ -24408,8 +24408,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
-          "size": 9458
+          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
+          "size": 9861
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -24528,8 +24528,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/content-integration.md",
-          "sha256": "daf2da6c6c27b35c6732d70cb7150545e350e500760fa547739126f4f194001d",
-          "size": 2774
+          "sha256": "d287854162c5daef8f1afd13745a1dbe91c96054c804b3af9648c1950d78dd0c",
+          "size": 3199
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/git.md",
@@ -24588,8 +24588,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
-          "size": 18325
+          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
+          "size": 19117
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -29566,8 +29566,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "2711fcbfea9ef5661565aaecd53ac56a293b5efede9e72ed617ed22d2ef93da6",
-          "size": 5410
+          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
+          "size": 7464
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -29576,8 +29576,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "6ba2c89e43b1ccda1ce186d02085d6ce9ce48b8a097038c985b966127613ef4f",
-          "size": 7415
+          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
+          "size": 7569
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -29721,8 +29721,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-country-and-ui-planning.md",
-          "sha256": "37a4cd93dd1eb4073575b66e2137054de73f8b42608a1f34494ff18adc8ceba6",
-          "size": 5235
+          "sha256": "17c0d638a02f39adf1d210d601d9d8ac5f5d3da7fd9f07a9b7aebfb2a1b85923",
+          "size": 5407
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-tree-path-design.md",
@@ -29901,8 +29901,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
-          "size": 9458
+          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
+          "size": 9861
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -30021,8 +30021,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/content-integration.md",
-          "sha256": "daf2da6c6c27b35c6732d70cb7150545e350e500760fa547739126f4f194001d",
-          "size": 2774
+          "sha256": "d287854162c5daef8f1afd13745a1dbe91c96054c804b3af9648c1950d78dd0c",
+          "size": 3199
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/git.md",
@@ -30081,8 +30081,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
-          "size": 18325
+          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
+          "size": 19117
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -35059,8 +35059,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "2711fcbfea9ef5661565aaecd53ac56a293b5efede9e72ed617ed22d2ef93da6",
-          "size": 5410
+          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
+          "size": 7464
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -35069,8 +35069,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "6ba2c89e43b1ccda1ce186d02085d6ce9ce48b8a097038c985b966127613ef4f",
-          "size": 7415
+          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
+          "size": 7569
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -35214,8 +35214,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-country-and-ui-planning.md",
-          "sha256": "37a4cd93dd1eb4073575b66e2137054de73f8b42608a1f34494ff18adc8ceba6",
-          "size": 5235
+          "sha256": "17c0d638a02f39adf1d210d601d9d8ac5f5d3da7fd9f07a9b7aebfb2a1b85923",
+          "size": 5407
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/focus-tree-path-design.md",
@@ -35394,8 +35394,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "c0b81b3449e614d4b9a391e4115d268568dd90a01f57b209be2c783f10eeb066",
-          "size": 9458
+          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
+          "size": 9861
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -35514,8 +35514,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/content-integration.md",
-          "sha256": "daf2da6c6c27b35c6732d70cb7150545e350e500760fa547739126f4f194001d",
-          "size": 2774
+          "sha256": "d287854162c5daef8f1afd13745a1dbe91c96054c804b3af9648c1950d78dd0c",
+          "size": 3199
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/git.md",
@@ -35574,8 +35574,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "4aaebfedac7e940efe03a467b923ec62f6e727fa081571cf9bb12bd27b85ab23",
-          "size": 18325
+          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
+          "size": 19117
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
