@@ -1,7 +1,8 @@
 """Blender side of the `quadruped` creature rig family.
 
-`author_rig` measures the working meshes, builds the 27-bone rig from
-`quadruped_layout`, binds every vertex with region-limited distance weights and
+`author_rig` measures the working meshes, builds the rig from `quadruped_layout`
+(27 bones, a load's bone and two bones per ear that stands out beside the head,
+`quadruped_ears`), binds every vertex with region-limited distance weights and
 saves a checkpoint. `author_action` keys one action every frame from the
 layout's gait poses and then lifts the Root each frame so the lowest vertex
 touches the ground. `h` is the worker's namespace (its helpers).
@@ -18,7 +19,10 @@ import bpy
 import numpy as np
 from mathutils import Matrix, Quaternion, Vector
 
+import quadruped_ears as qears
 import quadruped_layout as ql
+import quadruped_load as qload
+import quadruped_wings as qwings
 
 FAMILY = "quadruped"
 FPS = 24
@@ -57,10 +61,33 @@ def _evaluated_min_z(objects: List[bpy.types.Object]) -> float:
     return lowest
 
 
-def _landmarks_from_payload(points: np.ndarray, payload: Dict[str, Any]) -> Dict[str, Any]:
+def _mesh_triangles(owners: List[Tuple[bpy.types.Object, int]]) -> np.ndarray:
+    rows = []
+    offset = 0
+    for obj, count in owners:
+        mesh = obj.data
+        mesh.calc_loop_triangles()
+        flat = np.empty(len(mesh.loop_triangles) * 3, dtype=np.int64)
+        mesh.loop_triangles.foreach_get("vertices", flat)
+        rows.append(flat.reshape(-1, 3) + offset)
+        offset += count
+    return np.concatenate(rows) if rows else np.zeros((0, 3), dtype=np.int64)
+
+
+def _turn_quarter(meshes: List[bpy.types.Object], points: np.ndarray) -> None:
+    """Turn the meshes a quarter turn about the vertical through their centre, so their length lies along Y."""
+
+    centre = Vector(((points[:, 0].min() + points[:, 0].max()) / 2, (points[:, 1].min() + points[:, 1].max()) / 2, 0.0))
+    turn = Matrix.Translation(centre) @ Matrix.Rotation(math.pi / 2, 4, "Z") @ Matrix.Translation(-centre)
+    for obj in meshes:
+        obj.data.transform(obj.matrix_world.inverted() @ turn @ obj.matrix_world)
+        obj.data.update()
+
+
+def _landmarks_from_payload(points: np.ndarray, payload: Dict[str, Any], back_z: Any = None) -> Dict[str, Any]:
     measured = payload.get("landmarks")
     if not measured:
-        return ql.detect_landmarks(points)
+        return ql.detect_landmarks(points, back_z=back_z)
     landmarks = dict(measured)
     for key in ("muzzle", "poll", "saddle"):
         landmarks[key] = np.asarray(landmarks[key], dtype=float)
@@ -75,7 +102,7 @@ def _landmarks_from_payload(points: np.ndarray, payload: Dict[str, Any]) -> Dict
 
 def _jsonable(value: Any) -> Any:
     if isinstance(value, np.ndarray):
-        return [round(float(item), 6) for item in value.tolist()]
+        return round(float(value), 6) if value.ndim == 0 else _jsonable(value.tolist())
     if isinstance(value, dict):
         return {key: _jsonable(item) for key, item in value.items()}
     if isinstance(value, (list, tuple)):
@@ -133,6 +160,51 @@ def _bind(
     return per_bone, unweighted
 
 
+def _orient(meshes: List[bpy.types.Object], payload: Dict[str, Any], options: Dict[str, Any]):
+    """Turn the meshes so the animal lies along Y facing -Y, and find its load (quadruped_load.py) when the job says it carries one.
+
+    The animal's length is its longest horizontal extent, so a model that lies along X is turned a quarter first. The load is found
+    again in the turned frame (the vertex order is the same). Returns (points, owners, triangles, load or None, turned, quarter)."""
+
+    points, owners = _mesh_points(meshes)
+    triangles = _mesh_triangles(owners)
+    load = qload.find_load(points, triangles) if options.get("load") else None
+    turned = quarter = False
+    if not payload.get("landmarks"):
+        body = points[~load.mask] if load is not None else points
+        # A winged body's spread wings can be wider than it is long: its four feet set its long axis (quadruped_layout.feet_axis_along_x).
+        along_x = ql.feet_axis_along_x(body) if options.get("wings") else None
+        if along_x if along_x is not None else float(np.ptp(body[:, 0])) > float(np.ptp(body[:, 1])):
+            _turn_quarter(meshes, points)
+            points, owners = _mesh_points(meshes)
+            body = points[~load.mask] if load is not None else points
+            quarter = True
+        if ql.faces_plus_y(body):
+            _turn_half(meshes, points)
+            points, owners = _mesh_points(meshes)
+            turned = True
+    if load is not None:
+        load = qload.find_load(points, triangles)
+    return points, owners, triangles, load, turned, quarter
+
+
+def _seat_on_load(points: np.ndarray, triangles: np.ndarray, load: Any, landmarks: Dict[str, Any], options: Dict[str, Any]) -> Dict[str, Any]:
+    """Place the Saddle_Node on the load's clearest floor and cap the death's roll; record both in `landmarks` and return the report."""
+
+    rider_height = float(options.get("rider_height") or 0.0)
+    if rider_height <= 0:
+        raise RuntimeError("A loaded mount needs rig_options.rider_height (the rider's height in this model's units) to place its Saddle_Node.")
+    ground = float(points[:, 2].min())
+    seat = qload.fit_rider(points, triangles, load, rider_height, options.get("rider_footprint"))
+    landmarks["saddle"] = np.asarray(seat["point"], dtype=float) - np.array([0.0, 0.0, ground])
+    torso = points[:, 2] - ground > float(landmarks["belly_z"])
+    axis = np.array([0.0, 1.0, 0.0])
+    roll = qload.roll_limit(points, load.mask, torso, axis, ql.COLLAPSE_ROLL)
+    other = qload.roll_limit(points, load.mask, torso, axis, -ql.COLLAPSE_ROLL)
+    landmarks["load"] = {"roll_limit": roll, "roll_limit_other_side": other, "bone": qload.LOAD_BONE}
+    return {**load.summary(float(np.ptp(points[:, 2]))), "saddle": _jsonable(seat), "roll_limit": roll, "roll_limit_other_side": other, "bone": qload.LOAD_BONE}
+
+
 def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     job = Path(req["job_root"]).resolve()
     payload = req["payload"]
@@ -145,13 +217,21 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         raise RuntimeError("Quadruped rigging found no working meshes.")
     for existing in h["armatures"]():
         bpy.data.objects.remove(existing, do_unlink=True)
-    points, owners = _mesh_points(meshes)
-    turned = False
-    if not payload.get("landmarks") and ql.faces_plus_y(points):
-        _turn_half(meshes, points)
-        points, owners = _mesh_points(meshes)
-        turned = True
-    landmarks = _landmarks_from_payload(points, payload)
+    options = dict(payload.get("rig_options") or {})
+    points, owners, triangles, load, turned, quarter = _orient(meshes, payload, options)
+    body = points[~load.mask] if load is not None else points
+    ground = float(points[:, 2].min())
+    wing_plans, wing_masks = _find_wings(points, triangles, options) if not payload.get("landmarks") else ({}, {})
+    wing_any = np.zeros(len(points), bool)
+    for mask in wing_masks.values():
+        wing_any |= mask
+    if wing_any.any():
+        body = body if load is not None else points[~wing_any]
+    landmarks = _landmarks_from_payload(body, payload, back_z=(load.cut_z - ground) if load is not None else None)
+    if wing_plans:
+        landmarks["wings"] = wing_plans
+    load_report = _seat_on_load(points, triangles, load, landmarks, options) if load is not None else {}
+    ear_masks = _find_ears(points, triangles, landmarks, load, wing_any if wing_any.any() else None)
     layout = ql.build_layout(landmarks)
     if len(layout.bones) > 50:
         raise RuntimeError(f"The quadruped rig has {len(layout.bones)} bones; the engine skins at most 50.")
@@ -182,6 +262,13 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     rig.show_in_front = True
 
     indices, weights = ql.skin_weights(points, layout)
+    if load is not None:
+        indices, weights, bound = qload.bind_load(points, load.mask, indices, weights, layout.names(), qload.RING_SHARE * float(landmarks["height"]))
+        load_report.update(bound)
+    indices, weights = qears.ear_weights(points, triangles, layout, ear_masks, indices, weights, ring=qload.RING_SHARE * float(landmarks["height"]))
+    if wing_plans:
+        indices, weights = qwings.wing_weights(points, triangles, layout.names(), wing_plans, wing_masks, indices, weights,
+                                               float(landmarks["centre_x"]), float(landmarks["ground_offset"]) + float(landmarks["belly_z"]))
     per_bone, unweighted = _bind(owners, layout, indices, weights, rig)
     if unweighted:
         raise RuntimeError(f"{unweighted} vertices received no bone weight.")
@@ -199,8 +286,44 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "max_influences": int(indices.shape[1]),
         "unweighted_vertices": unweighted,
         "turned_to_face_minus_y": turned,
-        "weighting": "region-limited inverse fourth power of the distance to each bone segment",
+        "turned_quarter_to_lie_along_y": quarter,
+        "load": load_report or None,
+        "weighting": "region-limited inverse fourth power of the distance to each bone segment"
+        + ("; the load bound wholly to the Spine, fading into the body over a ring" if load is not None else "")
+        + ("; each ear on its own two bones, blending into the head at its root" if ear_masks else ""),
+        "ears": {side: {"vertices": int(mask.sum())} for side, mask in ear_masks.items()},
+        "wings": {side: {"vertices": int(mask.sum()), "root": _jsonable(wing_plans[side]["root"]), "length": round(float(wing_plans[side]["length"]), 5),
+                         "chains": int(np.asarray(wing_plans[side]["joints"]).shape[0]), "bones_per_chain": int(np.asarray(wing_plans[side]["joints"]).shape[1] - 1)}
+                  for side, mask in wing_masks.items()},
     }
+
+
+def _find_wings(points: np.ndarray, triangles: np.ndarray, options: Dict[str, Any]):
+    """A winged body's wings (`quadruped_wings.detect_wings`): first landmarks on the whole model give its mid-plane and belly, the wings are
+    found from them and the feet, and the caller measures the body again without them. ({}, {}) without `wings` in the rig options."""
+
+    if not options.get("wings"):
+        return {}, {}
+    first = ql.detect_landmarks(points)
+    feet, _dragged = ql.ground_contacts(points)
+    plans, masks = qwings.detect_wings(points, triangles, first, feet)
+    if not plans:
+        raise RuntimeError("The job asks for a winged quadruped, but no wing stands out from the body's sides (quadruped_wings.wing_masks).")
+    return plans, masks
+
+
+def _find_ears(points: np.ndarray, triangles: np.ndarray, landmarks: Dict[str, Any], load: Any, wings: Any = None) -> Dict[str, np.ndarray]:
+    """Find the ears beside the head (`quadruped_ears.detect_ears`), record their chains in `landmarks` and return their vertex masks. A wing is
+    never an ear."""
+
+    exclude = load.mask if load is not None else None
+    if wings is not None:
+        exclude = wings if exclude is None else (exclude | wings)
+    ears, masks = qears.detect_ears(points, triangles, landmarks, exclude=exclude)
+    if ears:
+        qears.assign_parents(points, landmarks, ears, masks)
+        landmarks["ears"] = ears
+    return masks
 
 
 def _rotation(rows: List[ql.Rotation]) -> Quaternion:
@@ -208,6 +331,134 @@ def _rotation(rows: List[ql.Rotation]) -> Quaternion:
     for axis, degrees in rows:
         result = Quaternion(Vector(axis), math.radians(degrees)) @ result
     return result
+
+
+TORSO = ("Pelvis", "Spine", "Chest")
+EAR_PREFIX = "Ear_"
+WING_PREFIX = qwings.WING_PREFIX
+TAIL_PREFIX = "Tail_"
+
+
+def _dominant_groups(meshes: List[bpy.types.Object]) -> List[np.ndarray]:
+    """Per mesh, each vertex's strongest vertex group name ("" for none)."""
+
+    out = []
+    for obj in meshes:
+        names = {group.index: group.name for group in obj.vertex_groups}
+        out.append(np.array([names.get(max(v.groups, key=lambda g: g.weight).group, "") if len(v.groups) else "" for v in obj.data.vertices]))
+    return out
+
+
+def _lowest_by_group(meshes: List[bpy.types.Object], dominant: List[np.ndarray]) -> Dict[str, float]:
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    lowest: Dict[str, float] = {}
+    for obj, names in zip(meshes, dominant):
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        try:
+            local = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
+            mesh.vertices.foreach_get("co", local)
+            matrix = np.array(evaluated.matrix_world, dtype=np.float64)
+            z = local.reshape(-1, 3).astype(np.float64) @ matrix[2, :3] + matrix[2, 3]
+            for name in set(names.tolist()):
+                lowest[name] = min(lowest.get(name, math.inf), float(z[names == name].min()))
+        finally:
+            evaluated.to_mesh_clear()
+    return lowest
+
+
+def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground: float) -> Dict[str, Any]:
+    """Pick the death's side, roll and neck lift on its final pose (`quadruped_layout.choose_collapse`), so the body ends lying on its torso:
+    neither a dropped head nor a load on the back may hold the dead body off the ground, and the neck turns against the roll only when
+    the head or neck is what holds it up. An ear is a thin flap that folds against the ground, so it is left out of the parts that hold it."""
+
+    dominant = _dominant_groups(meshes)
+    height = float(layout.landmarks["height"])
+    winged = bool(layout.landmarks.get("wings"))
+    # a wing lies on the ground beside the dead body and a dragged tail along it: neither holds it up, and the tail is laid by its own rule
+    thin = (EAR_PREFIX, WING_PREFIX, TAIL_PREFIX) if winged else (EAR_PREFIX,)
+
+    def evaluate(roll: float, lift: float):
+        # a winged body's legs underneath start the search without their drop toward the ground (choose_winged_rest adds what fits): with
+        # it a hoof held the Tripo dragon's body up at every roll, and the fallback rolled it only 34 degrees, the torso 17% up
+        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0} if winged else {})}
+        pose_frame(last, 0.0)
+        lowest = {name: z for name, z in _lowest_by_group(meshes, dominant).items() if not name.startswith(thin)}
+        torso = min(lowest.get(name, math.inf) for name in TORSO)
+        return (torso - min(lowest.values())) / height, min(lowest, key=lowest.get)
+
+    chosen = ql.choose_collapse(evaluate, ql.roll_limits(layout.landmarks))
+    layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"]}
+    if winged:
+        def rest(**parts: float) -> Dict[str, float]:
+            layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], **parts}
+            pose_frame(last, 0.0)
+            lowest = _lowest_by_group(meshes, dominant)
+            torso = min(lowest.get(name, math.inf) for name in TORSO)
+
+            def gap(prefixes) -> float:
+                return (min((z for name, z in lowest.items() if name.startswith(prefixes)), default=torso) - torso) / height
+
+            outer = tuple(name for name in lowest if name.startswith(WING_PREFIX) and name.endswith(f"_{qwings.WING_BONES}"))
+            return {"legs": gap(("Front_", "Rear_")), "wings": gap(outer) if outer else 0.0, "tail": gap(TAIL_PREFIX), "head": gap("Head")}
+
+        laid = ql.choose_winged_rest(rest)
+        layout.landmarks["death"].update(laid)
+        chosen = {**chosen, **laid}
+    return chosen
+
+
+def _torso_x(meshes: List[bpy.types.Object], torso: List[np.ndarray]) -> float:
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    total, count = 0.0, 0
+    for obj, mask in zip(meshes, torso):
+        evaluated = obj.evaluated_get(depsgraph)
+        mesh = evaluated.to_mesh()
+        try:
+            local = np.empty(len(mesh.vertices) * 3, dtype=np.float32)
+            mesh.vertices.foreach_get("co", local)
+            matrix = np.array(evaluated.matrix_world, dtype=np.float64)
+            x = local.reshape(-1, 3).astype(np.float64) @ matrix[0, :3] + matrix[0, 3]
+            total, count = total + float(x[mask].sum()), count + int(mask.sum())
+        finally:
+            evaluated.to_mesh_clear()
+    return total / max(count, 1)
+
+
+def _spot_keeper(meshes: List[bpy.types.Object], pose_frame):
+    """A dying body lies where it stood: a function that, for the frame just posed, gives the sideways shift that keeps the torso's
+    centre over its standing spot (a fresh review saw the fallen elephant a body width aside, out of the camera)."""
+
+    torso = [np.isin(names, TORSO) for names in _dominant_groups(meshes)]
+    pose_frame(0, 0.0)
+    standing = _torso_x(meshes, torso)
+    return lambda: standing - _torso_x(meshes, torso)
+
+
+def _body_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
+    """The whole body's turn: a rear pitches and a defend's sweep turns about the hind hooves, and a fall rolls about the edge of the side
+    it falls toward, so the body lies where it stood. A defend's step back (`__root_shift__`) moves it."""
+
+    shift = Matrix.Translation(sum((Vector(axis) * distance for axis, distance in pose.get("__root_shift__", [])), Vector((0.0, 0.0, 0.0))))
+    if "__root_pitch__" in pose or "__root_yaw__" in pose:
+        turn = _rotation(pose.get("__root_pitch__", []) + pose.get("__root_yaw__", [])).to_matrix().to_4x4()
+        return shift @ Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
+    if "__root_roll__" in pose:
+        degrees = pose["__root_roll__"][0][1]
+        edge = root_pivot + Vector((math.copysign(0.5 * width, degrees), 0.0, 0.0))
+        turn = _rotation(pose["__root_roll__"]).to_matrix().to_4x4()
+        return shift @ Matrix.Translation(edge) @ turn @ Matrix.Translation(-edge)
+    return shift
+
+
+def _whole_turn(pose: Dict[str, Any], rear_pivot: Vector, root_pivot: Vector, width: float) -> Matrix:
+    """`_body_turn`, then a turn about the vertical through the body's middle (`__root_turn__`: a winged retreat turns away and back)."""
+
+    body = _body_turn(pose, rear_pivot, root_pivot, width)
+    if "__root_turn__" not in pose:
+        return body
+    turn = _rotation(pose["__root_turn__"]).to_matrix().to_4x4()
+    return Matrix.Translation(root_pivot) @ turn @ Matrix.Translation(-root_pivot) @ body
 
 
 def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
@@ -228,6 +479,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     landmarks = _landmarks_from_payload(np.zeros((0, 3)), {"landmarks": json.loads(rig["hoi4_quadruped_landmarks"])})
     layout = ql.build_layout(landmarks)
     meshes = h["mesh_objects"]()
+    asked, style = style, ql.stance_style(style, landmarks)  # a graviportal animal never gallops
     total = ql.frame_count(style)
     loop = style in ql.LOOPING
     last = total if loop else total - 1
@@ -249,7 +501,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     rear_pivot = Vector(((rear[0][0] + rear[1][0]) / 2, (rear[0][1] + rear[1][1]) / 2, ground))
     root_pivot = root_rest.to_translation()
 
-    def pose_frame(frame: int, lift: float) -> None:
+    def pose_frame(frame: int, lift: float, shift: float = 0.0) -> None:
         pose = ql.pose_at(style, frame, layout)
         for bone in rig.pose.bones:
             bone.rotation_mode = "QUATERNION"
@@ -259,24 +511,20 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
                 bone.rotation_quaternion = rest[bone.name].inverted() @ _rotation(rows) @ rest[bone.name]
             else:
                 bone.rotation_quaternion = (1.0, 0.0, 0.0, 0.0)
-        body = Matrix.Identity(4)
-        if "__root_pitch__" in pose:
-            turn = _rotation(pose["__root_pitch__"]).to_matrix().to_4x4()
-            body = Matrix.Translation(rear_pivot) @ turn @ Matrix.Translation(-rear_pivot)
-        elif "__root_roll__" in pose:
-            turn = _rotation(pose["__root_roll__"]).to_matrix().to_4x4()
-            body = Matrix.Translation(root_pivot) @ turn @ Matrix.Translation(-root_pivot)
-        rig.pose.bones["Root"].matrix = Matrix.Translation((0.0, 0.0, lift)) @ body @ root_rest
+        body = _whole_turn(pose, rear_pivot, root_pivot, float(landmarks["width"]))
+        rig.pose.bones["Root"].matrix = Matrix.Translation((shift, 0.0, lift)) @ body @ root_rest
         bpy.context.view_layer.update()
 
-    contact_before = []
-    contact_after = []
+    dying = style in ("quadruped_collapse", "winged_collapse")
+    tuned = tune_collapse(rig, meshes, layout, last, pose_frame, ground) if dying else None
+    keep_spot = _spot_keeper(meshes, pose_frame) if dying else None
+    contact_before, contact_after = [], []
     for frame in range(0, last + 1):
         scene.frame_set(frame)
         pose_frame(frame, 0.0)
-        lowest = _evaluated_min_z(meshes) - ground
+        lowest, shift = _evaluated_min_z(meshes) - ground, keep_spot() if keep_spot else 0.0
         contact_before.append(lowest)
-        pose_frame(frame, -lowest)
+        pose_frame(frame, -lowest, shift)
         contact_after.append(_evaluated_min_z(meshes) - ground)
         for bone in rig.pose.bones:
             bone.keyframe_insert("rotation_quaternion", frame=frame, group=bone.name)
@@ -304,4 +552,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
         "ground_contact_before": {"min": min(contact_before), "max": max(contact_before)},
         "ground_contact_after": {"min": min(contact_after), "max": max(contact_after)},
         "ground_tolerance": GROUND_TOLERANCE * float(landmarks["height"]),
+        "collapse": tuned,
+        "asked_style": asked,
+        "stance": ql.leg_stance(landmarks),
     }

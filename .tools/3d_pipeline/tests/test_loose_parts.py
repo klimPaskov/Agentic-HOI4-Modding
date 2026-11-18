@@ -179,6 +179,49 @@ class PropClearance(unittest.TestCase):
         self.assertEqual(pdx_motion._holding_bones(mesh, 2), {1, 2, 3})
 
 
+def findings_with_weapon_bones(extra, weapon_bones):
+    with tempfile.TemporaryDirectory() as folder:
+        write_unit(Path(folder), extra)
+        found, facts = check_unit_files.check_files(Path(folder), None, None, limits=LIMITS, weapon_bones=weapon_bones)
+    return [item for item in found if item.rule == "UNIT-LOOSE-PART"], facts
+
+
+class WeaponBone(unittest.TestCase):
+    """A part bound wholly to a bone the job records as a weapon bone may leave the body; nothing else gets that."""
+
+    knee_part = [cube((0.15, 0.5, 0.04), 0.06, [("Head", 1.0)])]
+
+    def test_it_drifts_off_without_the_rule(self) -> None:
+        loose, _facts = findings_with_weapon_bones(self.knee_part, ())
+        self.assertIn("drift off the body", loose[0].message)
+
+    def test_a_part_bound_wholly_to_the_recorded_weapon_bone_is_not_judged_for_drifting(self) -> None:
+        loose, facts = findings_with_weapon_bones(self.knee_part, ("Head",))
+        self.assertEqual(loose, [])
+        self.assertEqual(facts["motion"]["u.mesh"]["loose_parts"][0]["rigid_to"], "Head")
+
+    def test_another_bone_name_does_not_excuse_it(self) -> None:
+        loose, _facts = findings_with_weapon_bones(self.knee_part, ("Weapon",))
+        self.assertIn("drift off the body", loose[0].message)
+
+    def test_a_weapon_bone_part_floating_apart_at_rest_still_fails(self) -> None:
+        loose, _facts = findings_with_weapon_bones([cube((0.6, 1.2, 0.0), 0.08, [("Head", 1.0)])], ("Head",))
+        self.assertEqual(len(loose), 1)
+        self.assertIn("float apart from the body at rest", loose[0].message)
+
+    def test_the_surface_distance_is_to_the_face_not_its_corners(self) -> None:
+        # A long thin triangle, like a decimated haft: a point beside its middle is near its surface and far from all three corners.
+        corners = np.array([[[0.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.01, 0.5, 0.0]]])
+        point = np.array([[0.005, 0.5, 0.001]])
+        self.assertLess(pdx_motion.point_surface_distance(point, corners), 0.002)
+        self.assertGreater(float(np.linalg.norm(corners[0] - point, axis=1).min()), 0.004)
+        self.assertAlmostEqual(pdx_motion.point_surface_distance(np.array([[0.0, 2.0, 0.0]]), corners), 1.0, places=6)
+
+    def test_a_part_that_follows_the_weapon_bone_only_partly_is_still_judged(self) -> None:
+        loose, _facts = findings_with_weapon_bones([cube((0.15, 0.5, 0.04), 0.06, [("Head", 0.5), ("Spine", 0.5)])], ("Head",))
+        self.assertTrue(loose)
+
+
 class LooseParts(unittest.TestCase):
     def test_a_part_resting_on_the_hips_and_weighted_to_them_passes(self) -> None:
         loose, facts = findings([cube((0.0, 1.0, 0.06), 0.1, [("Hips", 1.0)])])

@@ -518,6 +518,7 @@ class BlenderAdapterClient:
         promote_audited_target: bool = False,
         source_armature_name: str = "",
         root_scale_reference: Optional[Dict[str, list[str]]] = None,
+        location_bones: Optional[list[str]] = None,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_import_animation_action",
@@ -536,6 +537,7 @@ class BlenderAdapterClient:
                 "source_sha256": source_sha256,
                 "bone_chains": bone_chains or {},
                 "root_scale_reference": root_scale_reference,
+                "location_bones": location_bones,
                 "promote_audited_target": promote_audited_target,
             },
         )
@@ -628,19 +630,20 @@ class BlenderAdapterClient:
         weight_mode: str = "semantic",
         rig_name: str = "",
         creature_rig_family: str = "elephant",
+        rig_options: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        return self.call(
-            "hoi4_blender_author_creature_rig",
-            {
-                "job_id": job_id,
-                "blend_rel": blend_rel,
-                "checkpoint_rel": checkpoint_rel,
-                "rider_component_names": rider_component_names or [],
-                "weight_mode": weight_mode,
-                "rig_name": rig_name,
-                "creature_rig_family": creature_rig_family,
-            },
-        )
+        arguments = {
+            "job_id": job_id,
+            "blend_rel": blend_rel,
+            "checkpoint_rel": checkpoint_rel,
+            "rider_component_names": rider_component_names or [],
+            "weight_mode": weight_mode,
+            "rig_name": rig_name,
+            "creature_rig_family": creature_rig_family,
+        }
+        if rig_options:
+            arguments["rig_options"] = dict(rig_options)
+        return self.call("hoi4_blender_author_creature_rig", arguments)
 
     def author_creature_action(
         self,

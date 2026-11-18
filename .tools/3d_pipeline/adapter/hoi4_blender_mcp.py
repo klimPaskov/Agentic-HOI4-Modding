@@ -728,6 +728,7 @@ def hoi4_blender_import_animation_action(
     promote_audited_target: bool = False,
     source_armature_name: str = "",
     root_scale_reference: Dict[str, list[str]] | None = None,
+    location_bones: list[str] | None = None,
 ) -> Dict[str, Any]:
     """Transfer one receipt-verified provider/professional skeletal action by its exact source id.
 
@@ -752,6 +753,7 @@ def hoi4_blender_import_animation_action(
             "source_sha256": source_sha256,
             "bone_chains": bone_chains or {},
             "root_scale_reference": root_scale_reference,
+            "location_bones": location_bones or [],
             "promote_audited_target": promote_audited_target,
         },
     )
@@ -1083,8 +1085,12 @@ def hoi4_blender_author_creature_rig(
     weight_mode: str = "semantic",
     rig_name: str = "",
     creature_rig_family: str = "elephant",
+    rig_options: Dict[str, Any] | None = None,
 ) -> Dict[str, Any]:
-    """Create and checkpoint a bounded custom rig for a nonhumanoid creature candidate."""
+    """Create and checkpoint a bounded custom rig for a nonhumanoid creature candidate.
+
+    `rig_options` (quadruped family): `load` true finds a carried load by rule and binds it rigidly, `rider_height` (model units)
+    sizes the rider column that places the Saddle_Node on the load's floor."""
 
     return _run(
         job_id,
@@ -1096,6 +1102,7 @@ def hoi4_blender_author_creature_rig(
             "weight_mode": weight_mode,
             "rig_name": rig_name,
             "creature_rig_family": creature_rig_family,
+            "rig_options": dict(rig_options or {}),
         },
     )
 

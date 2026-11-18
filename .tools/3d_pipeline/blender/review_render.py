@@ -26,7 +26,7 @@ from pathlib import Path
 import addon_utils
 import bpy
 import numpy as np
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 out = Path(request["out"])
@@ -43,18 +43,120 @@ bpy.ops.wm.read_homefile(use_empty=True)
 scene = bpy.context.scene
 bpy.ops.io_pdx_mesh.import_mesh(filepath=request["mesh"], chk_locs=True)
 rig = next((o for o in scene.objects if o.type == "ARMATURE"), None)
-meshes = [o for o in scene.objects if o.type == "MESH" and "collision" not in o.name.lower()]
+def is_collision(o):
+    # the selection box: named for it in our units, a plain "pCube1" with the Collision shader in vanilla's
+    return "collision" in o.name.lower() or any(slot.material and slot.material.get("shader") == "Collision" for slot in o.material_slots)
+
+
+meshes = [o for o in scene.objects if o.type == "MESH" and not is_collision(o)]
 for o in scene.objects:
     if o.type == "MESH" and o not in meshes:
         o.hide_render = True
+
+# A mount's rider (`attach`): the rider entity's mesh, drawn on the mount's node at the rider entity's scale, playing its own clip per
+# mount clip. io_pdx_mesh finds the armature to animate by bone name, and the two rigs can share names (Spine, Head), so while one rig's
+# clip is imported the other rig's armature data is swapped for an empty one.
+ATTACH = request.get("attach") or {}
+rider_rig = None
+_empty_armature = bpy.data.armatures.new("review_empty")
+if ATTACH:
+    before = set(scene.objects)
+    # The importer looks for an existing armature by bone name too, so the mount's is hidden while the rider comes in.
+    mount_data = rig.data if rig is not None else None
+    if rig is not None:
+        rig.data = _empty_armature
+    try:
+        bpy.ops.io_pdx_mesh.import_mesh(filepath=ATTACH["mesh"], chk_locs=True)
+    finally:
+        if rig is not None:
+            rig.data = mount_data
+    added = [o for o in scene.objects if o not in before]
+    rider_rig = next((o for o in added if o.type == "ARMATURE"), None)
+    for o in added:
+        if o.type == "MESH":
+            if is_collision(o):
+                o.hide_render = True
+            else:
+                o["hoi4_rider"] = True
+                meshes.append(o)
+    if rider_rig is not None:
+        # The rider's skin follows the rider's own rig (the importer can bind it to the first rig that has a bone of the same name).
+        for o in added:
+            if o.type == "MESH":
+                for modifier in o.modifiers:
+                    if modifier.type == "ARMATURE":
+                        modifier.object = rider_rig
+                if o.parent is not rider_rig:
+                    world = o.matrix_world.copy()
+                    o.parent = rider_rig
+                    o.matrix_world = world
+    if rig is not None and rider_rig is not None:
+        RIDER_REST = rider_rig.matrix_world.copy()
+        print("REVIEW_RIDER", rider_rig.name, "node found:", ATTACH.get("node") in rig.data.bones)
+
+
+def place_rider():
+    """Put the rider entity on the mount's node in the current frame: the node's posed matrix, then the rider's entity scale."""
+
+    if rider_rig is None or rig is None or ATTACH.get("node") not in rig.pose.bones:
+        return
+    bpy.context.view_layer.update()
+    node = rig.pose.bones[ATTACH["node"]]
+    # Both rigs come in with io_pdx_mesh's own object transform: the rider's rest is taken into the mount's armature space first.
+    rider_rig.matrix_world = rig.matrix_world @ node.matrix @ Matrix.Diagonal((ATTACH["scale"],) * 3 + (1.0,)) @ rig.matrix_world.inverted() @ RIDER_REST
+    bpy.context.view_layer.update()
+
+
+def import_clip(target, path):
+    """Import one .anim onto `target` (the mount's or the rider's rig), the other rig hidden from io_pdx_mesh's bone-name lookup."""
+
+    other = rider_rig if target is rig else rig
+    saved = other.data if other is not None else None
+    if other is not None:
+        other.data = _empty_armature
+    try:
+        target.animation_data_create()
+        target.animation_data.action = bpy.data.actions.new(Path(path).stem)
+        bpy.ops.io_pdx_mesh.import_anim(filepath=path, int_start=1)
+    finally:
+        if other is not None:
+            other.data = saved
+
+# A stream on vanilla's scrolling shader (a tank's track runs, `PdxMeshAdvancedAnim`) keeps the textures its own
+# material names (io_pdx_mesh loaded them beside the mesh), not the shape's body map. Its tread scrolls in a move
+# clip as the game scrolls it, by the entity's `texture_anim_speed` UV units a second.
+SCROLLING = "PdxMeshAdvancedAnim"
+own_maps = {}
+for o in meshes:
+    for slot in o.material_slots:
+        material = slot.material
+        if material is not None and material.get("shader") == SCROLLING and material.node_tree:
+            found = [n.image for n in material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image]
+            own_maps[material.name] = {
+                "diffuse": next((i for i in found if "diff" in i.name.lower()), found[0] if found else None),
+                "specular": next((i for i in found if "spec" in i.name.lower()), None),
+            }
+scrollers = []  # (mapping node) of every scrolling material, moved per frame in a move clip
+
+
+def scroll_node(tree, image_node):
+    """A UV mapping in front of `image_node`, kept to scroll the tread."""
+
+    coordinates = tree.nodes.new("ShaderNodeTexCoord")
+    mapping = tree.nodes.new("ShaderNodeMapping")
+    tree.links.new(coordinates.outputs["UV"], mapping.inputs["Vector"])
+    tree.links.new(mapping.outputs["Vector"], image_node.inputs["Vector"])
+    scrollers.append(mapping)
+
 
 # A `.mesh` usually names no texture: the `.gfx` meshsettings do. Give each shape its diffuse map
 # as the active image node, which Workbench's texture colour mode draws.
 images = {}
 for o in meshes:
     # Imported objects are named after their shape, with a ".001"-style or "-001" suffix when repeated.
-    shapes = [shape for shape in request["diffuse"] if shape != "*" and o.name.startswith(shape)]
-    path = request["diffuse"][max(shapes, key=len)] if shapes else request["diffuse"].get("*")
+    maps = ATTACH["diffuse"] if o.get("hoi4_rider") else request["diffuse"]
+    shapes = [shape for shape in maps if shape != "*" and o.name.startswith(shape)]
+    path = maps[max(shapes, key=len)] if shapes else maps.get("*")
     if not path:
         continue
     if path not in images:
@@ -65,19 +167,117 @@ for o in meshes:
             continue
         slot.material.use_nodes = True
         node = slot.material.node_tree.nodes.new("ShaderNodeTexImage")
-        node.image = images[path]
+        own = own_maps.get(slot.material.name, {}).get("diffuse")
+        node.image = own or images[path]
+        if slot.material.name in own_maps:
+            scroll_node(slot.material.node_tree, node)
         slot.material.node_tree.nodes.active = node
 
-scene.render.engine = "BLENDER_WORKBENCH"
+PBR = bool(request.get("pbr", True))  # the default: shaded from the packed PDX specular. "pbr": false keeps the old Workbench studio light
+if PBR:
+    # Shade from the packed PDX specular the game gets: green = specular level, alpha = glossiness, blue = metalness
+    # (roughness = 1 - glossiness). Workbench cannot read a texture for these, so this mode renders with EEVEE.
+    scrollers.clear()  # the trees are rebuilt below, so the Workbench mappings are gone (a removed node has no inputs)
+    spec_images = {}
+    for o in meshes:
+        maps = ATTACH["diffuse"] if o.get("hoi4_rider") else request["diffuse"]
+        speculars = ATTACH.get("specular", {}) if o.get("hoi4_rider") else request.get("specular", {})
+        shapes = [shape for shape in maps if shape != "*" and o.name.startswith(shape)]
+        key = max(shapes, key=len) if shapes else "*"
+        spec_path = speculars.get(key) or speculars.get("*")
+        diffuse_path = maps.get(key) or maps.get("*")
+        if not diffuse_path:
+            continue
+        if spec_path and spec_path not in spec_images:
+            spec_images[spec_path] = bpy.data.images.load(spec_path)
+            spec_images[spec_path].colorspace_settings.name = "Non-Color"
+            spec_images[spec_path].alpha_mode = "CHANNEL_PACKED"
+        for slot in o.material_slots:
+            material = slot.material
+            if material is None:
+                continue
+            material.use_nodes = True
+            material.use_backface_culling = True
+            tree = material.node_tree
+            tree.nodes.clear()
+            out_node = tree.nodes.new("ShaderNodeOutputMaterial")
+            bsdf = tree.nodes.new("ShaderNodeBsdfPrincipled")
+            diffuse = tree.nodes.new("ShaderNodeTexImage")
+            diffuse.image = own_maps.get(material.name, {}).get("diffuse") or images[diffuse_path]
+            spec = tree.nodes.new("ShaderNodeTexImage")
+            if spec_path:
+                spec.image = spec_images[spec_path]
+            if material.name in own_maps:
+                own_spec = own_maps[material.name].get("specular")
+                if own_spec is not None:
+                    own_spec.colorspace_settings.name = "Non-Color"
+                    own_spec.alpha_mode = "CHANNEL_PACKED"
+                    spec.image = own_spec
+                scroll_node(tree, diffuse)
+                scroll_node(tree, spec)
+            split = tree.nodes.new("ShaderNodeSeparateColor")
+            invert = tree.nodes.new("ShaderNodeMath")
+            invert.operation = "SUBTRACT"
+            invert.inputs[0].default_value = 1.0
+            level = tree.nodes.new("ShaderNodeMath")
+            level.operation = "MULTIPLY"
+            level.inputs[1].default_value = 2.0
+            level.use_clamp = True
+            links = tree.links
+            links.new(diffuse.outputs["Color"], bsdf.inputs["Base Color"])
+            if spec_path:
+                links.new(spec.outputs["Color"], split.inputs["Color"])
+                links.new(spec.outputs["Alpha"], invert.inputs[1])
+                links.new(invert.outputs["Value"], bsdf.inputs["Roughness"])
+                links.new(split.outputs["Blue"], bsdf.inputs["Metallic"])
+                links.new(split.outputs["Green"], level.inputs[0])
+                links.new(level.outputs["Value"], bsdf.inputs["Specular IOR Level"])
+            else:  # no packed specular beside the mesh: matte, not metal
+                bsdf.inputs["Roughness"].default_value = 0.75
+                bsdf.inputs["Metallic"].default_value = 0.0
+            links.new(bsdf.outputs["BSDF"], out_node.inputs["Surface"])
+    scene.render.engine = "BLENDER_EEVEE"
+    # The world lights the unit grey and shows magenta to the camera; one sun gives the form.
+    world = bpy.data.worlds.new("review")
+    world.use_nodes = True
+    wt = world.node_tree
+    wt.nodes.clear()
+    light_path = wt.nodes.new("ShaderNodeLightPath")
+    grey = wt.nodes.new("ShaderNodeBackground")
+    grey.inputs["Color"].default_value = (0.55, 0.55, 0.57, 1.0)
+    grey.inputs["Strength"].default_value = float(request.get("ambient", 1.0))
+    magenta = wt.nodes.new("ShaderNodeBackground")
+    magenta.inputs["Color"].default_value = (1.0, 0.0, 1.0, 1.0)
+    mix = wt.nodes.new("ShaderNodeMixShader")
+    world_out = wt.nodes.new("ShaderNodeOutputWorld")
+    wt.links.new(light_path.outputs["Is Camera Ray"], mix.inputs[0])
+    wt.links.new(grey.outputs["Background"], mix.inputs[1])
+    wt.links.new(magenta.outputs["Background"], mix.inputs[2])
+    wt.links.new(mix.outputs["Shader"], world_out.inputs["Surface"])
+    scene.world = world
+    sun_data = bpy.data.lights.new("sun", "SUN")
+    sun_data.energy = float(request.get("sun", 3.0))
+    sun_data.use_shadow = bool(request.get("sun_shadow", True))  # off: no part casts a shadow on another (static review sheets)
+    sun = bpy.data.objects.new("sun", sun_data)
+    sun.rotation_euler = (math.radians(55), 0.0, math.radians(-25))
+    scene.collection.objects.link(sun)
+else:
+    scene.render.engine = "BLENDER_WORKBENCH"
 scene.render.resolution_x = scene.render.resolution_y = int(request["size"])
 scene.view_settings.view_transform = "Standard"
+# Workbench's studio light leaves a unit about 40% darker than its own diffuse map (vanilla's ENG infantry measured 95 unlit,
+# 55 lit; the game shows it near the diffuse map's brightness). One stop and a bit of exposure puts the lit tiles back near the
+# texture (lit 85 against unlit 86 on that unit). The flat-colour diagnostic tiles keep exposure 0 so their colours read as before.
+EXPOSURE = float(request.get("exposure", 0.0 if PBR else 1.1))
+scene.view_settings.exposure = EXPOSURE
 shading = scene.display.shading
-shading.light = "STUDIO"
+shading.light = request.get("light", "STUDIO")  # "FLAT" shows the diffuse map alone, unlit (`tripo/colour_compare.py`)
 shading.color_type = "TEXTURE"
 shading.show_backface_culling = True
 shading.show_cavity = False
-scene.world = bpy.data.worlds.new("review")
-scene.world.color = (1.0, 0.0, 1.0)
+if not PBR:
+    scene.world = bpy.data.worlds.new("review")
+    scene.world.color = (1.0, 0.0, 1.0)
 
 
 def bounds():
@@ -93,14 +293,44 @@ def bounds():
     return low, high
 
 
+place_rider()
 rest_low, rest_high = bounds()
 span = max(rest_high.x - rest_low.x, rest_high.y - rest_low.y, rest_high.z - rest_low.z, 1e-3)
 
 disc = bpy.data.meshes.new("ground")
-rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * span * 1.4, rest_low.z) for k in range(48)]
-disc.from_pydata([(0.0, 0.0, rest_low.z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
+# The disc sits at the rest pose's lowest point, or at `ground_z` when the request names it (a ship's waterline is z = 0,
+# with its keel below).
+ground_z = float(request["ground_z"]) if request.get("ground_z") is not None else rest_low.z
+rim = [(math.cos(k * math.tau / 48) * span * 1.4, math.sin(k * math.tau / 48) * span * 1.4, ground_z) for k in range(48)]
+disc.from_pydata([(0.0, 0.0, ground_z)] + rim, [], [(0, k + 1, (k + 1) % 48 + 1) for k in range(48)])
 ground_material = bpy.data.materials.new("ground")
 ground_material.diffuse_color = (0.08, 0.16, 0.08, 1.0)
+if PBR:
+    # unlit, so the disc has no shadows and its colour is the same wherever the unit stands
+    ground_material.use_nodes = True
+    gt = ground_material.node_tree
+    gt.nodes.clear()
+    emission = gt.nodes.new("ShaderNodeEmission")
+    emission.inputs["Color"].default_value = (0.08, 0.16, 0.08, 1.0)
+    gt_out = gt.nodes.new("ShaderNodeOutputMaterial")
+    alpha = float(request.get("ground_alpha", 1.0))
+    if alpha < 1.0:
+        # see-through water (`ground_alpha`): a sinking ship's hull shows under the surface instead of seeming cut off
+        clear = gt.nodes.new("ShaderNodeBsdfTransparent")
+        mix = gt.nodes.new("ShaderNodeMixShader")
+        mix.inputs["Fac"].default_value = alpha
+        gt.links.new(clear.outputs["BSDF"], mix.inputs[1])
+        gt.links.new(emission.outputs["Emission"], mix.inputs[2])
+        gt.links.new(mix.outputs["Shader"], gt_out.inputs["Surface"])
+        if hasattr(ground_material, "surface_render_method"):
+            ground_material.surface_render_method = "BLENDED"
+        else:
+            ground_material.blend_method = "BLEND"
+    else:
+        gt.links.new(emission.outputs["Emission"], gt_out.inputs["Surface"])
+# The disc faces up, so with back faces culled the `below` view looks up through it. The PBR material needs this
+# set as well, or the disc hides the whole unit from below.
+ground_material.use_backface_culling = True
 disc.materials.append(ground_material)
 scene.collection.objects.link(bpy.data.objects.new("ground", disc))
 
@@ -111,6 +341,9 @@ scene.collection.objects.link(camera)
 scene.camera = camera
 # io_pdx_mesh imports units facing -Y with Z up. (azimuth, elevation) in degrees; azimuth 0 faces the unit.
 VIEWS = {"front": (0, 8), "left": (90, 8), "back": (180, 8), "right": (270, 8), "hoi4": (25, 55), "below": (200, -25)}
+# A request may add views (`view_angles`: name -> [azimuth, elevation]) and zoom (`ortho_share`: the frame is that
+# many times the unit's largest extent; default 1.45), as `weapon_sheets.py` does for close-ups.
+VIEWS.update({name: tuple(angles) for name, angles in request.get("view_angles", {}).items()})
 
 
 def aim(view):
@@ -118,17 +351,28 @@ def aim(view):
     direction = Vector((math.sin(azimuth) * math.cos(elevation), -math.cos(azimuth) * math.cos(elevation), math.sin(elevation)))
     camera.location = (rest_low + rest_high) / 2 + direction * span * 6
     camera.rotation_euler = (-direction).to_track_quat("-Z", "Y").to_euler()
-    camera_data.ortho_scale = span * 1.45
+    camera_data.ortho_scale = span * float(request.get("ortho_share", 1.45))
     camera_data.clip_end = span * 20
 
 
 index = {"mesh": request["mesh"], "views": request["views"], "clips": []}
 
 
+def scroll(clip, frame):
+    """Move every scrolling tread to where the game has it at this frame of a move clip (still in any other clip)."""
+
+    speed = float(request.get("texture_anim_speed") or 0.0)
+    offset = -(frame - 1) / 30.0 * speed if clip.endswith("_move") else 0.0  # Blender's v is 1 - the game's
+    for mapping in scrollers:
+        mapping.inputs["Location"].default_value[1] = offset
+
+
 def render(clip, frames):
     rows = []
     for frame in frames:
         scene.frame_set(frame)
+        scroll(clip, frame)
+        place_rider()
         row = {"frame": frame, "tiles": {}}
         for view in request["views"]:
             aim(view)
@@ -207,7 +451,7 @@ def paint_diagnostics():
         colour = np.tile([0.72, 0.72, 0.74, 1.0], (len(co), 1))
         hot = per_vertex > DIAG_START
         colour[hot] = np.stack([np.ones(hot.sum()), 0.9 * (1.0 - t[hot]), np.zeros(hot.sum()), np.ones(hot.sum())], axis=1)
-        colour[co[:, 2] < rest_low.z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
+        colour[co[:, 2] < ground_z - 0.01 * height] = [0.1, 0.3, 1.0, 1.0]
         colour[info["open"]] = [0.0, 1.0, 1.0, 1.0]
         o.data.color_attributes["review_diag"].data.foreach_set("color", colour.astype(np.float32).ravel())
         o.data.update()
@@ -216,9 +460,18 @@ def paint_diagnostics():
 
 def render_diagnostics(clip, frames, views):
     rows = []
+    # The flat colours need Workbench (EEVEE does not draw vertex colours without a material), on a magenta world.
+    previous_engine, previous_world = scene.render.engine, scene.world
+    scene.render.engine = "BLENDER_WORKBENCH"
+    diagnostic_world = bpy.data.worlds.new("diagnostic")
+    diagnostic_world.color = (1.0, 0.0, 1.0)
+    scene.world = diagnostic_world
     shading.color_type = "VERTEX"
+    shading.light = "STUDIO"
+    scene.view_settings.exposure = 0.0
     for frame in frames:
         scene.frame_set(frame)
+        place_rider()
         worst = paint_diagnostics()
         row = {"frame": frame, "tiles": {}, "worst_share": round(worst, 4)}
         for view in views:
@@ -229,6 +482,8 @@ def render_diagnostics(clip, frames, views):
             row["tiles"][view] = path.name
         rows.append(row)
     shading.color_type = "TEXTURE"
+    scene.render.engine, scene.world = previous_engine, previous_world
+    scene.view_settings.exposure = 0.0 if PBR else EXPOSURE
     next(item for item in index["clips"] if item["name"] == clip)["diagnostic_rows"] = rows
 
 
@@ -240,8 +495,9 @@ if request.get("diagnostic_views"):
 for clip in request["clips"]:
     if rig is None:
         break
-    rig.animation_data.action = bpy.data.actions.new(clip["name"])
-    bpy.ops.io_pdx_mesh.import_anim(filepath=clip["path"], int_start=1)
+    import_clip(rig, clip["path"])
+    if rider_rig is not None and ATTACH.get("clips", {}).get(clip["name"]):
+        import_clip(rider_rig, ATTACH["clips"][clip["name"]])
     # `.anim` sample k plays at Blender frame k + 1.
     render(clip["name"], [frame + 1 for frame in clip["frames"]])
     if request.get("diagnostic_views") and clip.get("diagnostic_frames"):
