@@ -60,6 +60,9 @@ class PropClearance:
     failed_frames: List[int] = field(default_factory=list)
     note: str = ""
     smoothed_over: int = 0  # the radius (frames) the hand's added turn was smoothed over to stay under the spin limit
+    max_roll_degrees: float = 0.0  # the part turned about its own long axis where the wrist could not clear it
+    max_arm_degrees: float = 0.0  # the upper arm turned about the shoulder, last
+    search_bound_reached: bool = False  # a search past the wrist stopped at its bound (lib/tripo_clearance.STAGE_TESTS, BRIDGE_TESTS)
 
 
 def _frames_of(anim: pdx_deform.Animation) -> int:
@@ -139,62 +142,153 @@ def ramped(rotvecs: np.ndarray, needed: Sequence[bool], step_degrees: float = RA
     return out
 
 
+def _long_axis(points: np.ndarray) -> np.ndarray:
+    """The principal axis of a part's rest points: a weapon's haft, a shield's bar."""
+
+    centred = np.asarray(points, float) - np.mean(points, axis=0)
+    _u, _s, vt = np.linalg.svd(centred, full_matrices=False)
+    return vt[0]
+
+
+def _turned(rotation: np.ndarray) -> np.ndarray:
+    scale = np.cbrt(max(abs(float(np.linalg.det(rotation))), 1e-12))
+    return rotation / scale
+
+
+def _posed_frames(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, held: np.ndarray, body: np.ndarray, joints: Dict[str, int],
+                  can_arm: bool) -> Dict[str, list]:
+    """Per frame of the clip: the part's judged points, the body's vertices, the wrist, the grip and the haft's direction, and (with
+    `can_arm`) the shoulder with the elbow and the wrist. `joints` names the hand, the part, the elbow and the upper arm by index."""
+
+    height = float(mesh.height)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    world = matrices @ np.linalg.pinv(mesh.inverse_bind)[None]
+    rest_world = np.linalg.pinv(mesh.inverse_bind)
+    hand, part, elbow, upper = joints["hand"], joints["part"], joints["elbow"], joints["upper"]
+    indices = np.nonzero(held)[0]
+    indices = indices[np.linspace(0, len(indices) - 1, min(MAX_POINTS, len(indices))).astype(int)]
+    free = np.linalg.norm(mesh.positions[indices] - pdx_motion.rest_joints(mesh)[part], axis=1) > GRIP_ZONE_SHARE * height
+    axis_rest = _long_axis(mesh.positions[indices])
+    to_rest = np.linalg.inv(_turned(rest_world[part, :3, :3]))
+    out: Dict[str, list] = {key: [] for key in ("weapon", "body", "pivots", "grips", "hafts", "shoulders", "arm_joints")}
+    out["world"] = world
+    for frame in range(_frames_of(anim)):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        out["weapon"].append(posed[indices][free])
+        out["body"].append(posed[body])
+        out["pivots"].append(world[frame, hand, :3, 3])
+        out["grips"].append(world[frame, part, :3, 3])
+        out["hafts"].append(_turned(world[frame, part, :3, :3]) @ to_rest @ axis_rest)
+        if can_arm:
+            out["shoulders"].append(world[frame, upper, :3, 3])
+            out["arm_joints"].append(np.array([world[frame, elbow, :3, 3], world[frame, hand, :3, 3]]))
+    return out
+
+
+def _smoothed_near(turns: np.ndarray, fast: Sequence[int], radius: int) -> np.ndarray:
+    """`turns` smoothed over `radius` frames only within `radius` frames of the fast steps (step i is from frame i to i + 1)."""
+
+    if not radius or not len(fast):
+        return turns
+    near = np.zeros(len(turns), bool)
+    for i in fast:
+        near[max(i - radius, 0) : i + radius + 2] = True
+    return np.where(near[:, None], CL.smooth_rotations(turns, radius=radius), turns)
+
+
+def _written_turns(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, world: np.ndarray, bones, names: Dict[str, str], turns):
+    """(the channels with each bone's turn written, the smoothing radius): the turns of the hand, the roll and the arm, smoothed over the
+    fewest frames (`SMOOTH_RADII`) that keep every turned joint under `MAX_HAND_STEP_DEGREES` a frame. Only the frames round a step over the
+    limit are smoothed: smoothing the whole clip took the turn away from frames that needed it all (the ogre's chop, 31% of the club back in
+    the body over five frames for one fast step)."""
+
+    count = len(turns[0])
+    channels = {name: dict(channel) for name, channel in anim.channels.items()}
+    fast: List[int] = []
+    for radius in SMOOTH_RADII:
+        smooth = [_smoothed_near(np.asarray(v, float), fast, radius) for v in turns]
+        # the roll is solved about the haft as the wrist carries it, and the part's bone hangs from the hand: its own turn is that roll
+        # taken back through the wrist's turn
+        local_roll = np.array([CL.rotvec_matrix(smooth[0][i]).T @ smooth[1][i] for i in range(count)])
+        vectors = {names["hand"]: smooth[0], names["part"]: local_roll, names["upper"]: smooth[2]}
+        over = set()
+        for name, index in bones:
+            new_q = _rotation_vectors_to_quaternions(world, int(mesh.parents[index]), index, anim.channels[name]["q"], vectors[name])
+            channels[name] = dict(anim.channels[name], q=new_q)
+            over |= {i for i in range(len(new_q) - 1) if tripo_pose.quaternion_turn(new_q[i], new_q[i + 1]) > MAX_HAND_STEP_DEGREES}
+        if not over:
+            break
+        fast = sorted(set(fast) | over)
+    return channels, smooth, radius
+
+
 def clear_part(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, bone: str, others: Sequence[str], keyed: Sequence[str]):
-    """(the clip with the hand's turns applied, the record). The clip itself when the part is clear in every frame."""
+    """(the clip with the turns applied, the record, the bones whose rotations changed). The clip itself when the part is clear in every frame.
+
+    The turns come in the grip stage's order (`lib/tripo_clearance.clear_clip_staged`): the hand about the wrist, then the part about its own
+    long axis through its joint (when the part's bone is keyed), then the upper arm about the shoulder (when it is keyed), which never lowers a
+    hand raised above the shoulder. Each is written into its own bone's rotation samples."""
 
     hand_name = holding_hand(mesh, bone)
     record = PropClearance(bone, hand_name or "")
     if hand_name is None or hand_name not in keyed:
         record.note = "the part has no bone of its own under a keyed hand"
-        return anim, record
+        return anim, record, []
     held, triangles, body = part_split(mesh, bone, others)
     if held.sum() < 50:
         record.note = "fewer than 50 vertices"
-        return anim, record
+        return anim, record, []
     height = float(mesh.height)
-    matrices = pdx_deform.skinning_matrices(mesh, anim)
-    world = matrices @ np.linalg.pinv(mesh.inverse_bind)[None]
     hand = mesh.bones.index(hand_name)
-    rest = pdx_motion.rest_joints(mesh)
-    indices = np.nonzero(held)[0]
-    indices = indices[np.linspace(0, len(indices) - 1, min(MAX_POINTS, len(indices))).astype(int)]
-    grip = rest[mesh.bones.index(bone)]
-    free = np.linalg.norm(mesh.positions[indices] - grip, axis=1) > GRIP_ZONE_SHARE * height
-    weapon_frames, body_frames, pivots = [], [], []
-    for frame in range(_frames_of(anim)):
-        posed = pdx_deform.skin(mesh, matrices[frame])
-        weapon_frames.append(posed[indices][free])
-        body_frames.append(posed[body])
-        pivots.append(world[frame, hand, :3, 3])
-    result = CL.clear_clip(weapon_frames, pivots, body_frames, triangles, height, max_angle=MAX_TURN_DEGREES, ground_axis=UP_AXIS, coherent=True)
+    elbow = int(mesh.parents[hand])
+    upper = int(mesh.parents[elbow]) if elbow >= 0 else -1
+    names = {"hand": hand_name, "part": bone, "upper": mesh.bones[upper] if upper >= 0 else ""}
+    can_roll = bone in keyed
+    can_arm = upper >= 0 and names["upper"] in keyed and names["upper"].endswith("Arm")
+    f = _posed_frames(mesh, anim, held, body, {"hand": hand, "part": mesh.bones.index(bone), "elbow": elbow, "upper": upper}, can_arm)
+    result = CL.clear_clip_staged(f["weapon"], f["pivots"], f["body"], triangles, height, grips=f["grips"] if can_roll else None,
+                                  haft_axes=f["hafts"] if can_roll else None, shoulders=f["shoulders"] if can_arm else None,
+                                  arm_joints=f["arm_joints"] if can_arm else None, up_axis=UP_AXIS, max_angle=MAX_TURN_DEGREES, ground_axis=UP_AXIS,
+                                  coherent=True)
     record.worst_before = float(max(result["before"]))
     record.worst_after = float(max(result["after"]))
     record.failed_frames = [int(i) for i in result["failed"]]
     if record.worst_before <= CL.TARGET:
-        return anim, record
-    needed = [CL.deep_share(weapon_frames[i], body_frames[i], triangles, height, CL.CLEAR_MARGIN_SHARE, ground_axis=UP_AXIS) > CL.TARGET
-              for i in range(len(weapon_frames))]
-    rotvecs = ramped(result["rotvecs"], needed, clear=lambda frame, vector: CL.deep_share(
-        (weapon_frames[frame] - pivots[frame]) @ CL.rotvec_matrix(vector).T + pivots[frame], body_frames[frame], triangles, height,
-        CL.CLEAR_MARGIN_SHARE, ground_axis=UP_AXIS) <= CL.TARGET)
+        return anim, record, []
+    count = len(f["weapon"])
+    judged = CL._clip_free_points(f["weapon"], f["pivots"], height, None, None)  # the points the solve judged
+
+    def share_of(frame, wrist, roll, arm):
+        points = CL.staged_points(judged[frame], f["pivots"][frame], wrist, f["grips"][frame], roll, f["shoulders"][frame] if can_arm else None, arm)
+        return CL.deep_share(points, f["body"][frame], triangles, height, CL.CLEAR_MARGIN_SHARE, ground_axis=UP_AXIS)
+
+    rolls = np.asarray(result["rolls"], float)
+    arms = np.asarray(result["arm_rotvecs"], float)
+    needed = [CL.deep_share(f["weapon"][i], f["body"][i], triangles, height, CL.CLEAR_MARGIN_SHARE, ground_axis=UP_AXIS) > CL.TARGET
+              for i in range(count)]
+    wrists = ramped(result["rotvecs"], needed, clear=lambda frame, vector: share_of(frame, vector, rolls[frame], arms[frame]) <= CL.TARGET)
+    # a jump the ramp could not soften (a frame that needs a turn next to one the same turn puts in the body) is bridged where a nearer turn
+    # stays clear, within what the clip's own hand turn leaves of the spin limit
     q = anim.channels[hand_name]["q"]
-    for radius in SMOOTH_RADII:
-        turned = CL.smooth_rotations(rotvecs, radius=radius) if radius else rotvecs
-        new_q = _rotation_vectors_to_quaternions(world, int(mesh.parents[hand]), hand, q, turned)
-        steps = [tripo_pose.quaternion_turn(new_q[i], new_q[i + 1]) for i in range(len(new_q) - 1)]
-        if max(steps, default=0.0) <= MAX_HAND_STEP_DEGREES:
-            break
-    rotvecs = turned
-    after = CL._clip_shares(weapon_frames, pivots, rotvecs, body_frames, triangles, height, len(weapon_frames), ground_axis=UP_AXIS)
+    room = [max(MAX_HAND_STEP_DEGREES - tripo_pose.quaternion_turn(q[i], q[i + 1]), 0.0) for i in range(count - 1)]
+    wrists = CL.bridge_turns(wrists, lambda frame, vector: share_of(frame, vector, rolls[frame], arms[frame]) <= CL.LIMIT, room)
+    bones = [(hand_name, hand)]
+    if can_roll and np.abs(rolls).max() > 1e-9:
+        bones.append((bone, mesh.bones.index(bone)))
+    if can_arm and np.abs(arms).max() > 1e-9:
+        bones.append((names["upper"], upper))
+    channels, smooth, radius = _written_turns(mesh, anim, f["world"], bones, names, (wrists, rolls, arms))
+    after = [share_of(i, smooth[0][i], smooth[1][i], smooth[2][i]) for i in range(count)]
     record.worst_after = float(max(after))
     record.failed_frames = [i for i, share in enumerate(after) if share > CL.LIMIT]
     record.smoothed_over = radius
-    channels = {name: dict(channel) for name, channel in anim.channels.items()}
-    channels[hand_name] = dict(channels[hand_name], q=new_q)
     record.changed = True
     record.frames_changed = int(result["frames_changed"])
     record.max_degrees = round(float(result["max_degrees"]), 1)
-    return pdx_deform.Animation(anim.fps, anim.frames, channels), record
+    record.max_roll_degrees = round(float(result["max_roll_degrees"]), 1)
+    record.max_arm_degrees = round(float(result["max_arm_degrees"]), 1)
+    record.search_bound_reached = bool(result["search_bound_reached"])
+    return pdx_deform.Animation(anim.fps, anim.frames, channels), record, [name for name, _index in bones]
 
 
 def landing_frame(centres: np.ndarray, height: float) -> int:
@@ -316,12 +410,11 @@ def clear_clip_file(mesh_path: Path, anim_path: Path, out_path: Path, parts: Seq
     for _pass in range(MAX_PASSES):
         again = False
         for bone in bones:
-            result, record = clear_part(mesh, anim, bone, [b for b in everyone if b != bone], keyed)
+            result, record, turned = clear_part(mesh, anim, bone, [b for b in everyone if b != bone], keyed)
             if record.changed:
                 anim = result
                 again = True
-                if record.hand not in changed_hands:
-                    changed_hands.append(record.hand)
+                changed_hands += [name for name in turned if name not in changed_hands]
             first = records.get(bone)
             if first and first["changed"] and not record.changed:
                 # a later pass found the part clear: keep what the pass that turned the hand did, and the share it left
@@ -331,6 +424,8 @@ def clear_clip_file(mesh_path: Path, anim_path: Path, out_path: Path, parts: Seq
                 record.worst_before = first["worst_before"]
                 record.frames_changed = max(record.frames_changed, first["frames_changed"])
                 record.max_degrees = max(record.max_degrees, first["max_degrees"])
+                record.max_roll_degrees = max(record.max_roll_degrees, first.get("max_roll_degrees", 0.0))
+                record.max_arm_degrees = max(record.max_arm_degrees, first.get("max_arm_degrees", 0.0))
                 records[bone] = dict(record.__dict__)
             else:
                 records[bone] = dict(record.__dict__)

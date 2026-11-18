@@ -110,16 +110,23 @@ def _bin_triangles(t2: np.ndarray, grid: int) -> Tuple[np.ndarray, np.ndarray, n
     return key[order], tri[order], origin, cell, hi.max(axis=0)
 
 
-def _inside_along(points: np.ndarray, triangles: np.ndarray, direction: np.ndarray, grid: int) -> np.ndarray:
-    """True where a ray from the point along `direction` crosses the triangles an odd number of times."""
+def _project(triangles: np.ndarray, direction: np.ndarray, grid: int) -> tuple:
+    """The triangles projected along `direction` and binned (`_bin_triangles`): what the ray test needs of a mesh, whatever the points."""
 
     u, v = _basis(direction)
     plane = np.stack([u, v], axis=1)
-    p2 = points @ plane
-    pd = points @ direction
     t2 = triangles @ plane  # (T, 3, 2)
     td = triangles @ direction  # (T, 3)
     key, tri, origin, cell, upper = _bin_triangles(t2, grid)
+    return plane, direction, t2, td, key, tri, origin, cell, upper, grid
+
+
+def _inside_projected(points: np.ndarray, projected: tuple) -> np.ndarray:
+    """True where a ray from the point along the projection's direction crosses the triangles an odd number of times."""
+
+    plane, direction, t2, td, key, tri, origin, cell, upper, grid = projected
+    p2 = points @ plane
+    pd = points @ direction
     # Points outside the projected bounds cannot be crossed by any triangle.
     q = np.floor((p2 - origin) / cell).astype(np.int64)
     inside_bounds = np.all((q >= 0) & (q < grid), axis=1) & np.all(p2 >= origin, axis=1) & np.all(p2 <= upper, axis=1)
@@ -158,21 +165,41 @@ def _inside_along(points: np.ndarray, triangles: np.ndarray, direction: np.ndarr
     return result
 
 
+def _inside_along(points: np.ndarray, triangles: np.ndarray, direction: np.ndarray, grid: int) -> np.ndarray:
+    """True where a ray from the point along `direction` crosses the triangles an odd number of times."""
+
+    return _inside_projected(points, _project(triangles, direction, grid))
+
+
+class InsideTest:
+    """`points_inside_mesh` for one mesh and many sets of points: the projections and bins are made once.
+
+    The clearance tests hundreds of trial poses of a weapon against one posed body, and binning the body's 20,000 triangles took most of each
+    test's 60 ms."""
+
+    def __init__(self, triangles: np.ndarray, directions: Optional[np.ndarray] = None, grid: int = 48):
+        triangles = np.asarray(triangles, dtype=np.float64).reshape(-1, 3, 3)
+        directions = RAY_DIRECTIONS if directions is None else np.asarray(directions, dtype=np.float64)
+        self.empty = not len(triangles)
+        self.projected = [] if self.empty else [_project(triangles, d / np.linalg.norm(d), grid) for d in directions]
+
+    def __call__(self, points: np.ndarray) -> np.ndarray:
+        points = np.asarray(points, dtype=np.float64).reshape(-1, 3)
+        if not len(points) or self.empty:
+            return np.zeros(len(points), dtype=bool)
+        votes = np.zeros(len(points), dtype=np.int64)
+        for projected in self.projected:
+            votes += _inside_projected(points, projected)
+        return votes * 2 > len(self.projected)
+
+
 def points_inside_mesh(points: np.ndarray, triangles: np.ndarray, directions: Optional[np.ndarray] = None, grid: int = 48) -> np.ndarray:
     """Boolean mask of the points inside a triangle soup, by majority vote of ray-parity tests.
 
     `triangles` is (T, 3, 3). Triangle orientation is ignored and the mesh need not be watertight.
     """
 
-    points = np.asarray(points, dtype=np.float64).reshape(-1, 3)
-    triangles = np.asarray(triangles, dtype=np.float64).reshape(-1, 3, 3)
-    if not len(points) or not len(triangles):
-        return np.zeros(len(points), dtype=bool)
-    directions = RAY_DIRECTIONS if directions is None else np.asarray(directions, dtype=np.float64)
-    votes = np.zeros(len(points), dtype=np.int64)
-    for direction in directions:
-        votes += _inside_along(points, triangles, direction / np.linalg.norm(direction), grid)
-    return votes * 2 > len(directions)
+    return InsideTest(triangles, directions, grid)(points)
 
 
 def grip_zone_mask(points: np.ndarray, hand: np.ndarray, radius: float) -> np.ndarray:

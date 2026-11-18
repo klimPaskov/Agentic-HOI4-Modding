@@ -301,6 +301,7 @@ def main():
     c = SimpleNamespace(args=args, hand=args.hand, bone_name=S.SHIELD_BONE, part_name=S.SHIELD_PART, ease_skip=(PREFIX + GW.WEAPON_BONE,),
                         report={"tool": "shield_stage", "body": args.body.name, "shield": args.shield.name, "hand": args.hand})
     load_body(c)
+    c.raw_raise = GW.hand_raise(c)
     GW.find_hand_frame(c)
     GW.find_finger_skins(c)
     load_shield(c)
@@ -311,21 +312,23 @@ def main():
     GW.bind_weapon(c)
     hold_arm(c)
     c.report["rotation_keys"] = {action.name: GW.ease_clip(c, action) for action in bpy.data.actions}
-    GW.clear_weapon_from_body(c)
-    c.report["rotation_keys_after_clearance"] = {action.name: GW.ease_clip(c, action) for action in bpy.data.actions}
+    GW.clear_weapon_from_body(c)  # its turns are eased too, and the clip measured again after the easing
     for name in c.drop_clips:
         GW.smooth_rotation_keys(bpy.data.actions[name])  # as the drop does first, so the weapon is read where the drop will judge it
     c.occupant_frames = occupants(c)
     GW.release_clips(c)
     GW.check_fingers(c)
     dropped = GW.drop_failures(c)
+    lowered = GW.raise_lost(c)
     export(c)
     failed = c.clearance_failed
-    if (failed or dropped) and not args.clearance_allow_fail:
+    if (failed or dropped or lowered) and not args.clearance_allow_fail:
         if failed:
             print("CLEARANCE_FAILED " + json.dumps(failed), file=sys.stderr)
         if dropped:
             print("DROP_FAILED " + json.dumps(dropped), file=sys.stderr)
+        if lowered:
+            print("RAISE_LOST " + json.dumps(lowered), file=sys.stderr)
         raise SystemExit(3)
 
 
