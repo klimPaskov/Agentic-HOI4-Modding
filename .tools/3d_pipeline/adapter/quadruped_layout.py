@@ -109,8 +109,9 @@ CONTACT_ELONGATION = 2.5
 
 
 def ground_contacts(points: np.ndarray) -> Tuple[List[np.ndarray], List[np.ndarray]]:
-    """(feet, dragged): the ground contacts as point arrays, the elongated ones (a tail on the ground) apart. Only when more than four
-    pieces touch the ground is an elongated one set apart, so a horse's long hoof is never dropped."""
+    """(feet, dragged): the ground contacts as point arrays. Only when more than four pieces touch the ground and one beyond the four least
+    elongated is elongated (a tail on the ground, even one whose tip curls aside) are the four least elongated the feet and the rest
+    dragged, so a horse's long hoof is never dropped."""
 
     ground = float(points[:, 2].min())
     height = float(np.ptp(points[:, 2]))
@@ -134,14 +135,19 @@ def ground_contacts(points: np.ndarray) -> Tuple[List[np.ndarray], List[np.ndarr
                         stack.append(b)
     labels = np.array([label[tuple(item)] for item in cells.tolist()]) if len(cells) else np.zeros(0, int)
     pieces = [low[labels == value] for value in sorted(set(labels.tolist()))]
-    feet, dragged = [], []
+    elongations = []
     for piece in pieces:
         spread = np.linalg.svd(piece[:, :2] - piece[:, :2].mean(axis=0), compute_uv=False) if len(piece) > 2 else np.zeros(2)
-        elongation = float(spread[0] / max(float(spread[1]), 1e-12)) if len(spread) > 1 else 1.0
-        (dragged if elongation > CONTACT_ELONGATION else feet).append(piece)
-    if len(feet) < 4:
+        elongations.append(float(spread[0] / max(float(spread[1]), 1e-12)) if len(spread) > 1 else 1.0)
+    if len(pieces) <= 4:
         return pieces, []
-    return feet, dragged
+    # more than four: the four least elongated are the feet, and the rest are dragged when elongated (a tail) or when the feet are four
+    order = np.argsort(elongations)
+    feet = [pieces[i] for i in order[:4]]
+    rest = [pieces[i] for i in order[4:]]
+    if any(elongations[i] > CONTACT_ELONGATION for i in order[4:]):
+        return feet, rest
+    return pieces, []
 
 
 def feet_axis_along_x(points: np.ndarray) -> Optional[bool]:

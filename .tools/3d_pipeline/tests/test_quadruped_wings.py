@@ -76,6 +76,30 @@ class Ground(unittest.TestCase):
         self.assertTrue(ql.feet_axis_along_x(turned), "spread wings wider than the body do not decide it")
 
 
+class Legs(unittest.TestCase):
+    def test_a_curled_tail_does_not_move_the_mid_plane(self) -> None:
+        points, _triangles = _dragon()
+        curl = _box((0.0, 3.55, 0.0), (0.9, 3.6, 0.05), (8, 1, 1))[0]  # the tail tip curls aside on the ground
+        landmarks = ql.detect_landmarks(np.vstack([points, curl]))
+        self.assertLess(abs(landmarks["centre_x"]), 0.02, "the feet set the mid-plane")
+
+    def test_no_leg_is_thinner_than_half_the_median(self) -> None:
+        points, _triangles = _dragon()
+        landmarks = ql.detect_landmarks(points)
+        radii = [float(joints["radius"]) for joints in landmarks["legs"].values()]
+        self.assertGreaterEqual(min(radii), 0.5 * float(np.median(radii)) - 1e-12)
+
+    def test_the_neck_never_takes_leg_skin(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        points, _triangles = _dragon()
+        layout = ql.build_layout(landmarks)
+        indices, weights = ql.skin_weights(points, layout)
+        names = np.array(layout.names())
+        neck = np.where(np.isin(names[indices], ["Neck_01", "Neck_02", "Head"]), weights, 0.0).sum(axis=1)
+        legs = points[:, 2] < 0.9
+        self.assertTrue((neck[legs] < 1e-9).all())
+
+
 class FindWings(unittest.TestCase):
     def test_the_far_plates_are_the_wings(self) -> None:
         points, triangles, landmarks, plans, masks = _found()
@@ -206,6 +230,23 @@ class Checks(unittest.TestCase):
         self.assertEqual(left.tolist(), [True, False, False, False])
         self.assertEqual(right.tolist(), [False, False, True, False])
         self.assertIsNone(TC.quadruped_wing_sides(SimpleNamespace(bones=["Root"], joints=joints, weights=weights)))
+
+
+class QuadrupedViews(unittest.TestCase):
+    def test_the_views_run_from_the_hind_hooves_to_the_fore_hooves(self) -> None:
+        from lib import pdx_motion
+        from tripo import tripo_checks as TC
+
+        bones = [f"{end}_{side}_Hoof" for end in ("Front", "Rear") for side in ("Left", "Right")] + ["Head", "TailCurl"]
+        joints = np.array([[0.5, 0.0, -1.0], [-0.5, 0.0, -1.0], [0.5, 0.0, 1.0], [-0.5, 0.0, 1.0], [0.0, 2.0, -2.0], [5.0, 0.0, 3.0]])
+        mesh = SimpleNamespace(bones=bones)
+        original = pdx_motion.rest_joints
+        pdx_motion.rest_joints = lambda _mesh: joints
+        try:
+            front = TC.front_direction(mesh)
+        finally:
+            pdx_motion.rest_joints = original
+        self.assertTrue(np.allclose(front, [0.0, 0.0, -1.0]))
 
 
 class Size(unittest.TestCase):
