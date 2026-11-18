@@ -801,7 +801,7 @@ def role_of(clip: str) -> str:
 
 
 def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict, death_exclude: Sequence[str] = ()) -> Tuple[List[dict], dict]:
-    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND, TRIPO-DEATH-FEET, TRIPO-DEATH-REST and TRIPO-WAIST-TWIST over a unit's clips (`anims`: clip
+    """TRIPO-LOOP-POP, TRIPO-FOOT-BELOW-GROUND, TRIPO-DEATH-FEET, TRIPO-DEATH-HOVER (`lib/tripo_fall`), TRIPO-DEATH-REST and TRIPO-WAIST-TWIST over a unit's clips (`anims`: clip
     stem to Animation). `death_exclude`: bones whose skin never decides where the dying body's ground is (a weapon or shield it lets go of)."""
 
     out: List[dict] = []
@@ -819,6 +819,9 @@ def pose_findings(mesh: pdx_deform.SkinnedMesh, anims: dict, death_exclude: Sequ
             row["final_feet_height_share"] = round(height, 4)
             if height > DEATH_FEET_LIMIT:
                 out.append(_finding("TRIPO-DEATH-FEET", clip, f"in the last {DEATH_FINAL_FRAMES} frames the boots hang {height:.1%} of the height above the ground (limit {DEATH_FEET_LIMIT:.0%}, vanilla's deaths end within 0.6%)", share=round(height, 4)))
+            from . import tripo_fall
+
+            out += tripo_fall.hover_findings(mesh, anim, clip, row, death_exclude)
             rest = death_rest_heights(mesh, anim, death_exclude)
             if rest is not None:
                 row["final_rest_heights"] = rest
