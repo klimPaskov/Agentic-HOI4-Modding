@@ -194,9 +194,15 @@ After writing, it runs `check_unit_files.py --mod-root` and the static wiring au
 
 The agent picks one clip per role by these rules, and records every candidate's numbers in the job. `clip_check.py` gives stretch and ground. Spin, hand reach, pelvis travel and the tumble test are read from the clip's joint positions in the exported GLB. The kit has no single command for them yet, so the agent computes them and records how. `TRIPO-NOT-DOWN` and limb-in-torso run in `tripo_checks.py` on the exported unit, so a death candidate is confirmed there after the run.
 
+A death can be picked before the run with `tripo/death_pick.py`, once an earlier run of the same unit has exported its mesh. It plays each candidate of the rigged GLB on that mesh, whose weights are the route's, and measures the thigh split (TRIPO-DEATH-SPLAY), the hover (TRIPO-DEATH-HOVER), the end pose (TRIPO-NOT-DOWN, TRIPO-DEATH-REST), limb-in-torso and the kit's deformed edges. With `--settled` it measures each candidate again after the route's death settles, as the run will export it, and picks on those numbers.
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/death_pick.py <job folder>/inbox/<asset>__rigged.glb <earlier run's unit folder> --clips defeat_02 defeat_03 fall "<first words of a made clip>" --settled --json <job folder>/evidence/death_pick.json
+```
+
 1. Every candidate must pass the stretch, spin and ground checks, and a death must pass limb-in-torso.
 2. **Attack.** The largest forward reach of the hands (wrist ahead of the chest, as a share of the body's height) plus the travel of the pelvis. It must be at least 0.2.
-3. **Death.** It must end lying down, on the front or the back (TRIPO-NOT-DOWN), and must not tumble: the feet never above the head, the pelvis never turned past 120 degrees. Among those, the lowest limb-in-torso wins.
+3. **Death.** It must end lying down, on the front or the back (TRIPO-NOT-DOWN), and must not tumble: the feet never above the head, the pelvis never turned past 120 degrees. With an earlier run's mesh, `death_pick.py --settled` decides: the candidate that passes every death limit with the fewest deformed edges. Without one, the lowest limb-in-torso wins. On the zombie (2026-11-18) only the text-to-motion death passed every limit once settled (661 deformed edges, defeat_03 325 but split 93 degrees). defeat_02 never lies down, and fall splits the thighs 56 degrees.
 4. **Defend and retreat.** The lowest stretch among the candidates that pass.
 5. **Idle and move.** `idle` and `walk`, unless they fail a check.
 6. **When no candidate passes a role,** use the fixed default for the body type: idle `idle`, move `walk`, defend `hit_to_stomach`, retreat `flee_01`, death `defeat_03` (the tile labelled `defeat_02`), and attack `box_01` for an unarmed unit. Then make one text-to-motion clip for the role.
