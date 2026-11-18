@@ -56,6 +56,11 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the
   height against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
   pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
+- TRIPO-LOOP-STANDS: in a humanoid's move or retreat the feet stop striding in some frame step (one ankle moves against the other slower than
+  0.14 heights a second, smoothed over a sixth of a second around the loop; vanilla's slowest locomotion clip keeps 0.179), or the last step does
+  not flow into the first (a joint's speed against the pelvis changes by more than 1.56 heights a second across the seam, vanilla's worst 1.25).
+  The game loops both clips in place, so the unit would stop and stand, or jerk, once per cycle. `lib/tripo_loop.py`, whose loop window the
+  intake finds and `tripo/prepare_tripo_unit.py` cuts and closes.
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on). A head whose thinnest spread is above `MAX_FACE_FLATNESS` of its middle one (a club, a
   mace: no broad face) is not judged, and the numbers carry its `head_flatness`.
@@ -95,7 +100,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -1126,6 +1131,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         found, numbers["death_splay"] = tripo_splay.splay_findings(mesh, anims)
         findings += found
         found, numbers["death_kick"] = tripo_kick.kick_findings(mesh, anims)
+        findings += found
+        found, numbers["gait"] = tripo_loop.loop_findings(mesh, anims)
         findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found

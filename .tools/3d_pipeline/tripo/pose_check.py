@@ -1,6 +1,6 @@
 """Measure a rigged Tripo GLB's candidate clips on a unit's exported skin: the shoulder swell, the neck, the hand's raise and reach.
 
-    py -3.13 .tools/3d_pipeline/tripo/pose_check.py <rigged.glb> <unit.mesh> [--clips NAME ...] [--attack NAME ...] [--unarmed] [--hand RightHand] [--json out.json]
+    py -3.13 .tools/3d_pipeline/tripo/pose_check.py <rigged.glb> <unit.mesh> [--clips NAME ...] [--attack NAME ...] [--gait NAME ...] [--unarmed] [--hand RightHand] [--json out.json]
 
 The clip pick (docs/3d-units.md, "Pick the clips by measurement") needs to know, before a clip is bought into the route, whether its pose
 swells the shoulders (TRIPO-SHOULDER-SWELL, `lib/tripo_shoulder.py`) or sinks the head (TRIPO-NECK-SUNK, `lib/tripo_neck.py`) on the skin the
@@ -22,6 +22,10 @@ A verdict per clip says whether the swell and the neck pass their limits after t
 A clip named with `--attack` must also strike (TRIPO-ATTACK-NO-STRIKE's limits), and `attack_pick` names the attack by the pick rule: of the
 attack candidates that pass, the largest raise or reach plus the pelvis's travel after the rules, at least `MIN_ATTACK_SCORE`. A lunge that
 holds the arms out reaches as far as a blow, so the reach alone picked the zombie's static lunge three times (zombie_i, zombie_k, zombie_o).
+A clip named with `--gait` (a candidate for the move or the retreat) is judged as a looped gait (`lib/tripo_loop.py`, TRIPO-LOOP-STANDS): the
+loop window the route would cut (frames of this tool's 30 a second), the share of the whole clip's steps that stand, and on the window the
+slowest stride and the speed change across its seam before the route closes it. It fails when the clip never strides (no window) or the
+window stands or jerks past the check's limits. `flee_01` on the zombie: 21% of the whole clip's steps stand, and the window is one stride (frames 31 to 53).
 The weights stay the earlier run's, which the route fits again to the new clips, and the grip stage and the clearance are not run, so the
 numbers estimate the route's result. Checked on the round 4 ogre: the clips the run ogre_k exported measured as here within 0.003 (the
 defend `hit_to_body_01` 0.161, the chop's raise 0.267). Plain numpy, no Blender.
@@ -42,7 +46,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
-from lib import pdx_deform, pdx_motion, tripo_cloak_bend, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike
+from lib import pdx_deform, pdx_motion, tripo_cloak_bend, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike
 
 FRAME_RATE = 30.0
 MIN_ATTACK_SCORE = 0.2  # docs/3d-units.md, the attack's raise or reach plus the pelvis's travel
@@ -167,6 +171,30 @@ def route(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, idle: Option
     return eased if eased is not None else anim
 
 
+def gait(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[dict]:
+    """A move or retreat candidate as a looped gait (`lib/tripo_loop.py`): the whole clip's standing share, the loop window the route would
+    cut and that window's numbers, with the reasons it would fail TRIPO-LOOP-STANDS. None for a body without two legs."""
+
+    legs = pdx_motion.find_legs(mesh)
+    if not legs.biped or legs.pelvis < 0:
+        return None
+    joints = pdx_motion.posed_joints(mesh, anim)
+    feet, fps = (legs.legs[0].ankle, legs.legs[1].ankle), float(anim.fps or FRAME_RATE)
+    whole = tripo_loop.gait_numbers(joints, feet, legs.pelvis, mesh.height, fps)
+    out = {"whole_still_share": whole["still_share"], "window": None, "reasons": []}
+    window = tripo_loop.loop_window(joints, feet, legs.pelvis, mesh.height, fps)
+    if window is None:
+        out["reasons"].append("no loop window: the clip never strides")
+        return out
+    cut = tripo_loop.gait_numbers(joints[window["first"] : window["last"] + 1], feet, legs.pelvis, mesh.height, fps)
+    out.update(window=[window["first"], window["last"]], whole=window["whole"], cost=window["cost"], slowest=cut["slowest"],
+               still_share=cut["still_share"], seam_speed_change=cut["seam_speed_change"])
+    reason = tripo_loop.stands_reason(cut, "clip")
+    if reason:
+        out["reasons"].append("loop window: " + reason)
+    return out
+
+
 def is_attack(name: str, attacks: Optional[Sequence[str]]) -> bool:
     return bool(attacks) and any(name.startswith(prefix) for prefix in attacks)
 
@@ -187,7 +215,7 @@ def pick_attack(report: dict) -> Optional[str]:
 
 
 def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, hand: str = "RightHand", idle_clip: str = "idle",
-          attacks: Optional[Sequence[str]] = None, unarmed: bool = False) -> dict:
+          attacks: Optional[Sequence[str]] = None, unarmed: bool = False, gaits: Optional[Sequence[str]] = None) -> dict:
     doc, _binary = clip_check.load_glb(glb)
     body = next(node.get("name") for node in doc["nodes"] if "mesh" in node and "skin" in node)
     rig = clip_check.Rig(glb, body, None)
@@ -203,10 +231,17 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
         attack = is_attack(name, attacks)
         raw = measure(mesh, anim, hand, attack, unarmed)
         after = measure(mesh, route(mesh, anim, idle), hand, attack, unarmed)
-        report[name] = {"raw": raw, "route": after, "verdict": after["verdict"], "reasons": after["reasons"], "attack": attack}
+        report[name] = {"raw": raw, "route": after, "verdict": after["verdict"], "reasons": list(after["reasons"]), "attack": attack}
+        if is_attack(name, gaits):
+            found = gait(mesh, anim)
+            if found is not None:
+                report[name]["gait"] = found
+                report[name]["reasons"] += found["reasons"]
+                report[name]["verdict"] = "fail" if report[name]["reasons"] else "pass"
     return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "unarmed": unarmed, "scale": round(transfer.scale, 4),
             "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
-                       "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE},
+                       "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE,
+                       "stride_speed": tripo_loop.MIN_STRIDE_SPEED, "seam_speed_change": tripo_loop.MAX_SEAM_SPEED_CHANGE},
             "clips": report, "attack_pick": pick_attack(report)}
 
 
@@ -219,6 +254,13 @@ def print_table(result: dict) -> None:
         print(f"{label:<40}{raw['swell']:>10.3f}{after['swell']:>7.3f}{(raw['neck'] or 0):>9.2f}{(after['neck'] or 0):>7.2f}"
               f"{raw.get('raise_', 0):>10.3f}{after.get('raise_', 0):>7.3f}{raw['reach']:>7.3f}{raw['pelvis_travel']:>7.3f}{after.get('strike_travel', 0):>7.3f}{after.get('strike_speed', 0):>7.2f}  {c['verdict']}"
               + (f"  ({'; '.join(c['reasons'])})" if c["reasons"] else ""))
+    for name, c in result["clips"].items():
+        found = c.get("gait")
+        if found and found["window"]:
+            print(f"gait {name[:36]}: the whole clip stands in {100 * found['whole_still_share']:.0f}% of its steps; loop window frames {found['window'][0]} to "
+                  f"{found['window'][1]}" + (" (the whole clip)" if found["whole"] else "") + f", slowest stride {found['slowest']:.2f}, seam speed change {found['seam_speed_change']:.2f}")
+        elif found:
+            print(f"gait {name[:36]}: the whole clip stands in {100 * found['whole_still_share']:.0f}% of its steps and has no loop window")
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -229,10 +271,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--hand", default="RightHand", help="the holding hand, for the raise")
     parser.add_argument("--idle", default="idle", help="the GLB clip whose first frame is the stance the shoulder ease turns toward")
     parser.add_argument("--attack", nargs="*", help="the attack candidates (clips whose name starts with one of these): they must also strike, and the pick is made among them")
+    parser.add_argument("--gait", nargs="*", help="the move and retreat candidates (clips whose name starts with one of these): judged as a looped gait, with the loop window the route would cut")
     parser.add_argument("--unarmed", action="store_true", help="the unit holds no weapon: the striking hand is the faster one")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
-    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed)
+    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed, args.gait)
     print_table(result)
     if args.attack:
         print(f"attack pick: {result['attack_pick'] or 'none passes'}")
