@@ -60,6 +60,7 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-WING-EDGE-ON: in a clip whose wings beat hard (the attack and the retreat), a wing's median face share in a side or the map view is
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
+- TRIPO-WING-ROOT-STRETCH: in a clip, more than `MAX_WING_ROOT_STRETCH` of the edges where the wings blend into the body stretch or squash.
 - TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
   the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
 - TRIPO-HAND-BLEED: more than `MAX_HAND_BLEED_SHARE` of a shape's vertices lie outside a hand's own part (`lib/stretch_smooth.hand_parts`:
@@ -129,6 +130,12 @@ MIN_WING_FACE_SHARE = 0.4
 # over the clip, as a share of its median, at least `MIN_MOVE_IDLE_MOTION_RATIO` times the idle's. The round 2 pair the review found
 # almost alike measured 1.6 (idle 0.13, move 0.21); the limit is judgement, about twice that.
 MIN_MOVE_IDLE_MOTION_RATIO = 3.0
+# TRIPO-WING-ROOT-STRETCH: where the wing chains blend into the body (`wing_root_zone`), at most this share of the edges may stretch or squash
+# by the kit's measure in a frame. Set from the reviewed units: fresh reviews saw the round 4 demon's wing roots stretch, its worst clip 5.2%
+# (the attack), and failed every clip of the Tripo dragon's run 3 where the wing meets the body (the membrane pinned to the flank, the
+# creased fold beside the shoulders, the pinched wing forearm), which measured 9.2% (move) to 18.7% (defend). No reviewed clip above 5.2%
+# passed. The limit lies just under the least a reviewer flagged.
+MAX_WING_ROOT_STRETCH = 0.05
 SILHOUETTE_CELL_SHARE = 0.02
 # An armour plate is rigid: it may stretch no more than vanilla's tailored clothing does at its worst.
 MAX_PLATE_STRETCH_SHARE = VANILLA_CLOAK_WORST
@@ -453,6 +460,8 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False
 
 def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
     out = []
+    if row.get("root_stretch_share", 0.0) > MAX_WING_ROOT_STRETCH:
+        out.append(finding("TRIPO-WING-ROOT-STRETCH", clip, f"{row['root_stretch_share']:.1%} of the edges where the wings blend into the body stretch or squash in frame {row['root_stretch_frame']}; the limit is {MAX_WING_ROOT_STRETCH:.0%}", share=row["root_stretch_share"]))
     if row.get("stretch_worst_share", 0.0) > MAX_WING_STRETCH_SHARE:
         out.append(finding("TRIPO-WING-STRETCH", clip, f"{row['stretch_worst_share']:.1%} of the wing region's edges are stretched or squashed in frame {row['stretch_frame']}; the limit is {MAX_WING_STRETCH_SHARE:.0%}", share=row["stretch_worst_share"]))
     for view, share in (row.get("cover") or {}).items():
