@@ -1,6 +1,6 @@
 """Measure a rigged Tripo GLB's candidate clips on a unit's exported skin: the shoulder swell, the neck, the hand's raise and reach.
 
-    py -3.13 .tools/3d_pipeline/tripo/pose_check.py <rigged.glb> <unit.mesh> [--clips NAME ...] [--hand RightHand] [--json out.json]
+    py -3.13 .tools/3d_pipeline/tripo/pose_check.py <rigged.glb> <unit.mesh> [--clips NAME ...] [--attack NAME ...] [--unarmed] [--hand RightHand] [--json out.json]
 
 The clip pick (docs/3d-units.md, "Pick the clips by measurement") needs to know, before a clip is bought into the route, whether its pose
 swells the shoulders (TRIPO-SHOULDER-SWELL, `lib/tripo_shoulder.py`) or sinks the head (TRIPO-NECK-SUNK, `lib/tripo_neck.py`) on the skin the
@@ -13,11 +13,15 @@ route makes. Those depend on the route's weights, which only an earlier run of t
    axes, and the root's travel is scaled. The joints' lengths are the mesh's. Bones the GLB has not (the weapon's) follow their parents.
 3. On that clip: the shoulder swell (worst frame), the visible neck (lowest frame), the holding hand's highest point above the chest joint
    (`Spine02`) as a share of the height (`grip_weapon.hand_raise`), each hand's furthest point ahead of the chest along the way the feet
-   point, and the hips' furthest horizontal travel from the first frame, both as shares of the height.
+   point, and the hips' furthest horizontal travel from the first frame, both as shares of the height. The strike (`lib/tripo_strike.py`): the
+   striking hand's travel against the chest over the clip and its peak speed (the holding hand, or with `--unarmed` the faster one).
 4. Then the route's two pose rules on the clip, in their order: the neck lift (`tripo_neck.lift_animation`) and the shoulder ease toward the
    GLB's `idle` clip's first frame (`tripo_shoulder.ease_animation`), as a looping role, and the swell, the neck and the raise again.
 
 A verdict per clip says whether the swell and the neck pass their limits after the two rules (`route`), and as Tripo made the clip (`raw`).
+A clip named with `--attack` must also strike (TRIPO-ATTACK-NO-STRIKE's limits), and `attack_pick` names the attack by the pick rule: of the
+attack candidates that pass, the largest raise or reach plus the pelvis's travel after the rules, at least `MIN_ATTACK_SCORE`. A lunge that
+holds the arms out reaches as far as a blow, so the reach alone picked the zombie's static lunge three times (zombie_i, zombie_k, zombie_o).
 The weights stay the earlier run's, which the route fits again to the new clips, and the grip stage and the clearance are not run, so the
 numbers estimate the route's result. Checked on the round 4 ogre: the clips the run ogre_k exported measured as here within 0.003 (the
 defend `hit_to_body_01` 0.161, the chop's raise 0.267). Plain numpy, no Blender.
@@ -38,9 +42,10 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
-from lib import pdx_deform, pdx_motion, tripo_cloak_bend, tripo_neck, tripo_pose, tripo_shoulder
+from lib import pdx_deform, pdx_motion, tripo_cloak_bend, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike
 
 FRAME_RATE = 30.0
+MIN_ATTACK_SCORE = 0.2  # docs/3d-units.md, the attack's raise or reach plus the pelvis's travel
 PREFIX = "mixamorig:"
 KIT_TO_MIXAMO = {"Spine01": "Spine1", "Spine02": "Spine2", "neck": "Neck"}
 
@@ -111,8 +116,9 @@ class Transfer:
         return pdx_deform.Animation(FRAME_RATE, frames, channels)
 
 
-def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "RightHand") -> dict:
-    """The clip's numbers on the mesh (see the module text)."""
+def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "RightHand", attack: bool = False, unarmed: bool = False) -> dict:
+    """The clip's numbers on the mesh (see the module text). An `attack` candidate must also strike (`lib/tripo_strike.py`): the holding
+    `hand`, or for an `unarmed` unit the faster hand, travels and moves fast enough against the chest."""
 
     height = max(mesh.height, 1e-6)
     swell = tripo_shoulder.swelling(mesh, anim)
@@ -137,7 +143,12 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str 
     travel = hips - hips[0]
     travel[:, 1] = 0.0
     out["pelvis_travel"] = round(float(np.linalg.norm(travel, axis=1).max() / height), 3)
+    strike = tripo_strike.strike_numbers(joints, mesh.bones, height, float(anim.fps or FRAME_RATE), "" if unarmed else hand)
+    if strike is not None:
+        out.update(strike_hand=strike["hand"], strike_travel=strike["travel"], strike_speed=strike["speed"], strikes=strike["strikes"])
     reasons = []
+    if attack and strike is not None and not strike["strikes"]:
+        reasons.append(f"no strike: {strike['hand']} travels {strike['travel']:.2f} at {strike['speed']:.2f}/s (at least {tripo_strike.MIN_TRAVEL} and {tripo_strike.MIN_SPEED})")
     if out["swell"] > tripo_shoulder.SWELL_LIMIT:
         reasons.append(f"swell {out['swell']:.3f} over {tripo_shoulder.SWELL_LIMIT}")
     if out["neck"] is not None and out["neck"] < tripo_neck.NECK_LIMIT:
@@ -156,7 +167,27 @@ def route(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, idle: Option
     return eased if eased is not None else anim
 
 
-def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, hand: str = "RightHand", idle_clip: str = "idle") -> dict:
+def is_attack(name: str, attacks: Optional[Sequence[str]]) -> bool:
+    return bool(attacks) and any(name.startswith(prefix) for prefix in attacks)
+
+
+def pick_attack(report: dict) -> Optional[str]:
+    """The attack by the clip pick's rule (docs/3d-units.md): of the attack candidates that pass, the largest raise of the holding hand or
+    forward reach plus the pelvis's travel, after the route's rules; it must be at least `MIN_ATTACK_SCORE`. None when none qualifies."""
+
+    best, best_score = None, MIN_ATTACK_SCORE
+    for name, row in report.items():
+        if not row.get("attack") or row["verdict"] != "pass":
+            continue
+        after = row["route"]
+        score = max(after.get("raise_", 0.0), after["reach"]) + after["pelvis_travel"]
+        if score >= best_score:
+            best, best_score = name, score
+    return best
+
+
+def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, hand: str = "RightHand", idle_clip: str = "idle",
+          attacks: Optional[Sequence[str]] = None, unarmed: bool = False) -> dict:
     doc, _binary = clip_check.load_glb(glb)
     body = next(node.get("name") for node in doc["nodes"] if "mesh" in node and "skin" in node)
     rig = clip_check.Rig(glb, body, None)
@@ -169,21 +200,24 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
         if clips and not any(name.startswith(c) for c in clips):
             continue
         anim = transfer.animation(tracks, end)
-        raw = measure(mesh, anim, hand)
-        after = measure(mesh, route(mesh, anim, idle), hand)
-        report[name] = {"raw": raw, "route": after, "verdict": after["verdict"], "reasons": after["reasons"]}
-    return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "scale": round(transfer.scale, 4),
-            "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "neck": tripo_neck.NECK_LIMIT}, "clips": report}
+        attack = is_attack(name, attacks)
+        raw = measure(mesh, anim, hand, attack, unarmed)
+        after = measure(mesh, route(mesh, anim, idle), hand, attack, unarmed)
+        report[name] = {"raw": raw, "route": after, "verdict": after["verdict"], "reasons": after["reasons"], "attack": attack}
+    return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "unarmed": unarmed, "scale": round(transfer.scale, 4),
+            "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
+                       "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE},
+            "clips": report, "attack_pick": pick_attack(report)}
 
 
 def print_table(result: dict) -> None:
     print("raw: the clip as Tripo made it. route: after the neck lift and the shoulder ease")
-    print(f"{'clip':<40}{'swell raw':>10}{'route':>7}{'neck raw':>9}{'route':>7}{'raise raw':>10}{'route':>7}{'reach':>7}{'pelvis':>7}  verdict")
+    print(f"{'clip':<40}{'swell raw':>10}{'route':>7}{'neck raw':>9}{'route':>7}{'raise raw':>10}{'route':>7}{'reach':>7}{'pelvis':>7}{'strike':>7}{'speed':>7}  verdict")
     for name, c in result["clips"].items():
         raw, after = c["raw"], c["route"]
         label = name if len(name) <= 39 else name[:36] + "..."
         print(f"{label:<40}{raw['swell']:>10.3f}{after['swell']:>7.3f}{(raw['neck'] or 0):>9.2f}{(after['neck'] or 0):>7.2f}"
-              f"{raw.get('raise_', 0):>10.3f}{after.get('raise_', 0):>7.3f}{raw['reach']:>7.3f}{raw['pelvis_travel']:>7.3f}  {c['verdict']}"
+              f"{raw.get('raise_', 0):>10.3f}{after.get('raise_', 0):>7.3f}{raw['reach']:>7.3f}{raw['pelvis_travel']:>7.3f}{after.get('strike_travel', 0):>7.3f}{after.get('strike_speed', 0):>7.2f}  {c['verdict']}"
               + (f"  ({'; '.join(c['reasons'])})" if c["reasons"] else ""))
 
 
@@ -194,10 +228,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--clips", nargs="*", help="only clips whose name starts with one of these")
     parser.add_argument("--hand", default="RightHand", help="the holding hand, for the raise")
     parser.add_argument("--idle", default="idle", help="the GLB clip whose first frame is the stance the shoulder ease turns toward")
+    parser.add_argument("--attack", nargs="*", help="the attack candidates (clips whose name starts with one of these): they must also strike, and the pick is made among them")
+    parser.add_argument("--unarmed", action="store_true", help="the unit holds no weapon: the striking hand is the faster one")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
-    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle)
+    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed)
     print_table(result)
+    if args.attack:
+        print(f"attack pick: {result['attack_pick'] or 'none passes'}")
     if args.json:
         args.json.write_text(json.dumps(result, indent=1), encoding="utf-8", newline="\n")
     return 0
