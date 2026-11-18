@@ -331,6 +331,31 @@ class Round6(unittest.TestCase):
         self.assertGreaterEqual(reach, 0.9 * ql.STRIKE_NECK["Neck_01"][1], "the neck drives forward at the strike")
 
 
+class Round7(unittest.TestCase):
+    def test_no_neck_joint_bends_past_the_cap_in_the_strike(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        for frame in range(ql.frame_count("winged_rear")):
+            pose = ql.pose_at("winged_rear", frame, layout)
+            for name in ql.STRIKE_NECK:
+                for _axis, degrees in pose.get(name, []):
+                    self.assertLessEqual(abs(degrees), ql.STRIKE_JOINT_MAX + 1e-6, f"{name} frame {frame}")
+
+    def test_the_gait_strides_farther_than_the_shared_walk(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        name = ql.leg_name("Front", "Left", "Upper")
+        walk = max(abs(d) for f in range(ql.frame_count("quadruped_walk")) for a, d in ql.pose_at("quadruped_walk", f, layout).get(name, []) if tuple(a) == ql.X_AXIS)
+        self.assertGreater(ql.WINGED_STRIDE, 1.0)
+        self.assertGreater(walk, 0.0)
+
+    def test_the_crush_limit_lies_between_passed_and_failed_poses(self) -> None:
+        sys.path.insert(0, str(PIPELINE / "tripo"))
+        import tripo_checks as tc
+        self.assertTrue(0.045 < tc.MAX_WING_CRUSH < 0.096, "between the attack flare reviewers passed and the crushed defend")
+        self.assertTrue(0.24 < tc.MIN_STEP_READ, "run 12's move, which read as legs standing still")
+
+
 class Rest(unittest.TestCase):
     def test_each_part_takes_its_least_change(self) -> None:
         def evaluate(leg_drop, wing_lift, tail_lift, neck_drop):
