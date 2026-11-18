@@ -12,7 +12,8 @@ Repairs, each optional and run in this order:
   from one side.
 - `bridges`: delete the faces that fuse body parts that move apart (an edge whose two vertices
   follow bones `hops` or more parent steps apart, with neither blending the other's bone, and
-  whose two sides come apart once the faces are gone), then close each opened loop on both sides.
+  whose two sides come apart once the faces are gone), then close each opened loop on both sides. A side smaller than
+  `SPECK_SHARE` of the vertices is a mis-weighted speck, not a part: it takes the weights across its bridge and is not cut.
   Skinning tears such faces into spikes and webs in every clip. A bridge inside one continuous
   skin (the two sides still connect through the rest of the mesh) is kept and reported as a
   weight seam: it needs blended weights, not a cut.
@@ -190,6 +191,70 @@ def bridge_pairs(edges, weights):
     return pairs
 
 
+# A side of a fusion with fewer than this share of the mesh's vertices (and at least SPECK_MIN of them) is no body part: it is a speck the rig
+# weighted to a far bone, and cutting it off leaves it floating. The Tripo dragon's run 3 kept one triangle by a forefoot, weighted to the neck,
+# that the cut left 2.3% of the height off the body (UNIT-LOOSE-PART, vanilla's parts stay within 2.0%).
+SPECK_SHARE = 0.001
+SPECK_MIN = 8
+
+
+def _cut_components(bm, bridge_faces):
+    """Union-find over the faces that are not bridge faces: (find, vertex count per root)."""
+
+    parent = {}
+
+    def find(v):
+        parent.setdefault(v, v)
+        while parent[v] is not v:
+            parent[v] = parent[parent[v]]
+            v = parent[v]
+        return v
+
+    for face in bm.faces:
+        if face in bridge_faces:
+            continue
+        verts = list(face.verts)
+        for other in verts[1:]:
+            ra, rb = find(verts[0]), find(other)
+            if ra is not rb:
+                parent[ra] = rb
+    sizes = {}
+    for v in bm.verts:
+        root = find(v)
+        sizes[root] = sizes.get(root, 0) + 1
+    return find, sizes
+
+
+def rebind_specks(obj, bm, bridges):
+    """Give each speck a bridge would cut off (`SPECK_SHARE`) the weights of the vertex across its bridge, so it moves with the part it
+    rests on instead of being cut loose. Returns the number of vertices rebound."""
+
+    bridge_faces = {f for e in bridges for f in e.link_faces}
+    find, sizes = _cut_components(bm, bridge_faces)
+    limit = max(SPECK_MIN, SPECK_SHARE * len(bm.verts))
+    layer = bm.verts.layers.deform.verify()
+    across = {}
+    for edge in bridges:
+        a, b = edge.verts
+        ra, rb = find(a), find(b)
+        if ra is rb:
+            continue
+        for inner, outer, root, other in ((a, b, ra, rb), (b, a, rb, ra)):
+            if sizes[root] < limit <= sizes[other]:
+                across.setdefault(root, outer)
+    rebound = 0
+    for root, outer in across.items():
+        source = dict(outer[layer].items())
+        for v in bm.verts:
+            if find(v) is root:
+                deform = v[layer]
+                deform.clear()
+                for group, weight in source.items():
+                    deform[group] = weight
+                rebound += 1
+    return rebound
+
+
 def split_fusions(bm, bridges, weights):
     """Split bridge edges into fusions (cut them) and weight seams (keep them).
 
@@ -352,6 +417,10 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
         bm.verts.ensure_lookup_table()
         weights = weights_of(obj, bm)
         bridges = bridge_edges(bm, weights)
+        entry["speck_vertices_rebound"] = rebind_specks(obj, bm, bridges)
+        if entry["speck_vertices_rebound"]:
+            weights = weights_of(obj, bm)
+            bridges = bridge_edges(bm, weights)
         fused, seams = split_fusions(bm, bridges, weights)
         faces = list({f for e in fused for f in e.link_faces})
         pairs = bridge_pairs(fused, weights)
