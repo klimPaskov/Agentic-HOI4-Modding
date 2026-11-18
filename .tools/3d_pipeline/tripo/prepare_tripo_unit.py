@@ -108,6 +108,8 @@ def parse_args():
     parser.add_argument("--arm-level-target", type=float, default=0.85, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
     parser.add_argument("--chains", nargs="*", default=[], metavar="REGION",
                         help="add bone chains to these regions (cloak, wings), rebind them and key them per role by rule (tripo/chain_stage.py, lib/tripo_chains.py)")
+    parser.add_argument("--chain-role", action="append", default=[], metavar="ROLE=AS",
+                        help="key the chains of ROLE's clip by the rules of role AS (a death that burns away standing keeps the defend's wings, lib/tripo_burn.py)")
     parser.add_argument("--settle", nargs="*", default=[], metavar="ROLE",
                         help="in these roles, append frames that blend every bone from the last pose back to frame 1, so the looped clip does not pop (lib/tripo_trim.py)")
     parser.add_argument("--untwist", nargs="*", default=[], metavar="ROLE",
@@ -1440,7 +1442,7 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
             extras["settle_clearance"][role] = clear_settled_weapon(armature, body, action, end_before, int(round(action.frame_range[1])), args)
     if stage is not None:
         # Before the easing, so a chain bone pushed fast by a collision is eased like any other joint.
-        extras["chains"][role] = chain_stage.bake_chains(armature, action, stage, role)
+        extras["chains"][role] = chain_stage.bake_chains(armature, action, stage, dict(split_pair(item, "--chain-role") for item in args.chain_role).get(role, role))
         if closes:
             close_gait(armature, body, action, args, role, extras, "loop_close_chains")
         elif role in args.settle:

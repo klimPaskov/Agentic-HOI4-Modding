@@ -3772,6 +3772,21 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
     return record
 
 
+def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, Any]:
+    """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
+    keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
+
+    from lib import tripo_burn
+
+    mesh = staged / f"{stem}.mesh"
+    heap = tripo_burn.add_heap(mesh, staged / f"{stem}_diffuse.dds")
+    for role in roles:
+        if role != "death":
+            tripo_burn.add_rest_joint(mesh, staged / f"{stem}_{role}.anim")
+    death = tripo_burn.burn_death(mesh, staged / f"{stem}_death.anim")
+    return tripo_burn.write_plan(staged, stem, heap, death)
+
+
 def clear_held_props(mesh: Path, anim: Path, role: str, weapon: Any) -> Dict[str, Any]:
     """The Tripo route's last pose step (lib/tripo_final_clearance.py): every held weapon and shield kept out of the body in every frame of the exported
     clip, by the same solve as the grip stage, on the mesh the game loads. A part the unit lets go of in this role is left to its fall."""
@@ -4294,11 +4309,18 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # rule may be tried on the weights (lib/tripo_girdle.py, off unless the job sets `"girdle_weights": true`).
         ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
         records[f"{stem}.mesh"]["girdle_weights"] = girdle_trial(job, staged, spec, sorted(exports["animations"]), weapon_cfg)
-        # Then the mesh the game loads decides where the ground is.
+        # Then the mesh the game loads decides where the ground is. A death that burns away (`"death_kind": "burn"`, lib/tripo_burn.py) is grounded
+        # as the standing reaction it is, then burnt: its heap, bone and locator join the mesh, and its plan is written beside the files.
+        burning = (spec.get("tripo") or {}).get("death_kind") == "burn" and "death" in exports["animations"]
         for role in sorted(exports["animations"]):
-            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
+            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim",
+                                                                                "burn_stand" if burning and role == "death" else role, weapon_cfg,
                                                                                 humanoid=not tripo_quadruped(spec))
             records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
+        if burning:
+            records[f"{stem}.mesh"]["burn"] = burn_staged_death(staged, stem, sorted(exports["animations"]))
+            for name in [f"{stem}.mesh"] + [f"{stem}_{role}.anim" for role in sorted(exports["animations"])]:
+                records[name]["staged"] = file_record(staged / name, relative_to=job)
         # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
         # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
         clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)

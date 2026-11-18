@@ -220,6 +220,9 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     regions = [item["region"] if isinstance(item, dict) else str(item) for item in config.get("chains") or []]
     if regions:
         command += ["--chains", *regions]
+        # A death that burns away stands (lib/tripo_burn.py): its wings keep the defend's pose instead of folding and lying flat as a body falls.
+        if config.get("death_kind") == "burn":
+            command += ["--chain-role", "death=defend"]
     return command + rigid_part_args(config, files)
 
 

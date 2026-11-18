@@ -105,7 +105,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
+from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -1116,6 +1116,29 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
+def burn_split(folder: Path, mesh, anims: Dict[str, object], numbers: dict):
+    """A death that burns away (lib/tripo_burn.py, its plan beside the files): (its BURN findings and clip, the clips with that death cut at
+    the burn's start for every other check). The lying-body rules are dropped for it (`tripo_burn.LYING_RULES`). (None, anims) without one."""
+
+    mesh_path = sorted(folder.glob("*.mesh"))[0]
+    plan = tripo_burn.read_plan(folder, mesh_path.stem)
+    if plan is None or plan.get("clip") not in anims:
+        return None, anims
+    clip = plan["clip"]
+    found, numbers["burn"] = tripo_burn.burn_findings(mesh, anims[clip], plan, clip, tripo_burn.mesh_locators(mesh_path))
+    cut = dict(anims)
+    cut[clip] = tripo_burn.truncated(anims[clip], int(plan["burn_start"]) + 1)
+    return {"clip": clip, "findings": found}, cut
+
+
+def burn_filtered(findings: List[dict], burn: Optional[dict]) -> List[dict]:
+    """The findings with a burning death's lying-body rules dropped and its BURN findings added (`burn_split`)."""
+
+    if burn is None:
+        return findings
+    return [item for item in findings if not (item["subject"] == burn["clip"] and item["rule"] in tripo_burn.LYING_RULES)] + burn["findings"]
+
+
 def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = ()) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
     rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
@@ -1162,6 +1185,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
+    burn, anims = burn_split(args.folder.resolve(), mesh, anims, numbers)
     cape, wings, plates = job_regions(args)
     if cape:
         found, numbers["cloak"] = cloak_findings(mesh, anims)
@@ -1185,6 +1209,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)
         findings += found
     findings += weapon_stage_findings(args, mesh, anims, numbers)
+    findings = burn_filtered(findings, burn)
     findings, advisory = split_advisory(findings, advisory_rules(args))
     report = {"findings": findings, "advisory": advisory, "numbers": numbers}
     if args.json:

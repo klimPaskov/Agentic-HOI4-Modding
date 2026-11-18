@@ -301,6 +301,53 @@ Tested in November 2026: on an orc the plates stopped bending (0% stretch) and t
 
 Retested in November 2026 on the round 4 demon with the held face turn. The attack's face share rose from 27% to 30% in the side views to 57%, and its map view from 42% to 63%. The retreat's rose from 27% to 34% to 55% to 56%, and its map view from 21% to 50%. The wing-root stretch stayed the same in every clip in the offline replay, and the other roles did not change. Still failing: the retreat's side view hides 13.2% of the head and limbs (18.8% before) while the torso turns 50 degrees in its first frames. Swinging the root further back with the twist clears it (8.3% at a quarter more swing), but raises the root stretch from 1.5% to 3.1% in the retreat and from 5.4% to 6.9% in the attack, so the rule does not do it.
 
+### A death that burns away
+
+A job may choose another kind of death: `"death_kind": "burn"` in its `tripo` block. The unit does not fall and lie. It is struck, burns where it stands and leaves a small heap of ash. The demon dies this way (maintainer decision D-85). The death role's clip is then a standing reaction, such as `hit_to_stomach`, and the route makes it a burn on the exported files (`lib/tripo_burn.py`):
+
+1. The reaction plays to its peak, the frame farthest from its first pose, and holds there, so the body never stands up again.
+2. From the peak the whole body shrinks by bone scale toward the ground point under its feet over 2.5 seconds, to 0.07 of its size. The hips come down with it, so the feet stay on the ground, and the wings shrink with the body.
+3. An ash heap, a low closed mound on its own bone `Ash` under the hips, grows from nothing over the last 40% of the burn and stays for a second. In every other clip the bone keeps its rest pose, where the heap is bound at a thousandth of its size just inside the skin by the hips, so it is never seen. The heap takes the UVs of the body's darkest 3% of vertices: new geometry with the unit's own texels. The unit's own texture is never darkened or tinted to show burning (D-86). The burning reads from the particles and the shrink.
+4. A locator `burn`, parented to `Spine02`, carries the fire and the smoke. `wire_unit.py` writes two particle events into the entity's death state at time 0, and two mod particle files. These are copies of vanilla's `building_fire` and `city_smoke` whose endless subsystems emit only for the burn (the fire) and a second past the clip (the smoke), plus a `.gfx` file that registers them.
+5. The wings keep the defend's pose in this death (`--chain-role death=defend`), because the body does not fall.
+
+To give any unit a burn death, follow these steps:
+
+1. Pick a standing reaction for the death role: a hit that doubles the body over and stays on its feet (`hit_to_stomach`, or a text-to-motion hit). Its hips must not travel more than 0.1 hip heights (the intake refuses it otherwise).
+2. In the job's `tripo` block set `"death_kind": "burn"` and `"roles": {"death": "<that clip>"}`. Nothing else in the job changes.
+3. Run the route as usual (`tripo_intake.py`, then `run_pilot.py`). The heap, its bone, the locator and the burnt death are made on the staged files. Check that `runtime/files` holds `<stem>_burn.json` beside the `.mesh`.
+4. Run `tripo/tripo_checks.py` with the job. The BURN rules below replace the lying-body rules for that death. Every BURN finding must be 0. When a rule can only pass by cutting something from the unit (a wing, a part, detail), stop and report what would be lost (D-87, D-88).
+5. Render the review sheets (`review_unit.py`, `tripo/weapon_sheets.py --sheet game`, `tripo/clip_sheet.py --roles death`). The death's tiles show the fire and the smoke as a stand-in, stamped "particles: stand-in". Judge the game_size sheets and the hoi4 tiles: the body must shrink where it stands under the fire and leave the heap, never vanish at once or lie down.
+6. Run `wire_unit.py` on the mod. It writes the two particle events into the entity's death state and the files `gfx/particles/<stem>_fire.asset`, `gfx/particles/<stem>_smoke.asset` and `gfx/entities/<stem>_burn_particles.gfx`. The game must be installed, since the particles are copied from its `gfx/particles/environment/building_fire.asset` and `city_smoke.asset`.
+7. Ask for the in-game checks listed at the end of this section.
+
+What vanilla shows that this rests on:
+
+- **Particles in a death state.** GER rifle infantry's death state fires `blood_particle` at its `head` locator at `time = 0`. Ship deaths fire `ship_explosion_particle` at `hit_effect_locator` locators, and plane crashes fire `explosion_particle`.
+- **Locators follow a bone.** `GER_infantry.mesh` parents its `head` locator to the bone `head`.
+- **Bone scale hides parts.** In `landmark_hakko_ichiu_destroyed_destroy.anim` the bone `hide` scales from 1.0 to 0.07, while the landmark's `destroy` state fires timed explosion and smoke particles. The kit's exports already key `tqs` for every joint.
+
+The kit writes and reads the PDX files itself for this (`lib/pdx_write.py`, which gives the same bytes as the files it reads). The lying-body rules (TRIPO-NOT-DOWN, TRIPO-DEATH-REST, TRIPO-DEATH-FEET, TRIPO-DEATH-HOVER, TRIPO-DEATH-LEG-KICK, TRIPO-DEATH-SPLAY) are not run on this death. Its own rules run instead, in `tripo/tripo_checks.py`:
+
+| Rule | Fails when |
+| --- | --- |
+| BURN-STANDS | The torso leans more than 60 degrees from upright in any frame (the kit's untwist reads a torso past 60 degrees as not standing) |
+| BURN-IN-PLACE | The hips travel more than 0.1 hip heights, the in-place limit of the intake |
+| BURN-SHRINK | After the burn starts, the body's top, its outline in the map view or the hips' scale grows again by more than 1% between two frames |
+| BURN-GROUNDED | The lowest point goes more than 1% of the height off or under the ground in any frame |
+| BURN-NO-FLYOFF | A part moves more than 1% of the height farther from the burn's ground point between two frames |
+| BURN-END | In the last 15 frames the body is over 0.07 of its size, or the heap is not grown, not on the ground or wider than the standing body |
+| BURN-PARTICLE | The mesh lacks the locator, or the fire does not start by the burn or the smoke does not last past the clip |
+| BURN-WINGS | A wing is larger in scale than the body during the burn |
+
+The kit's deformation checks (`check_unit_files.py`) and the other Tripo checks read this death up to the burn's start, since after it the pose is held and only scaled.
+
+The review renders draw the fire and the smoke as a stand-in: orange puffs that rise fast and fade, and grey ones that rise slowly and grow, at the locator, timed as the plan says. Each tile that shows them is stamped "particles: stand-in", because only the game draws the real particles. These things are left for an in-game check:
+
+- How large the fire and the smoke are against the unit at map zoom (both are registered at scale 1).
+- The unit of an event's `time`. The burn's events use 0, which is the same in seconds and in frames.
+- How long the game holds the death's last frame before it removes the unit, and so how long the heap shows.
+
 ## Tripo checks
 
 `tripo/tripo_checks.py` reads the unit's runtime files and fails what a viewer fails on a Tripo unit. Each limit is measured on vanilla clips or on clips a reviewer failed.
