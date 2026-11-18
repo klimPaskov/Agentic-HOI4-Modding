@@ -213,6 +213,13 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         # The target height defaults to 0.85 in prepare_tripo_unit.py (arms straight forward at shoulder height); a job may name another.
         if config.get("arm_level_target") is not None:
             command += ["--arm-level-target", str(float(config["arm_level_target"]))]
+    # An unarmed unit's gait that walks with the hands raised (it fails TRIPO-HANDS-HIGH as cut) gets the same rule: Tripo's reaching zombie walk
+    # held both hands over the head for the whole clip, which reads as hands up from the front. `arm_level_high` lists the roles ([] or false to
+    # switch it off); the default is the move and the retreat of a job with no weapon. A gait whose hands stay down is not touched.
+    high = config.get("arm_level_high", [] if config.get("weapon") else ["move", "retreat"])
+    high = [role for role in (high or []) if role in wanted and role not in (levelled or [])]
+    if high:
+        command += ["--arm-level-high", *high]
     value = config.get("ease_snaps", DEFAULT_EASE_SNAPS)
     if value:
         command += ["--ease-snaps"] + ([] if value is True else [str(float(value))])

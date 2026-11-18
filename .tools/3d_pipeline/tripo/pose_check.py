@@ -20,6 +20,12 @@ route makes. Those depend on the route's weights, which only an earlier run of t
    (`tripo_shoulder.clavicle_animation`), and the swell, the girdle's tear (TRIPO-SHOULDER-TEAR), the neck and the raise again. On ogre_o's
    skin (2026-11-18) the tear after the rules read chop 0.125, the poleaxe attack 0.129, the defend hit_to_stomach 0.121.
 
+With `--map` each clip's map-size reading against the idle (`lib/map_read.read_pixels`, the pixels of the idle's silhouette it changes at game
+size in its 90th percentile frame, TRIPO-MAP-READ) is given as made and after the rules, and an attack under the limit is not picked. `--trim
+CLIP=FRAMES` cuts a clip as the job's `tripo.trim` would (frames at 24 a second), for the idle too. On zombie_w's skin (2026-11-18, the idle
+the zombie text clip cut at 44): the recoil defend 106 px as made and 106 after the rules (the exported clip 104, so the route did not weaken
+it), box_01 166 (exported 192), front_kick_01 517, the swipe 190, the lurch 181, `hit_to_stomach` 118, the staggering hit 426.
+
 A verdict per clip says whether the swell, the tear and the neck pass their limits after the rules (`route`), and as Tripo made the clip (`raw`).
 A clip named with `--attack` must also strike (TRIPO-ATTACK-NO-STRIKE's limits), and `attack_pick` names the attack by the pick rule: of the
 attack candidates that pass, the largest raise or reach plus the pelvis's travel after the rules, at least `MIN_ATTACK_SCORE`. A lunge that
@@ -37,6 +43,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence
@@ -48,7 +55,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
-from lib import pdx_deform, pdx_motion, tripo_cloak_bend, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike
+from lib import map_read, pdx_deform, pdx_motion, tripo_cloak_bend, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike, tripo_trim
 
 FRAME_RATE = 30.0
 MIN_ATTACK_SCORE = 0.2  # docs/3d-units.md, the attack's raise or reach plus the pelvis's travel
@@ -215,6 +222,8 @@ def pick_attack(report: dict) -> Optional[str]:
         if not row.get("attack") or row["verdict"] != "pass":
             continue
         after = row["route"]
+        if after.get("map_pixels", math.inf) < map_read.MIN_HUMANOID_READ_PIXELS["attack"]:
+            continue  # with --map: an attack that reads as the idle from the map camera (TRIPO-MAP-READ) is not picked
         score = max(after.get("raise_", 0.0), after["reach"]) + after["pelvis_travel"]
         if score >= best_score:
             best, best_score = name, score
@@ -222,22 +231,38 @@ def pick_attack(report: dict) -> Optional[str]:
 
 
 def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, hand: str = "RightHand", idle_clip: str = "idle",
-          attacks: Optional[Sequence[str]] = None, unarmed: bool = False, gaits: Optional[Sequence[str]] = None) -> dict:
+          attacks: Optional[Sequence[str]] = None, unarmed: bool = False, gaits: Optional[Sequence[str]] = None,
+          trims: Optional[Dict[str, int]] = None, map_size: bool = False) -> dict:
     doc, _binary = clip_check.load_glb(glb)
     body = next(node.get("name") for node in doc["nodes"] if "mesh" in node and "skin" in node)
     rig = clip_check.Rig(glb, body, None)
     mesh = pdx_deform.load_mesh(mesh_path)
     transfer = Transfer(rig, mesh)
+    trims = trims or {}
+
+    def cut(name: str, end: float) -> float:
+        # a role's trim, as the job's `tripo.trim` gives it: frames of the clip imported at 24 a second
+        frames = next((count for prefix, count in trims.items() if name.startswith(prefix)), None)
+        return min(end, frames / tripo_trim.FPS) if frames else end
+
     every = list(rig.clips())
-    idle = next((transfer.animation(tracks, end) for name, tracks, end in every if name == idle_clip), None)
+    idle_name = next((name for name, _tracks, _end in every if name == idle_clip), None) or next((name for name, _t, _e in every if name.startswith(idle_clip)), None)
+    idle = next((transfer.animation(tracks, cut(name, end)) for name, tracks, end in every if name == idle_name), None)
+    camera = map_read.MapCamera(mesh) if map_size and idle is not None else None
+    idle_map = camera.frames(idle) if camera is not None else None
     report = {}
     for name, tracks, end in every:
         if clips and not any(name.startswith(c) for c in clips):
             continue
-        anim = transfer.animation(tracks, end)
+        anim = transfer.animation(tracks, cut(name, end))
         attack = is_attack(name, attacks)
         raw = measure(mesh, anim, hand, attack, unarmed)
-        after = measure(mesh, route(mesh, anim, idle), hand, attack, unarmed)
+        routed = route(mesh, anim, idle)
+        after = measure(mesh, routed, hand, attack, unarmed)
+        if camera is not None:
+            # the map-size reading against the idle (lib/map_read.read_pixels), as Tripo made the clip and after the route's pose rules
+            raw["map_pixels"] = map_read.read_pixels(camera.frames(anim), idle_map)
+            after["map_pixels"] = map_read.read_pixels(camera.frames(routed), idle_map)
         report[name] = {"raw": raw, "route": after, "verdict": after["verdict"], "reasons": list(after["reasons"]), "attack": attack}
         if is_attack(name, gaits):
             found = gait(mesh, anim)
@@ -245,7 +270,7 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
                 report[name]["gait"] = found
                 report[name]["reasons"] += found["reasons"]
                 report[name]["verdict"] = "fail" if report[name]["reasons"] else "pass"
-    return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "unarmed": unarmed, "scale": round(transfer.scale, 4),
+    return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "unarmed": unarmed, "scale": round(transfer.scale, 4), "idle": idle_name, "trims": trims,
             "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "tear": tripo_shoulder.GIRDLE_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
                        "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE,
                        "stride_speed": tripo_loop.MIN_STRIDE_SPEED},
@@ -262,6 +287,10 @@ def print_table(result: dict) -> None:
               f"{raw.get('raise_', 0):>10.3f}{after.get('raise_', 0):>7.3f}{raw['reach']:>7.3f}{raw['pelvis_travel']:>7.3f}{after.get('strike_travel', 0):>7.3f}{after.get('strike_speed', 0):>7.2f}  {c['verdict']}"
               + (f"  ({'; '.join(c['reasons'])})" if c["reasons"] else ""))
     for name, c in result["clips"].items():
+        if "map_pixels" in c["route"]:
+            print(f"map {name[:36]:<36}: {c['raw']['map_pixels']:>6.0f} px as made, {c['route']['map_pixels']:>6.0f} px after the rules against the idle at game size"
+                  f" (attack at least {map_read.MIN_HUMANOID_READ_PIXELS['attack']:.0f}, defend {map_read.MIN_HUMANOID_READ_PIXELS['defend']:.0f})")
+    for name, c in result["clips"].items():
         found = c.get("gait")
         if found and found["window"]:
             print(f"gait {name[:36]}: the whole clip stands in {100 * found['whole_still_share']:.0f}% of its steps; loop window frames {found['window'][0]} to "
@@ -276,13 +305,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("mesh", type=Path, help="the unit's exported .mesh from an earlier run of the same body (its skeleton and route weights)")
     parser.add_argument("--clips", nargs="*", help="only clips whose name starts with one of these")
     parser.add_argument("--hand", default="RightHand", help="the holding hand, for the raise")
-    parser.add_argument("--idle", default="idle", help="the GLB clip whose first frame is the stance the shoulder ease turns toward")
+    parser.add_argument("--idle", default="idle", help="the GLB clip (its name, or its first words) whose first frame is the stance the shoulder ease turns toward, and the idle of the map reading")
     parser.add_argument("--attack", nargs="*", help="the attack candidates (clips whose name starts with one of these): they must also strike, and the pick is made among them")
     parser.add_argument("--gait", nargs="*", help="the move and retreat candidates (clips whose name starts with one of these): judged as a looped gait, with the loop window the route would cut")
     parser.add_argument("--unarmed", action="store_true", help="the unit holds no weapon: the striking hand is the faster one")
+    parser.add_argument("--trim", nargs="*", default=[], metavar="CLIP=FRAMES", help="cut a clip (named by its first words) after FRAMES frames at 24 a second, as the job's tripo.trim")
+    parser.add_argument("--map", action="store_true", help="also measure each clip's map-size reading against the idle (lib/map_read.read_pixels, TRIPO-MAP-READ)")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
-    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed, args.gait)
+    trims = {pair.rsplit("=", 1)[0]: int(pair.rsplit("=", 1)[1]) for pair in args.trim}
+    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed, args.gait, trims, args.map)
     print_table(result)
     if args.attack:
         print(f"attack pick: {result['attack_pick'] or 'none passes'}")
