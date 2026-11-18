@@ -71,7 +71,28 @@ HULL_PIECE_SHARE = 0.10  # a piece whose bounding box diagonal is at most this s
 HULL_BOX_FILL = 0.6  # a hull filling less than this share of the piece's oriented bounding box is a wedge, so the box stands in (kit rule: fittings are boxes)
 HULL_PLATE_FLAT = 0.2  # a piece thinner than this share of its longest side is a plate: its hull (a slanted wedge) stands in only above HULL_PLATE_FILL
 HULL_PLATE_FILL = 0.75
+HULL_WEDGE_FILL = 0.55  # a piece whose hull fills less than this of its box and whose faces mostly lean off the box's axes (under HULL_WEDGE_ALIGNED
+HULL_WEDGE_ALIGNED = 0.5  # of the area within 20 degrees of an axis) is a pinched wedge, a box a reduction cut into a prism: the box stands in
+HULL_AXIS_COS = math.cos(math.radians(20.0))
 HULL_PIECE_CONVEX = (0.9, 1.05)  # a small closed piece whose volume is outside this share of its convex hull's is crumpled (kit rule)
+
+
+def _nearest_uv(faces, samples, uv_layer):
+    """Each face takes the UV of the nearest sample (centre, normal, uv) that faces the same way."""
+
+    for f in faces:
+        centre, normal = f.calc_center_median(), f.normal
+        best = min(samples, key=lambda s: (s[0] - centre).length * (1.0 if s[1].dot(normal) > 0 else 4.0))
+        if uv_layer and best[2] is not None:
+            for loop in f.loops:
+                loop[uv_layer].uv = (float(best[2][0]), float(best[2][1]))
+
+
+def _box_corners(mid, axes, spans):
+    """The eight corners of the oriented box (axes through mid) that holds spans, the points' coordinates along the axes."""
+
+    lo, hi = spans.min(axis=0), spans.max(axis=0)
+    return [mid + np.array([x, y, z]) @ axes for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
 
 
 def hull_crumpled_pieces(bm):
@@ -112,28 +133,25 @@ def hull_crumpled_pieces(bm):
         own_volume = abs(sum(f.calc_area() * (f.calc_center_median().dot(f.normal)) for f in group)) / 3.0
         ratio = own_volume / hull_volume if hull_volume > 1e-12 else 1.0
         low, high = HULL_PIECE_CONVEX
-        if low <= ratio <= high:
+        fill = hull_volume / obb_volume if obb_volume > 1e-12 else 1.0
+        areas = np.array([f.calc_area() for f in group])
+        aligned = float(sum(a for a, f in zip(areas, group) if np.abs(axes @ np.array(f.normal[:])).max() > HULL_AXIS_COS) / max(areas.sum(), 1e-12))
+        pinched = bool(fill < HULL_WEDGE_FILL and aligned < HULL_WEDGE_ALIGNED)
+        if low <= ratio <= high and not pinched:
             continue
         samples = [(f.calc_center_median().copy(), f.normal.copy(), np.mean([l[uv_layer].uv[:] for l in f.loops], axis=0) if uv_layer else None) for f in group]
         bmesh.ops.delete(bm, geom=group, context="FACES_ONLY")
-        fill = hull_volume / obb_volume if obb_volume > 1e-12 else 1.0
         flat = bool(extent.min() < HULL_PLATE_FLAT * extent.max())
-        boxed = bool(fill < HULL_BOX_FILL or (flat and fill < HULL_PLATE_FILL))
+        boxed = bool(pinched or fill < HULL_BOX_FILL or (flat and fill < HULL_PLATE_FILL))
         if boxed:
-            lo, hi = spans.min(axis=0), spans.max(axis=0)
-            corners = [mid + np.array([x, y, z]) @ axes for x in (lo[0], hi[0]) for y in (lo[1], hi[1]) for z in (lo[2], hi[2])]
+            corners = _box_corners(mid, axes, spans)
             bmesh.ops.delete(bm, geom=[v for v in verts if v.is_valid], context="VERTS")
             verts = [bm.verts.new(Vector(c.tolist())) for c in corners]
         made = bmesh.ops.convex_hull(bm, input=verts)
         bmesh.ops.delete(bm, geom=[g for g in made["geom_interior"] if isinstance(g, bmesh.types.BMVert)], context="VERTS")
         bmesh.ops.delete(bm, geom=[e for e in {e for v in verts if v.is_valid for e in v.link_edges} if not e.link_faces], context="EDGES")
-        for f in {f for v in verts if v.is_valid for f in v.link_faces}:
-            centre, normal = f.calc_center_median(), f.normal
-            best = min(samples, key=lambda s: (s[0] - centre).length * (1.0 if s[1].dot(normal) > 0 else 4.0))
-            if uv_layer and best[2] is not None:
-                for loop in f.loops:
-                    loop[uv_layer].uv = (float(best[2][0]), float(best[2][1]))
-        replaced.append({"triangles": len(group), "volume_share": round(float(ratio), 3), "box": boxed, "hull_volume": float(hull_volume), "obb_volume": obb_volume, "own_volume": float(own_volume), "centre": centre_at, "extent": [round(float(x), 4) for x in extent]})
+        _nearest_uv({f for v in verts if v.is_valid for f in v.link_faces}, samples, uv_layer)
+        replaced.append({"triangles": len(group), "volume_share": round(float(ratio), 3), "box": boxed, "pinched": pinched, "aligned": round(aligned, 3), "hull_volume": float(hull_volume), "obb_volume": obb_volume, "own_volume": float(own_volume), "centre": centre_at, "extent": [round(float(x), 4) for x in extent]})
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces[:])
     return {"pieces": len(replaced), "replaced": replaced}
 
