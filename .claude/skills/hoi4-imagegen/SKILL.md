@@ -25,7 +25,7 @@ Use the `hoi4_imagegen` MCP (tools `hoi4.image_*`). It owns canvas sizes, alpha,
 * Animation beyond a frame strip: `hoi4-frame-animation`. 3D models, rigs and exports: `hoi4-3d-model-pipeline`. Bring a finished frame strip under the ledger with `hoi4.image_process` and `import`.
 * Sourced and user-provided art of one of the 40 families is not generated, but it is imported with `hoi4.image_process` (a required `family`) so its crop, validation, review and install run under the same ledger. An image of another family's size, or the pixels of an installed asset of another family, is refused.
 * Real people. `hoi4-feature-assets` section 21 decides first: a grounded real identity uses an attributed source, imported through `hoi4.image_process`, never a generated likeness. Only wholly fictional identities are generated. Providers may refuse or treat differently images of real people, and the project may forbid a category outright.
-* Art that is not an asset family has no route here, for example the single reference image of the 3D pipeline.
+* Art that is not an asset family has no route here. The 3D-ready picture of a Tripo model is made in Tripo's own Image tool, as step 1 of `docs/3d-units.md` says, never with this skill.
 
 ## Providers
 * The ChatGPT login is the default local provider once you have run `hoi4-imagegen login` (a browser sign-in and a one-time risk note). Every image runs on gpt-6-luna at high reasoning effort, and the route refuses a response whose model or effort differs. The backend's own image tool chooses the quality and size, which the route cannot force, so check the pixels. It calls an undocumented backend that OpenAI does not support for other tools, and it is never part of a hosted deployment.

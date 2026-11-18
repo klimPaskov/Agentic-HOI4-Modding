@@ -80,6 +80,8 @@ Run every command from the repository root. Your agent writes the job registry (
 
 ### 1. A 3D-ready picture
 
+Make or fix this picture in Tripo's own Image tool (in the Tripo web app, under the user's sign-in). That is the one route for it. It needs no `hoi4-imagegen` server, which may not be connected at all, and the `hoi4-imagegen` skill has no route for it.
+
 **The picture decides the look.** A model's colours come from its picture and the generator's texture. They are never changed afterwards by a tint, a filter or a recolour over that texture, for any unit. When the look must change (a unit that does not read as what it is at map size), make a new picture and generate the model again. The Blender stage refuses a Tripo unit whose diffuse map differs from the generator's export by a global colour transform: one 3 by 3 colour matrix and offset that explains the change with a residual of at most 35% of it, for a change of at least 3 of 255 RMS (`lib/texture_look.py`, `diffuse_look` in the texture report).
 
 Tripo copies the picture's pose into the rig, so the picture must be ready for rigging:
