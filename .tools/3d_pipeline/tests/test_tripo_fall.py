@@ -48,6 +48,21 @@ class FallTimes(unittest.TestCase):
         self.assertEqual(F.hover_spans(track), [(1, 2, 0.1), (5, 6, 0.04)])
 
 
+class Staggers(unittest.TestCase):
+    track = np.array([0.0] * 5 + [0.04, 0.07, 0.09, 0.09, 0.09, 0.08, 0.07, 0.07, 0.06, 0.05, 0.04, 0.035, 0.035, 0.0] + [0.0] * 8)
+
+    def test_a_span_after_which_the_pelvis_has_not_come_down_is_a_stagger_not_a_hold(self) -> None:
+        # the zombie's defeat_03 (2026-11-18): the hips dip 10% and the body stands up again, 2.16 times a fall's time
+        pelvis = np.full(len(self.track), 0.54)
+        pelvis[8:14] = 0.44
+        self.assertEqual(F.holds(self.track, 30, pelvis), [])
+        self.assertEqual(len(F.holds(self.track, 30)), 1, "without the pelvis the same span is judged on its time alone")
+
+    def test_a_span_after_which_the_pelvis_is_down_is_a_hold(self) -> None:
+        pelvis = np.linspace(0.54, 0.14, len(self.track))
+        self.assertEqual(len(F.holds(self.track, 30, pelvis)), 1)
+
+
 class SyntheticFall(Biped):
     def death(self, up=0.15, first=10, last=39, drop=6, frames=60) -> Path:
         return self.clip("death", frames, lifted(up, first, last, drop))
@@ -133,7 +148,7 @@ class VanillaCalibration(unittest.TestCase):
             anim = pdx_deform.load_anim(UNITS / f"GER_infantry_{clip}.anim")
             track = F.hover_track(mesh, anim)
             lying = P._lying_frame(mesh, anim, P.pdx_motion.find_legs(mesh).pelvis)
-            self.assertEqual(F.holds(track, lying), [])
+            self.assertEqual(F.holds(track, lying, F.pelvis_share(mesh, anim, P.pdx_motion.find_legs(mesh))), [])
             worst = max(worst, *[F.fall_ratio(*span) for span in F.hover_spans(track) if span[0] < lying])
         self.assertAlmostEqual(worst, F.VANILLA_FALL_RATIO, delta=0.1)
 

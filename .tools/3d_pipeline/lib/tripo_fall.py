@@ -45,6 +45,7 @@ VANILLA_FALL_RATIO = 1.7  # vanilla GER infantry deaths' worst (death_mg 1.66, d
 HOVER_PEAK_MIN = 0.08  # a hover under this share of the height is the thickness of a body that has landed, not a hold
 HOVER_RATIO_LIMIT = round(1.25 * VANILLA_FALL_RATIO, 2)
 EASE_FRAMES = 3
+LAND_FRAMES = 3  # a hold ends in a fall when the pelvis, this many frames past the span, is lower than where the span began
 SOLVE_MARGIN = 1e-4
 
 
@@ -109,15 +110,25 @@ def fall_ratio(start: int, end: int, peak: float) -> float:
     return (end - start + 1) / max(float(np.sqrt(2.0 * peak / FALL_G)), 1.0)
 
 
-def holds(track: np.ndarray, lying: int) -> List[Tuple[int, int, float, float]]:
-    """The spans that begin before the body lies, are at least `HOVER_FRAMES_MIN` long and fall slower than `HOVER_RATIO_LIMIT` allows:
-    (first, last, peak, ratio)."""
+def pelvis_share(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs: pdx_motion.LegSet) -> np.ndarray:
+    """Per frame, the pelvis joint's height above the ground (share of the height)."""
+
+    return (pdx_motion.posed_joints(mesh, anim)[:, legs.pelvis, 1] - float(mesh.positions[:, 1].min())) / max(mesh.height, 1e-6)
+
+
+def holds(track: np.ndarray, lying: int, pelvis: Optional[np.ndarray] = None) -> List[Tuple[int, int, float, float]]:
+    """The spans that begin before the body lies, are at least `HOVER_FRAMES_MIN` long, peak at `HOVER_PEAK_MIN` or more and fall slower than
+    `HOVER_RATIO_LIMIT` allows: (first, last, peak, ratio). With the pelvis track, a span after which the pelvis has not come down (a sag and a
+    recovery, a stagger: the zombie's defeat_03 dips 10% and stands again) is not a hold, since nothing waits to fall."""
 
     out = []
     for start, end, peak in hover_spans(track):
         ratio = fall_ratio(start, end, peak)
-        if start < lying and end - start + 1 >= HOVER_FRAMES_MIN and peak >= HOVER_PEAK_MIN and ratio > HOVER_RATIO_LIMIT:
-            out.append((start, end, peak, ratio))
+        if not (start < lying and end - start + 1 >= HOVER_FRAMES_MIN and peak >= HOVER_PEAK_MIN and ratio > HOVER_RATIO_LIMIT):
+            continue
+        if pelvis is not None and pelvis[min(end + LAND_FRAMES, len(pelvis) - 1)] > pelvis[start] - HOVER_FREE:
+            continue
+        out.append((start, end, peak, ratio))
     return out
 
 
@@ -135,7 +146,7 @@ def hover_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, cli
         row["fall_hover_peak_share"] = round(worst[2], 4)
         row["fall_hover_frames"] = worst[1] - worst[0] + 1
         row["fall_ratio"] = round(worst[3], 2)
-    bad = holds(track, lying)
+    bad = holds(track, lying, pelvis_share(mesh, anim, legs))
     if not bad:
         return []
     start, end, peak, ratio = max(bad, key=lambda item: item[3])
@@ -273,6 +284,26 @@ def _lowered(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs: pdx
     return pdx_deform.Animation(anim.fps, anim.frames, channels), solved
 
 
+def _why_still_held(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs: pdx_motion.LegSet, track: np.ndarray, start: int,
+                    exclude_bones: Sequence[str]) -> str:
+    """Why a hold the settle could not remove stays, from its worst frame: the support is a foot far from the hips (their height cannot lower it),
+    or the hips are as low as the skin outside the support lets them go."""
+
+    frame = start + int(np.argmax(track[start : start + 40] if len(track) > start else [0.0]))
+    support = support_mask(mesh, legs, exclude_bones)
+    height = max(mesh.height, 1e-6)
+    ground = float(mesh.positions[:, 1].min())
+    points = pdx_deform.skin(mesh, pdx_deform.skinning_matrices(mesh, anim)[frame])[support]
+    centre = pdx_motion.posed_joints(mesh, anim)[frame, legs.pelvis]
+    away = np.maximum(0.0, np.hypot(points[:, 0] - centre[0], points[:, 2] - centre[2]) - _footprint(mesh, legs))
+    best = int(np.argmin((points[:, 1] - ground) + away))
+    lift, reach = (points[best, 1] - ground) / height, away[best] / height
+    room = _room(mesh, anim, legs, exclude_bones)[frame]
+    if reach > lift:
+        return f"frame {frame}: the nearest support is a foot {reach:.0%} of the height beyond the hips' reach, and lowering the hips does not bring it closer"
+    return f"frame {frame}: the support is {lift:.0%} above the ground and the skin outside it rests {room:.0%} above the ground, so the hips cannot come lower"
+
+
 def _worst_ratio(track: Optional[np.ndarray], lying: int) -> float:
     return max([fall_ratio(*span) for span in hover_spans(track) if span[0] < lying] or [0.0]) if track is not None else 0.0
 
@@ -294,17 +325,17 @@ def settle_death_fall(mesh_path: Path, anim_path: Path, out_path: Path, exclude_
         return unchanged("no two legs and a pelvis found")
     lying = tripo_pose._lying_frame(mesh, anim, legs.pelvis)
     before = _worst_ratio(hover, lying)
-    if not holds(hover, lying):
-        return unchanged("the body falls as fast as a fall does", before)
+    pelvis = pelvis_share(mesh, anim, legs)
+    if not holds(hover, lying, pelvis):
+        return unchanged("no hold that ends in a fall: the body falls as fast as a fall does or stands again", before)
     info = read(anim_path).child("info")
     q_keyed = [joint.name for joint in info.children if "q" in str((joint.properties.get("sa") or [""])[0])]
     t_keyed = [joint.name for joint in info.children if "t" in str((joint.properties.get("sa") or [""])[0])]
     pelvis_name = mesh.bones[legs.pelvis]
     if pelvis_name not in t_keyed:
         return unchanged("the pelvis has no translation keys", before)
-    pelvis = (pdx_motion.posed_joints(mesh, anim)[:, legs.pelvis, 1] - float(mesh.positions[:, 1].min())) / max(mesh.height, 1e-6)
     wanted = np.zeros(anim.frames, bool)  # only the spans that hold are lowered: the rest of the clip keeps its hips
-    for start, end, _peak, _ratio in holds(hover, lying):
+    for start, end, _peak, _ratio in holds(hover, lying, pelvis):
         wanted[max(start - 3, 0) : end + 1] = True
     drop = target_drop(pelvis, np.where(wanted, hover, 0.0), _room(mesh, anim, legs, exclude_bones))
     if not (drop > 1e-4).any():
@@ -315,6 +346,9 @@ def settle_death_fall(mesh_path: Path, anim_path: Path, out_path: Path, exclude_
     tripo_pose._write_translations(data, t_keyed, [pelvis_name], result, weights)
     tripo_pose._write_rotations(data, q_keyed, [name for name in leg_joints if name in q_keyed], result, weights)
     Path(out_path).write_bytes(bytes(data))
-    after = _worst_ratio(hover_track(mesh, result, exclude_bones), lying)
-    return FallSettle(True, frames=int(weights.sum()), largest_drop=round(float(drop.max()), 4), ratio_before=round(before, 2), ratio_after=round(after, 2),
+    after_track = hover_track(mesh, result, exclude_bones)
+    after = _worst_ratio(after_track, lying)
+    still = holds(after_track, lying, pelvis_share(mesh, result, legs)) if after_track is not None else []
+    note = _why_still_held(mesh, result, legs, after_track, still[0][0], exclude_bones) if still else ""
+    return FallSettle(True, note, frames=int(weights.sum()), largest_drop=round(float(drop.max()), 4), ratio_before=round(before, 2), ratio_after=round(after, 2),
                       legs=sorted(set(solved)))
