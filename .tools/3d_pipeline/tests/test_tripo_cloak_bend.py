@@ -55,7 +55,7 @@ class Wiring(unittest.TestCase):
         self.assertTrue(run_pilot.job_has_cloak({"cape": True}))
         self.assertTrue(run_pilot.job_has_cloak({"tripo": {"chains": [{"region": "cloak"}]}}))
         self.assertTrue(run_pilot.job_has_cloak({"tripo": {"chains": ["cloak"]}}))
-        self.assertFalse(run_pilot.job_has_cloak({"tripo": {"chains": [{"region": "plates"}]}}), "the dwarf's back is not a cloak")
+        self.assertFalse(run_pilot.job_has_cloak({"tripo": {"chains": [{"region": "plates"}]}}), "plates alone are not a cloak")
         self.assertFalse(run_pilot.job_has_cloak({}))
 
     def test_a_job_without_a_cloak_or_with_the_switch_off_is_left_alone(self) -> None:
