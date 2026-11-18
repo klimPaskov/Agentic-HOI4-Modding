@@ -266,7 +266,7 @@ def lift_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
             continue
         ratios = np.stack([visible_neck(mesh, _turned(anim, joints, rest, np.full(anim.frames, s)), rig) for s in SHARES])
         needed = needed_shares(ratios, target)
-        turn = max(tripo_pose.quaternion_turn(q, rest[j]) for j in joints for q in anim.channels[j]["q"])
+        turn = max(tripo_pose.turn_to_target_degrees(anim.channels[j]["q"], rest[j]) for j in joints)
         largest = float(np.where(np.isfinite(needed), needed, 1.0).max())
         ramp = 0 if loop else max(tripo_trim.settle_frames(turn * largest), LIFT_MIN_RAMP_FRAMES)
         weights = spread_shares(needed, ramp, loop)

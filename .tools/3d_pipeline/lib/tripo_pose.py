@@ -233,16 +233,72 @@ def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvi
     return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
 
 
+def _slerp_along(a: np.ndarray, b: np.ndarray, t: float) -> np.ndarray:
+    """The slerp from `a` to `b` without choosing the short way: with `a . b` below zero it turns more than half a turn."""
+
+    a = a / np.linalg.norm(a)
+    b = b / np.linalg.norm(b)
+    dot = float(np.clip(a @ b, -1.0, 1.0))
+    if dot > 0.9995:
+        out = a + t * (b - a)
+        return out / np.linalg.norm(out)
+    theta = np.arccos(dot)
+    if np.sin(theta) < 1e-6:  # b is a itself on the far side: the same rotation, nothing to turn
+        return a
+    return (np.sin((1 - t) * theta) * a + np.sin(t * theta) * b) / np.sin(theta)
+
+
+def turned_toward(track: np.ndarray, target: np.ndarray, amounts: np.ndarray) -> np.ndarray:
+    """(F, 4) `track` turned toward the rotation `target` by `amounts[frame]` (0 to 1), the way of the turn kept the same from frame to frame.
+
+    A slerp toward a target takes the short way, which changes side where the joint passes half a turn from the target: the turned
+    pose jumps from one side to the other in one frame. The zombie's death (zombie_n, 2026-11-18) passed its left knee 179 degrees
+    from rest at frame 70, and the legs' settle, 40% toward rest at that frame's weight, turned the knee 120 degrees in one frame
+    (UNIT-ANIM-SPIN, vanilla's fastest is 37). So the side of the target is chosen once for each run of frames with a turn (the frames
+    whose amount is above zero), at the run's frame with the largest amount (the last of them), and kept along the run on the track
+    made continuous. Every frame on that side of the crossing turns the short way as before, the frames on the other side turn the long
+    way, so the turned track stays as continuous as the clip. A run with no crossing turns exactly as a slerp does. Each frame keeps the
+    sign of its own key."""
+
+    q = np.asarray(track, float) / np.maximum(np.linalg.norm(track, axis=1, keepdims=True), 1e-12)
+    target = np.asarray(target, float) / max(float(np.linalg.norm(target)), 1e-12)
+    amounts = np.asarray(amounts, float)
+    flat = q.copy()
+    for frame in range(1, len(flat)):
+        if float(flat[frame] @ flat[frame - 1]) < 0.0:
+            flat[frame] = -flat[frame]
+    out = q.copy()
+    frame = 0
+    while frame < len(q):
+        if amounts[frame] <= 0:
+            frame += 1
+            continue
+        end = frame
+        while end < len(q) and amounts[end] > 0:
+            end += 1
+        run = amounts[frame:end]
+        anchor = frame + int(len(run) - 1 - np.argmax(run[::-1]))
+        side = target if float(flat[anchor] @ target) >= 0.0 else -target
+        for k in range(frame, end):
+            new = _slerp_along(flat[k], side, float(amounts[k]))
+            out[k] = new if float(new @ q[k]) >= 0.0 else -new
+        frame = end
+    return out
+
+
+def turn_to_target_degrees(track: np.ndarray, target: np.ndarray, share: float = 1.0) -> float:
+    """The largest turn (degrees) `turned_toward` gives any frame of `track` at `share` in every frame."""
+
+    turned = turned_toward(track, target, np.full(len(track), share))
+    return max((quaternion_turn(a, b) for a, b in zip(track, turned)), default=0.0)
+
+
 def _turned_toward_rest(anim: pdx_deform.Animation, joints: Sequence[str], rest: dict, share: float, weights: np.ndarray) -> pdx_deform.Animation:
-    """`anim` with each joint's rotation turned toward its rest rotation by `share` times the frame's weight."""
+    """`anim` with each joint's rotation turned toward its rest rotation by `share` times the frame's weight (`turned_toward`)."""
 
     channels = {name: dict(channel) for name, channel in anim.channels.items()}
     for joint in joints:
-        q = anim.channels[joint]["q"].copy()
-        for frame in range(anim.frames):
-            if weights[frame] > 0:
-                q[frame] = slerp(q[frame], rest[joint], share * weights[frame])
-        channels[joint]["q"] = q
+        channels[joint]["q"] = turned_toward(anim.channels[joint]["q"], rest[joint], share * np.asarray(weights, float))
     return pdx_deform.Animation(anim.fps, anim.frames, channels)
 
 
@@ -312,7 +368,7 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
     if share == 0.0:
         Path(out_path).write_bytes(bytes(data))
         return LegSettle(False, height_before=before, height_after=before, note="turning the knees or the thighs does not lower the boots")
-    turn = max(quaternion_turn(q, slerp(q, rest[joint], share)) for joint in joints for q in anim.channels[joint]["q"][onset:])
+    turn = max(turn_to_target_degrees(anim.channels[joint]["q"][onset:], rest[joint], share) for joint in joints)
     length = int(min(max(tripo_trim.settle_frames(turn), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
     weights = _onset_ramp(anim.frames, onset, length)
     result = _turned_toward_rest(anim, joints, rest, share, weights)
