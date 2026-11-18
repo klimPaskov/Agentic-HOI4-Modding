@@ -23,6 +23,8 @@ import tripo_checks as TC
 from lib import pdx_deform, tripo_pose as P, tripo_shoulder as S
 from test_tripo_neck import BONES, about, local
 
+TS_BONES = BONES
+
 # The back sheet: a grid behind the spine on the left side, its lower rows bound to the hips and its upper rows to the spine, so a bent
 # spine stretches the row between them (the seam), as Tripo's hard borders on the ogre's hump did.
 COLUMNS = (0.02, 0.06, 0.10, 0.14)
@@ -161,23 +163,125 @@ class Ease(Unit):
         self.assertEqual(S.summary(frames), {"stretched": 12, "squashed": 6, "worst": 0.021})
 
 
+class Lever(Unit):
+    """The clavicle lever on a sheet whose upper rows the left clavicle carries, as Tripo binds the upper back."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        names = [b[0] for b in TS_BONES]
+        positions, triangles, owner = [], [], []
+        for index, (_name, _parent, (x, y, z)) in enumerate(TS_BONES):
+            base = len(positions)
+            points, tris = TD.tetrahedron((x, y, z), 0.03)
+            positions += points
+            triangles += [tuple(base + i for i in tri) for tri in tris]
+            owner += [index] * 4
+        base = len(positions)
+        for row, y in enumerate(ROWS):
+            for x in COLUMNS:
+                positions.append((x, y, DEPTH))
+                owner.append(names.index("LeftShoulder") if row % 2 else names.index("Spine"))  # every row between the two bones
+        width = len(COLUMNS)
+        for r in range(len(ROWS) - 1):
+            for c in range(width - 1):
+                a, b = base + r * width + c, base + r * width + c + 1
+                triangles += [(a, b, b + width), (a, b + width, a + width)]
+        TD.write_mesh(self.mesh_path, positions, triangles, owner)
+        self.mesh = pdx_deform.load_mesh(self.mesh_path)
+
+    def shrug(self, degrees: float) -> dict:
+        return {"LeftShoulder": (local("LeftShoulder"), about(0, degrees)), "LeftArm": (local("LeftArm"), about(2, 40.0))}
+
+    def test_a_shrug_that_tears_the_girdle_turns_the_clavicle_back_and_the_arm_keeps_its_direction(self) -> None:
+        idle = self.clip("idle", 3, lambda f: {})
+        path = self.clip("defend", 21, lambda f: self.shrug(70.0 * math.sin(math.pi * f / 20)))
+        anim = pdx_deform.load_anim(path)
+        before = float(S.swelling(self.mesh, anim, girdle=True).max())
+        self.assertGreater(before, S.GIRDLE_LIMIT)
+        ease = S.ease_clavicles(self.mesh_path, path, path, "defend", idle)
+        after = pdx_deform.load_anim(path)
+        self.assertTrue(ease.changed, ease.note or ease.tried)
+        self.assertIn("LeftShoulder", ease.joints)
+        self.assertLessEqual(float(S.swelling(self.mesh, after, girdle=True).max()), S.GIRDLE_TARGET + 1e-9)
+        arm = self.mesh.bones.index("LeftArm")
+        self.assertTrue(np.allclose(S._world_rotations(self.mesh, anim, [arm]), S._world_rotations(self.mesh, after, [arm]), atol=1e-4))
+        self.assertLessEqual(S._max_step(after, ["LeftShoulder", "LeftArm"]), S.MAX_STEP_DEGREES)
+        self.assertEqual(ease.hand_shift, 0.0)  # the fixture has no hand: the elbow moves with the arm root
+
+    def test_the_lever_aims_at_vanillas_worst_not_the_checks_limit(self) -> None:
+        # the review sheets still showed the ogre's armpit torn at 0.154 to 0.156, under the limit
+        self.assertEqual(S.GIRDLE_TARGET, S.VANILLA_GIRDLE_WORST)
+        self.assertLess(S.GIRDLE_TARGET, S.GIRDLE_LIMIT)
+        idle = self.clip("idle", 3, lambda f: {})
+        path = self.clip("defend", 21, lambda f: self.shrug(15.0 * math.sin(math.pi * f / 20)))
+        before = float(S.swelling(self.mesh, pdx_deform.load_anim(path), girdle=True).max())
+        # the fixture's tear moves in steps of a tenth: with the limit set above this clip, only the target can start the lever
+        with mock.patch.object(S, "GIRDLE_LIMIT", before + 0.05), mock.patch.object(S, "GIRDLE_TARGET", before - 0.05):
+            ease = S.ease_clavicles(self.mesh_path, path, path, "defend", idle)
+        self.assertTrue(ease.changed, ease.note or ease.tried)
+        self.assertLess(float(S.swelling(self.mesh, pdx_deform.load_anim(path), girdle=True).max()), before)
+
+    def test_a_clip_under_both_limits_is_copied_byte_for_byte(self) -> None:
+        path = self.clip("attack", 5, lambda f: self.shrug(2.0))
+        data = path.read_bytes()
+        out = self.folder / "out.anim"
+        ease = S.ease_clavicles(self.mesh_path, path, out, "attack")
+        self.assertFalse(ease.changed)
+        self.assertEqual(out.read_bytes(), data)
+
+
+class Strike(unittest.TestCase):
+    """The attack's strike that the shoulder ease and the clavicle lever keep (`strike`, `strike_kept`), on the biped with hands."""
+
+    def setUp(self) -> None:
+        import test_tripo_pose_upper as PU
+
+        self.PU = PU
+        self.biped = PU.Biped("setUp")
+        self.biped.setUp()
+        self.addCleanup(self.biped.doCleanups)
+
+    def swing(self, name: str, peak: int, degrees: float = 120.0):
+        PU = self.PU
+
+        def pose(frame: int):
+            share = 1.0 / (1.0 + math.exp(-(frame - peak) * 1.5))  # fastest at `peak`
+            return {"RightArm": (PU.local("RightArm"), PU.turn("z", degrees * share))}
+
+        return self.biped.load(self.biped.clip(name, 30, pose))
+
+    def test_a_blow_moved_to_another_frame_or_slowed_under_the_strike_rule_is_not_kept(self) -> None:
+        mesh = self.biped.mesh
+        before = S.strike(mesh, self.swing("attack", 20))
+        self.assertLessEqual(abs(before[1] - 20), 1)
+        self.assertEqual(mesh.bones[before[0]], "RightHand")
+        self.assertTrue(S.strike_kept(mesh, before, self.swing("same", 21)))
+        self.assertFalse(S.strike_kept(mesh, before, self.swing("early", 8)))
+        self.assertFalse(S.strike_kept(mesh, before, self.swing("slow", 20, degrees=2.0)))
+        self.assertTrue(S.strike_kept(mesh, None, self.swing("other", 8)))
+
+
 class Pilot(Unit):
     def test_every_role_is_eased_with_the_idle_last_and_recorded(self) -> None:
         records = {"u_idle.anim": {}, "u_attack.anim": {}, "u_defend.anim": {}}
         (self.folder / "u_idle.anim").write_bytes(b"")
         with mock.patch.object(S, "ease_shoulders", return_value=S.ShoulderEase(True, "spine", ("Spine",), 0.5, 4, 6, 0.1, 0.05)) as ease, \
+                mock.patch.object(S, "ease_clavicles", return_value=S.ClavicleEase(True, "left clavicle", ("LeftShoulder",), 0.4)) as lever, \
                 mock.patch.object(run_pilot, "file_record", lambda path, relative_to=None: {}):
             run_pilot.ease_staged_shoulders(self.folder, self.folder, {"runtime_stem": "u"}, ["attack", "idle", "defend"], records)
         self.assertEqual([call.args[3] for call in ease.call_args_list], ["attack", "defend", "idle"])
+        self.assertEqual([call.args[3] for call in lever.call_args_list], ["attack", "defend", "idle"])
+        self.assertEqual(records["u_defend.anim"]["clavicle_ease"]["joints"], ["LeftShoulder"])
         self.assertEqual(ease.call_args_list[0].args[4], self.folder / "u_idle.anim")
         self.assertEqual(records["u_attack.anim"]["shoulder_ease"]["joints"], ["Spine"])
         self.assertIn("staged", records["u_defend.anim"])
 
     def test_a_quadruped_or_the_switch_off_is_left_alone(self) -> None:
         for spec in ({"runtime_stem": "u", "tripo": {"ease_shoulders": False}},):
-            with mock.patch.object(S, "ease_shoulders") as ease:
+            with mock.patch.object(S, "ease_shoulders") as ease, mock.patch.object(S, "ease_clavicles") as lever:
                 run_pilot.ease_staged_shoulders(self.folder, self.folder, spec, ["attack"], {"u_attack.anim": {}})
             ease.assert_not_called()
+            lever.assert_not_called()
         with mock.patch.object(S, "ease_shoulders") as ease, mock.patch.object(run_pilot, "tripo_quadruped", return_value=True):
             run_pilot.ease_staged_shoulders(self.folder, self.folder, {"runtime_stem": "u"}, ["attack"], {"u_attack.anim": {}})
         ease.assert_not_called()

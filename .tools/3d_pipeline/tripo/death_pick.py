@@ -16,7 +16,8 @@ on those rows.
 The measures, with the route's limits: the thigh split (TRIPO-DEATH-SPLAY, `lib/tripo_splay.py`), the hips holding themselves up (TRIPO-DEATH-HOVER,
 `lib/tripo_fall.py`), the end pose lying down (TRIPO-NOT-DOWN) and no limb inside the torso (TRIPO-LIMB-IN-TORSO, `tripo_checks.death_findings`),
 the chest, head and hands resting on the ground (TRIPO-DEATH-REST, `lib/tripo_pose.py`), no boot kicking up once the hips are down
-(TRIPO-DEATH-LEG-KICK, `lib/tripo_kick.py`), and the kit's deformation over the clip (the worst
+(TRIPO-DEATH-LEG-KICK, `lib/tripo_kick.py`), the shoulder girdle's tear (TRIPO-SHOULDER-TEAR, `lib/tripo_shoulder.py`), the waist
+twist of the frames it stands (TRIPO-WAIST-TWIST, `lib/tripo_pose.py`), and the kit's deformation over the clip (the worst
 frame's stretched and squashed edges, `pdx_deform.deformation_report`). The pick (`pick`) is the candidate that passes every limit with the fewest
 deformed edges. When none passes, the one with the fewest failed rules, then the fewest deformed edges, is named as the closest.
 """
@@ -40,7 +41,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
 import tripo_checks
-from lib import pdx_deform, tripo_fall, tripo_kick, tripo_pose, tripo_splay
+from lib import pdx_deform, tripo_fall, tripo_kick, tripo_pose, tripo_shoulder, tripo_splay
 
 FPS = 30.0
 
@@ -181,6 +182,13 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, clip: str)
     numbers = death_numbers.get(stem, {})
     row.update(limb_in_torso_share=numbers.get("limb_in_torso_worst_share"), final_extent_share=numbers.get("final_extent_share"),
                final_extent_limit=numbers.get("final_extent_limit"), torso_vertical_share=numbers.get("torso_vertical_share"))
+    shoulders, _numbers = tripo_shoulder.shoulder_findings(mesh, {stem: anim})
+    found += [item for item in shoulders if item["rule"] == "TRIPO-SHOULDER-TEAR"]
+    row["tear"] = round(float(tripo_shoulder.swelling(mesh, anim, girdle=True).max()), 4)
+    twist = tripo_pose.stance_twist(mesh, anim)
+    row["waist_twist"] = round(float(np.nanmax(np.abs(twist))), 1) if twist is not None and np.isfinite(twist).any() else 0.0
+    if row["waist_twist"] > tripo_pose.WAIST_TWIST_LIMITS["death"]:
+        found.append({"rule": "TRIPO-WAIST-TWIST", "subject": stem})
     rest = tripo_pose.death_rest_heights(mesh, anim) or {}
     row["rest_heights"] = rest
     parts = [rest[name] for name in ("chest", "head", "left hand", "right hand") if name in rest]
@@ -230,12 +238,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         if args.settled:
             rows.append(measure(mesh, settled(mesh_path, mesh, anim), f"{name} (settled)"))
     verdict = pick([row for row in rows if row["clip"].endswith("(settled)")] if args.settled else rows)
-    print(f"{'clip':<28}{'splay':>7}{'hover':>7}{'limb':>7}{'extent':>8}{'rest':>7}{'str':>6}{'sq':>6}  fails")
+    print(f"{'clip':<28}{'splay':>7}{'hover':>7}{'limb':>7}{'extent':>8}{'rest':>7}{'tear':>7}{'twist':>7}{'str':>6}{'sq':>6}  fails")
     for row in rows:
         rest = row["rest_heights"]
         top = max((rest[name] for name in ("chest", "head", "left hand", "right hand") if name in rest), default=0.0)
         print(f"{row['clip'][:27]:<28}{row['splay_degrees'] or 0:>7.1f}{row['hover_ratio'] or 0:>7.2f}{row['limb_in_torso_share'] or 0:>7.3f}"
-              f"{row['final_extent_share'] or 0:>8.3f}{top:>7.3f}{row['stretched_edges']:>6}{row['squashed_edges']:>6}  {', '.join(row['fails']) or '-'}")
+              f"{row['final_extent_share'] or 0:>8.3f}{top:>7.3f}{row['tear']:>7.3f}{row['waist_twist']:>7.1f}{row['stretched_edges']:>6}{row['squashed_edges']:>6}  {', '.join(row['fails']) or '-'}")
     print(f"pick: {verdict['pick'] or '-'} ({verdict['why']})")
     if args.json:
         args.json.write_text(json.dumps({"rows": rows, **verdict}, indent=1, default=float), encoding="utf-8", newline="\n")

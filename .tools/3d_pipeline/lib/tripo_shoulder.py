@@ -76,6 +76,16 @@ SWELL_TARGET = VANILLA_SWELL_WORST
 SHARES = np.round(np.arange(0.0, 1.0001, 0.1), 2)
 MIN_RAMP_FRAMES = 6
 SPINE = ("Spine", "Spine01", "Spine02")
+# The girdle measure (TRIPO-SHOULDER-TEAR): the shoulder region with the side of the chest under the arm, and a lower growth.
+UNDER_ACROSS = (0.6, 1.6)  # the side under the arm: this share of the way from the midline to the arm joint (past it at 1)
+UNDER_DROP = (-0.3, 2.0)  # from 0.3 upper arm lengths above the arm joint to 2 below it
+ARM_WORDS = ("arm", "hand", "weapon", "shield")  # a vertex whose strongest bone carries one of these is the limb, not the torso
+GIRDLE_AREA_RATIO = 1.44  # 1.2 times along each side, where the review sheets turn yellow
+VANILLA_GIRDLE_WORST = 0.125
+GIRDLE_LIMIT = round(1.25 * VANILLA_GIRDLE_WORST, 4)
+# What the clavicle lever aims for and acts above: vanilla's worst, not the check's limit. The review sheets still showed the armpit torn at
+# 0.154 to 0.156 (ogre_o), where the check passed.
+GIRDLE_TARGET = VANILLA_GIRDLE_WORST
 
 
 @dataclass
@@ -124,17 +134,52 @@ def shoulder_regions(mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = 
     return out
 
 
-class Swelling:
-    """The shoulder regions' triangles of one mesh, to measure clip after clip (only the regions' vertices are skinned)."""
+def under_arm_regions(mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None) -> Dict[str, np.ndarray]:
+    """(V,) masks of the torso skin under each arm: `UNDER_ACROSS` of the way from the midline to the arm joint, `UNDER_DROP` upper arm lengths
+    round the joint's height, and not the limb itself (the vertex's strongest bone is no arm, hand or held part, `ARM_WORDS`)."""
 
-    def __init__(self, mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None):
+    rig = rig or shoulder_rig(mesh)
+    if rig is None:
+        return {}
+    joints = pdx_motion.rest_joints(mesh)
+    left, right = joints[rig.left], joints[rig.right]
+    middle = 0.5 * (left + right)
+    dominant = pdx_deform.dominant_bones(mesh)
+    limb = np.array([any(word in name.lower() for word in ARM_WORDS) for name in mesh.bones])
+    torso = ~limb[np.clip(dominant, 0, None)]
+    out = {}
+    for side, arm, joint in (("left", rig.left, left), ("right", rig.right, right)):
+        forearm = _forearm(mesh, arm)
+        width = float(np.linalg.norm(joint - middle))
+        if forearm < 0 or width <= 1e-9:
+            continue
+        length = float(np.linalg.norm(joints[forearm] - joint))
+        u = (mesh.positions - middle) @ ((joint - middle) / width) / width
+        drop = (joint[1] - mesh.positions[:, 1]) / max(length, 1e-9)
+        out[side] = (u >= UNDER_ACROSS[0]) & (u <= UNDER_ACROSS[1]) & (drop >= UNDER_DROP[0]) & (drop <= UNDER_DROP[1]) & torso
+    return out
+
+
+def girdle_regions(mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None) -> Dict[str, np.ndarray]:
+    """(V,) masks of each side's shoulder girdle: the shoulder region and the torso under the arm."""
+
+    shoulders, under = shoulder_regions(mesh, rig), under_arm_regions(mesh, rig)
+    return {side: shoulders[side] | under.get(side, False) for side in shoulders}
+
+
+class Swelling:
+    """The shoulder regions' triangles of one mesh, to measure clip after clip (only the regions' vertices are skinned). `girdle` measures
+    the girdle regions at `GIRDLE_AREA_RATIO` (TRIPO-SHOULDER-TEAR) instead."""
+
+    def __init__(self, mesh: pdx_deform.SkinnedMesh, rig: Optional[ShoulderRig] = None, girdle: bool = False):
         self.mesh = mesh
+        self.ratio = GIRDLE_AREA_RATIO if girdle else AREA_RATIO
         triangles = mesh.triangles
         keep = ~mesh.collision[triangles].any(axis=1) if len(mesh.collision) == len(mesh.positions) else np.ones(len(triangles), bool)
         rest = _areas(mesh.positions, triangles)
         self.sides = []
         used = np.zeros(len(mesh.positions), bool)
-        for mask in shoulder_regions(mesh, rig).values():
+        for mask in (girdle_regions if girdle else shoulder_regions)(mesh, rig).values():
             inside = mask[triangles].all(axis=1) & keep & (rest > 0)
             if inside.any():
                 self.sides.append(inside)
@@ -157,7 +202,7 @@ class Swelling:
         for frame in range(matrices.shape[0]):
             posed = stretch_smooth._skin_subset(points, joints, weights, matrices[frame])
             for triangles, rest in zip(self.triangles, self.rest):
-                grown = _areas(posed, triangles) > AREA_RATIO * rest
+                grown = _areas(posed, triangles) > self.ratio * rest
                 out[frame] = max(out[frame], float(rest[grown].sum() / rest.sum()))
         return out
 
@@ -167,10 +212,10 @@ def _areas(points: np.ndarray, triangles: np.ndarray) -> np.ndarray:
     return 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
 
 
-def swelling(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> np.ndarray:
-    """(frames,) the shoulder swelling of `anim` on `mesh` (see the module text)."""
+def swelling(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, girdle: bool = False) -> np.ndarray:
+    """(frames,) the shoulder swelling of `anim` on `mesh` (see the module text), or with `girdle` the girdle's tear."""
 
-    return Swelling(mesh).per_frame(anim)
+    return Swelling(mesh, girdle=girdle).per_frame(anim)
 
 
 # ---- the check ---------------------------------------------------------------------------------------------------------
@@ -181,7 +226,7 @@ def shoulder_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.
     rig = shoulder_rig(mesh)
     if rig is None:
         return [], {"note": "no head and two upper arms under one chest"}
-    measure = Swelling(mesh, rig)
+    measure, girdle = Swelling(mesh, rig), Swelling(mesh, rig, girdle=True)
     out: List[dict] = []
     numbers: dict = {}
     for clip, anim in anims.items():
@@ -189,13 +234,22 @@ def shoulder_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.
         frame = int(np.argmax(shares))
         worst = float(shares[frame])
         over = int(np.sum(shares > SWELL_LIMIT))
-        numbers[clip] = {"worst_share": round(worst, 4), "frame": frame, "frames_over_limit": over}
+        tear = girdle.per_frame(anim)
+        tear_frame = int(np.argmax(tear))
+        numbers[clip] = {"worst_share": round(worst, 4), "frame": frame, "frames_over_limit": over,
+                         "girdle_share": round(float(tear[tear_frame]), 4), "girdle_frame": tear_frame}
         if worst > SWELL_LIMIT:
             out.append({"rule": "TRIPO-SHOULDER-SWELL", "subject": clip,
                         "message": f"{worst:.1%} of the shoulder region's skin has grown past 1.69 times its area in frame {frame} (limit {SWELL_LIMIT:.1%}, "
                                    f"vanilla's worst {VANILLA_SWELL_WORST:.1%}), {over} of {len(shares)} frames over the limit: the shoulder and the upper "
                                    "back swell into one ball",
                         "share": round(worst, 4), "frame": frame})
+        if tear[tear_frame] > GIRDLE_LIMIT:
+            out.append({"rule": "TRIPO-SHOULDER-TEAR", "subject": clip,
+                        "message": f"{tear[tear_frame]:.1%} of the shoulder girdle's skin (the shoulder and the side of the chest under the arm) has grown "
+                                   f"past 1.44 times its area in frame {tear_frame} (limit {GIRDLE_LIMIT:.1%}, vanilla's worst {VANILLA_GIRDLE_WORST:.1%}): "
+                                   "the raised arm tears the armpit and the side of the chest",
+                        "share": round(float(tear[tear_frame]), 4), "frame": tear_frame})
     return out, numbers
 
 
@@ -259,6 +313,45 @@ def within(frames: np.ndarray, before: Dict[str, float]) -> np.ndarray:
             & (frames[:, 2] <= max(before["worst"], 0.0) * (1 + share) + 1e-6))
 
 
+# An attack keeps its blow: a plan may not move the striking hand's fastest frame (the strike the head-lead check reads, `tripo_swing`)
+# further than `tripo_swing.STRIKE_WINDOW` frames, nor slow it under TRIPO-ATTACK-NO-STRIKE's speed (`tripo_strike.MIN_SPEED`). On the ogre's
+# poleaxe attack (ogre_q, 2026-11-18) the spine turned toward the stance slowed the blow (frame 23) under the wind-up (frame 9), and the check
+# then judged the raise, which leads with the butt. The clavicles alone keep the blow at frame 23 (1.85 heights a second against 2.05).
+
+
+def strike(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[Tuple[int, int, float]]:
+    """(hand joint, frame, speed) of the faster hand's fastest frame in the world, or None without hands."""
+
+    from . import tripo_swing
+
+    hands = [i for i, name in enumerate(mesh.bones) if name.lower() in ("lefthand", "righthand")]
+    if not hands or anim.frames < 3:
+        return None
+    joints = pdx_motion.posed_joints(mesh, anim)
+    best = None
+    for hand in hands:
+        frame = tripo_swing.strike_frame(joints[:, hand])
+        speed = float(np.linalg.norm(np.gradient(joints[:, hand], axis=0), axis=1)[frame])
+        if best is None or speed > best[2]:
+            best = (hand, frame, speed)
+    return best
+
+
+def strike_kept(mesh: pdx_deform.SkinnedMesh, before: Optional[Tuple[int, int, float]], anim: pdx_deform.Animation) -> bool:
+    """Whether `anim` keeps the attack's strike `before` (see the note above `strike`). True when there is none to keep."""
+
+    from . import tripo_strike, tripo_swing
+
+    if before is None:
+        return True
+    hand, frame, speed = before
+    track = pdx_motion.posed_joints(mesh, anim)[:, hand]
+    now = tripo_swing.strike_frame(track)
+    peak = float(np.linalg.norm(np.gradient(track, axis=0), axis=1)[now])
+    fast = peak * float(anim.fps or 30.0) / max(mesh.height, 1e-6) >= tripo_strike.MIN_SPEED
+    return abs(now - frame) <= tripo_swing.STRIKE_WINDOW and fast
+
+
 def ease_groups(rig: ShoulderRig, mesh: pdx_deform.SkinnedMesh) -> List[Tuple[str, Tuple[str, ...]]]:
     spine = tuple(name for name in SPINE if name in mesh.bones)
     clavicles = tuple(mesh.bones[j] for j in rig.clavicles)
@@ -282,6 +375,7 @@ class _Clip:
     target: float
     neck_rig: object = None
     neck_floor: Optional[float] = None
+    strike: Optional[Tuple[int, int, float]] = None  # an attack's strike to keep (`strike_kept`)
 
 
 def _plan(clip: _Clip, joints: List[str]):
@@ -312,6 +406,8 @@ def _plan(clip: _Clip, joints: List[str]):
         why = "sinks the neck"
     elif stretch_smooth.worse(clip.deformed, summary(_frame_deformation(mesh, result, clip.edges, clip.rest))):
         why = "makes the clip's deformation worse"
+    elif not strike_kept(mesh, clip.strike, result):
+        why = "moves or slows the attack's strike"
     if why:
         record["rejected"] = why
     return record, why, weights, result, after, added
@@ -339,7 +435,8 @@ def ease_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
     neck_before = tripo_neck.visible_neck(mesh, anim, neck_rig)
     clip = _Clip(mesh, anim, measure, before, stance(mesh, idle), edges, rest, summary(_frame_deformation(mesh, anim, edges, rest)),
                  role in tripo_pose.LOOP_ROLES, target, neck_rig,
-                 min(tripo_neck.NECK_LIMIT, float(neck_before.min())) if neck_before is not None and len(neck_before) else None)
+                 min(tripo_neck.NECK_LIMIT, float(neck_before.min())) if neck_before is not None and len(neck_before) else None,
+                 strike(mesh, anim) if role == "attack" else None)
     plans, tried = [], {}
     for order, (name, group) in enumerate(ease_groups(rig, mesh)):
         joints = [j for j in group if j in keyed]
@@ -369,5 +466,191 @@ def ease_shoulders(mesh_path: Path, anim_path: Path, out_path: Path, role: str, 
     ease, result, weights = ease_animation(pdx_deform.load_mesh(mesh_path), pdx_deform.load_anim(anim_path), role, idle, keyed, limit, target)
     if result is not None:
         tripo_pose._write_rotations(data, keyed, ease.joints, result, weights)
+    Path(out_path).write_bytes(bytes(data))
+    return ease
+
+
+# ---- the clavicle lever ------------------------------------------------------------------------------------------------
+#
+# Run by `run_pilot` right after the shoulder ease (`ease_clavicles`): a clip still over TRIPO-SHOULDER-TEAR or the swell limit has its left, right
+# or both clavicles turned toward the idle's first frame, each upper arm keeping its world direction (`keep_arms`), so the hand and the weapon
+# keep their path and only the arm's root moves (the weapon is on its own bone under the hand, so the grip itself does not change). Each frame
+# takes the smallest share that brings it under both limits while its deformed edges stay inside the kit's strict no-worse rule (`within`), spread
+# by a smoothstep, no written joint faster than `MAX_STEP_DEGREES` a frame. When keeping the arms cannot lower the girdle, the arm may follow its
+# clavicle, never lowering a hand's highest point above the chest by more than `RAISE_KEEP`. Measured (2026-11-18): frozen at the idle's stance
+# with the arm's direction kept, the clavicle that drives the ogre's tear (the left in its defend, the right in its attack) took the girdle from
+# 0.161 to 0.122 and from 0.191 to 0.115. As the rule on ogre_m's files the attack went from 0.181 to 0.156 (both clavicles, 0.4, the hands
+# 2.5% of the height) and the defend from 0.166 to 0.154 (the left, 0.4, 3.6%), and the same in the run ogre_o. On ogre_n's files, where the
+# shoulder ease had turned the clavicles 0.6 already, only the arm following lowered the attack (the right clavicle 0.1: 0.164 to 0.153, the hand
+# 1.4%). The orc and the zombie pass both limits.
+
+MAX_STEP_DEGREES = 35.0  # a written joint never turns further in one frame than this (UNIT-ANIM-SPIN: vanilla's fastest joint turns 37)
+RAISE_KEEP = 0.01  # an arm that follows its clavicle may lower a hand's highest point above the chest by at most this share of the height
+
+
+def _world_rotations(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, joints: Sequence[int]) -> np.ndarray:
+    world = tripo_neck._world(mesh, anim)[:, list(joints), :3, :3]
+    u, _s, vt = np.linalg.svd(world)
+    return u @ vt
+
+
+def keep_arms(mesh: pdx_deform.SkinnedMesh, before: pdx_deform.Animation, after: pdx_deform.Animation, arms: Sequence[int]) -> pdx_deform.Animation:
+    """`after` with each upper arm's local rotation set so it points in the world as it did in `before`: the arm and what it holds keep their
+    direction, only the arm's root moves with the clavicle."""
+
+    target = _world_rotations(mesh, before, arms)
+    parents = _world_rotations(mesh, after, [mesh.parents[a] for a in arms])
+    channels = {name: dict(channel) for name, channel in after.channels.items()}
+    for k, arm in enumerate(arms):
+        name = mesh.bones[arm]
+        old = after.channels[name]["q"]
+        q = old.copy()
+        for frame in range(after.frames):
+            new = tripo_pose._quaternion_from_matrix(parents[frame, k].T @ target[frame, k])
+            q[frame] = new if float(new @ old[frame]) >= 0 else -new
+        channels[name]["q"] = q
+    return pdx_deform.Animation(after.fps, after.frames, channels)
+
+
+def _max_step(anim: pdx_deform.Animation, joints: Sequence[str]) -> float:
+    return max((tripo_pose.quaternion_turn(a, b) for j in joints for a, b in zip(anim.channels[j]["q"][:-1], anim.channels[j]["q"][1:])), default=0.0)
+
+
+def hand_raise(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> float:
+    """The highest any hand rises above the chest joint (`Spine02`, else the hips) in the clip, as a share of the height."""
+
+    index = {name: i for i, name in enumerate(mesh.bones)}
+    hands = [i for name, i in index.items() if name.lower() in ("lefthand", "righthand")]
+    if not hands:
+        return 0.0
+    joints = pdx_motion.posed_joints(mesh, anim)
+    chest = joints[:, index.get("Spine02", index.get("Hips", 0)), 1]
+    return float((joints[:, hands, 1] - chest[:, None]).max() / max(mesh.height, 1e-6))
+
+
+def hand_shift(mesh: pdx_deform.SkinnedMesh, before: pdx_deform.Animation, after: pdx_deform.Animation) -> float:
+    """The furthest any hand moves between the two clips in one frame, as a share of the height."""
+
+    hands = [i for i, name in enumerate(mesh.bones) if "hand" in name.lower()]
+    if not hands:
+        return 0.0
+    a, b = pdx_motion.posed_joints(mesh, before)[:, hands], pdx_motion.posed_joints(mesh, after)[:, hands]
+    return float(np.linalg.norm(a - b, axis=-1).max() / max(mesh.height, 1e-6))
+
+
+@dataclass
+class ClavicleEase:
+    changed: bool
+    group: str = ""
+    joints: Tuple[str, ...] = ()
+    share: float = 0.0
+    frames_changed: int = 0
+    ramp_frames: int = 0
+    girdle_before: float = 0.0
+    girdle_after: float = 0.0
+    swell_before: float = 0.0
+    swell_after: float = 0.0
+    hand_shift: float = 0.0  # the furthest a hand moves, share of the height
+    note: str = ""
+    tried: Dict[str, dict] = field(default_factory=dict)
+
+
+def _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed, loop, blow=None):
+    """(record, result, weights, why) for turning `joints` (clavicles) toward `reference`, with the `arms` kept in their world direction (none:
+    the arms follow their clavicles)."""
+
+    def posed_at(weights):
+        turned = _turned(anim, joints, reference, weights)
+        return keep_arms(mesh, anim, turned, arms) if arms else turned
+
+    posed = [posed_at(np.full(anim.frames, s)) for s in SHARES]
+    tear = np.stack([girdle.per_frame(p) for p in posed])
+    ball = np.stack([swell.per_frame(p) for p in posed])
+    allowed = np.logical_and.accumulate(np.stack([within(_frame_deformation(mesh, p, edges, rest), before_deformed) for p in posed]), axis=0)
+    cap = SHARES[np.maximum(allowed.sum(axis=0) - 1, 0)]
+    under = (tear <= GIRDLE_TARGET + 1e-9) & (ball <= SWELL_LIMIT + 1e-9) & allowed
+    lowest = SHARES[np.argmin(np.where(allowed, tear / GIRDLE_TARGET + ball / SWELL_LIMIT, np.inf), axis=0)]
+    needed = np.where(under.any(axis=0), SHARES[np.argmax(under, axis=0)], lowest)
+    needed = np.where((tear[0] <= GIRDLE_TARGET) & (ball[0] <= SWELL_LIMIT), 0.0, needed)
+    turn = max(tripo_pose.quaternion_turn(q, reference[j]) for j in joints for q in anim.channels[j]["q"])
+    ramp = max(tripo_trim.settle_frames(turn * float(needed.max())), MIN_RAMP_FRAMES)
+    weights = np.minimum(tripo_cloak_bend.spread(needed, ramp, loop), np.maximum(cap, needed))
+    result = posed_at(weights)
+    after_tear, after_ball = float(girdle.per_frame(result).max()), float(swell.per_frame(result).max())
+    written = list(joints) + [mesh.bones[a] for a in arms]
+    record = {"girdle_after": round(after_tear, 4), "swell_after": round(after_ball, 4), "ramp_frames": int(ramp),
+              "turn_added_degrees": round(tripo_neck.added_turn(anim, result, joints), 1),
+              "reaches_limits": bool(after_tear <= GIRDLE_TARGET + 1e-9 and after_ball <= SWELL_LIMIT + 1e-9),
+              "max_step_degrees": round(_max_step(result, written), 1)}
+    why = ""
+    if after_tear >= float(tear[0].max()) - 1e-4:
+        why = "does not lower the girdle's worst frame"
+    elif record["max_step_degrees"] > max(MAX_STEP_DEGREES, _max_step(anim, written) + 1e-6):
+        why = "a joint would turn faster than the spin rule allows"
+    elif stretch_smooth.worse(before_deformed, summary(_frame_deformation(mesh, result, edges, rest))):
+        why = "makes the clip's deformation worse"
+    elif not arms and hand_raise(mesh, result) < hand_raise(mesh, anim) - RAISE_KEEP:
+        why = "lowers the raised hand"
+    elif not strike_kept(mesh, blow, result):
+        why = "moves or slows the attack's strike"
+    return record, result, weights, why
+
+
+def clavicle_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, role: str, idle: Optional[pdx_deform.Animation] = None,
+                       keyed: Optional[Sequence[str]] = None) -> Tuple[ClavicleEase, Optional[pdx_deform.Animation], np.ndarray, Tuple[str, ...]]:
+    """The clavicle lever on a clip in memory (see `ease_clavicles`): (record, the eased clip or None, the per-frame weights, the joints written)."""
+
+    none = np.zeros(anim.frames)
+    rig = shoulder_rig(mesh)
+    if rig is None:
+        return ClavicleEase(False, note="no head and two upper arms under one chest"), None, none, ()
+    girdle, swell = Swelling(mesh, rig, girdle=True), Swelling(mesh, rig)
+    tear0, ball0 = float(girdle.per_frame(anim).max()), float(swell.per_frame(anim).max())
+    base = ClavicleEase(False, girdle_before=tear0, girdle_after=tear0, swell_before=ball0, swell_after=ball0)
+    if tear0 <= GIRDLE_TARGET and ball0 <= SWELL_LIMIT:
+        base.note = "the shoulders pass both limits"
+        return base, None, none, ()
+    keyed = list(anim.channels) if keyed is None else list(keyed)
+    reference = stance(mesh, idle)
+    edges = pdx_deform.mesh_edges(mesh)
+    rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
+    before_deformed = summary(_frame_deformation(mesh, anim, edges, rest))
+    blow = strike(mesh, anim) if role == "attack" else None
+    sides = [(mesh.bones[c], arm) for c, arm in zip(rig.clavicles, (rig.left, rig.right)) if mesh.bones[c] in keyed and mesh.bones[arm] in keyed]
+    groups = [(name, [pair]) for name, pair in zip(("left clavicle", "right clavicle"), sides)] + [("both clavicles", sides)]
+    groups = [(name, pairs, True) for name, pairs in groups] + [(name + ", arm follows", pairs, False) for name, pairs in groups]
+    plans = []
+    for order, (name, pairs, kept) in enumerate(groups):
+        if not pairs:
+            continue
+        joints, arms = [c for c, _a in pairs], [a for _c, a in pairs] if kept else []
+        record, result, weights, why = _clavicle_plan(mesh, anim, joints, arms, reference, girdle, swell, edges, rest, before_deformed,
+                                                      role in tripo_pose.LOOP_ROLES, blow)
+        if why:
+            record["rejected"] = why
+        base.tried[name] = record
+        if not why:
+            score = record["turn_added_degrees"] if record["reaches_limits"] else record["girdle_after"] / GIRDLE_TARGET + record["swell_after"] / SWELL_LIMIT
+            plans.append((not record["reaches_limits"], not kept, score, order, name, joints, arms, record, result, weights))
+    if not plans:
+        base.note = "no clavicle lowers the girdle within the kit's rules"
+        return base, None, none, ()
+    # A plan that reaches both limits first, then one whose arms keep their direction, then the least turn (or the lowest measures).
+    _, _, _, _, name, joints, arms, record, result, weights = min(plans, key=lambda plan: plan[:4])
+    written = tuple(joints) + tuple(mesh.bones[a] for a in arms)
+    return ClavicleEase(True, name, tuple(joints), round(float(weights.max()), 3), int((weights > 0).sum()), record["ramp_frames"], tear0,
+                        record["girdle_after"], ball0, record["swell_after"], round(hand_shift(mesh, anim, result), 4), tried=base.tried), result, weights, written
+
+
+def ease_clavicles(mesh_path: Path, anim_path: Path, out_path: Path, role: str, idle_path: Optional[Path] = None) -> ClavicleEase:
+    """Write `out_path`: `anim_path` with the clavicle that drives a torn shoulder turned toward the unit's stance, the upper arm keeping its
+    direction in the world (see the module text). Unchanged, and copied as it is, when the clip passes or no clavicle helps."""
+
+    data = bytearray(Path(anim_path).read_bytes())
+    keyed = [joint.name for joint in read(anim_path).child("info").children if "q" in str((joint.properties.get("sa") or [""])[0])]
+    idle = pdx_deform.load_anim(idle_path) if idle_path is not None and Path(idle_path).is_file() else None
+    ease, result, weights, written = clavicle_animation(pdx_deform.load_mesh(mesh_path), pdx_deform.load_anim(anim_path), role, idle, keyed)
+    if result is not None:
+        tripo_pose._write_rotations(data, keyed, written, result, weights)
     Path(out_path).write_bytes(bytes(data))
     return ease
