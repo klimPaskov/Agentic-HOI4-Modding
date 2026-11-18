@@ -46,7 +46,7 @@ WING_CHAINS = 4
 # The trailing chain (the first, by the flank) turns this share of the wing's every turn, beat and fold, so the membrane between the wing and
 # the flank it grows from follows the wing part of the way and bends across the fan's trailing quarter instead of along one seam: a fresh
 # review of run 3 saw it pinned to the flank, stretched into a dragged sheet when the wings rose.
-TRAIL_SHARE = 0.75
+TRAIL_SHARE = 0.7
 WING_BONES = 3
 
 
@@ -223,9 +223,9 @@ def target_frame(sweep: float, rise: float, roll: float, sign: float) -> np.ndar
     span = math.cos(e) * (math.cos(a) * sign * X + math.sin(a) * Y) + math.sin(e) * Z
     up = Z - (Z @ span) * span
     up = unit(up) if np.linalg.norm(up) > 1e-6 else unit(-Y - (-Y @ span) * span)
-    forward = unit(np.cross(span, up))
-    if forward @ -Y < 0:
-        forward = -forward
+    # the side's own sense (`sign`), never a test against the front: a span swept past straight ahead (the defend's crossing wings) flipped
+    # that test and turned the chord over in one frame (UNIT-ANIM-SPIN, 50 degrees in a frame in run 5)
+    forward = sign * unit(np.cross(span, up))
     chord = math.cos(r) * up + math.sin(r) * forward
     return np.stack([span, chord, sign * np.cross(span, chord)], axis=1)
 
@@ -238,9 +238,9 @@ def frame_angles(frame: np.ndarray, sign: float) -> Tuple[float, float, float]:
     sweep = math.degrees(math.atan2(float(span[1]), float(span[0]) * sign))
     up = Z - (Z @ span) * span
     up = unit(up)
-    forward = unit(np.cross(span, up))
-    if forward @ -Y < 0:
-        forward = -forward
+    # the side's own sense (`sign`), never a test against the front: a span swept past straight ahead (the defend's crossing wings) flipped
+    # that test and turned the chord over in one frame (UNIT-ANIM-SPIN, 50 degrees in a frame in run 5)
+    forward = sign * unit(np.cross(span, up))
     return sweep, rise, math.degrees(math.atan2(float(chord @ forward), float(chord @ up)))
 
 
@@ -423,7 +423,7 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 FOLDED = {"sweep": 70.0, "rise": 5.0, "roll": 0.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
 HALF = {"sweep": 55.0, "rise": 20.0, "roll": -40.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
-SHIELD = {"sweep": -130.0, "rise": 40.0, "roll": 30.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
+SHIELD = {"sweep": -95.0, "rise": 30.0, "roll": 0.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
 FLEE = {"sweep": 55.0, "rise": 20.0, "roll": -70.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
 DEAD_UPPER_START = 0.6
 DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
@@ -434,7 +434,7 @@ LYING = {**FOLDED, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}  # the lying win
 BREATH = (4.0, 1, 0.3, 0.12)
 WALK_BEAT = (25.0, 1, 0.35, 0.12)
 ATTACK_BEAT = (30.0, 2, 0.35, 0.12)
-FLEE_BEAT = (24.0, 3, 0.35, 0.12)
+FLEE_BEAT = (20.0, 3, 0.35, 0.12)
 GUARD_BEAT = (6.0, 2, 0.3, 0.12)
 DEATH_LIFT = 25.0  # degrees the wings rise halfway between folded and lying
 DEATH_FOLD_END = 0.25  # the wings fold by this share of a death, then open and settle flat as the body lies

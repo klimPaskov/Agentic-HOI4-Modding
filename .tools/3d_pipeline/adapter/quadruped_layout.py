@@ -696,7 +696,7 @@ WINGED_DEATH_FOLD = 0.8
 WINGED_LYING_RELAX = 0.6
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
-GUARD_NECK_LOW = {"Neck_01": -35.0, "Neck_02": 45.0, "Head": 30.0}
+GUARD_NECK_LOW = {"Neck_01": -60.0, "Neck_02": 80.0, "Head": 30.0}
 
 
 def frame_count(style: str) -> int:
