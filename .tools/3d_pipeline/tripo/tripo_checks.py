@@ -37,7 +37,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-LOOP-POP: the last frame of an idle, move, attack, defend or retreat clip is more than 8 degrees from its first at some joint (vanilla's role
   clips reach 6.3), so the looped clip pops. TRIPO-FOOT-BELOW-GROUND: a foot or toe sinks more than 0.1% of the height in a clip that is not a death.
   TRIPO-DEATH-FEET: in the last 15 frames of a death the boots hang more than 1% above the ground (vanilla's deaths end within 0.6%).
-  TRIPO-DEATH-REST: a death ends with the hips down and the chest, the head or a hand more than 10.2% of the height above the ground (vanilla's end
+  TRIPO-DEATH-HOVER: the hips of a death hold themselves up for 4 frames or more, 8% or more of the height over the support they would stand on, for more than 2.12 times the time
+  a free fall takes (vanilla's falls measure 1.7 at most). TRIPO-DEATH-REST: a death ends with the hips down and the chest, the head or a hand more than 10.2% of the height above the ground (vanilla's end
   within 8.2%). TRIPO-WAIST-TWIST: the shoulders turn further against the standing feet than vanilla's worst for the role with a quarter added. All are
   `lib/tripo_pose.py`, which also holds the settles that fix them (`lib/tripo_trim.settle_frames`, `settle_death_legs`, `settle_death_upper`, the
   grounding in `run_pilot`, the untwist in `tripo/prepare_tripo_unit.py`).
