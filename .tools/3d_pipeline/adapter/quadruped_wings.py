@@ -466,21 +466,34 @@ SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0
 # fold tight over the back as a hood that keeps to each wing's own side.
 # Round 6: folded tight over the head the membranes crushed into creased lumps (TRIPO-WING-CRUSH 9.6% of the wing's edges on run 12, the
 # poses reviewers passed 2.9% to 4.5%). Half open and mantled down on each side they stay flat (4.5% offline) and above the belly.
-SHIELD = {"sweep": 45.0, "rise": 10.0, "roll": -40.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
-FLEE = {"sweep": 50.0, "rise": 30.0, "roll": -55.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
-DEAD_UPPER_START = 0.6
-DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
-DEAD_UPPER = {**FOLDED, "sweep": 70.0, "rise": -15.0, "roll": 0.0}  # the wing on top of a dead body, folded and laid down along the flank
-LYING = {**FOLDED, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}  # the lying wing's direction comes from `lying_pose`
+# Round 7: the defend is a braced recoil, not a wing shield or a display. The wings open halfway and mantle low and back, behind the
+# shoulders (MANTLE): swept 45 degrees they stood out to the sides (run 14).
+MANTLE = {"sweep": 76.0, "rise": 6.0, "roll": -62.0, "spread": 1.0, "curl": 8.0, "curl_out": 0.0}
+# Round 7: the retreat runs with its wings half folded and swept back, beating little (FLEE, FLEE_BEAT). Held half open and beating hard
+# (swept 50 degrees, raised 30, a 20 degree beat) it read as the move (fresh reviews of runs 9 and 12).
+FLEE = {"sweep": 78.0, "rise": 12.0, "roll": -58.0, "spread": 1.0, "curl": 14.0, "curl_out": 0.0}
+# A dead winged quadruped lies on its side with both wings in the idle's fold (FOLDED: its curl and its spread, kept from the first frame
+# to the last). Rounds 3 to 6 opened them as the body fell and laid them flat on the ground beyond the back: one stood up as a sail or
+# a tent, the other spread under the body, and the head lay among them (fresh reviews of runs 7, 9 and 12). Held as the idle holds them
+# against the flanks, the one on top stood 34% of the height over its join once the body lay (offline, TRIPO-DEATH-WING-HIGH), so while
+# the body rolls (DEAD_WINGS_START to DEAD_WINGS_END of the clip) each folded wing turns to lie level behind the back (`lying_pose`).
+# LYING_UPPER and LYING_LOWER: (degrees the lying wing's span turns from straight out beyond the back toward the tail, degrees it tips
+# up from its root). Both lie well toward the tail, so the shoulders, the neck and the head laid forward stay clear of them. The wing on
+# top slopes down from the upper flank, and the wing underneath, whose root is at the ground, starts lower still and is lifted by the
+# rest's `wing_lift` until its far bones are off the ground (quadruped_layout.choose_winged_rest): offline on the Tripo dragon it comes
+# to rest 12 degrees under level, 0.22 of the height thick, the fold's own depth.
+DEAD_UPPER = dict(FOLDED)
+DEAD_LOWER = dict(FOLDED)
+LYING_UPPER = (80.0, -20.0)
+LYING_LOWER = (75.0, -22.0)
+DEAD_WINGS_START, DEAD_WINGS_END = 0.2, 0.65
 # Beats: (degrees at the root, beats per clip, the wave's bend per bone past the root as a share of the root's beat, its lag per bone as a
 # share of a beat). The idle breathes: one slow rise and fall of the folded wings per loop.
 BREATH = (4.0, 1, 0.3, 0.12)  # at 8 degrees the level wings of the move moved only 1.1 times as much at map size (TRIPO-WING-IDLE-MOVE, run 10)
 WALK_BEAT = (25.0, 1, 0.35, 0.12)
 ATTACK_BEAT = (30.0, 2, 0.35, 0.12)
-FLEE_BEAT = (20.0, 3, 0.35, 0.12)
+FLEE_BEAT = (10.0, 3, 0.35, 0.12)
 GUARD_BEAT = (6.0, 2, 0.3, 0.12)
-DEATH_LIFT = 25.0  # degrees the wings rise halfway between folded and lying
-DEATH_FOLD_END = 0.25  # the wings fold by this share of a death, then open and settle flat as the body lies
 
 
 def _blend(a: Dict[str, float], b: Dict[str, float], x: float) -> Dict[str, float]:
@@ -512,7 +525,8 @@ ATTACK_SNAP = (0.37, 0.5)  # its peak at 0.435 of the clip, on a review sheet fr
 ATTACK_OPEN = 0.35
 ATTACK_FLARE = 0.0
 ATTACK_LIFT = 15.0  # degrees the cocked wings rise
-ATTACK_DOWNSTROKE = 30.0  # degrees the wings beat down at the strike
+ATTACK_DOWNSTROKE = 27.0  # degrees the wings beat down at the strike
+ATTACK_DOWN_END, ATTACK_DOWN_EASE = 0.75, 0.15  # the clip time the down-stroke is over by, and how long it takes to ease off
 # The wings flare out and up as the head strikes, a support for the lunge: swept back for the blow they filled 91% as much of the map
 # view as the defend's (run 10, TRIPO-ATTACK-DEFEND-ALIKE), and level (rise 0) they hung beside the legs and hid 22% of them from the side
 # cameras (run 11, TRIPO-WING-FRONT).
@@ -531,8 +545,9 @@ def attack_phases(t: float) -> Tuple[float, float, float]:
 
 def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = None, upper: bool = False) -> Dict[str, object]:
     """The wing pose (`wing_rows`' keys) of a winged style at clip time t (0 to 1): idle folded and breathing, move half folded with a slow
-    beat per stride, attack spread wide with two strong beats, defend raised as a shield, retreat beating hard, death folding and then
-    settling flat. Clips the game loops start and end folded."""
+    beat per stride, attack opened part of the way with a down-stroke at the strike, defend half open and mantled low behind the
+    shoulders, retreat half folded and swept back, death folded throughout (`lying`: the frame the wing turns to as the body rolls).
+    Clips the game loops start and end folded."""
 
     if style == "winged_idle":
         return _beat(FOLDED, t, BREATH, bones)
@@ -544,29 +559,23 @@ def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = No
         # the wings open ATTACK_OPEN of the way to the spread pose and flare as the head lands, so the head's travel leads (a fresh review of
         # run 12 read the full spread as a wing display)
         pose = _blend(_blend(FOLDED, SPREAD, ATTACK_OPEN * envelope), STRIKE_WINGS, ATTACK_FLARE * strike)
-        pose["flap"] = pose.get("flap", 0.0) - ATTACK_LIFT * cock + ATTACK_DOWNSTROKE * strike
+        # the down-stroke is over before the wings fold again (ATTACK_DOWN_END): beaten down while they closed, a finger dropped past the
+        # belly in the recovery (0.6% of the wing points in frame 54 of run 14, TRIPO-WING-THROUGH-BODY)
+        down = ATTACK_DOWNSTROKE * strike * (1.0 - float(_smooth(np.array((t - ATTACK_DOWN_END + ATTACK_DOWN_EASE) / ATTACK_DOWN_EASE))))
+        pose["flap"] = pose.get("flap", 0.0) - ATTACK_LIFT * cock + down
         for b in range(1, bones):
-            pose[f"wave_{b}"] = 0.35 * (ATTACK_DOWNSTROKE * strike - ATTACK_LIFT * cock)
+            pose[f"wave_{b}"] = 0.35 * (down - ATTACK_LIFT * cock)
         return pose
     if style == "winged_guard":
         envelope = _envelope(t, 0.25, 0.25)
-        return _beat(_blend(FOLDED, SHIELD, envelope), t, GUARD_BEAT, bones, envelope)
+        return _beat(_blend(FOLDED, MANTLE, envelope), t, GUARD_BEAT, bones, envelope)
     if style == "winged_flee":
         envelope = _envelope(t, 0.15, 0.15)
         return _beat(_blend(FOLDED, FLEE, envelope), t, FLEE_BEAT, bones, envelope)
-    if style == "winged_collapse" and upper:
-        # the wing on top stays folded at its joints along the upper flank: spread over the back it wadded into a crumpled bundle on the
-        # dead body (a fresh review of run 3)
-        # it lies down only once the body has rolled (`quadruped_layout._collapse_fall` ends at 0.65 of the clip): lowered while the body
-        # still turned, it swept through the flank (7% of its points inside the body halfway, offline)
-        settle = float(_smooth(np.array(max(0.0, (t - DEAD_UPPER_START) / (1.0 - DEAD_UPPER_START)))))
-        return _blend(FOLDED, DEAD_UPPER, settle)
     if style == "winged_collapse":
-        settle = float(_smooth(np.array(max(0.0, (t - DEATH_FOLD_END) / (1.0 - DEATH_FOLD_END)))))
-        out = _blend(FOLDED, LYING, settle)
-        # on the way down the wings lift off the falling body (offline on the Tripo dragon, the straight turn to the lying pose put 4.5% of
-        # the wing points inside the body halfway, TRIPO-CHAIN-IN-BODY's limit)
-        out["rise"] = out.get("rise", 0.0) + DEATH_LIFT * math.sin(math.pi * settle)
+        # both wings stay in the idle's fold while the body sinks and rolls, and turn only as far as DEAD_UPPER and DEAD_LOWER ask
+        settle = float(_smooth(np.array(max(0.0, min(1.0, (t - DEAD_WINGS_START) / (DEAD_WINGS_END - DEAD_WINGS_START))))))
+        out = _blend(FOLDED, DEAD_UPPER if upper else DEAD_LOWER, settle)
         if lying is not None:
             out.update(frame=lying, frame_share=settle)
         return out
@@ -581,25 +590,11 @@ def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[
     rows: Dict[str, List[Tuple[Tuple[float, float, float], float]]] = {}
     for side, plan in (layout.landmarks.get("wings") or {}).items():
         bones = np.asarray(plan["joints"]).shape[1] - 1
-        lying = lying_pose(plan, layout.landmarks) if style == "winged_collapse" and (DEAD_UPPER_LIES or lies_under(plan, layout.landmarks)) else None
-        pose = role_pose(style, t, bones, lying, upper=style == "winged_collapse" and lying is None)
+        upper = style == "winged_collapse" and not lies_under(plan, layout.landmarks)
+        lying = lying_pose(plan, layout.landmarks, upper) if style == "winged_collapse" else None
+        pose = role_pose(style, t, bones, lying, upper)
         rows.update(wing_rows(plan, pose, side))
     return rows
-
-
-# A dead dragon's wings lie flat on the ground beyond its back, each sloping down from its root just enough that its far end reaches the
-# ground (the root's height after the roll over the wing's length): the wing underneath out from the back (LYING_SWEEP_LOWER degrees
-# toward the tail), the one on top LYING_SWEEP_UPPER toward the tail along the hind body, so each lies to its own side of the
-# shoulders and the head lies forward of both. Round 3 swept them 60 and 40 degrees the same way, and the two fans, each wider than 100
-# degrees, lay in one another with the head between them (both fresh reviews of run 7). Offline the head's share of top view cells under a
-# wing fell from 0.94 to 0.46 with the neck laid forward and the map camera's TRIPO-WING-FRONT share from 0.11 to
-# 0.09 with the lower wing at 25 degrees (run 8 measured 10.5% at 0) (`quadruped_layout.WINGED_DEAD_NECK`).
-LYING_SWEEP_LOWER = 25.0
-# The wing on top slopes this much less than down to the torso's level, so it lies over the back instead of sinking into it (offline on the
-# Tripo dragon 4.3% of the wing points ended inside the body without it, TRIPO-CHAIN-IN-BODY's limit is 4.5%).
-UPPER_CLEAR = 8.0
-LYING_SWEEP_UPPER = 80.0
-LYING_SWEEP_SIDE = 30.0
 
 
 def lies_under(plan: Dict[str, object], landmarks: Dict[str, object]) -> bool:
@@ -608,43 +603,27 @@ def lies_under(plan: Dict[str, object], landmarks: Dict[str, object]) -> bool:
     return (float((landmarks.get("death") or {}).get("roll", 82.0)) > 0) == (float(plan["side_sign"]) > 0)
 
 
-def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object]) -> np.ndarray:
-    """The wing frame (columns span, chord, normal, in the body's frame) that lays a wing flat on the ground once the dead body has rolled `landmarks["death"]["roll"]`
-    degrees about its long axis (about the edge of the side it falls toward, as `quadruped_rig._body_turn` does)."""
+def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object], upper: bool) -> np.ndarray:
+    """The frame (columns span, chord, normal, in the body's frame) of a dead body's wing once the body has rolled `landmarks["death"]["roll"]`
+    degrees onto its side: the wing's plane level with the ground, the fold's ridge up, its span out beyond the back, turned toward the
+    tail and tipped from its root as LYING_UPPER or LYING_LOWER says. The wing underneath tips up by the death's `wing_lift` more."""
 
     death = landmarks.get("death") or {}
     roll = float(death.get("roll", 82.0))
     sign = float(plan["side_sign"])
     body = rotation(Y, roll)
-    lower = (roll > 0) == (sign > 0)  # a positive roll lays the body on its left side (+X goes down)
-    width = float(landmarks.get("width", 0.0))
-    edge = np.array([float(landmarks["centre_x"]) + math.copysign(0.5 * width, roll), 0.0, float(landmarks["ground_offset"])])
-    root = np.asarray(plan["root"], float)
-    # the far end reaches down to where the rolled torso lies: the lowest of the torso's landmarks (the four leg tops at its sides, the back
-    # and the belly over its middle) after the roll
-    ground = float(landmarks["ground_offset"])
-    torso = [np.asarray(joints["top"], float) + np.array([0.0, 0.0, ground]) for joints in (landmarks.get("legs") or {}).values()]
-    middle = (float(landmarks["centre_x"]), float(landmarks["mid_y"]))
-    torso += [np.array([middle[0], middle[1], ground + float(landmarks[key])]) for key in ("back_z", "belly_z")]
-    lowest = min(float((body @ (point - edge))[2]) for point in torso)
-    height = float((body @ (root - edge))[2]) - lowest
-    length = max(float(plan["length"]), 1e-9)
-    droop = math.degrees(math.asin(max(0.0, min(1.0, height / length)))) - (float(death.get("wing_lift", 0.0)) if lower else UPPER_CLEAR)
     back = body @ Z
     out = unit(back - (back @ Z) * Z)
-    sweep = math.radians(LYING_SWEEP_LOWER if lower else LYING_SWEEP_UPPER)
-    side = body @ (sign * X)
-    if float(np.linalg.norm(side - (side @ Z) * Z)) > 0.5:
-        # a body lying on its belly or slightly rolled spreads each wing flat out to its own side, swept LYING_SWEEP_SIDE toward the tail
-        out = unit(side - (side @ Z) * Z)
-        sweep = math.radians(LYING_SWEEP_SIDE)
-        droop = math.degrees(math.asin(max(0.0, min(1.0, height / length))))
+    sweep, tip = (LYING_UPPER if upper else LYING_LOWER)
+    tip += 0.0 if upper else float(death.get("wing_lift", 0.0))
     # turn the outward direction toward the tail (+Y) by the sweep, whichever side it points to
-    turn = rotation(Z, math.degrees(sweep) * (1.0 if out[0] > 0 else -1.0))
-    span = unit(math.cos(math.radians(droop)) * (turn @ out) - math.sin(math.radians(droop)) * Z)
+    turn = rotation(Z, sweep * (1.0 if out[0] > 0 else -1.0))
+    span = unit(math.cos(math.radians(tip)) * (turn @ out) + math.sin(math.radians(tip)) * Z)
     chord = unit(np.cross(Z, span))
     if chord @ -Y < 0:
         chord = -chord
-    chord = unit(chord - (chord @ span) * span)
+    normal = np.cross(span, chord)
+    if normal[2] < 0:  # the fold's ridge points up: `wing_rows` bends the outer bones toward the back of the normal
+        chord = -chord
     world = np.stack([span, chord, sign * np.cross(span, chord)], axis=1)
     return body.T @ world

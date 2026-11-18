@@ -77,7 +77,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-ATTACK-REACH: a winged quadruped's attack drives the head forward less than `ATTACK_REACH_MIN` of the body's length.
 - TRIPO-WING-CRUSH: a winged quadruped's membrane has more than `MAX_WING_CRUSH` of its edges squashed or stretched in some frame.
 - TRIPO-WING-THROUGH-BODY: more than `MAX_WING_BELOW_SHARE` of a winged quadruped's wing points hang below the belly in some frame.
-- TRIPO-DEATH-WING-HIGH and TRIPO-DEATH-HEAD-HIDDEN: a winged quadruped's dead wing stands over the body, or its head is lost from above.
+- TRIPO-DEATH-WING-HIGH and TRIPO-DEATH-HEAD-HIDDEN: a winged quadruped's dead wing stands over the body, or its head and neck are lost
+  against the rest of the body from the game camera.
 - TRIPO-STEP-READ: a winged quadruped's hooves travel less than `MIN_STEP_READ` of the body's length from the game camera.
 - TRIPO-ATTACK-DEFEND-ALIKE: at the attack's farthest reach and the defend's middle the smaller wing silhouette from the map camera is
   more than `MAX_ATTACK_DEFEND_WINGS` of the larger.
@@ -198,8 +199,14 @@ WING_BELOW_MARGIN = 0.02
 MAX_WING_BELOW_SHARE = 0.005
 # TRIPO-DEATH-WING-HIGH: in a death's last frame no wing stands more than DEATH_WING_ABOVE of the height over where it joins the body (the
 # median height of its border with the body): run 12's top wing stood 0.29 over its join as a sail over the body on its side, the round 6
-# wings spread on the ground 0.17 at most (offline). Measured on the join, not the ground, since a large body's shoulders stand high. TRIPO-DEATH-HEAD-HIDDEN: in the last frame at least DEATH_HEAD_CLEAR of the
-# head's top view cells lie outside the body's and the wings' (run 12's head could not be found in the heap).
+# wings spread on the ground 0.17 at most (offline). Measured on the join, not the ground, since a large body's shoulders stand high. A
+# wing whose join lies lower than the lying torso's middle height (the wing underneath, joined at the ground) is measured from that
+# middle: the Tripo dragon's wing in the idle's fold is 0.22 of the height thick lying on the ground whichever way it is turned (offline),
+# beside a torso 0.55 high, and that is a folded wing on the ground, not a sail.
+# TRIPO-DEATH-HEAD-HIDDEN: in the last frame at least DEATH_HEAD_CLEAR of the head and neck's screen cells, from the game camera and from
+# its mirror (the lesser of the two), are cells no other part of the body fills, in front of it or behind. Up to round 6 it read the
+# head alone from straight above: 90% on run 12, where neither fresh review could find the head, which lay beside the chest and the
+# forelegs. Played offline on run 14's files the new measure reads run 12's death 36%, run 14's 38% and round 7's 62%.
 DEATH_WING_ABOVE = 0.2
 DEATH_HEAD_CLEAR = 0.5
 # TRIPO-STEP-READ: in a winged quadruped's move and retreat the hooves travel, from the game camera, at least MIN_STEP_READ of the body's
@@ -380,18 +387,16 @@ def upright_series(mesh, anim, step: int) -> np.ndarray:
 
 
 # A winged quadruped's wings grow from its back, so from every review camera their roots cover some of the back, as from the side on a
-# humanoid. Every view judges its legs, neck and head (`QUADRUPED_PARTS`) at the side views' limit. Its defend raises the wings as a shield
-# in front of the head and neck (the role's intent, decision D-76), so the defend judges the legs alone. On the Tripo dragon, played
-# offline: the shield hides 25% of the legs, neck and head from the side and none of the legs.
+# humanoid. Every view judges its legs, neck and head (`QUADRUPED_PARTS`) at the side views' limit, in every clip. Rounds 1 to 6 judged the
+# defend's legs alone, because it raised the wings as a shield in front of the head and neck. Since round 7 the defend is a braced recoil
+# with the wings mantled behind the shoulders, never in front of the head, so the head and neck are judged there too.
 QUADRUPED_PARTS = ("Front_", "Rear_", "Neck_", "Head")
-QUADRUPED_SHIELD_PARTS = ("Front_", "Rear_")
 
 
 def quadruped_parts(mesh, wings: np.ndarray, role: str) -> np.ndarray:
     names = np.array(mesh.bones + [""])
     dominant = names[pdx_deform.dominant_bones(mesh)].astype(str)
-    parts = QUADRUPED_SHIELD_PARTS if role == "defend" else QUADRUPED_PARTS
-    return np.array([name.startswith(parts) for name in dominant.tolist()], dtype=bool) & ~wings
+    return np.array([name.startswith(QUADRUPED_PARTS) for name in dominant.tolist()], dtype=bool) & ~wings
 
 
 def quadruped_upright(mesh, anim, step: int) -> np.ndarray:
@@ -526,7 +531,7 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False
                        cover=wing_cover(mesh, frames, mask, death, upright, role),
                        map_motion=wing_map_motion(mesh, frames, mask))
             if quadruped:
-                row["cover_judges"] = "legs" if role == "defend" else "legs, neck and head"
+                row["cover_judges"] = "legs, neck and head"
             if sides is not None:
                 row["face"] = wing_face_shares(mesh, frames[::2], sides)
             if root is not None and np.any(root):
@@ -749,21 +754,39 @@ def wing_body_numbers(mesh, matrices, wings: np.ndarray, torso: np.ndarray, edge
     return crush, crush_frame, below, below_frame
 
 
-def death_end_numbers(mesh, matrices, sides, head: np.ndarray, head_neck: np.ndarray) -> Tuple[float, float]:
-    """TRIPO-DEATH-WING-HIGH's and TRIPO-DEATH-HEAD-HIDDEN's numbers in a death's last frame."""
+def game_cameras(mesh) -> List[Tuple[np.ndarray, np.ndarray]]:
+    """The screen axes of the game camera (the map view) and of its mirror: a unit on the map is seen from either side of its heading."""
+
+    azimuth, elevation = tripo_chains.REVIEW_VIEWS["map"]
+    up = np.array([0.0, 1.0, 0.0])
+    cameras = []
+    for side in (1.0, -1.0):
+        direction = view_direction(front_direction(mesh), side * azimuth, elevation)
+        first = tripo_chains.unit(np.cross(up, direction))
+        cameras.append((first, np.cross(direction, first)))
+    return cameras
+
+
+def death_end_numbers(mesh, matrices, sides, head: np.ndarray, head_neck: np.ndarray, torso: Optional[np.ndarray] = None) -> Tuple[float, float]:
+    """TRIPO-DEATH-WING-HIGH's and TRIPO-DEATH-HEAD-HIDDEN's numbers in a death's last frame: the most a wing stands over where it joins
+    the body (or over the lying torso's middle height, when its join lies lower: `torso`), and the least share of the head and neck's
+    screen cells, from the game camera and its mirror, that no other part of the body fills."""
 
     posed = pdx_deform.skin(mesh, matrices[-1])
     above = 0.0
+    middle = float(np.median(posed[torso, 1])) if torso is not None and torso.any() else -np.inf
     for mask in sides:
         tm = mask[mesh.triangles]
         border = np.zeros(len(mask), bool)
         border[mesh.triangles[tm.any(1) & ~tm.all(1)].ravel()] = True
         if (border & mask).any():
-            above = max(above, float(posed[mask, 1].max() - np.median(posed[border & mask, 1])) / max(mesh.height, 1e-6))
+            above = max(above, float(posed[mask, 1].max() - max(float(np.median(posed[border & mask, 1])), middle)) / max(mesh.height, 1e-6))
     cell = 2.0 * SILHOUETTE_CELL_SHARE * mesh.height
-    seen = set(map(tuple, np.floor(posed[head][:, [0, 2]] / cell).astype(np.int64)))
-    rest_of_body = set(map(tuple, np.floor(posed[~head_neck][:, [0, 2]] / cell).astype(np.int64)))
-    return above, len(seen - rest_of_body) / max(len(seen), 1)
+    clear = 1.0
+    for axes in game_cameras(mesh):
+        seen = _cells(posed[head_neck], axes, cell)
+        clear = min(clear, len(seen - _cells(posed[~head_neck], axes, cell)) / max(len(seen), 1))
+    return above, clear
 
 
 def step_read(mesh, matrices, hooves: np.ndarray, torso: np.ndarray, length: float) -> float:
@@ -817,12 +840,12 @@ def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], d
 
 def _death_end_findings(mesh, clip: str, matrices, c: dict, row: dict) -> List[dict]:
     out = []
-    above, clear = death_end_numbers(mesh, matrices, c["sides"], c["head"], c["head_neck"])
+    above, clear = death_end_numbers(mesh, matrices, c["sides"], c["head"], c["head_neck"], c["torso"])
     row.update(wing_above_join=round(above, 4), head_clear=round(clear, 3))
     if above > DEATH_WING_ABOVE:
         out.append(finding("TRIPO-DEATH-WING-HIGH", clip, f"at the end a wing stands {above:.0%} of the height over where it joins the body (limit {DEATH_WING_ABOVE:.0%}): it reads as a sail, not a wing lying flat", share=round(above, 4)))
     if clear < DEATH_HEAD_CLEAR:
-        out.append(finding("TRIPO-DEATH-HEAD-HIDDEN", clip, f"at the end {clear:.0%} of the head lies outside the body's and wings' outline from above (at least {DEATH_HEAD_CLEAR:.0%}): the head is lost in the heap", share=round(clear, 3)))
+        out.append(finding("TRIPO-DEATH-HEAD-HIDDEN", clip, f"at the end {clear:.0%} of the head and neck shows clear of the body, legs, wings and tail from the game camera (at least {DEATH_HEAD_CLEAR:.0%}): the head is lost in the heap", share=round(clear, 3)))
     return out
 
 

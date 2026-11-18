@@ -5,6 +5,7 @@ bones."""
 
 from __future__ import annotations
 
+import math
 import sys
 import unittest
 from pathlib import Path
@@ -211,10 +212,12 @@ class Poses(unittest.TestCase):
         _points, _triangles, landmarks, plans, _masks = _found()
         landmarks["death"] = {"roll": -80.0}
         for side, plan in plans.items():
-            frame = qw.lying_pose(plan, landmarks)
+            upper = not qw.lies_under(plan, landmarks)
+            frame = qw.lying_pose(plan, landmarks, upper)
             world = qw.rotation((0.0, 1.0, 0.0), -80.0) @ frame
-            self.assertLess(world[2, 0], 0.05, f"{side}: the span does not rise from the ground")
-            self.assertLess(abs(world[2, 1]), 0.05, f"{side}: the membrane lies flat")
+            self.assertLess(world[2, 0], 0.05, f"{side}: the span does not rise from its root")
+            self.assertLess(abs(world[2, 1]), 0.05, f"{side}: the membrane lies level")
+            self.assertGreater(world[1, 0], 0.5, f"{side}: the wing lies toward the tail, behind the shoulders")
 
 
 class Round4(unittest.TestCase):
@@ -281,8 +284,9 @@ class Round5(unittest.TestCase):
             frame = qw.target_frame(pose["sweep"], pose["rise"], pose["roll"], 1.0)
             self.assertGreater(frame[2, 0], 0.05, "the span rises over the back")
 
-    def test_the_dead_wings_lie_to_their_own_sides_of_the_shoulders(self) -> None:
-        self.assertGreaterEqual(qw.LYING_SWEEP_UPPER - qw.LYING_SWEEP_LOWER, 50.0, "the two fans, each wider than 100 degrees, apart")
+    def test_the_dead_wings_lie_behind_the_shoulders(self) -> None:
+        for sweep, _tip in (qw.LYING_UPPER, qw.LYING_LOWER):
+            self.assertGreaterEqual(sweep, 60.0, "toward the tail, clear of the head and neck laid forward")
 
     def test_the_falling_body_tucks_its_lower_legs_and_lays_its_neck_forward(self) -> None:
         _points, _triangles, landmarks, _plans, _masks = _found()
@@ -354,6 +358,179 @@ class Round7(unittest.TestCase):
         import tripo_checks as tc
         self.assertTrue(0.045 < tc.MAX_WING_CRUSH < 0.096, "between the attack flare reviewers passed and the crushed defend")
         self.assertTrue(0.24 < tc.MIN_STEP_READ, "run 12's move, which read as legs standing still")
+
+
+class Round8(unittest.TestCase):
+    """Round 7 of the Tripo dragon: both dead wings folded, a braced recoil for the defend, a retreat with the wings swept back."""
+
+    def test_both_dead_wings_keep_the_idle_fold(self) -> None:
+        for upper in (True, False):
+            for t in (0.0, 0.3, 0.6, 1.0):
+                pose = qw.role_pose("winged_collapse", t, qw.WING_BONES, None, upper=upper)
+                self.assertEqual(pose["curl"], qw.FOLDED["curl"], "folded at the joints as in the idle")
+                self.assertEqual(pose["spread"], qw.FOLDED["spread"])
+                self.assertEqual(pose.get("flap", 0.0), 0.0, "no beat and no lift on the way down")
+
+    def test_the_dead_wings_turn_only_while_the_body_rolls(self) -> None:
+        _points, _triangles, landmarks, plans, _masks = _found()
+        landmarks["death"] = {"roll": -82.0}
+        frame = qw.lying_pose(plans["Left"], landmarks, True)
+        self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_START, qw.WING_BONES, frame, upper=True)["frame_share"], 0.0)
+        self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_END, qw.WING_BONES, frame, upper=True)["frame_share"], 1.0)
+
+    def test_the_wing_underneath_lifts_by_what_the_rest_chose(self) -> None:
+        _points, _triangles, landmarks, plans, _masks = _found()
+        landmarks["death"] = {"roll": -82.0}
+        lower = next(plan for plan in plans.values() if qw.lies_under(plan, landmarks))
+        turn = qw.rotation((0.0, 1.0, 0.0), -82.0)
+        flat = (turn @ qw.lying_pose(lower, landmarks, False))[2, 0]
+        landmarks["death"]["wing_lift"] = 10.0
+        self.assertGreater((turn @ qw.lying_pose(lower, landmarks, False))[2, 0], flat)
+
+    def test_a_planted_crouch_moves_the_feet_of_both_ends_alike_within_its_limits(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        crouch = ql.planted_crouch(landmarks, 8.0, 40.0)
+        back, sink = crouch["travel"]
+        self.assertGreater(back, 0.0, "the body shifts back")
+        self.assertGreater(sink, 0.0, "and sinks")
+        for name, joints in landmarks["legs"].items():
+            upper, lower = crouch[name.split("_")[0]]
+            self.assertLessEqual(abs(upper), 9.0, "the hip or shoulder turns no farther than its skin allows")
+            self.assertLessEqual(abs(lower), 42.0)
+            travel = ql._foot_travel(joints, upper, lower)
+            self.assertAlmostEqual(float(travel[0]), -back, delta=0.02 * float(landmarks["height"]), msg=f"{name}: the foot stays under the shift back")
+            self.assertAlmostEqual(float(travel[1]), sink, delta=0.02 * float(landmarks["height"]), msg=f"{name}: and under the sink")
+        self.assertEqual(ql.planted_crouch(landmarks, 0.0, 0.0), {}, "no turn allowed: no crouch")
+
+    def test_the_tail_lifts_by_the_sink(self) -> None:
+        landmarks = {"tail": [np.array([0.0, 2.0, 1.0]), np.array([0.0, 3.0, 0.2]), np.array([0.0, 4.0, 0.0]), np.array([0.0, 5.0, 0.0])]}
+        lift = ql.tail_lift(landmarks, 0.3)
+        angle = math.radians(lift)
+        self.assertAlmostEqual(1.0 * math.sin(angle) - 0.8 * math.cos(angle) + 0.8, 0.3, places=4, msg="its first joint rises by the sink")
+        self.assertEqual(ql.tail_lift(landmarks, 0.0), 0.0)
+        self.assertEqual(ql.tail_lift({}, 0.3), 0.0)
+
+    def test_the_defend_is_a_braced_recoil(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        total = ql.frame_count("winged_guard")
+        middle = ql.pose_at("winged_guard", total // 2, layout)
+        self.assertGreater(sum(d for _a, d in middle["__root_shift__"]), 0.0, "the body shifts back (+Y, away from the enemy)")
+        self.assertNotIn("__root_pitch__", middle, "the forefeet stay on the ground")
+        for end, side in ql.LEGS:
+            upper = sum(d for _a, d in middle[ql.leg_name(end, side, "Upper")])
+            self.assertLessEqual(abs(upper), ql.GUARD_HIP + 1.0, "the hips and shoulders turn within the skin's limit")
+            turns = [sum(d for _a, d in middle[ql.leg_name(end, side, segment)]) for segment in ("Upper", "Lower", "Cannon")]
+            self.assertAlmostEqual(sum(turns), 0.0, places=6, msg="the foot stays flat")
+            self.assertNotIn(ql.leg_name(end, side, "Hoof"), middle)
+        self.assertGreater(sum(d for _a, d in middle["Tail_01"]), 0.0, "the tail lifts as the body sinks")
+        self.assertAlmostEqual(sum(d for _a, d in middle["Tail_01"]) + sum(d for _a, d in middle["Tail_02"]), 0.0, places=6)
+        neck = {name: sum(d for _a, d in middle[name]) for name in ("Neck_01", "Neck_02", "Head")}
+        self.assertLess(neck["Neck_01"], 0.0, "the root of the neck draws back")
+        self.assertGreater(neck["Neck_02"], 0.0, "its upper half bends forward: an S")
+        self.assertLess(neck["Head"], 0.0, "and the head turns up again")
+        self.assertLess(abs(sum(neck.values())), 45.0, "so it faces the enemy, not the ground")
+        for frame in (0, total - 1):
+            self.assertAlmostEqual(sum(d for _a, d in ql.pose_at("winged_guard", frame, layout)["__root_shift__"]), 0.0, places=6)
+
+    def test_the_wings_of_the_defend_mantle_low_and_back(self) -> None:
+        self.assertGreaterEqual(qw.MANTLE["sweep"], 60.0, "behind the shoulders, never in front of the head")
+        self.assertLess(qw.MANTLE["rise"], qw.SPREAD["rise"] / 2, "low, not raised as a display")
+        self.assertLess(qw.MANTLE["sweep"], qw.FOLDED["sweep"], "and open from the fold")
+        self.assertLess(qw.MANTLE["curl"], qw.FOLDED["curl"])
+
+    def test_the_retreat_holds_its_wings_folded_further_than_the_move(self) -> None:
+        self.assertGreater(qw.FLEE["sweep"], qw.HALF["sweep"] + 10.0, "swept back")
+        self.assertGreater(qw.FLEE["curl"], 0.0, "half folded")
+        self.assertLess(qw.FLEE_BEAT[0], qw.WALK_BEAT[0], "and beating less than the wings of the move")
+
+    def test_the_down_stroke_of_the_attack_ends_before_the_wings_fold(self) -> None:
+        for t in (qw.ATTACK_DOWN_END, 0.85, 1.0):
+            self.assertAlmostEqual(qw.role_pose("winged_rear", t, qw.WING_BONES)["flap"], 0.0, places=6)
+        self.assertGreater(qw.role_pose("winged_rear", 0.45, qw.WING_BONES)["flap"], 0.5 * qw.ATTACK_DOWNSTROKE)
+
+    def test_a_winged_death_starts_to_roll_early(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        landmarks["death"] = {"roll": -82.0, "leg_drop": 0.0}
+        layout = ql.build_layout(landmarks)
+        total = ql.frame_count("winged_collapse")
+        roll = [abs(sum(d for _a, d in ql.pose_at("winged_collapse", frame, layout).get("__root_roll__", []))) for frame in range(total)]
+        self.assertLess(roll[0], 1e-9)
+        self.assertGreater(roll[int(0.2 * total)], 3.0, "no opening hold")
+        self.assertAlmostEqual(roll[int(0.6 * total)], 82.0, places=3, msg="it lies by 0.6 of the clip")
+
+
+def _lying(head_at: float, wing: str):
+    """A dead body as points on one bone (file frame: Y up, facing +Z): a torso slab 1 high, a head and neck block starting `head_at`
+    along the facing, and a wing joined to the torso: "flat" on the ground beside it (0.6 thick, its join on the ground) or a "sail"
+    standing 1.2 over its join on top of the torso. Returns (mesh, one frame of matrices, wing mask, head and neck mask, torso mask)."""
+
+    from lib import pdx_deform as P
+
+    def grid(xs, ys, zs):
+        return np.array([[x, y, z] for x in xs for y in ys for z in zs], float)
+
+    step = 0.1
+    torso = grid(np.arange(-1.0, 1.01, step), (0.0, 0.5, 1.0), np.arange(-2.0, 2.01, step))
+    head = grid(np.arange(-0.3, 0.31, step), (0.2,), np.arange(head_at, head_at + 0.81, step))
+    if wing == "flat":
+        membrane = grid(np.arange(1.0, 3.01, step), (0.0, 0.6), np.arange(-1.0, 1.01, step))
+        joined = np.flatnonzero((membrane[:, 0] == 1.0) & (membrane[:, 1] == 0.0))
+    else:
+        membrane = grid((0.0,), np.arange(1.0, 2.21, step), np.arange(-1.0, 1.01, step))
+        joined = np.flatnonzero(membrane[:, 1] == 1.0)
+    positions = np.concatenate([torso, head, membrane])
+    first = len(torso) + len(head)
+    # the wing's border with the body: a triangle from each joined wing point to the torso
+    triangles = np.array([[first + index, first + index, 0] for index in joined])
+    count = len(positions)
+    joints = np.full((count, 4), -1)
+    joints[:, 0] = 0
+    weights = np.zeros((count, 4))
+    weights[:, 0] = 1.0
+    mesh = P.SkinnedMesh(positions=positions, triangles=triangles, joints=joints, weights=weights, bones=["Root"], parents=[-1], inverse_bind=np.eye(4)[None])
+    index = np.arange(count)
+    return mesh, np.eye(4)[None, None], index >= first, (index >= len(torso)) & (index < first), index < len(torso)
+
+
+class DeathEnd(unittest.TestCase):
+    def setUp(self) -> None:
+        sys.path.insert(0, str(PIPELINE / "tripo"))
+        import tripo_checks as tc
+        self.tc = tc
+
+    def test_a_head_laid_forward_shows_and_one_on_the_body_is_lost(self) -> None:
+        tc = self.tc
+        mesh, matrices, wing, head, torso = _lying(2.6, "flat")
+        _above, clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
+        self.assertGreater(clear, tc.DEATH_HEAD_CLEAR, "forward of the body: seen from the game camera on either side")
+        mesh, matrices, wing, head, torso = _lying(-0.4, "flat")
+        _above, clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
+        self.assertLess(clear, 0.3, "over the torso: lost in its outline")
+
+    def test_a_head_beside_a_wing_is_judged_from_both_sides_of_the_heading(self) -> None:
+        tc = self.tc
+        # the head lies forward and to the wing's side: one of the two cameras sees it against the wing
+        mesh, matrices, wing, head, torso = _lying(1.2, "flat")
+        mesh.positions[head, 0] += 1.6
+        one_side = []
+        for axes in tc.game_cameras(mesh):
+            cell = 2.0 * tc.SILHOUETTE_CELL_SHARE * mesh.height
+            seen = tc._cells(mesh.positions[head], axes, cell)
+            one_side.append(len(seen - tc._cells(mesh.positions[~head], axes, cell)) / len(seen))
+        _above, clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
+        self.assertAlmostEqual(clear, min(one_side), places=6)
+
+    def test_a_folded_wing_on_the_ground_is_not_a_sail(self) -> None:
+        tc = self.tc
+        mesh, matrices, wing, head, torso = _lying(2.6, "flat")
+        above, _clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
+        self.assertLess(above, tc.DEATH_WING_ABOVE, "0.6 thick on the ground beside a torso 1 high: under the middle of the lying torso")
+        plain, _clear = tc.death_end_numbers(mesh, matrices, [wing], head, head)
+        self.assertGreater(plain, above, "measured from its join on the ground it would count as standing")
+        mesh, matrices, wing, head, torso = _lying(2.6, "sail")
+        above, _clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
+        self.assertGreater(above, tc.DEATH_WING_ABOVE, "standing over the body it is one")
 
 
 class Rest(unittest.TestCase):

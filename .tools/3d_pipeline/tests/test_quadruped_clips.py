@@ -337,6 +337,52 @@ class LyingLegs(unittest.TestCase):
             self.assertEqual(heights[1] > quadruped_checks.DEATH_LEG_REST, failing)
 
 
+def hoofed_animal() -> P.SkinnedMesh:
+    """A body on `Root` over four hooves, each on its own `*_Hoof` bone, and a tail block on `Tail_01` lying on the ground behind."""
+
+    bones = ["Root", "Front_Left_Hoof", "Front_Right_Hoof", "Rear_Left_Hoof", "Rear_Right_Hoof", "Tail_01"]
+    parts = [(_box((-1.0, 1.0, -3.0), (1.0, 2.0, 3.0)), 0), (_box((-3.0, 0.0, 3.0), (-2.0, 0.2, 5.0)), 5)]
+    for index, (x, z) in enumerate(((0.8, -2.5), (-0.8, -2.5), (0.8, 2.5), (-0.8, 2.5))):
+        parts.append((_box((x - 0.2, 0.0, z - 0.2), (x + 0.2, 1.0, z + 0.2)), index + 1))
+    points, faces, owner, offset = [], [], [], 0
+    for (p, f), bone in parts:
+        points.append(p)
+        faces.append(f + offset)
+        owner += [bone] * len(p)
+        offset += len(p)
+    positions = np.concatenate(points)
+    joints = np.full((len(positions), 4), -1)
+    joints[:, 0] = owner
+    weights = np.zeros((len(positions), 4))
+    weights[:, 0] = 1.0
+    return P.SkinnedMesh(positions=positions, triangles=np.concatenate(faces), joints=joints, weights=weights, bones=bones,
+                         parents=[-1, 0, 0, 0, 0, 0], inverse_bind=np.stack([np.eye(4)] * len(bones)))
+
+
+def lifted(frames: int, lift: float) -> P.Animation:
+    """Every bone still, the whole unit raised up to `lift` in the middle of the clip."""
+
+    rise = lift * np.sin(np.linspace(0.0, math.pi, frames))
+    still = {"t": np.zeros((frames, 3)), "q": np.tile([0.0, 0.0, 0.0, 1.0], (frames, 1)), "s": np.ones(frames)}
+    channels = {name: {key: value.copy() for key, value in still.items()} for name in ("Front_Left_Hoof", "Front_Right_Hoof", "Rear_Left_Hoof", "Rear_Right_Hoof", "Tail_01")}
+    channels["Root"] = {"t": np.stack([np.zeros(frames), rise, np.zeros(frames)], axis=1), "q": still["q"].copy(), "s": np.ones(frames)}
+    return P.Animation(fps=30.0, frames=frames, channels=channels)
+
+
+class FeetOffGround(unittest.TestCase):
+    def test_a_standing_clip_set_up_on_something_else_fails(self) -> None:
+        mesh = hoofed_animal()
+        height = mesh.height
+        anims = {"unit_idle": lifted(12, 0.0), "unit_defend": lifted(12, 0.03 * height), "unit_move": lifted(12, 0.03 * height)}
+        found, numbers = quadruped_checks.quadruped_findings(mesh, anims)
+        off = [item for item in found if item["rule"] == "TRIPO-FEET-OFF-GROUND"]
+        self.assertEqual([item["subject"] for item in off], ["unit_defend"], "the idle stands, and a gait may leave the ground")
+        self.assertAlmostEqual(numbers["unit_defend"]["highest_low_hoof_share"], 0.03, places=3)
+        anims["unit_defend"] = lifted(12, 0.5 * quadruped_checks.FEET_OFF_LIMIT * height)
+        found, _numbers = quadruped_checks.quadruped_findings(mesh, anims)
+        self.assertNotIn("TRIPO-FEET-OFF-GROUND", [item["rule"] for item in found])
+
+
 def seamed_mount():
     """A load row (weight 1 on `Load`, at the top) joined edge by edge to a row of head skin, and a long ring of skin half on the load and
     half on the tail, its neighbours joined in a chain; a floor vertex sets the height."""

@@ -706,10 +706,15 @@ WINGED_DEATH_FOLD = 0.8
 WINGED_LYING_RELAX = 0.6
 # A dead winged quadruped lays its neck forward as it falls (X turns in degrees at full fall, positive forward): its rest neck rises over the
 # back, so a body on its side held the head out beyond the back among the lying wings (both fresh reviews of run 7).
-WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 50.0}
+# Round 7 lays it straighter (75 and 30 degrees, 90 and 50 before): bent further the head curled back beside the chest and the forelegs, and
+# from the game camera 52% of the head and neck showed clear of the rest of the body (62% now, offline, TRIPO-DEATH-HEAD-HIDDEN).
+WINGED_DEAD_NECK = {"Neck_01": 75.0, "Neck_02": 30.0}
+# A winged death's clock runs ahead early (clip time to this power): the body starts to roll at a tenth of the clip and lies by 0.54 of it.
+# At the shared collapse's pace the first fifth of the clip only bent the legs, which a fresh review of run 9 read as an unchanged hold.
+WINGED_DEATH_EASE = 0.7
 # Offline on the Tripo dragon the torso's height over the lowest point at frame 28 of 64 fell from 0.20 to 0.08 of the height at 1.5, which
 # stretched 2.8% of the leg underneath's root edges in run 8 (TRIPO-LEG-ROOT-STRETCH, limit 2%).
-WINGED_FALL_TUCK = 1.0
+WINGED_FALL_TUCK = 0.6
 # The roll a winged quadruped's death starts its search from (`roll_limits`) and how far its legs turn out at the hip as it lies. Run 13 laid
 # the Tripo dragon on its belly (roll 0, legs turned out 65 degrees, both wings spread flat to their own sides by `quadruped_wings.lying_pose`,
 # which a fresh review of run 12 asked for): its thick thighs are one skin with the flank, so the turn tore 44.5% of the rear left leg's
@@ -718,10 +723,13 @@ WINGED_FALL_TUCK = 1.0
 WINGED_DEATH_ROLL = 82.0
 WINGED_DEATH_SPLAY = 0.0
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
-# The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
-GUARD_NECK_LOW = {"Neck_01": -20.0, "Neck_02": 70.0, "Head": 40.0}
-# A winged defend crouches: each leg bends this share of a death's buckle (`_collapse`), so the body sinks over planted feet.
-GUARD_CROUCH = 0.6
+# The defend is a braced recoil (round 7). Degrees at Neck_01, Neck_02 and Head, positive forward and down: the neck's root draws back, its
+# upper half bends forward and the head turns up again, so the neck makes an S and the head ends low and level, facing the enemy. Round 6
+# crouched under wings mantled out to each side with the head turned down (40 degrees at the head, 90 from level in all).
+GUARD_NECK_S = {"Neck_01": -10.0, "Neck_02": 90.0, "Head": -50.0}
+GUARD_HIP = 8.0  # degrees the hips and shoulders may turn in the crouch (`planted_crouch` says why)
+GUARD_BEND = 48.0  # degrees the joint below them may bend
+CROUCH_MATCH = 0.005  # of the height: how near the hind feet's travel must come to the forefeet's before it is matched exactly
 
 
 def frame_count(style: str) -> int:
@@ -732,7 +740,7 @@ def frame_count(style: str) -> int:
 # measured by its lowest point over the lying torso's lowest, as a share of the height:
 # - legs: the legs underneath bend toward the ground by the largest of LEG_DROP_SHARES of the death's leg drop (DEATH_LEG_DROP) that keeps them
 #   no lower than the torso (DOWN_TOLERANCE), so the body rests on its torso, not on a hoof;
-# - wings: the wing underneath lifts from the slope `quadruped_wings.lying_pose` gives it by the least of WING_LIFTS (degrees) that keeps its
+# - wings: the folded wing underneath tips up from where `quadruped_wings.lying_pose` lays it by the least of WING_LIFTS (degrees) that keeps its
 #   far bones (the last of each chain: a lift turns about the root, so the bones by the root go where the body goes) no lower than the torso,
 #   so a wing never holds the body up;
 # - tail: it turns at its root (degrees, positive lifts it) by the one of TAIL_LIFTS that brings its lowest point nearest the torso's without
@@ -852,21 +860,118 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
                 pose[name] = pose[name] + [(Y_AXIS, outward * WINGED_DEATH_SPLAY * fall)]
 
 
-def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None:
-    """The wings and the neck carry the guard: the legs stand planted (the brace's step back and leaning legs stretched the skin where the
-    dragon's heavy shoulders and thighs meet the torso, 2.2% of the edges in the offline play), and the neck crouches low."""
+def _foot_travel(joints: Dict[str, np.ndarray], upper: float, lower: float) -> np.ndarray:
+    """Where a leg's foot goes under the body (back, up) when its Upper and Lower bones turn `upper` and `lower` degrees about X. The Cannon
+    turns back by both, so the foot below it (the cannon and the hoof: a paw rests on both) keeps its attitude and travels as the
+    cannon's joint does."""
+
+    point = np.asarray(joints["middle"], dtype=float)[1:]
+    for pivot, degrees in ((joints["upper"], lower), (joints["top"], upper)):
+        centre = np.asarray(pivot, dtype=float)[1:]
+        angle = math.radians(degrees)
+        y, z = point - centre
+        point = centre + np.array([y * math.cos(angle) - z * math.sin(angle), y * math.sin(angle) + z * math.cos(angle)])
+    return point - np.asarray(joints["middle"], dtype=float)[1:]
+
+
+_CROUCHES: Dict[tuple, Dict[str, Tuple[float, float]]] = {}
+
+
+def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float) -> Dict[str, Tuple[float, float]]:
+    """A crouch that shifts the body back and sinks it over planted feet: per leg end the X turns (Upper, Lower), and under "travel" how far
+    the body shifts back and sinks (model units). The hip and shoulder turn at most `hip` degrees and the joint below at most `bend`, and
+    the Cannon turns back by both so the foot stays flat (`_foot_travel`). Of all such bends of the forelegs (whole degrees) for which the
+    hind legs have a bend that moves their feet the same way (within CROUCH_MATCH of the height, then matched exactly by a Newton step
+    or two), the one with the largest shift back plus sink. Empty when the legs have none.
+
+    The limits are the skin's: the Tripo dragon's thick thighs are one skin with the flank, and a hip turned 12 degrees stretched 1.6% of
+    a leg root's edges, 16 degrees 7.8% and the 39 degrees of an unbounded crouch 41.8% (offline, TRIPO-LEG-ROOT-STRETCH, limit 2%).
+    Bent at the Cannon instead of the hip, its paws tipped onto their heels and the unit was set up on them, every hoof in the air."""
+
+    legs = landmarks.get("legs") or {}
+    key = (round(hip, 3), round(bend, 3), tuple((name, tuple(np.round(np.asarray(joints[joint], dtype=float), 5))) for name, joints in sorted(legs.items()) for joint in ("top", "upper", "middle")))
+    if key in _CROUCHES:
+        return _CROUCHES[key]
+    ends = {end: [joints for name, joints in legs.items() if name.startswith(end)] for end in ("Front", "Rear")}
+    out: Dict[str, Tuple[float, float]] = {}
+    if ends["Front"] and ends["Rear"]:
+        def travel(end: str, upper: float, lower: float) -> np.ndarray:
+            return np.mean([_foot_travel(joints, upper, lower) for joints in ends[end]], axis=0)
+
+        turns = [(float(u), float(lower)) for u in np.arange(-math.floor(hip), math.floor(hip) + 1) for lower in np.arange(-math.floor(bend), math.floor(bend) + 1)]
+        rear = np.array([travel("Rear", u, lower) for u, lower in turns])
+        height = float(landmarks["height"])
+        best = None
+        for u, lower in turns:
+            moved = travel("Front", u, lower)
+            back, sink = -float(moved[0]), float(moved[1])
+            if back <= 0 or sink <= 0 or (best is not None and back + sink <= best[0]):
+                continue
+            miss = np.linalg.norm(rear - moved, axis=1)
+            nearest = int(np.argmin(miss))
+            if miss[nearest] > CROUCH_MATCH * height:
+                continue
+            values = np.array(turns[nearest])
+            for _ in range(4):
+                base = travel("Rear", *values) - moved
+                jacobian = np.stack([(travel("Rear", *(values + step)) - moved - base) / 1e-3 for step in (np.array([1e-3, 0.0]), np.array([0.0, 1e-3]))], axis=1)
+                if abs(float(np.linalg.det(jacobian))) < 1e-12:
+                    break
+                values = values - np.clip(np.linalg.solve(jacobian, base), -2.0, 2.0)
+            if abs(values[0]) <= hip + 1.0 and abs(values[1]) <= bend + 2.0 and float(np.abs(travel("Rear", *values) - moved).max()) < 1e-3 * height:
+                best = (back + sink, {"Front": (u, lower), "Rear": (float(values[0]), float(values[1])), "travel": (back, sink)})
+        if best is not None:
+            out = best[1]
+    _CROUCHES[key] = out
+    return out
+
+
+def tail_lift(landmarks: Dict[str, object], sink: float) -> float:
+    """Degrees the tail's first bone turns up at its root so its far joint rises `sink` (model units) against the body. A tail that lies
+    on the ground is carried by the body: when the body sinks the tail would go under the ground and the whole unit is set back up on it,
+    its hooves in the air (offline the Tripo dragon's defend hung them 2% to 5% of the height up). The first bone turns up by this and
+    the second back down by as much, so the rest of the tail keeps lying level where it lay."""
+
+    tail = landmarks.get("tail")
+    if not tail or sink <= 0:
+        return 0.0
+    y, z = (np.asarray(tail[1], dtype=float) - np.asarray(tail[0], dtype=float))[1:]
+    low, high = 0.0, 80.0
+    for _ in range(30):
+        middle = 0.5 * (low + high)
+        angle = math.radians(middle)
+        if y * math.sin(angle) + z * math.cos(angle) - z < sink:
+            low = middle
+        else:
+            high = middle
+    return 0.5 * (low + high)
+
+
+def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set, landmarks: Dict[str, object]) -> None:
+    """The defend is a braced recoil: the body shifts back and sinks over planted feet as far as the legs allow (`planted_crouch` within
+    GUARD_HIP and GUARD_BEND), the tail lifts by the sink so it keeps lying on the ground, and the neck draws back in an S with the head
+    low and level, facing the enemy (GUARD_NECK_S)."""
 
     envelope = _brace_envelope(t)
-    pose.pop("__root_shift__", None)
     pose.pop("__root_pitch__", None)
+    pose.pop("__root_shift__", None)
+    crouch = planted_crouch(landmarks, GUARD_HIP, GUARD_BEND)
     for end, side in LEGS:
         for segment in LEG_SEGMENTS:
             pose.pop(leg_name(end, side, segment), None)
-        fold = DEATH_FOLD * (1.0 if end == "Front" else COLLAPSE_HIND_FOLD) * GUARD_CROUCH * envelope
-        pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * fold)]
-        pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * fold)]
-        pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * fold)]
-    for name, degrees in GUARD_NECK_LOW.items():
+        if crouch:
+            upper, lower = (value * envelope for value in crouch[end])
+            pose[leg_name(end, side, "Upper")] = [(X_AXIS, upper)]
+            pose[leg_name(end, side, "Lower")] = [(X_AXIS, lower)]
+            pose[leg_name(end, side, "Cannon")] = [(X_AXIS, -(upper + lower))]
+    if crouch:
+        back, sink = crouch["travel"]
+        pose["__root_shift__"] = [(Y_AXIS, back * envelope)]
+        if "Tail_02" in names:
+            lift = tail_lift(landmarks, sink * envelope)
+            pose["Tail_01"] = pose.get("Tail_01", []) + [(X_AXIS, lift)]
+            pose["Tail_02"] = pose.get("Tail_02", []) + [(X_AXIS, -lift)]
+    for name, degrees in GUARD_NECK_S.items():
         if name in names:
             pose[name] = [(X_AXIS, degrees * envelope)]
 
@@ -899,6 +1004,9 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
     import quadruped_wings as qw
 
     t, base_frame = _winged_time(style, frame)
+    if style == "winged_collapse":
+        t = t**WINGED_DEATH_EASE
+        base_frame = t * (frame_count(WINGED_BASE[style]) - 1)
     pose = dict(pose_at(WINGED_BASE[style], base_frame, layout, ears=ears))
     names = set(layout.names())
     tails = [name for name in ("Tail_01", "Tail_02", "Tail_03") if name in names]
@@ -917,8 +1025,10 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
     elif style == "winged_collapse":
         _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
     elif style == "winged_guard":
-        _winged_guard(pose, t, names)
-    if style != "winged_collapse":  # a death folds its legs whole (TRIPO-DEATH-STIFF-LEGS read 23 degrees with the hip's turn moved down)
+        _winged_guard(pose, t, names, layout.landmarks)
+    # a death folds its legs whole (TRIPO-DEATH-STIFF-LEGS read 23 degrees with the hip's turn moved down), and a defend's crouch is solved
+    # for the hip and the joint below it as they stand (`planted_crouch`)
+    if style not in ("winged_collapse", "winged_guard"):
         _hip_to_knee(pose)
     yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
     pose.update(qw.role_rows(style, t, layout, yaw))
