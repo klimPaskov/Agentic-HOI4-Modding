@@ -203,9 +203,10 @@ class VisualPreflightTests(unittest.TestCase):
             "--reviewer", "parent_agent",
             "--review-file", str(review),
         ]
+        # a Meshy job asks for the key before anything else: CI has none, so the test gives a placeholder
         with mock.patch.object(init, "REPO_ROOT", self.root), mock.patch.object(sys, "argv", argv), mock.patch(
             "builtins.print"
-        ):
+        ), mock.patch.dict(os.environ, {"MESHY_API_KEY": "test-placeholder"}):
             self.assertEqual(init.main(), 0)
         self.assertEqual(self.preflight()["review"]["notes"], "Looks right.")
         self.assertEqual(self.read("validation/reference_preflight.json")["status"], "passed")
@@ -227,9 +228,9 @@ class VisualPreflightTests(unittest.TestCase):
         config_inside = inside / "jobs.json"
         config_inside.write_text(json.dumps({"jobs": {"unit_slug": self.spec}}), encoding="utf-8")
         argv[2] = str(config_inside)
-        with mock.patch.object(init, "REPO_ROOT", inside), mock.patch.object(sys, "argv", argv), self.assertRaisesRegex(
-            ValueError, "must remain inside the repository"
-        ):
+        with mock.patch.object(init, "REPO_ROOT", inside), mock.patch.object(sys, "argv", argv), mock.patch.dict(
+            os.environ, {"MESHY_API_KEY": "test-placeholder"}
+        ), self.assertRaisesRegex(ValueError, "must remain inside the repository"):
             init.main()
         self.assertEqual(self.preflight()["review"]["status"], "not_reviewed")
 
