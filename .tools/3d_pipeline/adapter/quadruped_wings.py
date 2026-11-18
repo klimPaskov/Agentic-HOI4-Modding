@@ -423,7 +423,7 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 FOLDED = {"sweep": 70.0, "rise": 5.0, "roll": 0.0, "spread": 1.0, "curl": 45.0, "curl_out": 0.0}
 HALF = {"sweep": 55.0, "rise": 20.0, "roll": -40.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
-SHIELD = {"sweep": -95.0, "rise": 30.0, "roll": 0.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
+SHIELD = {"sweep": -75.0, "rise": 20.0, "roll": -15.0, "spread": 1.0, "curl": -25.0, "curl_out": 0.0}
 FLEE = {"sweep": 55.0, "rise": 20.0, "roll": -70.0, "spread": 0.95, "curl": 0.0, "curl_out": 0.0}
 DEAD_UPPER_START = 0.6
 DEAD_UPPER_LIES = True  # the wing on top lies over the back to the ground too (round 3: folded on the flank it left a magenta slot)
