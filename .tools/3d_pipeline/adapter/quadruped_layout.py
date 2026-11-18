@@ -200,6 +200,22 @@ def _leg_radius(leg_points: np.ndarray, joints: Dict[str, np.ndarray], height: f
     return float(np.median(radii)) if radii else 0.1 * width
 
 
+def _mid_plane(cx: float, feet: List[np.ndarray], dragged: List[np.ndarray]) -> float:
+    """A tail lying on the ground curls wide to one side and moves the box's middle: the Tripo dragon's sat 0.08 of its length off the
+    feet's, so its left legs straddled the mid-plane and their radii read 0.007 against 0.054. With such a tail the feet set the mid-plane."""
+
+    return float(np.mean([foot[:, 0].mean() for foot in feet])) if dragged and len(feet) == 4 else cx
+
+
+def _floor_radii(legs: Dict[str, Dict[str, np.ndarray]]) -> None:
+    """A leg that stands across the mid-plane (the Tripo dragon's stepping foreleg) loses most of its points to the other side's band, and its
+    radius reads far too small: no leg is thinner than half the legs' median."""
+
+    floor = 0.5 * float(np.median([float(joints["radius"]) for joints in legs.values()]))
+    for joints in legs.values():
+        joints["radius"] = np.asarray(max(float(joints["radius"]), floor))
+
+
 def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict[str, object]:
     """Find the hooves, belly, back, head, tail and saddle of a standing quadruped.
 
@@ -222,10 +238,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
     hooves = np.concatenate(feet) if feet else p[:0]
     if len(hooves) < 8:
         raise LandmarkError("fewer than 8 vertices near the ground; the legs may not reach it")
-    if dragged and len(feet) == 4:
-        # A tail lying on the ground curls wide to one side and moves the box's middle: the Tripo dragon's sat 0.08 of its length off the
-        # feet's, so its left legs straddled the mid-plane and their radii read 0.007 against 0.054. The feet set the mid-plane.
-        cx = float(np.mean([foot[:, 0].mean() for foot in feet]))
+    cx = _mid_plane(cx, feet, dragged)
     split_y = _largest_gap_split(hooves[:, 1])
     hoof_centres = _hoof_centres(hooves, split_y, cx)
     front_y = float((hoof_centres["Front_Left"][1] + hoof_centres["Front_Right"][1]) / 2)
@@ -257,8 +270,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         poll = np.array([cx, front_y - 0.05 * length, back_z + 0.05 * height])
 
     # A tail that lies on the ground (a dragged contact) counts down to the ground behind the hindmost foot.
-    low_tail = (p[:, 1] > float(hooves[:, 1].max()) + 0.02 * length) if dragged else np.zeros(len(p), bool)
-    tail_region = p[(p[:, 1] > rear_y + 0.06 * length) & ((p[:, 2] > 0.2 * height) | low_tail)]
+    tail_region = p[(p[:, 1] > rear_y + 0.06 * length) & ((p[:, 2] > 0.2 * height) | (bool(dragged) & (p[:, 1] > float(hooves[:, 1].max()) + 0.02 * length)))]
     tail: Optional[List[np.ndarray]] = None
     if len(tail_region) >= 10:
         near = tail_region[tail_region[:, 1] < tail_region[:, 1].min() + 0.08 * length]
@@ -301,11 +313,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         joints["top"] = np.array([joints["upper"][0], joints["upper"][1] + (0.02 * length if end == "Rear" else 0.0), (belly_z + back_z) / 2])
         joints["radius"] = np.asarray(_leg_radius(leg_points, joints, height, width))
         legs[key] = joints
-    # A leg that stands across the mid-plane (the Tripo dragon's stepping foreleg) loses most of its points to the other side's band, and its
-    # radius reads far too small (0.007 against 0.054 for the other foreleg): no leg is thinner than half the legs' median.
-    floor = 0.5 * float(np.median([float(joints["radius"]) for joints in legs.values()]))
-    for joints in legs.values():
-        joints["radius"] = np.asarray(max(float(joints["radius"]), floor))
+    _floor_radii(legs)
 
     return {
         "ground_offset": ground,
