@@ -48,9 +48,13 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-SHOULDER-SWELL: in some frame of a humanoid's clip more than 7.75% of a shoulder region's skin (the torso between the midline and the
   upper arm's joint, down to 1.5 upper arm lengths below it) has grown past 1.69 times its rest area (vanilla's worst clip 6.2%). The shoulder and
   the upper back swell into one ball. `lib/tripo_shoulder.py`, whose ease `run_pilot` applies to the staged clips.
-- TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are more than 47.9 degrees apart (vanilla's deaths split them 38.3
-  at most). The crotch and the raised thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing `run_pilot`
-  applies to the exported death before its settles.
+- TRIPO-SHOULDER-TEAR: in some frame of a humanoid's clip more than 15.6% of a shoulder girdle's skin (the shoulder region and the torso under
+  the arm) has grown past 1.44 times its rest area (vanilla's worst 12.5%). The raised arm tears the armpit and the side of the chest.
+  `lib/tripo_shoulder.py`, with the weight rule of `lib/tripo_girdle.py`.
+- TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are further apart than 47.9 degrees, or than the rest pose's own
+  split plus 24.8 when the body is bound wider (vanilla's deaths split them 38.3 at most, 19.8 past its rest pose). The crotch and the raised
+  thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing and leg closing `run_pilot` applies to the exported
+  death before its settles.
 - TRIPO-DEATH-LEG-KICK: once the hips of a humanoid's death are down, a boot rises more than 3.4% of the height above where it had come down
   (vanilla's deaths 2.7%): a leg kicks up from the lying body. `lib/tripo_kick.py`, whose settle `run_pilot` applies after the legs' settle.
 - TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the

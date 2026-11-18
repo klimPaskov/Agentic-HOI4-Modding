@@ -44,12 +44,35 @@ degrees (frame 72), still over the limit, so TRIPO-DEATH-SPLAY reports it. The e
 1,388 to 1,217 at frame 100, the kit's worst-frame counts from 182 stretched and 189 squashed to 145 and 181. The diagnostics show far less red
 over the raised thigh and the crotch. What stops it is the squash it adds at the inner thigh in the frames before the kneel (frame 66).
 
+The ogre (2026-11-18, the text-to-motion death that falls forward onto the belly, played on ogre_o's files). Every death candidate failed: the
+new clip split the thighs 133 degrees as it lay, and 51 in its first standing frame, already past 47.9. Its rest pose holds them 33.0 degrees
+apart (vanilla's 18.5): the thighs are 0.106 of the height thick on hip joints 0.195 apart, so the body stands wide in every clip (idle 15,
+the made clips 48 to 51) and a split vanilla's legs reach only in a stumble is this body's stance. So the limit is judged against the body's
+own rest pose: its split plus vanilla's opening past its rest pose (38.3 less 18.5, 19.8) with a quarter added (`OPENING_LIMIT`, 24.8), and
+never under vanilla's 47.9 (`split_limit`). Vanilla's limit stays 47.9 (18.5 plus 24.8 is 43.3), the zombie's (rest 12.2) and the orc's
+(20.8) too, so the zombie's rejected kneel (93 after the swing) still fails, and the ogre's is 57.8. The ease aims at the rest split plus 19.8,
+at least 38.3 (`split_target`).
+
+The knee swing alone took the ogre's clip only from 133 to 120: its feet lie 0.43 of the height apart, and a knee swung round the line to a
+foot that far out keeps the thigh out. So where a frame still splits past the limit, the whole legs close at the hips (`_closed`): each leg
+turns about its hip joint toward the other thigh, about the line square to both thighs, the knee, the shin and the foot following. A lying
+body's thighs span the ground, so its legs slide together along it. Closing two planted legs of a body still falling lowers both feet alike,
+so the frame is judged by the ground pass that answers it: every lower leg that stood on the ground (within `CONTACT_SHARE`) stays within
+the upper-body settle's lift of where it stood, and the body is lifted no more than `CLOSE_LIFT_MAX` (`_contacts_kept`). The two legs keep
+`LEG_CLEARANCE` of the sum of their radii between them, thigh to thigh and shin to shin, unless they were nearer already, so no leg goes
+through the other. The closing is eased like the swing but each frame is checked at the share the smooth curve gives it (`_eased` with
+`checked`), and it repeats from its own result (`CLOSE_PASSES`), because the smoothing leaves part of a sharp peak. Tried and dropped: closing
+about the upright line (every point of the leg keeps its height) made the fall's frames worse by the kit's rule (frame 36 from 31 stretched
+and 90 squashed edges to 288 and 502), because it turns the thigh against the pelvis. On the ogre's clip the swing and the closing took the
+worst split from 133 to 56.2, the worst frame's stretched and squashed edges from 473 and 680 as Tripo made it to 172 and 279 after every death settle, and
+the settled clip passes every death rule (`tripo/death_pick.py --settled`).
+
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
@@ -61,6 +84,20 @@ from .pdx_binary import read
 VANILLA_DEATH_SPLIT = 38.3
 SPLIT_LIMIT = round(1.25 * VANILLA_DEATH_SPLIT, 1)
 SPLIT_TARGET = VANILLA_DEATH_SPLIT
+# The rest pose's own split: vanilla's bind pose holds the thighs 18.5 degrees apart (the same on GER_infantry, _alt_0, ENG_infantry and _snow),
+# so its deaths open them at most 19.8 degrees past it. A body bound with its legs wider apart (the round 4 ogre, 33.0: thick thighs on hip
+# joints 0.195 of the height apart) stands wider in every clip, and its limit is its own split plus that opening with a quarter added.
+VANILLA_REST_SPLIT = 18.5
+VANILLA_DEATH_OPENING = round(VANILLA_DEATH_SPLIT - VANILLA_REST_SPLIT, 1)
+OPENING_LIMIT = round(1.25 * VANILLA_DEATH_OPENING, 1)
+# The thigh closing (`_closed`): the two legs keep at least this share of the sum of their radii between them (thigh to thigh, shin to shin).
+LEG_CLEARANCE = 0.9
+# A lower leg within this share of the height of the ground stands on it, and the lift that answers the closing may raise the body by at most
+# `CLOSE_LIFT_MAX` (`_contacts_kept`).
+CONTACT_SHARE = 0.01
+CLOSE_LIFT_MAX = 0.02
+CLOSE_PASSES = 3
+CHECK_ROUNDS = 4
 SHARES = np.round(np.arange(0.0, 1.0001, 0.1), 2)
 MIN_RAMP_FRAMES = 6
 SWING_STEP = 2.0
@@ -91,6 +128,32 @@ def thigh_split(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Opt
     return np.degrees(np.arccos(np.clip((a * b).sum(axis=-1), -1.0, 1.0)))
 
 
+def rest_split(mesh: pdx_deform.SkinnedMesh) -> Optional[float]:
+    """The angle in degrees between the two thighs in the rest (bind) pose. None without two legs."""
+
+    legs = _legs(mesh)
+    if legs is None:
+        return None
+    rest = pdx_motion.rest_joints(mesh)
+    a = _unit(rest[legs[0].knee] - rest[legs[0].hip])
+    b = _unit(rest[legs[1].knee] - rest[legs[1].hip])
+    return float(np.degrees(np.arccos(np.clip(a @ b, -1.0, 1.0))))
+
+
+def split_limit(mesh: pdx_deform.SkinnedMesh) -> float:
+    """TRIPO-DEATH-SPLAY's limit for this body: vanilla's (`SPLIT_LIMIT`), or the rest pose's own split plus `OPENING_LIMIT` when that is wider."""
+
+    rest = rest_split(mesh)
+    return SPLIT_LIMIT if rest is None else round(max(SPLIT_LIMIT, rest + OPENING_LIMIT), 1)
+
+
+def split_target(mesh: pdx_deform.SkinnedMesh) -> float:
+    """What the ease aims for: vanilla's worst death (`SPLIT_TARGET`), or the rest pose's own split plus vanilla's opening when that is wider."""
+
+    rest = rest_split(mesh)
+    return SPLIT_TARGET if rest is None else round(max(SPLIT_TARGET, rest + VANILLA_DEATH_OPENING), 1)
+
+
 # ---- the check ---------------------------------------------------------------------------------------------------------
 
 def splay_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Animation]) -> Tuple[List[dict], dict]:
@@ -98,6 +161,8 @@ def splay_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Ani
 
     out: List[dict] = []
     numbers: dict = {}
+    limit = split_limit(mesh)
+    rest = rest_split(mesh)
     for clip, anim in anims.items():
         if not clip.endswith("death"):
             continue
@@ -107,11 +172,13 @@ def splay_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Ani
             continue
         frame = int(np.argmax(split))
         worst = float(split[frame])
-        over = int(np.sum(split > SPLIT_LIMIT))
-        numbers[clip] = {"worst_degrees": round(worst, 1), "frame": frame, "frames_over_limit": over, "final_degrees": round(float(split[-1]), 1)}
-        if worst > SPLIT_LIMIT:
+        over = int(np.sum(split > limit))
+        numbers[clip] = {"worst_degrees": round(worst, 1), "frame": frame, "frames_over_limit": over, "final_degrees": round(float(split[-1]), 1),
+                         "limit": limit, "rest_degrees": round(float(rest), 1)}
+        if worst > limit:
             out.append({"rule": "TRIPO-DEATH-SPLAY", "subject": clip,
-                        "message": f"the thighs split {worst:.0f} degrees apart in frame {frame} (limit {SPLIT_LIMIT:g}, vanilla's deaths {VANILLA_DEATH_SPLIT:g}), "
+                        "message": f"the thighs split {worst:.0f} degrees apart in frame {frame} (limit {limit:g}: the rest pose's {rest:.1f} plus {OPENING_LIMIT:g}, "
+                                   f"at least {SPLIT_LIMIT:g}, vanilla's deaths {VANILLA_DEATH_SPLIT:g}), "
                                    f"{over} of {len(split)} frames over the limit: the crotch and the raised thigh stretch into one mass",
                         "degrees": round(worst, 1), "frame": frame})
     return out, numbers
@@ -130,6 +197,7 @@ class SplayEase:
     largest_turn_degrees: float = 0.0
     fastest_step_degrees: float = 0.0  # the largest change of a leg's swing between two frames
     note: str = ""
+    closing: dict = field(default_factory=dict)  # the legs closed at the hips: share, largest turn, ramp
 
 
 def _swung(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs, turns: np.ndarray) -> pdx_deform.Animation:
@@ -224,7 +292,7 @@ def _frame_within(frames: np.ndarray, before: np.ndarray) -> np.ndarray:
             & (frames[:, 2] <= max(float(before[:, 2].max()), 0.0) * (1 + share) + 1e-6))
 
 
-def _frame_check(mesh, anim, edges, rest, body) -> Tuple[np.ndarray, np.ndarray]:
+def _frame_check(mesh, anim, edges, rest, body, masks: Sequence[np.ndarray] = ()):
     """(frames, 3) the kit's deformation per frame (stretched, squashed, largest growth) and (frames,) how far the ground pass lifts each frame
     (share of the height), from one skinning pass."""
 
@@ -233,22 +301,233 @@ def _frame_check(mesh, anim, edges, rest, body) -> Tuple[np.ndarray, np.ndarray]
     height = max(mesh.height, 1e-6)
     deformed = np.zeros((matrices.shape[0], 3))
     lifts = np.zeros(matrices.shape[0])
+    lows = np.zeros((matrices.shape[0], len(masks)))
     for frame in range(matrices.shape[0]):
         posed = pdx_deform.skin(mesh, matrices[frame])
         s, q, g = stretch_smooth._deformed(rest, np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1), height)
         deformed[frame] = (s.sum(), q.sum(), g.max())
         lifts[frame] = max(0.0, ground - float(posed[body, 1].min())) / height
-    return deformed, lifts
+        for k, mask in enumerate(masks):
+            lows[frame, k] = float(posed[mask, 1].min()) - ground if mask.any() else np.inf
+    return (deformed, lifts, lows) if len(masks) else (deformed, lifts)
 
 
-def close_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, exclude_bones: Sequence[str] = (), limit: float = SPLIT_LIMIT,
-                     target: float = SPLIT_TARGET) -> SplayEase:
-    """Write `out_path`: `anim_path` with the knees swung toward each other where a death splits the thighs past `limit` (see the module
-    text). Unchanged, and copied as it is, when the clip passes or no share closes them within the kit's rules."""
+def _closed(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs, turns: np.ndarray) -> pdx_deform.Animation:
+    """`anim` with each whole leg turned `turns[frame, leg]` degrees about its hip joint toward the other thigh, about the line square to both
+    thighs: the split closes in the plane the two thighs span, the knee, the shin and the foot following the thigh. A lying body's thighs span
+    the ground, so its legs slide together along it."""
+
+    rotations, positions = tripo_pose._world_rotations(mesh, anim)
+    channels = {name: dict(channel) for name, channel in anim.channels.items()}
+    for leg in legs:
+        channels[mesh.bones[leg.hip]]["q"] = anim.channels[mesh.bones[leg.hip]]["q"].copy()
+    for frame in range(anim.frames):
+        a = positions[frame, legs[0].knee] - positions[frame, legs[0].hip]
+        b = positions[frame, legs[1].knee] - positions[frame, legs[1].hip]
+        axis = np.cross(a, b)
+        if np.linalg.norm(axis) < 1e-9:
+            continue
+        axis = axis / np.linalg.norm(axis)
+        for k, (leg, sign) in enumerate(zip(legs, (1.0, -1.0))):
+            degrees = float(turns[frame, k])
+            if abs(degrees) < 1e-9:
+                continue
+            # the first thigh turned about a x b moves toward the second, the second about -(a x b) toward the first
+            turn = tripo_pose._axis_angle(axis, sign * degrees)
+            parent = mesh.parents[leg.hip]
+            frame_of_parent = rotations[frame, parent] if parent >= 0 else np.eye(3)
+            q = channels[mesh.bones[leg.hip]]["q"]
+            new = tripo_pose._quaternion_from_matrix(frame_of_parent.T @ turn @ frame_of_parent @ pdx_deform._quaternion_matrices(q[frame][None])[0])
+            q[frame] = new if float(new @ q[frame]) >= 0 else -new
+    return pdx_deform.Animation(anim.fps, anim.frames, channels)
+
+
+def closing_need(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs, target: float) -> np.ndarray:
+    """(frames, 2) degrees: for each frame whose thighs split past `target`, each leg's part (`_parts`) of the excess, which `_closed` turns it."""
+
+    posed = pdx_motion.posed_joints(mesh, anim)
+    excess = np.maximum(thigh_split(mesh, anim) - target, 0.0)
+    return _parts(mesh, posed, legs) * excess[:, None]
+
+
+def lower_leg_masks(mesh: pdx_deform.SkinnedMesh, legs) -> List[np.ndarray]:
+    """Per leg, the skin its knee joint and every joint below it move most: the shin and the foot, which a standing, kneeling or falling body
+    stands on."""
+
+    dominant = pdx_deform.dominant_bones(mesh)
+    return [np.isin(dominant, tripo_pose._subtree(mesh.parents, leg.knee)) for leg in legs]
+
+
+def _contacts_kept(lows_before: np.ndarray, lift_before: np.ndarray, lows: np.ndarray, lifts: np.ndarray, height: float) -> np.ndarray:
+    """(frames,) True where the ground pass's lift after the closing leaves every lower leg that stood on the ground before (within
+    `CONTACT_SHARE`) within `tripo_pose.UPPER_SETTLE_LIFT` of where it stood, and lifts the body no more than `CLOSE_LIFT_MAX`. Closing two
+    planted legs lowers both feet alike, and the lift that answers it keeps both on the ground: the body stands a little straighter."""
+
+    before = lows_before / height + lift_before[:, None]
+    after = lows / height + lifts[:, None]
+    standing = before <= CONTACT_SHARE
+    kept = np.where(standing, after <= before + tripo_pose.UPPER_SETTLE_LIFT + 1e-9, True).all(axis=1)
+    return kept & (lifts <= lift_before + CLOSE_LIFT_MAX + 1e-9)
+
+
+def _segment_gap(a0: np.ndarray, a1: np.ndarray, b0: np.ndarray, b1: np.ndarray, samples: int = 9) -> float:
+    t = np.linspace(0.0, 1.0, samples)[:, None]
+    p, q = a0 + t * (a1 - a0), b0 + t * (b1 - b0)
+    return float(np.linalg.norm(p[:, None] - q[None], axis=2).min())
+
+
+def leg_radii(mesh: pdx_deform.SkinnedMesh, legs) -> np.ndarray:
+    """(2, 2) each leg's thigh and shin radius: the median distance of the skin each bone moves most from its segment at rest."""
+
+    rest = pdx_motion.rest_joints(mesh)
+    dominant = pdx_deform.dominant_bones(mesh)
+    out = np.zeros((2, 2))
+    for k, leg in enumerate(legs):
+        for j, (bone, a, b) in enumerate(((leg.hip, leg.hip, leg.knee), (leg.knee, leg.knee, leg.ankle))):
+            points = mesh.positions[dominant == bone]
+            if not len(points):
+                continue
+            ab = rest[b] - rest[a]
+            t = np.clip((points - rest[a]) @ ab / max(float(ab @ ab), 1e-12), 0.0, 1.0)
+            out[k, j] = float(np.median(np.linalg.norm(points - (rest[a] + t[:, None] * ab), axis=1)))
+    return out
+
+
+def leg_gaps(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs) -> np.ndarray:
+    """(frames, 2) the least distance between the two thighs and between the two shins (joint segments) in each frame."""
+
+    posed = pdx_motion.posed_joints(mesh, anim)
+    out = np.zeros((anim.frames, 2))
+    l, r = legs
+    for frame in range(anim.frames):
+        p = posed[frame]
+        out[frame, 0] = _segment_gap(p[l.hip], p[l.knee], p[r.hip], p[r.knee])
+        out[frame, 1] = _segment_gap(p[l.knee], p[l.ankle], p[r.knee], p[r.ankle])
+    return out
+
+
+def _eased(mesh, anim, legs, need: np.ndarray, apply, frame_ok, checked: bool = False):
+    """(weights, turn, result, ramp) of the highest smooth share of `need` that `apply` may use in each frame while `frame_ok` (the trial clip
+    to a (frames,) mask) allows it, or None when no frame may take any. By default a share counts in a frame only while every smaller one is
+    allowed there too, so any share the smooth curve gives it is allowed. `checked` instead takes each frame's highest allowed share and then
+    checks the curve itself: a frame it fails is capped at its next allowed share below the curve, and the curve is drawn again
+    (`CHECK_ROUNDS` at most). Two edges more at a small share and none at a larger one (the ogre's fall, frame 28) then no longer stop it."""
+
+    need = np.stack([tripo_trim.smooth(need[:, k], SMOOTH_FRAMES) for k in range(2)], axis=1)
+    allowed = np.stack([frame_ok(apply(mesh, anim, legs, share * need)) for share in SHARES])
+    if not checked:
+        allowed = np.logical_and.accumulate(allowed, axis=0)
+    allowed[0] = True
+    moving = np.abs(need).max(axis=1) > 0
+    highest = np.array([SHARES[np.nonzero(allowed[:, f])[0].max()] for f in range(len(need))])
+    cap = np.where(moving, highest, 0.0) if checked else np.where(moving, SHARES[np.maximum(allowed.sum(axis=0) - 1, 0)], 0.0)
+    if not cap.any():
+        return None
+    ramp = max(tripo_trim.settle_frames(float(np.abs(need).max())), MIN_RAMP_FRAMES)
+    weights = _envelope(cap, ramp)
+    for _round in range(CHECK_ROUNDS if checked else 0):
+        ok = frame_ok(apply(mesh, anim, legs, weights[:, None] * need))
+        if ok.all():
+            break
+        for f in np.nonzero(~ok)[0]:
+            below = [share for k, share in enumerate(SHARES) if allowed[k, f] and share < weights[f] - 1e-9]
+            cap[f] = max(below) if below else 0.0
+        if not cap.any():
+            return None
+        weights = _envelope(cap, ramp)
+    turn = weights[:, None] * need
+    return weights, turn, apply(mesh, anim, legs, turn), ramp
+
+
+@dataclass
+class _Clip:
+    """What the two passes of `close_death_legs` judge each trial against: the clip before, on its mesh."""
+
+    mesh: pdx_deform.SkinnedMesh
+    legs: tuple
+    edges: np.ndarray
+    rest: np.ndarray
+    body: np.ndarray
+    masks: List[np.ndarray]
+    deformed: np.ndarray
+    lift_before: np.ndarray
+    lows_before: np.ndarray
+
+    def swing_ok(self, trial: pdx_deform.Animation) -> np.ndarray:
+        frames, lifts = _frame_check(self.mesh, trial, self.edges, self.rest, self.body)
+        return _frame_within(frames, self.deformed) & (lifts <= self.lift_before + tripo_pose.UPPER_SETTLE_LIFT + 1e-9)
+
+    def close_ok(self, trial: pdx_deform.Animation, gaps_floor: np.ndarray) -> np.ndarray:
+        frames, lifts, lows = _frame_check(self.mesh, trial, self.edges, self.rest, self.body, self.masks)
+        gaps = (leg_gaps(self.mesh, trial, self.legs) >= gaps_floor - 1e-6).all(axis=1)
+        kept = _contacts_kept(self.lows_before, self.lift_before, lows, lifts, max(self.mesh.height, 1e-6))
+        return _frame_within(frames, self.deformed) & kept & gaps
+
+
+@dataclass
+class _Passes:
+    """The clip as the passes leave it, with what they turned."""
+
+    current: pdx_deform.Animation
+    turn: np.ndarray
+    changed: np.ndarray
+    weights_max: float = 0.0
+    ramp_max: int = 0
+    closing: dict = field(default_factory=dict)
+    notes: List[str] = field(default_factory=list)
+
+    def take(self, weights: np.ndarray, turn: np.ndarray, result: pdx_deform.Animation, ramp: int) -> None:
+        self.current = result
+        self.turn = self.turn + np.abs(turn)
+        self.weights_max, self.ramp_max = max(self.weights_max, float(weights.max())), max(self.ramp_max, ramp)
+        self.changed = self.changed | (np.abs(turn).max(axis=1) > 0)
+
+
+def _swing_pass(clip: _Clip, anim: pdx_deform.Animation, target: float, worst: float, out: _Passes) -> None:
+    swing = _eased(clip.mesh, anim, clip.legs, needed_turns(clip.mesh, anim, clip.legs, target), _swung, clip.swing_ok)
+    if swing is None:
+        out.notes.append("no share swings the knees together within the kit's rules")
+    elif float(thigh_split(clip.mesh, swing[2]).max()) >= worst - 1e-3:
+        out.notes.append("swinging the knees together does not lower the worst split")
+    else:
+        out.take(*swing)
+
+
+def _closing_passes(clip: _Clip, limit: float, target: float, out: _Passes) -> None:
+    mesh, legs = clip.mesh, clip.legs
+    floor = np.minimum(leg_gaps(mesh, out.current, legs), LEG_CLEARANCE * leg_radii(mesh, legs).sum(axis=0)[None])  # thighs, shins
+    for done in range(CLOSE_PASSES):
+        # a pass closes what it can of each frame's excess; the smoothing and the ramp leave some at a sharp peak, so the next pass goes on
+        now = float(thigh_split(mesh, out.current).max())
+        if now <= limit:
+            return
+        close = _eased(mesh, out.current, legs, closing_need(mesh, out.current, legs, target), _closed,
+                       lambda trial: clip.close_ok(trial, floor), checked=True)
+        if close is None:
+            out.notes.append("no share closes the legs within the kit's rules")
+            return
+        if float(thigh_split(mesh, close[2]).max()) >= now - 1e-3:
+            out.notes.append("closing the legs does not lower the worst split")
+            return
+        weights, turn, _result, ramp = close
+        out.closing = {"passes": done + 1, "share": round(max(float(weights.max()), out.closing.get("share", 0.0)), 3),
+                       "largest_turn_degrees": round(float(np.abs(turn).max()) + out.closing.get("largest_turn_degrees", 0.0), 1),
+                       "ramp_frames": int(max(ramp, out.closing.get("ramp_frames", 0)))}
+        out.take(*close)
+
+
+def close_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, exclude_bones: Sequence[str] = (), limit: Optional[float] = None,
+                     target: Optional[float] = None) -> SplayEase:
+    """Write `out_path`: `anim_path` with the knees swung toward each other where a death splits the thighs past `limit` (this body's
+    `split_limit` by default), then, where they still split past it, the legs closed together at the hips (`_closed`), the two legs never
+    nearer than `LEG_CLEARANCE` of their radii unless they already were (see the module text). Unchanged, and copied as it is, when the clip
+    passes or no share closes them within the kit's rules."""
 
     data = bytearray(Path(anim_path).read_bytes())
     mesh = pdx_deform.load_mesh(mesh_path)
     anim = pdx_deform.load_anim(anim_path)
+    limit = split_limit(mesh) if limit is None else limit
+    target = split_target(mesh) if target is None else target
 
     def unchanged(note: str, before: float = 0.0) -> SplayEase:
         Path(out_path).write_bytes(bytes(data))
@@ -269,34 +548,26 @@ def close_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, exclude_b
     body = ~np.isin(pdx_deform.dominant_bones(mesh), excluded) if excluded else np.ones(len(mesh.positions), bool)
     edges = pdx_deform.mesh_edges(mesh)
     rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
-    deformed, lift_before = _frame_check(mesh, anim, edges, rest, body)
-    before = tripo_shoulder.summary(deformed)
-    need = needed_turns(mesh, anim, legs, target)
-    # the need jumps where a swing first reaches the target, so it is smoothed before any share of it is tried
-    need = np.stack([tripo_trim.smooth(need[:, k], SMOOTH_FRAMES) for k in range(2)], axis=1)
-    allowed = []
-    for share in SHARES:
-        frames, lifts = _frame_check(mesh, _swung(mesh, anim, legs, share * need), edges, rest, body)
-        allowed.append(_frame_within(frames, deformed) & (lifts <= lift_before + tripo_pose.UPPER_SETTLE_LIFT + 1e-9))
-    allowed = np.logical_and.accumulate(np.stack(allowed), axis=0)
-    cap = np.where(np.abs(need).max(axis=1) > 0, SHARES[np.maximum(allowed.sum(axis=0) - 1, 0)], 0.0)
-    if not cap.any():
-        return unchanged("no share swings the knees together within the kit's rules", worst)
-    ramp = max(tripo_trim.settle_frames(float(np.abs(need).max())), MIN_RAMP_FRAMES)
-    weights = _envelope(cap, ramp)
-    turn = weights[:, None] * need
-    result = _swung(mesh, anim, legs, turn)
-    after = float(thigh_split(mesh, result).max())
-    frames_after, lifts_after = _frame_check(mesh, result, edges, rest, body)
-    if after >= worst - 1e-3:
-        return unchanged("swinging the knees together does not lower the worst split", worst)
-    if stretch_smooth.worse(before, tripo_shoulder.summary(frames_after)):
-        return unchanged("swinging the knees together makes the clip's deformation worse", worst)
-    if float((lifts_after - lift_before).max()) > tripo_pose.UPPER_SETTLE_LIFT + 1e-6:
-        return unchanged("swinging the knees together sinks the body into the ground", worst)
-    changed = np.abs(turn).max(axis=1) > 0
-    tripo_pose._write_rotations(data, keyed, joints, result, changed.astype(float))
+    masks = lower_leg_masks(mesh, legs)
+    clip = _Clip(mesh, tuple(legs), edges, rest, body, masks, *_frame_check(mesh, anim, edges, rest, body, masks))
+    passes = _Passes(anim, np.zeros((anim.frames, 2)), np.zeros(anim.frames, bool))
+    _swing_pass(clip, anim, target, worst, passes)
+    _closing_passes(clip, limit, target, passes)
+    if passes.current is anim:
+        return unchanged("; ".join(passes.notes), worst)
+    after = float(thigh_split(mesh, passes.current).max())
+    frames_after, lifts_after, lows_after = _frame_check(mesh, passes.current, edges, rest, body, masks)
+    if stretch_smooth.worse(tripo_shoulder.summary(clip.deformed), tripo_shoulder.summary(frames_after)):
+        return unchanged("closing the legs makes the clip's deformation worse", worst)
+    if passes.closing:
+        sunk = not _contacts_kept(clip.lows_before, clip.lift_before, lows_after, lifts_after, max(mesh.height, 1e-6)).all()
+    else:
+        sunk = float((lifts_after - clip.lift_before).max()) > tripo_pose.UPPER_SETTLE_LIFT + 1e-6
+    if sunk:
+        return unchanged("closing the legs sinks the body into the ground or lifts a planted leg off it", worst)
+    tripo_pose._write_rotations(data, keyed, joints, passes.current, passes.changed.astype(float))
     Path(out_path).write_bytes(bytes(data))
+    turn = passes.turn
     step = float(np.abs(np.diff(turn, axis=0)).max()) if len(turn) > 1 else 0.0
-    return SplayEase(True, round(float(weights.max()), 3), int(changed.sum()), int(ramp), round(worst, 1), round(after, 1),
-                     round(float(np.abs(turn).max()), 1), round(step, 1))
+    return SplayEase(True, round(passes.weights_max, 3), int(passes.changed.sum()), int(passes.ramp_max), round(worst, 1), round(after, 1),
+                     round(float(turn.max()), 1), round(step, 1), "; ".join(passes.notes), passes.closing)

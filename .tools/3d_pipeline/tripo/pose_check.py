@@ -15,10 +15,12 @@ route makes. Those depend on the route's weights, which only an earlier run of t
    (`Spine02`) as a share of the height (`grip_weapon.hand_raise`), each hand's furthest point ahead of the chest along the way the feet
    point, and the hips' furthest horizontal travel from the first frame, both as shares of the height. The strike (`lib/tripo_strike.py`): the
    striking hand's travel against the chest over the clip and its peak speed (the holding hand, or with `--unarmed` the faster one).
-4. Then the route's two pose rules on the clip, in their order: the neck lift (`tripo_neck.lift_animation`) and the shoulder ease toward the
-   GLB's `idle` clip's first frame (`tripo_shoulder.ease_animation`), as a looping role, and the swell, the neck and the raise again.
+4. Then the route's pose rules on the clip, in their order: the neck lift (`tripo_neck.lift_animation`), the shoulder ease toward the
+   GLB's `idle` clip's first frame (`tripo_shoulder.ease_animation`), as a looping role, and the clavicle lever
+   (`tripo_shoulder.clavicle_animation`), and the swell, the girdle's tear (TRIPO-SHOULDER-TEAR), the neck and the raise again. On ogre_o's
+   skin (2026-11-18) the tear after the rules read chop 0.125, the poleaxe attack 0.129, the defend hit_to_stomach 0.121.
 
-A verdict per clip says whether the swell and the neck pass their limits after the two rules (`route`), and as Tripo made the clip (`raw`).
+A verdict per clip says whether the swell, the tear and the neck pass their limits after the rules (`route`), and as Tripo made the clip (`raw`).
 A clip named with `--attack` must also strike (TRIPO-ATTACK-NO-STRIKE's limits), and `attack_pick` names the attack by the pick rule: of the
 attack candidates that pass, the largest raise or reach plus the pelvis's travel after the rules, at least `MIN_ATTACK_SCORE`. A lunge that
 holds the arms out reaches as far as a blow, so the reach alone picked the zombie's static lunge three times (zombie_i, zombie_k, zombie_o).
@@ -126,12 +128,14 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str 
 
     height = max(mesh.height, 1e-6)
     swell = tripo_shoulder.swelling(mesh, anim)
+    tear = tripo_shoulder.swelling(mesh, anim, girdle=True)
     neck = tripo_neck.visible_neck(mesh, anim)
     joints = pdx_motion.posed_joints(mesh, anim)
     index = {name: i for i, name in enumerate(mesh.bones)}
     front = tripo_cloak_bend.front_direction(mesh)
     chest = joints[:, index["Spine02"]] if "Spine02" in index else joints[:, index["Hips"]]
     out = {"frames": int(anim.frames), "swell": round(float(swell.max()), 4), "swell_frame": int(np.argmax(swell)),
+           "tear": round(float(tear.max()), 4), "tear_frame": int(np.argmax(tear)),
            "neck": round(float(neck.min()), 3) if neck is not None else None, "neck_frame": int(np.argmin(neck)) if neck is not None else None}
     if hand in index:
         above = (joints[:, index[hand], 1] - chest[:, 1]) / height
@@ -155,6 +159,8 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str 
         reasons.append(f"no strike: {strike['hand']} travels {strike['travel']:.2f} at {strike['speed']:.2f}/s (at least {tripo_strike.MIN_TRAVEL} and {tripo_strike.MIN_SPEED})")
     if out["swell"] > tripo_shoulder.SWELL_LIMIT:
         reasons.append(f"swell {out['swell']:.3f} over {tripo_shoulder.SWELL_LIMIT}")
+    if out["tear"] > tripo_shoulder.GIRDLE_LIMIT:
+        reasons.append(f"tear {out['tear']:.3f} over {tripo_shoulder.GIRDLE_LIMIT}")
     if out["neck"] is not None and out["neck"] < tripo_neck.NECK_LIMIT:
         reasons.append(f"neck {out['neck']:.2f} under {tripo_neck.NECK_LIMIT}")
     out["verdict"] = "fail" if reasons else "pass"
@@ -163,12 +169,14 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str 
 
 
 def route(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, idle: Optional[pdx_deform.Animation], role: str = "attack") -> pdx_deform.Animation:
-    """The clip after the route's neck lift and shoulder ease (step 4 of the module text)."""
+    """The clip after the route's neck lift, shoulder ease and clavicle lever (step 4 of the module text)."""
 
     _lift, lifted, _weights = tripo_neck.lift_animation(mesh, anim, role)
     anim = lifted if lifted is not None else anim
     _ease, eased, _weights = tripo_shoulder.ease_animation(mesh, anim, role, idle)
-    return eased if eased is not None else anim
+    anim = eased if eased is not None else anim
+    _lever, levered, _weights, _written = tripo_shoulder.clavicle_animation(mesh, anim, role, idle)
+    return levered if levered is not None else anim
 
 
 def gait(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[dict]:
@@ -238,19 +246,19 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
                 report[name]["reasons"] += found["reasons"]
                 report[name]["verdict"] = "fail" if report[name]["reasons"] else "pass"
     return {"glb": str(glb), "mesh": str(mesh_path), "hand": hand, "unarmed": unarmed, "scale": round(transfer.scale, 4),
-            "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
+            "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "tear": tripo_shoulder.GIRDLE_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
                        "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE,
                        "stride_speed": tripo_loop.MIN_STRIDE_SPEED},
             "clips": report, "attack_pick": pick_attack(report)}
 
 
 def print_table(result: dict) -> None:
-    print("raw: the clip as Tripo made it. route: after the neck lift and the shoulder ease")
-    print(f"{'clip':<40}{'swell raw':>10}{'route':>7}{'neck raw':>9}{'route':>7}{'raise raw':>10}{'route':>7}{'reach':>7}{'pelvis':>7}{'strike':>7}{'speed':>7}  verdict")
+    print("raw: the clip as Tripo made it. route: after the neck lift, the shoulder ease and the clavicle lever")
+    print(f"{'clip':<40}{'tear raw':>9}{'route':>7}{'swell raw':>10}{'route':>7}{'neck raw':>9}{'route':>7}{'raise raw':>10}{'route':>7}{'reach':>7}{'pelvis':>7}{'strike':>7}{'speed':>7}  verdict")
     for name, c in result["clips"].items():
         raw, after = c["raw"], c["route"]
         label = name if len(name) <= 39 else name[:36] + "..."
-        print(f"{label:<40}{raw['swell']:>10.3f}{after['swell']:>7.3f}{(raw['neck'] or 0):>9.2f}{(after['neck'] or 0):>7.2f}"
+        print(f"{label:<40}{raw['tear']:>9.3f}{after['tear']:>7.3f}{raw['swell']:>10.3f}{after['swell']:>7.3f}{(raw['neck'] or 0):>9.2f}{(after['neck'] or 0):>7.2f}"
               f"{raw.get('raise_', 0):>10.3f}{after.get('raise_', 0):>7.3f}{raw['reach']:>7.3f}{raw['pelvis_travel']:>7.3f}{after.get('strike_travel', 0):>7.3f}{after.get('strike_speed', 0):>7.2f}  {c['verdict']}"
               + (f"  ({'; '.join(c['reasons'])})" if c["reasons"] else ""))
     for name, c in result["clips"].items():
