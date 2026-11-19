@@ -1186,15 +1186,21 @@ def clearance_radii(joints: np.ndarray, capsules: Sequence[Tuple[np.ndarray, np.
 #   0.8 of the clip and was still open when the knees bent.
 # Every pose is capped by the body: a down-stroke stops when the lowest chain hangs straight down (`wing_down_degrees`) and the bones
 # are pushed out of the body's capsules.
+# Round e (2026-11-19): a fresh review of run demon_d read the move and the defend as the idle at game size, the wings "only riding the
+# body": the fold room left the idle's wings spread (48 degrees of back swing), so every clip showed the same spread wings. Now the idle
+# lowers its folded wings (`lower`, degrees down in the frontal plane) and breathes, the move and the retreat beat harder, the attack's
+# single beat is stronger, and the defend wraps its wings forward round the body (`wrap`, degrees of forward swing, ramped in and out with
+# the guard, lib/tripo_guard.ramp) so the guard reads from the game camera.
 WING_ROLES: Dict[str, Dict[str, float]] = {
-    "idle": {"fold": 1.0, "flap": 3.0, "beats": 1},
-    "move": {"fold": 0.5, "flap": 14.0, "beats": 2, "steps": 1.0},
-    "attack": {"fold": 0.0, "flap": 30.0, "beats": 0, "beat": 1.0, "face": 1.0},
-    "defend": {"fold": 0.3, "flap": 4.0, "beats": 1},
-    "retreat": {"fold": 0.3, "flap": 25.0, "beats": 3, "face": 1.0},
+    "idle": {"fold": 1.0, "flap": 6.0, "beats": 1, "lower": 40.0},
+    "move": {"fold": 0.5, "flap": 19.0, "beats": 2, "steps": 1.0},  # under the edge-on rule's 20, which a move without a face turn would fail
+    "attack": {"fold": 0.0, "flap": 40.0, "beats": 0, "beat": 1.0, "face": 1.0},
+    "defend": {"fold": 0.0, "flap": 4.0, "beats": 1, "wrap": 45.0, "lower": 20.0},
+    "retreat": {"fold": 0.3, "flap": 35.0, "beats": 4, "face": 1.0},
     "death": {"fold": 0.0, "fold_end": 1.0, "flap": 0.0, "beats": 0, "droop": 1.0, "upright_sweep": 1.0, "fold_by_fall": 1.0, "knee_guard": 1.0},
 }
 WING_DEFAULT_ROLE = "idle"
+WRAP_RAMP_SHARE = 0.25  # the defend's wrap comes in over the first quarter of the clip and goes over the last, as the guard does
 # A folded fan keeps 70% of its spread: the membrane between two chains never narrows past the kit's squash limit (two thirds).
 FAN_CLOSE_SHARE = 0.3
 FLAP_DELAY = 0.15  # each bone down a chain lags its parent by this share of a flap cycle (the wave runs out to the tip)
@@ -1386,7 +1392,9 @@ def wing_role_pose(role: str, frames: int, events: Optional[Dict[str, float]] = 
         amplitude = amplitude * np.sin(math.pi * t)
     else:
         phase = 2.0 * math.pi * beats * t + offset  # whole beats: a looping clip ends on the angle it starts with
-    return {"fold": fold, "phase": phase, "amplitude": amplitude, "sweep": np.full(frames, rule.get("sweep", 1.0)), "droop": droop,
+    wrap_ramp = np.minimum(np.clip(t / WRAP_RAMP_SHARE, 0.0, 1.0), np.clip((1.0 - t) / WRAP_RAMP_SHARE, 0.0, 1.0))
+    return {"wrap": rule.get("wrap", 0.0) * smoothstep(wrap_ramp), "lower": np.full(frames, rule.get("lower", 0.0)),
+            "fold": fold, "phase": phase, "amplitude": amplitude, "sweep": np.full(frames, rule.get("sweep", 1.0)), "droop": droop,
             "face": np.full(frames, rule.get("face", 0.0)), "back_share": np.ones(frames) if back_share is None else np.asarray(back_share, float)}
 
 
@@ -1445,7 +1453,7 @@ def wing_pose_rotations(rest_directions: np.ndarray, chain_u: float, wing: Dict[
     # beat's up-stroke taken away as well (-1: no up-stroke)
     share = float(pose.get("back_share", 1.0))
     back, lift = max(share, 0.0), 1.0 + min(share, 0.0)
-    root = max(wing["sweep"] * fold, floor) * float(pose["sweep"]) * back
+    root = max(wing["sweep"] * fold, floor) * float(pose["sweep"]) * back - float(pose.get("wrap", 0.0))
     held = float(pose.get("face_back", 0.0)) * back
     outer = max(root, max(wing["sweep"] * fold * back, held) * float(pose["sweep"])) if face > 0 else root
     tilt = face * float(pose.get("face_tilt", 0.0)) * back
@@ -1455,7 +1463,8 @@ def wing_pose_rotations(rest_directions: np.ndarray, chain_u: float, wing: Dict[
         if k > 0 and face > 0:
             swing = axis_angle_matrix(up, math.radians(root + face * (outer - root))) @ axis_angle_matrix(lateral, -math.radians(tilt))
         beat = float(np.sum(flaps[: k + 1]))
-        turn = max((beat * lift if beat > 0.0 else beat) - wing["droop"] * float(pose["droop"]) + float(pose.get("raise", 0.0)), -wing["down"])
+        lowered = float(pose.get("lower", 0.0)) if k == 0 else 0.0
+        turn = max((beat * lift if beat > 0.0 else beat) - wing["droop"] * float(pose["droop"]) + float(pose.get("raise", 0.0)) - lowered, -wing["down"])
         out[k] = swing @ axis_angle_matrix(front, math.radians(turn)) @ close
     return out
 

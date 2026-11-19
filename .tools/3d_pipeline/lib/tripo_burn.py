@@ -36,16 +36,21 @@ from .pdx_write import write
 
 KIND = "burn"
 BURN_FRAMES = 75  # 2.5 s at the game's 30 frames a second
-HEAP_SHARE = 0.4  # the heap grows over the last 40% of the burn
+HEAP_SHARE = 0.4  # kept for older plans; the heap now grows from `HEAP_FROM`
+HEAP_FROM = 0.15  # the heap grows from the feet from this share of the burn on, as the body goes
+BODY_DELAY = 0.25  # the torso and head start to shrink at this share of the burn
+LIMB_SHARE = 0.5  # the wings and limbs are down to `LIMB_SCALE` by this share of the burn
+LIMB_SCALE = 0.15
 HOLD_FRAMES = 30  # the end state, 1 s
 END_SCALE = 0.07  # vanilla's hide scale (landmark_hakko_ichiu_destroyed_destroy.anim, bone `hide`)
 HIDE = 1e-3  # the heap is bound at this share of its size, inside the pelvis
 HEAP_BONE = "Ash"
 LOCATOR = "burn"
 LOCATOR_BONE = "Spine02"
-HEAP_RADIUS_HIPS = 1.6  # the heap's radius, in hip-to-hip distances (about the standing footprint)
+HEAP_RADIUS_HIPS = 2.1  # the heap's radius, in hip-to-hip distances (inside the standing footprint, BURN-END)
 HEAP_RINGS, HEAP_SIDES = 6, 24  # a smooth dome, not a polygon
 HEAP_LUMP = 0.08  # its gentle lumps, a share of the radius and height
+HEAP_RAGGED = 0.16  # the rim's ragged in and out, a share of the radius
 ASH_MARK = "_ash_"  # the heap's maps are <stem>_ash_diffuse.dds and so on (blender/review_render.py keeps a stream's own maps by it)
 ASH_TEXTURE_SIZE = 64
 ASH_COLOUR = (34.0, 32.0, 31.0)  # dark grey to black ash
@@ -53,7 +58,7 @@ EMBER_COLOUR = (150.0, 52.0, 18.0)  # a faint ember tint
 EMBER_SHARE = 0.04  # of the texels
 FLAT_NORMAL_RGBA = (0, 128, 0, 128)  # the packed layout of the kit's normal maps: x in alpha, y in green, blue black (blue is emissive)
 ASH_SPECULAR_RGBA = (0, 16, 0, 24)  # the kit's packed layout (pack_pdx_material.py): low specular level, not metal, matte
-HEAP_HEIGHT_SHARE = 0.35  # its height, a share of its radius
+HEAP_HEIGHT_SHARE = 0.16  # its height, a share of its radius: a low heap, not a dome
 DARK_PERCENTILE = 3.0  # the heap takes the UVs of the body's darkest 3% of vertices
 GROUND_TOLERANCE = 0.01  # BURN-GROUNDED: share of the height off or under the ground
 SHRINK_SLACK = 0.01  # BURN-SHRINK and BURN-NO-FLYOFF: share of the height a measure may grow by between frames
@@ -92,8 +97,9 @@ def heap_geometry(radius: float, height: float, rings: int = HEAP_RINGS, sides: 
         for side in range(sides):
             angle = 2.0 * math.pi * side / sides
             wobble = 1.0 + HEAP_LUMP * sum(math.sin(k * angle + phase) for k, phase in zip((2, 3, 5), lumps)) / 3.0
-            r = radius * share * (1.0 + 0.5 * HEAP_LUMP * math.sin(3 * angle + lumps[0])) if ring < rings else radius * (1.0 + 0.5 * HEAP_LUMP * math.sin(3 * angle + lumps[0]))
-            y = height * (1.0 - share * share) ** 1.5 * wobble if ring < rings else 0.0
+            ragged = 1.0 + HEAP_RAGGED * share ** 3 * (rng.uniform(-1.0, 1.0) * 0.6 + 0.4 * math.sin(7 * angle + lumps[1]))
+            r = radius * share * ragged
+            y = height * (1.0 - share ** 4) * wobble if ring < rings else 0.0  # flat on top, falling off at the edge
             points.append([r * math.cos(angle), y, r * math.sin(angle)])
     base = len(points)
     points.append([0.0, 0.0, 0.0])
@@ -319,6 +325,26 @@ def peak_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> int:
     return int(np.argmax(distance))
 
 
+def limb_roots(mesh: pdx_deform.SkinnedMesh) -> List[str]:
+    """The bones that shrink first in a burn: each arm's upper arm, each leg's thigh and each wing chain's root."""
+
+    names = [name for name in ("LeftArm", "RightArm", "LeftUpLeg", "RightUpLeg") if name in mesh.bones]
+    chains = [name for i, name in enumerate(mesh.bones) if name.startswith("Wing") and (mesh.parents[i] < 0 or not mesh.bones[mesh.parents[i]].startswith("Wing"))]
+    return names + chains
+
+
+def _sink(mesh: pdx_deform.SkinnedMesh, channels, frames: int, ground: float, start: int) -> np.ndarray:
+    """Per frame, how far the hips come down so the body's lowest point (the heap left out) stays on the ground while the legs shrink under it."""
+
+    anim = pdx_deform.Animation(30.0, frames, channels)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    body = pdx_deform.dominant_bones(mesh) != (mesh.bones.index(HEAP_BONE) if HEAP_BONE in mesh.bones else -2)
+    lift = np.zeros(frames)
+    for frame in range(start, frames):
+        lift[frame] = max(0.0, float(pdx_deform.skin(mesh, matrices[frame])[body, 1].min()) - ground)
+    return lift
+
+
 def burn_death(mesh_path: Path, anim_path: Path) -> dict:
     """Make the exported death clip a burn (see the module text), in place. Returns the plan's numbers."""
 
@@ -340,11 +366,18 @@ def burn_death(mesh_path: Path, anim_path: Path) -> dict:
     feet = [leg.ankle for leg in legs.legs]
     point = np.array([float(joints[start, feet, 0].mean()), ground, float(joints[start, feet, 2].mean())])
     t = (np.arange(frames) - start) / float(BURN_FRAMES)
-    scale = 1.0 - (1.0 - END_SCALE) * smoothstep(t)
-    grow = smoothstep((t - (1.0 - HEAP_SHARE)) / HEAP_SHARE)
+    # The burn breaks the body up: the wings and limbs shrink first and fastest (`LIMB_SCALE` by `LIMB_SHARE` of the burn), the torso and
+    # head last (from `BODY_DELAY` of the burn), while the body sinks so its lowest point stays on the ground. An even shrink left a whole
+    # half-size demon standing in the fire (run demon_d, frames 47 to 61), and a fresh review read it as a miniature.
+    scale = 1.0 - (1.0 - END_SCALE) * smoothstep((t - BODY_DELAY) / (1.0 - BODY_DELAY))
+    limb = 1.0 - (1.0 - LIMB_SCALE) * smoothstep(t / LIMB_SHARE)
+    grow = smoothstep((t - HEAP_FROM) / (1.0 - HEAP_FROM))
     hips_t = channels[hips]["t"].copy()
     channels[hips]["t"] = point + scale[:, None] * (hips_t - point)
     channels[hips]["s"] = channels[hips]["s"] * scale
+    for name in limb_roots(mesh):
+        channels[name]["s"] = channels[name]["s"] * limb
+    channels[hips]["t"][:, 1] -= _sink(mesh, channels, frames, ground, start)
     rest_t, rest_q, rest_s = _decompose(_rest_local(mesh, HEAP_BONE))
     heap = {"t": np.tile(rest_t, (frames, 1)), "q": np.tile(rest_q, (frames, 1)), "s": np.full(frames, rest_s)}
     # From the burn's start the hidden heap moves from where the hips carry it to the ground point and turns upright (a smoothstep up to the
@@ -353,7 +386,7 @@ def burn_death(mesh_path: Path, anim_path: Path) -> dict:
     carried = _hips_world(channels[hips], start) @ rest_local
     carried_q = tripo_pose._quaternion_from_matrix(carried[:3, :3] / np.cbrt(abs(np.linalg.det(carried[:3, :3]))))
     upright_q = np.array([0.0, 0.0, 0.0, 1.0])
-    move = smoothstep(t / max(1.0 - HEAP_SHARE, 1e-6))
+    move = smoothstep(t / max(HEAP_FROM, 1e-6))
     for frame in range(start, frames):
         hips_world = _hips_world(channels[hips], frame)
         heap_world = np.eye(4)
@@ -364,7 +397,7 @@ def burn_death(mesh_path: Path, anim_path: Path) -> dict:
         heap["t"][frame], heap["q"][frame], heap["s"][frame] = _decompose(np.linalg.inv(hips_world) @ heap_world)
     channels[HEAP_BONE] = heap
     write_anim(anim_path, channels, frames, {HEAP_BONE: {"t": rest_t, "q": rest_q, "s": [rest_s]}})
-    return {"kind": KIND, "burn_start": start, "burn_frames": BURN_FRAMES, "heap_start": int(start + round((1.0 - HEAP_SHARE) * BURN_FRAMES)),
+    return {"kind": KIND, "burn_start": start, "burn_frames": BURN_FRAMES, "heap_start": int(start + round(HEAP_FROM * BURN_FRAMES)),
             "frames": frames, "fps": anim.fps, "end_scale": END_SCALE, "ground_point": [round(float(v), 4) for v in point]}
 
 
