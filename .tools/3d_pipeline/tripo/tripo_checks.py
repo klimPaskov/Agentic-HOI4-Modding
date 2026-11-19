@@ -28,8 +28,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-CLOAK-STRETCH: in a clip, more than `CLOAK_MAX_STRETCH_SHARE` of the edges of the cloak region (vertices behind
   the body, weighted to the torso, hips or thighs) are stretched past 1.5x or squashed under 0.5x. The limit is the worst
   vanilla clothing stretch with a margin (see `CLOAK_MAX_STRETCH_SHARE`).
-- TRIPO-HANDS-HIGH: in the attack clip of an unarmed unit a hand is above the head in more than 20% of the frames, or the hands are above the shoulders in
-  more than 80% (lib/tripo_arms.py; Tripo's text-to-motion attacks do this and hide the head). `--arm-level attack` in the intake fixes it.
+- TRIPO-HANDS-HIGH: in the attack, the move or the retreat of an unarmed unit a hand is above the head in more than 20% of the frames, or the hands
+  are above the shoulders in more than 80% (lib/tripo_arms.py; Tripo's text-to-motion attacks do this and hide the head, and its reaching zombie walk
+  reads as hands up). `--arm-level attack` in the intake fixes the attack, `--arm-level-high move retreat` a gait.
 - TRIPO-LIMB-IN-TORSO: in a death clip, limb skin (arms, legs) is deeper than `LIMB_MARGIN_SHARE` of the height inside the torso in some frame, in more
   than `MAX_LIMB_IN_TORSO_SHARE` of the limb points: an arm or a leg through the body.
 - TRIPO-NOT-DOWN: a death clip must end lying down, prone or supine: the body's extent at the end at most `MAX_FINAL_EXTENT_SHARE` of its
@@ -60,6 +61,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the
   height against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
   pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
+- TRIPO-MAP-READ: from the map camera at game size (the unit 60 pixels tall), a humanoid's attack or defend changes fewer pixels of the
+  idle's silhouette than `map_read.MIN_HUMANOID_READ_PIXELS` (attack 300, defend 160) in its 90th percentile frame: it reads as the idle on the
+  map. The limits are the lowest readings of the humanoids fresh reviewers passed at game size (`lib/map_read.py`).
 - TRIPO-LOOP-STANDS: in a humanoid's move or retreat the feet stop striding in some frame step (one ankle moves against the other slower than
   0.14 heights a second, smoothed over a sixth of a second around the loop; vanilla's slowest locomotion clip keeps 0.179), or the last step does
   not flow into the first (across the seam a joint's speed against the pelvis changes by more than 1.2 times the largest change between two
@@ -105,7 +109,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
+from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -185,6 +189,8 @@ LIMB_MARGIN_SHARE = 0.015  # limb skin this deep inside the torso counts (1.5% o
 # fail the vanilla deaths themselves; the limit is the worst of them with a margin of half again. The orc death measures 1.0%, the zombie 0.5 to 1.5%.
 MAX_LIMB_IN_TORSO_SHARE = 0.08
 MAX_FINAL_EXTENT_SHARE = 0.4
+# TRIPO-HANDS-HIGH's roles: the attack, and the gaits, whose raised hands read as hands up from the front (the round 4 zombie's reaching walk)
+HANDS_HIGH_ROLES = ("attack", "move", "retreat")
 # A lying body is as tall as its torso is thick. The limit above holds for a human torso (the Tripo zombie's is 0.217 of its height, vanilla
 # infantry's whole body 0.209 deep). A thicker body gets its extra thickness on top: the ogre's torso is 0.403 deep, and it lay flat on its front
 # (torso 6% upright) at 51% of its standing height, which the fixed limit read as not lying down (2026-11-16).
@@ -740,7 +746,7 @@ def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
 
 
 def hands_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
-    """TRIPO-HANDS-HIGH for the attack clip of an unarmed unit (run only when the job names no weapon)."""
+    """TRIPO-HANDS-HIGH for the attack, the move and the retreat of an unarmed unit (run only when the job names no weapon)."""
 
     index = {name: i for i, name in enumerate(mesh.bones)}
     needed = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head")
@@ -748,7 +754,7 @@ def hands_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
         return [], {}
     out, numbers = [], {}
     for clip, anim in anims.items():
-        if not clip.endswith("attack"):
+        if clip.rsplit("_", 1)[-1] not in HANDS_HIGH_ROLES:
             continue
         joints = pdx_motion.posed_joints(mesh, anim)
         track = {name: joints[:, index[name]] for name in needed}
@@ -1229,6 +1235,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         found, numbers["death_kick"] = tripo_kick.kick_findings(mesh, anims)
         findings += found
         found, numbers["gait"] = tripo_loop.loop_findings(mesh, anims)
+        findings += found
+        found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
         findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
