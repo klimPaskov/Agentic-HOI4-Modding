@@ -19,6 +19,7 @@ REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from blender_client import BlenderAdapterClient
+from lib import heavy_job
 from lib.mcp_stdio import MCPRouteError
 from lib.paths import (
     append_history,
@@ -114,6 +115,17 @@ def read_job(job: Path) -> Dict[str, Any]:
     return read_job_document(job / "job.yaml")
 
 
+def installed_game_dir() -> Path:
+    """The game folder of this machine, by the kit's shared rule (`.tools/lib/game.py`). That file is read by path because the pipeline has its own `lib` package."""
+
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("kit_game_folder", PIPELINE_ROOT.parent / "lib" / "game.py")
+    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    return module.game_dir()
+
+
 def stage_vanilla_reference(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Stage the named installed vanilla reference inside the bounded job root."""
 
@@ -127,6 +139,9 @@ def stage_vanilla_reference(job: Path, spec: Dict[str, Any]) -> Optional[Dict[st
             "height-only calibration is not permitted."
         )
     source = Path(str(reference.get("mesh", ""))).resolve()
+    if not source.is_file() and reference.get("mesh") and not Path(str(reference["mesh"])).is_absolute():
+        # A relative path, such as the profile's own `gfx/models/units/western_european_infantry.mesh`, is a file of the installed game.
+        source = (installed_game_dir() / str(reference["mesh"])).resolve()
     if not source.is_file():
         raise FileNotFoundError(f"Installed vanilla scale reference is missing: {source}")
     destination = job / "blender" / "reference" / source.name
@@ -4403,6 +4418,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
+    heavy_job.add_argument(parser)
     parser.add_argument("assets", nargs="*")
     return parser
 
@@ -4410,6 +4426,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    heavy_job.apply(args)
     handled = run_file_only_command(args, parser)
     if handled is not None:
         return handled

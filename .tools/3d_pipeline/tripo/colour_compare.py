@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -27,6 +26,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import review_unit
+from lib import heavy_job
 
 VIEWS = ["front", "hoi4"]
 SIZE = 512
@@ -52,7 +52,7 @@ def render(mesh: Path, label: str, light: str, out: Path) -> None:
         request.update(light="STUDIO", specular=specular_maps(mesh))
     path = out / f"{label}_{light}_request.json"
     path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-    completed = subprocess.run(
+    completed = heavy_job.run(
         [str(review_unit.find_blender()), "-b", "--python", str(review_unit.BLENDER_SCRIPT), "--", str(path.resolve())],
         capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
@@ -125,7 +125,9 @@ def main() -> int:
     b.add_argument("folder", type=Path)
     b.add_argument("--labels", nargs="+", required=True)
     b.add_argument("--out", type=Path, required=True)
+    heavy_job.add_argument(parser)
     args = parser.parse_args()
+    heavy_job.apply(args)
     if args.command == "render":
         render(args.mesh, args.label, args.light, args.out)
     else:

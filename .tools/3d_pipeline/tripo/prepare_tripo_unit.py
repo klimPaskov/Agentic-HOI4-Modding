@@ -12,7 +12,10 @@ What it does, with no new keyframes (only the clips Tripo exported) except the c
 2. Renames the `mixamorig:*` bones to the names the kit expects (Spine1 -> Spine01, Spine2 -> Spine02,
    Neck -> neck) and merges every other bone (fingers, `*_End`) into its nearest kept parent: the weights
    are added to that parent and the bone and its channels are dropped. HOI4 allows 50 bones; 22 remain, and the
-   `Weapon` and `Shield` bones of a separately modelled weapon and shield when the rig has them.
+   `Weapon` and `Shield` bones of a separately modelled weapon and shield when the rig has them. A childless joint with no
+   animation and no kept ancestor, which Tripo's auto-rig has added since November 2026 (`neutral_bone`), is dropped too and the
+   weight it carries moves to the nearest kit bone by the vertex's position (lib/tripo_extra_joints.py); the report's
+   `extra_joints` says which joints went and how many weights moved.
 3. Binds a held weapon rigidly: every weapon vertex gets weight 1.0 on one hand bone. The weapon is a
    whole part (`--rigid-part`, for a segmented rigged export) or the vertices whose nearest vertex in a
    segmented twin of the same pose belongs to that part (`--rigid-from-twin`; both are first normalised
@@ -49,7 +52,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib.texture_lineage import ROLE_FILES, _SLOTS, _image_bytes, _read_glb, embedded_images
-from lib import tripo_arms, tripo_loop, tripo_pose, tripo_shape, tripo_trim
+from lib import tripo_arms, tripo_extra_joints, tripo_loop, tripo_pose, tripo_shape, tripo_trim
 from lib.tripo import atlas_layout, budget_list, decimate_ratio, parse_part_triangles, resolve_clip_name, safe_animation_name
 from tripo import chain_stage
 
@@ -62,11 +65,9 @@ ATLAS_GUTTER = 4
 NEUTRAL_ROUGHNESS = 204
 MAX_INFLUENCES = 4
 
-# Mixamo name (without the `mixamorig:` prefix) -> the kit's name. Every bone not named here is merged.
-KIT_BONES = {"Hips": "Hips", "Spine": "Spine", "Spine1": "Spine01", "Spine2": "Spine02", "Neck": "neck", "Head": "Head"}
-for _side in ("Left", "Right"):
-    for _part in ("Shoulder", "Arm", "ForeArm", "Hand", "UpLeg", "Leg", "Foot", "ToeBase"):
-        KIT_BONES[f"{_side}{_part}"] = f"{_side}{_part}"
+# Mixamo name (without the `mixamorig:` prefix) -> the kit's name. Every bone not named here is merged, and a joint with no kept ancestor
+# (Tripo's `neutral_bone`) is dropped by the rule of lib/tripo_extra_joints.py.
+KIT_BONES = dict(tripo_extra_joints.MIXAMO_KIT_BONES)
 KIT_NAMES = set(KIT_BONES.values())
 # The grip stage may add a bone for the separate weapon (a child of the hand), and the shield stage one for a shield held in the
 # other hand (tripo/shield_stage.py); each is kept when the rig has it. With both the unit has 24 bones of HOI4's 50.
@@ -1313,13 +1314,34 @@ def merge_plan(armature):
     keep = {b.name: KIT_BONES[short_name(b.name)] for b in armature.data.bones if short_name(b.name) in KIT_BONES}
     if not KIT_NAMES <= set(keep.values()):
         raise SystemExit(f"The rig lacks kit bones: {sorted(KIT_NAMES - set(keep.values()))}")
+    parents = {bone.name: (bone.parent.name if bone.parent else None) for bone in armature.data.bones}
+    animated = {bone_of_path(fcurve.data_path) for action in bpy.data.actions for fcurve, _container in action_fcurves(action)}
+    try:
+        extras = tripo_extra_joints.find_extra_joints(parents, set(keep), animated)
+    except tripo_extra_joints.ExtraJointError as problem:
+        raise SystemExit(str(problem)) from None
     merge_into = {}
     for bone in armature.data.bones:
+        if bone.name in extras:
+            continue
         target = kept_ancestor(bone, keep)
-        if target is None:
-            raise SystemExit(f"Bone {bone.name} has no kept ancestor")
         merge_into[bone.name] = keep[target.name]
-    return keep, merge_into, sorted(name for name in merge_into if name not in keep)
+    return keep, merge_into, sorted([name for name in merge_into if name not in keep] + extras), extras
+
+
+def move_extra_weights(armature, meshes, all_weights, keep, extras):
+    """Move the weight of the extra joints (lib/tripo_extra_joints.py) to the kept kit bone nearest to each vertex, in the rest pose. Changes
+    `all_weights` in place and returns how many vertex weights moved."""
+
+    if not extras:
+        return 0
+    to_armature = armature.matrix_world.inverted()
+    segments = {name: (tuple(armature.data.bones[name].head_local), tuple(armature.data.bones[name].tail_local))
+                for name, kit in keep.items() if kit in KIT_NAMES}
+    points = {obj.name: [tuple(to_armature @ (obj.matrix_world @ v.co)) for v in obj.data.vertices] for obj in meshes}
+    limit = tripo_extra_joints.near_limit([p for rows in points.values() for p in rows])
+    fallback = next(name for name, kit in keep.items() if kit == tripo_extra_joints.FALLBACK_BONE)
+    return sum(tripo_extra_joints.move_extra_weights(all_weights[obj.name], extras, points[obj.name], segments, fallback, limit) for obj in meshes)
 
 
 def resolve_roles(roles):
@@ -1478,8 +1500,10 @@ def main():
 
     # Bones: keep the kit's, merge the rest into their nearest kept parent, then rename.
     bones_before = len(armature.data.bones)
-    keep, merge_into, dropped = merge_plan(armature)
+    # `extras` below is the per-step record of the role clips, so the extra joints (lib/tripo_extra_joints.py) keep their own name.
+    keep, merge_into, dropped, extra_joints = merge_plan(armature)
     all_weights = {obj.name: read_weights(obj) for obj in meshes}
+    weights_moved = move_extra_weights(armature, meshes, all_weights, keep, extra_joints)
     clip_names, roles = resolve_roles(roles)
     bone_names = drop_and_rename(armature, keep, dropped)
     weapon_summary, weapon_points = bind_meshes(meshes, all_weights, bone_names, merge_into, rigid_for)
@@ -1517,6 +1541,7 @@ def main():
         "bones_after": len(armature.data.bones),
         "bone_names": [b.name for b in armature.data.bones],
         "dropped_bones": len(dropped),
+        "extra_joints": {"dropped": extra_joints, "weights_moved": weights_moved},
         "weapon": weapon_summary,
         "weapon_vertices_separated_from_body": separated,
         "part_triangles": decimated,

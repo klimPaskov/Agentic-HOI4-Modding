@@ -25,7 +25,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -33,7 +32,7 @@ from typing import Any, Dict, List, Optional, Tuple
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import pdx_binary, pdx_deform, stage_verdict
+from lib import heavy_job, pdx_binary, pdx_deform, stage_verdict
 from review_unit import find_blender, owned_anims, pick_frames
 
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "hole_render.py"
@@ -104,7 +103,7 @@ def _render_batch(target: Path, clips: List[Dict[str, Any]], out: Path, size: in
     }
     request_path = out / f"holes_request_{index}.json"
     request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-    completed = subprocess.run(
+    completed = heavy_job.run(
         [str(find_blender()), "-b", "--python", str(BLENDER_SCRIPT), "--", str(request_path.resolve())],
         capture_output=True,
         text=True,
@@ -192,7 +191,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--unit-type", help="passed on to the repair command the verdict names")
     parser.add_argument("--frames", type=int, default=FRAMES, help="evenly spaced frames per clip, before the worst-stretch, lowest and highest frames are added")
     parser.add_argument("--size", type=int, default=SIZE, help="tile size in pixels; the vanilla limit is scaled to it")
+    heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
+    heavy_job.apply(args)
     source, out = args.source.resolve(), args.out.resolve()
     target, clips = unit_target(source, args.stem, args.frames)
     results = render(target, clips, out, args.size)

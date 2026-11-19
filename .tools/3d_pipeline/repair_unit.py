@@ -36,7 +36,6 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
-import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -47,7 +46,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import check_unit_files
-from lib import pdx_deform, pdx_ground, pdx_motion, stage_verdict, stretch_smooth
+from lib import heavy_job, pdx_deform, pdx_ground, pdx_motion, stage_verdict, stretch_smooth
 from review_unit import find_blender
 
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "repair_mesh.py"
@@ -121,7 +120,7 @@ def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max
         }
         request_path = out / "repair_request.json"
         request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-        completed = subprocess.run(
+        completed = heavy_job.run(
             [str(find_blender()), "-b", "--python", str(BLENDER_SCRIPT), "--", str(request_path.resolve())],
             capture_output=True,
             text=True,
@@ -159,7 +158,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--unit-type", help="a type from config/unit_types.json, for the checks' group and rider rule")
     parser.add_argument("--max-hole-edges", type=int, default=16)
     parser.add_argument("--locked-bones", nargs="*", default=[], help="bones the `stretch` repair never smooths into or out of (a held weapon)")
+    heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
+    heavy_job.apply(args)
     unit_type = check_unit_files.load_unit_types().get(args.unit_type) if args.unit_type else None
     args.out.mkdir(parents=True, exist_ok=True)
     report = repair(args.folder, args.out, args.repairs, args.stem, args.max_hole_edges, unit_type, args.locked_bones)

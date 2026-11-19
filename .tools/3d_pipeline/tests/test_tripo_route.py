@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import os
 import subprocess
@@ -124,7 +126,7 @@ class IntakeRecords(unittest.TestCase):
         def run(command, **_options):
             return fake_prepare_output(Path(command[command.index("--out-dir") + 1]), command)
 
-        with mock.patch.object(tripo_intake.subprocess, "run", side_effect=run):
+        with mock.patch.object(tripo_intake.heavy_job.subprocess, "run", side_effect=run):
             return tripo_intake.run_intake(tripo_spec(), self.inbox, **kwargs)
 
     def test_the_receipt_records_name_size_and_hash_of_each_file(self) -> None:
@@ -136,6 +138,30 @@ class IntakeRecords(unittest.TestCase):
         self.assertEqual(source["bytes"], len(b"tripo rigged export"))
         self.assertRegex(source["sha256"], "^[0-9A-F]{64}$")
         self.assertEqual(receipt["task_id"], f"tripo-{source['sha256'].lower()[:12]}")
+
+    def intake_with_report(self, **changes) -> tuple:
+        def run(command, **_options):
+            done = fake_prepare_output(Path(command[command.index("--out-dir") + 1]), command)
+            report = json.loads(done.stdout.splitlines()[-1])
+            report.update(changes)
+            return subprocess.CompletedProcess(command, 0, "\n".join(["Blender noise", json.dumps(report, sort_keys=True), ""]), "")
+
+        printed = io.StringIO()
+        with mock.patch.object(tripo_intake.heavy_job.subprocess, "run", side_effect=run), contextlib.redirect_stderr(printed):
+            result = tripo_intake.run_intake(tripo_spec(), self.inbox)
+        return result, printed.getvalue()
+
+    def test_the_intake_says_in_one_line_which_extra_joints_went_and_how_many_weights_moved(self) -> None:
+        result, printed = self.intake_with_report(extra_joints={"dropped": ["neutral_bone"], "weights_moved": 3})
+        self.assertIn("extra joints dropped: neutral_bone (1 joint, 3 vertex weights moved to the nearest kit bone)", printed.splitlines())
+        self.assertEqual(result["extra_joints"], {"dropped": ["neutral_bone"], "weights_moved": 3})
+        receipt = json.loads((self.job / "provider" / "tripo_intake.json").read_text(encoding="utf-8"))
+        self.assertEqual(receipt["extra_joints"]["dropped"], ["neutral_bone"])
+
+    def test_a_rig_with_no_extra_joint_says_so(self) -> None:
+        result, printed = self.intake_with_report(extra_joints={"dropped": [], "weights_moved": 0})
+        self.assertIn("extra joints dropped: none", printed)
+        self.assertEqual(result["extra_joints"], {"dropped": [], "weights_moved": 0})
 
     def test_manifests_and_tasks_are_what_the_download_step_recognises(self) -> None:
         self.intake()

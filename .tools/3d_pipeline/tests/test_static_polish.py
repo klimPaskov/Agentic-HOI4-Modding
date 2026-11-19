@@ -170,7 +170,7 @@ class ReviewLightingTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 static_sheets.close_review(Path("model"), "vehicle", Path("out"), [])
         self.assertIs(render.call_args.kwargs.get("sun_shadow"), False)
-        with mock.patch.object(static_sheets.subprocess, "run", side_effect=SystemExit("stop")), mock.patch.object(static_sheets.review_unit, "find_blender", return_value="blender"), \
+        with mock.patch.object(static_sheets.heavy_job.subprocess, "run", side_effect=SystemExit("stop")), mock.patch.object(static_sheets.review_unit, "find_blender", return_value="blender"), \
                 mock.patch.object(static_sheets.review_unit, "diffuse_maps", return_value={}), mock.patch.object(static_sheets.review_unit, "specular_maps", return_value={}):
             written = {}
 
