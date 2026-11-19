@@ -197,8 +197,17 @@ class BlenderStageWiring(unittest.TestCase):
     def test_the_stage_drops_the_extra_joints_and_reports_them(self) -> None:
         self.assertIn("tripo_extra_joints.find_extra_joints(parents, set(keep), animated)", self.SOURCE)
         self.assertIn("tripo_extra_joints.move_extra_weights(", self.SOURCE)
-        self.assertIn('"extra_joints": {"dropped": extras, "weights_moved": weights_moved}', self.SOURCE)
+        self.assertIn('"extra_joints": {"dropped": extra_joints, "weights_moved": weights_moved}', self.SOURCE)
         self.assertNotIn('raise SystemExit(f"Bone {bone.name} has no kept ancestor")', self.SOURCE)
+
+    def test_the_report_names_the_extra_joints_not_the_per_step_record(self) -> None:
+        """`extras` in main() is the per-step record of the role clips (a dict). The first Blender run of this change reported that dict as the
+        dropped joints, because the joints had been bound to the same name."""
+
+        main = next(node for node in ast.parse(self.SOURCE).body if isinstance(node, ast.FunctionDef) and node.name == "main")
+        bound = [ast.unparse(target) for node in ast.walk(main) if isinstance(node, ast.Assign) for target in node.targets]
+        self.assertEqual(bound.count("extras"), 1)
+        self.assertIn("(keep, merge_into, dropped, extra_joints)", bound)
 
     def test_the_kit_bones_come_from_the_shared_module(self) -> None:
         tree = ast.parse(self.SOURCE)

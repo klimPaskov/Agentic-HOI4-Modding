@@ -1500,9 +1500,10 @@ def main():
 
     # Bones: keep the kit's, merge the rest into their nearest kept parent, then rename.
     bones_before = len(armature.data.bones)
-    keep, merge_into, dropped, extras = merge_plan(armature)
+    # `extras` below is the per-step record of the role clips, so the extra joints (lib/tripo_extra_joints.py) keep their own name.
+    keep, merge_into, dropped, extra_joints = merge_plan(armature)
     all_weights = {obj.name: read_weights(obj) for obj in meshes}
-    weights_moved = move_extra_weights(armature, meshes, all_weights, keep, extras)
+    weights_moved = move_extra_weights(armature, meshes, all_weights, keep, extra_joints)
     clip_names, roles = resolve_roles(roles)
     bone_names = drop_and_rename(armature, keep, dropped)
     weapon_summary, weapon_points = bind_meshes(meshes, all_weights, bone_names, merge_into, rigid_for)
@@ -1540,7 +1541,7 @@ def main():
         "bones_after": len(armature.data.bones),
         "bone_names": [b.name for b in armature.data.bones],
         "dropped_bones": len(dropped),
-        "extra_joints": {"dropped": extras, "weights_moved": weights_moved},
+        "extra_joints": {"dropped": extra_joints, "weights_moved": weights_moved},
         "weapon": weapon_summary,
         "weapon_vertices_separated_from_body": separated,
         "part_triangles": decimated,
