@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "013f37e5ea925ae1f5511bdd3f1e0f64501bcff4",
+  "generated_for_revision": "dd028052f05baee8020f83d80dd78ad43f065a14",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -6507,8 +6507,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
-          "size": 9861
+          "sha256": "08e80e90344d20016282054f1c5c0a6678499d48dbd05dc44f3947153dee9893",
+          "size": 9936
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -11961,8 +11961,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
-          "size": 9861
+          "sha256": "08e80e90344d20016282054f1c5c0a6678499d48dbd05dc44f3947153dee9893",
+          "size": 9936
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -15148,8 +15148,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/map_read.py",
-          "sha256": "794189f5b98fbe05a389389f0edd5d4913e7867f79f984e42ee9927dfa09958d",
-          "size": 10224
+          "sha256": "7a74302afe03abb7ae1c44578de4f48a7b3aef68016bfd5e1befe0ff8d4de118",
+          "size": 13633
         },
         {
           "path": ".tools/3d_pipeline/lib/mcp_stdio.py",
@@ -15235,6 +15235,11 @@
           "path": ".tools/3d_pipeline/lib/texture_lineage.py",
           "sha256": "ea7be0b25f7dec1720cc7db41fe2d7e44e2eca45e599eab1907c3c14d7c47423",
           "size": 11411
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/texture_look.py",
+          "sha256": "6758e72c377874ebc3f9e001d894bb7c87ce648944f8a7244e96151c196ab2c5",
+          "size": 3106
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo.py",
@@ -15338,8 +15343,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_strike.py",
-          "sha256": "b5176fd6dc6fc72c693381de4f66de87fc04965781538237e2ec34735915d114",
-          "size": 7947
+          "sha256": "5737f87b400c8d7ff62d8331ee452f47fd6b7913c730c084e0e6328d3d53e704",
+          "size": 8258
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_swing.py",
@@ -15408,8 +15413,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "f6af99e73f0feade8fdfad92a808e4498e3e53d9508b2ac12e526aaf26992404",
-          "size": 196429
+          "sha256": "34df91240c5b3fce4db800a5520b31fca5ff513825f1accfdcee068dae1f9d7a",
+          "size": 197682
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16162,6 +16167,11 @@
           "size": 2962
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_map_read_humanoid.py",
+          "sha256": "8552a542ea1980ddeccf9540f215e8a1341444a589eea0e45cdb04d8c0d8885f",
+          "size": 7371
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_material_visibility_probe.py",
           "sha256": "76ffebc10b1aa22b8e114b04eab161d23d7eb95fce3070a4054b19080087fc69",
           "size": 5008
@@ -16578,13 +16588,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/pose_check.py",
-          "sha256": "7a84fd64cdb9df9e01caf3b8c2ca8f3714a67731c9476e2f2891fe4dd479ef6f",
-          "size": 18851
+          "sha256": "6faaebdfb6557ec641cf731f89d36cfdcccf8b40e9d0f74638d7e638294b9aaf",
+          "size": 21862
         },
         {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
-          "sha256": "80316fa4d4609525a94e2f7bb19974e23fd667702a287ba7f8b66fae6fb6638e",
-          "size": 81232
+          "sha256": "ab8ed904705e8ea0cc74b2692e8e5fc8e0f3388a31b0065e422a28d431463ad1",
+          "size": 82034
         },
         {
           "path": ".tools/3d_pipeline/tripo/shield_stage.py",
@@ -16618,8 +16628,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "4f482edc9102987a443d540157d126733610ff9c55f82479063cb678dcc7611a",
-          "size": 79299
+          "sha256": "a1eb957139b2d3ad2e6ce4d2784e71b5923161b30f4d67ab519e08d8562dc29b",
+          "size": 80159
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
@@ -16633,8 +16643,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "074db15b476b28c0a2ce0fe2049f7a1179dcfac75d1a4900d2b916325da41a4e",
-          "size": 24951
+          "sha256": "2bfbdb9b09b323e1abbb1aedf64363a887536285afd99ebb45421741444fa21c",
+          "size": 25621
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
@@ -24438,8 +24448,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
-          "size": 9861
+          "sha256": "08e80e90344d20016282054f1c5c0a6678499d48dbd05dc44f3947153dee9893",
+          "size": 9936
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -29931,8 +29941,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
-          "size": 9861
+          "sha256": "08e80e90344d20016282054f1c5c0a6678499d48dbd05dc44f3947153dee9893",
+          "size": 9936
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
@@ -35424,8 +35434,8 @@
         },
         {
           "path": ".claude/skills/hoi4-imagegen/SKILL.md",
-          "sha256": "b11b0dc2c66d5f9069e74313acc3e677fa942422c22fd48bb1a26c85d057c974",
-          "size": 9861
+          "sha256": "08e80e90344d20016282054f1c5c0a6678499d48dbd05dc44f3947153dee9893",
+          "size": 9936
         },
         {
           "path": ".claude/skills/hoi4-improvement-loop/SKILL.md",
