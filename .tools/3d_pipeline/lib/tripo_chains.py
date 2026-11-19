@@ -1192,11 +1192,11 @@ def clearance_radii(joints: np.ndarray, capsules: Sequence[Tuple[np.ndarray, np.
 # single beat is stronger, and the defend wraps its wings forward round the body (`wrap`, degrees of forward swing, ramped in and out with
 # the guard, lib/tripo_guard.ramp) so the guard reads from the game camera.
 WING_ROLES: Dict[str, Dict[str, float]] = {
-    "idle": {"fold": 1.0, "flap": 6.0, "beats": 1, "lower": 40.0},
+    "idle": {"fold": 1.0, "flap": 3.0, "beats": 1, "lower": 40.0},  # a 6 degree breath left the move only 2.5 times the idle (TRIPO-WING-IDLE-MOVE)
     "move": {"fold": 0.5, "flap": 19.0, "beats": 2, "steps": 1.0},  # under the edge-on rule's 20, which a move without a face turn would fail
     "attack": {"fold": 0.0, "flap": 40.0, "beats": 0, "beat": 1.0, "face": 1.0},
-    "defend": {"fold": 0.0, "flap": 4.0, "beats": 1, "wrap": 45.0, "lower": 20.0},
-    "retreat": {"fold": 0.3, "flap": 35.0, "beats": 4, "face": 1.0},
+    "defend": {"fold": 0.0, "flap": 4.0, "beats": 1, "wrap": 30.0, "lower": 20.0},  # 45 put the exported defend at 64 on the map's screen
+    "retreat": {"fold": 0.3, "flap": 25.0, "beats": 4, "face": 1.0},  # faster beats; 35 degrees hid 11.9% of the limbs from the side
     "death": {"fold": 0.0, "fold_end": 1.0, "flap": 0.0, "beats": 0, "droop": 1.0, "upright_sweep": 1.0, "fold_by_fall": 1.0, "knee_guard": 1.0},
 }
 WING_DEFAULT_ROLE = "idle"
