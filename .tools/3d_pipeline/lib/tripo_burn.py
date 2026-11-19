@@ -44,6 +44,15 @@ HEAP_BONE = "Ash"
 LOCATOR = "burn"
 LOCATOR_BONE = "Spine02"
 HEAP_RADIUS_HIPS = 1.6  # the heap's radius, in hip-to-hip distances (about the standing footprint)
+HEAP_RINGS, HEAP_SIDES = 6, 24  # a smooth dome, not a polygon
+HEAP_LUMP = 0.08  # its gentle lumps, a share of the radius and height
+ASH_MARK = "_ash_"  # the heap's maps are <stem>_ash_diffuse.dds and so on (blender/review_render.py keeps a stream's own maps by it)
+ASH_TEXTURE_SIZE = 64
+ASH_COLOUR = (34.0, 32.0, 31.0)  # dark grey to black ash
+EMBER_COLOUR = (150.0, 52.0, 18.0)  # a faint ember tint
+EMBER_SHARE = 0.04  # of the texels
+FLAT_NORMAL_RGBA = (0, 128, 0, 128)  # the packed layout of the kit's normal maps: x in alpha, y in green, blue black (blue is emissive)
+ASH_SPECULAR_RGBA = (0, 16, 0, 24)  # the kit's packed layout (pack_pdx_material.py): low specular level, not metal, matte
 HEAP_HEIGHT_SHARE = 0.35  # its height, a share of its radius
 DARK_PERCENTILE = 3.0  # the heap takes the UVs of the body's darkest 3% of vertices
 GROUND_TOLERANCE = 0.01  # BURN-GROUNDED: share of the height off or under the ground
@@ -70,24 +79,27 @@ def smoothstep(x: np.ndarray) -> np.ndarray:
 
 # ---- the heap's shape --------------------------------------------------------------------------------------------------
 
-def heap_geometry(radius: float, height: float, rings: int = 3, sides: int = 10, seed: int = 7):
-    """(points (V, 3) with the base at y 0 round the origin, triangles (T, 3) wound outward, closed with a flat base): a low lumpy mound."""
+def heap_geometry(radius: float, height: float, rings: int = HEAP_RINGS, sides: int = HEAP_SIDES, seed: int = 7):
+    """(points (V, 3) with the base at y 0 round the origin, triangles (T, 3) wound outward, closed with a flat base): a soft, low, rounded
+    mound. Its profile is a smooth dome, `height * (1 - r^2)^1.5`, with gentle lumps (`HEAP_LUMP`) that fade to the rim, so its outline has
+    no corners: a fresh review read the first heap, three rings of ten points, as a hard seven-sided slab."""
 
     rng = np.random.default_rng(seed)
+    lumps = rng.uniform(0.0, 2.0 * math.pi, 3)
     points = [[0.0, height, 0.0]]
     for ring in range(1, rings + 1):
         share = ring / rings
         for side in range(sides):
-            angle = 2.0 * math.pi * (side + 0.5 * (ring % 2)) / sides
-            r = radius * share * (1.0 + 0.15 * rng.uniform(-1.0, 1.0))
-            y = height * (1.0 - share ** 1.6) * (1.0 + 0.2 * rng.uniform(-1.0, 1.0)) if ring < rings else 0.0
+            angle = 2.0 * math.pi * side / sides
+            wobble = 1.0 + HEAP_LUMP * sum(math.sin(k * angle + phase) for k, phase in zip((2, 3, 5), lumps)) / 3.0
+            r = radius * share * (1.0 + 0.5 * HEAP_LUMP * math.sin(3 * angle + lumps[0])) if ring < rings else radius * (1.0 + 0.5 * HEAP_LUMP * math.sin(3 * angle + lumps[0]))
+            y = height * (1.0 - share * share) ** 1.5 * wobble if ring < rings else 0.0
             points.append([r * math.cos(angle), y, r * math.sin(angle)])
     base = len(points)
     points.append([0.0, 0.0, 0.0])
     triangles = []
     for side in range(sides):
-        a, b = 1 + side, 1 + (side + 1) % sides
-        triangles.append([0, b, a])
+        triangles.append([0, 1 + (side + 1) % sides, 1 + side])
     for ring in range(1, rings):
         inner, outer = 1 + (ring - 1) * sides, 1 + ring * sides
         for side in range(sides):
@@ -104,6 +116,34 @@ def heap_geometry(radius: float, height: float, rings: int = 3, sides: int = 10,
         if float(np.cross(b - a, c - a) @ ((a + b + c) / 3.0 - centre)) < 0:
             triangles[t] = triangles[t][[0, 2, 1]]
     return points, triangles
+
+
+def ash_textures(folder: Path, stem: str, seed: int = 5) -> Dict[str, str]:
+    """Write the heap's own maps beside the mesh (DXT5 with mips, as the kit's unit textures): diffuse dark grey to black ash with a faint
+    ember tint (`ASH_COLOUR`, `EMBER_COLOUR`, `EMBER_SHARE`), a flat normal map and a matte, non-metal specular map. Returns their names."""
+
+    from PIL import Image
+
+    from . import model_dds
+
+    rng = np.random.default_rng(seed)
+    size = ASH_TEXTURE_SIZE
+    noise = rng.normal(0.0, 1.0, (size, size))
+    for _ in range(3):  # soft grain, wrapped so the texture tiles
+        noise = (noise + np.roll(noise, 1, 0) + np.roll(noise, -1, 0) + np.roll(noise, 1, 1) + np.roll(noise, -1, 1)) / 5.0
+    noise = (noise - noise.min()) / max(float(np.ptp(noise)), 1e-9)
+    colour = np.asarray(ASH_COLOUR, float)[None, None, :] * (0.55 + 0.9 * noise[..., None])
+    embers = noise > 1.0 - EMBER_SHARE
+    colour[embers] = colour[embers] * 0.5 + np.asarray(EMBER_COLOUR, float) * 0.5
+    rgba = np.dstack([np.clip(colour, 0, 255), np.full((size, size), 255.0)]).astype(np.uint8)
+    names = {"diffuse": f"{stem}{ASH_MARK}diffuse.dds", "normal": f"{stem}{ASH_MARK}normal.dds", "specular": f"{stem}{ASH_MARK}specular.dds"}
+    flat = np.zeros((size, size, 4), np.uint8)
+    flat[...] = FLAT_NORMAL_RGBA
+    spec = np.zeros((size, size, 4), np.uint8)
+    spec[...] = ASH_SPECULAR_RGBA
+    for key, array in (("diffuse", rgba), ("normal", flat), ("specular", spec)):
+        (Path(folder) / names[key]).write_bytes(model_dds.dxt5_bytes(Image.fromarray(array, "RGBA")))
+    return names
 
 
 def vertex_normals(points: np.ndarray, triangles: np.ndarray) -> np.ndarray:
@@ -139,9 +179,10 @@ def _shape(root: PdxNode) -> PdxNode:
     return next(child for child in obj.children if child.child("mesh") is not None)
 
 
-def add_heap(mesh_path: Path, diffuse: Optional[Path]) -> dict:
-    """Add the heap (its vertices to the first shape, bound to a new `HEAP_BONE` under the hips) and the `LOCATOR` to the `.mesh`, in place.
-    Returns the heap's numbers (bone, bind point, radius, height)."""
+def add_heap(mesh_path: Path, diffuse: Optional[Path] = None) -> dict:
+    """Add the heap to the `.mesh`, in place: its own stream in the first shape, with its own ash material (`ash_textures`, written beside
+    the mesh), bound wholly to a new `HEAP_BONE` under the hips, and the `LOCATOR`. The unit's own maps are not touched (D-86). Returns
+    the heap's numbers (bone, bind point, radius, height). `diffuse` is unused and kept for callers."""
 
     mesh = pdx_deform.load_mesh(mesh_path)
     if HEAP_BONE in mesh.bones:
@@ -159,28 +200,34 @@ def add_heap(mesh_path: Path, diffuse: Optional[Path]) -> dict:
     points, triangles = heap_geometry(radius, HEAP_HEIGHT_SHARE * radius)
     root = read(mesh_path)
     shape = _shape(root)
-    stream = shape.child("mesh")
+    body = shape.child("mesh")
     skeleton = shape.child("skeleton")
-    count = len(stream.properties["p"]) // 3
+    names = ash_textures(Path(mesh_path).parent, Path(mesh_path).stem)
     bound = anchor + HIDE * points
     normals = vertex_normals(points, triangles)
     tangents = np.cross(normals, [0.0, 0.0, 1.0])
     tangents[np.linalg.norm(tangents, axis=1) < 1e-6] = [1.0, 0.0, 0.0]
     tangents = tangents / np.linalg.norm(tangents, axis=1, keepdims=True)
+    uvs = np.c_[points[:, 0] / (2.0 * radius) + 0.5, points[:, 2] / (2.0 * radius) + 0.5] * 2.0  # the ash grain tiles twice across the heap
     index = len(skeleton.children)
-    stream.properties["p"] = list(stream.properties["p"]) + [float(v) for v in bound.ravel()]
-    if "n" in stream.properties:
-        stream.properties["n"] = list(stream.properties["n"]) + [float(v) for v in normals.ravel()]
-    if "ta" in stream.properties:
-        stream.properties["ta"] = list(stream.properties["ta"]) + [float(v) for row in tangents for v in (*row, 1.0)]
-    if "u0" in stream.properties:
-        uvs = dark_uvs(np.asarray(stream.properties["u0"], float).reshape(-1, 2), diffuse, len(points))
-        stream.properties["u0"] = list(stream.properties["u0"]) + [float(v) for v in uvs.ravel()]
-    stream.properties["tri"] = list(stream.properties["tri"]) + [int(count + v) for v in triangles.ravel()]
-    skin = stream.child("skin")
-    per = int(skin.properties["bones"][0])
-    skin.properties["ix"] = list(skin.properties["ix"]) + ([index] + [-1] * (per - 1)) * len(points)
-    skin.properties["w"] = list(skin.properties["w"]) + ([1.0] + [0.0] * (per - 1)) * len(points)
+    per = int(body.child("skin").properties["bones"][0])
+    properties = {"p": [float(v) for v in bound.ravel()]}
+    if "n" in body.properties:
+        properties["n"] = [float(v) for v in normals.ravel()]
+    if "ta" in body.properties:
+        properties["ta"] = [float(v) for row in tangents for v in (*row, 1.0)]
+    if "u0" in body.properties:
+        properties["u0"] = [float(v) for v in uvs.ravel()]
+    properties["tri"] = [int(v) for v in triangles.ravel()]
+    centre = bound.mean(axis=0)
+    properties["boundingsphere"] = [float(centre[0]), float(centre[1]), float(centre[2]), float(np.linalg.norm(bound - centre, axis=1).max())]
+    depth = body.depth
+    stream = PdxNode("mesh", depth, properties, [
+        PdxNode("aabb", depth + 1, {"min": [float(v) for v in bound.min(axis=0)], "max": [float(v) for v in bound.max(axis=0)]}),
+        PdxNode("material", depth + 1, {"shader": ["PdxMeshAdvanced"], "diff": [names["diffuse"]], "n": [names["normal"]], "spec": [names["specular"]]}),
+        PdxNode("skin", depth + 1, {"bones": [per], "ix": ([index] + [-1] * (per - 1)) * len(points), "w": ([1.0] + [0.0] * (per - 1)) * len(points)}),
+    ])
+    shape.children.insert(shape.children.index(skeleton), stream)
     parent_name = mesh.bones[hips]
     skeleton.children.append(PdxNode(HEAP_BONE, skeleton.children[0].depth, {
         "ix": [index], "pa": [int(next(c.properties["ix"][0] for c in skeleton.children if c.name == parent_name))],
@@ -193,7 +240,7 @@ def add_heap(mesh_path: Path, diffuse: Optional[Path]) -> dict:
         locators.children.append(PdxNode(LOCATOR, 2, {"p": [0.0, 0.0, 0.0], "q": [0.0, 0.0, 0.0, 1.0], "pa": [LOCATOR_BONE]}))
     write(mesh_path, root)
     return {"bone": HEAP_BONE, "parent": parent_name, "bind_point": [round(float(v), 4) for v in anchor], "radius": round(radius, 4),
-            "height": round(HEAP_HEIGHT_SHARE * radius, 4), "vertices": len(points), "triangles": len(triangles),
+            "height": round(HEAP_HEIGHT_SHARE * radius, 4), "vertices": len(points), "triangles": len(triangles), "maps": names,
             "locator": LOCATOR if LOCATOR_BONE in mesh.bones else None, "locator_bone": LOCATOR_BONE}
 
 

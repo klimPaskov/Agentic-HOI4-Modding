@@ -1158,7 +1158,7 @@ def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List
         numbers[clip] = {"screen_angle_worst": round(worst, 1), "frame": worst_frame}
         if worst > tripo_chains.SCREEN_MAX:
             out.append(finding("TRIPO-WING-SCREEN", clip, f"a wing rises {worst:.0f} degrees above the screen's level in the game's camera in frame {worst_frame} (limit "
-                               f"{tripo_chains.SCREEN_MAX:g}, the reviewed move's 51 with a tenth added): swung back it stands up as a spike at map size", degrees=round(worst, 1), frame=worst_frame))
+                               f"{tripo_chains.SCREEN_MAX:g}, the highest angle fresh reviews passed, 57.5, with a twentieth added): swung back it stands up as a spike at map size", degrees=round(worst, 1), frame=worst_frame))
     return out, numbers
 
 
@@ -1237,6 +1237,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         found, numbers["gait"] = tripo_loop.loop_findings(mesh, anims)
         findings += found
         found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
+        findings += found
+        found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
         findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found

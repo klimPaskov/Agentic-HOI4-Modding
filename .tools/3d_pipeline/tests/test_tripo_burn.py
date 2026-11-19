@@ -92,6 +92,27 @@ class Burn(WingedBiped):
         self.assertAlmostEqual(numbers["end_scale"], B.END_SCALE, places=3)
         self.assertIn(B.HEAP_BONE, pdx_deform.load_anim(idle).channels, "every clip keys the heap's bone")
 
+    def test_the_heap_is_its_own_stream_with_its_own_ash_maps(self) -> None:
+        self.burnt()
+        shape = B._shape(read(self.mesh_path))
+        streams = [child for child in shape.children if child.name == "mesh"]
+        self.assertEqual(len(streams), 2, "the body's stream is left as it was, the heap gets its own")
+        material = streams[1].child("material").properties
+        for key in ("diff", "n", "spec"):
+            self.assertIn(B.ASH_MARK, material[key][0])
+            self.assertTrue((self.folder / material[key][0]).is_file())
+        from lib import model_dds
+
+        ash = model_dds.decode_top_level((self.folder / material["diff"][0]).read_bytes())[..., :3].astype(float)
+        self.assertLess(float(ash.mean()), 60.0, "dark grey to black")
+        normal = model_dds.decode_top_level((self.folder / material["n"][0]).read_bytes())
+        self.assertEqual(int(normal[..., 2].max()), 0, "no emissive blue")
+
+    def test_the_heap_outline_is_round(self) -> None:
+        points, _triangles = B.heap_geometry(1.0, 0.35)
+        rim = points[np.isclose(points[:, 1], 0.0) & (np.linalg.norm(points[:, [0, 2]], axis=1) > 0.5)]
+        self.assertGreaterEqual(len(rim), 16, "a rounded outline, not a seven-sided slab")
+
     def test_the_heap_is_hidden_in_every_other_clip(self) -> None:
         plan, _death, idle = self.burnt()
         mesh = pdx_deform.load_mesh(self.mesh_path)

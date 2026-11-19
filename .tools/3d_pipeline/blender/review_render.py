@@ -126,12 +126,15 @@ def import_clip(target, path):
 # material names (io_pdx_mesh loaded them beside the mesh), not the shape's body map. Its tread scrolls in a move
 # clip as the game scrolls it, by the entity's `texture_anim_speed` UV units a second.
 SCROLLING = "PdxMeshAdvancedAnim"
+OWN_MAP_MARK = "_ash_"  # lib/tripo_burn.ASH_MARK
 own_maps = {}
 for o in meshes:
     for slot in o.material_slots:
         material = slot.material
-        if material is not None and material.get("shader") == SCROLLING and material.node_tree:
-            found = [n.image for n in material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image]
+        found = [n.image for n in material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image] if material is not None and material.node_tree else []
+        # A stream whose material names its own diffuse map (a burn death's ash heap, lib/tripo_burn.py) keeps it too, not the shape's
+        own_diffuse = any(OWN_MAP_MARK in i.name.lower() for i in found)
+        if material is not None and (material.get("shader") == SCROLLING or own_diffuse) and material.node_tree:
             own_maps[material.name] = {
                 "diffuse": next((i for i in found if "diff" in i.name.lower()), found[0] if found else None),
                 "specular": next((i for i in found if "spec" in i.name.lower()), None),

@@ -228,3 +228,29 @@ def humanoid_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> tuple:
                                         "it reads as the idle at map size"})
     return findings, numbers
 
+
+
+# A humanoid's defend against its attack on the map camera, in pixels at game size: each defend frame's least change against any attack
+# frame, the 90th percentile (`pixel_changes`). Measured on the exported files of the humanoids two fresh reviewers passed at game size
+# (2026-11-19): the orc (orc_k) 407, the ogre (ogre_l) 129, the dwarf (dwarf_f) 508. The limit is the lowest, rounded down. The demon's run
+# demon_c measured 404, yet a fresh review read its defend as its attack: its wings fill most of its silhouette and change between the two
+# clips, so the pixels do not see two bodies posed alike. The pose itself is set by rule there (`"defend_pose": "guard"`, lib/tripo_guard.py).
+MIN_DEFEND_ATTACK_PIXELS = 125.0
+
+
+def alike_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> tuple:
+    """TRIPO-MAP-ALIKE for a humanoid: the defend against the attack on the map camera (`MIN_DEFEND_ATTACK_PIXELS`). Returns (findings, numbers)."""
+
+    by_role = {clip.rsplit("_", 1)[-1]: clip for clip in anims}
+    if "attack" not in by_role or "defend" not in by_role:
+        return [], {}
+    camera = MapCamera(mesh)
+    changes = pixel_changes(camera.frames(anims[by_role["defend"]]), camera.frames(anims[by_role["attack"]]))
+    reading = round(float(np.percentile(changes, READ_PERCENTILE)), 1)
+    numbers = {by_role["defend"]: {"pixels_against_attack": reading, "limit": MIN_DEFEND_ATTACK_PIXELS}}
+    if reading >= MIN_DEFEND_ATTACK_PIXELS:
+        return [], numbers
+    return [{"rule": "TRIPO-MAP-ALIKE", "subject": by_role["defend"], "share": reading, "against": "attack",
+             "message": f"from the map camera the defend changes {reading:.0f} pixels of the attack's silhouette at game size in its "
+                        f"{READ_PERCENTILE:.0f}th percentile frame (at least {MIN_DEFEND_ATTACK_PIXELS:.0f}, the lowest of the humanoids reviewers "
+                        "passed): the guard reads as the attack at map size"}], numbers

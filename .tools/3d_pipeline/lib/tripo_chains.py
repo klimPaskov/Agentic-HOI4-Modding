@@ -1510,7 +1510,9 @@ def capped_rise(direction: np.ndarray, rest_direction: np.ndarray, up: np.ndarra
 # face turn) and the face tilt keep the largest share, in steps of 5%, under which the posed chains' mean direction from the wing's root
 # stays at or under `SCREEN_AIM` on the map's screen. The posed chains carry the flap and the torso's own turn and lean. The share changes by
 # at most `SCREEN_SHARE_RATE` a frame. The wing keeps its size and shape: only how far it swings back changes.
-SCREEN_MAX = 56.0  # the check's bound: the reviewed move's 51 degrees with a tenth added
+# The check's bound: the highest angle fresh reviewers saw at game size without naming the wing, with a twentieth added. The demon's run
+# demon_c (2026-11-19) measured its attack at 57.5 degrees and two fresh D-83 reviews passed the wing (the reviewed move of full2: 51).
+SCREEN_MAX = 60.0
 # The pose aims at the reviewed move's own 51 degrees, under the check's bound: the export's later steps (the shoulder ease, the snap easing,
 # the resample to 30 frames a second) still turn the upper spine that carries the wing.
 SCREEN_AIM = 51.0
