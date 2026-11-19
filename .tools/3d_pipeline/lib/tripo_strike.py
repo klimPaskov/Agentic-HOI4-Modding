@@ -32,7 +32,10 @@ without Blender (the share of one clip's map-camera silhouette that the other ne
 reports it (`map_read`, against the idle and the defend), but it does not separate the clips the reviewers did: zombie_o's attack changes 0.34 of
 its defend's silhouette and 0.41 of its idle's, more than the ogre_l attack that reads (0.20 and 0.28), because the lunge's step and its arms held
 out change the outline while nothing in it strikes. Against the attack's own first frame the zombie reads 0.17 and the ogre 0.22. So no limit is
-taken from it: what the map-size viewer misses is the strike, which the hand's travel and speed measure.
+taken from that share. Counted in pixels at game size instead (`map_read.read_pixels`), the clips separate: TRIPO-MAP-READ
+(`map_read.humanoid_findings`) holds a humanoid's attack and defend to the lowest readings of the humanoids reviewers passed, and zombie_w's
+attack and defend, read as its idle by two reviewers (2026-11-18), fail it. The strike stays its own check: a clip can change its outline
+with no blow.
 """
 
 from __future__ import annotations

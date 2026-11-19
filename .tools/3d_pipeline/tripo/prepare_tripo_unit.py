@@ -104,6 +104,9 @@ def parse_args():
     parser.add_argument("--arm-level", nargs="*", default=[], metavar="ROLE",
                         help="in these role clips bring the hands to chest height with one constant rotation of both upper arms (lib/tripo_arms.py): "
                         "Tripo's text-to-motion attacks keep the hands over the head and hide it")
+    parser.add_argument("--arm-level-high", nargs="*", default=[], metavar="ROLE",
+                        help="as --arm-level, but only for a clip whose hands are high as cut (it fails TRIPO-HANDS-HIGH, lib/tripo_arms.hands_high): "
+                        "an unarmed reaching walk that holds the hands over the head")
     # Default 0.85: chest height (0) read as dangling arms on the zombie; 0.85 of the way from chest to shoulder gives the arms straight forward
     # at shoulder height, the classic zombie reach.
     parser.add_argument("--arm-level-target", type=float, default=0.85, help="the hands' target height for --arm-level: 0 halfway between shoulders and hips (chest), 1 shoulder height")
@@ -1094,7 +1097,7 @@ def turned_hand_heights(armature, frames, sample, arm_quaternions, chest, angles
     return out / len(sample)
 
 
-def level_arms(armature, action, up=2, target_share=0.0):
+def level_arms(armature, action, up=2, target_share=0.0, only_when_high=False):
     """Solve and apply the arm-level rotation to the role clip `action` (see lib/tripo_arms.py). Returns what was done.
 
     Both upper arms (LeftArm, RightArm) get the same constant additive rotation, about the bone-local axis that moves the hands up
@@ -1125,6 +1128,9 @@ def level_arms(armature, action, up=2, target_share=0.0):
     reach = tripo_arms.reach_frames(hand_mid, track["Hips"], front)
     chest = tripo_arms.chest_height(shoulder_mid, track["Hips"], up, target_share)
     before = arm_levels(armature, frames, reach, front, standing, up, target_share)
+    if only_when_high and not tripo_arms.hands_high(before):
+        # --arm-level-high: a gait whose hands stay down keeps its arms
+        return {"applied": False, "why": "the hands are not high (TRIPO-HANDS-HIGH passes)", "before": {k: round(v, 3) for k, v in before.items()}}
     axes = [(1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0)]
     sample = reach[:: max(1, len(reach) // 12)]
 
@@ -1145,7 +1151,7 @@ def level_arms(armature, action, up=2, target_share=0.0):
     scene.frame_set(start)
     after = arm_levels(armature, frames, reach, front, standing, up, target_share)
     return {
-        "axis": axis_index, "signs": [float(v) for v in signs], "degrees": round(math.degrees(angle), 1), "error_left": round(left, 4),
+        "applied": True, "axis": axis_index, "signs": [float(v) for v in signs], "degrees": round(math.degrees(angle), 1), "error_left": round(left, 4),
         "reach_frames": [int(frames[i]) for i in (reach[0], reach[-1])], "before": {k: round(v, 3) for k, v in before.items()},
         "after": {k: round(v, 3) for k, v in after.items()},
     }
@@ -1447,6 +1453,8 @@ def export_role(armature, body, args, role, clip, trims, stage, extras, trims_en
         action, trimmed = trimmed_copy(action, int(trims_end[role]), exact=True)
     if role in args.arm_level:
         extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target)
+    elif role in args.arm_level_high:
+        extras["arm_level"][role] = level_arms(armature, action, target_share=args.arm_level_target, only_when_high=True)
     if role in args.untwist:
         # Before the settle, so the clip settles back to its untwisted first pose.
         extras["untwist"][role] = untwist_waist(armature, action, role, body)

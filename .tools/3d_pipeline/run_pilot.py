@@ -1407,6 +1407,26 @@ def _apply_runtime_diffuse_grade(
     return textures
 
 
+def check_diffuse_look(job: Path, provider_sources: Dict[str, str], textures: Dict[str, Any]) -> Dict[str, Any]:
+    """Refuse a Tripo unit whose runtime diffuse differs from the generator's export by a global colour transform (`lib/texture_look.py`).
+
+    A model's look comes from its picture and the generator's texture. A tint, filter or recolour over that texture is never the way to change
+    it: the model is regenerated. The numbers go into the texture report (`diffuse_look`)."""
+
+    from lib import texture_look
+
+    source_rel = provider_sources.get("diffuse")
+    conversion = next((item for item in textures.get("conversions") or [] if item.get("image") == "texture_0" and item.get("png")), None)
+    if not source_rel or conversion is None or not (job / source_rel).is_file() or not (job / conversion["png"]).is_file():
+        return textures
+    numbers = texture_look.global_transform(job / source_rel, job / conversion["png"])
+    textures["diffuse_look"] = {"source": source_rel, "runtime": conversion["png"], **numbers}
+    reason = texture_look.refusal(numbers)
+    if reason:
+        raise RuntimeError(reason)
+    return textures
+
+
 def compress_runtime_textures(job: Path, spec: Dict[str, Any], textures: Dict[str, Any]) -> Dict[str, Any]:
     """Rewrite each runtime DDS as DXT5 with a full mip chain, the format vanilla units ship.
 
@@ -1534,6 +1554,8 @@ def finalize_pdx_runtime_textures(
                 "alpha": "source_normal_green_tangent_y",
             },
         )
+    if uses_tripo(spec):
+        textures = check_diffuse_look(job, provider_sources, textures)
     textures = compress_runtime_textures(job, spec, textures)
     report = job / "blender" / "reports" / "textures_dds.json"
     textures["runtime_texture_sources"] = provider_sources
