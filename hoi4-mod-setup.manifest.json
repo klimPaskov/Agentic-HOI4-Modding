@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "349186ec71af99ae2b2bef642156c87bffcd0493",
+  "generated_for_revision": "013f37e5ea925ae1f5511bdd3f1e0f64501bcff4",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1787,8 +1787,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "1ff2629bc4a170b68353f0b1e5e280fc403afcb65f9612bbc11148c0df2369d2",
-          "size": 6645
+          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
+          "size": 6936
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -1802,8 +1802,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "da2e9f49dc920e7797bb1c7000d96e593b6ea2187ab2aa0b8a480b56f5894f8d",
-          "size": 76776
+          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
+          "size": 76796
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -7241,8 +7241,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "1ff2629bc4a170b68353f0b1e5e280fc403afcb65f9612bbc11148c0df2369d2",
-          "size": 6645
+          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
+          "size": 6936
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -7256,8 +7256,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "da2e9f49dc920e7797bb1c7000d96e593b6ea2187ab2aa0b8a480b56f5894f8d",
-          "size": 76776
+          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
+          "size": 76796
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -14833,8 +14833,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "cbe685fe00ae79da8d7fc088fb9ef2b558f1d4419652abcc2fa6193925690d7b",
-          "size": 16081
+          "sha256": "0fbd129703da32873a2b2d3a9a5b2fac422a5e6c16145aab3daa74e727ba9221",
+          "size": 17102
         },
         {
           "path": ".tools/3d_pipeline/adapter/anim_frame_range.py",
@@ -15013,13 +15013,13 @@
         },
         {
           "path": ".tools/3d_pipeline/blender_client.py",
-          "sha256": "7d1e0f67462738c8f910432bb32a2247ade4300b1aff1ee4500cc35cb2e77feb",
-          "size": 35626
+          "sha256": "e85716b914fa15b71d9d4071d7230f5b03c44f1dd9aef72b5c3f182edb3e2e54",
+          "size": 35960
         },
         {
           "path": ".tools/3d_pipeline/bootstrap_3d_workflow.py",
-          "sha256": "73009cc14e4e27648dddb7e6543ec88e9c4c407cf8a11227829b12af0eb30610",
-          "size": 76076
+          "sha256": "7fcfbf3dd255e8c9e7984e8657487a3fab0091c1032eaf79b3ab473fb35fecfd",
+          "size": 78650
         },
         {
           "path": ".tools/3d_pipeline/build_io_pdx_py313_compat.py",
@@ -15043,8 +15043,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_holes.py",
-          "sha256": "6e29b93e884953e455b20a64a9cc485c6a8f4fa64cae150efa7c828ef363959f",
-          "size": 12129
+          "sha256": "5d201c08da3441a283ca32f6f456a8d265a004cfd2e6c5037882109e71e03bbb",
+          "size": 12182
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
@@ -15093,8 +15093,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/unit_types.json",
-          "sha256": "5a18c4fed43551e6349911a0a7be95f5b67489ba0cf400ff5c9b291a93e8956d",
-          "size": 18891
+          "sha256": "6372528373553f9cb4436fc2c18b4f113cb1a888e3fdfdcca78d313dc1a5bb23",
+          "size": 20753
         },
         {
           "path": ".tools/3d_pipeline/config/vanilla_gloss.json",
@@ -15108,13 +15108,13 @@
         },
         {
           "path": ".tools/3d_pipeline/fit_prop.py",
-          "sha256": "ba306dc69596453d54954467d7cbd0432648db9e2ad188e25ecd5693d0505857",
-          "size": 12034
+          "sha256": "d8591f36b1a2f70f67387a99db1496acd8705d9f9320039352a7f96c8086eae2",
+          "size": 12087
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
-          "sha256": "98320f4a6a68ecef4578b44ec3d2528f00a52890e7fec5bfb25dffe9426cc74c",
-          "size": 21201
+          "sha256": "1edeee12bb442a78e5b0da153ce4b5d2055d622c84a5fb972cc14c2fefe02788",
+          "size": 22877
         },
         {
           "path": ".tools/3d_pipeline/lib/__init__.py",
@@ -15140,6 +15140,11 @@
           "path": ".tools/3d_pipeline/lib/glb_root.py",
           "sha256": "d17ed7334e433ffebbc8f913cdf181b889aa4fdd2b1695d4edc606880345f84f",
           "size": 4166
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/heavy_job.py",
+          "sha256": "15265324f21be4adbd4a5f1bb5fa77c4ef08407323371a01f07c6c8aea596401",
+          "size": 11103
         },
         {
           "path": ".tools/3d_pipeline/lib/map_read.py",
@@ -15267,6 +15272,11 @@
           "size": 7979
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_extra_joints.py",
+          "sha256": "fcc91de94e4a13d3a13fc55a75a46e54e3b6533ba48ac3bd6ac6fb796ef86a4e",
+          "size": 13380
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_fall.py",
           "sha256": "d7798837165c0d7daf22b50119d7f55993343a2bbc87202de9f876a9ba45d30c",
           "size": 20875
@@ -15388,18 +15398,18 @@
         },
         {
           "path": ".tools/3d_pipeline/repair_unit.py",
-          "sha256": "f041c56cb823723a6024a39d6ef42bd98c5c7c8a42e47eed601e8140845b15b1",
-          "size": 9556
+          "sha256": "e9509fa5dde38e121c8a0213b003a861f4d687b42576d721050802f01d4956a2",
+          "size": 9609
         },
         {
           "path": ".tools/3d_pipeline/review_unit.py",
-          "sha256": "65acb0be1bc10b6c398b6bb2f1ca023da4c03661d07e2880b61168bda02ca474",
-          "size": 31820
+          "sha256": "ef393a6c82a75de110ec7c042dbff6b8e5f460dbb788a060966085b57e210ba9",
+          "size": 31873
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "9a22f5404cb6048b8ac9b7f130aaebf02a2805c04184241aedc0d829e39ccad1",
-          "size": 195513
+          "sha256": "f6af99e73f0feade8fdfad92a808e4498e3e53d9508b2ac12e526aaf26992404",
+          "size": 196429
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -15997,6 +16007,11 @@
           "size": 894
         },
         {
+          "path": ".tools/3d_pipeline/tests/rig_glb.py",
+          "sha256": "20a93df2c69a91c1e2ccfe3a190fc5fd5f90f3625b1892b8df91e902865c57cb",
+          "size": 10009
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_action_phase_patch.py",
           "sha256": "58eaea29b09ce425e17a409f3926de442e60b718896c365146b9bd017cae06dd",
           "size": 11831
@@ -16043,8 +16058,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_clip_check.py",
-          "sha256": "0c5cb8666b8fbab9077b6d4dcbdb4181c2368aa39434e29db4521af27e542ffa",
-          "size": 5033
+          "sha256": "7fe1798b7a1c461f66f07631e3906691bb9ef3ba277066a131d59c1c3f675e81",
+          "size": 8092
         },
         {
           "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
@@ -16110,6 +16125,11 @@
           "path": ".tools/3d_pipeline/tests/test_ground_repair.py",
           "sha256": "2d1f73907399910fd5298b60df83db858cf38e4c665e8f03369a03d267bfa204",
           "size": 4858
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_heavy_job.py",
+          "sha256": "d7fb44bcb2495a21210f5d9c8979a0938b92dfd355b01c44453c8639aa6b3b7f",
+          "size": 12642
         },
         {
           "path": ".tools/3d_pipeline/tests/test_humanoid_component_review.py",
@@ -16178,8 +16198,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_optional_motion_contract.py",
-          "sha256": "c60c33ce9049f40d5e7fbadfc0ac03f4c6b1bd8af81a6d3402ee4d0d0316024f",
-          "size": 8684
+          "sha256": "7098f86110cdf631326873abbe1875cb3f470bb83c3d19cd8c71f720a7f9b1a1",
+          "size": 8957
         },
         {
           "path": ".tools/3d_pipeline/tests/test_orphan_image_retention.py",
@@ -16308,8 +16328,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_static_polish.py",
-          "sha256": "0c6edbcee9dc197b768b65ed8f8575afc81ea38fc0be1cf19e4bf805f13c1407",
-          "size": 9997
+          "sha256": "0c467044b1780e25c56e324ae120ca219beb269ba8fb42d71fa111eb1900c4d3",
+          "size": 10007
         },
         {
           "path": ".tools/3d_pipeline/tests/test_stretch_smooth.py",
@@ -16357,6 +16377,11 @@
           "size": 5906
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_extra_joints.py",
+          "sha256": "15ccac9ea41fe6aacdd6df7a89d5d305a281f1ddfc43126d5c35306b0a933236",
+          "size": 12393
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_fall.py",
           "sha256": "ca110334e2c5cb85ed2e7f2d880eec494f087e5ab513cb40ed7fb7bb8c2a1c2b",
           "size": 7996
@@ -16375,6 +16400,11 @@
           "path": ".tools/3d_pipeline/tests/test_tripo_grip.py",
           "sha256": "f46927ca1dd205b422eccb12deb4e099beeb09ce02c0bfee9a6af2b1f7e599fb",
           "size": 13455
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_tripo_job_entry.py",
+          "sha256": "cac3f1fdd9197dcd04329f5240b90ab2fbdd683a1a1089185e997c362ba48bb8",
+          "size": 14342
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_kick.py",
@@ -16403,8 +16433,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
-          "sha256": "8fe5e845069682186510a25d53dc62e0e26e83f73d9945923fb041f76c336241",
-          "size": 32923
+          "sha256": "bce6a1135b1ab648bbac2fb831fce81b792ab3916e4f46764d86cd52813ee12d",
+          "size": 34608
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shape.py",
@@ -16503,8 +16533,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_check.py",
-          "sha256": "d7da46e23c915a8dd90d0ee104d54251fed843da5a79db26713f4c5e782c90c9",
-          "size": 31857
+          "sha256": "fe3f08b922d3f2f6f80768b5fe2351f3298e0ed4a6425dd31f83edd2e6c90e10",
+          "size": 34162
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_frames.py",
@@ -16518,8 +16548,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/colour_compare.py",
-          "sha256": "3fdf6d75336b2f7bc4b66906cce51d33ad9709dff54243b516767283033f77da",
-          "size": 6390
+          "sha256": "cc9e26f4bf56af85fccb232a4c2ba12d3954b0da1499f012be6a198be5291b32",
+          "size": 6458
         },
         {
           "path": ".tools/3d_pipeline/tripo/death_pick.py",
@@ -16553,8 +16583,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
-          "sha256": "8c91072b4206615aee35cbadbd9bff63135b978cb17b9677fc6b151bc05c6b23",
-          "size": 79271
+          "sha256": "80316fa4d4609525a94e2f7bb19974e23fd667702a287ba7f8b66fae6fb6638e",
+          "size": 81232
         },
         {
           "path": ".tools/3d_pipeline/tripo/shield_stage.py",
@@ -16568,8 +16598,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model.py",
-          "sha256": "f9df124f26a6c6c34157476d989c3098e575bc9f0011bbd0bbd0d5843061d75e",
-          "size": 24448
+          "sha256": "91aa8ba3f7a61638030d30667fd3a6159788be55e02a385f9afc14a96c475e97",
+          "size": 24440
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model_blender.py",
@@ -16578,8 +16608,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_sheets.py",
-          "sha256": "e633ae0e8018e3f6eb9e0098391ca3221466f647bd86a48cd63c5c2c127ebeff",
-          "size": 14061
+          "sha256": "585b06053b9fa5dca9fc6252e2c79da7c72bbe2b47f6b23162d595e4cf19f07b",
+          "size": 14129
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_canvas.js",
@@ -16598,13 +16628,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
-          "sha256": "b495cba930da3c2e833507b8a5057ec07ea738ab28aa74c2f96bc306e2cba571",
-          "size": 9536
+          "sha256": "51e050b43dae05fcc7eedf241d3900e99bbeeba8e2fe3155a11345aa4eab9f89",
+          "size": 9589
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "a90e30a192f1c018f211ca502a6d8791ff1ff236b2676859748773d1dae41bc9",
-          "size": 23988
+          "sha256": "074db15b476b28c0a2ce0fe2049f7a1179dcfac75d1a4900d2b916325da41a4e",
+          "size": 24951
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
@@ -19688,8 +19718,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "1ff2629bc4a170b68353f0b1e5e280fc403afcb65f9612bbc11148c0df2369d2",
-          "size": 6645
+          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
+          "size": 6936
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -19703,8 +19733,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "da2e9f49dc920e7797bb1c7000d96e593b6ea2187ab2aa0b8a480b56f5894f8d",
-          "size": 76776
+          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
+          "size": 76796
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -25181,8 +25211,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "1ff2629bc4a170b68353f0b1e5e280fc403afcb65f9612bbc11148c0df2369d2",
-          "size": 6645
+          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
+          "size": 6936
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -25196,8 +25226,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "da2e9f49dc920e7797bb1c7000d96e593b6ea2187ab2aa0b8a480b56f5894f8d",
-          "size": 76776
+          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
+          "size": 76796
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -30674,8 +30704,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "1ff2629bc4a170b68353f0b1e5e280fc403afcb65f9612bbc11148c0df2369d2",
-          "size": 6645
+          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
+          "size": 6936
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -30689,8 +30719,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "da2e9f49dc920e7797bb1c7000d96e593b6ea2187ab2aa0b8a480b56f5894f8d",
-          "size": 76776
+          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
+          "size": 76796
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
