@@ -173,6 +173,22 @@ def loop_arguments(config: Dict[str, Any], wanted: Sequence[str], explicit: Dict
     return arguments, windows
 
 
+def trim_arguments(config: Dict[str, Any]):
+    """(the prepare stage's `--trim` and `--trim-end` arguments, {role: frames} the job cuts itself). `trim` cuts to a loop point,
+    `trim_end` cuts a role at exactly that frame (no loop point is searched): the end of a lunge before the clip's own follow-through, which
+    the settle then blends back to the first pose. Both win over the loop window and the auto trim."""
+
+    explicit = dict(config.get("trim") or {})
+    arguments: List[str] = []
+    for role, frames in explicit.items():
+        arguments += ["--trim", f"{role}={int(frames)}"]
+    for role, frames in (config.get("trim_end") or {}).items():
+        if role not in explicit:
+            arguments += ["--trim-end", f"{role}={int(frames)}"]
+            explicit[role] = frames
+    return arguments, explicit
+
+
 def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path], out_dir: Path, report: Path) -> List[str]:
     """The headless Blender command that makes the base model and one GLB per role."""
 
@@ -193,15 +209,8 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--part-triangles", f"{part}={budget if budget == 'auto' else int(budget)}"]
     if config.get("part_shape_iou") is not None:
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
-    explicit = config.get("trim") or {}
-    for role, frames in explicit.items():
-        command += ["--trim", f"{role}={int(frames)}"]
-    # `trim_end` cuts a role at exactly that frame (no loop point is searched): the end of a lunge before the clip's own follow-through, which
-    # the settle then blends back to the first pose. It wins over the loop window and the auto trim, as `trim` does.
-    ends = {role: frames for role, frames in (config.get("trim_end") or {}).items() if role not in explicit}
-    for role, frames in ends.items():
-        command += ["--trim-end", f"{role}={int(frames)}"]
-    explicit = {**explicit, **ends}
+    trimming, explicit = trim_arguments(config)
+    command += trimming
     # The looped gait (lib/tripo_loop.py): the move and the retreat are cut to their best whole strides and closed with no stop. A job's own trim wins.
     looping, windows = loop_arguments(config, wanted, explicit, roles, files["rigged"])
     command += looping
