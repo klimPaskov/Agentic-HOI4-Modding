@@ -67,6 +67,22 @@ class Step(unittest.TestCase):
                 tripo_intake.refuse_travelling_clips(spec, path)  # over its cap it is refused
 
 
+class RestoreStep(unittest.TestCase):
+    def test_the_provider_step_is_read_forward_and_eased_back_before_the_loop(self) -> None:
+        from lib import tripo_lunge
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "attack.glb"
+            write_glb(path, {"lunge": stepping(0.6)})
+            step = tripo_lunge.provider_step(path)
+        self.assertAlmostEqual(float(step["forward"][-1]), 0.6, places=4)
+        self.assertGreaterEqual(float(step["forward"].min()), -1e-6, "a step toward the rig's facing reads forward")
+        frames = tripo_lunge.step_per_frame(step, 40, 40.0)  # the provider clip lasts one second, as the export here
+        self.assertEqual(float(frames[0]), 0.0)
+        self.assertEqual(float(frames[-1]), 0.0, "the attack ends where it started, so its loop holds")
+        self.assertAlmostEqual(float(frames[:int(40 * (1 - tripo_lunge.RETURN_SHARE))].max()), 0.6, places=2)
+
+
 class GroundStrike(unittest.TestCase):
     def joints(self, step: float, reach: float) -> np.ndarray:
         """(F, 3, 3): Spine02 stepping `step` forward, both hands ahead of it, thrust a further `reach` over frames 8 to 12."""

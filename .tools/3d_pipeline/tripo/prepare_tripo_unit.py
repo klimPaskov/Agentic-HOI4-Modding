@@ -1042,6 +1042,9 @@ def clear_settled_part(armature, body, action, first_frame, last_frame, found):
 
 
 ARM_BONES = ("LeftArm", "RightArm")
+# When the arm level's solve still fails TRIPO-HANDS-HIGH, both arms go this much further down at a time, at most this far (`level_arms`).
+ARM_LOWER_STEP = 2.5
+ARM_LOWER_MAX = 30.0
 TRACKED_JOINTS = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head", "Hips")
 
 
@@ -1142,16 +1145,35 @@ def level_arms(armature, action, up=2, target_share=0.0, only_when_high=False):
     axis = axes[axis_index]
     signs = np.where(slopes[axis_index] >= 0, 1.0, -1.0)
     angle, left = tripo_arms.solve_arm_offset(lambda value: float(np.mean(heights(tuple(signs * value), axis))), tolerance=0.002 * max(standing, 1e-9))
-    for k, name in enumerate(ARM_BONES):
-        curves = rotation_curves(action).get(name)
-        if curves is None:
-            continue
-        offset = Quaternion(axis, float(signs[k] * angle))
-        write_quaternions(curves, [q @ offset for q in key_quaternions(curves)])
-    scene.frame_set(start)
-    after = arm_levels(armature, frames, reach, front, standing, up, target_share)
+    originals = {name: key_quaternions(curves) for name, curves in rotation_curves(action).items() if name in ARM_BONES}
+
+    def apply(value):
+        for k, name in enumerate(ARM_BONES):
+            curves = rotation_curves(action).get(name)
+            if curves is None:
+                continue
+            offset = Quaternion(axis, float(signs[k] * value))
+            write_quaternions(curves, [q @ offset for q in originals[name]])
+        scene.frame_set(start)
+        return arm_levels(armature, frames, reach, front, standing, up, target_share)
+
+    after = apply(angle)
+    lowered = 0.0
+    if tripo_arms.hands_high(after):
+        # The mean at chest height can still leave a hand over the head in more frames than TRIPO-HANDS-HIGH allows: a lunge whose hands
+        # fly up at its end kept 31% of its frames over the head after the solve (the D-94 zombie, run zombie_b). Lower both arms further,
+        # `ARM_LOWER_STEP` at a time up to `ARM_LOWER_MAX`, and take the first angle that passes while the hands stay ahead of the chest.
+        for extra in np.arange(ARM_LOWER_STEP, ARM_LOWER_MAX + 1e-9, ARM_LOWER_STEP):
+            trial = apply(angle - math.radians(float(extra)))
+            if not tripo_arms.hands_high(trial) and trial["forward_in_reach"] >= tripo_arms.MIN_FORWARD_SHARE:
+                after, lowered = trial, float(extra)
+                break
+        else:
+            after = apply(angle)
+    angle -= math.radians(lowered)
     return {
         "applied": True, "axis": axis_index, "signs": [float(v) for v in signs], "degrees": round(math.degrees(angle), 1), "error_left": round(left, 4),
+        "lowered_for_hands_high_degrees": lowered,
         "reach_frames": [int(frames[i]) for i in (reach[0], reach[-1])], "before": {k: round(v, 3) for k, v in before.items()},
         "after": {k: round(v, 3) for k, v in after.items()},
     }

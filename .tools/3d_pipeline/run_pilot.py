@@ -3822,6 +3822,18 @@ def clear_staged_props(job: Path, staged: Path, spec: Dict[str, Any], roles: Lis
         records[name]["staged"] = file_record(staged / name, relative_to=job)
 
 
+def restore_staged_lunges(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """Each role the job's `tripo.lunge` names gets its kept step back on the staged clip, read from the role's provider file
+    (lib/tripo_lunge.py), recorded."""
+
+    from lib import tripo_lunge
+
+    for role in (spec.get("tripo") or {}).get("lunge") or {}:
+        provider = job / "provider" / "downloads" / f"animation_{role}_provider.glb"
+        if role in roles and provider.is_file():
+            records[f"{stem}_{role}.anim"]["lunge"] = tripo_lunge.restore_step(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", provider)
+
+
 def lift_sunk_neck(mesh: Path, anim: Path, role: str, unarmed: bool = False) -> Dict[str, Any]:
     """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
     past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
@@ -4313,6 +4325,8 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             for role in sorted(exports["animations"]):
                 records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role,
                                                                                      unarmed=not weapon_cfg)
+        # A lunge the job keeps (`tripo.lunge`, lib/tripo_lunge.py) gets its step back: the Blender stage retargets every clip in place.
+        restore_staged_lunges(job, staged, stem, spec, exports["animations"], records)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
