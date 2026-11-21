@@ -281,6 +281,13 @@ When no preset reads, make the role's clip with Tripo's text-to-motion (20 credi
 
 Two things that make an attack fail the strike and the map reading, seen on the D-94 zombie (2026-11-21): **Animation stay in Place** strips a lunge's step forward, so the hips do not travel and a lunge counts only its arms (two lunging grabs measured 0.20 and 0.22 of the height at 0.8 and 1.2 a second, against 0.25 and 1.0). And when the idle already holds the arms forward, as a zombie's does, a two-handed grab changes its outline little (169 to 272 px against 300). A third clip that asked for a wind-up with the hands pulled back to the chest, then a hard two-handed thrust, came out weaker still (0.13 at 0.54 a second, 138 px): Tripo did not make the wind-up. Text-to-motion alone has not given this kind of attack.
 
+**A lunging attack keeps its step.** When the attack is a lunge, give it back the step that **Animation stay in Place** removed:
+
+1. Export once more with **Animation stay in Place** off (free, a fresh tab). Name the file `<asset>__travel.glb` and keep it beside the inbox, not in it.
+2. Run `py -3.13 -B .tools/3d_pipeline/tripo/lunge_clip.py <inbox>/<asset>__rigged.glb <asset>__travel.glb --clip "<first words of the lunge>" --out <inbox>/<asset>__rigged.glb --cap 0.6`. It copies that clip's forward step into the in-place file, capped at `--cap` hip heights, and keeps every other clip and the up-and-down motion as they were. The attack's settle brings the hips back to the start before the clip loops.
+3. Add `"lunge": {"attack": 0.6}` to the job's `tripo` block. The intake then allows that clip's travel up to the cap, and for an unarmed unit TRIPO-ATTACK-NO-STRIKE measures the hands against the ground instead of the chest, because the chest moves with them in a lunge. The limits stay 0.25 and 1.0. Measure before the run with `pose_check.py ... --lunge`.
+4. Pick the cap as the smallest that reaches the map reading. On the D-94 zombie (2026-11-21) the sudden lunge stepped 1.23 hip heights. Capped at 0.3 it read 259 px, at 0.6 it read 587 px, and its swell fell from 0.090 to 0.065. Against the chest it struck 0.23 at 0.97 a second, and against the ground 0.47 at 1.41. The lunge with its arms held out and no step that reviewers read as no strike (zombie_o) still measures 0.13 at 0.37 against the ground, so a held pose does not pass this way. Two fresh reviews still decide whether the attack reads as a lunging grab.
+
 ### 8. Intake (free)
 
 ```

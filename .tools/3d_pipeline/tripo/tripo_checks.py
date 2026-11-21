@@ -985,6 +985,16 @@ def advisory_rules(args) -> set:
     return {"TRIPO-GRIP-ENCLOSURE"} if advisory else set()
 
 
+def job_lunges(args) -> bool:
+    """Whether the job keeps its attack's lunge step (`tripo.lunge` names `attack`, tripo/lunge_clip.py): TRIPO-ATTACK-NO-STRIKE then measures
+    an unarmed unit's hands against the ground (lib/tripo_strike.strike_numbers). False without a job."""
+
+    if getattr(args, "jobs_config", None) and getattr(args, "slug", None):
+        job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+        return "attack" in ((job.get("tripo") or {}).get("lunge") or {})
+    return False
+
+
 def shield_bone(args) -> str:
     """The shield's bone: `--shield-bone`, or the job's `tripo.shield` (its `bone`, `Shield` by default). Empty for a unit without a shield."""
 
@@ -1187,7 +1197,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         findings += found
     if not quadruped_checks.is_quadruped(mesh):
         strike_hand = holding_hand(mesh, args.weapon_bone) if args.weapon_bone and args.weapon_bone in mesh.bones else ""
-        found, numbers["strike"] = tripo_strike.strike_findings(mesh, anims, strike_hand)
+        found, numbers["strike"] = tripo_strike.strike_findings(mesh, anims, strike_hand, lunge=job_lunges(args))
         findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)

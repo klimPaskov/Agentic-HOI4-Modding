@@ -129,9 +129,11 @@ class Transfer:
         return pdx_deform.Animation(FRAME_RATE, frames, channels)
 
 
-def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "RightHand", attack: bool = False, unarmed: bool = False) -> dict:
+def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "RightHand", attack: bool = False, unarmed: bool = False,
+            lunge: bool = False) -> dict:
     """The clip's numbers on the mesh (see the module text). An `attack` candidate must also strike (`lib/tripo_strike.py`): the holding
-    `hand`, or for an `unarmed` unit the faster hand, travels and moves fast enough against the chest."""
+    `hand`, or for an `unarmed` unit the faster hand, travels and moves fast enough against the chest (against the ground for an unarmed
+    `lunge` whose step the job keeps)."""
 
     height = max(mesh.height, 1e-6)
     swell = tripo_shoulder.swelling(mesh, anim)
@@ -158,7 +160,7 @@ def measure(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str 
     travel = hips - hips[0]
     travel[:, 1] = 0.0
     out["pelvis_travel"] = round(float(np.linalg.norm(travel, axis=1).max() / height), 3)
-    strike = tripo_strike.strike_numbers(joints, mesh.bones, height, float(anim.fps or FRAME_RATE), "" if unarmed else hand)
+    strike = tripo_strike.strike_numbers(joints, mesh.bones, height, float(anim.fps or FRAME_RATE), "" if unarmed else hand, lunge and unarmed)
     if strike is not None:
         out.update(strike_hand=strike["hand"], strike_travel=strike["travel"], strike_speed=strike["speed"], strikes=strike["strikes"])
     reasons = []
@@ -232,7 +234,7 @@ def pick_attack(report: dict) -> Optional[str]:
 
 def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, hand: str = "RightHand", idle_clip: str = "idle",
           attacks: Optional[Sequence[str]] = None, unarmed: bool = False, gaits: Optional[Sequence[str]] = None,
-          trims: Optional[Dict[str, int]] = None, map_size: bool = False) -> dict:
+          trims: Optional[Dict[str, int]] = None, map_size: bool = False, lunge: bool = False) -> dict:
     doc, _binary = clip_check.load_glb(glb)
     body = next(node.get("name") for node in doc["nodes"] if "mesh" in node and "skin" in node)
     rig = clip_check.Rig(glb, body, None)
@@ -256,9 +258,9 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
             continue
         anim = transfer.animation(tracks, cut(name, end))
         attack = is_attack(name, attacks)
-        raw = measure(mesh, anim, hand, attack, unarmed)
+        raw = measure(mesh, anim, hand, attack, unarmed, lunge and attack)
         routed = route(mesh, anim, idle)
-        after = measure(mesh, routed, hand, attack, unarmed)
+        after = measure(mesh, routed, hand, attack, unarmed, lunge and attack)
         if camera is not None:
             # the map-size reading against the idle (lib/map_read.read_pixels), as Tripo made the clip and after the route's pose rules
             raw["map_pixels"] = map_read.read_pixels(camera.frames(anim), idle_map)
@@ -311,10 +313,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--unarmed", action="store_true", help="the unit holds no weapon: the striking hand is the faster one")
     parser.add_argument("--trim", nargs="*", default=[], metavar="CLIP=FRAMES", help="cut a clip (named by its first words) after FRAMES frames at 24 a second, as the job's tripo.trim")
     parser.add_argument("--map", action="store_true", help="also measure each clip's map-size reading against the idle (lib/map_read.read_pixels, TRIPO-MAP-READ)")
+    parser.add_argument("--lunge", action="store_true", help="the job keeps the attack's lunge step (tripo.lunge, tripo/lunge_clip.py): an unarmed attack's hands are measured against the ground")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
     trims = {pair.rsplit("=", 1)[0]: int(pair.rsplit("=", 1)[1]) for pair in args.trim}
-    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed, args.gait, trims, args.map)
+    result = check(args.glb, args.mesh, args.clips, args.hand, args.idle, args.attack, args.unarmed, args.gait, trims, args.map, args.lunge)
     print_table(result)
     if args.attack:
         print(f"attack pick: {result['attack_pick'] or 'none passes'}")
