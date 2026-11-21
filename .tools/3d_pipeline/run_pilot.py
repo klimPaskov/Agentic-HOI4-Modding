@@ -3871,6 +3871,13 @@ def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any,
     grab_staged_attack(staged, stem, spec, roles, records)
 
 
+def step_and_pose_staged_roles(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), on the staged files."""
+
+    restore_staged_lunges(job, staged, stem, spec, roles, records)
+    pose_staged_roles(staged, stem, spec, roles, records)
+
+
 def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
     """Each shape's mesh streams and their material's texture names, for the registration (lib/unit_registration.mesh_streams)."""
 
@@ -4423,11 +4430,10 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
                 records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role,
                                                                                      unarmed=not weapon_cfg)
         # A lunge the job keeps (`tripo.lunge`, lib/tripo_lunge.py) gets its step back: the Blender stage retargets every clip in place.
-        restore_staged_lunges(job, staged, stem, spec, exports["animations"], records)
-        # A defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands before
-        # the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before the
-        # weights are fitted to the clips.
-        pose_staged_roles(staged, stem, spec, exports["animations"], records)
+        # Then a defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands
+        # before the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before
+        # the weights are fitted to the clips.
+        step_and_pose_staged_roles(job, staged, stem, spec, exports["animations"], records)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
