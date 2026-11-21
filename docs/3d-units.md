@@ -611,7 +611,20 @@ The pose is not fixed yet. An offline search on run 18's files (`tripo/pose_prev
 - The laid neck cannot carry the head clear: bent further forward it curls back toward the chest, and straighter it lies farther out beyond the back.
 - With the wings in other lying poses the death's side search can flip to the other side (+82), its two sides nearly tied, and the wing underneath then holds the body up. Searching the side with the wings in the idle's fold makes the dragon's two sides tie exactly (both lie on the torso), so a fix needs a tie rule too.
 
-What is left to try: lay the wing over the upper flank in stages spread down its chain (each bone a share of the turn) instead of one turn at the root, and give the neck a turn that lays the head forward of the forelegs. Do not spend a run on the death until the offline replay passes TRIPO-DEATH-WING-TENT and every other check.
+A second search tried the three fixes that list pointed to. Each is now a constant of the rig, and the defaults leave the route as it was (run 18's death replays within 0.05% of the height of the first search's replay, side and rest unchanged):
+
+- `LYING_UPPER_SHARE` and `LYING_LOWER_SHARE` (`quadruped_wings.py`, default 1): the share of the turn to its lying frame a dead wing takes at its root. The rest of its change is the bend of its bones past the root (`DEAD_UPPER` and `DEAD_LOWER`, `curl` and `curl_out`). A third value in `LYING_UPPER` or `LYING_LOWER` turns the lying plane about its span (degrees).
+- `WINGED_DEAD_NECK_DOWN` (`quadruped_layout.py`, default 0): a turn of the laid neck about the body's up axis, toward the side it lies on. Lying on its side that axis is level, so it lowers a neck laid forward. The old `neck_drop` turns a forward neck about itself and barely moves the head.
+- The tie rule. The death's side is searched with both wings in the idle's fold (`side_search` in the death's landmarks), and `WINGED_DEATH_SIDE` (default the right side, roll -82) wins a tie. The dragon's two sides then tie exactly, so the side no longer depends on the lying wing poses.
+- The rest's `wing_lift` is searched on the wing underneath alone (`quadruped_wings.lower_side`). It lifts only that wing, and a top wing draped down the flank had made it lift the wing underneath to 60 degrees for nothing.
+
+Scored again on run 18's files (about 1,900 end poses by the measures, a random search of 1,500 among them, and 40 more under every check), no end pose passes every check:
+
+- The top wing can lie low. Taking about 0.4 to 0.75 of the turn at the root and bending the rest of the way brings its own share of TRIPO-DEATH-WING-TENT to 0.09 to 0.34. Bent more than about 55 degrees per bone the membrane crushes (TRIPO-WING-CRUSH 6% to 10%), and the lowest drapes still pass through the flank (TRIPO-CHAIN-IN-BODY 11.5%).
+- The head cannot move clear of the back's side. The neck is short against the body: at most 0.22 of the height ahead of the chest, whatever the bend, the lowering turn or the drop. Laid forward of the forelegs it lies over the chest from the game camera (TRIPO-DEATH-HEAD-HIDDEN 0.36 at best). Only laid forward beyond the back, as in run 18, is it clear (0.68).
+- So the wing underneath must lie toward the tail, and there it stays above the torso's outline on the screen. Bent no more than the crush limit allows and kept down, its own share is 0.76 at the least. Turned up on edge it leaves the outline, but then it stands as a sail (TRIPO-DEATH-WING-HIGH 0.43 to 0.63) or crushes.
+
+The best poses that pass every other check read 0.87 against 0.45. Every route this rig offers was tried, and the method itself has to change before another run is spent. The candidates are a separate rule for the wing underneath (folded tight against the belly side rather than beyond the back), a longer reach for the neck (more neck bones, or a head that turns at its own joint), or laying the body on its belly once the thick thighs can turn out without tearing (round 6). Each changes the model's rig, so each needs the maintainer's view first (D-88).
 
 **Changing a winged quadruped's pose, step by step.** The defaults above are the rig's own (`quadruped_layout.py`, `quadruped_wings.py`), so a new winged unit gets them without any change. When a clip must change:
 

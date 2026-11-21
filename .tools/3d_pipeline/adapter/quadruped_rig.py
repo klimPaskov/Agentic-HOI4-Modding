@@ -381,7 +381,7 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     def evaluate(roll: float, lift: float):
         # a winged body's legs underneath start the search without their drop toward the ground (choose_winged_rest adds what fits): with
         # it a hoof held the Tripo dragon's body up at every roll, and the fallback rolled it only 34 degrees, the torso 17% up
-        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0} if winged else {})}
+        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0, "side_search": True} if winged else {})}
         pose_frame(last, 0.0)
         lowest = {name: z for name, z in _lowest_by_group(meshes, dominant).items() if not name.startswith(thin)}
         torso = min(lowest.get(name, math.inf) for name in TORSO)
@@ -399,7 +399,7 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
             def gap(prefixes) -> float:
                 return (min((z for name, z in lowest.items() if name.startswith(prefixes)), default=torso) - torso) / height
 
-            outer = tuple(name for name in lowest if name.startswith(WING_PREFIX) and name.endswith(f"_{qwings.WING_BONES}"))
+            outer = tuple(name for name in lowest if name.startswith(WING_PREFIX + qwings.lower_side(chosen["roll"])) and name.endswith(f"_{qwings.WING_BONES}"))
             return {"legs": gap(("Front_", "Rear_")), "wings": gap(outer) if outer else 0.0, "tail": gap(TAIL_PREFIX), "head": gap("Head")}
 
         laid = ql.choose_winged_rest(rest)

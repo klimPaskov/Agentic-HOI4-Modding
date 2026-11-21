@@ -732,6 +732,10 @@ WINGED_LYING_RELAX = 0.6
 # Round 7 lays it straighter (75 and 30 degrees, 90 and 50 before): bent further the head curled back beside the chest and the forelegs, and
 # from the game camera 52% of the head and neck showed clear of the rest of the body (62% now, offline, TRIPO-DEATH-HEAD-HIDDEN).
 WINGED_DEAD_NECK = {"Neck_01": 75.0, "Neck_02": 30.0}
+# Z turns (degrees at full fall) that swing the laid neck about the body's up axis toward the side the body lies on. Lying on its side that
+# axis is level, so the turn lowers a neck laid forward to the ground ahead of the forelegs. The drop about the long axis (`neck_drop`)
+# turns a forward neck about itself and barely moves the head.
+WINGED_DEAD_NECK_DOWN = {"Neck_01": 0.0, "Neck_02": 0.0}
 # A winged death's clock runs ahead early (clip time to this power): the body starts to roll at a tenth of the clip and lies by 0.54 of it.
 # At the shared collapse's pace the first fifth of the clip only bent the legs, which a fresh review of run 9 read as an unchanged hold.
 WINGED_DEATH_EASE = 0.7
@@ -744,6 +748,10 @@ WINGED_FALL_TUCK = 0.6
 # root edges (TRIPO-LEG-ROOT-STRETCH), and the belly still ended 7% of the height up with two legs hanging (TRIPO-NOT-DOWN,
 # TRIPO-DEATH-LEGS-HANG). The death stays on its side until the rig can lay such legs flat.
 WINGED_DEATH_ROLL = 82.0
+# The side a winged body lies on when its two sides tie in the search (negative: its right side, roll -82). The lying wings, the rest and the
+# checks were found on that side. With the wings in their lying poses the search's near tie flipped to the left side whenever a lying pose
+# changed (offline on run 18's files), and run 17's body laid on its left side failed five checks.
+WINGED_DEATH_SIDE = -1.0
 WINGED_DEATH_SPLAY = 0.0
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # The defend is a braced recoil (round 7). Degrees at Neck_01, Neck_02 and Head, positive forward and down: the neck's root draws back, its
@@ -899,18 +907,28 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
             name = leg_name(end, lower, segment)
             if name in pose:
                 pose[name] = [(axis, degrees * share) if tuple(axis) == Y_AXIS else (axis, degrees) for axis, degrees in pose[name]]
-    drop = math.copysign(float(death.get("neck_drop", 0.0)), roll) * fall
+    _lay_dead_neck(pose, names, float(death.get("neck_drop", 0.0)), roll, fall)
+    for end in ("Front", "Rear"):
+        for side, outward in (("Left", -1.0), ("Right", 1.0)):
+            name = leg_name(end, side, "Upper")
+            if name in pose:
+                pose[name] = pose[name] + [(Y_AXIS, outward * WINGED_DEATH_SPLAY * fall)]
+
+
+def _lay_dead_neck(pose: Dict[str, List[Rotation]], names: set, neck_drop: float, roll: float, fall: float) -> None:
+    """A dead winged body's neck: the rest's drop toward the ground against the roll (`neck_drop`), the forward lay (WINGED_DEAD_NECK) and
+    the lowering turn toward the side it lies on (WINGED_DEAD_NECK_DOWN), each as far as the fall has gone."""
+
+    drop = math.copysign(neck_drop, roll) * fall
     for name, part in (("Neck_01", 0.6), ("Neck_02", 0.4)):
         if name in names:
             pose[name] = pose.get(name, []) + [(Y_AXIS, part * drop)]
     for name, degrees in WINGED_DEAD_NECK.items():
         if name in names:
             pose[name] = pose.get(name, []) + [(X_AXIS, degrees * fall)]
-    for end in ("Front", "Rear"):
-        for side, outward in (("Left", -1.0), ("Right", 1.0)):
-            name = leg_name(end, side, "Upper")
-            if name in pose:
-                pose[name] = pose[name] + [(Y_AXIS, outward * WINGED_DEATH_SPLAY * fall)]
+    for name, degrees in WINGED_DEAD_NECK_DOWN.items():
+        if name in names and degrees:
+            pose[name] = pose.get(name, []) + [(Z_AXIS, math.copysign(1.0, roll) * degrees * fall)]
 
 
 def _foot_travel(joints: Dict[str, np.ndarray], upper: float, lower: float) -> np.ndarray:
@@ -1405,7 +1423,10 @@ def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:
 
     load = landmarks.get("load") or {}
     if landmarks.get("wings"):
-        return WINGED_DEATH_ROLL, -WINGED_DEATH_ROLL
+        # the tie rule: a winged body's side is searched with its wings in the idle's fold (`quadruped_wings.role_rows`), where the Tripo
+        # dragon's two sides tie (both lie on the torso at 82 degrees), and the first side wins a tie: WINGED_DEATH_SIDE's
+        first = math.copysign(WINGED_DEATH_ROLL, WINGED_DEATH_SIDE)
+        return first, -first
     if not load:
         return COLLAPSE_ROLL, -COLLAPSE_ROLL
     first = float(load.get("roll_limit", COLLAPSE_ROLL))

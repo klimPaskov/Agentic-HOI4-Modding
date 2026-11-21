@@ -250,7 +250,7 @@ class Stage:
         thin = ("Ear_", qw.WING_PREFIX, "Tail_") if winged else ("Ear_",)
 
         def evaluate(roll: float, lift: float):
-            landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0} if winged else {})}
+            landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0, "side_search": True} if winged else {})}
             lowest = {name: z for name, z in self.lowest(style, last).items() if not name.startswith(thin)}
             torso = min(lowest.get(name, math.inf) for name in TORSO)
             return (torso - min(lowest.values())) / self.height, min(lowest, key=lowest.get)
@@ -266,7 +266,7 @@ class Stage:
                 def gap(prefixes) -> float:
                     return (min((z for name, z in lowest.items() if name.startswith(prefixes)), default=torso) - torso) / self.height
 
-                outer = tuple(name for name in lowest if name.startswith(qw.WING_PREFIX) and name.endswith(f"_{qw.WING_BONES}"))
+                outer = tuple(name for name in lowest if name.startswith(qw.WING_PREFIX + qw.lower_side(chosen["roll"])) and name.endswith(f"_{qw.WING_BONES}"))
                 return {"legs": gap(("Front_", "Rear_")), "wings": gap(outer) if outer else 0.0, "tail": gap("Tail_"), "head": gap("Head")}
 
             laid = ql.choose_winged_rest(rest)

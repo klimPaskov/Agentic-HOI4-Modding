@@ -501,6 +501,10 @@ DEAD_LOWER = dict(FOLDED)
 LYING_UPPER = (80.0, -20.0)
 LYING_LOWER = (75.0, -22.0)
 DEAD_WINGS_START, DEAD_WINGS_END = 0.2, 0.65
+# The share of the turn to its lying frame each dead wing takes at its root (`lying_pose`). The rest of its change is the bend of its bones
+# past the root (DEAD_UPPER's and DEAD_LOWER's curl).
+LYING_UPPER_SHARE = 1.0
+LYING_LOWER_SHARE = 1.0
 # Beats: (degrees at the root, beats per clip, the wave's bend per bone past the root as a share of the root's beat, its lag per bone as a
 # share of a beat). The idle breathes: one slow rise and fall of the folded wings per loop.
 BREATH = (4.0, 1, 0.3, 0.12)  # at 8 degrees the level wings of the move moved only 1.1 times as much at map size (TRIPO-WING-IDLE-MOVE, run 10)
@@ -599,7 +603,7 @@ def role_pose(style: str, t: float, bones: int, lying: Optional[np.ndarray] = No
         settle = float(_smooth(np.array(max(0.0, min(1.0, (t - DEAD_WINGS_START) / (DEAD_WINGS_END - DEAD_WINGS_START))))))
         out = _blend(FOLDED, DEAD_UPPER if upper else DEAD_LOWER, settle)
         if lying is not None:
-            out.update(frame=lying, frame_share=settle)
+            out.update(frame=lying, frame_share=settle * (LYING_UPPER_SHARE if upper else LYING_LOWER_SHARE))
         return out
     return dict(FOLDED)
 
@@ -610,6 +614,10 @@ def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[
     turn, and both fresh reviews read it as one wing frozen upright while the other beat."""
 
     rows: Dict[str, List[Tuple[Tuple[float, float, float], float]]] = {}
+    if style == "winged_collapse" and (layout.landmarks.get("death") or {}).get("side_search"):
+        # the death's side is searched with both wings in the idle's fold (`quadruped_layout.roll_limits`): the skin by a wing's root takes
+        # part of the wing's weights, so each lying pose tipped the search's near tie its own way
+        style, t = "winged_idle", 0.0
     for side, plan in (layout.landmarks.get("wings") or {}).items():
         bones = np.asarray(plan["joints"]).shape[1] - 1
         upper = style == "winged_collapse" and not lies_under(plan, layout.landmarks)
@@ -617,6 +625,14 @@ def role_rows(style: str, t: float, layout, yaw: float = 0.0) -> Dict[str, List[
         pose = role_pose(style, t, bones, lying, upper)
         rows.update(wing_rows(plan, pose, side))
     return rows
+
+
+def lower_side(roll: float) -> str:
+    """The side ("Left" or "Right") of the wing underneath a body rolled `roll` degrees (`lies_under`). The death's `wing_lift` tips only that
+    wing, so the rest searches it on that wing's bones alone: with the top wing's far bones in the search a top wing draped down the flank
+    read as one under the torso, and the search lifted the wing underneath to its most (60 degrees) for nothing."""
+
+    return "Left" if roll > 0 else "Right"
 
 
 def lies_under(plan: Dict[str, object], landmarks: Dict[str, object]) -> bool:
@@ -636,7 +652,8 @@ def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object], upper: boo
     body = rotation(Y, roll)
     back = body @ Z
     out = unit(back - (back @ Z) * Z)
-    sweep, tip = (LYING_UPPER if upper else LYING_LOWER)
+    sweep, tip, *more = (LYING_UPPER if upper else LYING_LOWER)
+    stand = float(more[0]) if more else 0.0
     tip += 0.0 if upper else float(death.get("wing_lift", 0.0))
     # turn the outward direction toward the tail (+Y) by the sweep, whichever side it points to
     turn = rotation(Z, sweep * (1.0 if out[0] > 0 else -1.0))
@@ -647,5 +664,7 @@ def lying_pose(plan: Dict[str, object], landmarks: Dict[str, object], upper: boo
     normal = np.cross(span, chord)
     if normal[2] < 0:  # the fold's ridge points up: `wing_rows` bends the outer bones toward the back of the normal
         chord = -chord
+    if stand:  # the plane turns about the span by `stand` degrees
+        chord = unit(math.cos(math.radians(stand)) * chord + math.sin(math.radians(stand)) * np.cross(span, chord))
     world = np.stack([span, chord, sign * np.cross(span, chord)], axis=1)
     return body.T @ world

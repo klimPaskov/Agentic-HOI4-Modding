@@ -382,6 +382,54 @@ class Round8(unittest.TestCase):
         self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_START, qw.WING_BONES, frame, upper=True)["frame_share"], 0.0)
         self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_END, qw.WING_BONES, frame, upper=True)["frame_share"], 1.0)
 
+    def test_the_side_search_holds_the_wings_in_the_idle_fold_and_a_tie_lays_the_body_on_its_right_side(self) -> None:
+        _points, _triangles, landmarks, plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        landmarks["death"] = {"roll": -82.0, "side_search": True}
+        self.assertEqual(qw.role_rows("winged_collapse", 1.0, layout), qw.role_rows("winged_idle", 0.0, layout),
+                         "a lying pose must not tip the search between the two sides")
+        first, second = ql.roll_limits(landmarks)
+        self.assertLess(first, 0.0, "the first side wins a tie: the right side, the one the rest and the checks were found on")
+        self.assertEqual(second, -first)
+        self.assertEqual(qw.lower_side(-82.0), "Right")
+        self.assertEqual(qw.lower_side(82.0), "Left")
+        self.assertTrue(all(qw.lies_under(plan, {"death": {"roll": -82.0}}) == (side == qw.lower_side(-82.0)) for side, plan in plans.items()))
+
+    def test_a_lying_share_and_a_stand_change_the_dead_wing_only_when_asked(self) -> None:
+        _points, _triangles, landmarks, plans, _masks = _found()
+        landmarks["death"] = {"roll": -82.0}
+        plan = plans["Left"]
+        frame = qw.lying_pose(plan, landmarks, True)
+        self.assertEqual(qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, frame, upper=True)["frame_share"], 1.0)
+        saved_share, saved_upper = qw.LYING_UPPER_SHARE, qw.LYING_UPPER
+        try:
+            qw.LYING_UPPER_SHARE = 0.4
+            self.assertAlmostEqual(qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, frame, upper=True)["frame_share"], 0.4)
+            qw.LYING_UPPER = (*saved_upper[:2], 90.0)
+            stood = qw.lying_pose(plan, landmarks, True)
+            self.assertTrue(np.allclose(stood[:, 0], frame[:, 0]), "the stand turns the plane about its span")
+            self.assertAlmostEqual(abs(float(stood[:, 1] @ frame[:, 1])), 0.0, places=6, msg="90 degrees stands the plane upright")
+        finally:
+            qw.LYING_UPPER_SHARE, qw.LYING_UPPER = saved_share, saved_upper
+
+    def test_the_neck_lowering_turn_follows_the_side_the_body_lies_on(self) -> None:
+        _points, _triangles, landmarks, _plans, _masks = _found()
+        layout = ql.build_layout(landmarks)
+        last = ql.frame_count("winged_collapse") - 1
+        saved = dict(ql.WINGED_DEAD_NECK_DOWN)
+        try:
+            for roll in (-82.0, 82.0):
+                landmarks["death"] = {"roll": roll}
+                ql.WINGED_DEAD_NECK_DOWN.update({"Neck_01": 30.0})
+                turns = [degrees for axis, degrees in ql.pose_at("winged_collapse", last, layout).get("Neck_01", []) if tuple(axis) == ql.Z_AXIS]
+                self.assertEqual(len(turns), 1)
+                self.assertAlmostEqual(turns[0], math.copysign(30.0, roll))
+                ql.WINGED_DEAD_NECK_DOWN.update({"Neck_01": 0.0})
+                self.assertFalse(any(tuple(axis) == ql.Z_AXIS for axis, _d in ql.pose_at("winged_collapse", last, layout).get("Neck_01", [])))
+        finally:
+            ql.WINGED_DEAD_NECK_DOWN.clear()
+            ql.WINGED_DEAD_NECK_DOWN.update(saved)
+
     def test_the_wing_underneath_lifts_by_what_the_rest_chose(self) -> None:
         _points, _triangles, landmarks, plans, _masks = _found()
         landmarks["death"] = {"roll": -82.0}
