@@ -123,6 +123,12 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
         travelling = glb_root.travelling_clips(rigged, [clip for role, clip in roles.items() if role != "death"], deaths=[roles["death"]] if roles.get("death") else None)
     except ValueError:  # not a binary glTF: the Blender stage reads it and says what is wrong
         return
+    # A lunge the job keeps (`tripo.lunge`, {role: cap in hip heights}, written by tripo/lunge_clip.py) may travel up to its cap.
+    for role, cap in ((spec.get("tripo") or {}).get("lunge") or {}).items():
+        clip = roles.get(role)
+        for name in [name for name in travelling if clip and name.startswith(clip)]:
+            if travelling[name] <= float(cap) + 0.01:
+                travelling.pop(name)
     if travelling:
         listed = ", ".join(f"{clip.strip()} {travel:.2f}" for clip, travel in sorted(travelling.items()))
         raise ValueError(

@@ -150,6 +150,29 @@ class Splay(Biped):
             result = S.close_death_legs(self.mesh_path, path, out)
         self.assertFalse(result.closing, result)
 
+    def test_the_thigh_gap_is_read_below_the_pelvis(self) -> None:
+        # The hip ends are the pelvis's width apart in every pose: two thighs spreading from hip joints 0.85 apart read their gap a third of
+        # the way down, so a narrow pelvis under the clearance does not refuse every closing (the D-94 zombie, 2026-11-21).
+        hips = (np.array([-0.425, 1.0, 0.0]), np.array([0.425, 1.0, 0.0]))
+        knees = (np.array([-1.0, 0.0, 0.3]), np.array([1.0, 0.0, 0.3]))
+        whole = S._segment_gap(hips[0], knees[0], hips[1], knees[1])
+        below = S._segment_gap(hips[0], knees[0], hips[1], knees[1], start=S.THIGH_GAP_FROM)
+        self.assertAlmostEqual(whole, 0.85, places=6)
+        self.assertGreater(below, 1.2)
+        anim = self.load(self.clip("death", 70, lying_spread(60.0)))
+        gaps = S.leg_gaps(self.mesh, anim, S._legs(self.mesh))
+        legs = S._legs(self.mesh)
+        posed = P.pdx_motion.posed_joints(self.mesh, anim)
+        hip_width = np.linalg.norm(posed[:, legs[0].hip] - posed[:, legs[1].hip], axis=1)
+        self.assertTrue((gaps[-5:, 0] > hip_width[-5:] + 1e-6).all(), (gaps[-5:, 0], hip_width[-5:]))
+
+    def test_a_frame_far_under_the_worst_may_gain_the_rules_share_of_the_worst(self) -> None:
+        before = np.array([[282.0, 60.0, 0.035], [209.0, 41.0, 0.031]])
+        two_more = np.array([[282.0, 60.0, 0.035], [209.0, 43.0, 0.031]])
+        a_third_more = np.array([[282.0, 60.0, 0.035], [209.0, 55.0, 0.031]])
+        self.assertTrue(S._frame_within(two_more, before).all())
+        self.assertFalse(S._frame_within(a_third_more, before)[1])
+
     def test_a_body_bound_with_its_thighs_apart_is_judged_against_its_own_split(self) -> None:
         self.assertEqual(S.rest_split(self.mesh), 0.0)
         self.assertEqual(S.split_limit(self.mesh), S.SPLIT_LIMIT)  # a narrow body keeps vanilla's limit

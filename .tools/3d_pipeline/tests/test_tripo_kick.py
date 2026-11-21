@@ -56,6 +56,17 @@ class LegKick(Biped):
         found, _numbers = K.kick_findings(self.mesh, {"unit_death": anim, "unit_attack": anim})
         self.assertEqual([(item["rule"], item["subject"], item["leg"]) for item in found], [("TRIPO-DEATH-LEG-KICK", "unit_death", "left")])
 
+    def test_the_hips_are_down_where_the_ground_pass_will_leave_them(self) -> None:
+        # Before the ground pass a body that sinks into the floor while it lands reads its raw hips down early; the lift that answers the sink
+        # holds them up. The onset is judged on the lifted body, as the check reads it after the ground pass (the D-94 zombie, 2026-11-21).
+        anim = self.load(self.clip("death", 70, lying()))
+        legs = K._legs(self.mesh)
+        self.assertEqual(K.lifted_lying_frame(self.mesh, anim, legs.pelvis), 40)
+        lift = np.where(np.arange(70) < 55, 0.1 * self.mesh.height, 0.0)
+        with mock.patch.object(K, "_lifts", return_value=lift):
+            self.assertEqual(K.lifted_lying_frame(self.mesh, anim, legs.pelvis), 55)
+            self.assertEqual(K.kick_numbers(self.mesh, anim)["onset"], 55)
+
     def test_a_body_that_lies_still_passes(self) -> None:
         found, numbers = K.kick_findings(self.mesh, {"unit_death": self.load(self.clip("death", 70, lying()))})
         self.assertEqual(found, [], numbers)
