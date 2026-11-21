@@ -186,6 +186,19 @@
       }
       return { started: [], note: "no new task seen yet; check TS.tasks() before clicking again", credits: TS.credits() };
     },
+    // Animate page, before pressing Generate on a text-to-motion clip: Tripo refuses a prompt
+    // of about 300 characters or more without a word (no task, no charge, the button stays lit;
+    // a 330-character prompt failed three times on 2026-11-21, 266 ran). Returns ok: false with
+    // the reason when the prompt is too long or empty. Never press Generate on ok: false.
+    motionPromptCheck(max = TS.MOTION_PROMPT_MAX) {
+      const box = [...document.querySelectorAll("textarea")].filter((t) => t.offsetParent)[0];
+      const length = box ? box.value.trim().length : 0;
+      if (!box) return { ok: false, length, max, reason: "no visible prompt box" };
+      if (!length) return { ok: false, length, max, reason: "the prompt is empty" };
+      if (length > max) return { ok: false, length, max, reason: `the prompt is ${length} characters, over ${max}: shorten it` };
+      return { ok: true, length, max };
+    },
+    MOTION_PROMPT_MAX: 280,
     // Signed links of the generated multi-view pictures (front, left, back, right).
     multiviewUrls() {
       return [...document.querySelectorAll("img")].filter((i) => /multiview_\d/.test(i.src)).map((i) => i.src).sort();

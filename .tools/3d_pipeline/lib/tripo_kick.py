@@ -13,7 +13,8 @@ round the thigh and up over the back of the lying body: in the exported clip bef
 settle (`tripo_pose.settle_death_legs`) then turned the knees 0.4 of the way toward rest from frame 63, for the boots' end height only: the climb
 fell to 0.039, still there.
 
-The measure (`boot_heights`, `kick_numbers`): once the hips are down (`tripo_pose._lying_frame`), each leg's boot, the higher of its ankle and toe
+The measure (`boot_heights`, `kick_numbers`): once the hips are down (`lifted_lying_frame`: `tripo_pose._lying_frame` on the body as the
+ground pass will lift it, so the settle before the ground pass and the check after it read the same frame), each leg's boot, the higher of its ankle and toe
 joints, above the ground as the ground pass will lift the body, as a share of the height, and its largest rise above the lowest it has been since
 the hips came down: a leg that has come down and goes up again. Vanilla's two deaths (death_rifle and death_mg on GER_infantry, _alt_0,
 ENG_infantry and _snow, 2026-11-18, the skeleton the same on all four) raise a boot at most 0.027 that way (death_mg's left boot on ENG_infantry,
@@ -111,6 +112,20 @@ def boot_heights(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, exclu
     return out
 
 
+def lifted_lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvis: int, exclude_bones: Sequence[str] = ()) -> int:
+    """`tripo_pose._lying_frame` on the body as the ground pass will lift it, as `boot_heights` judges the boots: the first frame from which
+    the hips stay within `LYING_HIPS_SETTLE` of where they end. Before the ground pass the raw hips come down earlier than the lifted ones (the
+    D-94 zombie, 2026-11-21: frame 47 against 65), so the settle laid a rise across from frame 47 that the check, after the ground pass, read
+    from frame 65 as a boot climbing 3.7% to the end. On a grounded clip the lift is nil and the frame is `_lying_frame`'s."""
+
+    posed = pdx_motion.posed_joints(mesh, anim)
+    ground = float(mesh.positions[:, 1].min())
+    lift = _lifts(mesh, pdx_deform.skinning_matrices(mesh, anim), _body_mask(mesh, exclude_bones))
+    share = (posed[:, pelvis, 1] + lift - ground) / max(mesh.height, 1e-6)
+    off = np.nonzero(np.abs(share - share[-1]) > tripo_pose.LYING_HIPS_SETTLE)[0]
+    return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
+
+
 def _leg_key(mesh: pdx_deform.SkinnedMesh, leg, side: int) -> str:
     name = mesh.bones[leg.knee].lower()
     return "left" if "left" in name else "right" if "right" in name else f"leg{side}"
@@ -124,7 +139,7 @@ def kick_numbers(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, exclu
     if legs is None:
         return None
     boots = boot_heights(mesh, anim, exclude_bones, legs)
-    onset = tripo_pose._lying_frame(mesh, anim, legs.pelvis)
+    onset = lifted_lying_frame(mesh, anim, legs.pelvis, exclude_bones)
     out = {"onset": onset, "legs": {}}
     for side, leg in enumerate(legs.legs):
         track = boots[onset:, side]

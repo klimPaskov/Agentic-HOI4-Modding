@@ -34,6 +34,11 @@ turn brings the attack to 0.80 and the death to 0.79. A looping role
 gets one share for the whole clip, so its seam stays as it was. A death gets each frame's own share, spread over a smoothstep ramp so the joints
 turn no faster than `lib/tripo_trim.SETTLE_MAX_RATE`. Only that group's rotation samples change.
 
+The lift never makes another check fail (the kit's no-clip-worse rule). For an unarmed unit (`hands_guard`), a group whose turn would
+push a passing attack, move or retreat into TRIPO-HANDS-HIGH (`lib/tripo_arms.hands_high`) is not chosen. On the D-94 zombie (run zombie_a,
+2026-11-21) the neck and the clavicles together lifted the shamble's neck from 0.50 to 0.82, and the clavicles' turn carried both arms up
+with them: the hands, which the arm-level rule had brought under the shoulders in every frame, stood above them in every frame of the export.
+
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
 
@@ -45,13 +50,16 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
-from . import pdx_deform, tripo_pose, tripo_trim
+from . import pdx_deform, pdx_motion, tripo_arms, tripo_pose, tripo_trim
 from .pdx_binary import read
 
 VANILLA_NECK_WORST = 0.79
 VANILLA_NECK_WORST_BY_ROLE = {"attack": 0.79, "defend": 0.79, "idle": 0.88, "move": 1.0, "retreat": 1.0, "death": 1.0}
 NECK_LIMIT = round(1.0 - 1.25 * (1.0 - VANILLA_NECK_WORST), 2)
 NECK_TARGET = VANILLA_NECK_WORST
+# The roles TRIPO-HANDS-HIGH judges on an unarmed unit (tripo/tripo_checks.HANDS_HIGH_ROLES).
+HANDS_ROLES = ("attack", "move", "retreat")
+HAND_JOINTS = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head")
 SHARES = np.round(np.arange(0.0, 1.0001, 0.05), 2)
 LIFT_MIN_RAMP_FRAMES = 6
 HEAD_WORDS = ("head",)
@@ -241,10 +249,21 @@ def _turned(anim: pdx_deform.Animation, joints: Sequence[str], rest: dict, weigh
     return tripo_pose._turned_toward_rest(anim, joints, rest, 1.0, np.asarray(weights, float))
 
 
+def hands_reason(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Optional[str]:
+    """Why the clip fails TRIPO-HANDS-HIGH on this mesh, or None (also None when the rig lacks the hands, the upper arms or the head)."""
+
+    if any(name not in mesh.bones for name in HAND_JOINTS):
+        return None
+    joints = pdx_motion.posed_joints(mesh, anim)
+    track = [joints[:, mesh.bones.index(name)] for name in HAND_JOINTS]
+    return tripo_arms.hands_high(tripo_arms.hand_levels(*track))
+
+
 def lift_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, role: str, keyed: Optional[Sequence[str]] = None,
-                   limit: float = NECK_LIMIT, target: float = NECK_TARGET) -> Tuple[NeckLift, Optional[pdx_deform.Animation], np.ndarray]:
+                   limit: float = NECK_LIMIT, target: float = NECK_TARGET, hands_guard: bool = False) -> Tuple[NeckLift, Optional[pdx_deform.Animation], np.ndarray]:
     """The lift of `lift_neck` on a clip in memory: (record, the lifted clip or None when unchanged, the per-frame weights). `keyed`: the joints
-    whose rotations the clip's file stores (all of the clip's channels when not given)."""
+    whose rotations the clip's file stores (all of the clip's channels when not given). With `hands_guard` (an unarmed unit) a group that
+    would make a passing attack, move or retreat fail TRIPO-HANDS-HIGH is not chosen."""
 
     none = np.zeros(anim.frames)
     rig = neck_rig(mesh)
@@ -258,6 +277,7 @@ def lift_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
     bind = pdx_deform._bind_locals(mesh)
     rest = {mesh.bones[i]: tripo_pose._quaternion_from_matrix(bind[i]) for i in range(len(mesh.bones))}
     loop = role in tripo_pose.LOOP_ROLES
+    guard = hands_guard and role in HANDS_ROLES and hands_reason(mesh, anim) is None
     plans = []
     tried: Dict[str, dict] = {}
     for order, (name, group) in enumerate(lift_groups(parts, rig)):
@@ -275,6 +295,10 @@ def lift_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
         added = added_turn(anim, result, joints)
         reached = bool(np.all(np.isfinite(needed)))
         tried[name] = {"neck_after": round(after, 3), "turn_added_degrees": round(added, 1), "reaches_target": reached}
+        broken = hands_reason(mesh, result) if guard else None
+        if broken:
+            tried[name]["refused"] = f"TRIPO-HANDS-HIGH: {broken}"
+            continue
         plans.append((not reached, added if reached else -after, order, after, name, joints, weights, result, ramp))
     # A group that reaches the target everywhere beats one that does not. Of those that do, the smallest added turn wins, of those that do
     # not the highest neck. A tie goes to the group the measurement blames.
@@ -287,13 +311,14 @@ def lift_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
                     tried=tried), result, weights
 
 
-def lift_neck(mesh_path: Path, anim_path: Path, out_path: Path, role: str, limit: float = NECK_LIMIT, target: float = NECK_TARGET) -> NeckLift:
+def lift_neck(mesh_path: Path, anim_path: Path, out_path: Path, role: str, limit: float = NECK_LIMIT, target: float = NECK_TARGET,
+              hands_guard: bool = False) -> NeckLift:
     """Write `out_path`: `anim_path` with the neck or the clavicles turned toward the rest pose where the visible neck is under `limit`
     (see the module text). Unchanged, and copied as it is, when the clip passes or no group lifts it."""
 
     data = bytearray(Path(anim_path).read_bytes())
     keyed = [joint.name for joint in read(anim_path).child("info").children if "q" in str((joint.properties.get("sa") or [""])[0])]
-    lift, result, weights = lift_animation(pdx_deform.load_mesh(mesh_path), pdx_deform.load_anim(anim_path), role, keyed, limit, target)
+    lift, result, weights = lift_animation(pdx_deform.load_mesh(mesh_path), pdx_deform.load_anim(anim_path), role, keyed, limit, target, hands_guard)
     if result is not None:
         tripo_pose._write_rotations(data, keyed, lift.joints, result, weights)
     Path(out_path).write_bytes(bytes(data))
