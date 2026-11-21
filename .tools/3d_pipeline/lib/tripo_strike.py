@@ -69,45 +69,55 @@ def hand_strike(hand: np.ndarray, chest: np.ndarray, height: float, fps: float, 
     return travel, speed
 
 
-def strike_numbers(joints: np.ndarray, bones: Sequence[str], height: float, fps: float, hand: str = "") -> Optional[dict]:
+def strike_numbers(joints: np.ndarray, bones: Sequence[str], height: float, fps: float, hand: str = "", lunge: bool = False) -> Optional[dict]:
     """The strike of a clip from its (F, B, 3) joint positions: per hand travel and speed, the striking hand (`hand` when given and present,
-    else the faster), and whether it strikes. None without a chest bone or hands."""
+    else the faster), and whether it strikes. None without a chest bone or hands.
+
+    `lunge`: an unarmed lunging grab whose job keeps its step (`tripo.lunge`, tripo/lunge_clip.py). Its hands are measured against the
+    ground, not the chest, since the chest moves with them in a lunge: the D-94 zombie's sudden lunge with its step kept read 587 px on the
+    game camera and struck 0.23 at 0.97 against the chest. The limits are the same. A held pose with no step still moves its hands as
+    little against the ground as against the chest, so the zombie_o lunge reviewers read as no strike (exported in place) stays under them.
+    Only that job's attack is measured this way, and two fresh reviews still judge whether it reads as a grab."""
 
     chest = chest_index(bones)
     present = [name for name in HANDS if name in bones]
     if chest < 0 or not present:
         return None
-    hands = {name: hand_strike(joints[:, list(bones).index(name)], joints[:, chest], height, fps) for name in present}
+    ground = np.zeros_like(joints[:, chest])
+    hands = {name: hand_strike(joints[:, list(bones).index(name)], ground if lunge else joints[:, chest], height, fps) for name in present}
     striking = hand if hand in hands else max(hands, key=lambda name: hands[name][1])
     travel, speed = hands[striking]
     out = {"hand": striking, "travel": round(travel, 3), "speed": round(speed, 3),
            "hands": {name: {"travel": round(t, 3), "speed": round(s, 3)} for name, (t, s) in hands.items()}}
     out["strikes"] = travel >= MIN_TRAVEL and speed >= MIN_SPEED
+    out["against"] = "ground" if lunge else "chest"
     return out
 
 
 def no_strike_reason(numbers: dict) -> Optional[str]:
     if numbers is None or numbers["strikes"]:
         return None
-    return (f"the striking hand ({numbers['hand']}) travels {numbers['travel']:.2f} of the height against the chest at {numbers['speed']:.2f} heights "
+    return (f"the striking hand ({numbers['hand']}) travels {numbers['travel']:.2f} of the height against the {numbers.get('against', 'chest')} at {numbers['speed']:.2f} heights "
             f"a second at most (at least {MIN_TRAVEL} and {MIN_SPEED}, past vanilla's shooting attacks): the attack holds a pose and never strikes")
 
 
-def clip_strike(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "") -> Optional[dict]:
+def clip_strike(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "", lunge: bool = False) -> Optional[dict]:
     joints = pdx_motion.posed_joints(mesh, anim)
-    return strike_numbers(joints, mesh.bones, mesh.height, float(getattr(anim, "fps", 30.0) or 30.0), hand)
+    return strike_numbers(joints, mesh.bones, mesh.height, float(getattr(anim, "fps", 30.0) or 30.0), hand, lunge)
 
 
-def strike_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Animation], hand: str = "", map_read_numbers: bool = True) -> Tuple[List[dict], dict]:
+def strike_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Animation], hand: str = "", map_read_numbers: bool = True,
+                    lunge: bool = False) -> Tuple[List[dict], dict]:
     """TRIPO-ATTACK-NO-STRIKE on each attack clip of a humanoid; `hand` the weapon's holding hand ("" for an unarmed unit). With
-    `map_read_numbers` the attack's map-size reading against the idle and the defend is reported too (not judged, see the module text)."""
+    `map_read_numbers` the attack's map-size reading against the idle and the defend is reported too (not judged, see the module text).
+    `lunge` (an unarmed job whose `tripo.lunge` names the attack): the hands are measured against the ground (`strike_numbers`)."""
 
     out, numbers = [], {}
     by_role = {clip.rsplit("_", 1)[-1]: anim for clip, anim in anims.items()}
     for clip, anim in anims.items():
         if clip.rsplit("_", 1)[-1] != "attack":
             continue
-        row = clip_strike(mesh, anim, hand)
+        row = clip_strike(mesh, anim, hand, lunge and not hand)
         if row is None:
             continue
         if map_read_numbers:
