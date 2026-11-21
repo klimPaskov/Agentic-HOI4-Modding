@@ -444,18 +444,31 @@ class Rig:
             yield anim["name"], tracks, end
 
 
+def canonical_names(names: Sequence[str]) -> List[str]:
+    """Each joint's canonical (Mixamo short) name, through lib/tripo_rig.py (the newer Tripo rig's `R_Hand` is `RightHand`); a rig that is
+    neither of Tripo's keeps its names without a prefix."""
+
+    from lib import tripo_rig
+
+    try:
+        rig = tripo_rig.RigNames(names)
+    except tripo_rig.RigError:
+        return [tripo_rig.short(name) for name in names]
+    return [rig.canonical(name) for name in names]
+
+
 def hand_joint_indices(names: Sequence[str]) -> List[int]:
     """Indices of palm joints (`...Hand`, not a finger such as `RightHandIndex1`)."""
 
-    return [i for i, name in enumerate(names) if re.search(r"hand$", name.split(":")[-1], re.IGNORECASE)]
+    return [i for i, name in enumerate(canonical_names(names)) if re.search(r"hand$", name, re.IGNORECASE)]
 
 
 def resolve_weapon_joint(names: Sequence[str], weapon_rest: np.ndarray, joint_rest: np.ndarray, wanted: str = "auto") -> int:
     """The joint the weapon follows. `auto` takes the hand joint with a weapon vertex closest to it."""
 
     if wanted != "auto":
-        for i, name in enumerate(names):
-            if name == wanted or name.split(":")[-1] == wanted:
+        for i, (name, canonical) in enumerate(zip(names, canonical_names(names))):
+            if name == wanted or name.split(":")[-1] == wanted or canonical == wanted:
                 return i
         raise SystemExit(f"No joint named {wanted!r}; the hand joints are {[names[i] for i in hand_joint_indices(names)]}")
     hands = hand_joint_indices(names)

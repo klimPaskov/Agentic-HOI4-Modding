@@ -120,7 +120,7 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
 
     roles = (spec.get("tripo") or {}).get("roles") or {}
     try:
-        travelling = glb_root.travelling_clips(rigged, roles.values())
+        travelling = glb_root.travelling_clips(rigged, [clip for role, clip in roles.items() if role != "death"], deaths=[roles["death"]] if roles.get("death") else None)
     except ValueError:  # not a binary glTF: the Blender stage reads it and says what is wrong
         return
     # A lunge the job keeps (`tripo.lunge`, {role: cap in hip heights}, written by tripo/lunge_clip.py) may travel up to its cap.
@@ -133,7 +133,7 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
         listed = ", ".join(f"{clip.strip()} {travel:.2f}" for clip, travel in sorted(travelling.items()))
         raise ValueError(
             f"{rigged.name}: these role clips move the hips across the ground ({listed} times the hip height, limit "
-            f"{glb_root.MAX_ROOT_TRAVEL_SHARE}). Export again from Tripo with \"Animation in Place\" switched on.")
+            f"{glb_root.MAX_ROOT_TRAVEL_SHARE}, a death {glb_root.DEATH_TRAVEL_LIMIT}). Export again from Tripo with \"Animation in Place\" switched on.")
 
 
 def default_task_id(files: Dict[str, Path]) -> str:
@@ -238,6 +238,10 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     regions = [item["region"] if isinstance(item, dict) else str(item) for item in config.get("chains") or []]
     if regions:
         command += ["--chains", *regions]
+        # A death that burns away stands (lib/tripo_burn.py): its wings keep the idle's folded pose instead of lying flat as a body falls (the
+        # defend's, once it wrapped the wings forward, hid 54% of the limbs from the side, run demon_e).
+        if config.get("death_kind") == "burn":
+            command += ["--chain-role", "death=idle"]
     return command + rigid_part_args(config, files)
 
 

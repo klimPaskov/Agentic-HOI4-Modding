@@ -126,12 +126,15 @@ def import_clip(target, path):
 # material names (io_pdx_mesh loaded them beside the mesh), not the shape's body map. Its tread scrolls in a move
 # clip as the game scrolls it, by the entity's `texture_anim_speed` UV units a second.
 SCROLLING = "PdxMeshAdvancedAnim"
+OWN_MAP_MARK = "_ash_"  # lib/tripo_burn.ASH_MARK
 own_maps = {}
 for o in meshes:
     for slot in o.material_slots:
         material = slot.material
-        if material is not None and material.get("shader") == SCROLLING and material.node_tree:
-            found = [n.image for n in material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image]
+        found = [n.image for n in material.node_tree.nodes if n.type == "TEX_IMAGE" and n.image] if material is not None and material.node_tree else []
+        # A stream whose material names its own diffuse map (a burn death's ash heap, lib/tripo_burn.py) keeps it too, not the shape's
+        own_diffuse = any(OWN_MAP_MARK in i.name.lower() for i in found)
+        if material is not None and (material.get("shader") == SCROLLING or own_diffuse) and material.node_tree:
             own_maps[material.name] = {
                 "diffuse": next((i for i in found if "diff" in i.name.lower()), found[0] if found else None),
                 "specular": next((i for i in found if "spec" in i.name.lower()), None),
@@ -374,14 +377,135 @@ def render(clip, frames):
         scroll(clip, frame)
         place_rider()
         row = {"frame": frame, "tiles": {}}
+        if update_standin(clip, frame):
+            row["standin"] = True
         for view in request["views"]:
             aim(view)
+            bpy.context.view_layer.update()
             path = out / f"{clip}_{frame:04d}_{view}.png"
             scene.render.filepath = str(path)
             bpy.ops.render.render(write_still=True)
             row["tiles"][view] = path.name
         rows.append(row)
     index["clips"].append({"name": clip, "rows": rows})
+
+
+# ---- the burn's fire and smoke, drawn as a stand-in (lib/tripo_burn.py) ----
+# The game draws a death's particles; Blender cannot. When the unit's burn plan lies beside the mesh, its death clip's tiles get billboards
+# at the plan's locator: orange fire rising fast and fading, grey smoke rising slowly and growing, from each particle's `time` for its
+# `duration_s`, at the game's 30 frames a second. Every tile that shows them is stamped "particles: stand-in", since only the game shows
+# the real ones.
+STANDIN = {"fire": {"count": 24, "life": 0.8, "rise": 0.45, "size": (0.10, 0.05), "colour": (1.0, 0.45, 0.08), "alpha": 0.9, "strength": 6.0},
+           "smoke": {"count": 20, "life": 2.5, "rise": 0.22, "size": (0.12, 0.42), "colour": (0.22, 0.21, 0.2), "alpha": 0.55, "strength": 0.0}}
+_mesh_path = Path(request["mesh"])
+_plan_path = _mesh_path.with_name(f"{_mesh_path.stem}_burn.json")
+burn_plan = json.loads(_plan_path.read_text(encoding="utf-8")) if _plan_path.is_file() else None
+standin = []  # (kind, object, phase, offset)
+
+
+def _standin_material(kind):
+    rule = STANDIN[kind]
+    material = bpy.data.materials.new(f"standin_{kind}")
+    material.diffuse_color = (*rule["colour"], rule["alpha"])
+    material.use_nodes = True
+    tree = material.node_tree
+    tree.nodes.clear()
+    coords = tree.nodes.new("ShaderNodeTexCoord")
+    gradient = tree.nodes.new("ShaderNodeTexGradient")
+    gradient.gradient_type = "SPHERICAL"
+    mapping = tree.nodes.new("ShaderNodeMapping")
+    mapping.inputs["Scale"].default_value = (2.0, 2.0, 2.0)  # the plane's corners are past the gradient's rim: a soft round puff
+    tree.links.new(coords.outputs["Object"], mapping.inputs["Vector"])
+    tree.links.new(mapping.outputs["Vector"], gradient.inputs["Vector"])
+    alpha = tree.nodes.new("ShaderNodeMath")
+    alpha.operation = "MULTIPLY"
+    alpha.inputs[1].default_value = rule["alpha"]
+    tree.links.new(gradient.outputs["Fac"], alpha.inputs[0])
+    material["standin_alpha"] = alpha.name
+    emission = tree.nodes.new("ShaderNodeEmission")
+    emission.inputs["Color"].default_value = (*rule["colour"], 1.0)
+    emission.inputs["Strength"].default_value = max(rule["strength"], 1.0)
+    clear = tree.nodes.new("ShaderNodeBsdfTransparent")
+    mix = tree.nodes.new("ShaderNodeMixShader")
+    tree.links.new(alpha.outputs["Value"], mix.inputs["Fac"])
+    tree.links.new(clear.outputs["BSDF"], mix.inputs[1])
+    tree.links.new(emission.outputs["Emission"], mix.inputs[2])
+    output = tree.nodes.new("ShaderNodeOutputMaterial")
+    tree.links.new(mix.outputs["Shader"], output.inputs["Surface"])
+    if hasattr(material, "surface_render_method"):
+        material.surface_render_method = "BLENDED"
+    else:
+        material.blend_method = "BLEND"
+    return material
+
+
+def _locator_world():
+    empty = next((o for o in scene.objects if o.type == "EMPTY" and o.name.split(".")[0] == (burn_plan or {}).get("locator")), None)
+    if empty is not None:
+        return empty.matrix_world.translation.copy()
+    bone = (burn_plan or {}).get("locator_bone")
+    if rig is not None and bone in rig.pose.bones:
+        return rig.matrix_world @ rig.pose.bones[bone].head
+    return (rest_low + rest_high) / 2
+
+
+if burn_plan:
+    import random
+
+    chance = random.Random(11)
+    for kind, rule in STANDIN.items():
+        material = _standin_material(kind)
+        for k in range(rule["count"]):
+            plane = bpy.data.meshes.new(f"standin_{kind}_{k}")
+            plane.from_pydata([(-0.5, -0.5, 0.0), (0.5, -0.5, 0.0), (0.5, 0.5, 0.0), (-0.5, 0.5, 0.0)], [], [(0, 1, 2, 3)])
+            plane.materials.append(material)
+            obj = bpy.data.objects.new(f"standin_{kind}_{k}", plane)
+            scene.collection.objects.link(obj)
+            track = obj.constraints.new("TRACK_TO")
+            track.target = camera
+            track.track_axis = "TRACK_Z"
+            track.up_axis = "UP_Y"
+            obj.hide_render = True
+            offset = Vector((chance.uniform(-1, 1), chance.uniform(-1, 1), chance.uniform(-0.3, 0.3)))
+            standin.append((kind, obj, k / rule["count"], offset))
+
+
+def update_standin(clip, frame):
+    """Place the stand-in particles for this frame of `clip`; True when any is shown (the tile is then stamped)."""
+
+    shown = False
+    active = bool(burn_plan) and clip == burn_plan.get("clip")
+    seconds = (frame - 1) / 30.0
+    centre = _locator_world() if active else None
+    for kind, obj, phase, offset in standin:
+        rule = STANDIN[kind]
+        particle = next((p for p in burn_plan.get("particles", []) if p.get("standin") == kind), None) if active else None
+        if particle is None or not (particle["time"] <= seconds <= particle["time"] + particle["duration_s"] + rule["life"]):
+            obj.hide_render = True
+            continue
+        age = ((seconds - particle["time"]) / rule["life"] + phase) % 1.0
+        born = seconds - age * rule["life"]
+        if born < particle["time"] or born > particle["time"] + particle["duration_s"]:
+            obj.hide_render = True
+            continue
+        size = span * (rule["size"][0] + (rule["size"][1] - rule["size"][0]) * age)
+        obj.location = centre + offset * span * 0.06 + Vector((0.0, 0.0, rule["rise"] * span * age * rule["life"]))
+        obj.scale = (size, size, size)
+        obj.hide_render = False
+        shown = True
+    stamp = scene.render
+    stamp.use_stamp = shown
+    if shown:
+        for name in dir(stamp):
+            if name.startswith("use_stamp_") and name != "use_stamp_note" and isinstance(getattr(stamp, name), bool):
+                try:
+                    setattr(stamp, name, False)
+                except (AttributeError, TypeError):
+                    pass
+        stamp.use_stamp_note = True
+        stamp.stamp_note_text = "particles: stand-in"
+        stamp.stamp_font_size = max(8, int(scene.render.resolution_y / 30))
+    return shown
 
 
 # ---- diagnostics: colour what the checks measure, so a reviewer sees where it is ----
@@ -469,6 +593,9 @@ def render_diagnostics(clip, frames, views):
     shading.color_type = "VERTEX"
     shading.light = "STUDIO"
     scene.view_settings.exposure = 0.0
+    for _kind, obj, _phase, _offset in standin:
+        obj.hide_render = True
+    scene.render.use_stamp = False
     for frame in frames:
         scene.frame_set(frame)
         place_rider()

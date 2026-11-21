@@ -53,6 +53,19 @@ def bone_key(name: str) -> str:
     return re.sub(r"0+(\d)", r"\1", name)
 
 
+def kit_names(names: Sequence[str]) -> List[str]:
+    """Each GLB joint's kit name where it has one (lib/tripo_rig.py: Mixamo's `mixamorig:Spine1` and the newer Tripo rig's `Spine01` are the
+    kit's `Spine01`, its `Hip` the kit's `Hips`), else its own name."""
+
+    from lib import tripo_rig
+
+    try:
+        rig = tripo_rig.RigNames(names)
+    except tripo_rig.RigError:
+        return list(names)
+    return [rig.kit(name) or name for name in names]
+
+
 def similarity(source: np.ndarray, target: np.ndarray) -> np.ndarray:
     """The 4x4 scale, orthogonal turn and translation that best maps the `source` points onto the `target` points (Umeyama). The turn may be a
     mirror: the PDX exporter flips the forward axis (the GLB's toes point along +Z, the mesh's along -Z), so the proper rotation leaves the
@@ -83,7 +96,7 @@ def _matching_clip(names: Sequence[str], wanted: str) -> Optional[str]:
 def carry(rig: "clip_check.Rig", tracks: dict, end: float, mesh: pdx_deform.SkinnedMesh) -> pdx_deform.Animation:
     """The GLB clip as a `pdx_deform.Animation` on `mesh` (see the module text), lifted out of the ground per frame."""
 
-    keys = {bone_key(name): k for k, name in enumerate(rig.joint_names)}
+    keys = {bone_key(name): k for k, name in enumerate(kit_names(rig.joint_names))}
     pairs = [(i, keys[bone_key(name)]) for i, name in enumerate(mesh.bones) if bone_key(name) in keys]
     glb_bind = np.linalg.inv(rig.inverse)
     pdx_bind = np.linalg.inv(mesh.inverse_bind)

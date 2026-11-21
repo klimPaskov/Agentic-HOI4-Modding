@@ -325,7 +325,7 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
         if stems and _owner_of(anim_path, stems) != stem:
             continue
         try:
-            anim = pdx_deform.load_anim(anim_path)
+            anim = _burn_judged(folder, stem, anim_path, pdx_deform.load_anim(anim_path))
             report = pdx_deform.deformation_report(mesh, anim)
         except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError):
             continue  # UNIT-ANIM-UNREADABLE already reports it
@@ -341,6 +341,16 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
         if not seated and (sink > sink_limit or hover > limits["hover"]):
             add("UNIT-ANIM-GROUND", "error", anim_path, f"the lowest point goes {sink:.1%} of the unit's height below the ground and up to {report.highest_lowest:.1%} above it; vanilla {'deaths sink' if death else 'units sink'} at most {sink_limit:.1%} and lift at most {limits['hover']:.1%}")
     _check_motion(mesh, mesh_path, loaded, add, facts, limits, seated, weapon_bones)
+
+
+def _burn_judged(folder: Path, stem: str, anim_path: Path, anim):
+    """A death that burns away (lib/tripo_burn.py, its plan beside the files) is judged up to the burn's start: after it the pose is held and
+    only scaled toward the ground, and the burn's own rules (BURN-*, tripo/tripo_checks.py) judge the rest."""
+
+    from lib import tripo_burn
+
+    plan = tripo_burn.read_plan(folder, stem) if (_role_of(anim_path, stem) or "") == "death" else None
+    return tripo_burn.truncated(anim, int(plan["burn_start"]) + 1) if plan else anim
 
 
 # A seated rider's idle, move, retreat and training are one clip by design: the mount's gait carries it.

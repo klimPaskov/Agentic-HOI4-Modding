@@ -442,8 +442,8 @@ class Regions(unittest.TestCase):
         plan = {"lengths": lengths, "wing": dict(self.WING, side=20.0, droop=0.0), "side": "L", "rest_directions": np.array([rest[0]] * 3),
                 "parent_rest": np.eye(4), "chain_u": 0.5, "rest_relative": relative}
         stage = {"up": UP, "front": FRONT, "ground": -10.0, "height": 2.0}
-        quaternions = C.wing_quaternions(plan, np.stack([np.eye(4)] * 5), "retreat", stage)
-        pose = C.wing_role_pose("retreat", 5)
+        quaternions = C.wing_quaternions(plan, np.stack([np.eye(4)] * 5), "attack", stage)
+        pose = C.wing_role_pose("attack", 5)
         now = {key: value[2] for key, value in pose.items()}
         backs, tilts = C.held_face_turns(plan["wing"]["normal"], np.stack([np.eye(3)] * 5), "L", np.full(5, 20.0), FRONT, UP,
                                          most=max(C.FACE_SWEEP_MAX, plan["wing"]["sweep"]))
@@ -454,6 +454,72 @@ class Regions(unittest.TestCase):
             world = world @ relative[k][:3, :3] @ C.matrix_from_quaternion(quaternions[2, k])
         rest_world = relative[0][:3, :3] @ relative[1][:3, :3]
         np.testing.assert_allclose(world, turns[1] @ rest_world, atol=1e-6)
+
+    def test_a_capped_rise_keeps_the_heading_and_only_lowers(self) -> None:
+        rest = C.unit(np.array([-1.0, 0.0, 0.3]))
+        steep = C.unit(np.array([-0.3, 0.5, 1.0]))
+        capped = C.capped_rise(steep, rest, UP, 10.0)
+        limit = math.degrees(math.asin(float(rest @ UP))) + 10.0
+        self.assertAlmostEqual(math.degrees(math.asin(float(capped @ UP))), limit, places=6)
+        level, capped_level = steep - (steep @ UP) * UP, capped - (capped @ UP) * UP
+        np.testing.assert_allclose(C.unit(capped_level), C.unit(level), atol=1e-9)  # same heading
+        low = C.unit(np.array([-1.0, 0.2, 0.1]))
+        np.testing.assert_allclose(C.capped_rise(low, rest, UP, 10.0), low)  # a bone under the cap is left alone
+
+    def test_a_leaning_torso_does_not_stand_a_beating_wing_upright(self) -> None:
+        # a torso leaning 40 degrees forward under a swept-back wing lifted it toward the vertical (the demon's box_01): no bone of a
+        # standing wing now rises more than WING_RISE_MAX above its rest elevation, while a dying wing keeps its own rules
+        rest, _lateral = self.wing_chain()
+        lengths = np.array([0.1, 0.1, 0.1])
+        relative = chain_rest(lengths, start=(0.1, 0.0, 1.4), direction=rest[0])
+        plan = {"lengths": lengths, "wing": dict(self.WING, side=37.0, droop=0.0), "side": "L", "rest_directions": np.array([rest[0]] * 3),
+                "parent_rest": np.eye(4), "chain_u": 0.5, "rest_relative": relative}
+        stage = {"up": UP, "front": FRONT, "ground": -10.0, "height": 2.0}
+        lean = np.eye(4)
+        lean[:3, :3] = C.axis_angle_matrix(np.cross(UP, FRONT), math.radians(40.0))  # the top of the torso toward the front
+        self.assertGreater(float((lean[:3, :3] @ UP) @ FRONT), 0.5)
+        parents = np.stack([lean] * 9)
+        limit = math.sin(math.asin(float(rest[0] @ UP)) + math.radians(C.WING_RISE_MAX)) + 1e-6
+        for role in ("attack", "defend", "retreat"):
+            quaternions = C.wing_quaternions(plan, parents, role, stage)
+            for f in range(len(parents)):
+                world = lean.copy()
+                for k in range(3):
+                    world = world @ relative[k]
+                    world[:3, :3] = world[:3, :3] @ C.matrix_from_quaternion(quaternions[f, k])
+                    self.assertLessEqual(float(C.unit(world[:3, 1]) @ UP), limit, (role, f, k))
+
+    def test_a_wing_swung_back_stands_up_the_map_screen(self) -> None:
+        lateral = np.cross(UP, FRONT)  # the unit's left
+        self.assertLess(C.map_screen_angle(C.unit(lateral), FRONT, UP), 30.0, "a wing spread to the side lies across the screen")
+        self.assertGreater(C.map_screen_angle(C.unit(-FRONT + 0.2 * lateral), FRONT, UP), 70.0, "swung straight back it stands up the screen")
+        self.assertAlmostEqual(C.map_screen_angle(C.unit(lateral + 0.5 * UP), FRONT, UP), C.map_screen_angle(C.unit(-lateral + 0.5 * UP), FRONT, UP), places=6)
+        wrapped = C.unit(lateral + 2.0 * FRONT - 0.3 * UP)  # a wing wrapped forward round the body points down the screen
+        self.assertEqual(C.map_screen_angle(wrapped, FRONT, UP), 0.0)
+        self.assertGreater(C.map_screen_angle(C.unit(lateral - 2.0 * FRONT - 0.3 * UP), FRONT, UP), 30.0, "behind the body it still counts")
+        self.assertGreater(C.map_screen_angle(C.unit(lateral + 0.5 * FRONT + 2.0 * UP), FRONT, UP), 30.0, "up the screen it still counts")
+
+    def test_the_retreat_folds_and_the_defend_wraps_forward(self) -> None:
+        self.assertEqual(C.WING_ROLES["retreat"]["fold"], 1.0)
+        self.assertNotEqual(C.WING_ROLES["retreat"]["fold"], C.WING_ROLES["move"]["fold"])
+        self.assertGreaterEqual(C.WING_ROLES["defend"]["wrap"], 60.0)
+
+    def test_the_screen_share_changes_slowly_and_never_rises_over_a_need(self) -> None:
+        shares = C.limited_shares(np.array([1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0]))
+        self.assertEqual(float(shares[3]), 0.0)
+        self.assertLessEqual(float(np.abs(np.diff(shares)).max()), C.SCREEN_SHARE_RATE + 1e-9)
+        self.assertEqual(float(C.screen_share_steps()[0]), 1.0)
+        self.assertEqual(float(C.screen_share_steps()[-1]), -1.0)
+
+    def test_a_share_lowers_the_back_swing_and_tilt_only(self) -> None:
+        rest, _lateral = self.wing_chain()
+        wing = dict(self.WING, side=40.0)
+        full = dict(self.pose(), face=1.0, face_back=60.0, face_tilt=30.0, twist=20.0)
+        none = C.wing_pose_rotations(rest, 0.5, wing, UP, FRONT, dict(full, back_share=0.0), np.zeros(3))
+        np.testing.assert_allclose(none, np.stack([np.eye(3)] * len(rest)), atol=1e-9)  # no back swing and no tilt: the wing as spread at rest
+        half = C.wing_pose_rotations(rest, 0.5, wing, UP, FRONT, dict(full, back_share=0.5), np.zeros(3))
+        for turn in half:
+            self.assertAlmostEqual(float(np.linalg.det(turn)), 1.0, places=9)
 
     def test_the_attack_and_the_retreat_turn_their_face(self) -> None:
         for role, rule in C.WING_ROLES.items():
@@ -695,7 +761,8 @@ class WingChecks(unittest.TestCase):
         import tripo_checks as TC
 
         edge = {"left": TC.MIN_WING_FACE_SHARE - 0.1, "right": 0.6, "map": 0.6}
-        self.assertEqual(self.rules("u_retreat", self.row(face=edge)), [("TRIPO-WING-EDGE-ON", "left")])
+        self.assertEqual(self.rules("u_attack", self.row(face=edge)), [("TRIPO-WING-EDGE-ON", "left")])
+        self.assertEqual(self.rules("u_retreat", self.row(face=edge)), [])  # round g: folded along the back as it flees
         self.assertEqual(self.rules("u_idle", self.row(face=edge)), [])  # folded and still: an edge is fine
         self.assertEqual(self.rules("u_death", self.row(face=edge)), [])
 
