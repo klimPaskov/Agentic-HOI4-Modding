@@ -81,6 +81,10 @@ class RestoreStep(unittest.TestCase):
         self.assertEqual(float(frames[0]), 0.0)
         self.assertEqual(float(frames[-1]), 0.0, "the attack ends where it started, so its loop holds")
         self.assertAlmostEqual(float(frames[:int(40 * (1 - tripo_lunge.RETURN_SHARE))].max()), 0.6, places=2)
+        # a clip cut before its follow-through: the provider clip ends at frame 30 of 40, so the step holds to there and then eases back
+        late = tripo_lunge.step_per_frame(step, 40, 30.0)
+        self.assertAlmostEqual(float(late[30]), 0.6, places=2)
+        self.assertEqual(float(late[-1]), 0.0)
 
 
 class GroundStrike(unittest.TestCase):
