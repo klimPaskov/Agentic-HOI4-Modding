@@ -1186,15 +1186,33 @@ def clearance_radii(joints: np.ndarray, capsules: Sequence[Tuple[np.ndarray, np.
 #   0.8 of the clip and was still open when the knees bent.
 # Every pose is capped by the body: a down-stroke stops when the lowest chain hangs straight down (`wing_down_degrees`) and the bones
 # are pushed out of the body's capsules.
+# Round e (2026-11-19): a fresh review of run demon_d read the move and the defend as the idle at game size, the wings "only riding the
+# body": the fold room left the idle's wings spread (48 degrees of back swing), so every clip showed the same spread wings. Now the idle
+# lowers its folded wings (`lower`, degrees down in the frontal plane) and breathes, the move and the retreat beat harder, the attack's
+# single beat is stronger, and the defend wraps its wings forward round the body (`wrap`, degrees of forward swing, ramped in and out with
+# the guard, lib/tripo_guard.ramp) so the guard reads from the game camera.
+# Round g (2026-11-21): the second fresh review of run demon_f read the retreat as the move (both spread the wings in the same V from the
+# game camera) and the defend as a bank (one wing up, one down, never forward). Now the retreat folds its wings along the back as the idle
+# does, with small quick beats, and runs looking back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py): its outline
+# is narrow where the move's is a wide V. The defend wraps its wings forward round the body by `WRAP_GUARD` degrees, a cloak drawn round
+# against a blow. A wing wrapped forward points down the game camera's screen and hides the body: TRIPO-WING-SCREEN counts only a wing
+# that rises up the screen or swings back (`map_screen_angle`), and TRIPO-WING-FRONT judges a wrapped defend on the head alone
+# (tripo/tripo_checks.WRAP_COVER_PARTS). At 30 degrees the wrap left the wings beside the body from the game camera.
+WRAP_GUARD = 70.0
+# A wrap swung only at the root leaves a flat wing pointing forward beside the body (replayed on demon_f's dump: 2.5% of the body hidden from
+# the front at 70 degrees). Each bone past the root swings this share of the wrap further in, so the wing curls round and its tips close
+# before the chest, as a cloak is drawn round.
+WRAP_CURL_SHARE = 0.3
 WING_ROLES: Dict[str, Dict[str, float]] = {
-    "idle": {"fold": 1.0, "flap": 3.0, "beats": 1},
-    "move": {"fold": 0.5, "flap": 14.0, "beats": 2, "steps": 1.0},
-    "attack": {"fold": 0.0, "flap": 30.0, "beats": 0, "beat": 1.0, "face": 1.0},
-    "defend": {"fold": 0.3, "flap": 4.0, "beats": 1},
-    "retreat": {"fold": 0.3, "flap": 25.0, "beats": 3, "face": 1.0},
+    "idle": {"fold": 1.0, "flap": 3.0, "beats": 1, "lower": 40.0},  # a 6 degree breath left the move only 2.5 times the idle (TRIPO-WING-IDLE-MOVE)
+    "move": {"fold": 0.5, "flap": 19.0, "beats": 2, "steps": 1.0},  # under the edge-on rule's 20, which a move without a face turn would fail
+    "attack": {"fold": 0.0, "flap": 40.0, "beats": 0, "beat": 1.0, "face": 1.0},
+    "defend": {"fold": 0.0, "flap": 4.0, "beats": 1, "wrap": WRAP_GUARD, "lower": 20.0},
+    "retreat": {"fold": 1.0, "flap": 3.0, "beats": 4, "lower": 30.0},
     "death": {"fold": 0.0, "fold_end": 1.0, "flap": 0.0, "beats": 0, "droop": 1.0, "upright_sweep": 1.0, "fold_by_fall": 1.0, "knee_guard": 1.0},
 }
 WING_DEFAULT_ROLE = "idle"
+WRAP_RAMP_SHARE = 0.25  # the defend's wrap comes in over the first quarter of the clip and goes over the last, as the guard does
 # A folded fan keeps 70% of its spread: the membrane between two chains never narrows past the kit's squash limit (two thirds).
 FAN_CLOSE_SHARE = 0.3
 FLAP_DELAY = 0.15  # each bone down a chain lags its parent by this share of a flap cycle (the wave runs out to the tip)
@@ -1356,7 +1374,7 @@ def walk_beats(left_foot: np.ndarray, right_foot: np.ndarray, front: np.ndarray)
     return 2 * k, -0.5 * math.pi + 2.0 * angle
 
 
-def wing_role_pose(role: str, frames: int, events: Optional[Dict[str, float]] = None) -> Dict[str, np.ndarray]:
+def wing_role_pose(role: str, frames: int, events: Optional[Dict[str, float]] = None, back_share: Optional[np.ndarray] = None) -> Dict[str, np.ndarray]:
     """Per frame: the fold (0..1), the flap phase (radians) and amplitude (degrees) of the chain roots, the share of the back swing a
     fold makes (`sweep`), the share of the wing's droop room it sags by (`droop`) and the share of the face turn (`face`).
 
@@ -1386,8 +1404,10 @@ def wing_role_pose(role: str, frames: int, events: Optional[Dict[str, float]] = 
         amplitude = amplitude * np.sin(math.pi * t)
     else:
         phase = 2.0 * math.pi * beats * t + offset  # whole beats: a looping clip ends on the angle it starts with
-    return {"fold": fold, "phase": phase, "amplitude": amplitude, "sweep": np.full(frames, rule.get("sweep", 1.0)), "droop": droop,
-            "face": np.full(frames, rule.get("face", 0.0))}
+    wrap_ramp = np.minimum(np.clip(t / WRAP_RAMP_SHARE, 0.0, 1.0), np.clip((1.0 - t) / WRAP_RAMP_SHARE, 0.0, 1.0))
+    return {"wrap": rule.get("wrap", 0.0) * smoothstep(wrap_ramp), "lower": np.full(frames, rule.get("lower", 0.0)),
+            "fold": fold, "phase": phase, "amplitude": amplitude, "sweep": np.full(frames, rule.get("sweep", 1.0)), "droop": droop,
+            "face": np.full(frames, rule.get("face", 0.0)), "back_share": np.ones(frames) if back_share is None else np.asarray(back_share, float)}
 
 
 def flap_angles(phase: np.ndarray, amplitude: np.ndarray, bones: int) -> np.ndarray:
@@ -1441,16 +1461,23 @@ def wing_pose_rotations(rest_directions: np.ndarray, chain_u: float, wing: Dict[
     face = float(pose.get("face", 0.0))
     close = axis_angle_matrix(wing["normal"], fold * float(wing.get("close", FAN_CLOSE_SHARE)) * (wing["u_min"] - chain_u))
     floor = min(wing.get("side", 0.0) + float(pose.get("twist", 0.0)), wing["sweep"])
-    root = max(wing["sweep"] * fold, floor) * float(pose["sweep"])
-    held = float(pose.get("face_back", 0.0))
-    outer = max(root, max(wing["sweep"] * fold, held) * float(pose["sweep"])) if face > 0 else root
-    tilt = face * float(pose.get("face_tilt", 0.0))
+    # `tripo/chain_stage.screen_shares`: the share of the back swing and tilt the map's screen allows (1 to 0), and under 0 the share of the
+    # beat's up-stroke taken away as well (-1: no up-stroke)
+    share = float(pose.get("back_share", 1.0))
+    back, lift = max(share, 0.0), 1.0 + min(share, 0.0)
+    root = max(wing["sweep"] * fold, floor) * float(pose["sweep"]) * back - float(pose.get("wrap", 0.0))
+    held = float(pose.get("face_back", 0.0)) * back
+    outer = max(root, max(wing["sweep"] * fold * back, held) * float(pose["sweep"])) if face > 0 else root
+    tilt = face * float(pose.get("face_tilt", 0.0)) * back
     out = np.zeros((len(rest_directions), 3, 3))
+    curl = WRAP_CURL_SHARE * float(pose.get("wrap", 0.0))
     for k in range(len(rest_directions)):
-        swing = axis_angle_matrix(up, math.radians(root))
+        swing = axis_angle_matrix(up, math.radians(root - curl * k))  # a wrap curls each bone further in, so the tips close before the chest
         if k > 0 and face > 0:
             swing = axis_angle_matrix(up, math.radians(root + face * (outer - root))) @ axis_angle_matrix(lateral, -math.radians(tilt))
-        turn = max(float(np.sum(flaps[: k + 1])) - wing["droop"] * float(pose["droop"]) + float(pose.get("raise", 0.0)), -wing["down"])
+        beat = float(np.sum(flaps[: k + 1]))
+        lowered = float(pose.get("lower", 0.0)) if k == 0 else 0.0
+        turn = max((beat * lift if beat > 0.0 else beat) - wing["droop"] * float(pose["droop"]) + float(pose.get("raise", 0.0)) - lowered, -wing["down"])
         out[k] = swing @ axis_angle_matrix(front, math.radians(turn)) @ close
     return out
 
@@ -1468,6 +1495,90 @@ def mirror_directions(directions: np.ndarray, lateral: np.ndarray) -> np.ndarray
     lateral = unit(lateral)
     directions = np.asarray(directions, float)
     return directions - 2.0 * np.outer(directions @ lateral, lateral)
+
+
+# No bone of a standing wing points more than this many degrees above its own rest elevation in the world. The torso carries the wing, and
+# a wing swung back (the side floor, the twist, the face turn) rises when the torso leans forward or sideways over it: the demon's box_01
+# leans the upper spine 24 degrees forward and 22 sideways at the punch, and both wings' mean direction rose from 16 to 44 degrees above
+# level (sine 0.28 to 0.70), hit_to_body_01 to 40 (0.64), flee_01 to 41 (0.65). At map size each read as a wing stood upright, a spike,
+# and a fresh review failed the attack for it. The reviewed idle and move rise at most 4 degrees (0.28 to 0.35). Capped at 10 degrees, root
+# included (tripo/chain_replay.py on run demon_a, 2026-11-18), the three peaks fell to 0.29, 0.39 and 0.31, with the side cover, the face
+# shares and the root stretch unchanged within a point. A capped bone is turned down in its own vertical plane, so it keeps its heading.
+WING_RISE_MAX = 10.0
+
+
+def capped_rise(direction: np.ndarray, rest_direction: np.ndarray, up: np.ndarray, degrees: Optional[float]) -> np.ndarray:
+    """`direction` turned down in its own vertical plane so it rises at most `degrees` above `rest_direction`'s elevation (no cap: None)."""
+
+    if degrees is None:
+        return direction
+    up = unit(up)
+    direction = unit(direction)
+    rest_angle = math.asin(float(np.clip(unit(rest_direction) @ up, -1.0, 1.0)))
+    limit = min(math.radians(89.0), rest_angle + math.radians(degrees))
+    if math.asin(float(np.clip(direction @ up, -1.0, 1.0))) <= limit:
+        return direction
+    level = direction - (direction @ up) * up
+    if np.linalg.norm(level) < 1e-9:
+        return direction
+    return unit(math.cos(limit) * unit(level) + math.sin(limit) * up)
+
+
+# The game's camera looks down at the unit from the front at 55 degrees (the review sheets' hoi4 view), and from there a wing swung back
+# stands up the screen as a spike. Measured on the exported files as the angle of each wing's mean direction from its root above the
+# screen's level (`tripo/tripo_checks.py`, TRIPO-WING-SCREEN, both sides of the unit), the demon's reviewed move reaches 51 degrees (run
+# tripo-wings full2) and its box_01 attack, whose wing a fresh review saw collapse upright, 89. The attack and the defend therefore aim their
+# wings at the game camera (`tripo/chain_stage.screen_shares`): in each frame the back swing (the side floor, the torso's twist and the
+# face turn) and the face tilt keep the largest share, in steps of 5%, under which the posed chains' mean direction from the wing's root
+# stays at or under `SCREEN_AIM` on the map's screen. The posed chains carry the flap and the torso's own turn and lean. The share changes by
+# at most `SCREEN_SHARE_RATE` a frame. The wing keeps its size and shape: only how far it swings back changes.
+# The check's bound: the highest angle fresh reviewers saw at game size without naming the wing, with a twentieth added. The demon's run
+# demon_c (2026-11-19) measured its attack at 57.5 degrees and two fresh D-83 reviews passed the wing (the reviewed move of full2: 51).
+SCREEN_MAX = 60.0
+# The pose aims at the reviewed move's own 51 degrees, under the check's bound: the export's later steps (the shoulder ease, the snap easing,
+# the resample to 30 frames a second) still turn the upper spine that carries the wing.
+SCREEN_AIM = 51.0
+SCREEN_ROLES = ("attack", "defend")
+SCREEN_SHARE_STEP = 0.05
+SCREEN_SHARE_RATE = 0.1
+
+
+def map_screen_angle(direction: np.ndarray, front: np.ndarray, up: np.ndarray) -> float:
+    """Degrees a world direction rises above the screen's level in the review sheets' map view, the larger of the cameras on either side.
+
+    A direction ahead of the body's frontal plane that points down the screen counts 0: that is a wing wrapped forward round the body (the
+    defend's `wrap`), which hides the body instead of standing up as a spike. One that points down the screen behind the frontal plane, or
+    up the screen anywhere, counts by its angle."""
+
+    worst = 0.0
+    azimuth, elevation = REVIEW_VIEWS["map"]
+    ahead = float(direction @ unit(front)) > 0.0
+    for side in (azimuth, -azimuth):
+        view = review_view(front, up, side, elevation)
+        right = unit(np.cross(unit(up), view))
+        screen_up = np.cross(view, right)
+        rise = float(direction @ screen_up)
+        if ahead and rise < 0.0:
+            continue
+        worst = max(worst, math.degrees(math.atan2(abs(rise), abs(float(direction @ right)) + 1e-12)))
+    return worst
+
+
+def screen_share_steps() -> np.ndarray:
+    """The back-swing shares tried per frame, from the full swing down (`tripo/chain_stage.screen_shares`)."""
+
+    return np.round(np.arange(1.0, -1.0 - 1e-9, -SCREEN_SHARE_STEP), 3)
+
+
+def limited_shares(shares: np.ndarray) -> np.ndarray:
+    """`shares` held to `SCREEN_SHARE_RATE` a frame: a lower share spreads to the frames round it, so the wing never jumps."""
+
+    out = np.asarray(shares, float).copy()
+    for f in range(1, len(out)):
+        out[f] = min(out[f], out[f - 1] + SCREEN_SHARE_RATE)
+    for f in range(len(out) - 2, -1, -1):
+        out[f] = min(out[f], out[f + 1] + SCREEN_SHARE_RATE)
+    return out
 
 
 def side_twist(carry: np.ndarray, up: np.ndarray, front: np.ndarray, side: str) -> float:
@@ -1528,14 +1639,14 @@ def wing_events(role: str, track: Optional[Dict[str, np.ndarray]], stage: dict) 
 
 
 def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, capsule_axes: Optional[np.ndarray] = None,
-                     track: Optional[Dict[str, np.ndarray]] = None) -> np.ndarray:
+                     track: Optional[Dict[str, np.ndarray]] = None, back_share: Optional[np.ndarray] = None) -> np.ndarray:
     """(frames, bones, 4) local quaternions of one wing chain for a role clip: the role's fold, face turn and flap (`WING_ROLES`, timed by
     the body clip through `wing_events` and `track`) carried by the upper spine, each bone pushed out of the body's capsules
     (`capsule_axes` (frames, capsules, 2, 3) with the plan's `radii`) along the wing's outward side, and kept above the ground. A face
     turn is chosen per frame against the upper spine's turn (`held_face_turns`), from the side floor plus the torso's twist."""
 
     frames, bones = parents.shape[0], len(plan["lengths"])
-    pose = wing_role_pose(role, frames, wing_events(role, track, stage))
+    pose = wing_role_pose(role, frames, wing_events(role, track, stage), back_share)
     flaps = flap_angles(pose["phase"], pose["amplitude"], bones)
     wing = plan["wing"]
     lateral = unit(np.cross(stage["up"], stage["front"]))
@@ -1549,6 +1660,7 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
     for k in range(bones):
         chained = chained @ plan["rest_relative"][k]
         bone_rest.append(orthonormal(chained)[:3, :3])
+    rise_cap = None if "fold_end" in WING_ROLES.get(role, {}) else WING_RISE_MAX  # a dying wing has its own rules
     if float(np.max(pose["face"])) > 0:
         most = max(FACE_SWEEP_MAX, float(wing["sweep"]))
         floors = np.array([min(wing.get("side", 0.0) + side_twist(c, stage["up"], stage["front"], plan["side"]), most) for c in carries])
@@ -1578,6 +1690,7 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             capsules = [] if capsule_axes is None else [(axis[0], axis[1], float(plan["radii"][k, c])) for c, axis in enumerate(capsule_axes[f])]
             wanted = unit(carry @ posed[k])
             direction = collide_direction(head, wanted, float(plan["lengths"][k]), capsules, stage["ground"], stage["up"], outward, along=True)
+            direction = capped_rise(direction, rest[k], stage["up"], rise_cap)
             if whole and k > 0:
                 # a bone past the root of a face-turned wing takes the pose's whole turn, roll included: turned by the shortest arc onto
                 # its direction alone, the bones of neighbouring chains rolled apart under the compound swing and tilt and twisted the

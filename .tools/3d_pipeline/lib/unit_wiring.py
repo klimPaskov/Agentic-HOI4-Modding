@@ -22,7 +22,7 @@ import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 try:  # the pipeline's own `lib` package
     from lib.unit_registration import STATE_TO_ROLE
@@ -489,6 +489,52 @@ def apply_sound_events(entity_block: str, events: Sequence[SoundEvent], clip_sam
         out += _splice_state(lines, position, by_first[position], added)
         position = by_first[position] + 1
     return "\n".join(out)
+
+
+# ---------------------------------------------------------------- particle events (a death that burns away, lib/tripo_burn.py)
+
+
+def apply_particle_events(entity_block: str, state: str, events: Sequence[Dict[str, Any]]) -> str:
+    """Add an `event = { time = <seconds> node = "<locator>" particle = "<name>" keep_particle = yes }` line to every state named `state`, as
+    vanilla's GER rifle infantry's death fires `blood_particle` at its `head` locator. Raises WiringError when the entity has no such state."""
+
+    if not events:
+        return entity_block
+    lines = entity_block.split("\n")
+    states = _entity_states(lines)
+    targets = [(first, last) for first, last, name in states if name == state]
+    if not targets:
+        raise WiringError(f"particle events for {state}: the entity has no such state ({', '.join(dict.fromkeys(n for _f, _l, n in states))})")
+    added = []
+    for event in events:
+        node = f' node = "{_quoted(str(event["node"]))}"' if event.get("node") else ""
+        added.append(f'\t\tevent = {{ time = {float(event.get("time", 0)):g}{node} particle = "{_quoted(str(event["particle"]))}" keep_particle = yes }}')
+    out: List[str] = []
+    position = 0
+    by_first = dict(targets)
+    while position < len(lines):
+        if position in by_first:
+            out += _splice_state(lines, position, by_first[position], added)
+            position = by_first[position] + 1
+            continue
+        out.append(lines[position])
+        position += 1
+    return "\n".join(out)
+
+
+def finite_particle(text: str, name: str, duration: float) -> str:
+    """A copy of a vanilla particle file (`particle = { name = "..." subsystem = {...} }`) under its own `name`, every endless subsystem
+    (`duration=-1`) made to emit for `duration` seconds, so the burn's fire dies out with the unit instead of burning on."""
+
+    out = re.sub(r'(\bparticle\s*=\s*\{\s*name\s*=\s*)"[^"]*"', lambda m: f'{m.group(1)}"{name}"', text, count=1)
+    return re.sub(r"\bduration\s*=\s*-1(\.0+)?", f"duration={duration:.3f}", out)
+
+
+def particle_gfx(entries: Sequence[Dict[str, Any]]) -> str:
+    """A `.gfx` file that registers the burn's particles (`pdxparticle`, as vanilla's gfx/entities/particles.gfx)."""
+
+    body = "".join(f'\tpdxparticle = {{\n\t\tname = "{_quoted(e["name"])}"\n\t\ttype = "{_quoted(e["type"])}"\n\t\tscale = {float(e.get("scale", 1)):g}\n\t}}\n' for e in entries)
+    return "objectTypes = {\n" + body + "}\n"
 
 
 # ---------------------------------------------------------------- sub-unit, localisation, counters

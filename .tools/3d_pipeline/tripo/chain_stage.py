@@ -463,12 +463,14 @@ def wing_limits(sheet, heads, radii, up) -> Dict[str, float]:
     sweep = float(sheet.get("fold", {}).get("sweep", sweep))
     low = int(np.argmin(chain_u))
     low_rest = C.unit(np.diff(joints[low], axis=0))
+    span = C.unit(np.mean(np.asarray(points, float), axis=0) - np.asarray(root, float))  # the wing's mean direction from its root, as TRIPO-WING-SCREEN reads it
     if sheet["side"] == "R":  # the pose rules work on the left wing; the right one is its mirror
         low_rest = C.mirror_directions(low_rest, lateral)
+        span = C.mirror_directions(span[None], lateral)[0]
     return {
         "low_rest": low_rest, "low_lengths": np.linalg.norm(np.diff(joints[low], axis=0), axis=1), "low_u": float(chain_u[low]),
         "root": np.asarray(joints[low, 0], float),
-        "u_min": float(np.min(chain_u)), "normal": normal, "sweep": sweep, "side": side,
+        "u_min": float(np.min(chain_u)), "normal": normal, "span": span, "sweep": sweep, "side": side,
         "close": float(sheet.get("fold", {}).get("close", C.FAN_CLOSE_SHARE)),
         "down": C.wing_down_degrees(first[int(np.argmin(chain_u))], -up),
         "droop": 0.0,
@@ -715,16 +717,69 @@ def bake_cloak(plans, body, stage, dt, looping, role: str = "") -> List[np.ndarr
                             passes=C.LOOP_PASSES if looping else 1, lying=lying)
 
 
+def chain_points(plans: List[dict], parents: np.ndarray, quaternions: List[np.ndarray]) -> tuple:
+    """((frames, 3) the mean of every chain joint of a wing side, (frames, 3) its root) from the chains' local quaternions."""
+
+    frames = len(parents)
+    total, count = np.zeros((frames, 3)), 0
+    root = np.zeros((frames, 3))
+    for plan, quats in zip(plans, quaternions):
+        current = np.asarray(parents, float).copy()
+        for k in range(len(plan["bones"])):
+            local = np.tile(np.eye(4), (frames, 1, 1))
+            for f in range(frames):
+                local[f, :3, :3] = C.matrix_from_quaternion(quats[f, k])
+            current = current @ plan["rest_relative"][k] @ local
+            head = current[:, :3, 3]
+            if k == 0:
+                root += (np.asarray(parents, float) @ plan["rest_relative"][0])[:, :3, 3]
+            tip = (current @ np.r_[np.c_[np.eye(3), [0.0, plan["lengths"][k], 0.0]], [[0.0, 0.0, 0.0, 1.0]]])[:, :3, 3]
+            total += head + tip
+            count += 2
+    return total / max(count, 1), root / max(len(plans), 1)
+
+
+def screen_shares(stage: dict, body: Dict[str, np.ndarray], role: str, track) -> Dict[str, np.ndarray]:
+    """{wing side: per frame the share of the back swing and tilt to keep} for a role that aims its wings at the game camera
+    (lib/tripo_chains.SCREEN_ROLES): of the shares tried, the largest under which the posed chains' mean direction from the wing's root stays
+    at or under `SCREEN_AIM` on the map's screen (the lowest angle's share when none does), held to the share rate."""
+
+    if role not in C.SCREEN_ROLES:
+        return {}
+    out = {}
+    for side in ("L", "R"):
+        plans = [plan for plan in stage["plans"] if plan["region"] == "wings" and plan["side"] == side]
+        if not plans:
+            continue
+        frames = len(body["parents"])
+        best = np.zeros(frames)
+        best_angle = np.full(frames, np.inf)
+        chosen = np.full(frames, -1.0)
+        for share in C.screen_share_steps():
+            constant = np.full(frames, float(share))
+            quats = [C.wing_quaternions(plan, body["parents"], role, stage, body["axes"], track, constant) for plan in plans]
+            mean, root = chain_points(plans, body["parents"], quats)
+            for f in range(frames):
+                angle = C.map_screen_angle(mean[f] - root[f], stage["front"], stage["up"])
+                if chosen[f] < 0 and angle <= C.SCREEN_AIM:
+                    chosen[f] = share
+                if angle < best_angle[f]:
+                    best_angle[f], best[f] = angle, share
+        out[side] = C.limited_shares(np.where(chosen >= 0, chosen, best))
+    return out
+
+
 def bake_numpy(stage: dict, body: Dict[str, np.ndarray], role: str, dt: float, looping: bool) -> List[np.ndarray]:
     """Each plan's local quaternions (frames, bones, 4) for one role clip, by the rule of its region."""
 
     cloak = [plan for plan in stage["plans"] if plan["region"] == "cloak"]
     track = body_track(body)
     baked = dict(zip((id(plan) for plan in cloak), bake_cloak(cloak, body, stage, dt, looping, role))) if cloak else {}
+    shares = screen_shares(stage, body, role, track)
     out = []
     for plan in stage["plans"]:
         if plan["region"] == "wings":
-            quaternions = C.wing_quaternions(plan, body["parents"], role, stage, body["axes"], track)
+            quaternions = C.wing_quaternions(plan, body["parents"], role, stage, body["axes"], track, shares.get(plan["side"]))
         else:
             quaternions = baked[id(plan)]
         if looping:
