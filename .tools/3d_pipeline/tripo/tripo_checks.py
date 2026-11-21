@@ -79,6 +79,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-WING-THROUGH-BODY: more than `MAX_WING_BELOW_SHARE` of a winged quadruped's wing points hang below the belly in some frame.
 - TRIPO-DEATH-WING-HIGH and TRIPO-DEATH-HEAD-HIDDEN: a winged quadruped's dead wing stands over the body, or its head and neck are lost
   against the rest of the body from the game camera.
+- TRIPO-DEATH-WING-TENT: from the game camera a winged quadruped's dead wings stand above the lying torso's outline as a tent or a sail
+  (`death_wing_tent`), however little higher than the torso they are.
 - TRIPO-STEP-READ: a winged quadruped's hooves travel less than `MIN_STEP_READ` of the body's length from the game camera.
 - TRIPO-ATTACK-DEFEND-ALIKE: at the attack's farthest reach and the defend's middle the smaller wing silhouette from the map camera is
   more than `MAX_ATTACK_DEFEND_WINGS` of the larger.
@@ -210,6 +212,19 @@ MAX_WING_BELOW_SHARE = 0.005
 # forelegs. Played offline on run 14's files the new measure reads run 12's death 36%, run 14's 38% and round 7's 62%.
 DEATH_WING_ABOVE = 0.2
 DEATH_HEAD_CLEAR = 0.5
+# TRIPO-DEATH-WING-TENT: from the game camera and its mirror, in every judged frame of a death's end (from DEATH_TENT_FROM of the clip, the
+# frames both fresh reviews of run 18 judged, every other frame and the last), the wing screen cells (SILHOUETTE_CELL_SHARE of the height)
+# that no other part of the body fills and that stand above the lying torso's outline (the torso's highest cell in their screen column) are
+# at most DEATH_WING_TENT times the torso's own cells. Only wing points more than DEATH_TENT_GROUND of the height off the ground count, and
+# only columns the torso reaches. A height measure misses a wing folded along the top of a body on its side: the run 18 dragon's stood
+# 0.013 of the height over the lying torso (TRIPO-DEATH-WING-HIGH 0.03), yet from the high map camera both fresh reviews saw a tall peaked
+# tent over the body. The camera looks down at 55 degrees, so ground beyond the body toward the tail shows above it on the screen: a
+# folded wing lying there 0.2 of the height thick read as part of that tent. Run 18 reads 1.13 (its last frame 1.11) and run 12's death
+# (its rules played on run 14's mesh) 1.61 (its last frame 0.88), both failed by fresh reviews. No reviewed death has passed yet, so the
+# limit is provisional: about half the least failed last-frame reading.
+DEATH_TENT_FROM = 0.52
+DEATH_TENT_GROUND = 0.1
+DEATH_WING_TENT = 0.45
 # TRIPO-STEP-READ: in a winged quadruped's move and retreat the hooves travel, from the game camera, at least MIN_STEP_READ of the body's
 # length (each hoof's screen path against the torso's, its range, the mean over the hooves). Run 12's move measured 0.24 offline and a
 # fresh review saw only the wings move.
@@ -826,6 +841,40 @@ def death_end_numbers(mesh, matrices, sides, head: np.ndarray, head_neck: np.nda
     return above, clear
 
 
+def wing_tent_share(points: np.ndarray, wings: np.ndarray, torso: np.ndarray, axes: Tuple[np.ndarray, np.ndarray], cell: float, height: float) -> float:
+    """TRIPO-DEATH-WING-TENT's measure in one frame from one camera: the cells of wing points raised more than DEATH_TENT_GROUND of the
+    `height` off the ground that no other part fills and that stand above the torso's highest cell in their screen column, over the torso's
+    cell count. Columns the torso does not reach are left out: a wing lying beyond the back lies beside the body on the screen, not over it."""
+
+    torso_cells = _cells(points[torso], axes, cell)
+    if not torso_cells:
+        return 0.0
+    top: Dict[int, int] = {}
+    for x, y in torso_cells:
+        top[x] = max(top.get(x, y), y)
+    raised = wings & (points[:, 1] - float(points[:, 1].min()) > DEATH_TENT_GROUND * height)
+    free = _cells(points[raised], axes, cell) - _cells(points[~wings], axes, cell)
+    return sum(1 for x, y in free if x in top and y > top[x]) / len(torso_cells)
+
+
+def death_wing_tent(mesh, matrices, wings: np.ndarray, torso: np.ndarray) -> Tuple[float, int]:
+    """TRIPO-DEATH-WING-TENT's measure: the worst `wing_tent_share` over the death's end frames and both game cameras, and its frame."""
+
+    cell = SILHOUETTE_CELL_SHARE * mesh.height
+    cameras = game_cameras(mesh)
+    worst, worst_frame = 0.0, matrices.shape[0] - 1
+    frames = list(range(int(DEATH_TENT_FROM * (matrices.shape[0] - 1)), matrices.shape[0], 2))
+    if frames[-1] != matrices.shape[0] - 1:
+        frames.append(matrices.shape[0] - 1)
+    for frame in frames:
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        for axes in cameras:
+            share = wing_tent_share(posed, wings, torso, axes, cell, mesh.height)
+            if share > worst:
+                worst, worst_frame = share, frame
+    return worst, worst_frame
+
+
 def step_read(mesh, matrices, hooves: np.ndarray, torso: np.ndarray, length: float) -> float:
     """TRIPO-STEP-READ's measure: the hooves' screen travel from the game camera against the torso's, over the body's length."""
 
@@ -983,6 +1032,10 @@ def _death_end_findings(mesh, clip: str, matrices, c: dict, row: dict) -> List[d
         out.append(finding("TRIPO-DEATH-WING-HIGH", clip, f"at the end a wing stands {above:.0%} of the height over where it joins the body (limit {DEATH_WING_ABOVE:.0%}): it reads as a sail, not a wing lying flat", share=round(above, 4)))
     if clear < DEATH_HEAD_CLEAR:
         out.append(finding("TRIPO-DEATH-HEAD-HIDDEN", clip, f"at the end {clear:.0%} of the head and neck shows clear of the body, legs, wings and tail from the game camera (at least {DEATH_HEAD_CLEAR:.0%}): the head is lost in the heap", share=round(clear, 3)))
+    tent, frame = death_wing_tent(mesh, matrices, c["wings"], c["torso"])
+    row.update(wing_tent=round(tent, 3), wing_tent_frame=frame)
+    if tent > DEATH_WING_TENT:
+        out.append(finding("TRIPO-DEATH-WING-TENT", clip, f"in frame {frame} the wings fill {tent:.2f} times the lying torso's screen cells above its outline from the game camera (at most {DEATH_WING_TENT:.2f}): they stand over the dead body as a tent or a sail", share=round(tent, 3), frame=frame))
     return out
 
 
@@ -1001,7 +1054,7 @@ def _attack_reach(mesh, clip: str, role: str, matrices, c: dict, row: dict) -> T
 
 def quadruped_view_findings(mesh, anims: Dict[str, object], sides) -> (List[dict], dict):
     """TRIPO-WING-SLIVER, TRIPO-WING-HEAD-FRONT, TRIPO-ATTACK-REACH, TRIPO-ATTACK-DEFEND-ALIKE, TRIPO-WING-CRUSH, TRIPO-WING-THROUGH-BODY,
-    TRIPO-DEATH-WING-HIGH, TRIPO-DEATH-HEAD-HIDDEN, TRIPO-STEP-READ, TRIPO-WING-SIDE-REACH, TRIPO-HEAD-FACING, TRIPO-ATTACK-HEAD-LEAD and
+    TRIPO-DEATH-WING-HIGH, TRIPO-DEATH-HEAD-HIDDEN, TRIPO-DEATH-WING-TENT, TRIPO-STEP-READ, TRIPO-WING-SIDE-REACH, TRIPO-HEAD-FACING, TRIPO-ATTACK-HEAD-LEAD and
     TRIPO-DEATH-SIDE for a winged quadruped."""
 
     out, numbers = [], {}

@@ -481,6 +481,10 @@ def _lying(head_at: float, wing: str):
     if wing == "flat":
         membrane = grid(np.arange(1.0, 3.01, step), (0.0, 0.6), np.arange(-1.0, 1.01, step))
         joined = np.flatnonzero((membrane[:, 0] == 1.0) & (membrane[:, 1] == 0.0))
+    elif wing == "tent":
+        # a peaked fold beyond the torso's far end from the camera, its ridge 0.02 over the torso's top: the run 18 dragon's dead wings
+        membrane = np.array([[x, 1.02 - 0.6 * abs(x), z] for x in np.arange(-1.0, 1.01, step / 2) for z in np.arange(-6.0, -2.09, step / 2)], float)
+        joined = np.flatnonzero(np.isclose(membrane[:, 2], -2.1) & (np.abs(membrane[:, 0]) < 0.05))
     else:
         membrane = grid((0.0,), np.arange(1.0, 2.21, step), np.arange(-1.0, 1.01, step))
         joined = np.flatnonzero(membrane[:, 1] == 1.0)
@@ -583,6 +587,17 @@ class DeathEnd(unittest.TestCase):
         mesh, matrices, wing, head, torso = _lying(2.6, "sail")
         above, _clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
         self.assertGreater(above, tc.DEATH_WING_ABOVE, "standing over the body it is one")
+
+    def test_a_tent_over_the_lying_body_is_seen_from_the_game_camera_though_it_is_barely_higher(self) -> None:
+        tc = self.tc
+        mesh, matrices, wing, head, torso = _lying(2.6, "tent")
+        above, _clear = tc.death_end_numbers(mesh, matrices, [wing], head, head, torso)
+        self.assertLess(above, tc.DEATH_WING_ABOVE, "its ridge is only 0.02 over the torso: a height measure misses it")
+        tent, _frame = tc.death_wing_tent(mesh, matrices, wing, torso)
+        self.assertGreater(tent, tc.DEATH_WING_TENT, "from the high map camera it stands above the torso's outline")
+        mesh, matrices, wing, head, torso = _lying(2.6, "flat")
+        tent, _frame = tc.death_wing_tent(mesh, matrices, wing, torso)
+        self.assertLessEqual(tent, tc.DEATH_WING_TENT, "lying beside the body on the ground it shows beside the torso, not over it")
 
 
 class Rest(unittest.TestCase):
