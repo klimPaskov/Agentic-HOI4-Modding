@@ -2,14 +2,16 @@
 
 This file describes how to read, edit and extend the `[MOD_NAME]` codebase.
 
-Native Linux prerequisites, paths and client registration: `docs/linux.md`.
+<!-- HOI4_MOD_SETUP:COMPONENT:docs.linux:START -->
+Native Linux setup: `docs/linux.md`.
+<!-- HOI4_MOD_SETUP:COMPONENT:docs.linux:END -->
 
 It holds the rules that apply to every task. The full text of each section is in `.claude/skills/hoi4-project-rules/references/`, one file per topic.
 Read the file a section names before the work it governs. A summary here never replaces the full rule there.
 
 ## Placeholder Guide
 
-Use this guide once before turning the template into a real instruction file. HOI4 Mod Setup fills these values and removes this section automatically.
+Use this guide once. HOI4 Mod Setup fills these values and removes this section automatically.
 
 Install this template as `CLAUDE.md`. `CLAUDE.md` is canonical and `AGENTS.md` is generated from it.
 
@@ -20,7 +22,7 @@ Replace these everywhere outside examples:
 - `[HOI4_GAME_DIR]`: the installed Hearts of Iron IV folder, for example `C:/Program Files (x86)/Steam/steamapps/common/Hearts of Iron IV`.
 - `[STEAM_WORKSHOP_DIR]`: the Workshop content folder, for example `C:/Program Files (x86)/Steam/steamapps/workshop/content/394360`.
 
-Blocks wrapped in `<!-- HOI4_MOD_SETUP:COMPONENT:<component>:START -->` and the matching `END` comment belong to optional workflows. Keep a block when that workflow is installed and delete it, markers included, when it is not. The paths `docs/`, `.claude/skills/` and `.claude/agents/` stay as they are.
+Blocks wrapped in `<!-- HOI4_MOD_SETUP:COMPONENT:<component>:START -->` and the matching `END` comment belong to optional components. Keep a block when its component is installed, otherwise delete it with its markers. The paths `docs/`, `.claude/skills/` and `.claude/agents/` stay as they are.
 
 ---
 
