@@ -24,6 +24,9 @@ Checks (rule ids and levels are defined by each tool; see `.tools/lib/report.py`
 - localisation     `audits/audit_localisation_static.py`   localisation integrity and key wiring
 - asset-wiring     `audits/audit_asset_wiring_static.py`   sprite, texture and implicit GFX lookups
 - script-rules     `audits/audit_script_rules.py`          `<=`/`>=`, unary minus, scripted-localisation format codes
+- gui-rules        `audits/audit_gui_rules.py`             interface engine rules a render does not show: a text box
+                   with an extended scrollbar, quoted lower-case words, the event window's Description and
+                   picture places, negative sizes read as the parent's size (hoi4-scripted-gui)
 - gfx              `gfx/gfx.py audit`                      frame strips, flag ladder, achievement size, runtime binaries,
                    profiled icon families and report-image provenance
 - shelf            `audits/audit_shelf.py`                 vanilla reference shelf, its catalog and documents, and the 40
@@ -279,6 +282,8 @@ CHECKS = (
 		run_report_tool("asset-wiring", "audits/audit_asset_wiring_static.py")),
 	Check("script-rules", ("common/", "events/", "history/"), True,
 		run_report_tool("script-rules", "audits/audit_script_rules.py")),
+	Check("gui-rules", ("interface/",), True,
+		run_report_tool("gui-rules", "audits/audit_gui_rules.py")),
 	Check("gfx", ("gfx/", "interface/", "sound/", "music/"), True,
 		run_report_tool("gfx", "gfx/gfx.py", ("audit",))),
 	Check("shelf", (".claude/skills/hoi4-feature-assets/assets/", ".tools/gfx/", ".tools/audits/audit_shelf.py"), True,
