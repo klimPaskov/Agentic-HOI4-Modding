@@ -249,7 +249,9 @@ class EveryBlenderStart(unittest.TestCase):
 
     PRODUCTION = [
         path for path in PIPELINE.rglob("*.py")
+        # `vendor/` is the git-ignored copy of the Blender MCP server the bootstrap installs: not the kit's own tools (a set-up checkout failed here)
         if "tests" not in path.parts and "adapter" not in path.parts and "blender" not in path.parts and "meshy_runtime" not in path.parts
+        and "vendor" not in path.parts
         and path.name not in {"heavy_job.py", "bootstrap_3d_workflow.py", "mcp_stdio.py"}
     ]
 

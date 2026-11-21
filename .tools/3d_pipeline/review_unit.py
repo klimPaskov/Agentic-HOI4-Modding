@@ -105,7 +105,9 @@ def diffuse_maps(mesh_path: Path, gfx_texts: List[str]) -> Dict[str, str]:
                 texture = re.search(r'texture_diffuse\s*=\s*"([^"]+)"', settings.group(1))
                 if name and texture and (mesh_path.parent / Path(texture.group(1)).name).exists():
                     maps[name.group(1)] = str(mesh_path.parent / Path(texture.group(1)).name)
-    fallback = sorted(mesh_path.parent.glob(f"{mesh_path.stem}*diffuse*.dds")) or sorted(mesh_path.parent.glob("*diffuse*.dds"))
+    # the unit's own map first: a burn death's heap has its own `<stem>_ash_diffuse.dds`, which sorts before `<stem>_diffuse.dds`
+    own = mesh_path.parent / f"{mesh_path.stem}_diffuse.dds"
+    fallback = [own] if own.is_file() else sorted(mesh_path.parent.glob(f"{mesh_path.stem}*diffuse*.dds")) or sorted(mesh_path.parent.glob("*diffuse*.dds"))
     if fallback:
         maps["*"] = str(fallback[0])
     return maps

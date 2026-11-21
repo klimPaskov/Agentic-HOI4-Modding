@@ -82,6 +82,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   `MAX_WING_SIDE_COVER` of the arms, legs and head a viewer sees in a side view (`lib/tripo_chains.front_cover_share`: a wing point in a
   screen cell of the body, nearer the camera than its surface). A death skips the front view (from a low front camera a body lying face
   down has its wings ahead of its back by construction), and the side views while the torso lies.
+  A defend whose wings wrap forward (`wrap` in lib/tripo_chains.WING_ROLES) is judged in the front and map views on the head alone
+  (`WRAP_COVER_PARTS`).
 - TRIPO-WING-EDGE-ON: in a clip whose wings beat hard (the attack and the retreat), a wing's median face share in a side or the map view is
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
@@ -109,7 +111,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
+from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -144,6 +146,10 @@ COVER_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("front", "map"
 MAX_WING_SIDE_COVER = 0.10
 SIDE_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("left", "right")}
 SIDE_PARTS = ("Arm", "Hand", "Leg", "Foot", "Toe", "Head", "head", "neck")
+# A defend whose wings wrap forward round the body (lib/tripo_chains.WING_ROLES "wrap", round g of the demon, 2026-11-21) is judged in the
+# front and map views on the head alone: the wrap is meant to hide the torso and arms, and the unit still reads as itself while its head
+# shows above the wings.
+WRAP_COVER_PARTS = ("Head",)
 # A death is judged from the side only while the torso stands (hips to head more than half vertical): wings lying flat beside a fallen
 # body are in front of it from a low side camera by construction.
 UPRIGHT_SHARE = 0.5
@@ -387,6 +393,9 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
+    if float(tripo_chains.WING_ROLES.get(role, {}).get("wrap", 0.0)) > 0.0 and np.any(np.isin(dominant, WRAP_COVER_PARTS)):
+        # a defend that wraps its wings forward round the body is meant to hide it: the front and map views judge the head alone
+        body = np.isin(dominant, WRAP_COVER_PARTS)
     return wing_cover_points(frames, body, wings, side_parts(mesh, wings), front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height,
                              death, upright)
 
@@ -1000,10 +1009,10 @@ def shield_bone(args) -> str:
     return ""
 
 
-def split_advisory(findings: List[dict], rules: set) -> (List[dict], List[dict]):
-    """(the findings that fail the unit, the ones only reported)."""
+def split_advisory(findings: List[dict], rules: set, reported: Sequence[dict] = ()) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the ones only reported, `reported` among them)."""
 
-    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules]
+    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules] + list(reported)
 
 
 def job_regions(args) -> (bool, bool, bool):
@@ -1122,6 +1131,97 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
+def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-SCREEN: in a clip whose wings are spread (a role that folds them less than fully, not a death), each wing's mean direction
+    from its root may rise at most `tripo_chains.SCREEN_MAX` above the screen's level in the review sheets' map view, the game's camera, on
+    either side of the unit, in every judged frame. Past it a wing swung back stands up the screen as a spike (lib/tripo_chains.py says how
+    the bound was measured). Wings are the vertices bound mostly to `Wing` chain bones, each side's root the first bone of its chains."""
+
+    dominant = pdx_deform.dominant_bones(mesh)
+    names = mesh.bones
+    sides = {}
+    for side in ("L", "R"):
+        bones = [i for i, name in enumerate(names) if name.startswith(f"Wing{side}")]
+        roots = [i for i in bones if mesh.parents[i] < 0 or not names[mesh.parents[i]].startswith("Wing")]
+        if bones and roots:
+            sides[side] = (np.isin(dominant, bones), roots)
+    if len(sides) != 2:
+        return [], {}
+    front = front_direction(mesh)
+    up = np.array([0.0, 1.0, 0.0])
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        rule = tripo_chains.WING_ROLES.get(clip_role(clip))
+        if rule is None or "fold_end" in rule or float(rule.get("fold", 0.0)) >= 1.0:
+            continue
+        matrices = pdx_deform.skinning_matrices(mesh, anim)
+        joints = pdx_motion.posed_joints(mesh, anim)
+        worst, worst_frame = 0.0, 0
+        for frame in range(0, anim.frames, step):
+            posed = pdx_deform.skin(mesh, matrices[frame])
+            for mask, roots in sides.values():
+                direction = posed[mask].mean(axis=0) - joints[frame, roots].mean(axis=0)
+                angle = tripo_chains.map_screen_angle(direction, front, up)
+                if angle > worst:
+                    worst, worst_frame = angle, frame
+        numbers[clip] = {"screen_angle_worst": round(worst, 1), "frame": worst_frame}
+        if worst > tripo_chains.SCREEN_MAX:
+            out.append(finding("TRIPO-WING-SCREEN", clip, f"a wing rises {worst:.0f} degrees above the screen's level in the game's camera in frame {worst_frame} (limit "
+                               f"{tripo_chains.SCREEN_MAX:g}, the highest angle fresh reviews passed, 57.5, with a twentieth added): swung back it stands up as a spike at map size", degrees=round(worst, 1), frame=worst_frame))
+    return out, numbers
+
+
+# For a winged humanoid's attack and defend the game camera decides (D-83): their wings aim at it (lib/tripo_chains.SCREEN_ROLES), so the
+# side views' cover and edge-on rules only report there. They block in the map view, and in the side views of every other clip.
+SIDE_ADVISORY_RULES = ("TRIPO-WING-FRONT", "TRIPO-WING-EDGE-ON")
+
+
+def side_view_advisory(findings: List[dict], mesh) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the side-view wing findings of a winged humanoid's attack and defend, which only report)."""
+
+    if quadruped_checks.is_quadruped(mesh):
+        return findings, []
+    keep, report = [], []
+    for item in findings:
+        advisory = item["rule"] in SIDE_ADVISORY_RULES and item.get("view") in SIDE_VIEWS and clip_role(item["subject"]) in tripo_chains.SCREEN_ROLES
+        (report if advisory else keep).append(item)
+    return keep, report
+
+
+def wing_checks(mesh, anims: Dict[str, object], wings: bool, cape: bool, numbers: dict) -> (List[dict], List[dict]):
+    """The chain checks and, for wings, TRIPO-WING-SCREEN: (the findings that fail the unit, the side-view ones that only report)."""
+
+    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    found, advisory = side_view_advisory(found, mesh)
+    if wings:
+        screen, numbers["wing_screen"] = wing_screen_findings(mesh, anims)
+        found += screen
+    return found, advisory
+
+
+def burn_split(folder: Path, mesh, anims: Dict[str, object], numbers: dict):
+    """A death that burns away (lib/tripo_burn.py, its plan beside the files): (its BURN findings and clip, the clips with that death cut at
+    the burn's start for every other check). The lying-body rules are dropped for it (`tripo_burn.LYING_RULES`). (None, anims) without one."""
+
+    mesh_path = sorted(folder.glob("*.mesh"))[0]
+    plan = tripo_burn.read_plan(folder, mesh_path.stem)
+    if plan is None or plan.get("clip") not in anims:
+        return None, anims
+    clip = plan["clip"]
+    found, numbers["burn"] = tripo_burn.burn_findings(mesh, anims[clip], plan, clip, tripo_burn.mesh_locators(mesh_path))
+    cut = dict(anims)
+    cut[clip] = tripo_burn.truncated(anims[clip], int(plan["burn_start"]) + 1)
+    return {"clip": clip, "findings": found}, cut
+
+
+def burn_filtered(findings: List[dict], burn: Optional[dict]) -> List[dict]:
+    """The findings with a burning death's lying-body rules dropped and its BURN findings added (`burn_split`)."""
+
+    if burn is None:
+        return findings
+    return [item for item in findings if not (item["subject"] == burn["clip"] and item["rule"] in tripo_burn.LYING_RULES)] + burn["findings"]
+
+
 def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = ()) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
     rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
@@ -1147,6 +1247,8 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         findings += found
         found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
         findings += found
+        found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
+        findings += found
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
 
@@ -1170,13 +1272,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
+    burn, anims = burn_split(args.folder.resolve(), mesh, anims, numbers)
     cape, wings, plates = job_regions(args)
     if cape:
         found, numbers["cloak"] = cloak_findings(mesh, anims)
         findings += found
     else:
         numbers["cloak"] = "not run: the job's anatomy has no cape"
-    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    found, side_advisory = wing_checks(mesh, anims, wings, cape, numbers)
     findings += found
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
@@ -1193,7 +1296,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)
         findings += found
     findings += weapon_stage_findings(args, mesh, anims, numbers)
-    findings, advisory = split_advisory(findings, advisory_rules(args))
+    findings = burn_filtered(findings, burn)
+    findings, advisory = split_advisory(findings, advisory_rules(args), side_advisory)
     report = {"findings": findings, "advisory": advisory, "numbers": numbers}
     if args.json:
         args.json.write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")

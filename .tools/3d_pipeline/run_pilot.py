@@ -3775,12 +3775,17 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
     weapon or shield the unit has let go of never deciding where it is. A death whose thighs split apart past vanilla's deaths has its knees swung together first (lib/tripo_splay.py, TRIPO-DEATH-SPLAY), one whose hips hold themselves up while it falls has them brought down in a free fall first (lib/tripo_fall.py, TRIPO-DEATH-HOVER), one whose boots hang above the ground has its legs settled next, one
-    whose boot kicks up again once the hips are down has that leg laid across the kick (lib/tripo_kick.py, TRIPO-DEATH-LEG-KICK), and one whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
+    whose boot kicks up again once the hips are down has that leg laid across the kick (lib/tripo_kick.py, TRIPO-DEATH-LEG-KICK), and one whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. In a death the wing chains never decide where the body is, and each wing sunk under the ground is turned up about its root last (lib/tripo_chain_lift.py). `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
 
     from lib import pdx_ground, tripo_fall, tripo_kick, tripo_pose, tripo_splay
 
     released = released_bones(_parts(weapon), role)
     record: Dict[str, Any] = {}
+    if role == "death":
+        # a death's wing chains never decide where the body is: they are lifted off the ground instead (lib/tripo_chain_lift.py)
+        from lib import pdx_deform, tripo_chain_lift
+
+        released = list(released) + [name for name in tripo_chain_lift.chain_bones(pdx_deform.load_mesh(mesh)) if name not in released]
     if role == "death" and humanoid:
         splay = tripo_splay.close_death_legs(mesh, anim, anim, exclude_bones=released)
         record["splay"] = dict(splay.__dict__)
@@ -3795,9 +3800,69 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
         upper = tripo_pose.settle_death_upper(mesh, anim, anim, exclude_bones=released)
         record["upper_body"] = {"changed": upper.changed, "turns_degrees": upper.turns, "from_frame": upper.from_frame, "ramp_frames": upper.frames,
                                 "heights_before": upper.heights_before, "heights_after": upper.heights_after, "note": upper.note}
+    if role == "death":
+        lift = tripo_chain_lift.lift_death_chains(mesh, anim, anim)
+        if lift.changed or lift.sunk_before:
+            record["chain_lift"] = dict(lift.__dict__)
     fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=released)
     record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
     return record
+
+
+def guard_staged_defend(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The defend posed as a guard on the staged files when the job asks (`"defend_pose": "guard"`, lib/tripo_guard.py), recorded."""
+
+    if (spec.get("tripo") or {}).get("defend_pose") != "guard" or "defend" not in roles:
+        return
+    from lib import map_read, pdx_deform, tripo_guard
+
+    mesh = staged / f"{stem}.mesh"
+    records[f"{stem}_defend.anim"]["guard"] = tripo_guard.guard_defend(mesh, staged / f"{stem}_defend.anim", staged / f"{stem}_idle.anim",
+                                                                         map_read.front_of(pdx_deform.load_mesh(mesh)))
+
+
+def look_back_staged_retreat(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The retreat turned to look back over the shoulder on the staged files when the job asks (`"retreat_pose": "look_back"`,
+    lib/tripo_look_back.py), recorded."""
+
+    if (spec.get("tripo") or {}).get("retreat_pose") != "look_back" or "retreat" not in roles:
+        return
+    from lib import tripo_look_back
+
+    records[f"{stem}_retreat.anim"]["look_back"] = tripo_look_back.look_back(staged / f"{stem}.mesh", staged / f"{stem}_retreat.anim")
+
+
+def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The role poses a job asks for on the staged files: the defend's guard, then the retreat's look back."""
+
+    guard_staged_defend(staged, stem, spec, roles, records)
+    look_back_staged_retreat(staged, stem, spec, roles, records)
+
+
+def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
+    """Each shape's mesh streams and their material's texture names, for the registration (lib/unit_registration.mesh_streams)."""
+
+    from lib import unit_registration
+
+    try:
+        return unit_registration.mesh_streams(mesh) if mesh.is_file() else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, Any]:
+    """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
+    keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
+
+    from lib import tripo_burn
+
+    mesh = staged / f"{stem}.mesh"
+    heap = tripo_burn.add_heap(mesh, staged / f"{stem}_diffuse.dds")
+    for role in roles:
+        if role != "death":
+            tripo_burn.add_rest_joint(mesh, staged / f"{stem}_{role}.anim")
+    death = tripo_burn.burn_death(mesh, staged / f"{stem}_death.anim")
+    return tripo_burn.write_plan(staged, stem, heap, death)
 
 
 def clear_held_props(mesh: Path, anim: Path, role: str, weapon: Any) -> Dict[str, Any]:
@@ -4312,6 +4377,10 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         if not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("lift_neck", True) is not False:
             for role in sorted(exports["animations"]):
                 records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role)
+        # A defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands before
+        # the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before the
+        # weights are fitted to the clips.
+        pose_staged_roles(staged, stem, spec, exports["animations"], records)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
@@ -4322,11 +4391,18 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # rule may be tried on the weights (lib/tripo_girdle.py, off unless the job sets `"girdle_weights": true`).
         ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
         records[f"{stem}.mesh"]["girdle_weights"] = girdle_trial(job, staged, spec, sorted(exports["animations"]), weapon_cfg)
-        # Then the mesh the game loads decides where the ground is.
+        # Then the mesh the game loads decides where the ground is. A death that burns away (`"death_kind": "burn"`, lib/tripo_burn.py) is grounded
+        # as the standing reaction it is, then burnt: its heap, bone and locator join the mesh, and its plan is written beside the files.
+        burning = (spec.get("tripo") or {}).get("death_kind") == "burn" and "death" in exports["animations"]
         for role in sorted(exports["animations"]):
-            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
+            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim",
+                                                                                "burn_stand" if burning and role == "death" else role, weapon_cfg,
                                                                                 humanoid=not tripo_quadruped(spec))
             records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
+        if burning:
+            records[f"{stem}.mesh"]["burn"] = burn_staged_death(staged, stem, sorted(exports["animations"]))
+            for name in [f"{stem}.mesh"] + [f"{stem}_{role}.anim" for role in sorted(exports["animations"])]:
+                records[name]["staged"] = file_record(staged / name, relative_to=job)
         # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
         # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
         clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)
@@ -4346,6 +4422,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         template=(unit or {}).get("entity_template", "infantry"),
         state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
         rider=rider,
+        streams=registration_streams(staged / f"{stem}.mesh"),
     )
     (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
     report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}

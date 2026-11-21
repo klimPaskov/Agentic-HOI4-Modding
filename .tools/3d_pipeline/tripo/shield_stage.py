@@ -294,7 +294,8 @@ def main():
     from lib import glb_root
 
     named = [n for text in (args.hold_clips, args.hold_fade_clips, args.release_clips, args.clearance_clips) for n in (text or "").split(",")]
-    travelling = glb_root.travelling_clips(args.body, named)
+    # a clip that lets go of the weapon is a death, which falls (lib/glb_root.DEATH_TRAVEL_LIMIT)
+    travelling = glb_root.travelling_clips(args.body, named, deaths=(args.release_clips or "").split(","))
     if travelling:
         print("shield_stage refused: clips that move the hips across the ground " + json.dumps(travelling), file=sys.stderr)
         sys.exit(4)
