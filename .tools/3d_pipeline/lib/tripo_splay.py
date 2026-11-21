@@ -67,6 +67,13 @@ and 90 squashed edges to 288 and 502), because it turns the thigh against the pe
 worst split from 133 to 56.2, the worst frame's stretched and squashed edges from 473 and 680 as Tripo made it to 172 and 279 after every death settle, and
 the settled clip passes every death rule (`tripo/death_pick.py --settled`).
 
+The D-94 zombie (2026-11-21, Tripo's fall preset on the weights fitted with its lunging attack) split one frame 49.2 degrees and no share
+of the closing was taken, for two reasons. The thighs' gap was read from the hip joints, whose ends are the pelvis's width apart (0.85
+against a clearance of 0.94), so any turn about them narrowed it: the thighs are now read from `THIGH_GAP_FROM` of their length down. And
+a frame far under the clip's worst could gain under one edge (41 squashed to 43 refused), where the kit's rule lets the worst frame gain
+its share plus one: each frame now gets that allowance (`_frame_within`). With six closing passes, since the smoothing keeps about half of
+each pass's turn at a one-frame peak, the split ends at 47.6.
+
 Maths on the exported `.mesh` and `.anim` (`pdx_deform`), no Blender.
 """
 
@@ -92,11 +99,12 @@ VANILLA_DEATH_OPENING = round(VANILLA_DEATH_SPLIT - VANILLA_REST_SPLIT, 1)
 OPENING_LIMIT = round(1.25 * VANILLA_DEATH_OPENING, 1)
 # The thigh closing (`_closed`): the two legs keep at least this share of the sum of their radii between them (thigh to thigh, shin to shin).
 LEG_CLEARANCE = 0.9
+THIGH_GAP_FROM = 1.0 / 3.0
 # A lower leg within this share of the height of the ground stands on it, and the lift that answers the closing may raise the body by at most
 # `CLOSE_LIFT_MAX` (`_contacts_kept`).
 CONTACT_SHARE = 0.01
 CLOSE_LIFT_MAX = 0.02
-CLOSE_PASSES = 3
+CLOSE_PASSES = 6  # a one-frame peak keeps about half of each pass's turn after the smoothing (the D-94 zombie, 2026-11-21: three passes 1.2 degrees)
 CHECK_ROUNDS = 4
 SHARES = np.round(np.arange(0.0, 1.0001, 0.1), 2)
 MIN_RAMP_FRAMES = 6
@@ -287,8 +295,12 @@ def _frame_within(frames: np.ndarray, before: np.ndarray) -> np.ndarray:
     """(frames,) True where a frame stays inside what `stretch_smooth.worse` allows against the same frame before (not only against the clip's
     worst frame: a kneel at frame 66 of the zombie, far under the clip's worst, gained a third more edges past 1.3 times against the clip's rule)."""
 
+    # Each frame may gain as many edges as the kit's rule lets the clip's worst frame gain (its share of the worst, plus one): a share of a
+    # low frame's own count is under one edge, and two more squashed edges at the D-94 zombie's frame 48 (41 to 43, the clip's worst 60)
+    # refused every share of the closing its splay needed (2026-11-21). A third more on such a frame is still refused.
     share = stretch_smooth.WORSEN_SHARE
-    return ((frames[:, 0] <= before[:, 0] * (1 + share) + 1) & (frames[:, 1] <= before[:, 1] * (1 + share) + 1)
+    slack = before.max(axis=0)[:2] * share + 1
+    return ((frames[:, 0] <= before[:, 0] + slack[0]) & (frames[:, 1] <= before[:, 1] + slack[1])
             & (frames[:, 2] <= max(float(before[:, 2].max()), 0.0) * (1 + share) + 1e-6))
 
 
@@ -370,8 +382,8 @@ def _contacts_kept(lows_before: np.ndarray, lift_before: np.ndarray, lows: np.nd
     return kept & (lifts <= lift_before + CLOSE_LIFT_MAX + 1e-9)
 
 
-def _segment_gap(a0: np.ndarray, a1: np.ndarray, b0: np.ndarray, b1: np.ndarray, samples: int = 9) -> float:
-    t = np.linspace(0.0, 1.0, samples)[:, None]
+def _segment_gap(a0: np.ndarray, a1: np.ndarray, b0: np.ndarray, b1: np.ndarray, samples: int = 9, start: float = 0.0) -> float:
+    t = np.linspace(start, 1.0, samples)[:, None]
     p, q = a0 + t * (a1 - a0), b0 + t * (b1 - b0)
     return float(np.linalg.norm(p[:, None] - q[None], axis=2).min())
 
@@ -394,14 +406,17 @@ def leg_radii(mesh: pdx_deform.SkinnedMesh, legs) -> np.ndarray:
 
 
 def leg_gaps(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, legs) -> np.ndarray:
-    """(frames, 2) the least distance between the two thighs and between the two shins (joint segments) in each frame."""
+    """(frames, 2) the least distance between the two thighs and between the two shins (joint segments) in each frame. The thighs are
+    measured from `THIGH_GAP_FROM` of their length down to the knee: their hip ends are the pelvis's width apart in every pose, which on a
+    narrow body is already under the clearance (the D-94 zombie, 2026-11-21: hip joints 0.85 apart against a clearance of 0.94), and a turn
+    about the hip joints then always narrows that end a little, so no share of a closing could pass."""
 
     posed = pdx_motion.posed_joints(mesh, anim)
     out = np.zeros((anim.frames, 2))
     l, r = legs
     for frame in range(anim.frames):
         p = posed[frame]
-        out[frame, 0] = _segment_gap(p[l.hip], p[l.knee], p[r.hip], p[r.knee])
+        out[frame, 0] = _segment_gap(p[l.hip], p[l.knee], p[r.hip], p[r.knee], start=THIGH_GAP_FROM)
         out[frame, 1] = _segment_gap(p[l.knee], p[l.ankle], p[r.knee], p[r.ankle])
     return out
 
