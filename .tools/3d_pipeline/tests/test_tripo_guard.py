@@ -14,7 +14,7 @@ sys.path.insert(0, str(PIPELINE))
 sys.path.insert(0, str(PIPELINE / "tests"))
 
 import test_deformation_checks as TD
-from lib import map_read, pdx_deform, pdx_motion, tripo_guard as G
+from lib import map_read, pdx_deform, pdx_motion, tripo_guard as G, tripo_look_back as L
 from test_tripo_chain_lift import WingedBiped, local
 from test_tripo_pose_upper import turn
 
@@ -42,6 +42,30 @@ class Guard(WingedBiped):
             self.assertGreater(float(after[10, names.index(hand), 1]), chest, hand)
             self.assertGreater(float(after[10, names.index(hand), 2]), float(after[10, names.index("Spine02"), 2]), f"{hand} ahead of the chest")
         np.testing.assert_allclose(after[0], before[0], atol=1e-5)  # the first frame is the clip's own
+
+
+class LookBack(WingedBiped):
+    def test_the_head_turns_back_over_the_shoulder_and_the_loop_holds(self) -> None:
+        retreat = self.folder / "unit_retreat.anim"
+        TD.write_anim(retreat, 21, lambda frame: {})
+        before = pdx_motion.posed_joints(self.mesh, pdx_deform.load_anim(retreat))
+        result = L.look_back(self.mesh_path, retreat)
+        self.assertTrue(result["changed"])
+        anim = pdx_deform.load_anim(retreat)
+        after = pdx_motion.posed_joints(self.mesh, anim)
+        names = self.mesh.bones
+        np.testing.assert_allclose(after[0], before[0], atol=1e-5)  # the first and the last frame are the clip's own
+        np.testing.assert_allclose(after[-1], before[-1], atol=1e-5)
+        legs = [names.index(name) for name in ("Hips", "LeftFoot", "RightFoot")]
+        np.testing.assert_allclose(after[10, legs], before[10, legs], atol=1e-5)  # the stride is untouched
+        rotations, _positions = L.tripo_pose._world_rotations(self.mesh, anim)
+        head = rotations[10, names.index("Head")]
+        facing = head @ np.array([0.0, 0.0, 1.0])
+        turned = np.degrees(np.arctan2(facing[0], facing[2]))
+        self.assertAlmostEqual(abs(float(turned)), L.LOOK_BACK, delta=1.0)
+
+    def test_a_rig_without_a_head_is_left_alone(self) -> None:
+        self.assertEqual(L.TURN[-1][0], "Head")
 
 
 class Alike(WingedBiped):

@@ -82,6 +82,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   `MAX_WING_SIDE_COVER` of the arms, legs and head a viewer sees in a side view (`lib/tripo_chains.front_cover_share`: a wing point in a
   screen cell of the body, nearer the camera than its surface). A death skips the front view (from a low front camera a body lying face
   down has its wings ahead of its back by construction), and the side views while the torso lies.
+  A defend whose wings wrap forward (`wrap` in lib/tripo_chains.WING_ROLES) is judged in the front and map views on the head alone
+  (`WRAP_COVER_PARTS`).
 - TRIPO-WING-EDGE-ON: in a clip whose wings beat hard (the attack and the retreat), a wing's median face share in a side or the map view is
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
@@ -144,6 +146,10 @@ COVER_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("front", "map"
 MAX_WING_SIDE_COVER = 0.10
 SIDE_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("left", "right")}
 SIDE_PARTS = ("Arm", "Hand", "Leg", "Foot", "Toe", "Head", "head", "neck")
+# A defend whose wings wrap forward round the body (lib/tripo_chains.WING_ROLES "wrap", round g of the demon, 2026-11-21) is judged in the
+# front and map views on the head alone: the wrap is meant to hide the torso and arms, and the unit still reads as itself while its head
+# shows above the wings.
+WRAP_COVER_PARTS = ("Head",)
 # A death is judged from the side only while the torso stands (hips to head more than half vertical): wings lying flat beside a fallen
 # body are in front of it from a low side camera by construction.
 UPRIGHT_SHARE = 0.5
@@ -387,6 +393,9 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
+    if float(tripo_chains.WING_ROLES.get(role, {}).get("wrap", 0.0)) > 0.0 and np.any(np.isin(dominant, WRAP_COVER_PARTS)):
+        # a defend that wraps its wings forward round the body is meant to hide it: the front and map views judge the head alone
+        body = np.isin(dominant, WRAP_COVER_PARTS)
     return wing_cover_points(frames, body, wings, side_parts(mesh, wings), front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height,
                              death, upright)
 

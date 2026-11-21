@@ -3806,6 +3806,24 @@ def guard_staged_defend(staged: Path, stem: str, spec: Dict[str, Any], roles: An
                                                                          map_read.front_of(pdx_deform.load_mesh(mesh)))
 
 
+def look_back_staged_retreat(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The retreat turned to look back over the shoulder on the staged files when the job asks (`"retreat_pose": "look_back"`,
+    lib/tripo_look_back.py), recorded."""
+
+    if (spec.get("tripo") or {}).get("retreat_pose") != "look_back" or "retreat" not in roles:
+        return
+    from lib import tripo_look_back
+
+    records[f"{stem}_retreat.anim"]["look_back"] = tripo_look_back.look_back(staged / f"{stem}.mesh", staged / f"{stem}_retreat.anim")
+
+
+def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The role poses a job asks for on the staged files: the defend's guard, then the retreat's look back."""
+
+    guard_staged_defend(staged, stem, spec, roles, records)
+    look_back_staged_retreat(staged, stem, spec, roles, records)
+
+
 def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, Any]:
     """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
     keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
@@ -4334,8 +4352,9 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             for role in sorted(exports["animations"]):
                 records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role)
         # A defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands before
-        # the face, before the weights are fitted to the clips.
-        guard_staged_defend(staged, stem, spec, exports["animations"], records)
+        # the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before the
+        # weights are fitted to the clips.
+        pose_staged_roles(staged, stem, spec, exports["animations"], records)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour

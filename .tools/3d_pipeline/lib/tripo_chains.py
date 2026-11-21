@@ -1191,12 +1191,24 @@ def clearance_radii(joints: np.ndarray, capsules: Sequence[Tuple[np.ndarray, np.
 # lowers its folded wings (`lower`, degrees down in the frontal plane) and breathes, the move and the retreat beat harder, the attack's
 # single beat is stronger, and the defend wraps its wings forward round the body (`wrap`, degrees of forward swing, ramped in and out with
 # the guard, lib/tripo_guard.ramp) so the guard reads from the game camera.
+# Round g (2026-11-21): the second fresh review of run demon_f read the retreat as the move (both spread the wings in the same V from the
+# game camera) and the defend as a bank (one wing up, one down, never forward). Now the retreat folds its wings along the back as the idle
+# does, with small quick beats, and runs looking back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py): its outline
+# is narrow where the move's is a wide V. The defend wraps its wings forward round the body by `WRAP_GUARD` degrees, a cloak drawn round
+# against a blow. A wing wrapped forward points down the game camera's screen and hides the body: TRIPO-WING-SCREEN counts only a wing
+# that rises up the screen or swings back (`map_screen_angle`), and TRIPO-WING-FRONT judges a wrapped defend on the head alone
+# (tripo/tripo_checks.WRAP_COVER_PARTS). At 30 degrees the wrap left the wings beside the body from the game camera.
+WRAP_GUARD = 70.0
+# A wrap swung only at the root leaves a flat wing pointing forward beside the body (replayed on demon_f's dump: 2.5% of the body hidden from
+# the front at 70 degrees). Each bone past the root swings this share of the wrap further in, so the wing curls round and its tips close
+# before the chest, as a cloak is drawn round.
+WRAP_CURL_SHARE = 0.3
 WING_ROLES: Dict[str, Dict[str, float]] = {
     "idle": {"fold": 1.0, "flap": 3.0, "beats": 1, "lower": 40.0},  # a 6 degree breath left the move only 2.5 times the idle (TRIPO-WING-IDLE-MOVE)
     "move": {"fold": 0.5, "flap": 19.0, "beats": 2, "steps": 1.0},  # under the edge-on rule's 20, which a move without a face turn would fail
     "attack": {"fold": 0.0, "flap": 40.0, "beats": 0, "beat": 1.0, "face": 1.0},
-    "defend": {"fold": 0.0, "flap": 4.0, "beats": 1, "wrap": 30.0, "lower": 20.0},  # 45 put the exported defend at 64 on the map's screen
-    "retreat": {"fold": 0.3, "flap": 25.0, "beats": 4, "face": 1.0},  # faster beats; 35 degrees hid 11.9% of the limbs from the side
+    "defend": {"fold": 0.0, "flap": 4.0, "beats": 1, "wrap": WRAP_GUARD, "lower": 20.0},
+    "retreat": {"fold": 1.0, "flap": 3.0, "beats": 4, "lower": 30.0},
     "death": {"fold": 0.0, "fold_end": 1.0, "flap": 0.0, "beats": 0, "droop": 1.0, "upright_sweep": 1.0, "fold_by_fall": 1.0, "knee_guard": 1.0},
 }
 WING_DEFAULT_ROLE = "idle"
@@ -1458,8 +1470,9 @@ def wing_pose_rotations(rest_directions: np.ndarray, chain_u: float, wing: Dict[
     outer = max(root, max(wing["sweep"] * fold * back, held) * float(pose["sweep"])) if face > 0 else root
     tilt = face * float(pose.get("face_tilt", 0.0)) * back
     out = np.zeros((len(rest_directions), 3, 3))
+    curl = WRAP_CURL_SHARE * float(pose.get("wrap", 0.0))
     for k in range(len(rest_directions)):
-        swing = axis_angle_matrix(up, math.radians(root))
+        swing = axis_angle_matrix(up, math.radians(root - curl * k))  # a wrap curls each bone further in, so the tips close before the chest
         if k > 0 and face > 0:
             swing = axis_angle_matrix(up, math.radians(root + face * (outer - root))) @ axis_angle_matrix(lateral, -math.radians(tilt))
         beat = float(np.sum(flaps[: k + 1]))
@@ -1531,15 +1544,23 @@ SCREEN_SHARE_RATE = 0.1
 
 
 def map_screen_angle(direction: np.ndarray, front: np.ndarray, up: np.ndarray) -> float:
-    """Degrees a world direction rises above the screen's level in the review sheets' map view, the larger of the cameras on either side."""
+    """Degrees a world direction rises above the screen's level in the review sheets' map view, the larger of the cameras on either side.
+
+    A direction ahead of the body's frontal plane that points down the screen counts 0: that is a wing wrapped forward round the body (the
+    defend's `wrap`), which hides the body instead of standing up as a spike. One that points down the screen behind the frontal plane, or
+    up the screen anywhere, counts by its angle."""
 
     worst = 0.0
     azimuth, elevation = REVIEW_VIEWS["map"]
+    ahead = float(direction @ unit(front)) > 0.0
     for side in (azimuth, -azimuth):
         view = review_view(front, up, side, elevation)
         right = unit(np.cross(unit(up), view))
         screen_up = np.cross(view, right)
-        worst = max(worst, math.degrees(math.atan2(abs(float(direction @ screen_up)), abs(float(direction @ right)) + 1e-12)))
+        rise = float(direction @ screen_up)
+        if ahead and rise < 0.0:
+            continue
+        worst = max(worst, math.degrees(math.atan2(abs(rise), abs(float(direction @ right)) + 1e-12)))
     return worst
 
 

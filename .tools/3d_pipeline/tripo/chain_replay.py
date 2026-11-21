@@ -162,7 +162,8 @@ def wing_regions(positions: np.ndarray, rows: Sequence[Dict[str, float]], heads:
     left, right = C.wing_masks(positions, dominant, heads["Hips"], planned["front"], planned["up"])
     wings = left | right
     limbs = np.array([any(part in str(name) for part in TC.SIDE_PARTS) for name in dominant], dtype=bool) & ~wings
-    return {"sides": (left, right), "wings": wings, "body": ~wings, "limbs": limbs}
+    head = np.isin(dominant, TC.WRAP_COVER_PARTS)
+    return {"sides": (left, right), "wings": wings, "body": ~wings, "limbs": limbs, "head": head}
 
 
 def wing_numbers(role: str, positions: np.ndarray, posed: Sequence[np.ndarray], edges: np.ndarray, wings: dict, planned: dict,
@@ -181,7 +182,9 @@ def wing_numbers(role: str, positions: np.ndarray, posed: Sequence[np.ndarray], 
     if death:
         axis = (worlds["Head"][::CLIP_STEP, :3, 3] - worlds["Hips"][::CLIP_STEP, :3, 3])
         upright = np.abs(axis @ up) / np.maximum(np.linalg.norm(axis, axis=1), 1e-9)
-    cover = TC.wing_cover_points(posed, wings["body"], wings["wings"], wings["limbs"], front, up, height, death, upright)
+    # a defend that wraps its wings forward is judged in the front and map views on the head alone, as tripo/tripo_checks.wing_cover does
+    wrapped = float(C.WING_ROLES.get(role, {}).get("wrap", 0.0)) > 0.0 and bool(np.any(wings["head"]))
+    cover = TC.wing_cover_points(posed, wings["head"] if wrapped else wings["body"], wings["wings"], wings["limbs"], front, up, height, death, upright)
     face = TC.wing_face_shares_points(posed[::2], wings["sides"], front, up, height)
     return {"stretch_worst_share": round(share, 4), "stretch_frame": frame * CLIP_STEP, "cover": cover, "face": face}
 
