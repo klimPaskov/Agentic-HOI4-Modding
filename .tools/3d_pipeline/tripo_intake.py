@@ -34,7 +34,8 @@ roles in which the unit lets go of it: the kit grounds those clips by the body a
 judge that bone's part for drifting. `shield` is optional too: `{"part": "tripo_part_2", "bone": "Shield", "release_roles": ["death"]}`
 (those are the defaults but for the roles) names the shield `tripo/shield_stage.py` put in the free hand, bound rigidly to its own bone,
 with the same release rule as the weapon. `trim` is optional: it cuts a
-long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
+long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth. `trim_end` cuts a role at exactly
+that frame of the imported clip (24 a second), for a lunge that should end before the clip's own follow-through.
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
@@ -195,6 +196,12 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     explicit = config.get("trim") or {}
     for role, frames in explicit.items():
         command += ["--trim", f"{role}={int(frames)}"]
+    # `trim_end` cuts a role at exactly that frame (no loop point is searched): the end of a lunge before the clip's own follow-through, which
+    # the settle then blends back to the first pose. It wins over the loop window and the auto trim, as `trim` does.
+    ends = {role: frames for role, frames in (config.get("trim_end") or {}).items() if role not in explicit}
+    for role, frames in ends.items():
+        command += ["--trim-end", f"{role}={int(frames)}"]
+    explicit = {**explicit, **ends}
     # The looped gait (lib/tripo_loop.py): the move and the retreat are cut to their best whole strides and closed with no stop. A job's own trim wins.
     looping, windows = loop_arguments(config, wanted, explicit, roles, files["rigged"])
     command += looping
