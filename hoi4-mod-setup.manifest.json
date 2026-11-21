@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "612d46038677e19e5f507652a106704b799d36ed",
+  "generated_for_revision": "265716c05ab36f8412bf93421528827bc388f57f",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
