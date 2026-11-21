@@ -3810,15 +3810,18 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
 
 
 def guard_staged_defend(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
-    """The defend posed as a guard on the staged files when the job asks (`"defend_pose": "guard"`, lib/tripo_guard.py), recorded."""
+    """The defend posed as a guard or a recoil on the staged files when the job asks (`"defend_pose": "guard"` or `"recoil"`,
+    lib/tripo_guard.py), recorded."""
 
-    if (spec.get("tripo") or {}).get("defend_pose") != "guard" or "defend" not in roles:
+    pose = (spec.get("tripo") or {}).get("defend_pose")
+    if pose not in ("guard", "recoil") or "defend" not in roles:
         return
     from lib import map_read, pdx_deform, tripo_guard
 
     mesh = staged / f"{stem}.mesh"
-    records[f"{stem}_defend.anim"]["guard"] = tripo_guard.guard_defend(mesh, staged / f"{stem}_defend.anim", staged / f"{stem}_idle.anim",
-                                                                         map_read.front_of(pdx_deform.load_mesh(mesh)))
+    shape = tripo_guard.RECOIL if pose == "recoil" else {}  # the recoil: thrown back, the arms flung out (an unarmed zombie's defend)
+    records[f"{stem}_defend.anim"][pose] = tripo_guard.guard_defend(mesh, staged / f"{stem}_defend.anim", staged / f"{stem}_idle.anim",
+                                                                      map_read.front_of(pdx_deform.load_mesh(mesh)), **shape)
 
 
 def look_back_staged_retreat(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
@@ -3848,12 +3851,14 @@ def grab_staged_attack(staged: Path, stem: str, spec: Dict[str, Any], roles: Any
     """The attack's arms posed as a two-handed grab on the staged files when the job asks (`"attack_pose": "grab"`, lib/tripo_grab.py),
     recorded."""
 
-    if (spec.get("tripo") or {}).get("attack_pose") != "grab" or "attack" not in roles:
+    pose = (spec.get("tripo") or {}).get("attack_pose")
+    if pose not in ("grab", "grab_wide") or "attack" not in roles:
         return
     from lib import map_read, pdx_deform, tripo_grab
 
     mesh = staged / f"{stem}.mesh"
-    records[f"{stem}_attack.anim"]["grab"] = tripo_grab.grab_attack(mesh, staged / f"{stem}_attack.anim", map_read.front_of(pdx_deform.load_mesh(mesh)))
+    records[f"{stem}_attack.anim"]["grab"] = tripo_grab.grab_attack(mesh, staged / f"{stem}_attack.anim", map_read.front_of(pdx_deform.load_mesh(mesh)),
+                                                                     wide=pose == "grab_wide")
 
 
 def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:

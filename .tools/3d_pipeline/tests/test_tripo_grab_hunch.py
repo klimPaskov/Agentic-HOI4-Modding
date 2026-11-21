@@ -61,6 +61,44 @@ class Grab(Biped):
         np.testing.assert_allclose(still, G.tripo_guard.ramp(21))
 
 
+class WideGrab(Biped):
+    def test_the_arms_swing_out_wide_on_the_approach_and_close_at_the_peak(self) -> None:
+        travel = np.concatenate([np.zeros(5), np.linspace(0.0, 1.0, 15), np.ones(5), np.linspace(1.0, 0.0, 10)])
+        plan = G.wide_plan(travel)
+        peak = int(np.argmax(travel))
+        self.assertEqual(plan[0], G.READY)
+        self.assertEqual(plan[-1], G.READY)  # the loop holds
+        np.testing.assert_allclose(plan[peak], (G.UPPER_ARM, G.FOREARM), atol=1e-9)
+        outs = [step[0][2] for step in plan[:peak]]
+        self.assertGreater(max(outs), 0.7, "the upper arms swing out wide before the peak")
+
+    def test_the_wide_grab_opens_the_hands_then_brings_them_together(self) -> None:
+        path = self.clip("attack", 30, lunge())
+        result = G.grab_attack(self.mesh_path, path, FRONT, wide=True)
+        self.assertTrue(result["wide"], result)
+        after = pdx_motion.posed_joints(self.mesh, self.load(path))
+        names = self.mesh.bones
+        gap = np.linalg.norm(after[:, names.index("LeftHand")] - after[:, names.index("RightHand")], axis=1)
+        peak = 10
+        self.assertGreater(float(gap[:peak].max()), 1.5 * float(gap[peak]))
+
+
+class Recoil(Biped):
+    def test_the_recoil_throws_the_torso_back_and_the_arms_out(self) -> None:
+        from lib import tripo_guard
+
+        defend, idle = self.clip("defend", 21, lambda frame: {}), self.clip("idle", 21, lambda frame: {})
+        before = pdx_motion.posed_joints(self.mesh, self.load(defend))
+        tripo_guard.guard_defend(self.mesh_path, defend, idle, FRONT, **tripo_guard.RECOIL)
+        after = pdx_motion.posed_joints(self.mesh, self.load(defend))
+        names = self.mesh.bones
+        head, hips = names.index("Head"), names.index("Hips")
+        self.assertLess(float(after[10, head, 2] - after[10, hips, 2]), -0.05, "the head goes back behind the hips")
+        for hand, arm in (("LeftHand", "LeftArm"), ("RightHand", "RightArm")):
+            self.assertLess(float(after[10, names.index(hand), 1]), float(after[10, names.index(arm), 1]), f"{hand} flung down")
+        np.testing.assert_allclose(after[0], before[0], atol=1e-5)
+
+
 class Hunch(Biped):
     def test_the_idle_leans_forward_to_the_target_with_the_head_ahead(self) -> None:
         path = self.clip("idle", 12, lambda frame: {})

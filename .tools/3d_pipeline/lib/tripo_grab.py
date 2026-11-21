@@ -50,8 +50,50 @@ def lunge_weight(mesh, anim, front: np.ndarray) -> np.ndarray:
     return weight * weight * (3.0 - 2.0 * weight)
 
 
-def grab_attack(mesh_path: Path, anim_path: Path, front: np.ndarray) -> Dict[str, object]:
-    """Pose the exported attack's arms as a two-handed grab (see the module text), in place. `front` is the unit's facing."""
+# The wide grab (`"attack_pose": "grab_wide"`): from the map camera, which looks at the unit's front from above, a reach straight forward
+# foreshortens into hands under the helmet (zombie_f, two fresh reviews, 2026-11-21). The wide grab changes the outline from the front: the
+# claws start low and ready, swing out wide as the body lunges, and close together in front at the lunge's peak, then come back to ready.
+READY = ((0.75, -0.45, 0.3), (0.9, 0.2, -0.2))  # (upper arm, forearm): claws low and forward, no forearm across the face
+OPEN = ((0.45, 0.2, 0.85), (0.6, 0.25, 0.7))  # the arms swung out wide at shoulder height, the claws open
+CLOSING_SHARE = 0.35  # of the approach (from the lunge's start to its peak): the last part, over which the arms close
+START_SHARE = 0.15  # of the peak travel: where the lunge starts
+
+
+def _blend(a, b, share: float):
+    share = float(np.clip(share, 0.0, 1.0))
+    share = share * share * (3.0 - 2.0 * share)
+    return tuple(tuple((1.0 - share) * np.asarray(x, float) + share * np.asarray(y, float)) for x, y in zip(a, b))
+
+
+def wide_plan(travel: np.ndarray) -> list:
+    """The wide grab's (upper arm, forearm) directions for each frame, from the hips' forward travel (see the constants above)."""
+
+    frames = len(travel)
+    closed = (UPPER_ARM, FOREARM)
+    peak = int(np.argmax(travel))
+    top = float(travel[peak])
+    start = int(np.argmax(travel >= START_SHARE * top)) if top > 0 else 0
+    after = [f for f in range(peak, frames) if travel[f] < (1.0 - CLOSING_SHARE) * top]
+    release = after[0] if after else frames - 1
+    close_from = start + (1.0 - CLOSING_SHARE) * max(peak - start, 1)
+    plan = []
+    for f in range(frames):
+        if f <= start:
+            plan.append(READY)
+        elif f < close_from:
+            plan.append(_blend(READY, OPEN, (f - start) / max(close_from - start, 1.0)))
+        elif f <= peak:
+            plan.append(_blend(OPEN, closed, (f - close_from) / max(peak - close_from, 1.0)))
+        elif f < release:
+            plan.append(closed)
+        else:
+            plan.append(_blend(closed, READY, (f - release) / max(frames - 1 - release, 1.0)))
+    return plan
+
+
+def grab_attack(mesh_path: Path, anim_path: Path, front: np.ndarray, wide: bool = False) -> Dict[str, object]:
+    """Pose the exported attack's arms as a two-handed grab (see the module text), in place. `front` is the unit's facing. `wide` poses
+    the wide grab (`wide_plan`) at full weight in every frame instead of blending the straight reach in by the lunge."""
 
     mesh = pdx_deform.load_mesh(mesh_path)
     anim = pdx_deform.load_anim(anim_path)
@@ -68,6 +110,12 @@ def grab_attack(mesh_path: Path, anim_path: Path, front: np.ndarray) -> Dict[str
         away = away - (away @ up) * up - (away @ front) * front
         outward[side] = tripo_guard._unit(away) if np.linalg.norm(away) > 1e-9 else (lateral if side == "Left" else -lateral)
     weight = lunge_weight(mesh, anim, front)
+    plan = None
+    if wide:
+        _rotations, positions = tripo_pose._world_rotations(mesh, anim)
+        hips = positions[:, mesh.bones.index("Hips")]
+        plan = wide_plan((hips - hips[0]) @ front)
+        weight = np.ones(anim.frames)
     channels = {name: {key: value.copy() for key, value in channel.items()} for name, channel in anim.channels.items()}
     for frame in range(anim.frames):
         w = float(weight[frame])
@@ -75,7 +123,8 @@ def grab_attack(mesh_path: Path, anim_path: Path, front: np.ndarray) -> Dict[str
             continue
         for side, (upper, fore, hand) in ARMS.items():
             axes = np.stack([front, up, outward[side]], axis=1)
-            for bone, child, target in ((upper, fore, UPPER_ARM), (fore, hand, FOREARM)):
+            targets = plan[frame] if plan is not None else (UPPER_ARM, FOREARM)
+            for bone, child, target in ((upper, fore, targets[0]), (fore, hand, targets[1])):
                 rotations, positions = tripo_pose._world_rotations(mesh, pdx_deform.Animation(anim.fps, anim.frames, channels))
                 i, c = mesh.bones.index(bone), mesh.bones.index(child)
                 wanted = axes @ tripo_guard._unit(np.asarray(target, float))
@@ -87,4 +136,4 @@ def grab_attack(mesh_path: Path, anim_path: Path, front: np.ndarray) -> Dict[str
     joints = [name for name in ARMS["Left"][:2] + ARMS["Right"][:2] if name in keyed]
     tripo_pose._write_rotations(data, keyed, joints, pdx_deform.Animation(anim.fps, anim.frames, channels), (weight > 0).astype(float))
     Path(anim_path).write_bytes(bytes(data))
-    return {"changed": True, "frames": int((weight > 0).sum()), "joints": joints, "peak_weight": round(float(weight.max()), 3)}
+    return {"changed": True, "frames": int((weight > 0).sum()), "joints": joints, "peak_weight": round(float(weight.max()), 3), "wide": wide}
