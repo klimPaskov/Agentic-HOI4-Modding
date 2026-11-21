@@ -185,6 +185,23 @@ class Lift(Unit):
         self.assertGreaterEqual(lift.neck_after, N.NECK_TARGET - 1e-6)
         self.assertFalse(lift.tried["neck"]["reaches_target"])
 
+    def test_an_unarmed_units_lift_never_raises_its_hands(self) -> None:
+        # D-94 zombie (zombie_a): the clavicles' turn carried the shamble's arms over the shoulders. With the guard on, a group whose result
+        # fails TRIPO-HANDS-HIGH is refused; here every lifted result is made to fail, so no group is chosen and the clip stays as it is.
+        from unittest import mock
+
+        path = self.clip("move", 8, lambda f: shrugged(35.0))
+        original = pdx_deform.load_anim(path)
+        frames = original.channels["LeftShoulder"]["q"].copy()
+        fails = lambda mesh, anim: None if np.allclose(anim.channels["LeftShoulder"]["q"], frames) else "hands above the shoulders"
+        with mock.patch.object(N, "hands_reason", side_effect=fails):
+            guarded = N.lift_neck(self.mesh_path, path, self.folder / "guarded.anim", "move", hands_guard=True)
+            free = N.lift_neck(self.mesh_path, path, self.folder / "free.anim", "move")
+        self.assertFalse(guarded.changed)
+        self.assertTrue(any("refused" in row for row in guarded.tried.values()))
+        self.assertTrue(free.changed)
+        self.assertEqual((self.folder / "guarded.anim").read_bytes(), path.read_bytes())
+
     def test_a_death_gets_each_frames_own_share_ramped_in_and_out(self) -> None:
         def pose(f):
             return pitched(85.0 * math.exp(-((f - 20) / 4.0) ** 2))
