@@ -3839,6 +3839,17 @@ def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any,
     look_back_staged_retreat(staged, stem, spec, roles, records)
 
 
+def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
+    """Each shape's mesh streams and their material's texture names, for the registration (lib/unit_registration.mesh_streams)."""
+
+    from lib import unit_registration
+
+    try:
+        return unit_registration.mesh_streams(mesh) if mesh.is_file() else {}
+    except (OSError, ValueError):
+        return {}
+
+
 def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, Any]:
     """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
     keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
@@ -4411,6 +4422,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         template=(unit or {}).get("entity_template", "infantry"),
         state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
         rider=rider,
+        streams=registration_streams(staged / f"{stem}.mesh"),
     )
     (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
     report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
