@@ -131,6 +131,12 @@ class OptionalMotionTests(unittest.TestCase):
 
 
 class MutationRetryTests(unittest.TestCase):
+    def setUp(self):
+        # no Blender starts here (the transport is patched), so the machine-wide gate has nothing to wait for
+        patcher = patch.dict("os.environ", {"HOI4_KIT_SKIP_HEAVY_CHECK": "1"})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
     def test_blender_mutation_is_not_replayed(self):
         client = object.__new__(BlenderAdapterClient)
         client.repo_root = ROOT.parents[1]

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import contextlib
+import io
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -10,8 +14,10 @@ import numpy as np
 
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE / "tripo"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
+import rig_glb
 
 
 def box(lo=(-1.0, -1.0, -1.0), hi=(1.0, 1.0, 1.0)) -> np.ndarray:
@@ -104,6 +110,60 @@ class GripAndVerdict(unittest.TestCase):
         weapon = np.array([[0.8, 0, 0], [0.9, 0, 0]])
         self.assertEqual(clip_check.resolve_weapon_joint(names, weapon, rest), 1)
         self.assertEqual(clip_check.resolve_weapon_joint(names, weapon, rest, "LeftHand"), 3)
+
+
+class PlainExport(unittest.TestCase):
+    """An unarmed unit exported from Tripo with no Segment step: one skinned mesh named `tripo_node_<id>`, no weapon part."""
+
+    def setUp(self) -> None:
+        folder = tempfile.TemporaryDirectory()
+        self.addCleanup(folder.cleanup)
+        self.path = Path(folder.name) / "unit__rigged.glb"
+        rig_glb.write_rig_glb(self.path)
+
+    def test_the_default_body_name_picks_the_one_skinned_mesh(self) -> None:
+        result = clip_check.check(self.path, samples=3)
+        self.assertEqual(result["body"], rig_glb.NODE_NAME)
+        self.assertEqual(sorted(result["clips"]), ["idle", "walk"])
+        self.assertTrue(any("one skinned mesh" in note for note in result["notes"]))
+
+    def test_an_unarmed_unit_gets_a_clip_table_with_no_weapon_numbers(self) -> None:
+        result = clip_check.check(self.path, samples=3)
+        self.assertIsNone(result["weapon"])
+        self.assertIsNone(result["weapon_joint"])
+        self.assertEqual((result["weapon_points"], result["grip_points_excluded"]), (0, 0))
+        self.assertTrue(any("no weapon" in note for note in result["notes"]))
+        for name, clip in result["clips"].items():
+            with self.subTest(clip=name):
+                self.assertEqual((clip["weapon_in_body_pct"], clip["weapon_deep_in_body_pct"], clip["weapon_below_ground_pct"]), (0.0, 0.0, 0.0))
+                self.assertEqual(clip["verdict"], "pass")
+        json.dumps(result, allow_nan=False)  # no NaN from a mean of nothing
+
+    def test_the_weapon_can_be_named_none_or_empty(self) -> None:
+        for weapon in ("none", ""):
+            with self.subTest(weapon=weapon):
+                self.assertIsNone(clip_check.check(self.path, weapon=weapon, samples=2)["weapon_joint"])
+
+    def test_the_table_and_the_command_line_work_on_an_unarmed_unit(self) -> None:
+        out = Path(self.path.parent) / "clips.json"
+        printed = io.StringIO()
+        with contextlib.redirect_stdout(printed):
+            code = clip_check.main([str(self.path), "--samples", "2", "--json", str(out)])
+        self.assertEqual(code, 0)
+        self.assertIn("no weapon", printed.getvalue())
+        self.assertEqual(json.loads(out.read_text(encoding="utf-8"))["weapon"], None)
+
+    def test_a_body_named_on_the_command_line_that_the_file_lacks_is_still_an_error(self) -> None:
+        with self.assertRaisesRegex(SystemExit, "No mesh node named 'tripo_part_9'"):
+            clip_check.check(self.path, body="tripo_part_9", samples=2)
+
+    def test_the_real_export_runs_unarmed_with_no_option(self) -> None:
+        if not rig_glb.REAL_EXPORT.is_file():
+            self.skipTest("the real Tripo export is not on this machine")
+        result = clip_check.check(rig_glb.REAL_EXPORT, samples=2)
+        self.assertTrue(result["body"].startswith("tripo_node_"))
+        self.assertIsNone(result["weapon_joint"])
+        self.assertEqual(len(result["clips"]), 9)
 
 
 if __name__ == "__main__":

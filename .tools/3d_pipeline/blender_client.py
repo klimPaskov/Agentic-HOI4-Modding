@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 
+from lib import heavy_job
 from lib.mcp_stdio import MCPRouteError, call_stdio
 from lib.paths import resolve_job_root
 from lib.profile_gates import exporter_report_failures, job_profile_exception
@@ -55,13 +56,7 @@ class BlenderAdapterClient:
         attempt_limit = 3 if tool in read_only_tools else 1
         for attempt in range(attempt_limit):
             try:
-                result = call_stdio(
-                    command,
-                    tool=tool,
-                    arguments=arguments,
-                    timeout_seconds=1800,
-                    cwd=self.repo_root,
-                )
+                result = self._call_gated(command, tool, arguments)
                 break
             except MCPRouteError as exc:
                 if attempt == attempt_limit - 1:
@@ -77,6 +72,13 @@ class BlenderAdapterClient:
         if "error" in value:
             raise RuntimeError(str(value))
         return value
+
+    def _call_gated(self, command: List[str], tool: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        """One adapter call, after the machine-wide Blender gate (lib/heavy_job.py): the adapter starts a headless Blender for it, so it waits
+        for any other kit Blender and for free RAM first."""
+
+        with heavy_job.hold(f"blender adapter {tool}"):
+            return call_stdio(command, tool=tool, arguments=arguments, timeout_seconds=1800, cwd=self.repo_root)
 
     def _matching_mutation_receipts(self, tool: str, arguments: Dict[str, Any]) -> list[dict[str, Any]]:
         """Read bounded matching job-local request headers; never replay a mutation."""

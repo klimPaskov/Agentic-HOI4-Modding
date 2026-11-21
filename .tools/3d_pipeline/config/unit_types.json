@@ -104,6 +104,93 @@
         }
       }
     },
+    "infantry_unarmed": {
+      "description": "Unarmed foot soldier of human size: a zombie or undead soldier, a civilian or a militia fighter with empty hands. Set anatomy weapon-free and give the job no tripo.weapon",
+      "body": "humanoid",
+      "profile": "humanoid_unit",
+      "rig": "meshy_humanoid",
+      "entity_template": "infantry",
+      "roles": {
+        "idle": {
+          "meshy": [
+            [
+              0,
+              "Idle"
+            ],
+            [
+              338,
+              "Short_Breathe_and_Look_Around"
+            ]
+          ],
+          "loop": true
+        },
+        "move": {
+          "meshy": [
+            [
+              650,
+              "Mummy_Stagger_inplace"
+            ],
+            [
+              613,
+              "Casual_Walk_inplace"
+            ]
+          ],
+          "loop": true
+        },
+        "attack": {
+          "meshy": [
+            [
+              214,
+              "Punch_Forward_with_Both_Fists"
+            ],
+            [
+              198,
+              "Punch_Combo"
+            ]
+          ],
+          "loop": false
+        },
+        "defend": {
+          "meshy": [
+            [
+              386,
+              "Zombie_Scream"
+            ],
+            [
+              138,
+              "Block1"
+            ]
+          ],
+          "loop": true
+        },
+        "retreat": {
+          "meshy": [
+            [
+              637,
+              "Injured_Walk_inplace"
+            ],
+            [
+              645,
+              "Limping_Walk_inplace"
+            ]
+          ],
+          "loop": true
+        },
+        "death": {
+          "meshy": [
+            [
+              187,
+              "Knock_Down"
+            ],
+            [
+              8,
+              "Dead"
+            ]
+          ],
+          "loop": false
+        }
+      }
+    },
     "spearman": {
       "description": "Foot soldier with a spear or pike",
       "body": "humanoid",

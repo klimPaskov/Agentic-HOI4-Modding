@@ -10,9 +10,15 @@ the one rule `<asset_slug>__<kind>.glb`, where kind is
 Then run, once per asset (see `docs/3d-units.md`)::
 
     py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <jobs.json> <asset_slug> --inbox <folder>
-        [--task-id <tripo task id>] [--credits <n> --credits-note <text>] [--blender <blender.exe>]
+        [--task-id <tripo task id>] [--credits <n> --credits-note <text>] [--blender <blender.exe>] [--skip-heavy-check]
 
-and then `run_pilot.py` as for any unit. The job entry says `"provider": "tripo"` and, for a unit::
+The intake starts Blender itself. It first waits for the machine (lib/heavy_job.py): one kit Blender at a time and a floor of free RAM,
+with one line saying why it waits; `--skip-heavy-check` starts at once.
+
+Run `run_pilot.py` after it, as for any unit. Tripo's auto-rig may add extra joints to the Mixamo skeleton (`neutral_bone` since
+November 2026: a childless joint with no animation under the armature). The intake drops them, moves any weight they carry to the
+nearest kit bone by the vertex's position (lib/tripo_extra_joints.py) and prints one line, `extra joints dropped: ...`, with how many
+weights moved. The job entry says `"provider": "tripo"` and, for a unit::
 
     "tripo": {"roles": {"idle": "idle", "move": "walk", "attack": "chop", ...},
               "weapon": {"part": "tripo_part_1", "bone": "RightHand", "source": "rigged"},
@@ -56,7 +62,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence
@@ -65,7 +70,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import run_pilot
-from lib import tripo_loop, tripo_pose, tripo_trim
+from lib import heavy_job, tripo_extra_joints, tripo_loop, tripo_pose, tripo_trim
 from lib.credits import append_entry, read_ledger
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
 from lib.tripo import inbox_file, uses_tripo
@@ -357,10 +362,12 @@ def run_intake(
     if spec["asset_kind"] == "humanoid":
         report = job / "provider" / "tripo_prepare_report.json"
         command = prepare_command(find_blender(blender), spec, files, downloads, report)
-        completed = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+        completed = heavy_job.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
         if completed.returncode != 0:
             raise RuntimeError(f"Blender failed ({completed.returncode}): {(completed.stdout + completed.stderr)[-2500:]}")
         prepared = parse_report(completed.stdout)
+        extra = prepared.get("extra_joints") or {}
+        print(tripo_extra_joints.report_line(extra.get("dropped", []), int(extra.get("weights_moved", 0))), file=sys.stderr)
         print(f"Tripo clips in {files['rigged'].name}: {prepared['clips_in_file']}", file=sys.stderr)
         print(f"Roles use: { {role: clip['clip'] for role, clip in prepared['clips'].items()} }", file=sys.stderr)
         outputs["generation"] = write_manifest(job, base, task_id, sources, textures=True)
@@ -400,6 +407,7 @@ def run_intake(
         "credits_note": credits_note,
         "outputs": {name: item["file"]["relative_path"] for name, item in outputs.items()},
         "prepare": {key: prepared[key] for key in ("blender", "bones_before", "bones_after", "weapon", "clips", "triangles")} if prepared else None,
+        "extra_joints": (prepared.get("extra_joints") or {"dropped": [], "weights_moved": 0}) if prepared else None,
     }
     write_json(receipt_path, record)
     run_pilot.append_history(job, state="provider_task_completed", event=generation_stage, actor="tripo_intake", details={"task_id": task_id, "files": sources})
@@ -414,8 +422,10 @@ def main() -> int:
     parser.add_argument("--credits", type=int, help="Tripo credits spent on this asset")
     parser.add_argument("--credits-note", default="")
     parser.add_argument("--blender", help="blender executable (default: BLENDER_EXE, then the pipeline's discovery)")
+    heavy_job.add_argument(parser)
     parser.add_argument("asset")
     args = parser.parse_args()
+    heavy_job.apply(args)
     configs = run_pilot.load_job_configs(args.jobs_config)
     if args.asset not in configs:
         raise KeyError(f"Unknown configured 3D job: {args.asset}")

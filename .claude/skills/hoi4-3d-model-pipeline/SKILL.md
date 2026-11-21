@@ -40,8 +40,17 @@ Each gate is defined once in the guide:
   Tripo web app under the user's own sign-in, never through an API, and follows
   the route in `docs/3d-units.md`: a 3D-ready picture (neutral pose, empty
   hands), model, rig, candidate presets, export, clips picked by measurement,
-  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Never type the
-  user's password. Armed and winged Tripo units are not proven yet.
+  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Copy the complete
+  job entry and the picture review of step 2 in `docs/3d-units.md` (a Tripo
+  job needs `init_pilot_jobs.py` for its picture too). An unarmed soldier-sized
+  unit takes `infantry_unarmed`. Every command that starts Blender waits for
+  the machine first (`lib/heavy_job.py`). Never type the user's password. Proven on armed humanoids, a large creature, a mount, a
+  plane and a ship. Winged units, tanks, buildings and landmarks are not
+  proven yet.
+- **Detail and look**: never simplify a subject, picture, clip choice or
+  requirement to make a step easier or a check pass, and never change a look
+  by a tint, filter or recolour of its texture. Change the method, or make a
+  new picture and model, or ask the user. See the rules in `docs/3d-units.md`.
 - **Key and dependencies**: an old Meshy job needs a nonblank `MESHY_API_KEY`
   first. Every job needs the reviewed dependency lock, Blender bridge and
   pinned io_pdx_mesh export support ([Hard start gates](references/production-guide.md#hard-start-gates)).

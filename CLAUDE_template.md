@@ -214,6 +214,7 @@ Use `hoi4-events`. Wire the event, its registration, trigger, localisation and a
 Default route: `hoi4-imagegen`. Start with `hoi4.image_families { family }`, then the group tool with a required `family`. The `hoi4-imagegen` skill has the loop.
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
+- Before building anything judged by eye as a whole (a window, the top bar), draw concept pictures over a real capture. They are targets, never assets.
 - Animation uses `hoi4-frame-animation` (real planned frames, never one transformed still) or `hoi4-3d-model-pipeline` (real skeletal actions).
 - Sections 6 to 8 in full: `content-integration.md`.
 

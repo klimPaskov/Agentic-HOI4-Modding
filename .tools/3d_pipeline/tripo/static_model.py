@@ -30,7 +30,6 @@ import importlib.util
 import io
 import json
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, Optional
@@ -41,7 +40,7 @@ from PIL import Image
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import model_dds, pdx_deform, static_delight
+from lib import heavy_job, model_dds, pdx_deform, static_delight
 from lib import static_kinds as sk
 from lib.texture_lineage import embedded_images
 from pack_pdx_material import remap_gloss_table
@@ -362,7 +361,7 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
 def run_blender(request_path: Path, log: Path) -> None:
     import review_unit
 
-    completed = subprocess.run([str(review_unit.find_blender()), "-b", "--factory-startup", "--python", str(BLENDER_SCRIPT), "--", str(request_path)],
+    completed = heavy_job.run([str(review_unit.find_blender()), "-b", "--factory-startup", "--python", str(BLENDER_SCRIPT), "--", str(request_path)],
                                capture_output=True, text=True, encoding="utf-8", errors="replace")
     log.write_text(completed.stdout[-40000:] + completed.stderr[-20000:], encoding="utf-8")
     if "STATIC_MODEL_DONE" not in completed.stdout:

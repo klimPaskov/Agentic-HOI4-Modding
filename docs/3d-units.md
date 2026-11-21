@@ -4,7 +4,7 @@ This page is for modders who want their own 3D units on the HOI4 map: soldiers, 
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
-**What is proven.** Eight asset types have each gone the whole route below with at least one model and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe, a dwarf with a glaive and a shield), a large creature (an ogre with a club), a mount, a tank, a plane, a ship, a building and a landmark. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. An unarmed humanoid (a zombie soldier) still reads as an ordinary soldier at map size and is in progress. **Winged units are not proven yet**: neither a winged humanoid nor a winged beast such as a dragon has passed review, so do not plan a mod on them yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
+**What is proven.** Five asset types have each gone the whole route below with at least one model made from its full, detailed reference, and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe, a dwarf with a glaive and a shield), a large creature (an ogre with a club), a mount (a war elephant), a plane and a ship. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. **Not proven yet**: winged units (neither a winged humanoid nor a winged beast such as a dragon has passed review), tanks, buildings and landmarks (their earlier passes were on simplified redraws of the subject and do not count), and an unarmed zombie soldier, which still reads as an ordinary soldier at map size. Do not plan a mod on those yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
 
 ## How to use it
 
@@ -47,6 +47,8 @@ The Blender stage is Windows only today. In HOI4 Mod Setup, tick **3D models wor
 
 **A new worktree or a pipeline update needs the adapter set up again.** The Blender adapter checks its own source files against hashes in `.tools/3d_pipeline/config/blender_hoi4_adapter.json`, which is not tracked. A fresh worktree has no such file, and a merge that adds or changes an adapter source makes the adapter refuse with "source closure changed ... rebootstrap" or "source checksum changed". Set it up again right after such a merge, before any queued run in that worktree reaches `run_pilot`, or the run fails there after its earlier stages. Run `py -3.13 -B .tools/3d_pipeline/bootstrap_3d_workflow.py --without-meshy` from the repository. It also rewrites `.codex/config.toml` and `.tools/3d_pipeline/config/dependencies.lock.json` with paths of your machine. Put those two back with `git checkout`, and never commit them. It leaves a background Blender running as an MCP server (`--command blender_mcp`). Stop that one process before a run that waits for no Blender to be running.
 
+The setup prints a JSON record, and two lines in it are expected on a machine without Claude Code's command line (`claude`). `"claude_registration": "claude_cli_not_found"` means the `claude` command is not on the PATH, so the Meshy and Blender routes were not added to Claude Code's local settings. The Codex routes are written, and the Tripo route needs no registration, because the scripts start Blender themselves. `"template_removed": true` means the temporary `.codex/3d_mcp_config.template.toml` was deleted after the real MCP config was written, and it is true on every run. The setup also prints both in words. The setup waits for the machine like every Blender start (see [step 8](#8-intake-free)).
+
 **By agent needs Chrome.** The agent uploads your pictures and collects the exports through the Claude in Chrome extension. In Chrome's settings, turn off "Ask where to save each file before downloading", so exports land in your Downloads folder without a dialog. A browser pane inside a coding client cannot upload a local picture, and it asks you to confirm each download, so it only suits the by-hand mode.
 
 ## What a unit costs
@@ -74,11 +76,13 @@ Every step on your PC is free. Your agent asks you once for a credit budget per 
 
 ## The route step by step
 
-Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget`, `anatomy`, its size, and a `tripo` block with the clip for each role.
+Run every command from the repository root. Your agent writes the job registry (`3d_jobs.json`) with one entry per unit: its `unit_type`, `"provider": "tripo"`, `credit_budget`, `anatomy`, its size, the picture's details and a `tripo` block with the clip for each role. [Step 2](#2-job-entry-picture-card-and-inbox) has a complete entry to copy. `<job folder>` in the commands below is `docs/assets/hoi4_3d_model_jobs/models_3d/<unit>`, the folder the scripts make for the unit.
 
 **Size.** `target_height_m` is the unit's mesh height in HOI4 units, not metres, and `runtime_entity_scale` is its entity scale. Vanilla infantry is 7.35 tall at scale 0.8. Give a soldier-sized unit 7.35, and scale that for a smaller or larger body. `run_pilot.py` refuses a job whose unit would stand under half or over three times the height of its vanilla scale reference on the map. Review sheets frame every unit to fit, so they never show a wrong size.
 
 ### 1. A 3D-ready picture
+
+Make or fix this picture in Tripo's own Image tool (in the Tripo web app, under the user's sign-in). That is the one route for it. It needs no `hoi4-imagegen` server, which may not be connected at all, and the `hoi4-imagegen` skill has no route for it.
 
 **The picture decides the look.** A model's colours come from its picture and the generator's texture. They are never changed afterwards by a tint, a filter or a recolour over that texture, for any unit. When the look must change (a unit that does not read as what it is at map size), make a new picture and generate the model again. The Blender stage refuses a Tripo unit whose diffuse map differs from the generator's export by a global colour transform: one 3 by 3 colour matrix and offset that explains the change with a residual of at most 35% of it, for a change of at least 3 of 255 RMS (`lib/texture_look.py`, `diffuse_look` in the texture report).
 
@@ -89,11 +93,138 @@ Tripo copies the picture's pose into the rig, so the picture must be ready for r
 - Both hands empty, open and relaxed. A held weapon or a clenched fist rigs badly and deforms.
 - Every detail of your art kept: face, clothing, gear on the correct side.
 
-If your art is not like this, the agent redraws it in Tripo's image tool (**Image**, model Nano Banana 2, free within the quota) with an instruction that names every detail to keep and only the pose and hands to change. Name gear by the side of the picture ("on the viewer's left"), because "his left" gets swapped. Check the result against the original before you pay for a model. You approve the picture and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
+If your art is not like this, the agent redraws it in Tripo's image tool (**Image**, model Nano Banana 2, free within the quota) with an instruction that names every detail to keep and only the pose and hands to change. The tool's page is `studio.tripo3d.ai/workspace/generate-image`. In Tripo Studio it is the **Image** icon at the top of the left sidebar. Name gear by the side of the picture ("on the viewer's left"), because "his left" gets swapped. Check the result against the original before you pay for a model. You approve the picture and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
 
-### 2. Card and inbox
+**A look change is also a redraw.** When the unit's look must change (another colour, another uniform, damage), make a new 3D-ready picture in the same tool: the instruction names the new look and every other detail kept, and a new model comes from it. Never apply a tint or filter to the old picture or to a model's texture.
 
-The agent writes one card per model from `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` and makes the job's inbox folder. The card names the picture, every Tripo setting, the candidate presets for each role and the file name to save under. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
+Three rules hold for every unit and asset, at every step:
+
+- **Never simplify the subject.** A model is made as designed and as drawn, with all its detail. A 3D-ready picture may change the pose and leave out what is not body or gear, nothing else. When a source mesh has defects, change the method (another Tripo mode or setting, more triangles, a repair step, separate parts) and keep the design. The same holds for pictures, clip choices, text and requirements: nothing is cut down to make a step easier or a check pass without the owner's consent. A result made from a simplified input is never reported as passed, and every reported pass names the reference it used.
+- **Never change a look with a filter.** A model's colours or look are never changed by a tint, filter or recolour over its existing texture. When the look must change, make a new reference picture and a new model from it.
+- **When the detailed version cannot be done,** stop and ask the owner, showing the detailed target and what would be lost.
+
+### 2. Job entry, picture, card and inbox
+
+**The job entry.** One file, `3d_jobs.json`, anywhere inside the repository, holds an entry for each unit. This is a complete entry for an unarmed foot soldier and one for an armed one. Copy it and change the values.
+
+```json
+{
+  "jobs": {
+    "undead_soldier": {
+      "asset_id": "hoi4_3d_model_jobs.undead_soldier",
+      "unit_type": "infantry_unarmed",
+      "provider": "tripo",
+      "runtime_stem": "undead_soldier",
+      "credit_budget": 70,
+      "anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
+      "reference_path": "refs/original/undead_soldier.png",
+      "reference_source_mode": "agent_generated",
+      "reference_generator_output": "tripo-image",
+      "asset_brief": "An undead soldier in a ragged field uniform, unarmed, arms relaxed, hands empty.",
+      "required_components": ["undead soldier body", "ragged uniform with belt and pouches"],
+      "forbidden_additions": ["text", "weapons", "cloak"],
+      "proposed_runtime_identifiers": {},
+      "target_height_m": 7.35,
+      "runtime_entity_scale": 0.8,
+      "vanilla_scale_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": ["polySurface106"],
+        "exclude_name_patterns": ["collision"],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268
+      },
+      "tripo": {
+        "roles": {"idle": "idle", "move": "walk", "attack": "box_01", "defend": "hit_to_body_01", "retreat": "flee_01", "death": "fall"},
+        "trim": {"idle": 120}
+      }
+    },
+    "axe_soldier": {
+      "asset_id": "hoi4_3d_model_jobs.axe_soldier",
+      "unit_type": "infantry_melee",
+      "provider": "tripo",
+      "runtime_stem": "axe_soldier",
+      "credit_budget": 120,
+      "anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
+      "reference_path": "refs/original/axe_soldier.png",
+      "reference_source_mode": "agent_generated",
+      "reference_generator_output": "tripo-image",
+      "asset_brief": "A foot soldier in a leather coat, empty hands. The axe is modelled apart and put in the hand later.",
+      "required_components": ["soldier body", "leather coat", "axe as a separate part"],
+      "forbidden_additions": ["text", "extra weapons"],
+      "proposed_runtime_identifiers": {},
+      "target_height_m": 7.35,
+      "runtime_entity_scale": 0.8,
+      "vanilla_scale_reference": {
+        "mesh": "gfx/models/units/western_european_infantry.mesh",
+        "entity": "gfx/entities/units_infantry.asset#infantry_rifle_entity",
+        "mesh_object_names": ["polySurface106"],
+        "exclude_name_patterns": ["collision"],
+        "forward_axis": "-Y",
+        "up_axis": "+Z",
+        "mesh_height": 7.3518242835,
+        "entity_scale": 0.8,
+        "runtime_height": 5.8814594268
+      },
+      "tripo": {
+        "roles": {"idle": "idle", "move": "walk", "attack": "A soldier swings an axe down", "defend": "hit_to_body_01", "retreat": "flee_01", "death": "defeat_02"},
+        "trim": {"idle": 120},
+        "weapon": {"part": "tripo_part_1", "bone": "Weapon", "source": "rigged", "release_roles": ["death"]}
+      }
+    }
+  }
+}
+```
+
+What each field is for:
+
+| Field | Meaning |
+| --- | --- |
+| the key (`undead_soldier`) | The name you type on the command line. It equals the part of `asset_id` after the last dot, and the job folder is named after it |
+| `asset_id` | `hoi4_3d_model_jobs.` and the key |
+| `unit_type` | A type from `config/unit_types.json` (see [Unit types and bodies](#unit-types-and-bodies)). It sets the profile, the six roles and the rig |
+| `provider` | `"tripo"`. Without it the job runs the old Meshy route |
+| `runtime_stem` | The file name stem of the finished `.mesh` and `.anim` files |
+| `credit_budget` | The credits you approved. The scripts only print it, and the agent stops spending at it |
+| `anatomy` | Answers to the questions in `config/body_presets.json`, from the picture. `init_pilot_jobs.py` copies them and `unit_type` into the job, and `measure_body.py` checks them against the model. These seven keys are the only ones it reads, and a weapon is not one of them |
+| `reference_path` | The picture, relative to the job folder. It must be a real PNG in `refs/original`, the only image there |
+| `reference_source_mode`, `reference_generator_output` | Where the picture came from. They go into the job's provenance record |
+| `asset_brief`, `required_components`, `forbidden_additions` | What the unit is, what must be in it and what must not. They go into the job's brief and the reviewer's checklist |
+| `proposed_runtime_identifiers` | `{}` until the unit is wired into a mod |
+| `target_height_m`, `runtime_entity_scale` | The size (see Size above) |
+| `vanilla_scale_reference` | The vanilla soldier the size is judged against. Copy it as it is. The `mesh` is a file of the installed game, found by the kit's game folder rule |
+| `tripo.roles` | One clip name for each of the six roles, read from the export (step 7). `tripo.trim` and the other optional `tripo` keys are in `tripo_intake.py` |
+| `tripo.weapon` | Only for an armed unit: the weapon's mesh, its bone and where it comes from (see [Armed units](#armed-units)). An unarmed unit has none. The rest of `tripo` is explained in [Tripo defaults](#tripo-defaults) |
+
+**The job folder and the picture.** Make the folder `docs/assets/hoi4_3d_model_jobs/models_3d/<unit>/refs/original` and put the approved picture in it, as a real PNG named as in `reference_path` (Tripo's image tool saves WebP under a `.png` name, so convert it first). It is the only file there.
+
+**Tripo jobs use `init_pilot_jobs.py` only for the picture.** It needs no Meshy key and makes no provider call. It records the picture in the job, and `run_pilot.py` (step 9) refuses a unit whose picture has not been reviewed. Run it, look at the picture yourself, then record your review:
+
+```
+py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config <your 3d_jobs.json> <unit>
+py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config <your 3d_jobs.json> --record-visual-review <unit> --reviewer <your name> --review-file <answers.json>
+```
+
+`<answers.json>` is a file inside the repository that answers true or false for each check, with an optional note:
+
+```json
+{
+  "single_subject": true,
+  "complete_silhouette": true,
+  "component_separation": true,
+  "neutral_background": true,
+  "no_multi_view_board": true,
+  "no_side_profile_sheet": true,
+  "notes": "One subject, full body, front view, plain light background, arms away from the body, hands empty."
+}
+```
+
+If the entry lacks a field the script needs, it stops and names the missing fields. The intake (step 8) does not need this step to run, but `run_pilot.py` does.
+
+**The card and the inbox.** The agent writes one card per model from `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` and makes the job's inbox folder. The card names the picture, every Tripo setting, the candidate presets for each role and the file name to save under. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
 
 ### 3. Model (Tripo, 30 credits)
 
@@ -105,13 +236,15 @@ Open **Rig**: **Humanoid**, skeleton preset **Mixamo**, **Auto Rig**.
 
 ### 5. Candidate animations (Tripo, free)
 
-Open **Animate**. Apply every candidate preset on the card, using the search box to find each one by name. A good set for a humanoid is `idle`, `walk`, `hit_to_stomach`, `hit_to_body_01`, `flee_01`, `defeat`, `defeat_02`, `fall` and `box_01`. Clips you made earlier are under **AI Animation** and cost nothing to apply again.
+Open **Animate**. Its page is `studio.tripo3d.ai/workspace/animate/<asset id>`. The asset id is in the address of your model's page, `studio.tripo3d.ai/workspace/generate/<asset id>`: open the model from the history list on the left and copy what follows the last `/`. Use the address, because the sidebar's icons change order from page to page and some open paid tools. Apply every candidate preset on the card, using the search box to find each one by name. A good set for a humanoid is `idle`, `walk`, `hit_to_stomach`, `hit_to_body_01`, `flee_01`, `defeat`, `defeat_02`, `fall` and `box_01`. Clips you made earlier are under **AI Animation** and cost nothing to apply again.
 
 If no candidate can read as the attack, write one text-to-motion clip (20 credits). Name the motion, the hand, the height and the stance, for example "lunges one step forward, both arms straight at shoulder height, grabbing, torso upright, feet planted". The clip is named after the instruction text.
 
 ### 6. Export into the inbox
 
 On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on. Under **Number of Animations** press **Select All**. Tripo builds the file in about a minute and saves it as `tripo_convert_<id>.glb`. Move it into the job's inbox as `<asset>__rigged.glb`.
+
+**What the body is called.** A one-piece model (step 3 with **Generate in Parts** off) exports as one skinned mesh. Its mesh node is named `tripo_node_<id>` and its mesh `tripo_mesh_<id>`, not `tripo_part_0`. No Segment step is needed for it. Segment is only for a separately modelled weapon or shield (see [Armed units](#armed-units)). A tool that takes a body name (`clip_check.py --body`) uses the one skinned mesh when you leave the name out. An unarmed unit has no `tripo_part_1` either, so such a tool checks the body alone.
 
 With **Animation stay in Place** off, every clip carries its travel in the hips, and the loop, grounding and weapon-drop rules fail on it. The intake and the grip stage measure each role clip's hips travel in the file (`lib/glb_root.py`) and refuse one that moves more than a tenth of the hip height.
 
@@ -127,6 +260,17 @@ The agent measures every clip in the export and writes the role map into the job
 py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset>__rigged.glb --samples all --json <job folder>/evidence/clips.json
 ```
 
+For an unarmed unit this command is complete. It finds the body and no weapon by itself, prints `no weapon`, and measures stretch and the ground only. An armed unit names its weapon part with `--weapon`.
+
+**Each clip must read as its role and as the unit's kind from the game's camera.** At map zoom a unit is about 60 pixels tall: a face, the skin's colour and small wounds are a few pixels, and the outline and its motion are what the player reads. A clean clip can still fail review because it reads as something else. Before the run, measure the candidates on the game camera with `tripo/pose_check.py --map` (it reads each clip's silhouette against the idle and reports TRIPO-MAP-READ, see [Tripo checks](#tripo-checks)), and pick for each role:
+
+- the attack: a strike whose outline changes clearly from the idle, not a guard held for most of the clip,
+- the defend: a guard or recoil whose outline differs from the attack and from the idle,
+- the idle and the move: a posture that says what the unit is. An undead soldier hunches, sways and shambles with the arms reaching forward at shoulder height. A healthy soldier stands straight. Arms raised above the head read as surrender,
+- the retreat: a run that differs from the move.
+
+When no preset reads, make the role's clip with Tripo's text-to-motion (20 credits), with a prompt that names the outline you need. A new texture or picture never fixes a clip that reads wrong: an undead soldier with a corpse's skin still reads as a living soldier at map zoom when it stands and walks like one.
+
 ### 8. Intake (free)
 
 ```
@@ -134,6 +278,17 @@ py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <your 3d_jobs.json>
 ```
 
 The intake records each file's name, size and SHA-256, then prepares it for the shared stage in Blender. It renames Tripo's bones to the kit's names, folds the finger bones into the hands so the unit stays within HOI4's 50 bones, writes one file per role, and applies the [Tripo defaults](#tripo-defaults).
+
+**Extra joints.** Tripo's auto-rig may add extra joints to the Mixamo skeleton. Since November 2026 it adds `neutral_bone`: a joint under the armature with no children and no animation, that the exports of the days before did not have. The intake drops such a joint (a childless, unanimated joint outside the hips chain). It moves any vertex weight on it to the kit bone nearest to the vertex, and to the hips when no kit bone is near. It prints one line, for example `extra joints dropped: neutral_bone (1 joint, 1 vertex weight moved to the nearest kit bone)`. A joint outside the chain that has children or animation stops the intake and is named: export the rig again.
+
+**Blender starts here.** Blender is the heavy step, and your machine may already run a game, a render or another unit's Blender. Every kit command that starts Blender first waits for the machine (`lib/heavy_job.py`):
+
+- It takes a lock file, `hoi4-kit-heavy-job.lock` in the temporary folder, so only one kit Blender runs at a time.
+- It waits while the free RAM is under 4 GB (`HOI4_KIT_MIN_FREE_RAM_GB` sets another floor).
+- It prints one line saying why it waits, and gives up with an error after six hours (`HOI4_KIT_HEAVY_WAIT_MINUTES`).
+- `--skip-heavy-check`, or `HOI4_KIT_SKIP_HEAVY_CHECK=1`, starts at once.
+
+The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py` and `tripo/static_sheets.py`. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
 
 ### 9. Blender stage and export (free)
 
@@ -170,7 +325,16 @@ py -3.13 -B .tools/3d_pipeline/repair_unit.py <unit folder> --out <job folder>/r
 
 Repairs never make new bones, a new weight set or new keyframes. The copy goes to `<job folder>/repair/files`, and `repair_report.json` lists what changed with the check results before and after. Nothing under `gfx/` changes.
 
-`review_unit.py` then renders every clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when it passes (see [Independent review](#independent-review)). For colour, `tripo/colour_compare.py` renders the unit and a vanilla unit under the same light and prints the brightness and saturation of each.
+`review_unit.py` then renders every clip, and a reviewer who did not make the unit lists every defect it sees. The unit is finished only when it passes (see [Independent review](#independent-review)). The review judges the unit at the size players see it first, so make the two game-size sheets before you ask for a review. Both start Blender:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/weapon_sheets.py <unit folder> --out <review folder> --sheet game
+py -3.13 -B .tools/3d_pipeline/tripo/clip_sheet.py <unit folder> --roles death --frames 6 --views left --out <review folder>/sheets/death_six_frames_side.png
+```
+
+The first writes `sheets/game_size.png` (the unit about 60 pixels tall from the game's camera and from the front, four frames of every clip) and `sheets/game_size_x3.png`, the same sheet three times larger for reading. The second writes the death in six frames from the side. A review folder without them is not ready.
+
+A welded non-manifold edge (an edge shared by more than two faces) stops `run_pilot.py` at its candidate gate when the profile allows none. Tripo HD models made of many closed parts can bring a few. No repair for them runs before the export yet. When `check_holes.py` and `measure_body.py` pass on the provider GLB, record a reasoned exception for that one job (the measured count, the reason and the job as its scope, in the form `profile_exceptions` reads) and continue. Never widen the profile for every job. For colour, `tripo/colour_compare.py` renders the unit and a vanilla unit under the same light and prints the brightness and saturation of each.
 
 ### 11. Hand-over and in game
 
@@ -512,6 +676,8 @@ Give two units of one type different presets where the library has a second one 
 
 The agent works in your Chrome through Claude in Chrome, on the tab where you are signed in to Tripo Studio. It follows the same card as you would.
 
+- **A promotion dialog is closed, never used.** Tripo may cover a page with a limited-time offer or another promotion. The agent closes it with the dialog's own close button (or Escape), does not claim the offer, and never presses a button inside it. If the dialog has no close button, the agent stops and says so.
+- It opens pages by their address when it knows it: the image tool at `studio.tripo3d.ai/workspace/generate-image` and a model's Animate page at `studio.tripo3d.ai/workspace/animate/<asset id>` (see steps 1 and 5).
 - It loads `.tools/3d_pipeline/tripo/tripo_studio.js` into the page. The helpers read the credit balance and the price on each button and refuse to press Generate when the price differs from the card. On the Animate page it types each preset's name into the search box (`TS.search`) and clicks the tile it finds (`TS.presetPoint`).
 - It uploads the picture with the extension's file upload, never through a file dialog.
 - It presses each paid button once, then waits for the new task. A second press starts a second paid task.
@@ -534,6 +700,7 @@ Pick one type per unit in the job's `unit_type`. The type sets the rig, the clip
 | Type | For | Body | Rig | Clips |
 | --- | --- | --- | --- | --- |
 | `infantry_melee` | swords, axes, maces | humanoid | Tripo humanoid | sword slash, parry, wounded retreat, fall |
+| `infantry_unarmed` | soldier-sized units with empty hands: zombies, undead soldiers, civilians | humanoid | Tripo humanoid | stagger, punch, scream, wounded retreat, fall |
 | `spearman` | spears and pikes | humanoid | Tripo humanoid | spear walk, thrust, two-handed parry |
 | `archer` | bows | humanoid | Tripo humanoid | archery shot, aim and scan, step back with bow |
 | `heavy_brute` | giants, trolls, ogres | large biped | Tripo humanoid | slow heavy walk, hammer swing, ground stomp |
@@ -544,6 +711,8 @@ Pick one type per unit in the job's `unit_type`. The type sets the rig, the clip
 | `quadruped_beast` | wolves, war beasts, elephants | quadruped | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
 | `winged_quadruped` | dragons, griffins | winged quadruped | Blender quadruped with wing chains | folded idle, heavy walk with a slow beat, rear with spread wings, wing shield, turned walk with beating wings, collapse with the wings laid flat |
 | `vehicle` | tanks, armoured cars, other wheeled or tracked units | none | live in Blender | idle, drive, fire, brace, reverse, wreck |
+
+**An unarmed soldier-sized humanoid** (an undead soldier, a zombie, a civilian) takes `infantry_unarmed`, with the anatomy answers of any person (legs 2, arms 2, and no for the rest) and no `tripo.weapon` in the job. Do not take `infantry_melee` for it, whose clips are sword clips, and not `beast_biped`, which is for a large body (a yeti, a large ghoul) and is checked against the large-biped body preset that a soldier-sized model does not fit. The anatomy has no question about a held weapon, so an unarmed unit adds no key for it.
 
 Every type gets the six land-unit roles: idle, move, attack, defend, retreat and death. A Tripo job picks one clip per role from the candidates it exported (see [Pick the clips by measurement](#pick-the-clips-by-measurement)), and the export's stay-in-place option keeps walks from sliding. The clips column above describes the motion each role should read as. For an old Meshy job most roles list two library candidates in `unit_types.json`, so the clip plan can give two units of one type different clips. A `vehicle` has `calibration_group: vehicle`: its checks use vanilla's tanks and trucks as the limit, not its soldiers.
 
@@ -811,7 +980,7 @@ The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rule
 
 The notes below come from models made by hand before the [static route](#static-and-rigid-part-models). They still hold for a model made outside it.
 
-**Buildings and landmarks (proven on one model).**
+**Buildings and landmarks (not proven yet on a detailed subject).**
 
 - A tall and thin landmark (height over twice the larger side of its upper half) is sized on its height, but its base is bounded too. Vanilla's four (Big Ben, the Eiffel Tower, Hakko Ichiu, the Statue of Liberty) stand on bases of 0.17, 0.43, 0.88 and 0.82 times their height, so the contract's `size.tall_base.max_share` is 0.8757. A model whose largest horizontal side is wider than that share of the height it would get is sized on the base (largest side divided by 0.8757), so a wide paved plaza does not read as a larger monument than vanilla's. STATIC-SIZE measures the same way. An obelisk with a plaza 1.12 times its height wide came out as tall as the Statue of Liberty and 1.40 times as wide at its base. It is now 0.80 times as tall and 1.09 times as wide.
 - A building can be textured with no image: one joined mesh, procedural Blender materials, smart UV project and packed islands, then Cycles bakes colour, ambient occlusion, a tangent normal map and the specular maps, packed for the PDX shader. A whole castle baked in about 40 seconds.
