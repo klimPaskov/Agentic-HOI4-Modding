@@ -44,6 +44,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from lib import static_kinds as sk
+from lib import static_parts
 from lib import static_slab
 from lib import tripo_shape
 from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, double_inside_out_walls, hull_crumpled_pieces, remove_slivers, thicken_cards
@@ -76,7 +77,10 @@ scene = bpy.context.scene
 
 
 def arrays(obj):
-    mesh = obj.data
+    return mesh_arrays(obj.data)
+
+
+def mesh_arrays(mesh):
     mesh.calc_loop_triangles()
     positions = np.empty(len(mesh.vertices) * 3)
     mesh.vertices.foreach_get("co", positions)
@@ -250,6 +254,12 @@ for obj in meshes:
 for obj in imported:
     if obj not in meshes:
         bpy.data.objects.remove(obj, do_unlink=True)
+# A model made in parts (Tripo's Generate in Parts) has one mesh a part. Each face keeps its part (static_parts.PART_LAYER,
+# counted from 1), so the parts are welded and reduced on their own and a tank's part goes whole onto its bone.
+source_parts = [obj.name for obj in meshes] if request.get("parts", "auto") is not False and len(meshes) > 1 else []
+for k, obj in enumerate(meshes if source_parts else []):
+    layer = obj.data.attributes.new(static_parts.PART_LAYER, "INT", "FACE")
+    layer.data.foreach_set("value", [k + 1] * len(obj.data.polygons))
 bpy.ops.object.select_all(action="DESELECT")
 for obj in meshes:
     obj.select_set(True)
@@ -293,7 +303,23 @@ bm = bmesh.new()
 bm.from_mesh(model.data)
 size = float(np.ptp(original[0], axis=0).max())
 welded = len(bm.verts)
-bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=size * 1e-5)
+
+
+def part_verts(bm):
+    """The vertices of each source part (one group of every vertex for a model not in parts)."""
+
+    layer = bm.faces.layers.int.get(static_parts.PART_LAYER)
+    if layer is None:
+        return [list(bm.verts)]
+    groups = {}
+    for face in bm.faces:
+        if face[layer]:
+            groups.setdefault(face[layer], set()).update(face.verts)
+    return [list(group) for group in groups.values()]
+
+
+for group in part_verts(bm):  # parts that only touch stay apart
+    bmesh.ops.remove_doubles(bm, verts=group, dist=size * 1e-5)
 welded -= len(bm.verts)
 bmesh.ops.triangulate(bm, faces=bm.faces[:])
 report["winding"] = consistent_winding(bm)
@@ -308,43 +334,106 @@ budget = contract["triangle_budget"]["value"]
 target = int(budget * 0.94) - cards_cost
 current = triangle_count(model)
 planar = None
-if current > target:
-    # First merge the faces that lie flat together (within PLANAR_DEGREES), keeping UV island borders, then collapse
-    # what is left. Collapsing a generated hard-surface mesh straight to a vanilla budget crumples flat plates into
-    # folds and smears the texture across them; flat plates cost almost nothing once merged.
-    decimate = model.modifiers.new("planar", "DECIMATE")
+part_iou = float(request.get("part_shape_iou") or tripo_shape.MIN_IOU)
+
+
+def planar_then_collapse(obj, wanted):
+    """First merge the faces that lie flat together (within PLANAR_DEGREES), keeping UV island borders, then collapse
+    what is left to `wanted` triangles. Collapsing a generated hard-surface mesh straight to a vanilla budget crumples
+    flat plates into folds and smears the texture across them; flat plates cost almost nothing once merged. Returns the
+    count after the planar step."""
+
+    bpy.context.view_layer.objects.active = obj
+    decimate = obj.modifiers.new("planar", "DECIMATE")
     decimate.decimate_type = "DISSOLVE"
     decimate.angle_limit = math.radians(PLANAR_DEGREES)
     decimate.delimit = {"UV"}
-    bpy.context.view_layer.objects.active = model
     bpy.ops.object.modifier_apply(modifier=decimate.name)
     bm = bmesh.new()
-    bm.from_mesh(model.data)
+    bm.from_mesh(obj.data)
     bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method="BEAUTY", ngon_method="BEAUTY")
-    bm.to_mesh(model.data)
+    bm.to_mesh(obj.data)
     bm.free()
-    planar = triangle_count(model)
-    current = planar
-if current > target:
-    decimate = model.modifiers.new("decimate", "DECIMATE")
-    decimate.decimate_type = "COLLAPSE"
-    decimate.ratio = target / current
-    decimate.use_collapse_triangulate = True
-    bpy.context.view_layer.objects.active = model
-    bpy.ops.object.modifier_apply(modifier=decimate.name)
+    after = triangle_count(obj)
+    if after > wanted:
+        decimate = obj.modifiers.new("decimate", "DECIMATE")
+        decimate.decimate_type = "COLLAPSE"
+        decimate.ratio = wanted / after
+        decimate.use_collapse_triangulate = True
+        bpy.ops.object.modifier_apply(modifier=decimate.name)
+    return after
+
+
+def reduce_in_parts(wanted):
+    """Each source part reduced on its own to its share of `wanted` (lib/static_parts.reduce_parts), the shares by need and
+    every part's shape checked as the unit route checks a reduced part; the parts are joined back into the model."""
+
+    sources = []
+    for k in range(len(source_parts)):
+        mesh = model.data.copy()
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        layer = bm.faces.layers.int.get(static_parts.PART_LAYER)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if f[layer] != k + 1], context="FACES")
+        bm.to_mesh(mesh)
+        bm.free()
+        sources.append(mesh)
+    objects = []
+    for k, mesh in enumerate(sources):
+        obj = bpy.data.objects.new(f"{name}_part_{k + 1}", mesh.copy())
+        scene.collection.objects.link(obj)
+        objects.append(obj)
+
+    def reduce(k, triangles):
+        obj = objects[k]
+        old = obj.data
+        obj.data = sources[k].copy()
+        bpy.data.meshes.remove(old)
+        if triangles < triangle_count(obj):
+            planar_then_collapse(obj, triangles)
+        return arrays(obj)
+
+    try:
+        receipt = static_parts.reduce_parts(source_parts, [mesh_arrays(m) for m in sources], wanted, reduce, part_iou)
+    except static_parts.PartsBudgetError as problem:
+        raise SystemExit(f"STATIC-PARTS: {problem}") from None
+    bpy.ops.object.select_all(action="DESELECT")
+    for obj in objects:
+        obj.select_set(True)
+    bpy.context.view_layer.objects.active = objects[0]
+    bpy.ops.object.join()
+    old = model.data
+    model.data = objects[0].data
+    bpy.data.objects.remove(objects[0], do_unlink=True)
+    bpy.data.meshes.remove(old)
+    for mesh in sources:
+        bpy.data.meshes.remove(mesh)
+    model.data.name = f"{name}Shape"
+    return receipt
+
+
+parts_receipt = None
+if source_parts and current > target:
+    parts_receipt = reduce_in_parts(target)
+elif current > target:
+    planar = planar_then_collapse(model, target)
 # STATIC-SHAPE judges the reduction alone, before the holes below are closed: a cap over an opening adds to the outline
 # by design (the Smart Mesh monument's base had wedge openings through it, and their caps read as a 0.91 top outline)
 shape = tripo_shape.shape_report(original, arrays(model))
 reduced_to = triangle_count(model)
+# Parts that only touched come apart in their own reductions, so a model in parts is judged whole by its silhouettes alone
+# (each part's shells and closure were checked on their own).
+shape_problems = static_parts.silhouette_problems(shape) if parts_receipt else tripo_shape.shape_problems(shape)
 # Small open loops a reviewer sees as specks of the background (the kit closes loops up to 32 edges without a seam,
 # check_unit_files.SMALL_HOLE_EDGES); larger ones stay for UNIT-HOLE to report.
 bm = bmesh.new()
 bm.from_mesh(model.data)
 # Slits first: open-edge vertices within a thousandth of the model's size of each other are one point. A reviewer saw
 # such a crack on the ship's deck as a cyan rim; the weld tolerance above (a hundred-thousandth) leaves it open.
-rim_verts = list({v for e in bm.edges if e.is_boundary for v in e.verts})
 slits = len(bm.verts)
-bmesh.ops.remove_doubles(bm, verts=rim_verts, dist=size * SLIT_SHARE)
+for group in part_verts(bm):
+    rim_verts = [v for v in group if any(e.is_boundary for e in v.link_edges)]
+    bmesh.ops.remove_doubles(bm, verts=rim_verts, dist=size * SLIT_SHARE)
 slits -= len(bm.verts)
 report["slit_vertices_merged"] = slits
 closed = bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=SMALL_HOLE_EDGES)["faces"]
@@ -386,7 +475,11 @@ bm.free()
 report["small_holes_closed"] = len(closed)
 report["reduction"] = {"welded_vertices": welded, "from": len(original[1]), "after_planar": planar, "to": reduced_to, "budget": budget,
                        "iou": shape["iou"], "shells_before": shape["shells_before"]["shells"], "shells_after": shape["shells_after"]["shells"],
-                       "problems": tripo_shape.shape_problems(shape)}
+                       "problems": shape_problems}
+if parts_receipt:
+    report["reduction"]["parts"] = parts_receipt
+elif source_parts:
+    report["reduction"]["parts"] = {"within_target": True, "parts": source_parts}
 
 # ---- 3. rigid parts ----
 positions, triangles = arrays(model)
@@ -411,6 +504,21 @@ def centre(face):
 
 
 hull_layer = bm.faces.layers.int.new(HULL_LEVEL) if kind == "vehicle" else None  # (before the cuts: a new layer removes the face references)
+part_layer = bm.faces.layers.int.get(static_parts.PART_LAYER)
+whole_region = {}  # a source part that lies wholly on one side of the cuts -> the rigid part it goes to whole
+
+
+def whole_sides(faces, side):
+    """static_parts.whole_parts on these faces: {part id: True when the part lies wholly on the side `side` marks}."""
+
+    if part_layer is None or not faces:
+        return {}
+    return static_parts.whole_parts(np.array([f[part_layer] for f in faces]), np.array([f.calc_area() for f in faces]),
+                                    np.array([bool(side(f)) for f in faces]))
+
+
+def uncut(faces, decided):
+    return [f for f in faces if part_layer is None or f[part_layer] not in decided]
 if kind == "vehicle":
     turret = sk.turret_cut(samples, contract["rules"]["turret"])
     barrel = sk.barrel_cut(samples, turret["cut_z"], contract["rules"]["barrel"])
@@ -434,13 +542,24 @@ if kind == "vehicle":
             v.co.z = roof_z
         snapped = len(moved)
     collar_report = {"faces": len(collar), "vertices_snapped": snapped}
-    bisect(bm.faces[:], (0, 0, turret["cut_z"]), (0, 0, 1))
-    upper = [f for f in bm.faces if centre(f).z > turret["cut_z"]]
-    bisect(upper, (0, barrel["cut_y"], 0), (0, 1, 0))
+    # A source part (a model in parts) lying wholly over or under a cut goes whole to that side and is not sliced: a
+    # turret part sunk a little into the hull stays one closed turret.
+    over_turret = whole_sides(bm.faces[:], lambda f: centre(f).z > turret["cut_z"])
+    bisect(uncut(bm.faces[:], over_turret), (0, 0, turret["cut_z"]), (0, 0, 1))
+    is_upper = lambda f: over_turret[f[part_layer]] if part_layer is not None and f[part_layer] in over_turret else centre(f).z > turret["cut_z"]
+    upper = [f for f in bm.faces if is_upper(f)]
+    # (only a part wholly over the turret cut may also go whole past the barrel cut: a part the turret cut slices is
+    # sliced by the barrel cut too, so no face of it crosses a plane without a cut there)
+    before_barrel = whole_sides([f for f in upper if part_layer is not None and over_turret.get(f[part_layer])], lambda f: centre(f).y < barrel["cut_y"])
+    bisect(uncut(upper, before_barrel), (0, barrel["cut_y"], 0), (0, 1, 0))
+    for part, over in over_turret.items():
+        # (a part wholly over the turret cut but cut by the barrel's goes by the barrel cut alone: "upper")
+        whole_region[part] = "body" if not over else ("barrel" if before_barrel.get(part) else "turret" if part in before_barrel else "upper")
     part_of = {}
     for face in bm.faces:
         c = centre(face)
-        part_of[face] = "body" if c.z <= turret["cut_z"] else ("barrel" if c.y < barrel["cut_y"] else "turret")
+        known = whole_region.get(face[part_layer]) if part_layer is not None else None
+        part_of[face] = known if known in ("body", "turret", "barrel") else ("body" if not is_upper(face) else ("barrel" if c.y < barrel["cut_y"] else "turret"))
     # Hull roof the cut only clipped (a Smart Mesh's roof plates and bolts lie a hair above it, outside the turret's ring)
     # is not the turret's: carried off with it, it leaves a hole in the roof and hangs beside the flying turret.
     bm.verts.index_update()
@@ -555,9 +674,9 @@ bm = bmesh.new()
 bm.from_mesh(model.data)
 
 
-def region(c):
+def region(c, upper=False):
     if kind == "vehicle":
-        if c.z <= parts_report["turret_cut"]["cut_z"]:
+        if c.z <= parts_report["turret_cut"]["cut_z"] and not upper:
             return "body"
         return "barrel" if c.y < parts_report["barrel_cut"]["cut_y"] else "turret"
     if kind == "plane":
@@ -585,10 +704,14 @@ for face in bm.faces:
     for v in face.verts[1:]:
         parent[find(v.index)] = find(first)
 hull_layer = bm.faces.layers.int.get(HULL_LEVEL)
+part_layer = bm.faces.layers.int.get(static_parts.PART_LAYER)
 
 
 def region_of(face):
-    return "body" if hull_layer is not None and face[hull_layer] else region(centre(face))
+    if hull_layer is not None and face[hull_layer]:
+        return "body"
+    known = whole_region.get(face[part_layer]) if part_layer is not None else None
+    return region(centre(face), upper=True) if known == "upper" else known or region(centre(face))
 
 
 votes = {}
@@ -651,7 +774,18 @@ for face, part in zip(bm.faces, face_part):
     for v in face.verts:
         vertex_part.setdefault(v.index, set()).add(part)
 shared = sum(1 for parts in vertex_part.values() if len(parts) > 1)
+if part_layer is not None:
+    # which rigid part each source part ended on (triangles), and the parts that went whole onto their bone
+    landed = {}
+    for face, part in zip(bm.faces, face_part):
+        if face[part_layer]:
+            where = landed.setdefault(source_parts[face[part_layer] - 1], {})
+            where[part] = where.get(part, 0) + 1
+    parts_report["source_parts"] = landed
+    parts_report["whole_parts"] = {source_parts[k - 1]: where for k, where in sorted(whole_region.items())}
 bm.free()
+if static_parts.PART_LAYER in model.data.attributes:
+    model.data.attributes.remove(model.data.attributes[static_parts.PART_LAYER])
 parts_report["caps"] = caps
 parts_report["vertices_in_two_parts"] = shared
 parts_report["triangles_per_part"] = {p: face_part.count(p) for p in sorted(set(face_part))}

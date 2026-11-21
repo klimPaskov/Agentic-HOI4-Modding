@@ -5,7 +5,10 @@
 
 The job file names the model and its `model_kind` (building, landmark, ship, vehicle, plane); the GLB is
 `<name>.glb` next to it (or the job's `glb`). An optional `front` (`-y`, `+y`, `-x`, `+x`) overrides which way
-the model is found to face. Everything else comes from the kind's contract in `config/static_kinds.json`, measured
+the model is found to face. A GLB made in parts (Tripo's Generate in Parts: one mesh node a part) is reduced part by
+part (`lib/static_parts.py`): each part gets a share of the triangle budget by its need and keeps its shape (the
+silhouette agreement `part_shape_iou`, default 0.97, as the unit route's `part_shape_iou`) and its closure; `"parts":
+false` joins the parts and reduces them as one, as before. Everything else comes from the kind's contract in `config/static_kinds.json`, measured
 from vanilla files by `calibrate_static_kinds.py`:
 
 - size and place: the kind's vanilla main measure (a tank's length, a plane's wingspan, a ship's length with its
@@ -40,7 +43,7 @@ from PIL import Image
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import heavy_job, model_dds, pdx_deform, static_delight
+from lib import heavy_job, model_dds, pdx_deform, static_delight, static_parts
 from lib import static_kinds as sk
 from lib.texture_lineage import embedded_images
 from pack_pdx_material import remap_gloss_table
@@ -358,6 +361,32 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
     return "\n".join(parts) + "\n"
 
 
+def parts_plan(glb: Path, contract: dict, job: dict) -> Optional[dict]:
+    """What the stage would do with a GLB made in parts: each part's triangles, need and first share of the reduction
+    target (the stage keeps back a little more for the cards it thickens), or None for a model in one piece."""
+
+    parts = static_parts.glb_parts(glb)
+    if len(parts) < 2 or job.get("parts", "auto") is False:
+        return None
+    needs = [static_parts.part_need(p, t) for _name, p, t in parts]
+    target = int(contract["triangle_budget"]["value"] * 0.94)
+    try:
+        shares = static_parts.allocate(needs, target)
+    except static_parts.PartsBudgetError as problem:
+        return {"target": target, "problem": str(problem)}
+    weights = static_parts.need_weights(needs)
+    return {"target": target, "parts": {name: {"triangles": n["triangles"], "need": round(w, 4), "share": share}
+                                        for (name, _p, _t), n, w, share in zip(parts, needs, weights, shares)}}
+
+
+def parts_summary(report: dict):
+    """Each source part's triangles before and after its reduction, the part names when the model was within its target,
+    or None for a model in one piece."""
+
+    source = (report.get("reduction", {}).get("parts") or {}).get("parts")
+    return {k: [v["from"], v["to"]] for k, v in source.items()} if isinstance(source, dict) else source
+
+
 def run_blender(request_path: Path, log: Path) -> None:
     import review_unit
 
@@ -387,7 +416,7 @@ def main(argv=None) -> int:
     out.mkdir(parents=True, exist_ok=True)
     if args.plan:
         points, triangles = sk.read_glb_geometry(glb)
-        print(json.dumps(sk.plan(points, triangles, contract, front), indent=1, default=float))
+        print(json.dumps({**sk.plan(points, triangles, contract, front), "parts": parts_plan(glb, contract, job)}, indent=1, default=float))
         return 0
     game = args.game or game_dir()
     files = out / "mod" / FOLDERS[kind] / name
@@ -405,6 +434,7 @@ def main(argv=None) -> int:
         # Blender's v runs up, glTF's down
         "hole_uv": [hole["uv"][0], 1.0 - hole["uv"][1]] if hole else None,
         "report": str(out / "blender_report.json"), "blend": str(out / f"{name}.blend") if args.keep_blend else None,
+        "parts": job.get("parts", "auto"), "part_shape_iou": job.get("part_shape_iou"),
     }
     request_path = out / "blender_request.json"
     request_path.write_text(json.dumps(request), encoding="utf-8", newline="\n")
@@ -430,6 +460,7 @@ def main(argv=None) -> int:
         code = 1
     print(json.dumps({"tool": "static_model", "name": name, "kind": kind, "files": str(files), "triangles": report.get("triangles"),
                       "parts": report.get("parts", {}).get("triangles_per_part"), "reduction_problems": report.get("reduction", {}).get("problems"),
+                      "source_parts": parts_summary(report),
                       "check": "pass" if code == 0 else "fail"}))
     return code
 
