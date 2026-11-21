@@ -2,7 +2,9 @@
 
 This file describes how to read, edit and extend the `[MOD_NAME]` codebase.
 
+<!-- HOI4_MOD_SETUP:COMPONENT:docs.linux:START -->
 Native Linux prerequisites, paths and client registration: `docs/linux.md`.
+<!-- HOI4_MOD_SETUP:COMPONENT:docs.linux:END -->
 
 It holds the rules that apply to every task. The full text of each section is in `.claude/skills/hoi4-project-rules/references/`, one file per topic.
 Read the file a section names before the work it governs. A summary here never replaces the full rule there.

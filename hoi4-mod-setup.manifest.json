@@ -17513,7 +17513,7 @@
       "display_name": "Native Linux setup guide",
       "description": "Native Linux prerequisites, current-user paths, client registration and workflow support boundaries.",
       "category": "documentation",
-      "optional": false,
+      "optional": true,
       "platforms": [
         "all"
       ],
