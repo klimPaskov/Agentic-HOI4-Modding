@@ -24,10 +24,12 @@ import numpy as np
 from . import pdx_deform, tripo_guard, tripo_pose
 from .pdx_binary import read
 
-# Directions in the frame (the unit's front, up, out toward the arm's side). A two-handed grab: the upper arm forward and a little out, the
-# forearm forward and in, so the hands meet in front at shoulder height.
-UPPER_ARM = (0.95, 0.05, 0.2)
-FOREARM = (0.9, 0.08, -0.4)
+# Directions in the frame (the unit's front, up, out toward the arm's side). A two-handed grab: the upper arm forward and barely out, the
+# forearm forward and a little in, so the hands close in front at shoulder height with the arms nearly straight. On zombie_e's files a
+# forearm turned further in (0.9, 0.08, -0.4) kept the hands 0.16 of the height apart but reached 292 px against the idle on the map camera,
+# under TRIPO-MAP-READ's 300. These reach 304 with the hands 0.18 apart.
+UPPER_ARM = (0.97, 0.08, 0.1)
+FOREARM = (0.97, 0.05, -0.18)
 FULL_SHARE = 0.5
 MIN_TRAVEL = 0.02  # of the height: less than this and the clip has no lunge to follow
 ARMS = tripo_guard.ARMS
