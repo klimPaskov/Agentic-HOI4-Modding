@@ -51,7 +51,6 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -62,7 +61,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 
 import numpy as np
 
-from lib import pdx_binary, pdx_deform, stage_verdict
+from lib import heavy_job, pdx_binary, pdx_deform, stage_verdict
 
 PROMPT = PIPELINE_ROOT / "config" / "visual_review_prompt.md"
 BLENDER_SCRIPT = PIPELINE_ROOT / "blender" / "review_render.py"
@@ -106,7 +105,9 @@ def diffuse_maps(mesh_path: Path, gfx_texts: List[str]) -> Dict[str, str]:
                 texture = re.search(r'texture_diffuse\s*=\s*"([^"]+)"', settings.group(1))
                 if name and texture and (mesh_path.parent / Path(texture.group(1)).name).exists():
                     maps[name.group(1)] = str(mesh_path.parent / Path(texture.group(1)).name)
-    fallback = sorted(mesh_path.parent.glob(f"{mesh_path.stem}*diffuse*.dds")) or sorted(mesh_path.parent.glob("*diffuse*.dds"))
+    # the unit's own map first: a burn death's heap has its own `<stem>_ash_diffuse.dds`, which sorts before `<stem>_diffuse.dds`
+    own = mesh_path.parent / f"{mesh_path.stem}_diffuse.dds"
+    fallback = [own] if own.is_file() else sorted(mesh_path.parent.glob(f"{mesh_path.stem}*diffuse*.dds")) or sorted(mesh_path.parent.glob("*diffuse*.dds"))
     if fallback:
         maps["*"] = str(fallback[0])
     return maps
@@ -502,7 +503,7 @@ def render(
     out.mkdir(parents=True, exist_ok=True)
     request_path = out / "render_request.json"
     request_path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-    completed = subprocess.run(
+    completed = heavy_job.run(
         [str(find_blender()), "-b", "--python", str(BLENDER_SCRIPT), "--", str(request_path.resolve())],
         capture_output=True,
         text=True,
@@ -538,7 +539,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--rider-stem", help="the rider's file stem, when its folder holds several")
     parser.add_argument("--rider-scale", type=float, default=1.0, help="the rider entity's scale (it multiplies the mount's, so it is the rider's size in the mount's mesh units)")
     parser.add_argument("--rider-roles", nargs="*", default=[], metavar="ROLE=RIDER_ROLE", help="the rider clip each mount role plays, for example move=idle")
+    heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
+    heavy_job.apply(args)
     out = args.out
     unit = args.stem or next((mesh.stem for mesh in sorted(args.folder.glob("*.mesh"))), args.folder.name)
     if args.record:

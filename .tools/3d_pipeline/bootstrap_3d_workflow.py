@@ -1507,6 +1507,33 @@ def register_claude_routes(root: Path, config_path: Path) -> str:
     return "registered:" + ",".join(registered) if registered else "no_routes"
 
 
+def explain_outcomes(claude_registration: str, template_removed: bool) -> list[str]:
+    """The two short codes of the bootstrap's JSON record (`claude_registration`, `template_removed`) in words, one line each."""
+
+    lines = []
+    if claude_registration == "claude_cli_not_found":
+        lines.append(
+            "Claude Code registration skipped: the `claude` command is not on this machine's PATH, so the Meshy and Blender routes were not "
+            "added to Claude Code's local settings. This is expected where Claude Code's command line is not installed. The Codex routes are "
+            "written, and the Tripo route needs no registration (the scripts start Blender themselves)."
+        )
+    elif claude_registration.startswith("claude_registration_failed:"):
+        lines.append(
+            f"Claude Code registration failed for the {claude_registration.split(':', 1)[1]} route: `claude mcp add-json` returned an error. "
+            "The scripts still work. Register the route by hand if you want to call Blender from Claude Code."
+        )
+    elif claude_registration.startswith("registered:"):
+        lines.append(f"Claude Code registration done for: {claude_registration.split(':', 1)[1]}.")
+    elif claude_registration == "no_routes":
+        lines.append("Claude Code registration found no reviewed routes to add.")
+    if template_removed:
+        lines.append(
+            "Config template removed: the temporary `.codex/3d_mcp_config.template.toml` was deleted after the real MCP config was written. "
+            "This is expected on every run."
+        )
+    return lines
+
+
 def write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
@@ -1669,10 +1696,23 @@ def write_config_texts(pipeline_root: Path, blender_mcp_project: Path, uv_execut
     )
 
 
+def load_heavy_job():
+    """The machine-wide Blender gate (lib/heavy_job.py), read by its path: it needs nothing else, and the pipeline's `lib` package must not
+    join `sys.path` (the kit's own `.tools/lib` shares its name)."""
+
+    spec = importlib.util.spec_from_file_location("kit_heavy_job", PIPELINE_ROOT / "lib" / "heavy_job.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def main() -> int:
     try:
+        heavy_job = load_heavy_job()
         parser = build_parser()
+        heavy_job.add_argument(parser)
         args = parser.parse_args()
+        heavy_job.apply(args)
         without_meshy = check_meshy_setup(args)
         root = (args.project_root or repository_root()).resolve()
         pipeline_root = root / ".tools/3d_pipeline"
@@ -1688,31 +1728,36 @@ def main() -> int:
         blender_mcp = resolve_blender_mcp()
         blender_mcp_project = ensure_blender_mcp(pipeline_root, blender_mcp)
         io_resolution = resolve_io_pdx_mesh(pipeline_root)
-        io_pdx_mesh = ensure_io_pdx_mesh(pipeline_root, blender_executable, io_resolution)
-        blender_hoi4_adapter = materialize_hoi4_adapter(
-            root,
-            pipeline_root,
-            uv_executable,
-            blender_executable,
-            io_pdx_mesh,
-        )
-        addon_source = pipeline_root / "vendor" / "blender_mcp" / "addon" / "blender_mcp_addon"
-        bridge = resolve_blender_bridge_settings(addon_source)
-        blender_mcp_addon = ensure_blender_mcp_addon(
-            pipeline_root,
-            blender_executable,
-            blender_mcp_project,
-            blender_mcp,
-            io_pdx_mesh,
-            bridge,
-        )
-        blender_bridge = ensure_blender_bridge(blender_executable, bridge)
+        # These steps start Blender several times (add-on checks, the bridge probe): wait for any other kit Blender and for free RAM first.
+        with heavy_job.hold("bootstrap_3d_workflow"):
+            io_pdx_mesh = ensure_io_pdx_mesh(pipeline_root, blender_executable, io_resolution)
+            blender_hoi4_adapter = materialize_hoi4_adapter(
+                root,
+                pipeline_root,
+                uv_executable,
+                blender_executable,
+                io_pdx_mesh,
+            )
+            addon_source = pipeline_root / "vendor" / "blender_mcp" / "addon" / "blender_mcp_addon"
+            bridge = resolve_blender_bridge_settings(addon_source)
+            blender_mcp_addon = ensure_blender_mcp_addon(
+                pipeline_root,
+                blender_executable,
+                blender_mcp_project,
+                blender_mcp,
+                io_pdx_mesh,
+                bridge,
+            )
+            blender_bridge = ensure_blender_bridge(blender_executable, bridge)
         config_path = (
             verify_reviewed_config(root, with_meshy=not without_meshy)
             if args.verify_reviewed_config
             else materialize_config(root, args.trusted_launcher, with_meshy=not without_meshy)
         )
         claude_registration = register_claude_routes(root, config_path)
+        if not args.quiet:
+            for line in explain_outcomes(claude_registration, True):
+                print(line, file=sys.stderr)
         resolved_at = utc_now()
 
         payload = {

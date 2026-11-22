@@ -19,6 +19,7 @@ REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 from blender_client import BlenderAdapterClient
+from lib import heavy_job
 from lib.mcp_stdio import MCPRouteError
 from lib.paths import (
     append_history,
@@ -114,6 +115,17 @@ def read_job(job: Path) -> Dict[str, Any]:
     return read_job_document(job / "job.yaml")
 
 
+def installed_game_dir() -> Path:
+    """The game folder of this machine, by the kit's shared rule (`.tools/lib/game.py`). That file is read by path because the pipeline has its own `lib` package."""
+
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("kit_game_folder", PIPELINE_ROOT.parent / "lib" / "game.py")
+    module = importlib.util.module_from_spec(spec)  # type: ignore[arg-type]
+    spec.loader.exec_module(module)  # type: ignore[union-attr]
+    return module.game_dir()
+
+
 def stage_vanilla_reference(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """Stage the named installed vanilla reference inside the bounded job root."""
 
@@ -127,6 +139,9 @@ def stage_vanilla_reference(job: Path, spec: Dict[str, Any]) -> Optional[Dict[st
             "height-only calibration is not permitted."
         )
     source = Path(str(reference.get("mesh", ""))).resolve()
+    if not source.is_file() and reference.get("mesh") and not Path(str(reference["mesh"])).is_absolute():
+        # A relative path, such as the profile's own `gfx/models/units/western_european_infantry.mesh`, is a file of the installed game.
+        source = (installed_game_dir() / str(reference["mesh"])).resolve()
     if not source.is_file():
         raise FileNotFoundError(f"Installed vanilla scale reference is missing: {source}")
     destination = job / "blender" / "reference" / source.name
@@ -1392,6 +1407,26 @@ def _apply_runtime_diffuse_grade(
     return textures
 
 
+def check_diffuse_look(job: Path, provider_sources: Dict[str, str], textures: Dict[str, Any]) -> Dict[str, Any]:
+    """Refuse a Tripo unit whose runtime diffuse differs from the generator's export by a global colour transform (`lib/texture_look.py`).
+
+    A model's look comes from its picture and the generator's texture. A tint, filter or recolour over that texture is never the way to change
+    it: the model is regenerated. The numbers go into the texture report (`diffuse_look`)."""
+
+    from lib import texture_look
+
+    source_rel = provider_sources.get("diffuse")
+    conversion = next((item for item in textures.get("conversions") or [] if item.get("image") == "texture_0" and item.get("png")), None)
+    if not source_rel or conversion is None or not (job / source_rel).is_file() or not (job / conversion["png"]).is_file():
+        return textures
+    numbers = texture_look.global_transform(job / source_rel, job / conversion["png"])
+    textures["diffuse_look"] = {"source": source_rel, "runtime": conversion["png"], **numbers}
+    reason = texture_look.refusal(numbers)
+    if reason:
+        raise RuntimeError(reason)
+    return textures
+
+
 def compress_runtime_textures(job: Path, spec: Dict[str, Any], textures: Dict[str, Any]) -> Dict[str, Any]:
     """Rewrite each runtime DDS as DXT5 with a full mip chain, the format vanilla units ship.
 
@@ -1519,6 +1554,8 @@ def finalize_pdx_runtime_textures(
                 "alpha": "source_normal_green_tangent_y",
             },
         )
+    if uses_tripo(spec):
+        textures = check_diffuse_look(job, provider_sources, textures)
     textures = compress_runtime_textures(job, spec, textures)
     report = job / "blender" / "reports" / "textures_dds.json"
     textures["runtime_texture_sources"] = provider_sources
@@ -3737,13 +3774,18 @@ def _parts(held: Any) -> List[Dict[str, Any]]:
 def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoid: bool = True) -> Dict[str, Any]:
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
-    weapon or shield the unit has let go of never deciding where it is. A death whose thighs split apart past vanilla's deaths has its knees swung together first (lib/tripo_splay.py, TRIPO-DEATH-SPLAY), one whose hips hold themselves up while it falls has them brought down in a free fall first (lib/tripo_fall.py, TRIPO-DEATH-HOVER), one whose boots hang above the ground has its legs settled next, and one
-    whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
+    weapon or shield the unit has let go of never deciding where it is. A death whose thighs split apart past vanilla's deaths has its knees swung together first (lib/tripo_splay.py, TRIPO-DEATH-SPLAY), one whose hips hold themselves up while it falls has them brought down in a free fall first (lib/tripo_fall.py, TRIPO-DEATH-HOVER), one whose boots hang above the ground has its legs settled next, one
+    whose boot kicks up again once the hips are down has that leg laid across the kick (lib/tripo_kick.py, TRIPO-DEATH-LEG-KICK), and one whose chest, head or hands stay up once the hips are down has its upper body settled next, both judged on the body as the ground pass will lift it. In a death the wing chains never decide where the body is, and each wing sunk under the ground is turned up about its root last (lib/tripo_chain_lift.py). `weapon` is the job's weapon block or the list of held parts (`lib.tripo.held_parts`)."""
 
-    from lib import pdx_ground, tripo_fall, tripo_pose, tripo_splay
+    from lib import pdx_ground, tripo_fall, tripo_kick, tripo_pose, tripo_splay
 
     released = released_bones(_parts(weapon), role)
     record: Dict[str, Any] = {}
+    if role == "death":
+        # a death's wing chains never decide where the body is: they are lifted off the ground instead (lib/tripo_chain_lift.py)
+        from lib import pdx_deform, tripo_chain_lift
+
+        released = list(released) + [name for name in tripo_chain_lift.chain_bones(pdx_deform.load_mesh(mesh)) if name not in released]
     if role == "death" and humanoid:
         splay = tripo_splay.close_death_legs(mesh, anim, anim, exclude_bones=released)
         record["splay"] = dict(splay.__dict__)
@@ -3753,12 +3795,113 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
         legs = tripo_pose.settle_death_legs(mesh, anim, anim, exclude_bones=released)
         record["legs"] = {"changed": legs.changed, "joints": list(legs.joints), "share": round(legs.share, 3), "from_frame": legs.from_frame, "ramp_frames": legs.frames,
                           "boots_height_before": round(legs.height_before, 4), "boots_height_after": round(legs.height_after, 4), "note": legs.note}
+        kick = tripo_kick.settle_death_kick(mesh, anim, anim, exclude_bones=released)
+        record["kick"] = {"changed": kick.changed, "onset": kick.onset, "spans": kick.spans, "before": kick.before, "after": kick.after, "note": kick.note}
         upper = tripo_pose.settle_death_upper(mesh, anim, anim, exclude_bones=released)
         record["upper_body"] = {"changed": upper.changed, "turns_degrees": upper.turns, "from_frame": upper.from_frame, "ramp_frames": upper.frames,
                                 "heights_before": upper.heights_before, "heights_after": upper.heights_after, "note": upper.note}
+    if role == "death":
+        lift = tripo_chain_lift.lift_death_chains(mesh, anim, anim)
+        if lift.changed or lift.sunk_before:
+            record["chain_lift"] = dict(lift.__dict__)
     fix = pdx_ground.ground(mesh, anim, anim, death=role == "death", tolerance=tripo_pose.GROUND_TOLERANCE, exclude_bones=released)
     record["ground"] = {"root": fix.root, "shifted": fix.corrected, "largest_shift": round(fix.largest_shift, 4), "note": fix.reason}
     return record
+
+
+def guard_staged_defend(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The defend posed as a guard or a recoil on the staged files when the job asks (`"defend_pose": "guard"` or `"recoil"`,
+    lib/tripo_guard.py), recorded."""
+
+    pose = (spec.get("tripo") or {}).get("defend_pose")
+    if pose not in ("guard", "recoil") or "defend" not in roles:
+        return
+    from lib import map_read, pdx_deform, tripo_guard
+
+    mesh = staged / f"{stem}.mesh"
+    shape = tripo_guard.RECOIL if pose == "recoil" else {}  # the recoil: thrown back, the arms flung out (an unarmed zombie's defend)
+    records[f"{stem}_defend.anim"][pose] = tripo_guard.guard_defend(mesh, staged / f"{stem}_defend.anim", staged / f"{stem}_idle.anim",
+                                                                      map_read.front_of(pdx_deform.load_mesh(mesh)), **shape)
+
+
+def look_back_staged_retreat(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The retreat turned to look back over the shoulder on the staged files when the job asks (`"retreat_pose": "look_back"`,
+    lib/tripo_look_back.py), recorded."""
+
+    if (spec.get("tripo") or {}).get("retreat_pose") != "look_back" or "retreat" not in roles:
+        return
+    from lib import tripo_look_back
+
+    records[f"{stem}_retreat.anim"]["look_back"] = tripo_look_back.look_back(staged / f"{stem}.mesh", staged / f"{stem}_retreat.anim")
+
+
+def hunch_staged_idle(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The idle posed hunched with the head forward on the staged files when the job asks (`"idle_pose": "hunch"`, lib/tripo_hunch.py),
+    recorded."""
+
+    if (spec.get("tripo") or {}).get("idle_pose") != "hunch" or "idle" not in roles:
+        return
+    from lib import map_read, pdx_deform, tripo_hunch
+
+    mesh = staged / f"{stem}.mesh"
+    records[f"{stem}_idle.anim"]["hunch"] = tripo_hunch.hunch_idle(mesh, staged / f"{stem}_idle.anim", map_read.front_of(pdx_deform.load_mesh(mesh)))
+
+
+def grab_staged_attack(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The attack's arms posed as a two-handed grab on the staged files when the job asks (`"attack_pose": "grab"`, lib/tripo_grab.py),
+    recorded."""
+
+    pose = (spec.get("tripo") or {}).get("attack_pose")
+    if pose not in ("grab", "grab_wide") or "attack" not in roles:
+        return
+    from lib import map_read, pdx_deform, tripo_grab
+
+    mesh = staged / f"{stem}.mesh"
+    records[f"{stem}_attack.anim"]["grab"] = tripo_grab.grab_attack(mesh, staged / f"{stem}_attack.anim", map_read.front_of(pdx_deform.load_mesh(mesh)),
+                                                                     wide=pose == "grab_wide")
+
+
+def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The role poses a job asks for on the staged files: the idle's hunch first (the guard turns the torso toward the idle's stance), then
+    the defend's guard, the retreat's look back and the attack's grab (after the lunge step is restored, which it follows)."""
+
+    hunch_staged_idle(staged, stem, spec, roles, records)
+    guard_staged_defend(staged, stem, spec, roles, records)
+    look_back_staged_retreat(staged, stem, spec, roles, records)
+    grab_staged_attack(staged, stem, spec, roles, records)
+
+
+def step_and_pose_staged_roles(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), on the staged files."""
+
+    restore_staged_lunges(job, staged, stem, spec, roles, records)
+    pose_staged_roles(staged, stem, spec, roles, records)
+
+
+def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
+    """Each shape's mesh streams and their material's texture names, for the registration (lib/unit_registration.mesh_streams)."""
+
+    from lib import unit_registration
+
+    try:
+        return unit_registration.mesh_streams(mesh) if mesh.is_file() else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, Any]:
+    """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
+    keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
+
+    from lib import tripo_burn
+
+    mesh = staged / f"{stem}.mesh"
+    heap = tripo_burn.add_heap(mesh, staged / f"{stem}_diffuse.dds")
+    for role in roles:
+        if role != "death":
+            tripo_burn.add_rest_joint(mesh, staged / f"{stem}_{role}.anim")
+    death = tripo_burn.burn_death(mesh, staged / f"{stem}_death.anim")
+    return tripo_burn.write_plan(staged, stem, heap, death)
 
 
 def clear_held_props(mesh: Path, anim: Path, role: str, weapon: Any) -> Dict[str, Any]:
@@ -3783,14 +3926,26 @@ def clear_staged_props(job: Path, staged: Path, spec: Dict[str, Any], roles: Lis
         records[name]["staged"] = file_record(staged / name, relative_to=job)
 
 
-def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
+def restore_staged_lunges(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """Each role the job's `tripo.lunge` names gets its kept step back on the staged clip, read from the role's provider file
+    (lib/tripo_lunge.py), recorded."""
+
+    from lib import tripo_lunge
+
+    for role in (spec.get("tripo") or {}).get("lunge") or {}:
+        provider = job / "provider" / "downloads" / f"animation_{role}_provider.glb"
+        if role in roles and provider.is_file():
+            records[f"{stem}_{role}.anim"]["lunge"] = tripo_lunge.restore_step(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", provider)
+
+
+def lift_sunk_neck(mesh: Path, anim: Path, role: str, unarmed: bool = False) -> Dict[str, Any]:
     """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
     past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
     brings the head's base back above the shoulder line. It runs before the weights are smoothed and fitted, so they fit the lifted clip."""
 
     from lib import tripo_neck
 
-    lift = tripo_neck.lift_neck(mesh, anim, anim, role)
+    lift = tripo_neck.lift_neck(mesh, anim, anim, role, hands_guard=unarmed)  # an unarmed unit's lift never raises its hands (TRIPO-HANDS-HIGH)
     return {"changed": lift.changed, "group": lift.group, "joints": list(lift.joints), "share": lift.share, "frames_changed": lift.frames_changed,
             "ramp_frames": lift.ramp_frames, "neck_before": round(lift.neck_before, 3), "neck_after": round(lift.neck_after, 3), "tried": lift.tried,
             "note": lift.note}
@@ -3841,6 +3996,11 @@ def ease_staged_shoulders(job: Path, staged: Path, spec: Dict[str, Any], roles: 
         name = f"{stem}_{role}.anim"
         ease = tripo_shoulder.ease_shoulders(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
         records[name]["shoulder_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in ease.__dict__.items()}
+        # Then the clavicle that still tears the girdle turns toward the stance, the upper arm keeping its direction (TRIPO-SHOULDER-TEAR).
+        # `"ease_clavicles": false` switches it off.
+        if (spec.get("tripo") or {}).get("ease_clavicles", True) is not False:
+            lever = tripo_shoulder.ease_clavicles(staged / f"{stem}.mesh", staged / name, staged / name, role, idle if idle.is_file() else None)
+            records[name]["clavicle_ease"] = {key: (list(value) if isinstance(value, tuple) else value) for key, value in lever.__dict__.items()}
         records[name]["staged"] = file_record(staged / name, relative_to=job)
 
 
@@ -3850,6 +4010,81 @@ def ease_staged_poses(job: Path, staged: Path, spec: Dict[str, Any], roles: List
 
     ease_staged_cloak_bends(job, staged, spec, roles, records)
     ease_staged_shoulders(job, staged, spec, roles, records)
+
+
+def _smooth_and_fit(staged: Path, stem: str, roles: List[str], weapon: Any, spec: Dict[str, Any]) -> Dict[str, Any]:
+    """The smoothing (`"smooth_weights": false` switches it off) and then the fit (`"fit_weights": false`) on the staged mesh, recorded."""
+
+    tripo = spec.get("tripo") or {}
+    # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
+    load_bones = ["Load"] if tripo_quadruped(spec) and tripo.get("load") else []
+    out: Dict[str, Any] = {}
+    if tripo.get("smooth_weights", True) is not False:
+        out["stretch_smooth"] = smooth_stretched_weights(staged, stem, roles, weapon, load_bones, job_has_plates(spec))
+    if tripo.get("fit_weights", True) is not False:
+        out["weight_fit"] = fit_clip_weights(staged, stem, roles, weapon, load_bones, job_has_plates(spec))
+    return out
+
+
+def _girdle_on(spec: Dict[str, Any]) -> bool:
+    # Off unless the job asks for it: two fits of nearly the same clips differ by more than the rule gains (lib/tripo_girdle.py).
+    return not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("girdle_weights", False) is True
+
+
+def fit_staged_weights(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Dict[str, Any]:
+    """The smoothing and the fit on the staged mesh. For a humanoid the weights they start from are kept for the girdle trial
+    (`girdle_trial`), which runs after the pose eases."""
+
+    stem = spec["runtime_stem"]
+    if _girdle_on(spec):
+        trial = job / "validation" / "girdle_trial"
+        shutil.rmtree(trial, ignore_errors=True)
+        trial.mkdir(parents=True)
+        shutil.copy2(staged / f"{stem}.mesh", trial / "start.mesh")
+    return _smooth_and_fit(staged, stem, roles, weapon, spec)
+
+
+def girdle_trial(job: Path, staged: Path, spec: Dict[str, Any], roles: List[str], weapon: Any) -> Optional[Dict[str, Any]]:
+    """The girdle rule (lib/tripo_girdle.py), after the pose eases, for a humanoid whose clips still fail TRIPO-SHOULDER-SWELL or
+    TRIPO-SHOULDER-TEAR. From the weights the fit started from, two trials smooth and fit against the eased clips, one with the rule and one
+    without, and the rule's weights replace the staged mesh when the bounded trade accepts them against the other. The rule is judged on the
+    clips as they leave the route: tried before the shoulder ease, it could not lower what the ease left (the ogre's attack 0.198 to 0.197)."""
+
+    from lib import pdx_deform, tripo_chains, tripo_girdle, weight_fit
+
+    trial = job / "validation" / "girdle_trial"
+    stem = spec["runtime_stem"]
+    if not _girdle_on(spec) or not (trial / "start.mesh").is_file():
+        return None
+    mesh = staged / f"{stem}.mesh"
+    anims = [staged / f"{stem}_{role}.anim" for role in roles]
+    now = tripo_girdle.measures(mesh, anims)
+    failing = [n for n, m in now.items() if not n.startswith("_") and (m["girdle"] > tripo_girdle.tripo_shoulder.GIRDLE_LIMIT
+                                                                      or m["swell"] > tripo_girdle.tripo_shoulder.SWELL_LIMIT)]
+    record: Dict[str, Any] = {"failing_before": failing}
+    if not failing:
+        shutil.rmtree(trial, ignore_errors=True)
+        return dict(record, note="every clip passes the shoulder checks")
+    results = {}
+    for name in ("without", "with"):
+        folder = trial / name
+        folder.mkdir()
+        shutil.copy2(trial / "start.mesh", folder / mesh.name)
+        for anim in anims:
+            shutil.copy2(anim, folder / anim.name)
+        if name == "with":
+            plates = weight_fit.plate_vertices(pdx_deform.load_mesh(folder / mesh.name)) if job_has_plates(spec) else None
+            record["rule"] = tripo_girdle.confine_arm_weights(folder / mesh.name, folder / mesh.name, held_bones(_parts(weapon)),
+                                                              tuple(tripo_chains.REGION_PREFIX.values()), plates)
+        _smooth_and_fit(folder, stem, roles, weapon, spec)
+        results[name] = tripo_girdle.measures(folder / mesh.name, [folder / a.name for a in anims])
+    result = tripo_girdle.trade(results["without"], results["with"])
+    record.update({"accepted": result.accepted, "deformed_edges_before": result.deformed_before, "deformed_edges_after": result.deformed_after,
+                   "reasons": result.reasons, "clips": result.clips})
+    if result.accepted:
+        shutil.copy2(trial / "with" / mesh.name, mesh)
+    shutil.rmtree(trial, ignore_errors=True)
+    return record
 
 
 def smooth_stretched_weights(staged: Path, stem: str, roles: List[str], weapon: Any, locked: Sequence[str] = (), plates: bool = False) -> Dict[str, Any]:
@@ -4192,28 +4427,35 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # switches it off.
         if not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("lift_neck", True) is not False:
             for role in sorted(exports["animations"]):
-                records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role)
+                records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role,
+                                                                                     unarmed=not weapon_cfg)
+        # A lunge the job keeps (`tripo.lunge`, lib/tripo_lunge.py) gets its step back: the Blender stage retargets every clip in place.
+        # Then a defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands
+        # before the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before
+        # the weights are fitted to the clips.
+        step_and_pose_staged_roles(job, staged, stem, spec, exports["animations"], records)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
-        if (spec.get("tripo") or {}).get("smooth_weights", True) is not False:
-            # A mount's load is bound wholly to one bone (adapter/quadruped_load.py): that bone is locked, so the load stays rigid.
-            load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
-            records[f"{stem}.mesh"]["stretch_smooth"] = smooth_stretched_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones,
-                                                                                 job_has_plates(spec))
-            records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour
         # plates locked. `"fit_weights": false` in the job's tripo block switches it off.
-        if (spec.get("tripo") or {}).get("fit_weights", True) is not False:
-            load_bones = ["Load"] if tripo_quadruped(spec) and (spec.get("tripo") or {}).get("load") else []
-            records[f"{stem}.mesh"]["weight_fit"] = fit_clip_weights(staged, stem, sorted(exports["animations"]), weapon_cfg, load_bones, job_has_plates(spec))
-            records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
-        # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder.
+        records[f"{stem}.mesh"].update(fit_staged_weights(job, staged, spec, sorted(exports["animations"]), weapon_cfg))
+        records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        # What the weights cannot keep whole is eased in the pose: a hard torso bend under a cloak, then a swollen shoulder. Then the girdle
+        # rule may be tried on the weights (lib/tripo_girdle.py, off unless the job sets `"girdle_weights": true`).
         ease_staged_poses(job, staged, spec, sorted(exports["animations"]), records)
-        # Then the mesh the game loads decides where the ground is.
+        records[f"{stem}.mesh"]["girdle_weights"] = girdle_trial(job, staged, spec, sorted(exports["animations"]), weapon_cfg)
+        # Then the mesh the game loads decides where the ground is. A death that burns away (`"death_kind": "burn"`, lib/tripo_burn.py) is grounded
+        # as the standing reaction it is, then burnt: its heap, bone and locator join the mesh, and its plan is written beside the files.
+        burning = (spec.get("tripo") or {}).get("death_kind") == "burn" and "death" in exports["animations"]
         for role in sorted(exports["animations"]):
-            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role, weapon_cfg,
+            records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim",
+                                                                                "burn_stand" if burning and role == "death" else role, weapon_cfg,
                                                                                 humanoid=not tripo_quadruped(spec))
             records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
+        if burning:
+            records[f"{stem}.mesh"]["burn"] = burn_staged_death(staged, stem, sorted(exports["animations"]))
+            for name in [f"{stem}.mesh"] + [f"{stem}_{role}.anim" for role in sorted(exports["animations"])]:
+                records[name]["staged"] = file_record(staged / name, relative_to=job)
         # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
         # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
         clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)
@@ -4233,6 +4475,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         template=(unit or {}).get("entity_template", "infantry"),
         state_set=str(spec.get("entity_state_set") or {"mount": "cavalry", "rider": "cavalry"}.get((unit or {}).get("entity_template", ""), "infantry")),
         rider=rider,
+        streams=registration_streams(staged / f"{stem}.mesh"),
     )
     (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
     report = {"files": records, "check": {"errors": errors, "warnings": [item.__dict__ for item in findings if item.severity != "error"]}, "facts": facts}
@@ -4327,6 +4570,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--phase", choices=("full", "candidate"), default="full")
     parser.add_argument("--shared-humanoid-batch")
+    heavy_job.add_argument(parser)
     parser.add_argument("assets", nargs="*")
     return parser
 
@@ -4334,6 +4578,7 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+    heavy_job.apply(args)
     handled = run_file_only_command(args, parser)
     if handled is not None:
         return handled

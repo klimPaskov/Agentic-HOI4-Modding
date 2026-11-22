@@ -24,7 +24,9 @@ ENG_infantry and GER_infantry_snow, 2026-11-15):
   the way the planted feet point, against the rest pose's: what a viewer reads as a wrung waist is the chest turned away from feet that
   stand still. Each foot's heading is its ankle joint's turn applied to the rest pose's ankle-to-toe direction (to the body's forward on a
   rig without toes). A frame is read only when both feet stand: each foot within `STANCE_FOOT_LEVEL` of level (about 32 degrees) and its
-  lower end (ankle or toe joint, against its rest height) within `STANCE_PLANTED` of the height of the other's. A stride or a run gives no
+  lower end (ankle or toe joint, against its rest height) within `STANCE_PLANTED` of the height of the other's, while the torso (the hips to
+  the chest) stands within 60 degrees of upright (`STANCE_UPRIGHT`: the ogre's death lay on its belly with its soles level side by side and
+  read 75 degrees, 2026-11-18). A stride or a run gives no
   reading, so a chest turned across a running body is not counted. Vanilla's GER infantry clips on GER_infantry.mesh (the same on
   GER_infantry_alt_0, ENG_infantry and GER_infantry_snow, 2026-11-16), worst per role: retreat 19.6 (retreat_rifle), move 18.4 (moving_rifle),
   idle 69.7 (long_idle02, the soldier looks behind him), attack 38.3 (charge_mg_shoot), death 30.8 (death_mg, still standing). Vanilla has
@@ -77,6 +79,7 @@ VANILLA_WAIST_TWIST_DEGREES = {"retreat": 19.6, "move": 18.4, "idle": 69.7, "att
 WAIST_TWIST_LIMITS = {role: round(1.25 * value, 1) for role, value in VANILLA_WAIST_TWIST_DEGREES.items()}
 STANCE_FOOT_LEVEL = 0.85  # a foot's heading counts when its horizontal part is at least this share of it (within about 32 degrees of level)
 STANCE_PLANTED = 0.02  # both feet stand when their lower ends are within this share of the height of each other
+STANCE_UPRIGHT = 0.5  # and only while the torso (the hips to the chest) is within 60 degrees of upright
 VANILLA_DEATH_REST = 0.082
 DEATH_REST_FRAMES = 1
 DEATH_REST_LIMIT = round(1.25 * VANILLA_DEATH_REST, 3)
@@ -233,16 +236,72 @@ def _lying_frame(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, pelvi
     return int(min(off[-1] + 1, anim.frames - 1)) if len(off) else 0
 
 
+def _slerp_along(a: np.ndarray, b: np.ndarray, t: float) -> np.ndarray:
+    """The slerp from `a` to `b` without choosing the short way: with `a . b` below zero it turns more than half a turn."""
+
+    a = a / np.linalg.norm(a)
+    b = b / np.linalg.norm(b)
+    dot = float(np.clip(a @ b, -1.0, 1.0))
+    if dot > 0.9995:
+        out = a + t * (b - a)
+        return out / np.linalg.norm(out)
+    theta = np.arccos(dot)
+    if np.sin(theta) < 1e-6:  # b is a itself on the far side: the same rotation, nothing to turn
+        return a
+    return (np.sin((1 - t) * theta) * a + np.sin(t * theta) * b) / np.sin(theta)
+
+
+def turned_toward(track: np.ndarray, target: np.ndarray, amounts: np.ndarray) -> np.ndarray:
+    """(F, 4) `track` turned toward the rotation `target` by `amounts[frame]` (0 to 1), the way of the turn kept the same from frame to frame.
+
+    A slerp toward a target takes the short way, which changes side where the joint passes half a turn from the target: the turned
+    pose jumps from one side to the other in one frame. The zombie's death (zombie_n, 2026-11-18) passed its left knee 179 degrees
+    from rest at frame 70, and the legs' settle, 40% toward rest at that frame's weight, turned the knee 120 degrees in one frame
+    (UNIT-ANIM-SPIN, vanilla's fastest is 37). So the side of the target is chosen once for each run of frames with a turn (the frames
+    whose amount is above zero), at the run's frame with the largest amount (the last of them), and kept along the run on the track
+    made continuous. Every frame on that side of the crossing turns the short way as before, the frames on the other side turn the long
+    way, so the turned track stays as continuous as the clip. A run with no crossing turns exactly as a slerp does. Each frame keeps the
+    sign of its own key."""
+
+    q = np.asarray(track, float) / np.maximum(np.linalg.norm(track, axis=1, keepdims=True), 1e-12)
+    target = np.asarray(target, float) / max(float(np.linalg.norm(target)), 1e-12)
+    amounts = np.asarray(amounts, float)
+    flat = q.copy()
+    for frame in range(1, len(flat)):
+        if float(flat[frame] @ flat[frame - 1]) < 0.0:
+            flat[frame] = -flat[frame]
+    out = q.copy()
+    frame = 0
+    while frame < len(q):
+        if amounts[frame] <= 0:
+            frame += 1
+            continue
+        end = frame
+        while end < len(q) and amounts[end] > 0:
+            end += 1
+        run = amounts[frame:end]
+        anchor = frame + int(len(run) - 1 - np.argmax(run[::-1]))
+        side = target if float(flat[anchor] @ target) >= 0.0 else -target
+        for k in range(frame, end):
+            new = _slerp_along(flat[k], side, float(amounts[k]))
+            out[k] = new if float(new @ q[k]) >= 0.0 else -new
+        frame = end
+    return out
+
+
+def turn_to_target_degrees(track: np.ndarray, target: np.ndarray, share: float = 1.0) -> float:
+    """The largest turn (degrees) `turned_toward` gives any frame of `track` at `share` in every frame."""
+
+    turned = turned_toward(track, target, np.full(len(track), share))
+    return max((quaternion_turn(a, b) for a, b in zip(track, turned)), default=0.0)
+
+
 def _turned_toward_rest(anim: pdx_deform.Animation, joints: Sequence[str], rest: dict, share: float, weights: np.ndarray) -> pdx_deform.Animation:
-    """`anim` with each joint's rotation turned toward its rest rotation by `share` times the frame's weight."""
+    """`anim` with each joint's rotation turned toward its rest rotation by `share` times the frame's weight (`turned_toward`)."""
 
     channels = {name: dict(channel) for name, channel in anim.channels.items()}
     for joint in joints:
-        q = anim.channels[joint]["q"].copy()
-        for frame in range(anim.frames):
-            if weights[frame] > 0:
-                q[frame] = slerp(q[frame], rest[joint], share * weights[frame])
-        channels[joint]["q"] = q
+        channels[joint]["q"] = turned_toward(anim.channels[joint]["q"], rest[joint], share * np.asarray(weights, float))
     return pdx_deform.Animation(anim.fps, anim.frames, channels)
 
 
@@ -312,7 +371,7 @@ def settle_death_legs(mesh_path: Path, anim_path: Path, out_path: Path, limit: f
     if share == 0.0:
         Path(out_path).write_bytes(bytes(data))
         return LegSettle(False, height_before=before, height_after=before, note="turning the knees or the thighs does not lower the boots")
-    turn = max(quaternion_turn(q, slerp(q, rest[joint], share)) for joint in joints for q in anim.channels[joint]["q"][onset:])
+    turn = max(turn_to_target_degrees(anim.channels[joint]["q"][onset:], rest[joint], share) for joint in joints)
     length = int(min(max(tripo_trim.settle_frames(turn), LEG_SETTLE_MIN_FRAMES), max(anim.frames - 1 - onset, 1)))
     weights = _onset_ramp(anim.frames, onset, length)
     result = _turned_toward_rest(anim, joints, rest, share, weights)
@@ -744,13 +803,14 @@ def _wrap(degrees: np.ndarray) -> np.ndarray:
 
 def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, rest_left: np.ndarray, rest_right: np.ndarray,
                         foot_rotations: Sequence[np.ndarray], foot_headings: Sequence[np.ndarray], foot_lifts: Sequence[np.ndarray],
-                        up: int, height: float) -> np.ndarray:
+                        up: int, height: float, torso: Optional[np.ndarray] = None) -> np.ndarray:
     """Per frame, the shoulder line's turn about the `up` axis against the way the standing feet point, less the rest pose's (degrees);
     NaN in a frame where not every foot stands (the rule in the module docstring).
 
     `shoulder_left` and `shoulder_right` are (F, 3) joint tracks and `rest_left`, `rest_right` their rest positions. Per foot:
     `foot_rotations` (F, 3, 3) the ankle's turn from the rest pose, `foot_headings` (3,) its rest heading (the ankle to the toe), and
-    `foot_lifts` (F,) how far its lower end sits above its rest height. Blender (Z up) and the exported files (Y up) call this alike."""
+    `foot_lifts` (F,) how far its lower end sits above its rest height. `torso` (F, 3), the hips joint to the chest joint: a frame whose torso
+    leans further than `STANCE_UPRIGHT` from upright gives no reading. Blender (Z up) and the exported files (Y up) call this alike."""
 
     shoulders = _wrap(_yaw(np.asarray(shoulder_right) - np.asarray(shoulder_left), up) - _yaw(np.asarray(rest_right) - np.asarray(rest_left), up))
     frames = len(shoulders)
@@ -768,6 +828,9 @@ def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, r
         turns.append(_wrap(_yaw(posed, up) - _yaw(flat, up)))
     lifts = np.asarray(foot_lifts, float)
     standing = np.all(level, axis=0) & (lifts.max(axis=0) - lifts.min(axis=0) <= STANCE_PLANTED * height)
+    if torso is not None:
+        torso = np.asarray(torso, float)
+        standing &= torso[:, up] / np.maximum(np.linalg.norm(torso, axis=1), 1e-12) >= STANCE_UPRIGHT
     radians = np.radians(np.asarray(turns))
     feet = np.degrees(np.arctan2(np.sin(radians).sum(axis=0), np.cos(radians).sum(axis=0)))
     return np.where(standing, _wrap(shoulders - feet), np.nan)
@@ -797,7 +860,9 @@ def stance_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Op
         if leg.toe >= 0:
             lift = np.minimum(lift, posed[:, leg.toe, 1] - rest[leg.toe, 1])
         lifts.append(lift)
-    return stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height)
+    names = {name: i for i, name in enumerate(mesh.bones)}
+    torso = posed[:, names["Spine02"]] - posed[:, names["Hips"]] if "Hips" in names and "Spine02" in names else None
+    return stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height, torso)
 
 
 def twist_excess(twist: np.ndarray, target: float) -> np.ndarray:

@@ -11,6 +11,7 @@ over in `runtime/registration.md`.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Dict, List, Optional
 
 STATE_TO_ROLE = {
@@ -35,23 +36,53 @@ STATE_SETS = {
 NON_LOOPING = {"attack", "death"}
 
 
+def mesh_streams(mesh_path: Path) -> Dict[str, List[Dict[str, str]]]:
+    """{shape: per mesh stream, the texture names its material in the `.mesh` gives (`diff`, `n`, `spec`, empty when unnamed)}."""
+
+    from .pdx_binary import read
+
+    out: Dict[str, List[Dict[str, str]]] = {}
+    objects = read(mesh_path).child("object")
+    for shape in (objects.children if objects is not None else []):
+        streams = []
+        for stream in (child for child in shape.children if child.name == "mesh"):
+            material = stream.child("material")
+            props = material.properties if material is not None else {}
+            streams.append({key: str((props.get(key) or [""])[0]) for key in ("diff", "n", "spec")})
+        out[shape.name] = streams
+    return out
+
+
+def _meshsettings(shape: str, index: int, maps: Dict[str, str]) -> List[str]:
+    return [
+        "\t\tmeshsettings = {",
+        f'\t\t\tname = "{shape}"',
+        f"\t\t\tindex = {index}",
+        f'\t\t\ttexture_diffuse = "{maps["diff"]}"',
+        f'\t\t\ttexture_normal = "{maps["n"]}"',
+        f'\t\t\ttexture_specular = "{maps["spec"]}"',
+        '\t\t\tshader = "PdxMeshAdvanced"',
+        "\t\t}",
+    ]
+
+
 def pdxmesh_block(stem: str, model_folder: str, shape_names: List[str], roles: List[str], states: Optional[List[str]] = None,
-                  role_map: Optional[Dict[str, str]] = None, mesh_name: str = "") -> str:
+                  role_map: Optional[Dict[str, str]] = None, mesh_name: str = "", streams: Optional[Dict[str, List[Dict[str, str]]]] = None) -> str:
     """`role_map` (a rider's): the clip each entity role plays, such as the rider's idle while the mount moves. `mesh_name` names the
-    block when the files already belong to another unit (a rider made from a foot unit), so the two never share a name."""
+    block when the files already belong to another unit (a rider made from a foot unit), so the two never share a name. `streams`
+    (`mesh_streams`): a shape with more than one mesh stream gets one `meshsettings` per stream, each with the textures its material in
+    the `.mesh` names (the unit's own maps where it names none). The burn death's ash heap (lib/tripo_burn.py) is such a second stream
+    with its own ash maps: registered with index 0 only (run demon_g, 2026-11-21), its textures were left to the game to guess."""
 
     lines = ["\tpdxmesh = {", f'\t\tname = "{mesh_name or stem + "_mesh"}"', f'\t\tfile = "{model_folder}/{stem}.mesh"']
+    own = {"diff": f"{stem}_diffuse.dds", "n": f"{stem}_normal.dds", "spec": f"{stem}_specular.dds"}
     for index, shape in enumerate(shape_names):
-        lines += [
-            "\t\tmeshsettings = {",
-            f'\t\t\tname = "{shape}"',
-            f"\t\t\tindex = {index}",
-            f'\t\t\ttexture_diffuse = "{stem}_diffuse.dds"',
-            f'\t\t\ttexture_normal = "{stem}_normal.dds"',
-            f'\t\t\ttexture_specular = "{stem}_specular.dds"',
-            '\t\t\tshader = "PdxMeshAdvanced"',
-            "\t\t}",
-        ]
+        per_stream = (streams or {}).get(shape) or []
+        if len(per_stream) > 1:
+            for k, names in enumerate(per_stream):
+                lines += _meshsettings(shape, k, {key: names.get(key) or own[key] for key in own})
+            continue
+        lines += _meshsettings(shape, index, own)
     for state, role in STATE_TO_ROLE.items():
         clip = (role_map or {}).get(role, role)
         if clip in roles:
@@ -108,6 +139,7 @@ def registration_text(
     rider: Optional[Dict[str, object]] = None,
     move_sound: str = "",
     state_set: str = "infantry",
+    streams: Optional[Dict[str, List[Dict[str, str]]]] = None,
 ) -> str:
     """Markdown with the three blocks to wire one unit; a mount also wires its rider."""
 
@@ -119,7 +151,7 @@ def registration_text(
         f"## `.gfx` (for example `gfx/entities/<mod>_units.gfx`, inside `objectTypes = {{ }}`)",
         "",
         "```",
-        pdxmesh_block(stem, model_folder, shapes, roles, STATE_SETS[state_set]),
+        pdxmesh_block(stem, model_folder, shapes, roles, STATE_SETS[state_set], streams=streams),
     ]
     rider_map = dict(rider.get("role_map") or {}) if rider else {}  # type: ignore[union-attr]
     rider_mesh = str(rider.get("mesh_name") or "") if rider else ""  # type: ignore[union-attr]

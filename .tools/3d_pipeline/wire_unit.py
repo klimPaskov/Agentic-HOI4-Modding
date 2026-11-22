@@ -193,6 +193,53 @@ def plan_sound(spec: Dict[str, Any], registration: wiring.Registration, clip_sam
     return entity_block, sound
 
 
+PARTICLE_TIME_WARNING = (
+    "particle events: the burn's fire and smoke start at time 0 of the death state (vanilla's GER rifle infantry fires blood_particle at "
+    "time = 0 the same way); check in the game how large they are at map zoom and how long the death's last frame holds"
+)
+
+
+def plan_particles(job: Path, registration: wiring.Registration, entity_block: str, errors: List[str], warnings: List[str]) -> Tuple[str, Dict[str, Any]]:
+    """The entity block with a burn death's particle events (lib/tripo_burn.py's plan beside the runtime files), and the mod files that define
+    the particles: finite copies of the vanilla fire and smoke the plan names."""
+
+    from lib import tripo_burn
+
+    stem = registration.stem
+    plan = tripo_burn.read_plan(job / "runtime" / "files", stem)
+    report: Dict[str, Any] = {"plan": bool(plan), "events": [], "files": []}
+    if not plan:
+        return entity_block, report
+    game = game_dir()
+    entries = []
+    for particle in plan.get("particles", []):
+        source = (game / particle["source"]) if game else None
+        if source is None or not source.is_file():
+            errors.append(f"burn particle {particle['name']}: the vanilla file {particle['source']} is not in the game folder")
+            continue
+        kind = f"{particle['name']}_file"
+        text = wiring.finite_particle(source.read_text(encoding="utf-8", errors="replace"), kind, float(particle["duration_s"]))
+        report["files"].append((f"gfx/particles/{stem}_{particle['standin']}.asset", text))
+        entries.append({"name": particle["name"], "type": kind, "scale": particle.get("scale", 1)})
+        report["events"].append({"state": "death", "time": particle["time"], "node": plan.get("locator"), "particle": particle["name"]})
+    if entries:
+        report["files"].append((f"gfx/entities/{stem}_burn_particles.gfx", wiring.particle_gfx(entries)))
+    try:
+        entity_block = wiring.apply_particle_events(entity_block, "death", report["events"])
+        warnings.append(PARTICLE_TIME_WARNING)
+    except wiring.WiringError as error:
+        errors.append(f"burn particles: {error}")
+    return entity_block, report
+
+
+def add_particle_files(mod_root: Path, particles: Dict[str, Any], plan: wiring.Plan) -> None:
+    for rel, text in particles.get("files", []):
+        data = text.encode("utf-8")
+        dest = mod_root / rel
+        status = "create" if not dest.is_file() else ("unchanged" if dest.read_bytes() == data else "update")
+        plan.items.append(wiring.PlanItem("block", rel, status, "burn particle", payload=data))
+
+
 def check_subunits(mod_root: Path, registration: wiring.Registration, errors: List[str], warnings: List[str]) -> Dict[str, Any]:
     """The sub-unit and localisation report; adds what is missing to `errors`."""
 
@@ -261,6 +308,7 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
     if spec_stem and spec_stem != stem:
         errors.append(f"job.yaml's runtime stem {spec_stem} differs from the registration's {stem}")
     entity_block, sound = plan_sound(spec, registration, load_clip_samples(job), errors, warnings)
+    entity_block, particles = plan_particles(job, registration, entity_block, errors, warnings)
     plan = wiring.build_plan(
         mod_root=mod_root,
         registration=registration,
@@ -271,6 +319,7 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
         prefix=args.prefix,
     )
     errors += plan.errors
+    add_particle_files(mod_root, particles, plan)
     blocking = bool(errors)  # errors found before any write: the job, the sound plan and the plan itself
     result: Dict[str, Any] = {
         "job": str(job),
@@ -279,6 +328,7 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
         "dry_run": bool(args.dry_run),
         "plan": [item.as_dict() for item in plan.items],
         "sound": sound,
+        "particles": {key: value for key, value in particles.items() if key != "files"},
         "checks": {},
     }
     result["subunit"] = check_subunits(mod_root, registration, errors, warnings)

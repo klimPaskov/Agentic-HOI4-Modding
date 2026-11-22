@@ -28,8 +28,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-CLOAK-STRETCH: in a clip, more than `CLOAK_MAX_STRETCH_SHARE` of the edges of the cloak region (vertices behind
   the body, weighted to the torso, hips or thighs) are stretched past 1.5x or squashed under 0.5x. The limit is the worst
   vanilla clothing stretch with a margin (see `CLOAK_MAX_STRETCH_SHARE`).
-- TRIPO-HANDS-HIGH: in the attack clip of an unarmed unit a hand is above the head in more than 20% of the frames, or the hands are above the shoulders in
-  more than 80% (lib/tripo_arms.py; Tripo's text-to-motion attacks do this and hide the head). `--arm-level attack` in the intake fixes it.
+- TRIPO-HANDS-HIGH: in the attack, the move or the retreat of an unarmed unit a hand is above the head in more than 20% of the frames, or the hands
+  are above the shoulders in more than 80% (lib/tripo_arms.py; Tripo's text-to-motion attacks do this and hide the head, and its reaching zombie walk
+  reads as hands up). `--arm-level attack` in the intake fixes the attack, `--arm-level-high move retreat` a gait.
 - TRIPO-LIMB-IN-TORSO: in a death clip, limb skin (arms, legs) is deeper than `LIMB_MARGIN_SHARE` of the height inside the torso in some frame, in more
   than `MAX_LIMB_IN_TORSO_SHARE` of the limb points: an arm or a leg through the body.
 - TRIPO-NOT-DOWN: a death clip must end lying down, prone or supine: the body's extent at the end at most `MAX_FINAL_EXTENT_SHARE` of its
@@ -48,9 +49,33 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-SHOULDER-SWELL: in some frame of a humanoid's clip more than 7.75% of a shoulder region's skin (the torso between the midline and the
   upper arm's joint, down to 1.5 upper arm lengths below it) has grown past 1.69 times its rest area (vanilla's worst clip 6.2%). The shoulder and
   the upper back swell into one ball. `lib/tripo_shoulder.py`, whose ease `run_pilot` applies to the staged clips.
-- TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are more than 47.9 degrees apart (vanilla's deaths split them 38.3
-  at most). The crotch and the raised thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing `run_pilot`
-  applies to the exported death before its settles.
+- TRIPO-SHOULDER-TEAR: in some frame of a humanoid's clip more than 15.6% of a shoulder girdle's skin (the shoulder region and the torso under
+  the arm) has grown past 1.44 times its rest area (vanilla's worst 12.5%). The raised arm tears the armpit and the side of the chest.
+  `lib/tripo_shoulder.py`, with the weight rule of `lib/tripo_girdle.py`.
+- TRIPO-DEATH-SPLAY: in some frame of a humanoid's death the two thighs are further apart than 47.9 degrees, or than the rest pose's own
+  split plus 24.8 when the body is bound wider (vanilla's deaths split them 38.3 at most, 19.8 past its rest pose). The crotch and the raised
+  thigh stretch into one mass with no knee shape. `lib/tripo_splay.py`, whose knee swing and leg closing `run_pilot` applies to the exported
+  death before its settles.
+- TRIPO-DEATH-LEG-KICK: once the hips of a humanoid's death are down, a boot rises more than 3.4% of the height above where it had come down
+  (vanilla's deaths 2.7%): a leg kicks up from the lying body. `lib/tripo_kick.py`, whose settle `run_pilot` applies after the legs' settle.
+- TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the
+  height against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
+  pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
+- TRIPO-MAP-READ: from the map camera at game size (the unit 60 pixels tall), a humanoid's attack or defend changes fewer pixels of the
+  idle's silhouette than `map_read.MIN_HUMANOID_READ_PIXELS` (attack 300, defend 160) in its 90th percentile frame: it reads as the idle on the
+  map. The limits are the lowest readings of the humanoids fresh reviewers passed at game size (`lib/map_read.py`).
+- TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME: what a humanoid's clips read as from the map camera at game size, by
+  their outline (`lib/map_outline.py`). The idle's body outline must match the posture the job asks for (`tripo.posture`: `hunched` at most
+  0.93 of the rest pose's height, `upright` above it). The attack and the defend must not spread both hands wider than 0.80 of the body's
+  height (a T-pose), nor both hold that spread (they read as each other). A melee attack's striking end (the weapon, or each hand's middle)
+  must show at least 5 pixels outside the body's outline at the strike, or the reach foreshortens into the body. Not judged for a winged
+  unit's reach. The limits sit between the D-94 zombie runs reviewers failed and the humanoids they passed.
+- TRIPO-LOOP-STANDS: in a humanoid's move or retreat the feet stop striding in some frame step (one ankle moves against the other slower than
+  0.14 heights a second, smoothed over a sixth of a second around the loop; vanilla's slowest locomotion clip keeps 0.179), or the last step does
+  not flow into the first (across the seam a joint's speed against the pelvis changes by more than 1.2 times the largest change between two
+  steps inside the clip, vanilla's worst 0.96).
+  The game loops both clips in place, so the unit would stop and stand, or jerk, once per cycle. `lib/tripo_loop.py`, whose loop window the
+  intake finds and `tripo/prepare_tripo_unit.py` cuts and closes.
 - TRIPO-BLADE-FACING: in the idle pose the broad face of the weapon's head turns more than `MAX_BLADE_FACING_DEGREES` from the
   direction the unit faces (the front view shows it edge-on). A head whose thinnest spread is above `MAX_FACE_FLATNESS` of its middle one (a club, a
   mace: no broad face) is not judged, and the numbers carry its `head_flatness`.
@@ -63,6 +88,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   `MAX_WING_SIDE_COVER` of the arms, legs and head a viewer sees in a side view (`lib/tripo_chains.front_cover_share`: a wing point in a
   screen cell of the body, nearer the camera than its surface). A death skips the front view (from a low front camera a body lying face
   down has its wings ahead of its back by construction), and the side views while the torso lies.
+  A defend whose wings wrap forward (`wrap` in lib/tripo_chains.WING_ROLES) is judged in the front and map views on the head alone
+  (`WRAP_COVER_PARTS`).
 - TRIPO-WING-EDGE-ON: in a clip whose wings beat hard (the attack and the retreat), a wing's median face share in a side or the map view is
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
@@ -111,7 +138,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_swing
+from lib import map_outline, map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -146,6 +173,10 @@ COVER_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("front", "map"
 MAX_WING_SIDE_COVER = 0.10
 SIDE_VIEWS = {view: tripo_chains.REVIEW_VIEWS[view] for view in ("left", "right")}
 SIDE_PARTS = ("Arm", "Hand", "Leg", "Foot", "Toe", "Head", "head", "neck")
+# A defend whose wings wrap forward round the body (lib/tripo_chains.WING_ROLES "wrap", round g of the demon, 2026-11-21) is judged in the
+# front and map views on the head alone: the wrap is meant to hide the torso and arms, and the unit still reads as itself while its head
+# shows above the wings.
+WRAP_COVER_PARTS = ("Head",)
 # A death is judged from the side only while the torso stands (hips to head more than half vertical): wings lying flat beside a fallen
 # body are in front of it from a low side camera by construction.
 UPRIGHT_SHARE = 0.5
@@ -319,6 +350,8 @@ LIMB_MARGIN_SHARE = 0.015  # limb skin this deep inside the torso counts (1.5% o
 # fail the vanilla deaths themselves; the limit is the worst of them with a margin of half again. The orc death measures 1.0%, the zombie 0.5 to 1.5%.
 MAX_LIMB_IN_TORSO_SHARE = 0.08
 MAX_FINAL_EXTENT_SHARE = 0.4
+# TRIPO-HANDS-HIGH's roles: the attack, and the gaits, whose raised hands read as hands up from the front (the round 4 zombie's reaching walk)
+HANDS_HIGH_ROLES = ("attack", "move", "retreat")
 # A lying body is as tall as its torso is thick. The limit above holds for a human torso (the Tripo zombie's is 0.217 of its height, vanilla
 # infantry's whole body 0.209 deep). A thicker body gets its extra thickness on top: the ogre's torso is 0.403 deep, and it lay flat on its front
 # (torso 6% upright) at 51% of its standing height, which the fixed limit read as not lying down (2026-11-16).
@@ -513,6 +546,9 @@ def wing_cover(mesh, frames, wings: np.ndarray, death: bool, upright: Optional[n
     names = np.array(mesh.bones)
     dominant = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
     body = ~wings & ~np.isin(dominant, ["Weapon", "Shield"])
+    if float(tripo_chains.WING_ROLES.get(role, {}).get("wrap", 0.0)) > 0.0 and np.any(np.isin(dominant, WRAP_COVER_PARTS)):
+        # a defend that wraps its wings forward round the body is meant to hide it: the front and map views judge the head alone
+        body = np.isin(dominant, WRAP_COVER_PARTS)
     return wing_cover_points(frames, body, wings, side_parts(mesh, wings), front_direction(mesh), np.array([0.0, 1.0, 0.0]), mesh.height,
                              death, upright)
 
@@ -1426,7 +1462,7 @@ def death_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
 
 
 def hands_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
-    """TRIPO-HANDS-HIGH for the attack clip of an unarmed unit (run only when the job names no weapon)."""
+    """TRIPO-HANDS-HIGH for the attack, the move and the retreat of an unarmed unit (run only when the job names no weapon)."""
 
     index = {name: i for i, name in enumerate(mesh.bones)}
     needed = ("LeftHand", "RightHand", "LeftArm", "RightArm", "Head")
@@ -1434,7 +1470,7 @@ def hands_findings(mesh, anims: Dict[str, object]) -> (List[dict], dict):
         return [], {}
     out, numbers = [], {}
     for clip, anim in anims.items():
-        if not clip.endswith("attack"):
+        if clip.rsplit("_", 1)[-1] not in HANDS_HIGH_ROLES:
             continue
         joints = pdx_motion.posed_joints(mesh, anim)
         track = {name: joints[:, index[name]] for name in needed}
@@ -1665,6 +1701,16 @@ def advisory_rules(args) -> set:
     return {"TRIPO-GRIP-ENCLOSURE"} if advisory else set()
 
 
+def job_lunges(args) -> bool:
+    """Whether the job keeps its attack's lunge step (`tripo.lunge` names `attack`, tripo/lunge_clip.py): TRIPO-ATTACK-NO-STRIKE then measures
+    an unarmed unit's hands against the ground (lib/tripo_strike.strike_numbers). False without a job."""
+
+    if getattr(args, "jobs_config", None) and getattr(args, "slug", None):
+        job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+        return "attack" in ((job.get("tripo") or {}).get("lunge") or {})
+    return False
+
+
 def shield_bone(args) -> str:
     """The shield's bone: `--shield-bone`, or the job's `tripo.shield` (its `bone`, `Shield` by default). Empty for a unit without a shield."""
 
@@ -1680,10 +1726,21 @@ def shield_bone(args) -> str:
     return ""
 
 
-def split_advisory(findings: List[dict], rules: set) -> (List[dict], List[dict]):
-    """(the findings that fail the unit, the ones only reported)."""
+def split_advisory(findings: List[dict], rules: set, reported: Sequence[dict] = ()) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the ones only reported, `reported` among them)."""
 
-    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules]
+    return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules] + list(reported)
+
+
+def job_posture(args) -> str:
+    """The idle posture TRIPO-MAP-POSTURE judges: `--posture`, else the job's (`lib/map_outline.posture_of`: `tripo.posture`, or `hunched` for
+    `"idle_pose": "hunch"`), else `upright`."""
+
+    if getattr(args, "posture", None):
+        return args.posture
+    if getattr(args, "jobs_config", None) and getattr(args, "slug", None):
+        return map_outline.posture_of(json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug])
+    return "upright"
 
 
 def job_regions(args) -> (bool, bool, bool):
@@ -1802,9 +1859,118 @@ def hand_bleed_findings(mesh) -> (List[dict], dict):
     return out, numbers
 
 
-def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = ()) -> List[dict]:
+def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-SCREEN: in a clip whose wings are spread (a role that folds them less than fully, not a death), each wing's mean direction
+    from its root may rise at most `tripo_chains.SCREEN_MAX` above the screen's level in the review sheets' map view, the game's camera, on
+    either side of the unit, in every judged frame. Past it a wing swung back stands up the screen as a spike (lib/tripo_chains.py says how
+    the bound was measured). Wings are the vertices bound mostly to `Wing` chain bones, each side's root the first bone of its chains."""
+
+    dominant = pdx_deform.dominant_bones(mesh)
+    names = mesh.bones
+    sides = {}
+    for side in ("L", "R"):
+        bones = [i for i, name in enumerate(names) if name.startswith(f"Wing{side}")]
+        roots = [i for i in bones if mesh.parents[i] < 0 or not names[mesh.parents[i]].startswith("Wing")]
+        if bones and roots:
+            sides[side] = (np.isin(dominant, bones), roots)
+    if len(sides) != 2:
+        return [], {}
+    front = front_direction(mesh)
+    up = np.array([0.0, 1.0, 0.0])
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        rule = tripo_chains.WING_ROLES.get(clip_role(clip))
+        if rule is None or "fold_end" in rule or float(rule.get("fold", 0.0)) >= 1.0:
+            continue
+        matrices = pdx_deform.skinning_matrices(mesh, anim)
+        joints = pdx_motion.posed_joints(mesh, anim)
+        worst, worst_frame = 0.0, 0
+        for frame in range(0, anim.frames, step):
+            posed = pdx_deform.skin(mesh, matrices[frame])
+            for mask, roots in sides.values():
+                direction = posed[mask].mean(axis=0) - joints[frame, roots].mean(axis=0)
+                angle = tripo_chains.map_screen_angle(direction, front, up)
+                if angle > worst:
+                    worst, worst_frame = angle, frame
+        numbers[clip] = {"screen_angle_worst": round(worst, 1), "frame": worst_frame}
+        if worst > tripo_chains.SCREEN_MAX:
+            out.append(finding("TRIPO-WING-SCREEN", clip, f"a wing rises {worst:.0f} degrees above the screen's level in the game's camera in frame {worst_frame} (limit "
+                               f"{tripo_chains.SCREEN_MAX:g}, the highest angle fresh reviews passed, 57.5, with a twentieth added): swung back it stands up as a spike at map size", degrees=round(worst, 1), frame=worst_frame))
+    return out, numbers
+
+
+# For a winged humanoid's attack and defend the game camera decides (D-83): their wings aim at it (lib/tripo_chains.SCREEN_ROLES), so the
+# side views' cover and edge-on rules only report there. They block in the map view, and in the side views of every other clip.
+SIDE_ADVISORY_RULES = ("TRIPO-WING-FRONT", "TRIPO-WING-EDGE-ON")
+
+
+def side_view_advisory(findings: List[dict], mesh) -> (List[dict], List[dict]):
+    """(the findings that fail the unit, the side-view wing findings of a winged humanoid's attack and defend, which only report)."""
+
+    if quadruped_checks.is_quadruped(mesh):
+        return findings, []
+    keep, report = [], []
+    for item in findings:
+        advisory = item["rule"] in SIDE_ADVISORY_RULES and item.get("view") in SIDE_VIEWS and clip_role(item["subject"]) in tripo_chains.SCREEN_ROLES
+        (report if advisory else keep).append(item)
+    return keep, report
+
+
+def wing_checks(mesh, anims: Dict[str, object], wings: bool, cape: bool, numbers: dict) -> (List[dict], List[dict]):
+    """The chain checks and, for wings, TRIPO-WING-SCREEN: (the findings that fail the unit, the side-view ones that only report)."""
+
+    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    found, advisory = side_view_advisory(found, mesh)
+    if wings:
+        screen, numbers["wing_screen"] = wing_screen_findings(mesh, anims)
+        found += screen
+    return found, advisory
+
+
+def burn_split(folder: Path, mesh, anims: Dict[str, object], numbers: dict):
+    """A death that burns away (lib/tripo_burn.py, its plan beside the files): (its BURN findings and clip, the clips with that death cut at
+    the burn's start for every other check). The lying-body rules are dropped for it (`tripo_burn.LYING_RULES`). (None, anims) without one."""
+
+    mesh_path = sorted(folder.glob("*.mesh"))[0]
+    plan = tripo_burn.read_plan(folder, mesh_path.stem)
+    if plan is None or plan.get("clip") not in anims:
+        return None, anims
+    clip = plan["clip"]
+    found, numbers["burn"] = tripo_burn.burn_findings(mesh, anims[clip], plan, clip, tripo_burn.mesh_locators(mesh_path))
+    cut = dict(anims)
+    cut[clip] = tripo_burn.truncated(anims[clip], int(plan["burn_start"]) + 1)
+    return {"clip": clip, "findings": found}, cut
+
+
+def burn_filtered(findings: List[dict], burn: Optional[dict]) -> List[dict]:
+    """The findings with a burning death's lying-body rules dropped and its BURN findings added (`burn_split`)."""
+
+    if burn is None:
+        return findings
+    return [item for item in findings if not (item["subject"] == burn["clip"] and item["rule"] in tripo_burn.LYING_RULES)] + burn["findings"]
+
+
+def map_findings(mesh, anims: Dict[str, object], numbers: dict, posture: str = "upright", weapon_bone: str = "",
+                 winged: Optional[bool] = None) -> List[dict]:
+    """A humanoid's map camera rules: TRIPO-MAP-READ and TRIPO-MAP-ALIKE (lib/map_read.py) and the outline rules (lib/map_outline.py, with
+    the idle `posture` the job asks for). Fills `numbers`."""
+
+    findings: List[dict] = []
+    found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
+    findings += found
+    found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
+    findings += found
+    if map_outline.is_humanoid(mesh):
+        found, numbers["map_outline"] = map_outline.outline_findings(mesh, anims, posture, weapon_bone, winged)
+        findings += found
+    return findings
+
+
+def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = (), posture: str = "upright",
+                  weapon_bone: str = "", winged: Optional[bool] = None) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
-    rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
+    rules (lib/quadruped_checks.py), any other body the death and pose checks and the map camera's outline rules (lib/map_outline.py, with
+    the idle `posture` the job asks for); every body the hand bleed check. Fills `numbers`."""
 
     findings: List[dict] = []
     if quadruped_checks.is_quadruped(mesh):
@@ -1821,6 +1987,11 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         findings += found
         found, numbers["death_splay"] = tripo_splay.splay_findings(mesh, anims)
         findings += found
+        found, numbers["death_kick"] = tripo_kick.kick_findings(mesh, anims)
+        findings += found
+        found, numbers["gait"] = tripo_loop.loop_findings(mesh, anims)
+        findings += found
+        findings += map_findings(mesh, anims, numbers, posture, weapon_bone, winged)
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
 
@@ -1838,32 +2009,39 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--cape", action="store_true", help="the unit has a cloak or cape: run the cloak check (the job's `cape: true` does the same with --jobs-config and --slug)")
     parser.add_argument("--wings", action="store_true", help="the unit has wings: run the wing stretch, in-body and ground checks")
     parser.add_argument("--plates", action="store_true", help="the unit wears armour plates: run the plate stretch check")
+    parser.add_argument("--posture", choices=map_outline.POSTURES, help="the idle posture TRIPO-MAP-POSTURE judges (default: the job's tripo.posture, or upright)")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--slug")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
+    burn, anims = burn_split(args.folder.resolve(), mesh, anims, numbers)
     cape, wings, plates = job_regions(args)
     if cape:
         found, numbers["cloak"] = cloak_findings(mesh, anims)
         findings += found
     else:
         numbers["cloak"] = "not run: the job's anatomy has no cape"
-    found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
+    found, side_advisory = wing_checks(mesh, anims, wings, cape, numbers)
     findings += found
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
-    findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone])
+    findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone], job_posture(args), args.weapon_bone, wings or None)
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
+        findings += found
+    if not quadruped_checks.is_quadruped(mesh):
+        strike_hand = holding_hand(mesh, args.weapon_bone) if args.weapon_bone and args.weapon_bone in mesh.bones else ""
+        found, numbers["strike"] = tripo_strike.strike_findings(mesh, anims, strike_hand, lunge=job_lunges(args))
         findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)
         findings += found
     findings += weapon_stage_findings(args, mesh, anims, numbers)
-    findings, advisory = split_advisory(findings, advisory_rules(args))
+    findings = burn_filtered(findings, burn)
+    findings, advisory = split_advisory(findings, advisory_rules(args), side_advisory)
     report = {"findings": findings, "advisory": advisory, "numbers": numbers}
     if args.json:
         args.json.write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")

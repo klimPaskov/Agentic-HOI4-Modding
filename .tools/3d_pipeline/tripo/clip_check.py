@@ -2,6 +2,15 @@
 
     py -3.13 .tools/3d_pipeline/tripo/clip_check.py <rigged.glb> [--body tripo_part_0] [--weapon tripo_part_1]
         [--weapon-bone auto|<joint name>] [--samples 24] [--grip-radius 0.12] [--json out.json] [--fail-on-verdict]
+        [--attack <candidate> ...]
+
+With `--attack` it ends with one `attack:` line: the candidates that pass, or `attack: none passes` and exit 3. Run it on the first
+export before you leave Tripo (the card's step 6), so a text-to-motion attack is made while the rigged model is still open.
+
+A plain Tripo export (Rig, Animate, Export, no Segment step) is one skinned mesh: its mesh node is named `tripo_node_<id>` and its mesh
+`tripo_mesh_<id>`, not `tripo_part_0`. When the body is left at its default name and the file has no such node, the one skinned mesh is
+the body. It has no weapon part either, so with the default weapon name absent (or `--weapon none`) the check measures stretch only, for an
+unarmed unit. A body or weapon named on the command line that the file lacks is still an error.
 
 Ranking clips by mesh stretch alone passes a clip whose weapon goes through the torso. This tool
 skins the body with linear blend skinning, numpy only, at `--samples` times per clip and measures:
@@ -67,6 +76,10 @@ RAY_DIRECTIONS = np.array(
     [[0.267, 0.534, 0.802], [-0.611, 0.302, 0.733], [0.436, -0.718, 0.543], [-0.287, -0.641, -0.713], [0.874, 0.157, -0.461]]
 )
 RAY_DIRECTIONS = RAY_DIRECTIONS / np.linalg.norm(RAY_DIRECTIONS, axis=1, keepdims=True)
+
+DEFAULT_BODY = "tripo_part_0"
+DEFAULT_WEAPON = "tripo_part_1"
+NO_WEAPON = ("", "none")
 
 COMPONENT = {5120: np.int8, 5121: np.uint8, 5122: np.int16, 5123: np.uint16, 5125: np.uint32, 5126: np.float32}
 WIDTH = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
@@ -335,8 +348,18 @@ class Rig:
         self.joints = skin["joints"]
         self.inverse = read_accessor(doc, self.binary, skin["inverseBindMatrices"]).reshape(-1, 4, 4).transpose(0, 2, 1)
         self.joint_names = [self.nodes[j].get("name", str(j)) for j in self.joints]
+        self.body_note = self.weapon_note = ""
+        skinned = [n for n in self.nodes if "mesh" in n and "skin" in n]
+        if body_name == DEFAULT_BODY and not any(n.get("name") == body_name for n in self.nodes if "mesh" in n) and len(skinned) == 1:
+            body_name = self.body_name = skinned[0].get("name", "")
+            self.body_note = f"the file has no mesh node named {DEFAULT_BODY!r}: the one skinned mesh {body_name!r} is the body"
+        else:
+            self.body_name = body_name
         self.body = self._part(body_name)
-        self.weapon = self._part(weapon_name) if weapon_name else None
+        weapon_missing = weapon_name == DEFAULT_WEAPON and not any(n.get("name") == weapon_name for n in self.nodes if "mesh" in n)
+        if weapon_missing:
+            self.weapon_note = f"the file has no mesh node named {DEFAULT_WEAPON!r}: no weapon is checked (an unarmed unit)"
+        self.weapon = self._part(weapon_name) if weapon_name and weapon_name not in NO_WEAPON and not weapon_missing else None
 
     def _part(self, name: str) -> dict:
         nodes = [n for n in self.nodes if "mesh" in n and n.get("name") == name]
@@ -425,18 +448,31 @@ class Rig:
             yield anim["name"], tracks, end
 
 
+def canonical_names(names: Sequence[str]) -> List[str]:
+    """Each joint's canonical (Mixamo short) name, through lib/tripo_rig.py (the newer Tripo rig's `R_Hand` is `RightHand`); a rig that is
+    neither of Tripo's keeps its names without a prefix."""
+
+    from lib import tripo_rig
+
+    try:
+        rig = tripo_rig.RigNames(names)
+    except tripo_rig.RigError:
+        return [tripo_rig.short(name) for name in names]
+    return [rig.canonical(name) for name in names]
+
+
 def hand_joint_indices(names: Sequence[str]) -> List[int]:
     """Indices of palm joints (`...Hand`, not a finger such as `RightHandIndex1`)."""
 
-    return [i for i, name in enumerate(names) if re.search(r"hand$", name.split(":")[-1], re.IGNORECASE)]
+    return [i for i, name in enumerate(canonical_names(names)) if re.search(r"hand$", name, re.IGNORECASE)]
 
 
 def resolve_weapon_joint(names: Sequence[str], weapon_rest: np.ndarray, joint_rest: np.ndarray, wanted: str = "auto") -> int:
     """The joint the weapon follows. `auto` takes the hand joint with a weapon vertex closest to it."""
 
     if wanted != "auto":
-        for i, name in enumerate(names):
-            if name == wanted or name.split(":")[-1] == wanted:
+        for i, (name, canonical) in enumerate(zip(names, canonical_names(names))):
+            if name == wanted or name.split(":")[-1] == wanted or canonical == wanted:
                 return i
         raise SystemExit(f"No joint named {wanted!r}; the hand joints are {[names[i] for i in hand_joint_indices(names)]}")
     hands = hand_joint_indices(names)
@@ -510,10 +546,11 @@ def _check_clip(ctx: _CheckContext, tracks: dict, end: float, count: int, tolera
         # The weapon rides the hand joint rigidly.
         lowest_body = max(lowest_body, float((ctx.ground + GROUND_TOLERANCE_SHARE * height - now[:, 1].min()) / height))
         hand = mats[ctx.joint]
-        world_all = (ctx.all_points @ hand.T)[:, :3]
-        frame_ground = float(now[:, 1].min()) - tolerance * height if ctx.per_frame_ground else ctx.ground
-        worst_ground = max(worst_ground, float((world_all[:, 1] < frame_ground).mean()))
-        worst_rest_ground = max(worst_rest_ground, float((world_all[:, 1] < ctx.ground).mean()))
+        if len(ctx.all_points):  # an unarmed unit has no weapon points: nothing to ground
+            world_all = (ctx.all_points @ hand.T)[:, :3]
+            frame_ground = float(now[:, 1].min()) - tolerance * height if ctx.per_frame_ground else ctx.ground
+            worst_ground = max(worst_ground, float((world_all[:, 1] < frame_ground).mean()))
+            worst_rest_ground = max(worst_rest_ground, float((world_all[:, 1] < ctx.ground).mean()))
         share, deep, depth = _penetration(ctx, hand, now)
         in_series.append(share)
         deep_series.append(deep)
@@ -560,13 +597,17 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
     rest_len = np.linalg.norm(rest_body[edges[:, 0]] - rest_body[edges[:, 1]], axis=1)
     keep = rest_len > 1e-6
 
-    weapon_rest = rig.skin(weapon_part, rest_mats) if "joint_ids" in weapon_part else weapon_part["positions"]
-    pick = np.linspace(0, len(weapon_rest) - 1, min(MAX_WEAPON_POINTS, len(weapon_rest))).astype(int)
-    points = weapon_rest[pick]
-    joint_rest = rest_worlds[:, :3, 3]
-    joint = resolve_weapon_joint(rig.joint_names, weapon_rest, joint_rest, weapon_bone)
     radius = grip_radius * height
-    free = ~grip_zone_mask(points, joint_rest[joint], radius)
+    if weapon_part is None:
+        # An unarmed unit: no weapon points, so the clip table holds the stretch numbers and a zero weapon.
+        points, joint, free = np.zeros((0, 3)), 0, np.zeros(0, dtype=bool)
+    else:
+        weapon_rest = rig.skin(weapon_part, rest_mats) if "joint_ids" in weapon_part else weapon_part["positions"]
+        pick = np.linspace(0, len(weapon_rest) - 1, min(MAX_WEAPON_POINTS, len(weapon_rest))).astype(int)
+        points = weapon_rest[pick]
+        joint_rest = rest_worlds[:, :3, 3]
+        joint = resolve_weapon_joint(rig.joint_names, weapon_rest, joint_rest, weapon_bone)
+        free = ~grip_zone_mask(points, joint_rest[joint], radius)
     free_points = np.concatenate([points[free], np.ones((int(free.sum()), 1))], axis=1)
     all_points = np.concatenate([points, np.ones((len(points), 1))], axis=1)
 
@@ -581,9 +622,10 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
         report[name] = _check_clip(ctx, tracks, end, count, tolerance, keep_series=samples == "all")
     return {
         "file": "<bytes>" if isinstance(path, (bytes, bytearray)) else str(path),
-        "body": body,
-        "weapon": weapon,
-        "weapon_joint": rig.joint_names[joint],
+        "body": rig.body_name,
+        "weapon": None if weapon_part is None else weapon,
+        "weapon_joint": None if weapon_part is None else rig.joint_names[joint],
+        "notes": [note for note in (rig.body_note, rig.weapon_note) if note],
         "body_height": round(height, 4),
         "grip_radius": round(radius, 4),
         "grip_points_excluded": int((~free).sum()),
@@ -601,18 +643,49 @@ def check(path, body="tripo_part_0", weapon="tripo_part_1", weapon_bone="auto", 
 
 
 def print_table(result: dict) -> None:
-    print(f"{result['file']}  weapon follows {result['weapon_joint']}  height {result['body_height']}  grip radius {result['grip_radius']}")
+    for note in result.get("notes", []):
+        print(f"note: {note}")
+    follows = f"weapon follows {result['weapon_joint']}" if result["weapon_joint"] else "no weapon"
+    print(f"{result['file']}  {follows}  height {result['body_height']}  grip radius {result['grip_radius']}")
     print(f"{'clip':<34}{'stretch%':>9}{'in-body%':>9}{'thru%':>7}{'deep%H':>8}{'ground%':>8}  verdict")
     for name, c in result["clips"].items():
         label = name if len(name) <= 33 else name[:30] + "..."
         print(f"{label:<34}{c['stretched_pct']:>9.2f}{c['weapon_in_body_pct']:>9.2f}{c['weapon_deep_in_body_pct']:>7.2f}{c['deepest_penetration_pct_of_height']:>8.2f}{c['weapon_below_ground_pct']:>8.2f}  {c['verdict']}" + (f"  ({'; '.join(c['reasons'])})" if c["reasons"] else ""))
 
 
+# `--attack`: exit code when no attack candidate passes, so the card's "before you leave Tripo" step can branch on it.
+NO_ATTACK_EXIT = 3
+
+
+def attack_line(result: dict, candidates: List[str]) -> tuple:
+    """The `attack:` line of the card's "before you leave Tripo" step: which attack candidates pass, by the clip verdicts above, and
+    whether a text-to-motion attack must be made before the Tripo tab is closed (the hobgoblin run, 2026-11-22, learnt only after leaving
+    that `chop`, its one free candidate, fails the stretch). A candidate is a clip name or its first words."""
+
+    clips = result["clips"]
+    passed, failed, absent = [], [], []
+    for wanted in candidates:
+        names = [name for name in clips if name == wanted] or [name for name in clips if name.startswith(wanted)]
+        if not names:
+            absent.append(wanted)
+        for name in names:
+            (passed if clips[name]["verdict"] == "pass" else failed).append(name)
+    notes = []
+    if failed:
+        notes.append("fail: " + ", ".join(f"{name} ({'; '.join(clips[name]['reasons'])})" for name in failed))
+    if absent:
+        notes.append("not in the file: " + ", ".join(absent) + " (apply the tile and export again)")
+    if passed:
+        return f"attack: pass {', '.join(passed)}" + (f". {'. '.join(notes)}" if notes else ""), True
+    return ("attack: none passes. " + (". ".join(notes) + ". " if notes else "")
+            + "Make one text-to-motion attack now, before you leave Tripo, export again and run this again"), False
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("glb", type=Path)
-    parser.add_argument("--body", default="tripo_part_0")
-    parser.add_argument("--weapon", default="tripo_part_1")
+    parser.add_argument("--body", default=DEFAULT_BODY, help="the body's mesh node (default tripo_part_0, or the one skinned mesh of a plain export)")
+    parser.add_argument("--weapon", default=DEFAULT_WEAPON, help="the weapon's mesh node, or none for an unarmed unit (default tripo_part_1, or none when the file has no such node)")
     parser.add_argument("--weapon-bone", default="auto")
     parser.add_argument("--samples", type=lambda v: v if v == "all" else int(v), default=24, help="sampled times per clip, or `all` for every frame at 24 fps with the per-frame series")
     parser.add_argument("--grip-radius", type=float, default=GRIP_RADIUS_SHARE, help="grip zone radius as a share of the body height")
@@ -620,6 +693,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--ground-tolerance", help="clip=share,... : own per-frame below-ground tolerance (share of the body height) for named clips, for example a death clip that lies on the ground")
     parser.add_argument("--json", type=Path, help="write the full report here")
     parser.add_argument("--fail-on-verdict", action="store_true", help="exit 1 when any clip fails")
+    parser.add_argument("--attack", nargs="+", metavar="CLIP", help="the attack candidates (names or first words): print the `attack:` line and exit 3 when none passes")
     args = parser.parse_args(argv)
     result = check(args.glb, args.body, args.weapon, args.weapon_bone, args.samples, args.grip_radius, args.ground_per_frame, ground_tolerance_by_clip={k: float(v) for k, _, v in (item.rpartition("=") for item in args.ground_tolerance.split(","))} if args.ground_tolerance else None)
     print_table(result)
@@ -627,6 +701,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(json.dumps(result, indent=1), encoding="utf-8", newline="\n")
     failed = [n for n, c in result["clips"].items() if c["verdict"] == "fail"]
+    if args.attack:
+        line, ok = attack_line(result, args.attack)
+        print(line)
+        if not ok:
+            return NO_ATTACK_EXIT
     return 1 if args.fail_on_verdict and failed else 0
 
 

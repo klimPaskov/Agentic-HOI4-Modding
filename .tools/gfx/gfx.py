@@ -17,7 +17,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union, 
 
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter
-from scipy.ndimage import distance_transform_edt, binary_erosion, label
+from scipy.ndimage import binary_dilation, distance_transform_edt, binary_erosion, label
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / '.tools'))
@@ -338,6 +338,13 @@ def sprite_registry(root: Union[str, Path]) -> List[Dict[str, Any]]:
 #   ships incomplete ladders (89 normal flags without a small file), so a gap is not an engine failure.
 # - GFX-FLAG-ORIGIN (warning): the skill forbids top-origin flag TGAs; vanilla ships 5 of 2,203, so the
 #   engine loads them and the rule stays a warning.
+# - GFX-FLAG-VARIANTS-UNIFORM (warning, D-118): a prompt to review, never a verdict on one flag. A small change can be
+#   right (a communist emblem on an otherwise kept national flag, as real states did) and a country with a new
+#   identity may break with its old flag entirely, so no single variant fails. The check flags a country only when
+#   it has two or more variants (`TAG_suffix` beside a base `TAG`) and EVERY one of them keeps at least
+#   FLAG_VARIANT_CONTAINMENT (0.70) of the base flag's edge pixels within one pixel at 82x52, also when mirrored.
+#   That is the mechanical pattern D-118 forbids: the same design with colours or a mark added for every variant.
+#   Bases with fewer than FLAG_VARIANT_MIN_EDGES edge pixels (plain fields) cannot be judged and are skipped.
 # - GFX-ACHIEVEMENT-SIZE (error): achievement art is 64x64 (882 of 882 vanilla files;
 #   `process_achievement_icons.py`). The base, `_grey` and `_not_eligible` files of every defined
 #   achievement are already required by `audit_asset_wiring_static.py` (implicit achievement-art rule).
@@ -348,11 +355,14 @@ def sprite_registry(root: Union[str, Path]) -> List[Dict[str, Any]]:
 LFS_POINTER = b'version https://git-lfs.github.com/spec/v1'
 FLAG_LADDER = {'': (82, 52), 'medium': (41, 26), 'small': (10, 7)}
 ACHIEVEMENT_SIZE = (64, 64)
+FLAG_VARIANT_CONTAINMENT = 0.70
+FLAG_VARIANT_MIN_EDGES = 30
+FLAG_EDGE_STEP = 48  # summed RGB step between neighbours that counts as an edge
 RUNTIME_BINARY_DIRS = ('gfx', 'sound', 'music')
 RUNTIME_BINARY_SUFFIXES = {'.dds', '.tga', '.png', '.mesh', '.anim', '.wav', '.ogg'}
 GFX_LEVELS = {
     'GFX-FRAME-WIDTH': 'warning', 'GFX-FLAG-SIZE': 'error', 'GFX-FLAG-LADDER': 'warning', 'GFX-FLAG-ORIGIN': 'warning',
-    'GFX-ACHIEVEMENT-SIZE': 'error', 'GFX-LFS-POINTER': 'error', 'GFX-TRUNCATED': 'error',
+    'GFX-FLAG-VARIANTS-UNIFORM': 'warning', 'GFX-ACHIEVEMENT-SIZE': 'error', 'GFX-LFS-POINTER': 'error', 'GFX-TRUNCATED': 'error',
 }
 # Bytes per 4x4 block (compressed) or per pixel (uncompressed) for DDS formats with a known payload size.
 DDS_BLOCK_BYTES = {b'DXT1': 8, b'DXT2': 16, b'DXT3': 16, b'DXT4': 16, b'DXT5': 16, b'ATI1': 8, b'BC4U': 8, b'ATI2': 16, b'BC5U': 16}
@@ -516,6 +526,54 @@ def check_flags(root: Union[str, Path] = ROOT, paths: Optional[Sequence[str]] = 
                 findings.append(gfx_finding('GFX-FLAG-LADDER', rel, 0, f'{label} flag {stem} has no {" or ".join(missing)} size'))
             if path.read_bytes()[17:18] and path.read_bytes()[17] & 0x20:
                 findings.append(gfx_finding('GFX-FLAG-ORIGIN', rel, 0, f'{label} flag {stem} is stored top-origin'))
+    return findings + check_flag_variants(root, paths)
+
+
+def flag_edges(path: Path) -> Any:
+    rgb = np.asarray(load(path).convert('RGB'), dtype=np.int32)
+    dx = np.abs(np.diff(rgb, axis=1)).sum(axis=2)
+    dy = np.abs(np.diff(rgb, axis=0)).sum(axis=2)
+    edges = np.zeros(rgb.shape[:2], dtype=bool)
+    edges[:, :-1] |= dx >= FLAG_EDGE_STEP
+    edges[:-1, :] |= dy >= FLAG_EDGE_STEP
+    return edges
+
+
+def flag_containment(base: Any, variant: Any) -> float:
+    """Share of the base flag's edge pixels that reappear within one pixel in the variant, mirrored or not."""
+    count = int(base.sum())
+    if count < FLAG_VARIANT_MIN_EDGES or base.shape != variant.shape:
+        return 0.0
+    best = 0.0
+    for candidate in (variant, variant[:, ::-1]):
+        near = binary_dilation(candidate, iterations=1)
+        best = max(best, float((base & near).sum()) / count)
+    return best
+
+
+def check_flag_variants(root: Union[str, Path] = ROOT, paths: Optional[Sequence[str]] = None) -> List[Finding]:
+    """GFX-FLAG-VARIANTS-UNIFORM: every variant of a country keeps the base design (D-118). A prompt to review."""
+    selector, findings = PathFilter(paths), []
+    base_dir = Path(root) / 'gfx' / 'flags'
+    files = {p.stem: p for p in base_dir.glob('*.tga')} if base_dir.is_dir() else {}
+    groups: Dict[str, List[Path]] = {}
+    for stem, path in files.items():
+        tag, _, suffix = stem.partition('_')
+        if suffix and tag in files:
+            groups.setdefault(tag, []).append(path)
+    for tag, variants in sorted(groups.items()):
+        rel = files[tag].relative_to(root).as_posix()
+        if len(variants) < 2 or not selector.matches(rel):
+            continue
+        try:
+            base = flag_edges(files[tag])
+            ratios = [flag_containment(base, flag_edges(path)) for path in sorted(variants)]
+        except (OSError, ValueError, struct.error):
+            continue
+        if min(ratios) >= FLAG_VARIANT_CONTAINMENT:
+            findings.append(gfx_finding('GFX-FLAG-VARIANTS-UNIFORM', rel, 0, f'all {len(ratios)} variants of flag {tag} keep at least {min(ratios):.0%} of its edge structure, '
+                                        'so each reads as the base with colours or marks added. Review them: how would this country really present itself under each government or path? '
+                                        'A small change is right for some, but not as a rule for every variant'))
     return findings
 
 

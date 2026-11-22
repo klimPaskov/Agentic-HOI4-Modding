@@ -156,6 +156,19 @@ class StanceTwistClip(Biped):
         twist = P.stance_twist(self.mesh, self.load(self.clip("move", 10, pose)))
         self.assertTrue(np.all(np.isnan(twist)))
 
+    def test_a_body_lying_down_gives_no_reading(self) -> None:
+        # The ogre's death (ogre_p, 2026-11-18) lay on its belly with both soles level side by side, and its turned shoulders read 75 degrees
+        # against them. A body lying down has no stance: only frames whose torso stands within 60 degrees of upright count.
+        def pose(frame):
+            fall = min(frame / 10.0, 1.0)
+            # the feet turned back so their soles lie level side by side, as the ogre's did
+            return {"Hips": ((0.0, 0.55 - 0.45 * fall, 0.0), turn("x", 90.0 * fall)), "Spine": (local("Spine"), turn("y", 70.0 * fall)),
+                    "LeftFoot": (local("LeftFoot"), turn("x", -90.0 * fall)), "RightFoot": (local("RightFoot"), turn("x", -90.0 * fall))}
+
+        twist = P.stance_twist(self.mesh, self.load(self.clip("death", 20, pose)))
+        self.assertFalse(np.isnan(twist[0]))
+        self.assertTrue(np.all(np.isnan(twist[10:])), twist)
+
 
 def lying(sit: float = 0.0, arms: float = 0.0, sit_from: int = 40):
     """Stand 20 frames, fall onto the back over 20 more and lie to frame 70. From `sit_from` the spine raises the chest `sit` degrees off

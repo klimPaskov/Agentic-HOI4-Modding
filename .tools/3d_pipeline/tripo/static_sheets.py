@@ -22,7 +22,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
 from typing import List
@@ -35,6 +34,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 import numpy as np
 
 import review_unit
+from lib import heavy_job
 from lib import static_kinds as sk
 
 # The pixels a metre of runtime size gets at game size: a vanilla soldier (humanoid_unit's source height 7.351824 at
@@ -102,7 +102,7 @@ def render_rest(mesh: Path, out: Path, texts: List[str], views=("hoi4", "front")
     out.mkdir(parents=True, exist_ok=True)
     path = out / "request.json"
     path.write_text(json.dumps(request, indent=1), encoding="utf-8", newline="\n")
-    completed = subprocess.run([str(review_unit.find_blender()), "-b", "--python", str(review_unit.BLENDER_SCRIPT), "--", str(path.resolve())],
+    completed = heavy_job.run([str(review_unit.find_blender()), "-b", "--python", str(review_unit.BLENDER_SCRIPT), "--", str(path.resolve())],
                                capture_output=True, text=True, encoding="utf-8", errors="replace")
     if "REVIEW_RENDERED" not in completed.stdout:
         raise SystemExit("Blender did not finish the renders: " + (completed.stdout + completed.stderr)[-1500:])
@@ -206,7 +206,9 @@ def main(argv=None) -> int:
     parser.add_argument("--only", choices=("close", "game"), help="one Blender start: the close-up review or the game-size sheet")
     parser.add_argument("--note", action="append", default=[], help="a fixed note added to the kind's own (repeatable)")
     parser.add_argument("--game", type=Path, help="the game folder (default: the one .tools/lib/game.py finds)")
+    heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
+    heavy_job.apply(args)
     folder, out = args.folder.resolve(), args.out.resolve()
     if args.only in (None, "close"):
         close_review(folder, args.model_kind, out, args.note)

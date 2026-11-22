@@ -52,6 +52,15 @@ MIN_GAIT_READ = 0.15
 LOADED_MOVE_READ = 0.002
 LOADED_READ = 0.034
 MAX_FRAMES = 30  # frames sampled per clip (evenly), and per idle
+# A humanoid's attack and defend against its idle, in pixels changed at game size (`read_pixels`), not as a share of the idle's area: the
+# player sees pixels, and a slender body has a small area, so a share made a small motion of the round 4 zombie look large. Measured with this
+# module on the exported files of the humanoids two fresh reviewers passed at game size (2026-11-18), the 90th percentile frame: the orc
+# (orc_k) attack 441 and defend 453, the ogre (ogre_l) attack 320 and defend 166, the dwarf (dwarf_f) attack 530 and defend 493. The zombie
+# (zombie_w), whose attack and defend both reviewers read as its idle from the game camera: attack 192, defend 104 (its recoil peaks at 232 for
+# a tenth of a 5 second clip). As shares of the idle's area the zombie's defend (0.164) read above the ogre's (0.143) that passed. The limits
+# are the lowest passing readings rounded down: an attack must change at least `MIN_HUMANOID_READ_PIXELS["attack"]`, a defend
+# `["defend"]`. Vanilla has no melee attack or defend to calibrate on (`lib/tripo_strike.py`): its infantry attacks shoot from the idle's stance.
+MIN_HUMANOID_READ_PIXELS = {"attack": 300.0, "defend": 160.0}
 
 
 def front_of(mesh: pdx_deform.SkinnedMesh) -> np.ndarray:
@@ -169,6 +178,20 @@ def read_against_idle(camera: MapCamera, frames: Sequence[np.ndarray], idle: Seq
     return round(float(np.percentile(changes, READ_PERCENTILE)), 4) if changes else 0.0
 
 
+def pixel_changes(frames: Sequence[np.ndarray], idle: Sequence[np.ndarray]) -> List[int]:
+    """Per clip frame, the least change against an idle frame, in pixels of the map camera at game size."""
+
+    return [min(change(frame, other) for other in idle) for frame in frames]
+
+
+def read_pixels(frames: Sequence[np.ndarray], idle: Sequence[np.ndarray]) -> float:
+    """The humanoid reading (TRIPO-MAP-READ for a humanoid): the `READ_PERCENTILE` percentile over the clip's frames of the least change
+    against an idle frame, in pixels of the unit drawn `MAP_PIXELS` tall. Not over the idle's area, see `MIN_HUMANOID_READ_PIXELS`."""
+
+    changes = pixel_changes(frames, idle)
+    return round(float(np.percentile(changes, READ_PERCENTILE)), 1) if changes else 0.0
+
+
 def clip_reading(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, idle: pdx_deform.Animation) -> float:
     camera = MapCamera(mesh)
     return read_against_idle(camera, camera.frames(anim), camera.frames(idle))
@@ -179,3 +202,55 @@ def loaded_limit(limit: float, loaded: bool, move: bool = False) -> float:
     `LOADED_READ` for the rest), never more than the horse's `limit`."""
 
     return min(limit, LOADED_MOVE_READ if move else LOADED_READ) if loaded else limit
+
+
+def humanoid_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> tuple:
+    """TRIPO-MAP-READ for a humanoid: the attack and the defend each against the idle, in pixels at game size (`read_pixels`), under
+    `MIN_HUMANOID_READ_PIXELS`. Returns (findings, numbers). A unit without an idle clip gets no reading."""
+
+    by_role = {clip.rsplit("_", 1)[-1]: clip for clip in anims}
+    if "idle" not in by_role:
+        return [], {}
+    camera = MapCamera(mesh)
+    idle = camera.frames(anims[by_role["idle"]])
+    findings, numbers = [], {}
+    for role, limit in MIN_HUMANOID_READ_PIXELS.items():
+        clip = by_role.get(role)
+        if clip is None:
+            continue
+        changes = pixel_changes(camera.frames(anims[clip]), idle)
+        reading = round(float(np.percentile(changes, READ_PERCENTILE)), 1)
+        numbers[clip] = {"pixels": reading, "peak_pixels": int(max(changes)), "limit": limit}
+        if reading < limit:
+            findings.append({"rule": "TRIPO-MAP-READ", "subject": clip, "share": reading, "against": "idle",
+                             "message": f"from the map camera the {role} changes {reading:.0f} pixels of the idle's silhouette at game size in its "
+                                        f"{READ_PERCENTILE:.0f}th percentile frame (at least {limit:.0f}, the lowest of the humanoids reviewers passed): "
+                                        "it reads as the idle at map size"})
+    return findings, numbers
+
+
+
+# A humanoid's defend against its attack on the map camera, in pixels at game size: each defend frame's least change against any attack
+# frame, the 90th percentile (`pixel_changes`). Measured on the exported files of the humanoids two fresh reviewers passed at game size
+# (2026-11-19): the orc (orc_k) 407, the ogre (ogre_l) 129, the dwarf (dwarf_f) 508. The limit is the lowest, rounded down. The demon's run
+# demon_c measured 404, yet a fresh review read its defend as its attack: its wings fill most of its silhouette and change between the two
+# clips, so the pixels do not see two bodies posed alike. The pose itself is set by rule there (`"defend_pose": "guard"`, lib/tripo_guard.py).
+MIN_DEFEND_ATTACK_PIXELS = 125.0
+
+
+def alike_findings(mesh: pdx_deform.SkinnedMesh, anims: dict) -> tuple:
+    """TRIPO-MAP-ALIKE for a humanoid: the defend against the attack on the map camera (`MIN_DEFEND_ATTACK_PIXELS`). Returns (findings, numbers)."""
+
+    by_role = {clip.rsplit("_", 1)[-1]: clip for clip in anims}
+    if "attack" not in by_role or "defend" not in by_role:
+        return [], {}
+    camera = MapCamera(mesh)
+    changes = pixel_changes(camera.frames(anims[by_role["defend"]]), camera.frames(anims[by_role["attack"]]))
+    reading = round(float(np.percentile(changes, READ_PERCENTILE)), 1)
+    numbers = {by_role["defend"]: {"pixels_against_attack": reading, "limit": MIN_DEFEND_ATTACK_PIXELS}}
+    if reading >= MIN_DEFEND_ATTACK_PIXELS:
+        return [], numbers
+    return [{"rule": "TRIPO-MAP-ALIKE", "subject": by_role["defend"], "share": reading, "against": "attack",
+             "message": f"from the map camera the defend changes {reading:.0f} pixels of the attack's silhouette at game size in its "
+                        f"{READ_PERCENTILE:.0f}th percentile frame (at least {MIN_DEFEND_ATTACK_PIXELS:.0f}, the lowest of the humanoids reviewers "
+                        "passed): the guard reads as the attack at map size"}], numbers

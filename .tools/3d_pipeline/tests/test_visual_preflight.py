@@ -47,6 +47,7 @@ class VisualPreflightTests(unittest.TestCase):
         self.spec = {
             "asset_id": "hoi4_3d_model_jobs.unit_slug",
             "reference_path": "refs/original/meshy_input.png",
+            "reference_sources": ["mod art: gfx/entities/lamp_post.png", "research: refs/research/street_lamp_1938_photo.jpg"],
             "profile": "static_prop",
             "asset_kind": "static",
             "asset_brief": "A lamp post.",
@@ -203,9 +204,10 @@ class VisualPreflightTests(unittest.TestCase):
             "--reviewer", "parent_agent",
             "--review-file", str(review),
         ]
+        # a Meshy job asks for the key before anything else: CI has none, so the test gives a placeholder
         with mock.patch.object(init, "REPO_ROOT", self.root), mock.patch.object(sys, "argv", argv), mock.patch(
             "builtins.print"
-        ):
+        ), mock.patch.dict(os.environ, {"MESHY_API_KEY": "test-placeholder"}):
             self.assertEqual(init.main(), 0)
         self.assertEqual(self.preflight()["review"]["notes"], "Looks right.")
         self.assertEqual(self.read("validation/reference_preflight.json")["status"], "passed")
@@ -227,12 +229,70 @@ class VisualPreflightTests(unittest.TestCase):
         config_inside = inside / "jobs.json"
         config_inside.write_text(json.dumps({"jobs": {"unit_slug": self.spec}}), encoding="utf-8")
         argv[2] = str(config_inside)
-        with mock.patch.object(init, "REPO_ROOT", inside), mock.patch.object(sys, "argv", argv), self.assertRaisesRegex(
-            ValueError, "must remain inside the repository"
-        ):
+        with mock.patch.object(init, "REPO_ROOT", inside), mock.patch.object(sys, "argv", argv), mock.patch.dict(
+            os.environ, {"MESHY_API_KEY": "test-placeholder"}
+        ), self.assertRaisesRegex(ValueError, "must remain inside the repository"):
             init.main()
         self.assertEqual(self.preflight()["review"]["status"], "not_reviewed")
 
+
+class ReferenceSourcesTests(unittest.TestCase):
+    """A reference picture is made from existing references and research, never from a text prompt alone: the review refuses a job that
+    names no sources, and records the ones it names."""
+
+    # the job fixture of VisualPreflightTests, without running its tests a second time
+    setUp = VisualPreflightTests.setUp
+    initialize = VisualPreflightTests.initialize
+    read = VisualPreflightTests.read
+    preflight = VisualPreflightTests.preflight
+
+    def test_the_review_records_the_sources(self) -> None:
+        self.initialize(require_review=False)
+        init.record_visual_preflight_review(self.job, ALL_TRUE, reviewer="parent_agent")
+        self.assertEqual(self.preflight()["reference_sources"], self.spec["reference_sources"])
+        self.assertEqual(self.read("refs/derived/reference_provenance.json")["reference_sources"], self.spec["reference_sources"])
+        self.assertEqual(self.initialize()["visual_preflight"], "passed")
+
+    def test_a_job_without_sources_cannot_pass_the_picture_review(self) -> None:
+        for empty in (None, [], ["", "  "]):
+            with self.subTest(sources=empty):
+                if empty is None:
+                    self.spec.pop("reference_sources", None)
+                else:
+                    self.spec["reference_sources"] = empty
+                self.initialize(require_review=False)
+                with self.assertRaisesRegex(ValueError, "reference_sources is empty.*never from a text prompt alone"):
+                    init.record_visual_preflight_review(self.job, ALL_TRUE, reviewer="parent_agent")
+                with self.assertRaisesRegex(RuntimeError, "No paid call"):
+                    self.initialize()
+
+    def test_sources_added_to_the_entry_after_initializing_count_at_the_review(self) -> None:
+        # The hobgoblin run (2026-11-22) filled reference_sources after the first init_pilot_jobs.py run, and the review refused until
+        # the job was initialized again. The review now reads the entry's current list.
+        sources = self.spec.pop("reference_sources")
+        self.initialize(require_review=False)
+        self.spec["reference_sources"] = sources
+        review = self.root / "review.json"
+        review.write_text(json.dumps(ALL_TRUE), encoding="utf-8")
+        config = self.root / "jobs.json"
+        config.write_text(json.dumps({"jobs": {"unit_slug": {**self.spec, "provider": "tripo"}}}), encoding="utf-8")
+        argv = ["init_pilot_jobs.py", "--jobs-config", str(config), "--record-visual-review", "unit_slug",
+                "--reviewer", "parent_agent", "--review-file", str(review)]
+        with mock.patch.object(init, "REPO_ROOT", self.root), mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"):
+            self.assertEqual(init.main(), 0)
+        self.assertEqual(self.preflight()["reference_sources"], sources)
+        self.assertEqual(self.read("refs/derived/reference_provenance.json")["reference_sources"], sources)
+        self.assertEqual(self.read("validation/reference_preflight.json")["status"], "passed")
+
+    def test_a_recorded_review_with_an_empty_sources_list_fails(self) -> None:
+        reviewed = {**ALL_TRUE, "reference_sources": [], "review": {"status": "reviewed"}}
+        self.assertEqual(init.visual_preflight_status(reviewed), "failed")
+        self.assertEqual(init.visual_preflight_status({**reviewed, "reference_sources": ["the owner's drawing"]}), "passed")
+        self.assertEqual(init.visual_preflight_status({**ALL_TRUE, "review": {"status": "reviewed"}}), "passed",
+                         "a review recorded before sources were asked keeps its result")
+
+    def test_a_single_string_counts_as_one_source(self) -> None:
+        self.assertEqual(init.reference_sources({"reference_sources": " the owner's drawing "}), ["the owner's drawing"])
 
 if __name__ == "__main__":
     unittest.main()

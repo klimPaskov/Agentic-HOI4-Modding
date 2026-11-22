@@ -43,6 +43,29 @@ from lib.paths import (  # noqa: E402
 )
 
 
+# The fields of a job entry that `initialize_one` reads directly. The rest come from `unit_type` (profile, kind, actions) and the model settings
+# (`prepare_spec`). A Tripo job needs the same ones: its picture is the 3D-ready reference that the review below records.
+REQUIRED_ENTRY_FIELDS = (
+    "asset_id",
+    "runtime_stem",
+    "target_height_m",
+    "reference_path",
+    "reference_source_mode",
+    "reference_generator_output",
+    "asset_brief",
+    "required_components",
+    "forbidden_additions",
+    "proposed_runtime_identifiers",
+)
+
+
+def missing_entry_fields(spec: Dict[str, Any]) -> list:
+    """The required fields (REQUIRED_ENTRY_FIELDS, and `profile` and `asset_kind` for an entry without `unit_type`) a job entry lacks."""
+
+    needed = REQUIRED_ENTRY_FIELDS + (() if spec.get("unit_type") else ("profile", "asset_kind"))
+    return [field for field in needed if field not in spec]
+
+
 def png_dimensions(path: Path) -> Dict[str, int]:
     with path.open("rb") as handle:
         header = handle.read(24)
@@ -68,6 +91,27 @@ VISUAL_PREFLIGHT_CHECKS = (
 )
 
 
+# A reference picture is made from existing references and research, never from nothing: the subject's own reference (the owner's drawing,
+# the mod's art) and, for a real-world subject (a tank, a ship, a uniform, a building style), the real references research found
+# (photographs, plans, museum pieces, period art) that were given to the image tool. A job lists them in `reference_sources`, one line each
+# (a path in the repository, a link, or a book and page). The picture review refuses a job without them, so no paid step starts from a
+# picture made from a text prompt alone.
+SOURCES_MESSAGE = (
+    "The job's reference_sources is empty. A 3D reference picture is made from existing references and research, never from a text "
+    "prompt alone. List the subject's own reference (the owner's drawing or the mod's art) and, for a real-world subject, the real "
+    "references research found and gave to the image tool, one entry each, in the job entry, then record the review again."
+)
+
+
+def reference_sources(spec: Dict[str, Any]) -> list:
+    """The job's `reference_sources`: the non-empty strings of its list (an empty list when it has none)."""
+
+    sources = spec.get("reference_sources") or []
+    if isinstance(sources, str):
+        sources = [sources]
+    return [str(item).strip() for item in sources if isinstance(item, str) and item.strip()]
+
+
 def pending_visual_preflight(reference_sha256: str) -> Dict[str, Any]:
     return {
         **{check: None for check in VISUAL_PREFLIGHT_CHECKS},
@@ -83,11 +127,14 @@ def pending_visual_preflight(reference_sha256: str) -> Dict[str, Any]:
 
 
 def visual_preflight_status(preflight: Dict[str, Any]) -> str:
-    """`passed` only for a recorded review that answered every check True."""
+    """`passed` only for a recorded review that answered every check True and, for a review that records them, named the picture's
+    sources (`reference_sources`)."""
 
     review = preflight.get("review")
     if not isinstance(review, dict) or review.get("status") != "reviewed":
         return "pending_review"
+    if "reference_sources" in preflight and not preflight["reference_sources"]:
+        return "failed"
     if all(preflight.get(check) is True for check in VISUAL_PREFLIGHT_CHECKS):
         return "passed"
     return "failed"
@@ -138,8 +185,13 @@ def record_visual_preflight_review(
     *,
     reviewer: str,
     notes: str = "",
+    sources: Optional[list] = None,
 ) -> Dict[str, Any]:
-    """Record the parent agent's answer to every visual preflight check."""
+    """Record the parent agent's answer to every visual preflight check.
+
+    `sources` is the job entry's current `reference_sources`. When it names any, it replaces the list the job was initialized with, so
+    sources added to the entry after the first `init_pilot_jobs.py` run count without initializing the job again (the hobgoblin run,
+    2026-11-22, filled the list after the first run and the review refused until the job was initialized a second time)."""
 
     if not isinstance(reviewer, str) or not reviewer.strip():
         raise ValueError("A visual preflight review needs a non-empty reviewer.")
@@ -154,12 +206,18 @@ def record_visual_preflight_review(
     if not provenance_path.is_file():
         raise FileNotFoundError(f"Initialize the job before reviewing its reference: {provenance_path}")
     provenance = read_json(provenance_path)
+    if sources:
+        provenance["reference_sources"] = list(sources)
+    sources = provenance.get("reference_sources") or []
+    if not sources:
+        raise ValueError(SOURCES_MESSAGE)
     recorded = provenance["derived_reference"]
     current = file_record(job_root / recorded["relative_path"], relative_to=job_root)
     if current["sha256"] != recorded["sha256"]:
         raise RuntimeError("The reference image changed since the job was initialized; initialize it again first.")
     preflight = {
         **results,
+        "reference_sources": list(sources),
         "approval": "parent_agent_visual_review",
         "review": {
             "status": "reviewed",
@@ -313,6 +371,10 @@ def initialize_one(spec: Dict[str, Any], *, require_review: bool = True) -> Dict
         },
         "created_at": utc_now(),
     }
+    # measure_body.py reads these from the job folder: the unit type the body must fit and the anatomy answers (config/body_presets.json).
+    for field in ("unit_type", "anatomy", "body_preset", "body_preset_reason"):
+        if spec.get(field) is not None:
+            job[field] = spec[field]
     if job["provider"] == "tripo":
         # A Tripo job has no Meshy plan: its files come from an inbox (tripo_intake.py) and it is paid in Tripo's app.
         job["input_gate"] = job.pop("meshy_input_gate")
@@ -394,6 +456,7 @@ The reference was generated by the approved built-in image-generation route for 
         "generator_output": spec["reference_generator_output"],
         "generation_prompt_record": spec["asset_brief"],
         "derived_reference": reference_record,
+        "reference_sources": reference_sources(spec),
         "visual_preflight": recorded_visual_preflight(job_root, reference_record["sha256"])
         or pending_visual_preflight(reference_record["sha256"]),
     }
@@ -451,6 +514,24 @@ The reference was generated by the approved built-in image-generation route for 
     }
 
 
+def initialize_entry(slug: str, spec: Dict[str, Any]) -> Dict[str, Any]:
+    """Fill a unit entry the way the runner does, refuse one that lacks a field this step reads, and create the job."""
+
+    if spec.get("unit_type"):
+        # A unit-type job gets its profile, kind, actions, model and price estimates the way the runner fills them.
+        from run_pilot import prepare_spec
+
+        prepare_spec(spec, require_budget=False)
+    absent = missing_entry_fields(spec)
+    if absent:
+        raise SystemExit(
+            f"{slug}: the job entry lacks {', '.join(absent)}. docs/3d-units.md, step 2, has a complete entry to copy. "
+            "A Tripo job needs them too: this step records its 3D-ready picture (refs/original) and the review of it."
+        )
+    # Creating the job is how its reference gets reviewed, so do not demand the review here.
+    return initialize_one(spec, require_review=False)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jobs-config", required=True, type=Path)
@@ -496,7 +577,8 @@ def main() -> int:
         notes = answers.pop("notes", "")
         reviewed_slug = jobs[args.record_visual_review]["asset_id"].rsplit(".", 1)[-1]
         outcome = record_visual_preflight_review(
-            resolve_job_root(reviewed_slug), answers, reviewer=args.reviewer, notes=str(notes or "")
+            resolve_job_root(reviewed_slug), answers, reviewer=args.reviewer, notes=str(notes or ""),
+            sources=reference_sources(jobs[args.record_visual_review]),
         )
         print(json.dumps(outcome, indent=2))
         return 0 if outcome["status"] == "passed" else 1
@@ -504,17 +586,7 @@ def main() -> int:
     missing = sorted(set(slugs) - set(jobs))
     if missing:
         raise KeyError(f"Unknown configured 3D jobs: {missing}")
-    outputs = []
-    for slug in slugs:
-        spec = jobs[slug]
-        if spec.get("unit_type"):
-            # A unit-type job gets its profile, kind, actions, model and price estimates the way the runner fills them.
-            from run_pilot import prepare_spec
-
-            prepare_spec(spec, require_budget=False)
-        # Creating the job is how its reference gets reviewed, so do not demand the review here.
-        outputs.append(initialize_one(spec, require_review=False))
-    print(json.dumps(outputs, indent=2))
+    print(json.dumps([initialize_entry(slug, jobs[slug]) for slug in slugs], indent=2))
     return 0
 
 

@@ -103,6 +103,18 @@ class Retime(unittest.TestCase):
         self.assertLessEqual(max(E.turn_rates(eased, frames)), 10.5 + 1e-6)
         self.assertLess(max(angle_of(q) for q in eased), 60.0)
 
+    def test_a_thigh_and_a_shin_that_snap_in_the_same_frame_are_each_eased(self) -> None:
+        # the zombie's death (Tripo, 2026-11-18): LeftUpLeg turned 72 degrees and LeftLeg 68.5 in the same frame. Each joint's local turn is
+        # what the unit spin check reads, so each channel is eased along its own path and both come under the target.
+        frames = list(range(60))
+        thigh = [about_x(2.0 * k + (72.0 if k >= 30 else 0.0)) for k in frames]
+        shin = [about_x(-1.5 * k - (68.5 if k >= 30 else 0.0)) for k in frames]
+        for quats in (thigh, shin):
+            eased, windows = E.ease_turns(quats, frames, trigger=14.0, target=10.5)
+            self.assertTrue(windows)
+            self.assertLessEqual(max(E.turn_rates(eased, frames)), 10.5 + 1e-6)
+            self.assertAlmostEqual(abs(angle_of(eased[-1])), abs(angle_of(quats[-1])), places=4)
+
     def test_flips_are_put_on_one_hemisphere(self) -> None:
         quats = [about_x(10.0), -about_x(12.0), about_x(14.0)]
         fixed, flips = E.one_hemisphere(quats)

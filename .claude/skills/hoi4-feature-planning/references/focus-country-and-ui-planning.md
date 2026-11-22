@@ -46,7 +46,7 @@ Read [`references/forces-and-3d-planning.md`](forces-and-3d-planning.md) wheneve
 
 If the feature benefits from custom UI, design one.
 
-Describe what the player sees, how it changes, and what visual assets are needed.
+Describe what the player sees, how it changes, and what visual assets are needed. Plan the concept round of `hoi4-feature-assets` (`generation-and-review.md`) ahead of the build for any surface judged by eye, so the description has a picture to aim for.
 
 Map the UI states if the UI represents pressure, route choice, threat, stage, faction cohesion, recognition, contamination, loyalty, or any other living value.
 

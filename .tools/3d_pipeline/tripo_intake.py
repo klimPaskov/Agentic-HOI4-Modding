@@ -10,9 +10,15 @@ the one rule `<asset_slug>__<kind>.glb`, where kind is
 Then run, once per asset (see `docs/3d-units.md`)::
 
     py -3.13 -B .tools/3d_pipeline/tripo_intake.py --jobs-config <jobs.json> <asset_slug> --inbox <folder>
-        [--task-id <tripo task id>] [--credits <n> --credits-note <text>] [--blender <blender.exe>]
+        [--task-id <tripo task id>] [--credits <n> --credits-note <text>] [--blender <blender.exe>] [--skip-heavy-check]
 
-and then `run_pilot.py` as for any unit. The job entry says `"provider": "tripo"` and, for a unit::
+The intake starts Blender itself. It first waits for the machine (lib/heavy_job.py): one kit Blender at a time and a floor of free RAM,
+with one line saying why it waits; `--skip-heavy-check` starts at once.
+
+Run `run_pilot.py` after it, as for any unit. Tripo's auto-rig may add extra joints to the Mixamo skeleton (`neutral_bone` since
+November 2026: a childless joint with no animation under the armature). The intake drops them, moves any weight they carry to the
+nearest kit bone by the vertex's position (lib/tripo_extra_joints.py) and prints one line, `extra joints dropped: ...`, with how many
+weights moved. The job entry says `"provider": "tripo"` and, for a unit::
 
     "tripo": {"roles": {"idle": "idle", "move": "walk", "attack": "chop", ...},
               "weapon": {"part": "tripo_part_1", "bone": "RightHand", "source": "rigged"},
@@ -28,10 +34,14 @@ roles in which the unit lets go of it: the kit grounds those clips by the body a
 judge that bone's part for drifting. `shield` is optional too: `{"part": "tripo_part_2", "bone": "Shield", "release_roles": ["death"]}`
 (those are the defaults but for the roles) names the shield `tripo/shield_stage.py` put in the free hand, bound rigidly to its own bone,
 with the same release rule as the weapon. `trim` is optional: it cuts a
-long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
+long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth. `trim_end` cuts a role at exactly
+that frame of the imported clip (24 a second), for a lunge that should end before the clip's own follow-through.
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
+The move and the retreat are a looped gait and get the loop window instead (`lib/tripo_loop.py`): the clip is cut to its best whole number of strides, the window inside its
+striding phase whose end continues into its start best, and the seam is closed over the last frames with no stop. A preset walk that already loops keeps every frame.
+`trim` for a role wins, and `"loop_window": false` (or a list of roles) switches the rule off (or limits it), which gives the role the trim and the settle above.
 `untwist` (default every role, `false` or a shorter list to limit it) turns the spine back where the shoulders twist against the standing feet past vanilla's worst for the role (`lib/tripo_pose.py`, the stance twist).
 `ease_snaps` (default 14, `false` to switch it off, or another number of degrees per frame to ease from) eases any joint turn faster than that in the role clips (the kit rejects a clip over 37 degrees in one frame at 30 fps).
 `chains` is optional: `[{"region": "cloak"}]` or `[{"region": "wings"}]` (or both) gives that region its own bone chains, rebinds it and keys
@@ -53,16 +63,15 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 
 PIPELINE_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import run_pilot
-from lib import tripo_pose, tripo_trim
+from lib import heavy_job, tripo_extra_joints, tripo_loop, tripo_pose, tripo_trim
 from lib.credits import append_entry, read_ledger
 from lib.paths import ensure_job_layout, file_record, read_json, resolve_job_root, sha256_file, utc_now, write_json
 from lib.tripo import inbox_file, uses_tripo
@@ -112,19 +121,72 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
 
     roles = (spec.get("tripo") or {}).get("roles") or {}
     try:
-        travelling = glb_root.travelling_clips(rigged, roles.values())
+        travelling = glb_root.travelling_clips(rigged, [clip for role, clip in roles.items() if role != "death"], deaths=[roles["death"]] if roles.get("death") else None)
     except ValueError:  # not a binary glTF: the Blender stage reads it and says what is wrong
         return
+    # A lunge the job keeps (`tripo.lunge`, {role: cap in hip heights}, written by tripo/lunge_clip.py) may travel up to its cap.
+    for role, cap in ((spec.get("tripo") or {}).get("lunge") or {}).items():
+        clip = roles.get(role)
+        for name in [name for name in travelling if clip and name.startswith(clip)]:
+            if travelling[name] <= float(cap) + 0.01:
+                travelling.pop(name)
     if travelling:
         listed = ", ".join(f"{clip.strip()} {travel:.2f}" for clip, travel in sorted(travelling.items()))
         raise ValueError(
             f"{rigged.name}: these role clips move the hips across the ground ({listed} times the hip height, limit "
-            f"{glb_root.MAX_ROOT_TRAVEL_SHARE}). Export again from Tripo with \"Animation in Place\" switched on.")
+            f"{glb_root.MAX_ROOT_TRAVEL_SHARE}, a death {glb_root.DEATH_TRAVEL_LIMIT}). Export again from Tripo with \"Animation in Place\" switched on.")
 
 
 def default_task_id(files: Dict[str, Path]) -> str:
     main = files.get("rigged") or files["model"]
     return f"tripo-{sha256_file(main).lower()[:12]}"
+
+
+def loop_roles(config: Dict[str, Any], wanted: Sequence[str], explicit: Dict[str, Any]) -> List[str]:
+    """The roles that get the loop window (lib/tripo_loop.py): the move and the retreat, less the roles with a `trim` of their own and what
+    the job's `loop_window` switches off (`false`, or a list that names the roles to keep)."""
+
+    chosen = config.get("loop_window", list(tripo_loop.STRIDE_ROLES))
+    if not chosen:
+        return []
+    return [role for role in tripo_loop.STRIDE_ROLES if role in wanted and role not in explicit and (chosen is True or role in chosen)]
+
+
+def loop_arguments(config: Dict[str, Any], wanted: Sequence[str], explicit: Dict[str, Any], roles: Dict[str, str], rigged: Path):
+    """(the prepare stage's `--loop-window` and `--loop-close` arguments, {role: its window}) for the looped gaits of a job."""
+
+    looped = loop_roles(config, wanted, explicit)
+    windows = tripo_loop.auto_windows(rigged, roles, explicit=set(explicit), apply_to=looped) if looped else {}
+    arguments: List[str] = []
+    for role, found in windows.items():
+        if not found["whole"]:
+            arguments += ["--loop-window", f"{role}={found['first']}:{found['last']}"]
+        print(f"loop window: {role} ({found['clip'][:40]}) frames {found['first']} to {found['last']} of {found['from_frames']}"
+              + (" (the clip loops as it is)" if found["whole"] else f", striding from frame {found['phase'][0]} to {found['phase'][1]}")
+              + f", seam cost {found['cost']} of the height", file=sys.stderr)
+    for role in looped:
+        if role not in windows:
+            print(f"loop window: {role} never strides, so it keeps the trim and the settle (TRIPO-LOOP-STANDS will fail it)", file=sys.stderr)
+    looped = [role for role in looped if role in windows]
+    if looped:
+        arguments += ["--loop-close", *looped]
+    return arguments, windows
+
+
+def trim_arguments(config: Dict[str, Any]):
+    """(the prepare stage's `--trim` and `--trim-end` arguments, {role: frames} the job cuts itself). `trim` cuts to a loop point,
+    `trim_end` cuts a role at exactly that frame (no loop point is searched): the end of a lunge before the clip's own follow-through, which
+    the settle then blends back to the first pose. Both win over the loop window and the auto trim."""
+
+    explicit = dict(config.get("trim") or {})
+    arguments: List[str] = []
+    for role, frames in explicit.items():
+        arguments += ["--trim", f"{role}={int(frames)}"]
+    for role, frames in (config.get("trim_end") or {}).items():
+        if role not in explicit:
+            arguments += ["--trim-end", f"{role}={int(frames)}"]
+            explicit[role] = frames
+    return arguments, explicit
 
 
 def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path], out_dir: Path, report: Path) -> List[str]:
@@ -147,13 +209,15 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--part-triangles", f"{part}={budget if budget == 'auto' else int(budget)}"]
     if config.get("part_shape_iou") is not None:
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
-    explicit = config.get("trim") or {}
-    for role, frames in explicit.items():
-        command += ["--trim", f"{role}={int(frames)}"]
+    trimming, explicit = trim_arguments(config)
+    command += trimming
+    # The looped gait (lib/tripo_loop.py): the move and the retreat are cut to their best whole strides and closed with no stop. A job's own trim wins.
+    looping, windows = loop_arguments(config, wanted, explicit, roles, files["rigged"])
+    command += looping
     # The rule for a clip that ends still (lib/tripo_trim.py): an attack, defend or retreat clip drops its trailing still part. A job's own trim wins.
     auto = config.get("auto_trim", list(tripo_trim.DEFAULT_ROLES))
     if auto:
-        for role, found in tripo_trim.auto_trims(files["rigged"], roles, explicit=set(explicit), apply_to=[role for role in tripo_trim.DEFAULT_ROLES if role in wanted and (auto is True or role in auto)]).items():
+        for role, found in tripo_trim.auto_trims(files["rigged"], roles, explicit=set(explicit), apply_to=[role for role in tripo_trim.DEFAULT_ROLES if role in wanted and role not in windows and (auto is True or role in auto)]).items():
             command += ["--trim-end", f"{role}={found['keep_frames']}"]
             print(f"auto trim: {role} ({found['clip'][:40]}) {found['from_frames']} -> {found['keep_frames']} frames, still from frame {found['still_from_frame']} "
                   f"(floor {found['floor_degrees']} degrees a frame, 5% of its peak {found['peak_degrees']})", file=sys.stderr)
@@ -176,6 +240,13 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         # The target height defaults to 0.85 in prepare_tripo_unit.py (arms straight forward at shoulder height); a job may name another.
         if config.get("arm_level_target") is not None:
             command += ["--arm-level-target", str(float(config["arm_level_target"]))]
+    # An unarmed unit's gait that walks with the hands raised (it fails TRIPO-HANDS-HIGH as cut) gets the same rule: Tripo's reaching zombie walk
+    # held both hands over the head for the whole clip, which reads as hands up from the front. `arm_level_high` lists the roles ([] or false to
+    # switch it off); the default is the move and the retreat of a job with no weapon. A gait whose hands stay down is not touched.
+    high = config.get("arm_level_high", [] if config.get("weapon") else ["move", "retreat"])
+    high = [role for role in (high or []) if role in wanted and role not in (levelled or [])]
+    if high:
+        command += ["--arm-level-high", *high]
     value = config.get("ease_snaps", DEFAULT_EASE_SNAPS)
     if value:
         command += ["--ease-snaps"] + ([] if value is True else [str(float(value))])
@@ -183,6 +254,10 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
     regions = [item["region"] if isinstance(item, dict) else str(item) for item in config.get("chains") or []]
     if regions:
         command += ["--chains", *regions]
+        # A death that burns away stands (lib/tripo_burn.py): its wings keep the idle's folded pose instead of lying flat as a body falls (the
+        # defend's, once it wrapped the wings forward, hid 54% of the limbs from the side, run demon_e).
+        if config.get("death_kind") == "burn":
+            command += ["--chain-role", "death=idle"]
     return command + rigid_part_args(config, files)
 
 
@@ -309,10 +384,12 @@ def run_intake(
     if spec["asset_kind"] == "humanoid":
         report = job / "provider" / "tripo_prepare_report.json"
         command = prepare_command(find_blender(blender), spec, files, downloads, report)
-        completed = subprocess.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
+        completed = heavy_job.run(command, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=1800)
         if completed.returncode != 0:
             raise RuntimeError(f"Blender failed ({completed.returncode}): {(completed.stdout + completed.stderr)[-2500:]}")
         prepared = parse_report(completed.stdout)
+        extra = prepared.get("extra_joints") or {}
+        print(tripo_extra_joints.report_line(extra.get("dropped", []), int(extra.get("weights_moved", 0))), file=sys.stderr)
         print(f"Tripo clips in {files['rigged'].name}: {prepared['clips_in_file']}", file=sys.stderr)
         print(f"Roles use: { {role: clip['clip'] for role, clip in prepared['clips'].items()} }", file=sys.stderr)
         outputs["generation"] = write_manifest(job, base, task_id, sources, textures=True)
@@ -352,6 +429,7 @@ def run_intake(
         "credits_note": credits_note,
         "outputs": {name: item["file"]["relative_path"] for name, item in outputs.items()},
         "prepare": {key: prepared[key] for key in ("blender", "bones_before", "bones_after", "weapon", "clips", "triangles")} if prepared else None,
+        "extra_joints": (prepared.get("extra_joints") or {"dropped": [], "weights_moved": 0}) if prepared else None,
     }
     write_json(receipt_path, record)
     run_pilot.append_history(job, state="provider_task_completed", event=generation_stage, actor="tripo_intake", details={"task_id": task_id, "files": sources})
@@ -366,8 +444,10 @@ def main() -> int:
     parser.add_argument("--credits", type=int, help="Tripo credits spent on this asset")
     parser.add_argument("--credits-note", default="")
     parser.add_argument("--blender", help="blender executable (default: BLENDER_EXE, then the pipeline's discovery)")
+    heavy_job.add_argument(parser)
     parser.add_argument("asset")
     args = parser.parse_args()
+    heavy_job.apply(args)
     configs = run_pilot.load_job_configs(args.jobs_config)
     if args.asset not in configs:
         raise KeyError(f"Unknown configured 3D job: {args.asset}")
