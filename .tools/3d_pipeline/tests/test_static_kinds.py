@@ -311,6 +311,26 @@ def disc_mesh(centre, radius, thickness, sides=16):
     return points, np.array(faces)
 
 
+def loop_mesh(x0, width, length, height, thick, segments=16):
+    """A track run seen from the side as a closed band round a stadium (from y = -length/2, z = 0), extruded across x."""
+
+    radius = height / 2
+    outline = [(-length / 2 + radius + radius * np.cos(a), radius + radius * np.sin(a)) for a in np.linspace(np.pi / 2, 1.5 * np.pi, segments)]
+    outline += [(length / 2 - radius + radius * np.cos(a), radius + radius * np.sin(a)) for a in np.linspace(-np.pi / 2, np.pi / 2, segments)]
+    outer = np.array(outline)
+    inner = np.array([0.0, radius]) + (outer - [0.0, radius]) * (1 - thick / radius)
+    n = len(outer)
+    points = np.array([[x, y, z] for x in (x0, x0 + width) for ring in (outer, inner) for y, z in ring])
+    faces = []
+    for k in range(n):
+        j = (k + 1) % n
+        for side in (0, 2 * n):
+            faces += [(side + k, side + j, side + n + j), (side + k, side + n + j, side + n + k)]
+        for ring in (0, n):
+            faces += [(ring + k, 2 * n + ring + k, 2 * n + ring + j), (ring + k, 2 * n + ring + j, ring + j)]
+    return points, np.array(faces)
+
+
 def assemble(parts):
     points, triangles, offset = [], [], 0
     for p, t in parts:
@@ -326,7 +346,7 @@ class RunningGearTests(unittest.TestCase):
     def test_wheels_and_tracks_of_a_tank_in_pieces(self):
         parts = [box_mesh([-1.5, -4.0, 0.6], [1.5, 4.0, 2.5])]  # hull
         for side in (-1, 1):
-            parts.append(box_mesh([side * 2.0 - 0.3, -4.0, 0.0], [side * 2.0 + 0.3, 4.0, 1.4]))  # a track run
+            parts.append(loop_mesh(side * 2.0 - 0.3, 0.6, 8.0, 1.4, 0.1))  # a track run: a loop round the wheels
             for y in (-2.4, -0.8, 0.8, 2.4):
                 parts.append(disc_mesh([side * 1.8, y, 0.5], 0.45, 0.25))  # road wheels inside the track loop
         parts.append(disc_mesh([1.9, 0.0, 3.0], 0.2, 0.1))  # a round fitting high on the hull: not a wheel
@@ -336,7 +356,7 @@ class RunningGearTests(unittest.TestCase):
         for wheel in gear["wheels"]:
             self.assertAlmostEqual(wheel["radius"], 0.45, delta=0.02)
             self.assertAlmostEqual(wheel["centre"][2], 0.5, delta=0.02)
-        self.assertEqual(len(gear["tracks"]), 16)  # both track boxes, 8 vertices each
+        self.assertEqual(len(gear["tracks"]), 2 * 4 * 32)  # both loops, 4 rings of 32 vertices each
         self.assertEqual([round(w["centre"][1], 1) for w in gear["wheels"][:2]], [-2.4, -2.4])  # front first, left then right
 
     def test_a_coarse_piece_does_not_spin(self):

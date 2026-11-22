@@ -134,11 +134,26 @@ class ReduceLoop(unittest.TestCase):
         receipt = parts.reduce_parts(["slab", "ball"], self.meshes, 1500, self.reducer, checker=checker)
         self.assertGreaterEqual(receipt["parts"]["ball"]["to"], 600)
         self.assertLessEqual(receipt["triangles"], 1500)
-        self.assertGreater(receipt["rounds"], 1)
+        # its least share is found close above 600 (within the search precision), more than its share by need
+        self.assertTrue(600 <= receipt["parts"]["ball"]["least"] <= 640, receipt["parts"]["ball"])
+        self.assertLess(receipt["parts"]["ball"]["first_share"], 600)
         # the reducer's last call for each part is its chosen share
         last = {i: n for i, n in self.calls}
         self.assertEqual(last[1], receipt["parts"]["ball"]["share"])
         self.assertEqual(last[0], receipt["parts"]["slab"]["share"])
+
+    def test_least_share_searches_down_from_a_pass_and_up_from_a_fail(self) -> None:
+        asked = []
+
+        def passes(n):
+            asked.append(n)
+            return n >= 317
+
+        self.assertTrue(317 <= parts.least_share(passes, 1000, 5000) <= 317 * 1.05 + 8)
+        self.assertTrue(317 <= parts.least_share(passes, 40, 5000) <= 317 * 1.05 + 8)
+        self.assertEqual(parts.least_share(lambda n: True, 400, 5000), parts.MIN_PART_TRIANGLES)
+        self.assertEqual(parts.least_share(lambda n: n >= 90, 30, 90), 90)  # all of a small part always passes
+        self.assertLess(len(asked), 30)
 
     def test_when_the_failing_parts_need_more_than_the_target_it_stops_with_their_names(self) -> None:
         def checker(original, reduced, min_iou):
@@ -167,6 +182,55 @@ class Whole(unittest.TestCase):
         areas = np.array([1, 1, 1, 0.05, 1, 1, 1, 0.02, 1])
         over = np.array([True, True, True, False, True, False, False, False, True])
         self.assertEqual(parts.whole_parts(ids, areas, over), {1: True, 3: False})
+
+
+def track_loop(length, height, thick, width, x0=1.5, segments=24):
+    """A track run as a closed loop seen from the side: a thin band round a stadium, extruded across (x)."""
+
+    radius = height / 2
+    outline = []
+    for k in range(segments):
+        a = math.pi / 2 + math.pi * k / (segments - 1)
+        outline.append((-length / 2 + radius + radius * math.cos(a), radius + radius * math.sin(a)))
+    for k in range(segments):
+        a = -math.pi / 2 + math.pi * k / (segments - 1)
+        outline.append((length / 2 - radius + radius * math.cos(a), radius + radius * math.sin(a)))
+    centre = np.array([0.0, radius])
+    outer = np.array(outline)
+    inner = centre + (outer - centre) * (1 - thick / radius)
+    points, triangles = [], []
+    rings = [outer, inner]
+    for x in (x0, x0 + width):
+        for ring in rings:
+            points += [[x, y, z] for y, z in ring]
+    n = len(outer)
+    base = {(side, ring): (2 * side + ring) * n for side in (0, 1) for ring in (0, 1)}
+    for k in range(n):
+        j = (k + 1) % n
+        for side in (0, 1):
+            o, i = base[(side, 0)], base[(side, 1)]
+            triangles += [[o + k, o + j, i + j], [o + k, i + j, i + k]]
+        for ring in (0, 1):
+            a, b = base[(0, ring)], base[(1, ring)]
+            triangles += [[a + k, b + k, b + j], [a + k, b + j, a + j]]
+    return np.array(points, dtype=float), np.array(triangles)
+
+
+class TrackRuns(unittest.TestCase):
+    def test_a_loop_is_a_track_run_and_a_band_with_its_bogies_is_not(self) -> None:
+        from lib import static_kinds as sk
+
+        loop = track_loop(6.0, 1.0, 0.08, 0.5)
+        band = box((1.5, -3.0, 0.0), (2.0, 3.0, 1.0))
+        self.assertLess(sk.side_fill(*loop, np.arange(len(loop[0]))), 0.3)
+        self.assertGreater(sk.side_fill(*band, np.arange(len(band[0]))), sk.TRACK_FILL_MAX)
+        hull = box((-1.4, -3.0, 0.4), (1.4, 3.0, 2.0))
+        rule = sk.kind_contract("vehicle")["rules"]["wheels"]
+        for piece, runs in ((loop, True), (band, False)):
+            points = np.vstack([hull[0], piece[0]])
+            triangles = np.vstack([hull[1], piece[1] + len(hull[0])])
+            found = sk.running_gear(points, triangles, rule)["tracks"]
+            self.assertEqual(len(found) > 0, runs)
 
 
 class PartsGlb(unittest.TestCase):

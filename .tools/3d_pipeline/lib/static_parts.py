@@ -9,12 +9,12 @@ its hull plates. The static route therefore keeps the parts apart and reduces ea
   between the two faces each one joins, so a bogie, a rivet row or a lion's mane counts more than a flat plate).
 - `allocate` shares a triangle target between the parts by need (half by area, half by bend), never more than a part
   has and never less than `MIN_PART_TRIANGLES` (or all of a smaller part).
-- `reduce_parts` reduces each part to its share with the caller's reducer (Blender's Decimate in the stage) and checks
-  every result with the unit route's shape check (`lib.tripo_shape`: no new shells, front, side and top silhouette
-  agreement of at least `part_shape_iou`) and a closure check (no more open edges than the part had). A part that
-  fails gets `GROWTH` times its share, taken from the others, and every part whose share changed is reduced and
-  checked again. When the parts that fail need more than the target holds, it stops with `PartsBudgetError`, which
-  names them and what they need.
+- `reduce_parts` reduces each part with the caller's reducer (Blender's Decimate in the stage) and checks every result
+  with the unit route's shape check (`lib.tripo_shape`: no new shells, front, side and top silhouette agreement of at
+  least `part_shape_iou`) and a closure check (no more open edges than the part had). Each part's least passing share
+  is searched on its own from its share by need (`least_share`). When the least shares fit the target, the rest is
+  shared by need on top of them. When they do not, it stops with `PartsBudgetError`, which names each part's least
+  share: the model is never simplified to fit, the user decides.
 - `whole_parts` says which parts lie wholly on one side of a rigid-part cut (a tank's turret over its turret cut), so
   the stage moves a part whole onto its bone instead of slicing it.
 
@@ -36,8 +36,7 @@ from lib import tripo_shape
 PART_LAYER = "static_part"  # a face attribute in the Blender stage: the part a face came from, counted from 1 (0: a cap or a new face)
 NEED_AREA_WEIGHT = 0.5  # the rest of a part's need is its bend
 MIN_PART_TRIANGLES = 24  # a part is never asked to go below this (an 8-corner box has 12)
-GROWTH = 1.5  # a part whose shape failed asks for this much more
-MAX_ROUNDS = 10
+SEARCH_PRECISION = 0.05  # a part's least passing share is found to this share of itself
 WHOLE_SHARE = 0.9  # a part with this share of its area on one side of a cut goes whole to that side
 WELD_SHARE = 1e-5  # vertices within this share of a part's size are one (as the stage's weld)
 
@@ -140,12 +139,33 @@ def allocate(needs: Sequence[dict], target: int, lower: Optional[Sequence[int]] 
     return result
 
 
+_ORIGINALS: Dict[int, dict] = {}  # an original part's silhouettes, shells and open edges, kept while its search tries shares
+
+
+def _shape_report(original: Mesh, reduced: Mesh) -> dict:
+    """`tripo_shape.shape_report`, with the original part's own numbers worked out once (the search reduces one part many
+    times, and rasterising the original again for each try doubled the time)."""
+
+    key = id(original[1])
+    cached = _ORIGINALS.get(key)
+    if cached is None or cached["triangles"] is not original[1]:
+        low, high = original[0].min(axis=0), original[0].max(axis=0)
+        tolerance = float(np.max(high - low)) * 1e-5
+        cached = _ORIGINALS[key] = {"triangles": original[1], "low": low, "high": high, "tolerance": tolerance,
+                                    "masks": tripo_shape.silhouettes(*original, low, high), "shells": tripo_shape.shell_summary(*original, tolerance),
+                                    "open_edges": open_edges(*original)}
+    after = tripo_shape.silhouettes(*reduced, cached["low"], cached["high"])
+    return {"shells_before": cached["shells"], "shells_after": tripo_shape.shell_summary(*reduced, cached["tolerance"]),
+            "iou": {view: round(tripo_shape.iou(cached["masks"][view], after[view]), 4) for view in tripo_shape.VIEWS},
+            "triangles_before": int(len(original[1])), "triangles_after": int(len(reduced[1])), "mask_size": tripo_shape.MASK_SIZE}
+
+
 def part_problems(original: Mesh, reduced: Mesh, min_iou: float = tripo_shape.MIN_IOU) -> Tuple[dict, List[str]]:
     """The shape check of one reduced part (`lib.tripo_shape`) plus its closure: no more open edges than it had."""
 
-    shape = tripo_shape.shape_report(original, reduced)
+    shape = _shape_report(original, reduced)
     problems = tripo_shape.shape_problems(shape, min_iou)
-    before, after = open_edges(*original), open_edges(*reduced)
+    before, after = _ORIGINALS[id(original[1])]["open_edges"], open_edges(*reduced)
     shape["open_edges_before"], shape["open_edges_after"] = before, after
     if after > before:
         problems.append(f"the reduction opened the part ({after} open edges, it had {before})")
@@ -154,61 +174,90 @@ def part_problems(original: Mesh, reduced: Mesh, min_iou: float = tripo_shape.MI
 
 def reduce_parts(names: Sequence[str], originals: Sequence[Mesh], target: int, reduce: Callable[[int, int], Mesh],
                  min_iou: float = tripo_shape.MIN_IOU, checker: Callable[[Mesh, Mesh, float], Tuple[dict, List[str]]] = part_problems) -> dict:
-    """Share `target` triangles between the parts by need and reduce each to its share, growing the share of a part whose
-    shape fails. `reduce(i, triangles)` returns part i reduced from its original to about that many triangles; the
-    chosen result of each part is the last one asked for. Returns the receipt; raises PartsBudgetError when it cannot."""
+    """Reduce each part to the share of `target` that keeps its shape, the slack shared by need.
+
+    Each part's check is its own, so each part's least passing share is searched on its own (`least_share`), starting
+    from its share by need. When the least shares fit the target, the rest of the target is shared by need on top of
+    them, each part is reduced to its final share and checked once more (a part that fails there takes its least
+    share). `reduce(i, triangles)` returns part i reduced from its original to about that many triangles (all of it when
+    `triangles` is its count), and the result it was last asked for is the chosen one. Returns the receipt; raises
+    PartsBudgetError, naming each part's least share, when they need more than the target."""
 
     needs = [part_need(*mesh) for mesh in originals]
     counts = [n["triangles"] for n in needs]
-    lower = [0] * len(needs)
-    passed: Dict[int, int] = {}  # the smallest share each part passed at
-    tried: Dict[int, int] = {}
-    results: Dict[int, dict] = {}
-    attempts: List[List[dict]] = [[] for _ in needs]
-    rounds = 0
-    while True:
-        rounds += 1
-        shares = allocate(needs, target, lower)
-        failing = []
-        for i, share in enumerate(shares):
-            if tried.get(i) == share:
-                if results[i]["problems"]:
-                    failing.append(i)
-                continue
-            # the reducer is called for every share, a whole part too, so the result it keeps is always the chosen one
+    first = allocate(needs, target)
+    tries: List[Dict[int, Tuple[dict, List[str], int]]] = [{} for _ in needs]
+
+    def attempt(i: int, share: int) -> Tuple[dict, List[str], int]:
+        share = min(counts[i], share)
+        if share not in tries[i]:
             mesh = reduce(i, share)
-            whole = share >= counts[i]
-            shape, problems = (({"iou": {v: 1.0 for v in tripo_shape.VIEWS}, "open_edges_before": open_edges(*mesh), "open_edges_after": open_edges(*mesh)}, [])
-                               if whole else checker(originals[i], mesh, min_iou))
-            tried[i] = share
-            results[i] = {"share": share, "triangles": int(len(mesh[1])), "iou": shape["iou"], "open_edges": [shape["open_edges_before"], shape["open_edges_after"]], "problems": problems}
-            attempts[i].append({"share": share, "triangles": int(len(mesh[1])), "iou": shape["iou"], "problems": problems})
-            if problems:
-                failing.append(i)
+            if share >= counts[i]:
+                shape, problems = {"iou": {v: 1.0 for v in tripo_shape.VIEWS}, "open_edges_before": open_edges(*mesh), "open_edges_after": open_edges(*mesh)}, []
             else:
-                passed[i] = min(share, passed.get(i, share))
-        if not failing:
-            break
-        for i in failing:
-            grown = min(counts[i], int(math.ceil(max(shares[i], MIN_PART_TRIANGLES) * GROWTH)))
-            lower[i] = min(grown, passed[i]) if i in passed and passed[i] > shares[i] else grown
-        if sum(min(c, max(MIN_PART_TRIANGLES, l)) for c, l in zip(counts, lower)) > target or rounds >= MAX_ROUNDS:
-            table = "; ".join(f"{names[i]} ({counts[i]} triangles) failed at {shares[i]}: {results[i]['problems'][0]}" for i in failing)
-            raise PartsBudgetError(f"the parts cannot share {target} triangles and keep their shape after {rounds} rounds: {table}. "
-                                   "Give the model a larger budget, lower part_shape_iou, or make the failing part again with fewer details it does not need")
-        for i in failing:
-            tried.pop(i, None)
+                shape, problems = checker(originals[i], mesh, min_iou)
+            tries[i][share] = (shape, problems, int(len(mesh[1])))
+        return tries[i][share]
+
+    least = [least_share(lambda share, i=i: not attempt(i, share)[1], first[i], counts[i]) for i in range(len(needs))]
+    if sum(least) > target:
+        table = "; ".join(f"{names[i]} needs {least[i]} of its {counts[i]} (its share by need was {first[i]}: {tries[i][min(counts[i], first[i])][1][0] if tries[i][min(counts[i], first[i])][1] else 'passed'})"
+                          for i in range(len(needs)) if least[i] > first[i])
+        raise PartsBudgetError(f"the parts need {sum(least)} triangles to keep their shape at part_shape_iou {min_iou}, over the target of {target}: {table}. "
+                               "Do not simplify the model: ask the user whether to accept a lower part_shape_iou or a larger budget for this kind")
+    final = allocate(needs, target, lower=least)
+    for i, share in enumerate(final):
+        if attempt(i, share)[1]:
+            final[i] = least[i]
+    results = [attempt(i, share) for i, share in enumerate(final)]
+    for i, share in enumerate(final):
+        reduce(i, min(counts[i], share))  # the result the reducer keeps is the last one asked for: the final share
     weights = need_weights(needs)
     return {
         "target": target,
         "min_iou": min_iou,
-        "rounds": rounds,
-        "triangles": sum(results[i]["triangles"] for i in range(len(needs))),
-        "parts": {names[i]: {"from": counts[i], "to": results[i]["triangles"], "share": results[i]["share"], "need": round(weights[i], 4),
-                             "area": round(needs[i]["area"], 4), "bend": round(needs[i]["bend"], 4), "iou": results[i]["iou"],
-                             "open_edges": results[i]["open_edges"], "attempts": len(attempts[i])}
+        "triangles": sum(r[2] for r in results),
+        "least": sum(least),
+        "parts": {names[i]: {"from": counts[i], "to": results[i][2], "share": final[i], "least": least[i], "first_share": first[i],
+                             "need": round(weights[i], 4), "area": round(needs[i]["area"], 4), "bend": round(needs[i]["bend"], 4),
+                             "iou": results[i][0]["iou"], "open_edges": [results[i][0]["open_edges_before"], results[i][0]["open_edges_after"]],
+                             "attempts": len(tries[i])}
                   for i in range(len(needs))},
     }
+
+
+def least_share(passes: Callable[[int], bool], start: int, count: int, precision: float = SEARCH_PRECISION) -> int:
+    """The least share (to `precision` of it, at least 8 triangles) at which `passes` holds, searched from `start`: down
+    by halves while it passes, up by doubling while it fails (all of the part always passes), then by bisection."""
+
+    start = max(min(start, count), min(count, MIN_PART_TRIANGLES))
+    floor = min(count, MIN_PART_TRIANGLES)
+    if passes(start):
+        good, bad = start, None
+        while good > floor:
+            lower = max(floor, good // 2)
+            if passes(lower):
+                good = lower
+            else:
+                bad = lower
+                break
+        if bad is None:
+            return good
+    else:
+        bad, good = start, None
+        while good is None:
+            upper = min(count, bad * 2)
+            if upper >= count or passes(upper):
+                good = upper
+            else:
+                bad = upper
+    while good - bad > max(8, int(precision * good)):
+        middle = (good + bad) // 2
+        if passes(middle):
+            good = middle
+        else:
+            bad = middle
+    return good
 
 
 def silhouette_problems(shape: dict, min_iou: float = tripo_shape.MIN_IOU) -> List[str]:

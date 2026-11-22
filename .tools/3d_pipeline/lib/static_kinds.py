@@ -635,12 +635,33 @@ def half_turn_mismatch(points: np.ndarray, centre: np.ndarray, radius: float) ->
     return float(np.percentile(gaps, 90) / max(radius, 1e-9))
 
 
+TRACK_FILL_MAX = 0.5  # kit rule: the most of its side box a track run's side view may fill
+
+
+def side_fill(points: np.ndarray, triangles: np.ndarray, vertices: np.ndarray) -> float:
+    """The share of a piece's side-view box (along the hull and up) that its side view covers, at 128 pixels."""
+
+    from lib import tripo_shape
+
+    mine = np.zeros(len(points), dtype=bool)
+    mine[np.asarray(vertices, dtype=np.int64)] = True
+    faces = np.asarray(triangles, dtype=np.int64)
+    faces = faces[mine[faces].all(axis=1)]
+    if not len(faces):
+        return 0.0
+    used, inverse = np.unique(faces, return_inverse=True)
+    q = points[used][:, 1:]
+    low, span = q.min(axis=0), np.maximum(np.ptp(q, axis=0), 1e-12)
+    return float(tripo_shape.rasterize((q - low) / span, inverse.reshape(-1, 3), 128).mean())
+
+
 def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     """A tank's road wheels and track runs, from its separate pieces (a Smart Mesh tank models them apart).
 
     Pieces are the position-welded connected shells. Of those on the outer side (centre at least `rule.x_share` of the
     half-width out) and in the lower half:
-    - a track run is a piece at least `rule.track_length_share` of the hull's length long;
+    - a track run is a piece at least `rule.track_length_share` of the hull's length long whose side view fills at most
+      `TRACK_FILL_MAX` of its box (a loop, not a band with its bogies);
     - a wheel is a round piece (its length and height within `rule.round_ratio` of each other, thinner across than
       round) whose diameter lies in `rule.diameter_share` (of the hull's length), whose top stays under the track's, and
       whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`), reach round it as
@@ -668,7 +689,9 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
         if abs(c[0] - centre_x) < rule["x_share"] * half or c[2] > (low[2] + high[2]) / 2:
             continue
         pieces.append((vertices, c, e))
-    tracks = [v for v, _c, e in pieces if e[1] >= rule["track_length_share"] * span[1]]
+    # a track run is a loop: seen from the side it fills little of its box (Smart Mesh runs 0.13 to 0.21). A long piece that
+    # fills it (a parts export's track band with its bogies and fender, 0.76) is no run: scrolled, its wheels would wear tread.
+    tracks = [v for v, _c, e in pieces if e[1] >= rule["track_length_share"] * span[1] and side_fill(points, triangles, v) <= TRACK_FILL_MAX]
     # a wheel sits inside the track loop: its top under the track's top (with a margin)
     track_top = max((points[v][:, 2].max() for v in tracks), default=high[2]) + rule["top_margin_share"] * span[2]
     lo_d, hi_d = rule["diameter_share"]
