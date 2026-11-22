@@ -13033,8 +13033,8 @@
                 }
               },
               "macos": {
-                "package_tree_sha256": "5a9ff8793f9bb7c3f1299facd83e84926a758ddfc3c685e3a9d8f1156602aa41",
-                "package_file_count": 5752,
+                "package_tree_sha256": "50289d38ed56433bc39d7a72e587cd8d608c3fc5b7b9b0a29ea6952cfd4cc6ce",
+                "package_file_count": 5787,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
