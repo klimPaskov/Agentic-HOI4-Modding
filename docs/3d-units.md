@@ -1,6 +1,6 @@
 # 3D units with Tripo and Blender
 
-This page is for modders who want their own 3D units on the HOI4 map: soldiers, archers, riders, beasts and vehicles. Tripo makes the model from your picture, rigs it and animates it. Blender turns the result into HOI4 files. Your coding agent does the work through the `hoi4-3d-model-pipeline` skill. You approve the picture and the credit budget, and you look at the result.
+This page is for modders who want their own 3D units on the HOI4 map: soldiers, archers, riders, beasts and vehicles. Tripo makes the model from your picture, rigs it and animates it. Blender turns the result into HOI4 files. Your coding agent does the work through the `hoi4-3d-model-pipeline` skill. You approve the picture and the credit budget, and you look at the result. New to 3D? Start with the one-page [quick start](3d-quick-start.md). The same route runs on [Tripo's Agentic Canvas](3d-canvas.md) too.
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 

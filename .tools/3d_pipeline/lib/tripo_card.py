@@ -288,7 +288,7 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
         "<preset label>": preset["label"],
         "<preset proven>": preset["proven"],
         "<preset budget>": tripo_presets.budget_line(preset),
-        "<canvas>": tripo_presets.canvas_line(preset),
+        "<canvas>": tripo_presets.canvas_line(preset, armed=is_armed(spec)),
     }
     if preset["route"] == "static":
         values.update({"<model_kind>": preset["model_kind"], "<static folder>": static_folder(preset["model_kind"]),
