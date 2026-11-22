@@ -47,7 +47,7 @@ from lib import static_kinds as sk
 from lib import static_parts
 from lib import static_slab
 from lib import tripo_shape
-from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, double_inside_out_walls, hull_crumpled_pieces, remove_slivers, thicken_cards
+from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, double_inside_out_walls, hull_crumpled_pieces, remove_slivers, snap_to_source, thicken_cards
 
 request = json.loads(Path(sys.argv[sys.argv.index("--") + 1]).read_text(encoding="utf-8"))
 # Faces within this angle of each other count as one flat plate in the first reduction step (kit rule: a degree or two
@@ -329,6 +329,8 @@ report["slivers"] = remove_slivers(bm, size)
 cards_cost = card_cost(bm, size)
 bm.to_mesh(model.data)
 bm.free()
+# the welded, unreduced mesh, for moving the reduction's stray vertices back onto its surface (snap_to_source below)
+source_mesh = model.data.copy()
 budget = contract["triangle_budget"]["value"]
 # The cuts and caps add triangles, so the mesh is reduced to 94 % of the budget first, less what the cards will add.
 target = int(budget * 0.94) - cards_cost
@@ -417,6 +419,13 @@ if source_parts and current > target:
     parts_receipt = reduce_in_parts(target)
 elif current > target:
     planar = planar_then_collapse(model, target)
+if current > target:
+    bm = bmesh.new()
+    bm.from_mesh(model.data)
+    report["snap"] = snap_to_source(bm, source_mesh, size, static_parts.PART_LAYER)
+    bm.to_mesh(model.data)
+    bm.free()
+bpy.data.meshes.remove(source_mesh)
 # STATIC-SHAPE judges the reduction alone, before the holes below are closed: a cap over an opening adds to the outline
 # by design (the Smart Mesh monument's base had wedge openings through it, and their caps read as a 0.91 top outline)
 shape = tripo_shape.shape_report(original, arrays(model))
