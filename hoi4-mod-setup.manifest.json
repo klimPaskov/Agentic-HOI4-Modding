@@ -12963,7 +12963,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.18.0",
+          "version": "4.19.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -12982,8 +12982,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.18.0",
-            "package_integrity": "sha512-pNWpHKqKH7PP75ACNZwt2n6kVp/w+ciYJ6JAzcQsT15DjX5+AgUQcLFeBsmtkBsA3FX2IBsluHKsdoTubL7o3w==",
+            "package_version": "4.19.0",
+            "package_integrity": "sha512-oHGpxKt1zz4Qa24J431MjrRCzKs+zzqSMI19WYj5HgbFOWVnBbKxFkPwPlfo5rqhiCp1sjKIw68/HwkH0Y/pPQ==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
             "runtime_entry_size": 4587,
@@ -13006,8 +13006,8 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
-            "package_file_count": 5899,
+            "package_tree_sha256": "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035",
+            "package_file_count": 5934,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools",
@@ -13015,15 +13015,15 @@
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
-                "package_file_count": 5899,
+                "package_tree_sha256": "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035",
+                "package_file_count": 5934,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "7a3960150dedae3c00dbd5357fc104261449701a3be922adc241bd9c60a10765",
-                "package_file_count": 5763,
+                "package_tree_sha256": "f3cd35def973709760c0cfdc44bd2ed94d264cfed6a8c1e8d4d9f1dd18b0a701",
+                "package_file_count": 5798,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {

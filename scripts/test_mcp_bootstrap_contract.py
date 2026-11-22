@@ -308,8 +308,8 @@ class McpBootstrapContractTests(unittest.TestCase):
         self.assertEqual(len(parameters["required_tools"]), 13)
         self.assertEqual(len(set(parameters["required_tools"])), 13)
         self.assertTrue(set(pin.REQUIRED_TOOLS) <= set(pin.ROUTE_CONTRACT))
-        self.assertEqual(len(pin.ROUTE_CONTRACT), 39)
-        self.assertEqual(len(set(pin.ROUTE_CONTRACT)), 39)
+        self.assertEqual(len(pin.ROUTE_CONTRACT), 45)
+        self.assertEqual(len(set(pin.ROUTE_CONTRACT)), 45)
 
     def test_route_check_reads_a_live_listing_and_rejects_a_wrong_one(self) -> None:
         def server(core: tuple[str, ...], everything: tuple[str, ...]) -> list[str]:
