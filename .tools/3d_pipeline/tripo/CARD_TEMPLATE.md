@@ -76,13 +76,14 @@ How to write `<every detail>`:
 1. **Model**, **HD Model**. Add the body picture.
 2. Settings under **Geometry & Texture**: Ultra Mesh Quality off, Texture on, 2K, Remove Lighting on, PBR on, Triangle, polycount 20000. AI model H3.1. Generate in Parts off.
 3. The button must read **Generate 30**. Press it once. Turn the model and look at every side.
+4. **Export** the model (GLB, free) and run `py -3.13 -B .tools/3d_pipeline/tripo/span_check.py <model.glb> <picture>`. It must print `pass`. On `fail` (TRIPO-SPAN-PICTURE: wings, arms or tail not as wide as drawn) make the model again and do not rig it.
 <!-- armed -->
-4. For the weapon, start a new asset. Tripo keeps the settings of the last asset but not its picture, so add the weapon picture and read the settings again.
-5. The button must read **Generate 30**. Press it once. Look at every side.
-6. On the weapon's Model page press **Export**: GLB, 2K. Tripo names the file after the model's title (for example `orc character 3d model.glb`). Save it as `<job folder>/armed/<asset_slug>_weapon__model.glb`.
+5. For the weapon, start a new asset. Tripo keeps the settings of the last asset but not its picture, so add the weapon picture and read the settings again.
+6. The button must read **Generate 30**. Press it once. Look at every side.
+7. On the weapon's Model page press **Export**: GLB, 2K. Tripo names the file after the model's title (for example `orc character 3d model.glb`). Save it as `<job folder>/armed/<asset_slug>_weapon__model.glb`.
 <!-- /armed -->
 <!-- shield -->
-7. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
+8. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
 <!-- /shield -->
 <!-- /model -->
 <!-- tripo_rig -->
@@ -111,11 +112,13 @@ How to write `<every detail>`:
 **The wings.** Tripo's rig has no wing bones. The route adds them and moves the wings by fixed rules per role (`docs/3d-units.md`, Secondary chains: cloaks and wings), so pick each clip for the body alone. The job keeps `"chains": [{"region": "wings"}]`, `"defend_pose": "guard"` (the guard is posed by rule, the wings wrap forward) and `"retreat_pose": "look_back"` (the wings fold along the back, the head looks back) in its `tripo` block. A burn death (`"death_kind": "burn"`) takes a standing reaction, so its row lists `hit_to_stomach`.
 <!-- /winged -->
 
+Every clip must fit the unit: its era, its weapon and its kind of creature. Never a modern boxing, kick or dance preset, even when it passes the checks (D-127). The table lists only presets that may fit, and `make_card.py` and the intake refuse a job whose roles name one of the `never_fitting` patterns in `config/tripo_presets.json`.
+
 <!-- unarmed -->
-Text-to-motion (20), only when step 6 says no attack passes: name the motion, both hands, their height and the stance, for example `<paid clip>`. At most 266 characters.
+Text-to-motion (20), <paid clip when>: name the motion, both hands, their height and the stance, written to fit the unit on the first try, for example `<paid clip>`. At most 266 characters.
 <!-- /unarmed -->
 <!-- armed -->
-The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). `box_01` is an empty-hand punch and does not read as a weapon swing. For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
+The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). The boxing and kick presets never fit a unit (D-127). For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
 
 Text-to-motion (20): `<paid clip>` Change the body words to fit the unit. Name the hand by the character's own side, which is the rig's `<hand>`. At most 266 characters.
 <!-- /armed -->
@@ -157,7 +160,7 @@ First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the
 <!-- armed -->
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/armed/<asset_slug>__body.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /armed -->
-2. Read the `attack:` line. `attack: pass` names the candidates that pass. Go to step 7.
+2. Read the `attack:` line. `attack: pass` names the candidates that pass. Go to step 7. With no free or earlier attack to check (the table names none for this unit), go to 3.
 3. `attack: none passes` (exit code 3): make the text-to-motion clip of step 4 now (20). Write the ledger row first.
 4. Export again in a fresh browser tab (step 5) and run step 6 again.
 5. When the attack budget is spent and still none passes, stop and ask before more credits.

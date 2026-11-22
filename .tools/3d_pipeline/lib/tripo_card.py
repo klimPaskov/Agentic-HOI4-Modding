@@ -71,6 +71,13 @@ def preset_of(spec: Dict[str, Any]) -> Dict[str, Any]:
     return {"name": name, **tripo_presets.get(name)}
 
 
+def paid_prompt(preset: Dict[str, Any], armed: bool) -> str:
+    """The made clip's prompt: the preset's own for a unit with empty hands where it has one (a large creature smashes with its fists)."""
+
+    paid = preset.get("paid_clip") or {}
+    return paid.get("prompt", "") if armed or not paid.get("prompt_unarmed") else paid["prompt_unarmed"]
+
+
 def static_folder(kind: str) -> str:
     """Where `tripo/static_model.py` writes a static model of this kind inside its mod tree."""
 
@@ -191,6 +198,9 @@ def _preset_problems(spec: Dict[str, Any], found: List[str]) -> str | None:
         found.append(f"the preset {name} makes a {preset['model_kind']}: set model_kind to \"{preset['model_kind']}\"")
     if preset["route"] != "static" and not spec.get("unit_type"):
         found.append(f"the preset {name} is a unit: set unit_type (the preset's is \"{preset['unit_type']}\")")
+    unfitting = tripo_presets.unfitting_clips(spec)
+    if unfitting:
+        found.append(tripo_presets.unfitting_message(unfitting))
     return preset["route"]
 
 
@@ -317,9 +327,10 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     sources = [sources] if isinstance(sources, str) else sources
     # The preset's values go first: some of them hold placeholders of their own (the armed attack prompt names <weapon>).
     values = {
-        "<free attacks>": " ".join(clip for clip in (preset.get("clips") or {}).get("attack", []) if " " not in clip),
         "<clip table>": tripo_presets.clip_table(clip_candidates(spec, preset)) if preset["route"] == "tripo_rig" else "",
-        "<paid clip>": (preset.get("paid_clip") or {}).get("prompt", ""),
+        "<paid clip>": paid_prompt(preset, is_armed(spec)),
+        "<paid clip when>": (preset.get("paid_clip") or {}).get("when", "only when step 6 says no attack passes"),
+        "<free attacks>": " ".join(tripo_presets.free_attacks(preset, is_armed(spec))),
         "<picture sentence>": " ".join([preset["picture"].get("sentence_prefix") or DEFAULT_PICTURE_PREFIX, preset["picture"]["pose"]]),
         "<picture rules>": "\n".join(f"- {rule}" for rule in preset["picture"].get("rules") or []),
         "<preset>": preset["name"],
@@ -356,4 +367,5 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     text = keep_blocks(template, spec)
     for key, value in values.items():
         text = text.replace(key, value)
-    return text
+    # A unit with no fitting free attack checks only its earlier made clips (D-127).
+    return text.replace("--attack  <earlier clips>", "--attack <earlier clips>")

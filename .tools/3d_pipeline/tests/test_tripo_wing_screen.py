@@ -51,6 +51,25 @@ class Screen(WingedBiped):
             self.assertEqual((found, numbers), ([], {}), role)
 
 
+class Span(Screen):
+    def span(self, role: str, back: float):
+        anim = pdx_deform.load_anim(self.clip(role, back))
+        return TC.wing_span_findings(self.mesh, {f"unit_{role}": anim})
+
+    def test_a_spread_wing_keeps_the_drawn_span_and_a_wing_swung_far_back_does_not(self) -> None:
+        for role in ("attack", "move"):
+            found, numbers = self.span(role, 0.0)
+            self.assertEqual(found, [], numbers)
+            self.assertAlmostEqual(numbers[f"unit_{role}"]["span_share"], 1.0, places=2)
+            found, numbers = self.span(role, 80.0)
+            self.assertEqual([item["rule"] for item in found], ["TRIPO-WING-SPAN"], numbers)
+
+    def test_folded_wrapped_and_dying_wings_are_not_judged(self) -> None:
+        for role in ("idle", "retreat", "defend", "death"):
+            found, numbers = self.span(role, 80.0)
+            self.assertEqual((found, numbers), ([], {}), role)
+
+
 class Advisory(unittest.TestCase):
     def test_only_the_side_views_of_a_humanoids_attack_and_defend_report(self) -> None:
         class Mesh:  # a humanoid: no quadruped's bones
