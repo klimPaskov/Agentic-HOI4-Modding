@@ -149,6 +149,8 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 
 Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
 
+First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil: use the rig's free retry on the Rig page, export again in a fresh browser tab and check again. Pay for no clip on a rig that fails.
+
 <!-- unarmed -->
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack box_01 <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /unarmed -->
