@@ -202,11 +202,16 @@ class NewJobCommand(unittest.TestCase):
                 self.assertEqual(code, 3)  # the weapon is still missing
                 code = new_job.main(["--jobs-config", str(registry), "--preset", "armed_humanoid", "orc",
                                      *sum((["--set", f"{key}={json.dumps(value)}"] for key, value in WEAPON.items()), [])])
+                self.assertEqual(code, 3)  # the parts the picture must keep are still missing
+                code = new_job.main(["--jobs-config", str(registry), "--preset", "armed_humanoid", "orc",
+                                     "--set", 'required_components=["bearded axe","horned helmet"]'])
                 self.assertEqual(code, 0)
                 job = json.loads(registry.read_text(encoding="utf-8"))["jobs"]["orc"]
                 self.assertEqual(job["tripo"]["posture"], "upright")
                 self.assertEqual(job["tripo"]["weapon"]["grip_options"]["grip"], 0.3)
                 self.assertEqual(job["reference_sources"], SOURCES)
+                self.assertEqual(job["forbidden_additions"], ["text"])
+                self.assertEqual(job["required_components"], ["bearded axe", "horned helmet"])
                 self.assertEqual(new_job.main(["--jobs-config", str(registry), "--preset", "tank", "orc"]), 2)
                 self.assertEqual(new_job.main(["--jobs-config", str(registry), "--preset", "ship", "galley", "--source", "a photo"]), 0)
                 static = json.loads((root / "galley" / "inbox" / "galley.json").read_text(encoding="utf-8"))
