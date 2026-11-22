@@ -93,13 +93,16 @@ How to write `<every detail>`:
 **Rig**: Humanoid, skeleton preset Mixamo, **Auto Rig**.
 <!-- winged -->
 
-**When Tripo says "Not Ready for Auto-Rigging".** Large wings make Tripo's pre-rig check doubt a humanoid rig. It shows this dialog about ten seconds after the press, with **Generate with T-Pose** and **Try Rigging Anyway**. Neither is needed: the picture's pose is the one the route wants, and a T-pose picture means a new model (30). On the devil (2026-11-22) **Try Rigging Anyway** sent the rig request and Tripo refused it (HTTP 406, no charge). A press after reopening the page did nothing, and the next press rigged and charged once. What worked:
+**When Tripo says "Not Ready for Auto-Rigging".** Large wings make Tripo's pre-rig check doubt a humanoid rig. It shows this dialog about ten seconds after the press, with **Generate with T-Pose** and **Try Rigging Anyway**. Do not take the T-pose: the picture's pose is the one the route wants, and a T-pose picture means a new model (30).
 
-1. Read the balance in the header. It must not have dropped. If it dropped, the rig is running: wait and do not press again.
-2. Open the rigging page again by its address, `studio.tripo3d.ai/workspace/rigging/<asset id>`.
+Each press of **Auto Rig** locks the asset on Tripo's side for about 6 minutes, and every further press starts the lock again. A rig request inside the lock is refused (HTTP 406, Tripo's code 12003, no charge), so quick presses and a quick **Try Rigging Anyway** do nothing. That is why the devil's first presses failed. After the lock has run out, **Try Rigging Anyway** does rig: the angel was rigged that way, about 6.5 minutes after its last press, and charged once (2026-11-22). The order:
+
+1. Read the balance in the header. If it has already dropped by 20, the rig is running: wait, and press nothing.
+2. Wait at least 6 minutes after any earlier press of **Auto Rig** or **Try Rigging Anyway** on this asset.
 3. Check that **Auto Rig** reads 20, then press it once.
-4. Wait 30 seconds. The rig runs without the dialog. The page then shows "Rigged models can be used for animation", the balance has dropped by 20 once, and the button reads **Retry 20**.
-5. Do not press **Retry**: it rigs again, charges 20 again and drops every clip applied. A rig that `rig_check.py` fails is repaired with `arm_seat.py` (step 6). Write the ledger's balance after only when the drop shows.
+4. When the dialog shows, leave it open and press nothing for at least 6 minutes.
+5. Press **Try Rigging Anyway** once. The charge of 20 shows at once. The rig itself can take many minutes when Tripo is busy: the asset tile reads "Queuing", and on the angel it took over 20 minutes and its first preset sat in "Retargeting" for over 15. Do not press again while it waits. It is done when the page shows "Rigged models can be used for animation" and the button reads **Retry 20**. On the devil one press after a wait rigged with no dialog at all. The angel's presses never did.
+6. Never press twice in a row. A second press restarts the lock and the wait, and once the lock has passed every press is a new paid rig. Do not press **Retry**: it rigs again, charges 20 again and drops every clip applied. A rig that `rig_check.py` fails is repaired with `arm_seat.py` (step 6). Write the ledger's balance after only when the drop shows.
 <!-- /winged -->
 
 ## 4. Candidate animations (free)
