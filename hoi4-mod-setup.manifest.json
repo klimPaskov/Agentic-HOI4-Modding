@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1d7cdb336035745498db41b12ad9a7199f3b8767",
+  "generated_for_revision": "0b7c86992d4a4344c0beda3c165f51cb30b192a4",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14968,8 +14968,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
-          "sha256": "8479b98d47dfb34118ae9338594e48890a84be1bb07a56541c09851022195e25",
-          "size": 101068
+          "sha256": "aa220070b2c5b33390d629e42a8c925ac35dff65438add9bddc02c0e177b7b94",
+          "size": 101305
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_load.py",
@@ -14983,8 +14983,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_wings.py",
-          "sha256": "6f8f83597516e00eb0104b15d1dc28274f457063a8ce51a5d6296910e775bc8f",
-          "size": 44401
+          "sha256": "d298f2694735cc68614946e870b06b7076a806895d66ebe2d336b24dd6ea21d7",
+          "size": 45459
         },
         {
           "path": ".tools/3d_pipeline/adapter/retarget_root_motion.py",
@@ -16403,8 +16403,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_pose_preview.py",
-          "sha256": "2907fa745886ba56e5e9326f5076776b5498f118413e273fec23ace520c05915",
-          "size": 14389
+          "sha256": "00b85ba0ab6720e7e246238011344c02dbcc1ffaf0cc1da550d1079ca510c175",
+          "size": 16959
         },
         {
           "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
@@ -16678,8 +16678,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
-          "sha256": "bce6a1135b1ab648bbac2fb831fce81b792ab3916e4f46764d86cd52813ee12d",
-          "size": 34608
+          "sha256": "db969442a3e5919a2ef6afbcf4b10568d4244cb796a4c401bd03225d1715cfb2",
+          "size": 35576
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shape.py",
@@ -16943,8 +16943,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "72713722465726a60a8fc3e1f2dbbce5e6e2dc7b34fe102d1216f08101115b16",
-          "size": 142434
+          "sha256": "c52eed430a1fb3b71e16661ede8d84f6babcda917b934bfc33541cf0cd30101a",
+          "size": 147572
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
@@ -16958,8 +16958,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "16880545ccebf26a1a7085009a4e32011fb4a81ce41e1f29d1c7f6aa392c654e",
-          "size": 27923
+          "sha256": "8ec33c3955538d96d32ac25a8c281a0510544f50a21e0be6dee5df3132c30378",
+          "size": 28505
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",

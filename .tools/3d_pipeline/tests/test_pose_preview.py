@@ -220,7 +220,7 @@ class Rerig(unittest.TestCase):
         mesh = pdx_deform.load_mesh(self.out / "beast.mesh")
         left, right = tc.wing_sides(mesh)
         wings = left | right
-        head, _head_neck, _trunk = tc._parts(mesh, wings)
+        head, head_neck, _trunk = tc._parts(mesh, wings)
         named = np.asarray(mesh.bones)[pdx_deform.dominant_bones(mesh)]
         chest = (named == "Chest") & ~wings
         front = tc.front_direction(mesh)
@@ -242,9 +242,47 @@ class Rerig(unittest.TestCase):
         hood = moved(("WingLeft_", "WingRight_"), (0.0, -1.0, 0.0))  # the wings brought forward past the head
         self.assertLess(tc.head_lead_over_wings(mesh, np.stack([rest, hood]), head, wings, front)[0], tc.DEFEND_HEAD_LEAD)
         alone = pdx_deform.skin(mesh, moved(("Head",), (0.0, -1.5, 0.0)))  # the head well clear of everything
-        self.assertGreater(tc.head_findable(mesh, alone, head), tc.DEATH_HEAD_FINDABLE)
+        self.assertGreater(tc.head_findable(mesh, alone, head, head_neck), tc.DEATH_HEAD_FINDABLE)
         buried = pdx_deform.skin(mesh, moved(("Head",), (0.0, 0.9, -0.5)))  # the head pushed into the chest
-        self.assertLess(tc.head_findable(mesh, buried, head), tc.DEATH_HEAD_FINDABLE)
+        self.assertLess(tc.head_findable(mesh, buried, head, head_neck), tc.DEATH_HEAD_FINDABLE)
+        # round 13 leaves the head's own neck out, but a wing laid over the head still loses it
+        covered = pdx_deform.skin(mesh, moved(("WingLeft_",), (-0.5, -0.9, 0.5)))
+        self.assertLess(tc.head_findable(mesh, covered, head, head_neck), tc.DEATH_HEAD_FINDABLE, "a wing over the head hides it")
+
+    def test_the_fold_spike_fails_an_arm_standing_up_over_the_body(self) -> None:
+        """TRIPO-WING-FOLD-SPIKE (round 13): the folded wing's arm raised over the body, as both fresh reviews of run 19 named it, fails."""
+
+        import tripo_checks as tc
+
+        mesh = pdx_deform.load_mesh(self.out / "beast.mesh")
+        left, right = tc.wing_sides(mesh)
+        named = np.asarray(mesh.bones)[pdx_deform.dominant_bones(mesh)].astype(str)
+        arm = np.char.startswith(named, "WingLeft_4") | np.char.startswith(named, "WingRight_4")
+        self.assertTrue(arm.any())
+        rest = np.stack([np.eye(4)] * len(mesh.bones))
+        self.assertLess(tc.fold_spike(mesh, rest[None], arm, ~(left | right))[0], tc.FOLD_SPIKE_MAX)
+        raised = rest.copy()
+        shift = np.eye(4)
+        shift[:3, 3] = (0.0, 0.0, 3.0)  # the arm far up: the screen's up leans back, where the long tail stands highest
+        for index, name in enumerate(mesh.bones):
+            if name.startswith(("WingLeft_4", "WingRight_4")):
+                raised[index] = TO_FILE @ shift @ np.linalg.inv(TO_FILE)
+        self.assertGreater(tc.fold_spike(mesh, raised[None], arm, ~(left | right))[0], tc.FOLD_SPIKE_MAX)
+
+    def test_the_winged_humanoid_screen_and_span_checks_judge_a_quadruped_only_in_its_move(self) -> None:
+        """QUADRUPED_SCOPE (round 13): no TRIPO-WING-SCREEN for a winged quadruped, and TRIPO-WING-SPAN in its move only."""
+
+        import tripo_checks as tc
+
+        clips = [{"name": name, "style": style, "times": [0.0, 0.5]} for name, style in (("idle", "winged_idle"), ("move", "winged_walk"), ("attack", "winged_rear"))]
+        pp.write_folder(self.out, pp.read_landmarks(self.out / "landmarks.json"), self.out, clips)
+        mesh = pdx_deform.load_mesh(self.out / "beast.mesh")
+        anims = {f"beast_{clip['name']}": pdx_deform.load_anim(self.out / f"beast_{clip['name']}.anim") for clip in clips}
+        numbers: dict = {}
+        found, _advisory = tc.wing_checks(mesh, anims, True, False, numbers)
+        self.assertNotIn("wing_screen", numbers)
+        self.assertFalse([item for item in found if item["rule"] == "TRIPO-WING-SCREEN"])
+        self.assertEqual(set(numbers.get("wing_span", {})), {"beast_move"})
 
     def test_a_rerigged_folder_plays_its_clips(self) -> None:
         clips = [{"name": "idle", "style": "winged_idle", "times": [0.0]}, {"name": "attack", "style": "winged_rear", "times": [0.435]}]
