@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8933f51d11da46a0593dffbf5cae528b54f578f6",
+  "generated_for_revision": "cf48c5ba2fb90cead2a94220600abb7413988913",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15283,8 +15283,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/static_kinds.py",
-          "sha256": "870c67f08776d25ebec0f75684f0bee96f9783dc556e4fd4eabb6fd6719c9c94",
-          "size": 119350
+          "sha256": "e9e684d1a343b116431fc67bd11b19c208c09ea5af2665037c4e64efd37f0dde",
+          "size": 119624
         },
         {
           "path": ".tools/3d_pipeline/lib/static_parts.py",
@@ -15295,6 +15295,11 @@
           "path": ".tools/3d_pipeline/lib/static_slab.py",
           "sha256": "e00d3a0f02ae8562bbd45e8511095e2076b2780a55a6ef6e20226c4b3955524d",
           "size": 15606
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/static_yard.py",
+          "sha256": "b4b80c2d3200027e32d42837762b04f9d202bc8b15e5f731e19e2551546b3579",
+          "size": 10272
         },
         {
           "path": ".tools/3d_pipeline/lib/stretch_smooth.py",
@@ -16502,6 +16507,11 @@
           "size": 14509
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_static_geometry_only.py",
+          "sha256": "200682f903fb83bdee6d36e8c913a6926ac2e2fb25fe6396b1d38428d14164bd",
+          "size": 3011
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_static_kinds.py",
           "sha256": "7be67aa9a186f4446b3a83b45f498b39bf59dc97152a29b8198ac3d3bbf25a77",
           "size": 49512
@@ -16515,6 +16525,11 @@
           "path": ".tools/3d_pipeline/tests/test_static_polish.py",
           "sha256": "0c467044b1780e25c56e324ae120ca219beb269ba8fb42d71fa111eb1900c4d3",
           "size": 10007
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_static_yard.py",
+          "sha256": "1b582e46d925172308d2c79c316ecdd4122c2fe4888455a0c3330921c5022e99",
+          "size": 3719
         },
         {
           "path": ".tools/3d_pipeline/tests/test_stretch_smooth.py",
@@ -16908,13 +16923,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model.py",
-          "sha256": "87ce26aeb044cf232f1d469154b7e239f2436776bf60445cb52cabc8ae9cb966",
-          "size": 27914
+          "sha256": "444de274e19e62436f9a45145d119ebc1ec65044492d47bdb93b7bbb58f32423",
+          "size": 29461
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model_blender.py",
-          "sha256": "09a209875709c251aa716b7bf7071fe2c35716c6c9144f0dc58e4409fe553012",
-          "size": 61934
+          "sha256": "e260057b834f54b69e017f1b959f032fd06286fc86e7db40a70f09d3d209a0ac",
+          "size": 62834
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_sheets.py",
