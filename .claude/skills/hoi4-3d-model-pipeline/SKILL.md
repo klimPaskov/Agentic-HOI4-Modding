@@ -39,7 +39,9 @@ Each gate is defined once in the guide:
 - **Generator**: Tripo is the default (`"provider": "tripo"`). It runs in the
   Tripo web app under the user's own sign-in, never through an API, and follows
   the route in `docs/3d-units.md`: a 3D-ready picture (neutral pose, empty
-  hands), model, rig, candidate presets, export, clips picked by measurement,
+  hands), model, rig, candidate presets, export, clips picked by measurement
+  and by their outline on the map camera (`pose_check.py --map`, the job's
+  `tripo.posture`, TRIPO-MAP-POSTURE, -SPREAD, -REACH and -SAME),
   `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Copy the complete
   job entry and the picture review of step 2 in `docs/3d-units.md` (a Tripo
   job needs `init_pilot_jobs.py` for its picture too). An unarmed soldier-sized
