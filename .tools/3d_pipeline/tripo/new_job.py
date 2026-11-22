@@ -9,7 +9,8 @@
 the registry (it creates the file when it does not exist) with the preset's defaults: the unit type and its anatomy, the size reference of
 the type's profile, the credit cap as the budget, the Tripo block, and for a static model the job file `static_model.py` reads. `--set`
 gives what only you know, named as the card names it: `posture=hunched`, `weapon.name="wooden mallet"`, `weapon.hand=LeftHand`,
-`weapon.grip_options.length_ratio=0.62`, `weapon.grip_options.grip=0.3`, `armed=true`, `tail=true`, `size_vs_horse=1.7`. A value that
+`weapon.grip_options.length_ratio=0.62`, `weapon.grip_options.grip=0.3`, `armed=true`, `tail=true`, `size_vs_horse=1.7`, `required_components=["..."]` (the parts the picture must keep) and `forbidden_additions=["..."]`
+(it starts as text and, for an unarmed unit, weapons and clothing). A value that
 reads as JSON (a number, true, false) is stored as one. Then it prints what the entry still lacks, and the next command: `make_card.py`.
 Run it again with more `--set` or `--source` to add to an existing job. `--replace` starts the job again from the preset.
 """
@@ -30,6 +31,8 @@ from lib.paths import resolve_job_root
 
 CONFIG = PIPELINE_ROOT / "config"
 JOB_PREFIX = "hoi4_3d_model_jobs"
+# A private reference is recorded in the job's sources with this mark, and the card says it never goes to Tripo (D-123).
+PRIVATE_PREFIX = "private, never uploaded: "
 
 
 def parse_value(text: str) -> Any:
@@ -80,6 +83,12 @@ def build_entry(preset_name: str, slug: str, sources: List[str], brief: str, ans
     if preset["route"] != "static":
         entry.update(profile_reference(job["unit_type"]))
     entry.update(job)
+    # init_pilot_jobs.py refuses an entry without these two lists, so the job starts with them (the answers can replace either).
+    forbidden = ["text", "clothing"] if "weapon" not in job.get("tripo", {}) else ["text"]
+    if "weapon" not in job.get("tripo", {}):
+        forbidden.insert(1, "weapons")
+    entry.setdefault("forbidden_additions", forbidden)
+    entry.setdefault("required_components", [])
     return entry
 
 
@@ -96,6 +105,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--preset")
     parser.add_argument("slug", nargs="?")
     parser.add_argument("--source", action="append", default=[], help="a reference the picture is made from (repeat for each)")
+    parser.add_argument("--private-source", action="append", default=[], dest="private_sources",
+                        help="a private reference, such as an owner's drawing: recorded, never given to Tripo or any online service (D-123)")
     parser.add_argument("--brief", default="", help="one sentence: what the unit is")
     parser.add_argument("--set", action="append", default=[], dest="answers", help="<key>=<value>, see the module help")
     parser.add_argument("--replace", action="store_true", help="overwrite a job of the same name")
@@ -110,6 +121,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.preset not in data["presets"]:
         parser.error(f"no preset {args.preset!r}. The presets are: {', '.join(data['presets'])}")
     answers = answers_from(args.answers)
+    args.source = [*args.source, *[PRIVATE_PREFIX + item for item in args.private_sources]]
     registry = json.loads(args.jobs_config.read_text(encoding="utf-8")) if args.jobs_config.exists() else {"jobs": {}}
     jobs = registry.setdefault("jobs", {})
     if args.slug in jobs and not args.replace:
@@ -137,6 +149,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         static_job.write_bytes((json.dumps({"name": args.slug, "model_kind": entry["model_kind"]}, indent=2) + "\n").encode("utf-8"))
         print(f"static job file written: {static_job.as_posix()}")
     missing = tripo_card.problems(entry)
+    if entry.get("unit_type") and not entry.get("required_components"):
+        missing.append("required_components is empty: list the parts the picture must keep, one per detail, for example "
+                       "--set 'required_components=[\"long black fur all over\",\"red eyes\",\"open clawed hands\"]'")
     if missing:
         print("Still to add before the card (run this again with --set for each, or edit the entry):")
         for item in missing:

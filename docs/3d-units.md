@@ -37,6 +37,12 @@ Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json
 | `building` | buildings on the map | static, Smart Mesh |
 | `landmark` | landmarks | static, Smart Mesh |
 
+**Which preset.** `tripo/pick_preset.py` works it out from a few plain answers about the picture, by fixed rules, and prints one sentence to confirm with the cost of the card and of the Canvas workflow, then the `new_job.py` command to run after a yes. It refuses when no reference is given (a picture is made from references, never from a prompt alone), and a reference given with `--private` (an owner's drawing) is recorded in the job as never uploaded: it never goes to Tripo or any other online service, and the 3D-ready picture is made from it offline or by the mod's own image lane.
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --kind unit --legs 2 --weapon --hand LeftHand --name "A goblin with an axe" --slug goblin_axe --reference "the mod's art: gfx/units/goblin.png"
+```
+
 Start a job from a preset, then write its card:
 
 ```
@@ -289,6 +295,14 @@ It fills `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` from the job entry and its 
 ### 3. Model (Tripo, 30 credits)
 
 In Tripo Studio open **Model**, **HD Model**, add the picture and generate with the settings on the card. One good picture is enough. Look at the result from all sides before you pay for the rig.
+
+**Check the span before the rig.** On the model's page press **Export** (GLB, free) and run:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/span_check.py <model.glb> <job folder>/refs/original/<picture>.png
+```
+
+It compares the model's width over its height with the picture subject's. TRIPO-SPAN-PICTURE fails when they differ by more than a tenth: wings, arms or a tail came out shorter or longer than drawn, and no later step brings the span back. Make the model again before you pay for the rig. The bat-winged demon's picture and model both read 1.51.
 
 ### 4. Rig (Tripo, 20 credits)
 
@@ -552,7 +566,7 @@ For a winged unit, set `target_height_m` so that the body without the wings is a
 1. TRIPO-WING-SCREEN fails a clip with spread wings (every role but the folded idle and the death) in which a wing's mean direction from its root rises more than 56 degrees above the screen's level in the map view, on either side of the unit, in any judged frame. The bound is 60 degrees: the highest angle fresh reviewers saw at game size without naming the wing, with a twentieth added. Two D-83 reviews of run demon_c passed its attack's wing at 57.5 degrees, and the reviewed move of run tripo-wings full2 measured 51 (exported files). Its box_01 attack, whose wing a fresh review saw collapse upright, measured 89, and run demon_b's attack 88 and defend 76. One reviewed clip does not fit: full2's retreat reached 87 and the review did not name it.
 2. The attack and the defend aim their wings at that camera (`tripo/chain_stage.screen_shares`). For each frame and each wing the stage poses all of the wing's chains at shares of the back swing and the face tilt from 1 down to 0, in steps of 5%. It keeps the largest share under which the chains' mean direction from the root stays at or under 51 degrees, the move's own. Past 0 it also takes away the beat's up-stroke, down to none at -1. When no share gets there, it keeps the one with the lowest angle. The share changes by at most 0.1 a frame. The posed chains carry the flap and the torso's own turn and lean, so both are counted. The wing keeps its full size and shape (D-87, D-88). Only how far it swings back changes, and no texture is touched (D-86).
 3. For a winged humanoid's attack and defend, TRIPO-WING-FRONT and TRIPO-WING-EDGE-ON in the side views only report (they print as advisory). In the map view they still fail the unit, and in every other clip the side views still fail it, so nothing gets worse where it worked.
-4. To check a unit: run `tripo/tripo_checks.py` with the job. TRIPO-WING-SCREEN must be 0. Then look at the hoi4 tiles of the game_size sheets: no wing may stand up as a narrow spike in any clip.
+4. To check a unit: run `tripo/tripo_checks.py` with the job. TRIPO-WING-SCREEN and TRIPO-WING-SPAN must be 0. A wing aimed at the camera must not lose the drawn span: TRIPO-WING-SPAN fails a spread clip (the move, the attack) whose widest frame stays under 85% of the rest pose's width. Then look at the hoi4 tiles of the game_size sheets: no wing may stand up as a narrow spike in any clip.
 
 **Wing motion per role, round e.** A fresh review of run demon_d read the move and the defend as the idle at game size: the fold room left the idle's wings spread, so every clip showed the same spread wings riding the body. The roles now differ by rule (`WING_ROLES` in `lib/tripo_chains.py`):
 
@@ -692,6 +706,7 @@ The flail and the long bow of run d's attack draw no outline finding: its arm fl
 | TRIPO-WING-FRONT | The wings hide more than 5% of the body in the front or map view, or more than 10% of the limbs and head in a side view |
 | TRIPO-WING-EDGE-ON | A beating wing (attack, retreat) shows less than 40% of its face in a side or the map view, as a median over the clip |
 | TRIPO-WING-IDLE-MOVE | At map size the move's wings move less than three times as much as the idle's |
+| TRIPO-WING-SPAN | A clip that spreads the wings (the move, the attack) is never as wide as 85% of the rest pose's width, the drawn span. The passed demon reached 98% in the move and 95% in the attack |
 | TRIPO-GRIP-ENCLOSURE, TRIPO-GRIP-THUMB | The hand does not wrap the haft, or the thumb is on the wrong side (armed units) |
 | TRIPO-WEAPON-HEAD-LEAD | In an attack the weapon's head trails the holding hand at the strike (the hand's fastest frame), so the blow lands butt first. The cosine of the hand-to-head line to the hand's motion, weighted over two frames each side of the strike, must not be negative. Two fresh reviewers failed the orc's chop for landing with the blade at the sky and the butt driven at the ground: it measured -0.42 |
 | TRIPO-BLADE-FACING | The weapon's blade is seen edge-on from the front in the idle pose (armed units). The head is the end of the haft with the larger cross-section (a hand may hold the weapon nearer its head than its butt). A head whose thinnest spread is more than 0.55 of its middle spread has no broad face (a club, a mace) and is not judged, because the thinnest axis of a near-round head is unstable: the round 4 ogre's club (ratio 0.72) read 85, 74 and 87 degrees when turned about its haft by -74, 0 and +74 degrees. The orc's axe blade measures 0.41. The check's numbers carry the ratio as `head_flatness` |

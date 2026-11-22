@@ -94,6 +94,9 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
 - TRIPO-WING-ROOT-STRETCH: in a clip, more than `MAX_WING_ROOT_STRETCH` of the edges where the wings blend into the body stretch or squash.
+- TRIPO-WING-SPAN: in a clip whose wings spread (a role that folds them less than fully, neither wrapped forward nor a death), the unit's
+  widest frame across its lateral axis is under `MIN_WING_SPAN_SHARE` of its width in the rest pose, the drawn span Tripo copied from the
+  picture: the clip shows a smaller wing than the drawing.
 - TRIPO-WING-MIRROR: a winged quadruped's two wings do not mirror each other within `MAX_WING_MIRROR_DEGREES` (every clip but the death), or
   in a beating clip one wing turns through less than `MIN_WING_BEAT_SHARE` of the other's range.
 - TRIPO-WING-FLANK-HANG: in a winged quadruped's move or retreat (between the ease from and back to the folded wings), more than
@@ -190,6 +193,11 @@ MIN_WING_FACE_SHARE = 0.4
 # over the clip, as a share of its median, at least `MIN_MOVE_IDLE_MOTION_RATIO` times the idle's. The round 2 pair the review found
 # almost alike measured 1.6 (idle 0.13, move 0.21); the limit is judgement, about twice that.
 MIN_MOVE_IDLE_MOTION_RATIO = 3.0
+# TRIPO-WING-SPAN: a clip that spreads its wings keeps the drawn span: its widest frame across the unit's lateral axis is at least this share
+# of the rest pose's width (the picture's, which Tripo's model keeps: the demon's picture and model both read 1.51 times as wide as tall).
+# The passed demon_g measured 0.98 in the move and 0.95 in the attack. The bat-winged devil's wings are three times its body, so a swing
+# back that a small wing hides costs it most of its span.
+MIN_WING_SPAN_SHARE = 0.85
 # TRIPO-WING-ROOT-STRETCH: where the wing chains blend into the body (`wing_root_zone`), at most this share of the edges may stretch or squash
 # by the kit's measure in a frame. Set from the reviewed units: fresh reviews saw the round 4 demon's wing roots stretch, its worst clip 5.2%
 # (the attack), and failed every clip of the Tripo dragon's run 3 where the wing meets the body (the membrane pinned to the flank, the
@@ -1899,6 +1907,32 @@ def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List
     return out, numbers
 
 
+def wing_span_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-SPAN: a clip that spreads the wings (a role in `tripo_chains.WING_ROLES` that folds them less than fully, has no forward
+    wrap and is not a death) reaches in its widest frame at least `MIN_WING_SPAN_SHARE` of the rest pose's width across the lateral axis."""
+
+    front = front_direction(mesh)
+    lateral = T.unit(np.cross(np.array([0.0, 1.0, 0.0]), front))
+    rest = float(np.ptp(np.asarray(mesh.positions, float) @ lateral))
+    out, numbers = [], {}
+    if rest <= 0:
+        return out, numbers
+    for clip, anim in anims.items():
+        rule = tripo_chains.WING_ROLES.get(clip_role(clip))
+        if rule is None or "fold_end" in rule or float(rule.get("fold", 0.0)) >= 1.0 or float(rule.get("wrap", 0.0)) > 0:
+            continue
+        spans = [float(np.ptp(posed @ lateral)) for posed in posed_frames(mesh, anim, step)]
+        if not spans:
+            continue
+        widest = int(np.argmax(spans))
+        share = spans[widest] / rest
+        numbers[clip] = {"span_share": round(share, 3), "frame": widest * step}
+        if share < MIN_WING_SPAN_SHARE:
+            out.append(finding("TRIPO-WING-SPAN", clip, f"the wings spread at most {share:.0%} of the drawn span (frame {widest * step}, limit "
+                               f"{MIN_WING_SPAN_SHARE:.0%} of the rest pose's width): the clip shows a smaller wing than the picture", share=round(share, 3), frame=widest * step))
+    return out, numbers
+
+
 # For a winged humanoid's attack and defend the game camera decides (D-83): their wings aim at it (lib/tripo_chains.SCREEN_ROLES), so the
 # side views' cover and edge-on rules only report there. They block in the map view, and in the side views of every other clip.
 SIDE_ADVISORY_RULES = ("TRIPO-WING-FRONT", "TRIPO-WING-EDGE-ON")
@@ -1923,7 +1957,8 @@ def wing_checks(mesh, anims: Dict[str, object], wings: bool, cape: bool, numbers
     found, advisory = side_view_advisory(found, mesh)
     if wings:
         screen, numbers["wing_screen"] = wing_screen_findings(mesh, anims)
-        found += screen
+        span, numbers["wing_span"] = wing_span_findings(mesh, anims)
+        found += screen + span
     return found, advisory
 
 

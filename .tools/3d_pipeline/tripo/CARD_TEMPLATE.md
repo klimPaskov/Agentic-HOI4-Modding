@@ -26,7 +26,7 @@ One card per unit or static model. Write it with `py -3.13 -B .tools/3d_pipeline
 The picture is made from existing references, never from a text prompt alone. Every reference is already in the Sources row and the job's `reference_sources`.
 
 1. Open **Image**, model Nano Banana 2.
-2. Add the subject's own reference and every researched reference from the Sources row.
+2. Add the subject's own reference and every researched reference from the Sources row, except a source marked `private, never uploaded`: an owner's drawing never goes to Tripo or any other online service (D-123). Its 3D-ready picture is made offline or by the mod's own image lane, and only that picture comes here.
 3. Write the redraw instruction below. Fill each part in angle brackets.
 4. Check that the button reads 0, then press it.
 5. Compare the result with the art, detail by detail, before you go on.
@@ -76,13 +76,14 @@ How to write `<every detail>`:
 1. **Model**, **HD Model**. Add the body picture.
 2. Settings under **Geometry & Texture**: Ultra Mesh Quality off, Texture on, 2K, Remove Lighting on, PBR on, Triangle, polycount 20000. AI model H3.1. Generate in Parts off.
 3. The button must read **Generate 30**. Press it once. Turn the model and look at every side.
+4. **Export** the model (GLB, free) and run `py -3.13 -B .tools/3d_pipeline/tripo/span_check.py <model.glb> <picture>`. It must print `pass`. On `fail` (TRIPO-SPAN-PICTURE: wings, arms or tail not as wide as drawn) make the model again and do not rig it.
 <!-- armed -->
-4. For the weapon, start a new asset. Tripo keeps the settings of the last asset but not its picture, so add the weapon picture and read the settings again.
-5. The button must read **Generate 30**. Press it once. Look at every side.
-6. On the weapon's Model page press **Export**: GLB, 2K. Tripo names the file after the model's title (for example `orc character 3d model.glb`). Save it as `<job folder>/armed/<asset_slug>_weapon__model.glb`.
+5. For the weapon, start a new asset. Tripo keeps the settings of the last asset but not its picture, so add the weapon picture and read the settings again.
+6. The button must read **Generate 30**. Press it once. Look at every side.
+7. On the weapon's Model page press **Export**: GLB, 2K. Tripo names the file after the model's title (for example `orc character 3d model.glb`). Save it as `<job folder>/armed/<asset_slug>_weapon__model.glb`.
 <!-- /armed -->
 <!-- shield -->
-7. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
+8. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
 <!-- /shield -->
 <!-- /model -->
 <!-- tripo_rig -->
