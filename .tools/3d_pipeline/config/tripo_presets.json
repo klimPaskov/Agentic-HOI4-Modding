@@ -23,6 +23,10 @@
     "smart_mesh": "Smart Mesh of the picture, 4 variants at the preset's polycount, pick the cleanest (card step 2)",
     "smart_mesh_texture": "Texture on the picked Smart Mesh variant (card step 2)"
   },
+  "never_fitting": {
+    "about": "Clips that never fit a HOI4 unit, whatever its type (D-127): modern sport, dance and everyday moves. A free preset that passes every check is still refused when its name matches one of these patterns (fnmatch, lower case). A preset adds its own with `never_fitting`. A made clip is written to fit on the first try, so its name is checked by the same patterns.",
+    "patterns": ["box_*", "*boxing*", "*jab*", "*uppercut*", "front_kick_*", "*kick*", "*karate*", "*kung_fu*", "*dance*", "*dancing*", "*hip_hop*", "*breakdance*", "*salsa*", "*twerk*", "*moonwalk*", "*celebrat*", "*cheer*", "*selfie*", "*phone*", "*texting*", "*guitar*", "*push_up*", "*pushup*", "*sit_up*", "*yoga*", "*jumping_jack*", "*jog*", "*skate*", "*wave_hello*"]
+  },
   "presets": {
     "humanoid": {
       "label": "Humanoid, empty hands",
@@ -40,12 +44,12 @@
       "clips": {
         "idle": ["idle"],
         "move": ["walk"],
-        "attack": ["box_01", "every earlier clip under AI Animation made for an unarmed unit"],
+        "attack": ["every earlier clip under AI Animation made for this kind of unit"],
         "defend": ["hit_to_stomach", "hit_to_body_01"],
         "retreat": ["flee_01"],
         "death": ["defeat", "defeat_02", "fall"]
       },
-      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`", "prompt": "lunges one huge fast step, both arms thrust straight forward at chest height, then jerks back"},
+      "paid_clip": {"role": "attack", "when": "from the start unless an earlier made clip of this kind of unit fits: the free library has no unarmed attack that fits a soldier of the past, a monster or a beast (D-127)", "prompt": "lunges one huge fast step, both clawed hands thrust straight forward at chest height to grab, then jerks back"},
       "checks": ["clip_check", "pose_check_map", "tripo_checks", "check_unit_files", "review"],
       "expected_credits": [50, 70],
       "cap": 120,
@@ -103,12 +107,12 @@
       "clips": {
         "idle": ["idle"],
         "move": ["walk"],
-        "attack": ["chop", "box_01", "every earlier clip under AI Animation made for this body"],
+        "attack": ["`chop` (with a weapon only)", "every earlier clip under AI Animation made for this body"],
         "defend": ["hit_to_stomach", "hit_to_body_01"],
         "retreat": ["flee_01"],
         "death": ["defeat", "defeat_02", "fall"]
       },
-      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`", "prompt": "A huge heavy brute raises the <weapon> in its own <hand words> high over its head, then smashes it down hard in front of it, torso leaning forward, feet planted."},
+      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`, and from the start for a creature with empty hands: the free library has no blow that fits one (D-127)", "prompt": "A huge heavy brute raises the <weapon> in its own <hand words> high over its head, then smashes it down hard in front of it, torso leaning forward, feet planted.", "prompt_unarmed": "A huge heavy creature raises both fists high over its head, then smashes them down together onto the ground in front of it, crushing, torso leaning forward, feet planted."},
       "checks": ["clip_check", "pose_check_map", "arm_unit", "tripo_checks", "check_unit_files", "review"],
       "expected_credits": [70, 100],
       "cap": 120,
@@ -136,12 +140,12 @@
       "clips": {
         "idle": ["idle"],
         "move": ["walk"],
-        "attack": ["box_01", "every earlier clip under AI Animation made for this body"],
+        "attack": ["every earlier clip under AI Animation made for this body"],
         "defend": ["hit_to_body_01", "hit_to_stomach"],
         "retreat": ["flee_01"],
         "death": ["fall", "defeat", "defeat_02"]
       },
-      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`", "prompt": "lunges one huge fast step, both arms thrust straight forward at chest height, then jerks back"},
+      "paid_clip": {"role": "attack", "when": "from the start unless an earlier made clip of this body fits: the free library has no attack that fits a winged creature (D-127)", "prompt": "lunges forward and rakes down hard with both clawed hands, wings spread wide and beating down once, then draws back"},
       "checks": ["clip_check", "pose_check_map", "tripo_checks", "check_unit_files", "review"],
       "expected_credits": [50, 70],
       "cap": 120,
@@ -223,7 +227,7 @@
       "clips": {
         "idle": ["idle"],
         "move": ["idle"],
-        "attack": ["chop", "box_01"],
+        "attack": ["`chop` (with a sword or axe)", "every earlier clip under AI Animation made for a rider"],
         "defend": ["hit_to_body_01"],
         "retreat": ["idle"],
         "death": ["fall"]

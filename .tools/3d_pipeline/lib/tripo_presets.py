@@ -15,8 +15,9 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 CONFIG = Path(__file__).resolve().parents[1] / "config"
 PRESETS = CONFIG / "tripo_presets.json"
@@ -105,6 +106,7 @@ def _step_problems(preset: Dict[str, Any], data: Dict[str, Any]) -> List[str]:
             found.append(f"no clip candidates for {', '.join(missing)}")
         if "auto_rig" not in steps:
             found.append("a Tripo-rigged type needs the auto_rig step")
+        found += [f"the {role} candidate {clip!r} never fits a unit (D-127)" for role, clip in _unfitting_candidates(preset, data)]
     elif preset.get("clips"):
         found.append(f"a {route} type takes its clips from the kit, so it lists none")
     low, high = (preset.get("expected_credits") or [0, 0])
@@ -115,6 +117,59 @@ def _step_problems(preset: Dict[str, Any], data: Dict[str, Any]) -> List[str]:
     if cost > high:
         found.append(f"its steps cost {cost}, more than the expected {high}")
     return found
+
+
+def _unfitting_candidates(preset: Dict[str, Any], data: Dict[str, Any]) -> List[Tuple[str, str]]:
+    import fnmatch
+
+    patterns = never_fitting(preset, data)
+    found = []
+    for role, clips in (preset.get("clips") or {}).items():
+        for clip in clips:
+            # A candidate is a preset name, or a sentence naming one in backticks (`chop` (with a weapon only)).
+            names = re.findall(r"`([^`]+)`", clip) or ([clip] if " " not in clip else [])
+            found += [(role, name) for name in names if any(fnmatch.fnmatch(name.lower(), pattern) for pattern in patterns)]
+    return found
+
+
+def free_attacks(preset: Dict[str, Any], armed: bool) -> List[str]:
+    """The free library attacks the card's step 6 checks: the preset names in the attack candidates, without one marked for a weapon
+    when the unit has empty hands."""
+
+    found = []
+    for clip in (preset.get("clips") or {}).get("attack") or []:
+        names = re.findall(r"`([^`]+)`", clip) or ([clip] if " " not in clip else [])
+        if names and "with a weapon only" in clip and not armed:
+            continue
+        found += names
+    return found
+
+
+def never_fitting(preset: Optional[Dict[str, Any]] = None, data: Optional[Dict[str, Any]] = None) -> List[str]:
+    """The name patterns of clips that never fit (D-127): the shared list and the preset's own."""
+
+    data = data or load()
+    return [*data.get("never_fitting", {}).get("patterns", []), *((preset or {}).get("never_fitting") or [])]
+
+
+def unfitting_clips(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
+    """The job's role clips whose names match a never-fitting pattern, {role: clip}. Empty when every clip may fit (D-127)."""
+
+    import fnmatch
+
+    data = data or load()
+    name = for_job(spec, data)
+    patterns = never_fitting(data["presets"].get(name) if name else None, data)
+    roles = (spec.get("tripo") or {}).get("roles") or {}
+    return {role: clip for role, clip in roles.items() if isinstance(clip, str)
+            and any(fnmatch.fnmatch(clip.strip().lower().replace(" ", "_"), pattern) for pattern in patterns)}
+
+
+def unfitting_message(found: Dict[str, str]) -> str:
+    listed = ", ".join(f"{role} {clip!r}" for role, clip in found.items())
+    return (f"these clips do not fit the unit (D-127: every clip fits its era, its weapon and its kind of creature, no modern boxing, kicks "
+            f"or dance, even when a free preset passes the checks): {listed}. Pick a fitting clip from the card's table, or make one "
+            f"that fits")
 
 
 def price_of(step: str) -> str:

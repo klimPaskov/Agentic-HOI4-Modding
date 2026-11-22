@@ -168,7 +168,7 @@ class CardFromPreset(unittest.TestCase):
         text = card("large_creature")
         for role in P.get("large_creature")["clips"]:
             self.assertIn(f"| {role} | ", text)
-        self.assertIn("| attack | `chop`, `box_01`", text)
+        self.assertIn("| attack | `chop` (with a weapon only), every earlier clip", text)
 
     def test_the_armed_attack_prompt_names_the_weapon_and_hand(self):
         text = card("armed_humanoid")
@@ -218,6 +218,50 @@ class NewJobCommand(unittest.TestCase):
         printed = "".join(call.args[0] for call in out.write.call_args_list)
         for name in P.names():
             self.assertIn(name, printed)
+
+
+class ClipsFitTheUnit(unittest.TestCase):
+    """D-127: box_01 and front_kick_01 passed the strike checks on the devil, Kror and the rider, and do not fit any of them."""
+
+    def test_no_preset_offers_a_never_fitting_clip(self):
+        for name in P.names():
+            with self.subTest(preset=name):
+                self.assertEqual(P._unfitting_candidates(P.get(name), P.load()), [])
+                self.assertNotIn("box_01", card(name))
+                self.assertNotIn("front_kick", card(name))
+
+    def test_a_preset_listing_box_01_is_refused(self):
+        data = copy.deepcopy(P.load())
+        data["presets"]["humanoid"]["clips"]["attack"] = ["box_01"]
+        self.assertTrue(any("box_01" in item and "D-127" in item for item in P.check(data)))
+
+    def test_a_job_whose_roles_use_boxing_or_kicks_is_refused(self):
+        for clip in ("box_01", "front_kick_01", "Hip_Hop_Dance", "zombie dance party"):
+            with self.subTest(clip=clip):
+                job = entry("humanoid")
+                job["tripo"]["roles"] = {"idle": "idle", "move": "walk", "attack": clip, "defend": "hit_to_body_01", "retreat": "flee_01",
+                                         "death": "fall"}
+                self.assertEqual(P.unfitting_clips(job), {"attack": clip})
+                self.assertTrue(any("D-127" in item for item in C.problems(job)))
+                import tripo_intake
+
+                with self.assertRaises(ValueError):
+                    tripo_intake.refuse_unfitting_clips(job)
+
+    def test_fitting_clips_pass(self):
+        job = entry("armed_humanoid")
+        job["tripo"]["roles"] = {"idle": "idle", "move": "walk", "attack": "A heavy warrior raises the axe", "defend": "hit_to_stomach",
+                                 "retreat": "flee_01", "death": "defeat_02"}
+        self.assertEqual(P.unfitting_clips(job), {})
+
+    def test_step_6_checks_only_fitting_free_attacks(self):
+        self.assertIn("--attack chop <earlier clips>", card("armed_humanoid"))
+        self.assertIn("--attack <earlier clips> --json", card("humanoid"))
+        unarmed = new_job.build_entry("large_creature", "kror", SOURCES, "", {"posture": "hunched", "armed": False})
+        text = C.fill(TEMPLATE, unarmed, "kror", job_folder="jobs/kror", kit_commit="abc")
+        self.assertNotIn("--attack chop", text)
+        self.assertIn("raises both fists high over its head", text)
+        self.assertIn("raises the wooden mallet", card("large_creature"))
 
 
 if __name__ == "__main__":
