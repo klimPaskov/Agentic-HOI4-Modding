@@ -34,7 +34,7 @@
    "upstream": ".tools/audits/validate_scripts_mcp.py"
   },
   ".tools/gfx/gfx.py": {
-   "sha256": "b3ae3f400293d2a463220a4fb7fa1f53b8277034571cf8aab367e70080c5ffd7",
+   "sha256": "3b4c835fc55be5f6827ff8100e74b5069856ae1ee17a4bf90933823b3eb51c0d",
    "upstream": ".tools/gfx/gfx.py"
   },
   ".tools/gfx/requirements.txt": {
@@ -106,7 +106,7 @@
    "upstream": ".tools/tests/test_game_dir.py"
   },
   ".tools/tests/test_gfx_conformance.py": {
-   "sha256": "f8197f26ef235de0c64de0155b881d45b378f24e0764b3e45df95d5ecfd88faf",
+   "sha256": "ee8695569ce4b7c33b7bc95a591e4ff48517406ab77e44c284ef336593049b7c",
    "upstream": ".tools/tests/test_gfx_conformance.py"
   },
   ".tools/tests/test_report_provenance.py": {

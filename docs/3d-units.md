@@ -122,6 +122,14 @@ Make or fix this picture in Tripo's own Image tool (in the Tripo web app, under 
 3. Give the subject's reference and the researched references to the Image tool together, and name in the instruction what each one shows.
 4. List every reference in the job's `reference_sources` (one entry each: a repository path, a link, or a book and page) and in the card's Sources row, before the first paid press. The picture review (`init_pilot_jobs.py --record-visual-review`) refuses a job whose list is empty, and a picture without its sources is not used.
 
+**A picture for a building or a landmark.** The rules for poses and hands below are for units. A static model's picture follows these instead:
+
+- One building, elevated three-quarter view, the whole of it in frame, plain light grey background, soft even light with no cast shadows.
+- **No plate base for a map building.** Vanilla's map buildings stand on the terrain with at most a small yard round them. A big square paved plate sits on the map like a tile. Ask for only a small yard just round the building, with a ragged edge that can sink into the terrain.
+- **Thick bracing.** Thin open members (trestle posts, cross-braces, crane beams, railings, lattice) break in generation into open sheets and torn faces. Ask for every post, brace and beam to be thick and chunky, at least about 1.5 % of the building's longest side (a 0.3 m post on a 20 m hall). Before you pay, look at the picture: redraw it, free, when a brace still looks thinner than that.
+- No smoke, falling water, people or trees. The map draws its own effects and scenery.
+- Keep the mod's own look: when the mod wants a hand-sculpted, hand-painted maquette, ask for that and not for "photographic".
+
 Tripo copies the picture's pose into the rig, so the picture must be ready for rigging:
 
 - One subject, full body, front view, feet visible, on a plain light background.
