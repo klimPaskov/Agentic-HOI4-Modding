@@ -1249,6 +1249,22 @@ def burn_filtered(findings: List[dict], burn: Optional[dict]) -> List[dict]:
     return [item for item in findings if not (item["subject"] == burn["clip"] and item["rule"] in tripo_burn.LYING_RULES)] + burn["findings"]
 
 
+def map_findings(mesh, anims: Dict[str, object], numbers: dict, posture: str = "upright", weapon_bone: str = "",
+                 winged: Optional[bool] = None) -> List[dict]:
+    """A humanoid's map camera rules: TRIPO-MAP-READ and TRIPO-MAP-ALIKE (lib/map_read.py) and the outline rules (lib/map_outline.py, with
+    the idle `posture` the job asks for). Fills `numbers`."""
+
+    findings: List[dict] = []
+    found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
+    findings += found
+    found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
+    findings += found
+    if map_outline.is_humanoid(mesh):
+        found, numbers["map_outline"] = map_outline.outline_findings(mesh, anims, posture, weapon_bone, winged)
+        findings += found
+    return findings
+
+
 def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = (), posture: str = "upright",
                   weapon_bone: str = "", winged: Optional[bool] = None) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
@@ -1274,13 +1290,7 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         findings += found
         found, numbers["gait"] = tripo_loop.loop_findings(mesh, anims)
         findings += found
-        found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
-        findings += found
-        found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
-        findings += found
-        if map_outline.is_humanoid(mesh):
-            found, numbers["map_outline"] = map_outline.outline_findings(mesh, anims, posture, weapon_bone, winged)
-            findings += found
+        findings += map_findings(mesh, anims, numbers, posture, weapon_bone, winged)
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
 
