@@ -317,6 +317,7 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     sources = [sources] if isinstance(sources, str) else sources
     # The preset's values go first: some of them hold placeholders of their own (the armed attack prompt names <weapon>).
     values = {
+        "<free attacks>": " ".join(clip for clip in (preset.get("clips") or {}).get("attack", []) if " " not in clip),
         "<clip table>": tripo_presets.clip_table(clip_candidates(spec, preset)) if preset["route"] == "tripo_rig" else "",
         "<paid clip>": (preset.get("paid_clip") or {}).get("prompt", ""),
         "<picture sentence>": " ".join([preset["picture"].get("sentence_prefix") or DEFAULT_PICTURE_PREFIX, preset["picture"]["pose"]]),

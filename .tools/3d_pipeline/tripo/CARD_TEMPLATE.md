@@ -152,10 +152,10 @@ Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip
 First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. No free step re-places an arm chain, and the Rig page has no free retry: press **Retry** there once (20, the ledger row first, with the reason), apply the clips again, export in a fresh browser tab and check again. Pay for no clip on a rig that fails. When a retry fails too, stop and ask.
 
 <!-- unarmed -->
-1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack box_01 <earlier clips> --json <job folder>/evidence/clips.json`.
+1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /unarmed -->
 <!-- armed -->
-1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/armed/<asset_slug>__body.glb --samples all --attack chop <earlier clips> --json <job folder>/evidence/clips.json`.
+1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/armed/<asset_slug>__body.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /armed -->
 2. Read the `attack:` line. `attack: pass` names the candidates that pass. Go to step 7.
 3. `attack: none passes` (exit code 3): make the text-to-motion clip of step 4 now (20). Write the ledger row first.
