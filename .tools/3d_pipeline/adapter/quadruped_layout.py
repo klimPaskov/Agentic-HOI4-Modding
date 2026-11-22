@@ -261,7 +261,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         muzzle_y = float(np.percentile(head_region[:, 1], 1))
         tip = head_region[head_region[:, 1] < muzzle_y + 0.05 * length]
         muzzle = np.array([cx, muzzle_y, float(np.median(tip[:, 2]))])
-        top = head_region[head_region[:, 2] > np.percentile(head_region[:, 2], 95)]
+        top = head_region[head_region[:, 2] >= np.percentile(head_region[:, 2], 95)]  # >=: a flat-topped head has no point above it
         poll = np.array([cx, float(np.median(top[:, 1])), float(np.percentile(head_region[:, 2], 97))])
         if poll[1] <= muzzle[1] + 0.02 * length:
             poll[1] = muzzle[1] + 0.12 * length
@@ -336,6 +336,76 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
     }
 
 
+# The neck of a winged quadruped (round 11). The withers and the poll place a horse's neck well, but a dragon's neck is a thin column that
+# rises from its shoulders below the withers and ends in a large horned head: on the Tripo dragon the column runs from 0.57 to 0.72 of the
+# height, the withers sit at 0.67 and the poll (the top of the horns) at 0.90. Its two neck bones lay inside the head, the column took the
+# Chest's weights and never bent, and the dead head could lie at most 0.22 of the height ahead of the chest. `detect_neck` measures the
+# column in horizontal slices NECK_SLICE of the height thick, in front of the forelegs (NECK_ZONE of the length behind them at most): the
+# shoulders are the widest slice between the belly and the back, the neck the first run of slices above them no wider than NECK_NARROW of
+# the shoulders, and the head starts where a slice reaches NECK_HEAD_LEAD of the length ahead of the neck's front or grows wider again. The
+# neck bones then run up the column's middle and the head bone from the head's root to the muzzle.
+NECK_SLICE = 0.03
+NECK_ZONE = 0.03
+NECK_NARROW = 0.45
+NECK_HEAD_LEAD = 0.05
+NECK_MIN = 0.05  # a measured neck shorter than this share of the height is not used
+
+
+def detect_neck(points: np.ndarray, landmarks: Dict[str, object]) -> Optional[Dict[str, List[float]]]:
+    """The neck column of a standing quadruped's body (its wings left out): {"base", "middle", "head"} joints above the ground, or None
+    when no thin column rises between the shoulders and the head (a horse's neck reaches forward, and the withers place it)."""
+
+    ground = float(landmarks["ground_offset"])
+    height, length, width = (float(landmarks[key]) for key in ("height", "length", "width"))
+    belly_z, back_z, front_y = (float(landmarks[key]) for key in ("belly_z", "back_z", "front_y"))
+    cx = float(landmarks["centre_x"])
+    p = np.asarray(points, dtype=float) - np.array([0.0, 0.0, ground])
+    zone = p[(p[:, 1] < front_y + NECK_ZONE * length) & (p[:, 2] > belly_z) & (np.abs(p[:, 0] - cx) < 0.5 * width)]
+    if len(zone) < 50:
+        return None
+    step = NECK_SLICE * height
+    rows = []
+    for z in np.arange(belly_z + 0.5 * step, float(zone[:, 2].max()), step):
+        band = zone[np.abs(zone[:, 2] - z) < 0.5 * step]
+        if len(band) < 6:
+            rows.append(None)
+            continue
+        low, high = np.percentile(band[:, 0], [2, 98])
+        rows.append({"z": float(z), "width": float(high - low), "front": float(np.percentile(band[:, 1], 2)), "y": float(np.median(band[:, 1]))})
+    shoulders = [index for index, row in enumerate(rows) if row is not None and row["z"] <= back_z]
+    if not shoulders:
+        return None
+    widest = max(shoulders, key=lambda index: rows[index]["width"])
+    narrow = NECK_NARROW * rows[widest]["width"]
+    base = next((index for index in range(widest + 1, len(rows)) if rows[index] is not None and rows[index]["width"] <= narrow), None)
+    if base is None:
+        return None
+    # a slice with too few points to measure (a coarse mesh) neither ends the column nor starts the head
+    neck_front, head = rows[base]["front"], None
+    for index in range(base + 1, len(rows)):
+        row = rows[index]
+        if row is None:
+            continue
+        if row["width"] > narrow or row["front"] < neck_front - NECK_HEAD_LEAD * length:
+            head = index
+            break
+        neck_front = min(neck_front, row["front"])
+    if head is None or (rows[head]["z"] - rows[base]["z"]) < NECK_MIN * height:
+        return None
+    column = [rows[index] for index in range(base, head) if rows[index] is not None]
+    lower, upper = column[0], column[-1]
+    middle = column[len(column) // 2]
+
+    def joint(row: Dict[str, float], z: float) -> List[float]:
+        return [cx, row["y"], z]
+
+    return {
+        "base": joint(lower, lower["z"] - 0.5 * step),
+        "middle": joint(middle, middle["z"]),
+        "head": joint(upper, rows[head]["z"] - 0.5 * step),
+    }
+
+
 def _t(vector: np.ndarray, ground: float) -> Tuple[float, float, float]:
     return (float(vector[0]), float(vector[1]), float(vector[2] + ground))
 
@@ -356,9 +426,13 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
     add(Bone("Pelvis", _t(v([cx, rear_y, mid_z]), g), _t(v([cx, mid_y, mid_z]), g), "Root"))
     add(Bone("Spine", _t(v([cx, mid_y, mid_z]), g), _t(v([cx, front_y, mid_z + 0.03 * h]), g), "Pelvis"))
     withers = v([cx, front_y - 0.04 * float(landmarks["length"]), back_z - 0.04 * h])
-    add(Bone("Chest", _t(v([cx, front_y, mid_z + 0.03 * h]), g), _t(withers, g), "Spine"))
     poll = np.asarray(landmarks["poll"], dtype=float)
     neck_mid = withers + 0.5 * (poll - withers)
+    neck = landmarks.get("neck")
+    if neck:
+        # a measured neck column (detect_neck): the neck bones run up it from the shoulders and the head turns at its root
+        withers, neck_mid, poll = (np.asarray(neck[key], dtype=float) for key in ("base", "middle", "head"))
+    add(Bone("Chest", _t(v([cx, front_y, mid_z + 0.03 * h]), g), _t(withers, g), "Spine"))
     add(Bone("Neck_01", _t(withers, g), _t(neck_mid, g), "Chest"))
     add(Bone("Neck_02", _t(neck_mid, g), _t(poll, g), "Neck_01"))
     add(Bone("Head", _t(poll, g), _t(np.asarray(landmarks["muzzle"], dtype=float), g), "Neck_02"))
@@ -675,18 +749,59 @@ Rotation = Tuple[Tuple[float, float, float], float]
 WINGED_FRAMES = {"winged_idle": 72, "winged_walk": 32, "winged_rear": 56, "winged_guard": 48, "winged_flee": 64, "winged_collapse": 64}
 WINGED_BASE = {"winged_idle": "quadruped_idle", "winged_walk": "quadruped_walk", "winged_rear": "quadruped_rear",
                "winged_guard": "quadruped_brace", "winged_flee": "quadruped_walk", "winged_collapse": "quadruped_collapse"}
-WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 2}  # gait strides per clip
+# gait strides per clip. Round 9: the retreat runs four strides (three in round 8, whose gait one fresh review of run 17 read as a walk)
+WINGED_CYCLES = {"winged_walk": 1, "winged_flee": 4}
 ROLE_FRAMES.update(WINGED_FRAMES)
 LOOPING |= {"winged_idle", "winged_walk", "winged_flee"}
 # The retreat turns away from the unit's heading and back while it walks with beating wings: FLEE_TURN degrees about the vertical through the
 # body's middle, in over the first FLEE_TURN_IN of the clip and out over its last, so the clip starts and ends at the heading (TRIPO-LOOP-HEADING).
-FLEE_TURN = -20.0
-FLEE_TURN_IN = 0.25
+# Round 4 turns it FLEE_TURN at mid-clip (in over the first half, out over the second) and runs it in three strides where the move takes
+# one in half the frames: with 20 degrees held over the middle half and the move's stride the retreat read as the move played again (both
+# fresh reviews of run 7). At 45 degrees the turned body's near wing hid 23.9% of the legs from the right camera, and a lowered neck went
+# behind the near wing (run 8, TRIPO-WING-FRONT, limit 10%). At 30 degrees the level wings of round 5 hid 18.9% (run 10).
+# Round 9: 45 degrees, held over the middle 0.3 of the clip. At 25 degrees one fresh review of run 17 saw no turn. With the wings held back
+# in the fold the near wing hides the legs no more than TRIPO-WING-FRONT allows (offline on run 17's files).
+FLEE_TURN = -45.0
+FLEE_TURN_IN = 0.35
 # The attack: (degrees drawn back while cocked, degrees forward at the strike) at Neck_01, Neck_02 and Head (positive pitches a raised neck
 # forward), the head's snap down at the bite, and the share of the rear's pitch and lifted forelegs that comes down at the strike.
-STRIKE_NECK = {"Neck_01": (-18.0, 55.0), "Neck_02": (-10.0, 35.0), "Head": (-14.0, 15.0)}
-STRIKE_SNAP = 35.0
-STRIKE_DROP = 0.7
+# The strike drives the neck forward and down, and the rear's pitch and lifted forelegs go fully at the blow (STRIKE_DROP 1): at 55 and 35
+# degrees with 0.7 of the rear kept the head travelled 9% of the body's length forward and both fresh reviews of run 9 saw no strike
+# (TRIPO-ATTACK-REACH now asks for ATTACK_REACH_MIN, offline 0.21).
+# Round 8: the Head entry is not a turn of the head bone but where the head faces (`aim_head`), in degrees below its rest facing (positive
+# down). Up to round 7 it was the head bone's own turn, carried by the neck's 100 degrees: the snout ended 110 degrees past its rest
+# facing, turned back toward the chest (both fresh reviews of run 15 saw the neck coil into a hook with the throat kinked).
+# The head faces its rest facing through the strike and dips only at the bite: aimed 10 degrees lower the snout led by 9.8% of the
+# body's length on run 16 (TRIPO-ATTACK-HEAD-LEAD, at least 10%), at its rest facing 11.3% (offline).
+# Round 9: the neck's root drives forward 75 degrees and its upper half 30, so the head ends below the shoulders and ahead of the forefeet.
+# At 50 and 50 both fresh reviews of run 17 saw the head stay at its rest height with the upper neck curled back. The neck, head and
+# chest deform more (the whole clip's edges past 1.5 times 1.5%, run 17 1.0%), within DEFORM_PASSED_BOUND (D-83).
+# Round 11 (D-107): the neck bends from the shoulders (`detect_neck`), so the same turns lift the bite: at 75 and 30 with a 15 degree snap
+# the snout ended 5.7% of the height above the shoulders (TRIPO-ATTACK-HEAD-LEAD, offline on run 18's files re-rigged). At 90 and 45 with
+# a 30 degree snap it ends 2.2% below them and 34% of the height ahead of the forefeet, the head faces 30 degrees below its rest facing
+# (TRIPO-HEAD-FACING, at most 40) and 1.7% of the edges deform (DEFORM_PASSED_BOUND 2.4%). At 90 and 60 the head, held to its facing
+# against the faster neck, turned 40 degrees in one frame (UNIT-ANIM-SPIN, vanilla's fastest joint 37).
+# Round 12: both fresh reviews of run 19 saw 90 and 45 fold the short neck into the shoulders, a hunch with no strike (TRIPO-NECK-SQUASH,
+# the head 0.75 of its rest distance from the chest). At 75 and 30 with the 30 degree snap the head keeps 0.87 of it, the snout drops 27%
+# of the height on the game camera's screen and ends 1.4% below the shoulders (offline on run 19's files).
+STRIKE_NECK = {"Neck_01": (-10.0, 75.0), "Neck_02": (-5.0, 30.0), "Head": (-10.0, 0.0)}
+STRIKE_SNAP = 30.0
+# The share of the shared rear (`_rear`: the body pitched 32 degrees up about the hind feet, the forelegs lifted) the attack keeps while it
+# gathers. The whole rear lifted the head 8% of the height and drew it back 37% before the blow, and both fresh reviews of run 15 read a rear,
+# not a strike.
+ATTACK_REAR = 0.0
+# Round 9: the attack gathers back and lunges forward over planted feet (`planted_crouch`): the shares of the crouch's full travel, and the
+# hip and knee limits the crouch is solved within.
+# The lunge carries the body 9% of the height forward and 3% down (the gather 0.6 of the defend's 9% back). At a hip turn of 12 degrees
+# a front leg's root stretched 4.4% of its edges (TRIPO-LEG-ROOT-STRETCH, limit 2%).
+ATTACK_GATHER = 0.6
+ATTACK_LUNGE = 1.0
+ATTACK_HIP = 8.0
+ATTACK_BEND = 48.0
+# No neck joint bends more than STRIKE_JOINT_MAX degrees in the strike: at 80 degrees at the neck's root and a 35 degree snap at the head the
+# upper neck kinked behind the head and read as squashed (fresh reviews of run 12). The forward turn is spread over the neck instead.
+STRIKE_JOINT_MAX = 75.0
+STRIKE_DROP = 1.0
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
 FORELEG_LIFT = 0.6
@@ -694,9 +809,57 @@ FORELEG_LIFT = 0.6
 # degrees in its death (TRIPO-DEATH-STIFF-LEGS, at least 25), at 0.8 32 (offline).
 WINGED_DEATH_FOLD = 0.8
 WINGED_LYING_RELAX = 0.6
+# A dead winged quadruped lays its neck forward as it falls (X turns in degrees at full fall, positive forward): its rest neck rises over the
+# back, so a body on its side held the head out beyond the back among the lying wings (both fresh reviews of run 7).
+# Round 7 lays it straighter (75 and 30 degrees, 90 and 50 before): bent further the head curled back beside the chest and the forelegs, and
+# from the game camera 52% of the head and neck showed clear of the rest of the body (62% now, offline, TRIPO-DEATH-HEAD-HIDDEN).
+# Round 11 (D-107): the neck bends from the shoulders (`detect_neck`), and laid 90 and 35 degrees it puts the head ahead of the chest,
+# clear of the body from the game camera (TRIPO-DEATH-HEAD-HIDDEN 0.64 offline on run 18's files re-rigged, 0.52 at 75 and 30). Aimed
+# (WINGED_DEAD_HEAD 20 or -20) the head turned in against the chest or the forelegs (0.03 to 0.26).
+WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 35.0}
+# Z turns (degrees at full fall) that swing the laid neck about the body's up axis toward the side the body lies on. Lying on its side that
+# axis is level, so the turn lowers a neck laid forward to the ground ahead of the forelegs. The drop about the long axis (`neck_drop`)
+# turns a forward neck about itself and barely moves the head.
+WINGED_DEAD_NECK_DOWN = {"Neck_01": 0.0, "Neck_02": 0.0}
+# Where the dead head faces (`aim_head`, degrees below its rest facing at full fall), or None to let the laid neck carry it.
+WINGED_DEAD_HEAD = None
+# A winged death's clock runs ahead early (clip time to this power): the body starts to roll at a tenth of the clip and lies by 0.54 of it.
+# At the shared collapse's pace the first fifth of the clip only bent the legs, which a fresh review of run 9 read as an unchanged hold.
+WINGED_DEATH_EASE = 0.7
+# Offline on the Tripo dragon the torso's height over the lowest point at frame 28 of 64 fell from 0.20 to 0.08 of the height at 1.5, which
+# stretched 2.8% of the leg underneath's root edges in run 8 (TRIPO-LEG-ROOT-STRETCH, limit 2%).
+WINGED_FALL_TUCK = 0.6
+# The roll a winged quadruped's death starts its search from (`roll_limits`) and how far its legs turn out at the hip as it lies. Run 13 laid
+# the Tripo dragon on its belly (roll 0, legs turned out 65 degrees, both wings spread flat to their own sides by `quadruped_wings.lying_pose`,
+# which a fresh review of run 12 asked for): its thick thighs are one skin with the flank, so the turn tore 44.5% of the rear left leg's
+# root edges (TRIPO-LEG-ROOT-STRETCH), and the belly still ended 7% of the height up with two legs hanging (TRIPO-NOT-DOWN,
+# TRIPO-DEATH-LEGS-HANG). The death stays on its side until the rig can lay such legs flat.
+WINGED_DEATH_ROLL = 82.0
+# The side a winged body lies on when its two sides tie in the search (negative: its right side, roll -82). The lying wings, the rest and the
+# checks were found on that side. With the wings in their lying poses the search's near tie flipped to the left side whenever a lying pose
+# changed (offline on run 18's files), and run 17's body laid on its left side failed five checks.
+WINGED_DEATH_SIDE = -1.0
+WINGED_DEATH_SPLAY = 0.0
 LEG_PREFIX_NAMES = ("Front_", "Rear_")
-# The defend crouches the neck forward and low under the raised wings (degrees at Neck_01, Neck_02 and Head, positive forward and down).
-GUARD_NECK_LOW = {"Neck_01": -60.0, "Neck_02": 90.0, "Head": 45.0}
+# The defend is a braced recoil (round 7). Degrees at Neck_01, Neck_02 and Head, positive forward and down: the neck's root draws back, its
+# upper half bends forward and the head turns up again, so the neck makes an S and the head ends low and level, facing the enemy. Round 6
+# crouched under wings mantled out to each side with the head turned down (40 degrees at the head, 90 from level in all).
+# Round 8: the neck arcs forward and down from the shoulders and the head turns up at its end to face the enemy level, an S that carries the
+# head low. The Head entry is the head's facing below its rest facing (`aim_head`). Round 7 held the neck's root upright and bent its upper
+# half 90 degrees forward, and its head turn of -50 was a turn of the head bone, carried by the neck's 80: the head pointed 86 degrees
+# below level, straight down, 0.77 of the height up (0.90 at rest, the withers 0.71), and both fresh reviews of run 15 saw a tall S with
+# the head high.
+# Round 9: the neck's root draws back 30 degrees and its upper half bends forward 100, so the head is drawn back over the chest (8% of the
+# height behind its rest place) and faces the enemy, and the body sinks further (the hips may turn 12 degrees, 5% of the height down at
+# the shoulders). One fresh review of run 17 read the idle, the defend and the retreat as one silhouette from the game camera.
+# Round 12: with the neck bending from the shoulders (`detect_neck`) the drawn-back S held the head behind the raised wings' front, and both
+# fresh reviews of run 19 saw them box it in like a hood (TRIPO-DEFEND-HEAD-BOXED, 3.8% of the height behind). The neck now leans forward
+# from the shoulders (35 and 40 degrees) and the head faces 15 degrees above its rest facing: 5.8% ahead of the wings, the head 0.94 of
+# its rest distance from the chest, and the clip still reads 0.30 against the idle (TRIPO-GAME-READ, offline on run 19's files).
+GUARD_NECK_S = {"Neck_01": 35.0, "Neck_02": 40.0, "Head": -15.0}
+GUARD_HIP = 12.0  # degrees the hips and shoulders may turn in the crouch (`planted_crouch` says why)
+GUARD_BEND = 60.0  # degrees the joint below them may bend
+CROUCH_MATCH = 0.005  # of the height: how near the hind feet's travel must come to the forefeet's before it is matched exactly
 
 
 def frame_count(style: str) -> int:
@@ -707,7 +870,7 @@ def frame_count(style: str) -> int:
 # measured by its lowest point over the lying torso's lowest, as a share of the height:
 # - legs: the legs underneath bend toward the ground by the largest of LEG_DROP_SHARES of the death's leg drop (DEATH_LEG_DROP) that keeps them
 #   no lower than the torso (DOWN_TOLERANCE), so the body rests on its torso, not on a hoof;
-# - wings: the wing underneath lifts from the slope `quadruped_wings.lying_pose` gives it by the least of WING_LIFTS (degrees) that keeps its
+# - wings: the folded wing underneath tips up from where `quadruped_wings.lying_pose` lays it by the least of WING_LIFTS (degrees) that keeps its
 #   far bones (the last of each chain: a lift turns about the root, so the bones by the root go where the body goes) no lower than the torso,
 #   so a wing never holds the body up;
 # - tail: it turns at its root (degrees, positive lifts it) by the one of TAIL_LIFTS that brings its lowest point nearest the torso's without
@@ -759,29 +922,52 @@ def _winged_time(style: str, frame: float) -> Tuple[float, float]:
     return t, t * base_total if base in LOOPING else t * (base_total - 1)
 
 
-def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str]) -> None:
-    """The attack strikes (`quadruped_wings.attack_phases`): the body rears and the neck draws back, then the forequarters come down as
-    the neck and head lunge forward and the head snaps down, and it recovers. The rear's pitch and the lifted forelegs ease off by
-    STRIKE_DROP of themselves at the strike, so the blow lands forward and the forelegs keep their rest shape. The tail keeps its world
-    pitch while the body rears about the hind feet (else it sinks and the feet lift off). A fresh review of run 3 read a rear with a slow
-    lunge as a threat display, not an attack."""
+def _winged_rear(pose: Dict[str, List[Rotation]], t: float, names: set, tails: List[str], landmarks: Dict[str, object]) -> None:
+    """The attack strikes (`quadruped_wings.attack_phases`): the body gathers back over planted feet as the neck draws back, then lunges
+    forward and down over them (`planted_crouch`, forward) while the neck drives forward and down and the head, aimed (`aim_head`), snaps
+    down at the bite, and it recovers. The shared rear's pitch and lifted forelegs are kept only ATTACK_REAR of themselves while it gathers.
+    Round 9: the head's travel must be the clip's largest change from the game camera, so the body carries it forward and down."""
 
     import quadruped_wings as qw
 
     cock, strike, snap = qw.attack_phases(t)
-    keep = 1.0 - STRIKE_DROP * strike
+    keep = (1.0 - STRIKE_DROP * strike) * ATTACK_REAR
     pose["__root_pitch__"] = [(axis, degrees * keep) for axis, degrees in pose.get("__root_pitch__", [])]
-    for side in ("Left", "Right"):
-        for segment in LEG_SEGMENTS:
-            name = leg_name("Front", side, segment)
-            if name in pose:
-                pose[name] = [(axis, degrees * keep * FORELEG_LIFT) for axis, degrees in pose[name]]
+    gather = planted_crouch(landmarks, ATTACK_HIP, ATTACK_BEND) if ATTACK_GATHER > 0 else {}
+    lunge = planted_crouch(landmarks, ATTACK_HIP, ATTACK_BEND, forward=True) if ATTACK_LUNGE > 0 else {}
+    if gather or lunge:
+        a, b = ATTACK_GATHER * cock, ATTACK_LUNGE * strike
+        for end, side in LEGS:
+            for segment in LEG_SEGMENTS:
+                pose.pop(leg_name(end, side, segment), None)
+            upper = a * (gather or {}).get(end, (0.0, 0.0))[0] + b * (lunge or {}).get(end, (0.0, 0.0))[0]
+            lower = a * (gather or {}).get(end, (0.0, 0.0))[1] + b * (lunge or {}).get(end, (0.0, 0.0))[1]
+            pose[leg_name(end, side, "Upper")] = [(X_AXIS, upper)]
+            pose[leg_name(end, side, "Lower")] = [(X_AXIS, lower)]
+            pose[leg_name(end, side, "Cannon")] = [(X_AXIS, -(upper + lower))]
+        shift = a * (gather or {}).get("travel", (0.0, 0.0))[0] + b * (lunge or {}).get("travel", (0.0, 0.0))[0]
+        sink = a * (gather or {}).get("travel", (0.0, 0.0))[1] + b * (lunge or {}).get("travel", (0.0, 0.0))[1]
+        pose["__root_shift__"] = [(Y_AXIS, shift)]
+        if "Tail_02" in names:
+            lift = tail_lift(landmarks, sink)
+            pose["Tail_01"] = [(X_AXIS, lift)]
+            pose["Tail_02"] = [(X_AXIS, -lift)]
+    else:
+        for side in ("Left", "Right"):
+            for segment in LEG_SEGMENTS:
+                name = leg_name("Front", side, segment)
+                if name in pose:
+                    pose[name] = [(axis, degrees * keep * FORELEG_LIFT) for axis, degrees in pose[name]]
+        _hip_to_knee(pose)
     for name, (back, forward) in STRIKE_NECK.items():
-        if name in names:
-            turn = back * cock + forward * strike + (STRIKE_SNAP * snap if name == "Head" else 0.0)
+        if name in names and name != "Head":
+            turn = back * cock + forward * strike
+            turn = max(-STRIKE_JOINT_MAX, min(STRIKE_JOINT_MAX, turn))
             pose[name] = [(X_AXIS, turn)]
+    back, forward = STRIKE_NECK.get("Head", (0.0, 0.0))
+    aim_head(pose, names, back * cock + forward * strike + STRIKE_SNAP * snap)
     pitch = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
-    if tails:
+    if tails and not (gather or lunge):
         pose[tails[0]] = [(X_AXIS, -pitch)]
 
 
@@ -803,31 +989,178 @@ def _winged_death(pose: Dict[str, List[Rotation]], t: float, names: set, tails: 
         for name in tails[1:]:
             pose[name] = [(X_AXIS, -0.5 * float(death.get("tail_lift", 0.0)) * fall)]
     lower = "Right" if roll < 0 else "Left"
-    share = float(death.get("leg_drop", 1.0))
+    # the legs underneath swing in under the body while it falls (WINGED_FALL_TUCK of the drop's turn, the other way, at mid-fall) and back
+    # to `leg_drop` as it lies: held out they carried the tipping body on their hooves, and it hung above the ground with the forelegs
+    # dangling (both fresh reviews of run 7, frames 28 to 31)
+    share = float(death.get("leg_drop", 1.0)) - WINGED_FALL_TUCK * math.sin(math.pi * fall)
     for end in ("Front", "Rear"):
         for segment in LEG_SEGMENTS:
             name = leg_name(end, lower, segment)
             if name in pose:
                 pose[name] = [(axis, degrees * share) if tuple(axis) == Y_AXIS else (axis, degrees) for axis, degrees in pose[name]]
-    drop = math.copysign(float(death.get("neck_drop", 0.0)), roll) * fall
+    _lay_dead_neck(pose, names, float(death.get("neck_drop", 0.0)), roll, fall)
+    for end in ("Front", "Rear"):
+        for side, outward in (("Left", -1.0), ("Right", 1.0)):
+            name = leg_name(end, side, "Upper")
+            if name in pose:
+                pose[name] = pose[name] + [(Y_AXIS, outward * WINGED_DEATH_SPLAY * fall)]
+
+
+def _lay_dead_neck(pose: Dict[str, List[Rotation]], names: set, neck_drop: float, roll: float, fall: float) -> None:
+    """A dead winged body's neck: the rest's drop toward the ground against the roll (`neck_drop`), the forward lay (WINGED_DEAD_NECK) and
+    the lowering turn toward the side it lies on (WINGED_DEAD_NECK_DOWN), each as far as the fall has gone."""
+
+    drop = math.copysign(neck_drop, roll) * fall
     for name, part in (("Neck_01", 0.6), ("Neck_02", 0.4)):
         if name in names:
             pose[name] = pose.get(name, []) + [(Y_AXIS, part * drop)]
+    for name, degrees in WINGED_DEAD_NECK.items():
+        if name in names:
+            pose[name] = pose.get(name, []) + [(X_AXIS, degrees * fall)]
+    for name, degrees in WINGED_DEAD_NECK_DOWN.items():
+        if name in names and degrees:
+            pose[name] = pose.get(name, []) + [(Z_AXIS, math.copysign(1.0, roll) * degrees * fall)]
+    if WINGED_DEAD_HEAD is not None:
+        aim_head(pose, names, WINGED_DEAD_HEAD * fall)
 
 
-def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None:
-    """The wings and the neck carry the guard: the legs stand planted (the brace's step back and leaning legs stretched the skin where the
-    dragon's heavy shoulders and thighs meet the torso, 2.2% of the edges in the offline play), and the neck crouches low."""
+def _foot_travel(joints: Dict[str, np.ndarray], upper: float, lower: float) -> np.ndarray:
+    """Where a leg's foot goes under the body (back, up) when its Upper and Lower bones turn `upper` and `lower` degrees about X. The Cannon
+    turns back by both, so the foot below it (the cannon and the hoof: a paw rests on both) keeps its attitude and travels as the
+    cannon's joint does."""
+
+    point = np.asarray(joints["middle"], dtype=float)[1:]
+    for pivot, degrees in ((joints["upper"], lower), (joints["top"], upper)):
+        centre = np.asarray(pivot, dtype=float)[1:]
+        angle = math.radians(degrees)
+        y, z = point - centre
+        point = centre + np.array([y * math.cos(angle) - z * math.sin(angle), y * math.sin(angle) + z * math.cos(angle)])
+    return point - np.asarray(joints["middle"], dtype=float)[1:]
+
+
+_CROUCHES: Dict[tuple, Dict[str, Tuple[float, float]]] = {}
+
+
+def planted_crouch(landmarks: Dict[str, object], hip: float, bend: float, forward: bool = False) -> Dict[str, Tuple[float, float]]:
+    """A crouch that shifts the body back and sinks it over planted feet: per leg end the X turns (Upper, Lower), and under "travel" how far
+    the body shifts back and sinks (model units). The hip and shoulder turn at most `hip` degrees and the joint below at most `bend`, and
+    the Cannon turns back by both so the foot stays flat (`_foot_travel`). Of all such bends of the forelegs (whole degrees) for which the
+    hind legs have a bend that moves their feet the same way (within CROUCH_MATCH of the height, then matched exactly by a Newton step
+    or two), the one with the largest shift back plus sink. Empty when the legs have none.
+
+    The limits are the skin's: the Tripo dragon's thick thighs are one skin with the flank, and a hip turned 12 degrees stretched 1.6% of
+    a leg root's edges, 16 degrees 7.8% and the 39 degrees of an unbounded crouch 41.8% (offline, TRIPO-LEG-ROOT-STRETCH, limit 2%).
+    Bent at the Cannon instead of the hip, its paws tipped onto their heels and the unit was set up on them, every hoof in the air.
+
+    `forward` asks for a lunge instead: the body shifts forward and sinks (the attack's blow), and "travel" holds a negative shift back."""
+
+    legs = landmarks.get("legs") or {}
+    key = (round(hip, 3), round(bend, 3), forward, tuple((name, tuple(np.round(np.asarray(joints[joint], dtype=float), 5))) for name, joints in sorted(legs.items()) for joint in ("top", "upper", "middle")))
+    if key in _CROUCHES:
+        return _CROUCHES[key]
+    ends = {end: [joints for name, joints in legs.items() if name.startswith(end)] for end in ("Front", "Rear")}
+    out: Dict[str, Tuple[float, float]] = {}
+    if ends["Front"] and ends["Rear"]:
+        def travel(end: str, upper: float, lower: float) -> np.ndarray:
+            return np.mean([_foot_travel(joints, upper, lower) for joints in ends[end]], axis=0)
+
+        turns = [(float(u), float(lower)) for u in np.arange(-math.floor(hip), math.floor(hip) + 1) for lower in np.arange(-math.floor(bend), math.floor(bend) + 1)]
+        rear = np.array([travel("Rear", u, lower) for u, lower in turns])
+        height = float(landmarks["height"])
+        best = None
+        for u, lower in turns:
+            moved = travel("Front", u, lower)
+            back, sink = -float(moved[0]), float(moved[1])
+            way = -back if forward else back
+            if way <= 0 or sink <= 0 or (best is not None and way + sink <= best[0]):
+                continue
+            miss = np.linalg.norm(rear - moved, axis=1)
+            nearest = int(np.argmin(miss))
+            if miss[nearest] > CROUCH_MATCH * height:
+                continue
+            values = np.array(turns[nearest])
+            for _ in range(4):
+                base = travel("Rear", *values) - moved
+                jacobian = np.stack([(travel("Rear", *(values + step)) - moved - base) / 1e-3 for step in (np.array([1e-3, 0.0]), np.array([0.0, 1e-3]))], axis=1)
+                if abs(float(np.linalg.det(jacobian))) < 1e-12:
+                    break
+                values = values - np.clip(np.linalg.solve(jacobian, base), -2.0, 2.0)
+            if abs(values[0]) <= hip + 1.0 and abs(values[1]) <= bend + 2.0 and float(np.abs(travel("Rear", *values) - moved).max()) < 1e-3 * height:
+                best = (way + sink, {"Front": (u, lower), "Rear": (float(values[0]), float(values[1])), "travel": (back, sink)})
+        if best is not None:
+            out = best[1]
+    _CROUCHES[key] = out
+    return out
+
+
+def tail_lift(landmarks: Dict[str, object], sink: float) -> float:
+    """Degrees the tail's first bone turns up at its root so its far joint rises `sink` (model units) against the body. A tail that lies
+    on the ground is carried by the body: when the body sinks the tail would go under the ground and the whole unit is set back up on it,
+    its hooves in the air (offline the Tripo dragon's defend hung them 2% to 5% of the height up). The first bone turns up by this and
+    the second back down by as much, so the rest of the tail keeps lying level where it lay."""
+
+    tail = landmarks.get("tail")
+    if not tail or sink <= 0:
+        return 0.0
+    y, z = (np.asarray(tail[1], dtype=float) - np.asarray(tail[0], dtype=float))[1:]
+    low, high = 0.0, 80.0
+    for _ in range(30):
+        middle = 0.5 * (low + high)
+        angle = math.radians(middle)
+        if y * math.sin(angle) + z * math.cos(angle) - z < sink:
+            low = middle
+        else:
+            high = middle
+    return 0.5 * (low + high)
+
+
+def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set, landmarks: Dict[str, object]) -> None:
+    """The defend is a braced recoil: the body shifts back and sinks over planted feet as far as the legs allow (`planted_crouch` within
+    GUARD_HIP and GUARD_BEND), the tail lifts by the sink so it keeps lying on the ground, and the neck draws back in an S with the head
+    low and level, facing the enemy (GUARD_NECK_S)."""
 
     envelope = _brace_envelope(t)
-    pose.pop("__root_shift__", None)
     pose.pop("__root_pitch__", None)
+    pose.pop("__root_shift__", None)
+    crouch = planted_crouch(landmarks, GUARD_HIP, GUARD_BEND)
     for end, side in LEGS:
         for segment in LEG_SEGMENTS:
             pose.pop(leg_name(end, side, segment), None)
-    for name, degrees in GUARD_NECK_LOW.items():
-        if name in names:
+        if crouch:
+            upper, lower = (value * envelope for value in crouch[end])
+            pose[leg_name(end, side, "Upper")] = [(X_AXIS, upper)]
+            pose[leg_name(end, side, "Lower")] = [(X_AXIS, lower)]
+            pose[leg_name(end, side, "Cannon")] = [(X_AXIS, -(upper + lower))]
+    if crouch:
+        back, sink = crouch["travel"]
+        pose["__root_shift__"] = [(Y_AXIS, back * envelope)]
+        if "Tail_02" in names:
+            lift = tail_lift(landmarks, sink * envelope)
+            pose["Tail_01"] = pose.get("Tail_01", []) + [(X_AXIS, lift)]
+            pose["Tail_02"] = pose.get("Tail_02", []) + [(X_AXIS, -lift)]
+    for name, degrees in GUARD_NECK_S.items():
+        if name in names and name != "Head":
             pose[name] = [(X_AXIS, degrees * envelope)]
+    aim_head(pose, names, GUARD_NECK_S.get("Head", 0.0) * envelope)
+
+
+# The bones whose turns about the body's cross axis carry the head (all about the armature's X, so their pitches add).
+HEAD_CARRIERS = ("Pelvis", "Spine", "Chest", "Neck_01", "Neck_02")
+
+
+def aim_head(pose: Dict[str, List[Rotation]], names: set, facing: float) -> None:
+    """Set the head's turn about the cross axis so it faces `facing` degrees below its rest facing (positive down), whatever the body and
+    the neck do: the pitches of the root and of every bone that carries the head add to the head's own turn, so the head takes the
+    difference. Its other turns are kept. A head turn written as the bone's own turn rode on the neck's: in round 7 the strike's 100 degrees
+    of neck turned the snout back toward the chest."""
+
+    if "Head" not in names:
+        return
+    carried = sum(degrees for axis, degrees in pose.get("__root_pitch__", []) if tuple(axis) == X_AXIS)
+    for name in HEAD_CARRIERS:
+        carried += sum(degrees for axis, degrees in pose.get(name, []) if tuple(axis) == X_AXIS)
+    others = [(axis, degrees) for axis, degrees in pose.get("Head", []) if tuple(axis) != X_AXIS]
+    pose["Head"] = [(X_AXIS, facing - carried)] + others
 
 
 # A winged quadruped's legs swing from the hip and shoulder only WINGED_HIP_SHARE of the stride, reach or fold, and the joint below takes the
@@ -835,6 +1168,9 @@ def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None
 # between leg and torso is a short seam: at the full turn, 12% to 24% of each leg root's edges stretched in run 2 of the Tripo dragon
 # (TRIPO-LEG-ROOT-STRETCH, limit 2%).
 WINGED_HIP_SHARE = 0.4
+# A winged quadruped's gait swings its legs WINGED_STRIDE times the shared walk's: under the wings the move read as the wings alone moving
+# from the game camera (a fresh review of run 12; the feet travelled 0.24 of the body's length there, offline).
+WINGED_STRIDE = 1.3
 
 
 def _hip_to_knee(pose: Dict[str, List[Rotation]]) -> None:
@@ -855,10 +1191,16 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
     import quadruped_wings as qw
 
     t, base_frame = _winged_time(style, frame)
+    if style == "winged_collapse":
+        t = t**WINGED_DEATH_EASE
+        base_frame = t * (frame_count(WINGED_BASE[style]) - 1)
     pose = dict(pose_at(WINGED_BASE[style], base_frame, layout, ears=ears))
     names = set(layout.names())
     tails = [name for name in ("Tail_01", "Tail_02", "Tail_03") if name in names]
     if style in ("winged_walk", "winged_flee"):
+        for name in list(pose):
+            if name.startswith(LEG_PREFIX_NAMES):
+                pose[name] = [(axis, degrees * WINGED_STRIDE) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[name]]
         cycles = WINGED_CYCLES.get(style, 1)
         for index, name in enumerate(tails):
             pose[name] = [(Z_AXIS, (8.0 - 2.0 * index) * math.sin(2 * math.pi * t * cycles - 0.6 * index))]
@@ -866,12 +1208,14 @@ def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[s
         turn = _smooth(min(1.0, t / FLEE_TURN_IN)) * (1 - _smooth(max(0.0, (t - 1 + FLEE_TURN_IN) / FLEE_TURN_IN)))
         pose["__root_turn__"] = [(Z_AXIS, FLEE_TURN * turn)]
     elif style == "winged_rear":
-        _winged_rear(pose, t, names, tails)
+        _winged_rear(pose, t, names, tails, layout.landmarks)
     elif style == "winged_collapse":
         _winged_death(pose, t, names, tails, layout.landmarks.get("death") or {})
     elif style == "winged_guard":
-        _winged_guard(pose, t, names)
-    if style != "winged_collapse":  # a death folds its legs whole (TRIPO-DEATH-STIFF-LEGS read 23 degrees with the hip's turn moved down)
+        _winged_guard(pose, t, names, layout.landmarks)
+    # a death folds its legs whole (TRIPO-DEATH-STIFF-LEGS read 23 degrees with the hip's turn moved down), and a defend's crouch is solved
+    # for the hip and the joint below it as they stand (`planted_crouch`)
+    if style not in ("winged_collapse", "winged_guard", "winged_rear"):
         _hip_to_knee(pose)
     yaw = sum(degrees for axis, degrees in pose.get("__root_turn__", []) if tuple(axis) == Z_AXIS)
     pose.update(qw.role_rows(style, t, layout, yaw))
@@ -1171,6 +1515,11 @@ def roll_limits(landmarks: Dict[str, object]) -> Tuple[float, float]:
     load (quadruped_load.roll_limit, `roll_limit` and `roll_limit_other_side` in the landmarks' `load`)."""
 
     load = landmarks.get("load") or {}
+    if landmarks.get("wings"):
+        # the tie rule: a winged body's side is searched with its wings in the idle's fold (`quadruped_wings.role_rows`), where the Tripo
+        # dragon's two sides tie (both lie on the torso at 82 degrees), and the first side wins a tie: WINGED_DEATH_SIDE's
+        first = math.copysign(WINGED_DEATH_ROLL, WINGED_DEATH_SIDE)
+        return first, -first
     if not load:
         return COLLAPSE_ROLL, -COLLAPSE_ROLL
     first = float(load.get("roll_limit", COLLAPSE_ROLL))
