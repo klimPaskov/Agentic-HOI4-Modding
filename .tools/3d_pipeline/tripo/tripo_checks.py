@@ -94,8 +94,31 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
   under `MIN_WING_FACE_SHARE`: seen edge-on it reads as a spike.
 - TRIPO-WING-IDLE-MOVE: at map size the move's wings move less than `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's.
 - TRIPO-WING-ROOT-STRETCH: in a clip, more than `MAX_WING_ROOT_STRETCH` of the edges where the wings blend into the body stretch or squash.
+- TRIPO-WING-SPAN: in a clip whose wings spread (a role that folds them less than fully, neither wrapped forward nor a death), the unit's
+  widest frame across its lateral axis is under `MIN_WING_SPAN_SHARE` of its width in the rest pose, the drawn span Tripo copied from the
+  picture: the clip shows a smaller wing than the drawing.
 - TRIPO-WING-MIRROR: a winged quadruped's two wings do not mirror each other within `MAX_WING_MIRROR_DEGREES` (every clip but the death), or
   in a beating clip one wing turns through less than `MIN_WING_BEAT_SHARE` of the other's range.
+- TRIPO-WING-FLANK-HANG: in a winged quadruped's move or retreat (between the ease from and back to the folded wings), more than
+  `MAX_WING_FLANK_HANG` of a wing hangs over the flank below the lowest point where it joins the body (`wing_flank_shares`).
+- TRIPO-WING-SLIVER: from the game camera a winged quadruped's beating wing keeps less than `MIN_WING_SLIVER` of its flat shape.
+- TRIPO-WING-HEAD-FRONT: in a clip's first frame a winged quadruped's wings stand behind more than `MAX_HEAD_FRONT_SHARE` of the head
+  seen from the front.
+- TRIPO-ATTACK-REACH: a winged quadruped's attack drives the head forward less than `ATTACK_REACH_MIN` of the body's length.
+- TRIPO-NECK-SQUASH: a winged quadruped's head comes nearer its chest than `NECK_SQUASH_MIN` of the rest distance in some frame of a clip
+  that is not the death: the neck folds into the shoulders.
+- TRIPO-DEFEND-HEAD-BOXED: a winged quadruped's defend holds its head behind the front of its wings in some frame: the wings box it in.
+- TRIPO-DEATH-HEAD-LOST: in some frame of its end, a winged quadruped's dead head stands clear of every other part, by a margin of `DEATH_HEAD_MARGIN` screen cells,
+  for less than `DEATH_HEAD_FINDABLE` of its cells from the game camera or its mirror.
+- TRIPO-WING-CRUSH: a winged quadruped's membrane has more than `MAX_WING_CRUSH` of its edges squashed or stretched in some frame.
+- TRIPO-WING-THROUGH-BODY: more than `MAX_WING_BELOW_SHARE` of a winged quadruped's wing points hang below the belly in some frame.
+- TRIPO-DEATH-WING-HIGH and TRIPO-DEATH-HEAD-HIDDEN: a winged quadruped's dead wing stands over the body, or its head and neck are lost
+  against the rest of the body from the game camera.
+- TRIPO-DEATH-WING-TENT: from the game camera a winged quadruped's dead wings stand above the lying torso's outline as a tent or a sail
+  (`death_wing_tent`), however little higher than the torso they are.
+- TRIPO-STEP-READ: a winged quadruped's hooves travel less than `MIN_STEP_READ` of the body's length from the game camera.
+- TRIPO-ATTACK-DEFEND-ALIKE: at the attack's farthest reach and the defend's middle the smaller wing silhouette from the map camera is
+  more than `MAX_ATTACK_DEFEND_WINGS` of the larger.
 - TRIPO-PLATE-STRETCH: in a clip, more than `MAX_PLATE_STRETCH_SHARE` of the edges of an armour plate (`lib/tripo_chains.plate_masks`:
   the shoulder plates and the chest plate) are stretched or squashed. Runs for `--plates` or a job whose `tripo.chains` names plates.
 - TRIPO-HAND-BLEED: more than `MAX_HAND_BLEED_SHARE` of a shape's vertices lie outside a hand's own part (`lib/stretch_smooth.hand_parts`:
@@ -107,6 +130,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
@@ -169,6 +193,11 @@ MIN_WING_FACE_SHARE = 0.4
 # over the clip, as a share of its median, at least `MIN_MOVE_IDLE_MOTION_RATIO` times the idle's. The round 2 pair the review found
 # almost alike measured 1.6 (idle 0.13, move 0.21); the limit is judgement, about twice that.
 MIN_MOVE_IDLE_MOTION_RATIO = 3.0
+# TRIPO-WING-SPAN: a clip that spreads its wings keeps the drawn span: its widest frame across the unit's lateral axis is at least this share
+# of the rest pose's width (the picture's, which Tripo's model keeps: the demon's picture and model both read 1.51 times as wide as tall).
+# The passed demon_g measured 0.98 in the move and 0.95 in the attack. The bat-winged devil's wings are three times its body, so a swing
+# back that a small wing hides costs it most of its span.
+MIN_WING_SPAN_SHARE = 0.85
 # TRIPO-WING-ROOT-STRETCH: where the wing chains blend into the body (`wing_root_zone`), at most this share of the edges may stretch or squash
 # by the kit's measure in a frame. Set from the reviewed units: fresh reviews saw the round 4 demon's wing roots stretch, its worst clip 5.2%
 # (the attack), and failed every clip of the Tripo dragon's run 3 where the wing meets the body (the membrane pinned to the flank, the
@@ -179,12 +208,140 @@ MAX_WING_ROOT_STRETCH = 0.05
 # held its half-folded wings upright, and from the map camera one of the two read as a thin spike (0.27 of its face) while the other spread,
 # which both fresh reviews failed.
 QUADRUPED_BEATING = ("move", "attack", "retreat")
+# TRIPO-WING-FLANK-HANG: a wing's points near the flank (within FLANK_REACH times the hooves' reach of the mid-plane) more than
+# FLANK_HANG_MARGIN of the height below where the wing joins the body, in the Chest bone's frame. Offline on the Tripo dragon the round 3 poses
+# that both fresh reviews of run 7 read as a crumpled skirt over the flank and the hind leg measured 0.19 (move) to 0.36 (retreat), the
+# round 4 poses that carry the folded wing over the back 0.03 at most, and the rest pose none.
+FLANK_REACH = 1.6
+FLANK_HANG_MARGIN = 0.02
+MAX_WING_FLANK_HANG = 0.1
+# Round 5 lays the folded wings along the back and flanks (a fresh review of run 9 asked for them there): the check judges the open wings of
+# the move and the retreat, where the skirt was seen, between the ease from and back to the folded wings.
+FLANK_HANG_ROLES = ("move", "retreat")
+FLANK_HANG_EASE = 0.2
+# TRIPO-WING-SLIVER: from the game camera (the map view) each wing of a winged quadruped's beating clip keeps a shape: the width over the
+# length of its screen points (their two principal spreads) over the same ratio of the wing laid flat, median over the clip. Run 9's move
+# held one wing upright and both fresh reviews saw a thin spike from the game camera while the other spread: it measured 0.31 to 0.38 in
+# the frames they named, from the camera on that wing's side (`wing_sliver`), the round 5 poses 0.86 offline. The face share (TRIPO-WING-EDGE-ON) passed it at 58%: a curled wing fills cells edge-on.
+MIN_WING_SLIVER = 0.6
+# TRIPO-WING-HEAD-FRONT: in the first frame of each clip (the folded pose every clip starts and ends in) the wings' front view silhouette
+# covers at most MAX_HEAD_FRONT_SHARE of the head and neck's, depth aside: wings standing behind the head framed it as a box in run 9
+# (both fresh reviews), at 95% of the head and neck offline, which TRIPO-WING-FRONT (wings nearer the camera than the body) measured as 0.
+# Round 11 judges the head alone (the Head and Jaw skin). With the neck bones on the measured neck column (quadruped_layout.detect_neck)
+# the neck is the short column at the shoulders, and from the front the folded wings stand behind it in any pose: the dragon's idle fold,
+# unchanged since run 18, read 0.246 by the head and neck in run 19 against 0.059 in run 18, and by the head alone 0.068 against 0.056.
+# On run 18 and run 17, rigged with the withers' neck, the head alone reads within 0.02 of the head and neck in every clip.
+MAX_HEAD_FRONT_SHARE = 0.25
+# TRIPO-ATTACK-REACH: a winged quadruped's attack drives the head forward at least ATTACK_REACH_MIN of the body's length (pelvis to head
+# along the facing): run 9 reached 9% offline and both fresh reviews saw no strike. TRIPO-ATTACK-DEFEND-ALIKE: at the attack's farthest
+# reach and the defend's middle frame, the smaller of the two wings' map view silhouettes is at most MAX_ATTACK_DEFEND_WINGS of the larger:
+# run 9 opened the wings wide in both (both fresh reviews: at map size the same clip, wings open and wings close).
+ATTACK_REACH_MIN = 0.15
+MAX_ATTACK_DEFEND_WINGS = 0.75
+# TRIPO-WING-CRUSH: in no frame of a winged quadruped's clip may more than MAX_WING_CRUSH of the membrane's edges be squashed or stretched 1.3
+# times (and by 0.5% of the height) against the rest pose. Run 12's defend folded tight over the head measured 9.6% and both fresh reviews
+# saw creased lumps, the poses they passed 2.9% (idle fold) to 4.5% (attack flare).
+MAX_WING_CRUSH = 0.06
+CRUSH_RATIO = 1.3
+# TRIPO-WING-THROUGH-BODY: in no frame may more than MAX_WING_BELOW_SHARE of the wing points lie more than WING_BELOW_MARGIN of the height
+# below the torso's lowest point: run 12's attack hung a finger past the belly across the forelegs to 1% of the height over the ground
+# (a fresh review: major). TRIPO-CHAIN-IN-BODY already counts wing points inside the body.
+WING_BELOW_MARGIN = 0.02
+MAX_WING_BELOW_SHARE = 0.005
+# TRIPO-DEATH-WING-HIGH: in a death's last frame no wing stands more than DEATH_WING_ABOVE of the height over where it joins the body (the
+# median height of its border with the body): run 12's top wing stood 0.29 over its join as a sail over the body on its side, the round 6
+# wings spread on the ground 0.17 at most (offline). Measured on the join, not the ground, since a large body's shoulders stand high. A
+# wing whose join lies lower than the lying torso's middle height (the wing underneath, joined at the ground) is measured from that
+# middle: the Tripo dragon's wing in the idle's fold is 0.22 of the height thick lying on the ground whichever way it is turned (offline),
+# beside a torso 0.55 high, and that is a folded wing on the ground, not a sail.
+# TRIPO-DEATH-HEAD-HIDDEN: in the last frame at least DEATH_HEAD_CLEAR of the head and neck's screen cells, from the game camera and from
+# its mirror (the lesser of the two), are cells no other part of the body fills, in front of it or behind. Up to round 6 it read the
+# head alone from straight above: 90% on run 12, where neither fresh review could find the head, which lay beside the chest and the
+# forelegs. Played offline on run 14's files the new measure reads run 12's death 36%, run 14's 38% and round 7's 62%.
+DEATH_WING_ABOVE = 0.2
+DEATH_HEAD_CLEAR = 0.5
+# TRIPO-DEATH-WING-TENT: from the game camera and its mirror, in every judged frame of a death's end (from DEATH_TENT_FROM of the clip, the
+# frames both fresh reviews of run 18 judged, every other frame and the last), the wing screen cells (SILHOUETTE_CELL_SHARE of the height)
+# that no other part of the body fills and that stand above the lying torso's outline (the torso's highest cell in their screen column) are
+# at most DEATH_WING_TENT times the torso's own cells. Only wing points more than DEATH_TENT_GROUND of the height off the ground count, and
+# only columns the torso reaches. A height measure misses a wing folded along the top of a body on its side: the run 18 dragon's stood
+# 0.013 of the height over the lying torso (TRIPO-DEATH-WING-HIGH 0.03), yet from the high map camera both fresh reviews saw a tall peaked
+# tent over the body. The camera looks down at 55 degrees, so ground beyond the body toward the tail shows above it on the screen: a
+# folded wing lying there 0.2 of the height thick read as part of that tent. Run 18 reads 1.13 (its last frame 1.11) and run 12's death
+# (its rules played on run 14's mesh) 1.61 (its last frame 0.88), both failed by fresh reviews. No reviewed death has passed yet, so the
+# limit is provisional: about half the least failed last-frame reading.
+DEATH_TENT_FROM = 0.52
+DEATH_TENT_GROUND = 0.1
+DEATH_WING_TENT = 0.45
+# Round 12, after both fresh reviews of run 19 failed its death though every check passed (the tent from the game camera 0.33):
+# - the same measure from the eye-level views (front, left and right) at the end, at most DEATH_WING_TENT_EYE: run 19's top wing lay
+#   over the body as a mound in every eye-level view (both reviews), 0.15 to 0.17 from the sides (run 18 0.06 to 0.08, its tent was
+#   from the game camera);
+# - the game camera's measure while the body rolls too, from DEATH_TENT_ROLL_FROM of the clip: in run 19 one wing stood upright from
+#   frame 16 to 31 (both reviews), 1.61 at frame 25.
+DEATH_WING_TENT_EYE = 0.10
+DEATH_TENT_ROLL_FROM = 0.3
+# TRIPO-DEATH-HEAD-LOST: over the death's end (as TRIPO-DEATH-WING-TENT judges it), from the game camera and its mirror, at least DEATH_HEAD_FINDABLE of the head's screen cells
+# (SILHOUETTE_CELL_SHARE of the height) lie more than DEATH_HEAD_MARGIN cells from every cell another part fills. Neither fresh review
+# of run 18 or run 19 could find the head among the forelegs and the claws, while TRIPO-DEATH-HEAD-HIDDEN, which needs only cells no
+# other part fills, read 0.68 and 0.67 at the last frame. This measure reads 0 and 0.22 at their worst end frames (run 19 0.41 at its
+# last frame: the reviews failed frames 44 to 80). No dead head has passed a review yet: the limit is provisional.
+DEATH_HEAD_MARGIN = 2
+DEATH_HEAD_FINDABLE = 0.4
+# TRIPO-NECK-SQUASH: in every frame of a winged quadruped's clips but the death, the distance from the middle of the head's skin to the
+# middle of the Chest's skin stays at least NECK_SQUASH_MIN of its rest value. Both fresh reviews of run 19 saw the strike fold the neck
+# into the shoulders (0.75 at frame 35). Run 18's strike, which one review read clearly, keeps 0.87, its defend 0.83.
+NECK_SQUASH_MIN = 0.8
+# TRIPO-DEFEND-HEAD-BOXED: in every frame of the defend, the middle of the head's skin lies at least DEFEND_HEAD_LEAD of the height ahead of
+# the wings' front (their 99th percentile along the facing). Both fresh reviews of run 19 saw the raised wing forearms box the head in
+# like a hood: it lay 0.038 behind their front (run 18 0.032 behind). The idle, whose head both reviews read clearly, keeps it 0.12 ahead.
+DEFEND_HEAD_LEAD = 0.02
+# TRIPO-STEP-READ: in a winged quadruped's move and retreat the hooves travel, from the game camera, at least MIN_STEP_READ of the body's
+# length (each hoof's screen path against the torso's, its range, the mean over the hooves). Run 12's move measured 0.24 offline and a
+# fresh review saw only the wings move.
+MIN_STEP_READ = 0.3
 # TRIPO-WING-MIRROR: a winged quadruped's two wings take mirrored poses in the body's frame in every clip but the death (it lies on one side).
 # In the Chest bone's frame the planes of the two wings, the right one mirrored, may differ by at most `MAX_WING_MIRROR_DEGREES` in any frame
 # (`wing_turns`). In a beating clip each wing must also turn through at least `MIN_WING_BEAT_SHARE` of the other's range. Calibrated on the
 # Tripo dragon's run 4: its mirrored clips' planes differ by at most 5.3 degrees, and its retreat, which both fresh reviews read as one wing
 # beating while the other stayed frozen upright, by 22 (the wing the retreat's turn carried forward swept back by the turn).
 MAX_WING_MIRROR_DEGREES = 15.0
+# TRIPO-WING-SIDE-REACH: a winged quadruped's defend and retreat hold the wings back, so in no frame may a wing reach further to its side
+# than MAX_SIDE_REACH_OVER_IDLE times the most it reaches in the idle's fold. The reach is the 99th percentile of the wing points' distance
+# from the torso's midline, in the Chest bone's frame (a body that turns keeps its own sides). On run 15 the idle's breath varied it by 4%,
+# the defend reached 1.26 times the idle (both fresh reviews: the wings stand straight out, wider than the idle) and the retreat 1.17 (one
+# review: one wing stretched out).
+SIDE_REACH_ROLES = ("defend", "retreat")
+MAX_SIDE_REACH_OVER_IDLE = 1.05
+SIDE_REACH_PERCENTILE = 99.0
+# TRIPO-HEAD-FACING: in every clip but the death the head (from its joint to its snout, the head's point furthest forward at rest) faces at
+# most MAX_HEAD_FACING_TURN degrees up or down from its rest facing, read in the vertical plane of the chest's forward direction. A neck's
+# turns carried a head bone turned on its own: run 15's attack turned the snout 131 degrees from its rest facing, back at the chest (both
+# fresh reviews saw a hook, the throat kinked to a right angle), its defend 30 (75 below level). Its idle, move and retreat stay within 10.
+MAX_HEAD_FACING_TURN = 40.0
+# TRIPO-ATTACK-HEAD-LEAD: a winged quadruped's attack drops its snout on the game camera's screen (the map view's projection, `lib/map_read`)
+# by at least ATTACK_SNOUT_DROP of the height from its first frame, and at that frame the snout lies below the shoulders (the Neck_01 joint
+# at rest) and ahead of the fore hooves. Round 9 measures it as reviewers see it: the blows reviewers accepted, the hand of the orc's chop
+# (orc_k) and of the ogre's (ogre_l), drop 0.174 and 0.236 of their height on that screen. Run 17's snout dropped 0.154 and both fresh
+# reviews saw no strike, while round 8's form of the check (12% of the body's length ahead, 12.5% of the height lower, in the world) passed it.
+ATTACK_SNOUT_DROP = 0.17
+# TRIPO-GAME-READ: a winged quadruped's attack, defend and retreat each change at least MIN_GAME_READ of the idle's silhouette from the game
+# camera (`map_read.clip_reading`, its 90th percentile frame). The units reviewers passed (orc_k, ogre_l, dwarf_f) read 0.276 to 0.445 in
+# those clips, but for the ogre's defend (0.143, a guard close to its idle stance). Run 17 read 0.21 (attack) and 0.183 (defend), and
+# fresh reviews read its attack as no strike and its defend as the idle (one review).
+MIN_GAME_READ = 0.27
+GAME_READ_ROLES = ("attack", "defend", "retreat")
+# TRIPO-DEFORM-PASSED-BOUND: no clip of a winged quadruped deforms more of its edges (stretched or squashed 1.5 times and by 0.5% of the
+# height, `pdx_deform`, its worst frame) than the worst clip of a unit reviewers passed: orc_k's retreat, 2.40% (its other clips 0.25% to
+# 2.38%, ogre_l's at most 1.55%, dwarf_f's at most 2.05%, measured 2026-11-18). Under D-83 a change that makes a clip read at game size
+# may deform more than the clip did before, as long as it stays within this bound (the kit's no-worse rule does not block it).
+DEFORM_PASSED_BOUND = 0.024
+# TRIPO-ATTACK-DEFEND-ALIKE is judged only when one of the two clips holds its wings larger in the map view than WINGS_OPEN_SHARE times the
+# idle's fold: the check caught two wing displays (run 9), and a blow with the wings closed along the back is no display.
+WINGS_OPEN_SHARE = 1.1
+# TRIPO-DEATH-SIDE: a winged quadruped's death ends with the torso (the Chest bone's up axis) rolled DEATH_ROLL_RANGE degrees from upright:
+# on its side, not on its belly or its back. Run 15 ended at 82 degrees.
+DEATH_ROLL_RANGE = (60.0, 120.0)
 MIN_WING_BEAT_SHARE = 0.5
 WING_MIRROR_SKIP = ("death",)
 SILHOUETTE_CELL_SHARE = 0.02
@@ -355,18 +512,16 @@ def upright_series(mesh, anim, step: int) -> np.ndarray:
 
 
 # A winged quadruped's wings grow from its back, so from every review camera their roots cover some of the back, as from the side on a
-# humanoid. Every view judges its legs, neck and head (`QUADRUPED_PARTS`) at the side views' limit. Its defend raises the wings as a shield
-# in front of the head and neck (the role's intent, decision D-76), so the defend judges the legs alone. On the Tripo dragon, played
-# offline: the shield hides 25% of the legs, neck and head from the side and none of the legs.
+# humanoid. Every view judges its legs, neck and head (`QUADRUPED_PARTS`) at the side views' limit, in every clip. Rounds 1 to 6 judged the
+# defend's legs alone, because it raised the wings as a shield in front of the head and neck. Since round 7 the defend is a braced recoil
+# with the wings mantled behind the shoulders, never in front of the head, so the head and neck are judged there too.
 QUADRUPED_PARTS = ("Front_", "Rear_", "Neck_", "Head")
-QUADRUPED_SHIELD_PARTS = ("Front_", "Rear_")
 
 
 def quadruped_parts(mesh, wings: np.ndarray, role: str) -> np.ndarray:
     names = np.array(mesh.bones + [""])
     dominant = names[pdx_deform.dominant_bones(mesh)].astype(str)
-    parts = QUADRUPED_SHIELD_PARTS if role == "defend" else QUADRUPED_PARTS
-    return np.array([name.startswith(parts) for name in dominant.tolist()], dtype=bool) & ~wings
+    return np.array([name.startswith(QUADRUPED_PARTS) for name in dominant.tolist()], dtype=bool) & ~wings
 
 
 def quadruped_upright(mesh, anim, step: int) -> np.ndarray:
@@ -504,7 +659,7 @@ def chain_clip_numbers(mesh, anim, regions, body, step: int, death: bool = False
                        cover=wing_cover(mesh, frames, mask, death, upright, role),
                        map_motion=wing_map_motion(mesh, frames, mask))
             if quadruped:
-                row["cover_judges"] = "legs" if role == "defend" else "legs, neck and head"
+                row["cover_judges"] = "legs, neck and head"
             if sides is not None:
                 row["face"] = wing_face_shares(mesh, frames[::2], sides)
             if root is not None and np.any(root):
@@ -530,6 +685,8 @@ def chain_row_findings(clip: str, name: str, row: dict) -> List[dict]:
     beating = clip_role(clip) in QUADRUPED_BEATING if "cover_judges" in row else rule.get("flap", 0.0) >= EDGE_ON_FLAP
     if row.get("face") and beating:
         for view, share in row["face"].items():
+            if "cover_judges" in row and view != "map":
+                continue  # a winged quadruped's wings lie level toward the game camera, so the low side cameras see them edge-on by design
             if share < MIN_WING_FACE_SHARE:
                 out.append(finding("TRIPO-WING-EDGE-ON", clip, f"a beating wing shows {share:.0%} of its face in the {view} view (median over the clip; limit {MIN_WING_FACE_SHARE:.0%}): seen edge-on it reads as a spike", view=view, share=share))
     if row["in_body_worst_share"] > MAX_CHAIN_IN_BODY_SHARE:
@@ -595,6 +752,554 @@ def wing_mirror_findings(mesh, anims: Dict[str, object], sides, step: int = 2) -
     return out, numbers
 
 
+def wing_flank_shares(mesh, anim, sides, step: int = 2) -> List[float]:
+    """Per judged frame, the larger of the two wings' shares of points that hang over the flank: within `FLANK_REACH` times the hooves' reach
+    from the mid-plane and more than `FLANK_HANG_MARGIN` of the height below the lowest point where that wing joins the body, in the Chest
+    bone's frame (so a rear or a turn of the whole body does not count). Empty without hooves."""
+
+    names = np.array(mesh.bones).astype(str)
+    dominant = pdx_deform.dominant_bones(mesh)
+    hooves = np.isin(dominant, np.flatnonzero(np.char.endswith(names, "_Hoof")))
+    if not hooves.any():
+        return []
+    centre = float(np.median(mesh.positions[hooves, 0]))
+    reach = FLANK_REACH * float(np.abs(mesh.positions[hooves, 0] - centre).mean())
+    height = max(mesh.height, 1e-6)
+    joins = []
+    for mask in sides:
+        tm = mask[mesh.triangles]
+        border = np.zeros(len(mask), bool)
+        border[mesh.triangles[tm.any(1) & ~tm.all(1)].ravel()] = True
+        joins.append(float(mesh.positions[border & mask, 1].min()) if (border & mask).any() else -np.inf)
+    chest = {name: i for i, name in enumerate(mesh.bones)}.get("Chest", 0)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    out = []
+    for frame in range(0, matrices.shape[0], step):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        inverse = np.linalg.inv(matrices[frame, chest])
+        local = posed @ inverse[:3, :3].T + inverse[:3, 3]
+        near = np.abs(local[:, 0] - centre) < reach
+        out.append(max(float((mask & near & (local[:, 1] < join - FLANK_HANG_MARGIN * height)).sum()) / max(int(mask.sum()), 1)
+                       for mask, join in zip(sides, joins)))
+    return out
+
+
+def wing_flank_findings(mesh, anims: Dict[str, object], sides, step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-FLANK-HANG for a winged quadruped (`wing_flank_shares`) in the move and the retreat, the clips' first and last
+    `FLANK_HANG_EASE` left out (they ease from and back to the folded wings, which lie along the flanks)."""
+
+    out, numbers = [], {}
+    for clip, anim in anims.items():
+        if clip_role(clip) not in FLANK_HANG_ROLES:
+            continue
+        shares = wing_flank_shares(mesh, anim, sides, step)
+        if not shares:
+            continue
+        ease = int(round(FLANK_HANG_EASE * len(shares)))
+        shares = [0.0] * ease + shares[ease : len(shares) - ease] + [0.0] * ease
+        worst = int(np.argmax(shares))
+        numbers[clip] = {"share": round(shares[worst], 4), "frame": worst * step}
+        if shares[worst] > MAX_WING_FLANK_HANG:
+            out.append(finding("TRIPO-WING-FLANK-HANG", clip, f"{shares[worst]:.0%} of a wing hangs over the flank below where it joins the body in frame {worst * step} (limit {MAX_WING_FLANK_HANG:.0%}): the inner membrane reads as a skirt pulled down to the body and the hind leg", share=round(shares[worst], 4), frame=worst * step))
+    return out, numbers
+
+
+def _view_axes(mesh, view: str) -> Tuple[np.ndarray, np.ndarray]:
+    up = np.array([0.0, 1.0, 0.0])
+    direction = view_direction(front_direction(mesh), *tripo_chains.REVIEW_VIEWS[view])
+    first = tripo_chains.unit(np.cross(up, direction))
+    return first, np.cross(direction, first)
+
+
+def _aspect(points: np.ndarray) -> float:
+    spread = np.linalg.svd(points - points.mean(axis=0), compute_uv=False)
+    return float(spread[1] / max(float(spread[0]), 1e-9))
+
+
+def _cells(points: np.ndarray, axes: Tuple[np.ndarray, np.ndarray], cell: float) -> set:
+    return set(map(tuple, np.floor(np.stack([points @ axes[0], points @ axes[1]], axis=1) / cell).astype(np.int64)))
+
+
+def _parts(mesh, wings: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    names = np.array(mesh.bones).astype(str)
+    dominant = pdx_deform.dominant_bones(mesh)
+    named = np.where(dominant >= 0, names[np.clip(dominant, 0, None)], "")
+    head = (np.char.startswith(named, "Head") | np.char.startswith(named, "Jaw")) & ~wings
+    head_neck = (head | np.char.startswith(named, "Neck")) & ~wings
+    return head, head_neck, np.isin(named, ["Pelvis", "Spine", "Chest"]) | head_neck
+
+
+def _dilate(cells: set, steps: int) -> set:
+    out = set(cells)
+    for _ in range(steps):
+        out |= {(x + dx, y + dy) for x, y in out for dx in (-1, 0, 1) for dy in (-1, 0, 1)}
+    return out
+
+
+def head_findable(mesh, posed: np.ndarray, head: np.ndarray) -> float:
+    """TRIPO-DEATH-HEAD-LOST's measure in one frame: the least share, from the game camera and its mirror, of the head's screen cells that
+    lie more than DEATH_HEAD_MARGIN cells from every cell another part fills."""
+
+    cell = SILHOUETTE_CELL_SHARE * mesh.height
+    least = 1.0
+    for axes in game_cameras(mesh):
+        seen = _cells(posed[head], axes, cell)
+        near = _dilate(_cells(posed[~head], axes, cell), DEATH_HEAD_MARGIN)
+        least = min(least, len(seen - near) / max(len(seen), 1))
+    return least
+
+
+def neck_squash(mesh, matrices, head: np.ndarray, chest: np.ndarray) -> Tuple[float, int]:
+    """TRIPO-NECK-SQUASH's measure: the least distance over the clip from the middle of the head's skin to the middle of the Chest's,
+    over its rest value, and its frame."""
+
+    rest = float(np.linalg.norm(mesh.positions[head].mean(axis=0) - mesh.positions[chest].mean(axis=0)))
+    gaps = [float(np.linalg.norm((posed := pdx_deform.skin(mesh, frame))[head].mean(axis=0) - posed[chest].mean(axis=0))) / max(rest, 1e-9) for frame in matrices]
+    return min(gaps), int(np.argmin(gaps))
+
+
+def head_lead_over_wings(mesh, matrices, head: np.ndarray, wings: np.ndarray, front: np.ndarray) -> Tuple[float, int]:
+    """TRIPO-DEFEND-HEAD-BOXED's measure: the least lead over the clip of the middle of the head's skin over the wings' front (their 99th
+    percentile along the facing), as a share of the height, and its frame."""
+
+    leads = []
+    for frame in matrices:
+        posed = pdx_deform.skin(mesh, frame)
+        leads.append(float(np.median(posed[head] @ front) - np.percentile(posed[wings] @ front, 99)) / mesh.height)
+    return min(leads), int(np.argmin(leads))
+
+
+def head_front_region(head: np.ndarray, head_neck: np.ndarray) -> np.ndarray:
+    """The skin TRIPO-WING-HEAD-FRONT judges: the head alone (MAX_HEAD_FRONT_SHARE says why), or the head and neck when no skin is the
+    head's."""
+
+    return head if head.any() else head_neck
+
+
+def head_front_share(mesh, matrices, wings: np.ndarray, head_neck: np.ndarray) -> float:
+    """TRIPO-WING-HEAD-FRONT's share in the first frame: the front view cells of `head` (the head's skin) the wings' silhouette also fills."""
+
+    posed = pdx_deform.skin(mesh, matrices[0])
+    axes, cell = _view_axes(mesh, "front"), SILHOUETTE_CELL_SHARE * mesh.height
+    seen = _cells(posed[head_neck], axes, cell)
+    return len(seen & _cells(posed[wings], axes, cell)) / max(len(seen), 1)
+
+
+def wing_sliver(mesh, matrices, sides, flat: List[float]) -> float:
+    """TRIPO-WING-SLIVER's measure: the median over the clip of the thinner wing's width over length from the game camera, over its flat
+    shape's. The game camera is judged from both sides (the map view's azimuth and its mirror), since a camera off the unit's axis sees one
+    of two mirrored upright wings edge-on: run 9's right wing measured 0.31 from one side and 0.61 from the other."""
+
+    azimuth, elevation = tripo_chains.REVIEW_VIEWS["map"]
+    cameras = []
+    for side in (1.0, -1.0):
+        up = np.array([0.0, 1.0, 0.0])
+        direction = view_direction(front_direction(mesh), side * azimuth, elevation)
+        first = tripo_chains.unit(np.cross(up, direction))
+        cameras.append((first, np.cross(direction, first)))
+    ratios = []
+    for frame in range(0, matrices.shape[0], 2):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        ratios.append(min(_aspect(np.stack([posed[mask] @ a, posed[mask] @ b], axis=1)) / max(rest, 1e-9)
+                          for mask, rest in zip(sides, flat) for a, b in cameras))
+    return float(np.median(ratios))
+
+
+def wing_edges(mesh, wings: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    t = mesh.triangles
+    edges = np.unique(np.sort(np.concatenate([t[:, [0, 1]], t[:, [1, 2]], t[:, [2, 0]]]), axis=1), axis=0)
+    edges = edges[wings[edges[:, 0]] & wings[edges[:, 1]]]
+    return edges, np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
+
+
+def wing_body_numbers(mesh, matrices, wings: np.ndarray, torso: np.ndarray, edges, rest) -> Tuple[float, int, float, int]:
+    """TRIPO-WING-CRUSH's and TRIPO-WING-THROUGH-BODY's worst shares over a clip, with their frames."""
+
+    height = max(mesh.height, 1e-6)
+    crush, crush_frame, below, below_frame = 0.0, 0, 0.0, 0
+    for frame in range(0, matrices.shape[0], 2):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        length = np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1)
+        share = float((((length > CRUSH_RATIO * rest) | (length < rest / CRUSH_RATIO)) & (np.abs(length - rest) > 0.005 * height)).mean()) if len(rest) else 0.0
+        if share > crush:
+            crush, crush_frame = share, frame
+        low = float((posed[wings, 1] < posed[torso, 1].min() - WING_BELOW_MARGIN * height).mean()) if torso.any() else 0.0
+        if low > below:
+            below, below_frame = low, frame
+    return crush, crush_frame, below, below_frame
+
+
+def game_cameras(mesh) -> List[Tuple[np.ndarray, np.ndarray]]:
+    """The screen axes of the game camera (the map view) and of its mirror: a unit on the map is seen from either side of its heading."""
+
+    azimuth, elevation = tripo_chains.REVIEW_VIEWS["map"]
+    up = np.array([0.0, 1.0, 0.0])
+    cameras = []
+    for side in (1.0, -1.0):
+        direction = view_direction(front_direction(mesh), side * azimuth, elevation)
+        first = tripo_chains.unit(np.cross(up, direction))
+        cameras.append((first, np.cross(direction, first)))
+    return cameras
+
+
+def death_end_numbers(mesh, matrices, sides, head: np.ndarray, head_neck: np.ndarray, torso: Optional[np.ndarray] = None) -> Tuple[float, float]:
+    """TRIPO-DEATH-WING-HIGH's and TRIPO-DEATH-HEAD-HIDDEN's numbers in a death's last frame: the most a wing stands over where it joins
+    the body (or over the lying torso's middle height, when its join lies lower: `torso`), and the least share of the head and neck's
+    screen cells, from the game camera and its mirror, that no other part of the body fills."""
+
+    posed = pdx_deform.skin(mesh, matrices[-1])
+    above = 0.0
+    middle = float(np.median(posed[torso, 1])) if torso is not None and torso.any() else -np.inf
+    for mask in sides:
+        tm = mask[mesh.triangles]
+        border = np.zeros(len(mask), bool)
+        border[mesh.triangles[tm.any(1) & ~tm.all(1)].ravel()] = True
+        if (border & mask).any():
+            above = max(above, float(posed[mask, 1].max() - max(float(np.median(posed[border & mask, 1])), middle)) / max(mesh.height, 1e-6))
+    cell = 2.0 * SILHOUETTE_CELL_SHARE * mesh.height
+    clear = 1.0
+    for axes in game_cameras(mesh):
+        seen = _cells(posed[head_neck], axes, cell)
+        clear = min(clear, len(seen - _cells(posed[~head_neck], axes, cell)) / max(len(seen), 1))
+    return above, clear
+
+
+def wing_tent_share(points: np.ndarray, wings: np.ndarray, torso: np.ndarray, axes: Tuple[np.ndarray, np.ndarray], cell: float, height: float) -> float:
+    """TRIPO-DEATH-WING-TENT's measure in one frame from one camera: the cells of wing points raised more than DEATH_TENT_GROUND of the
+    `height` off the ground that no other part fills and that stand above the torso's highest cell in their screen column, over the torso's
+    cell count. Columns the torso does not reach are left out: a wing lying beyond the back lies beside the body on the screen, not over it."""
+
+    torso_cells = _cells(points[torso], axes, cell)
+    if not torso_cells:
+        return 0.0
+    top: Dict[int, int] = {}
+    for x, y in torso_cells:
+        top[x] = max(top.get(x, y), y)
+    raised = wings & (points[:, 1] - float(points[:, 1].min()) > DEATH_TENT_GROUND * height)
+    free = _cells(points[raised], axes, cell) - _cells(points[~wings], axes, cell)
+    return sum(1 for x, y in free if x in top and y > top[x]) / len(torso_cells)
+
+
+def death_wing_tent(mesh, matrices, wings: np.ndarray, torso: np.ndarray, start: float = DEATH_TENT_FROM, end: float = 1.0,
+                    cameras=None) -> Tuple[float, int]:
+    """TRIPO-DEATH-WING-TENT's measure: the worst `wing_tent_share` over the death's frames from `start` to `end` of the clip (every other
+    frame and the last of them) and `cameras` (the game camera and its mirror unless given), and its frame."""
+
+    cell = SILHOUETTE_CELL_SHARE * mesh.height
+    cameras = game_cameras(mesh) if cameras is None else cameras
+    last = min(matrices.shape[0] - 1, int(round(end * (matrices.shape[0] - 1))))
+    worst, worst_frame = 0.0, last
+    frames = list(range(int(start * (matrices.shape[0] - 1)), last + 1, 2))
+    if frames[-1] != last:
+        frames.append(last)
+    for frame in frames:
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        for axes in cameras:
+            share = wing_tent_share(posed, wings, torso, axes, cell, mesh.height)
+            if share > worst:
+                worst, worst_frame = share, frame
+    return worst, worst_frame
+
+
+def step_read(mesh, matrices, hooves: np.ndarray, torso: np.ndarray, length: float) -> float:
+    """TRIPO-STEP-READ's measure: the hooves' screen travel from the game camera against the torso's, over the body's length."""
+
+    axes = _view_axes(mesh, "map")
+    paths = []
+    for frame in range(0, matrices.shape[0], 2):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        feet = np.stack([posed[hooves] @ axes[0], posed[hooves] @ axes[1]], axis=1)
+        body = np.stack([posed[torso] @ axes[0], posed[torso] @ axes[1]], axis=1)
+        paths.append(feet - body.mean(axis=0))
+    return float(np.linalg.norm(np.ptp(np.stack(paths), axis=0), axis=1).mean()) / length
+
+
+def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], dict, Optional[int]]:
+    """One clip's part of `quadruped_view_findings`: its findings, its numbers and, for the attack and the defend, the wings' map view
+    cells at the attack's farthest reach or the defend's middle."""
+
+    out, row, peak = [], {}, None
+    role = clip_role(clip)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    crush, crush_frame, below, below_frame = wing_body_numbers(mesh, matrices, c["wings"], c["torso"], c["edges"], c["rest"])
+    row.update(crush=round(crush, 4), crush_frame=crush_frame, below=round(below, 4), below_frame=below_frame)
+    if crush > MAX_WING_CRUSH:
+        out.append(finding("TRIPO-WING-CRUSH", clip, f"{crush:.1%} of the membrane's edges are squashed or stretched {CRUSH_RATIO:g} times in frame {crush_frame} (limit {MAX_WING_CRUSH:.0%}, the poses reviewers passed 2.9% to 4.5%): the wing crumples", share=round(crush, 4), frame=crush_frame))
+    if below > MAX_WING_BELOW_SHARE and role != "death":  # a lying body's wings rest on the ground, below its raised belly
+        out.append(finding("TRIPO-WING-THROUGH-BODY", clip, f"{below:.1%} of the wing points hang more than {WING_BELOW_MARGIN:.0%} of the height below the belly in frame {below_frame} (limit {MAX_WING_BELOW_SHARE:.1%}): a finger drops through the legs", share=round(below, 4), frame=below_frame))
+    if role == "death" and c["head"].any() and c["torso"].any():
+        out += _death_end_findings(mesh, clip, matrices, c, row)
+    if role in ("move", "retreat") and c["hooves"].any() and c["torso"].any():
+        steps = step_read(mesh, matrices, c["hooves"], c["torso"], c["length"])
+        row["step_read"] = round(steps, 3)
+        if steps < MIN_STEP_READ:
+            out.append(finding("TRIPO-STEP-READ", clip, f"from the game camera the hooves travel {steps:.0%} of the body's length (at least {MIN_STEP_READ:.0%}): only the wings read as moving", share=round(steps, 3)))
+    if role != "death" and c["head"].any() and c["chest_skin"].any():
+        squash, squash_frame = neck_squash(mesh, matrices, c["head"], c["chest_skin"])
+        row.update(neck_gap=round(squash, 3), neck_gap_frame=squash_frame)
+        if squash < NECK_SQUASH_MIN:
+            out.append(finding("TRIPO-NECK-SQUASH", clip, f"in frame {squash_frame} the head comes within {squash:.0%} of its rest distance from the chest (at least {NECK_SQUASH_MIN:.0%}): the neck folds into the shoulders", share=round(squash, 3), frame=squash_frame))
+    if role == "defend" and c["head"].any():
+        lead, lead_frame = head_lead_over_wings(mesh, matrices, c["head"], c["wings"], c["front"])
+        row.update(head_lead=round(lead, 3), head_lead_frame=lead_frame)
+        if lead < DEFEND_HEAD_LEAD:
+            out.append(finding("TRIPO-DEFEND-HEAD-BOXED", clip, f"in frame {lead_frame} the head lies {lead:.1%} of the height ahead of the wings' front (at least {DEFEND_HEAD_LEAD:.0%}): the wings box it in", share=round(lead, 3), frame=lead_frame))
+    if role != "death" and c["head_neck"].any():
+        share = head_front_share(mesh, matrices, c["wings"], head_front_region(c["head"], c["head_neck"]))
+        row["head_front_share"] = round(share, 3)
+        if share > MAX_HEAD_FRONT_SHARE:
+            out.append(finding("TRIPO-WING-HEAD-FRONT", clip, f"in the first frame the wings stand behind {share:.0%} of the head seen from the front (limit {MAX_HEAD_FRONT_SHARE:.0%}): they frame the head as a screen", share=round(share, 3)))
+    if role in QUADRUPED_BEATING:
+        sliver = wing_sliver(mesh, matrices, c["sides"], c["flat"])
+        row["sliver"] = round(sliver, 3)
+        if sliver < MIN_WING_SLIVER:
+            out.append(finding("TRIPO-WING-SLIVER", clip, f"from the game camera a wing keeps {sliver:.0%} of its flat shape's width over length (median over the clip; at least {MIN_WING_SLIVER:.0%}): it reads as a thin spike", share=round(sliver, 3)))
+    if role in ("attack", "defend") and c["head"].any():
+        out_reach, peak = _attack_reach(mesh, clip, role, matrices, c, row)
+        out += out_reach
+    out += _held_pose_findings(mesh, clip, role, matrices, c, row)
+    return out, row, peak
+
+
+def _held_pose_findings(mesh, clip: str, role: str, matrices, c: dict, row: dict) -> List[dict]:
+    """TRIPO-HEAD-FACING, TRIPO-ATTACK-HEAD-LEAD and TRIPO-DEATH-SIDE for one clip, and its wings' side reach for TRIPO-WING-SIDE-REACH."""
+
+    out: List[dict] = []
+    if c.get("chest") is None:
+        return out
+    row["side_reach"] = [round(value, 4) for value in side_reach(mesh, matrices, c["sides"], c["torso"], c["chest"], c["front"])]
+    if role != "death" and c.get("head_bone") is not None:
+        turn, frame = head_facing_turn(mesh, matrices, c["head_bone"], c["snout"], c["chest"], c["front"])
+        row.update(head_facing_turn=round(turn, 1), head_facing_frame=frame)
+        if turn > MAX_HEAD_FACING_TURN:
+            out.append(finding("TRIPO-HEAD-FACING", clip, f"in frame {frame} the head faces {turn:.0f} degrees off its rest facing (at most {MAX_HEAD_FACING_TURN:.0f}): the neck carries the head round into a hook or straight down", degrees=round(turn, 1), frame=frame))
+    if role == "attack" and c.get("head_bone") is not None:
+        out += _snout_lead(mesh, clip, matrices, c, row)
+    if role == "death":
+        roll = torso_roll(matrices[-1], c["chest"])
+        row["end_roll"] = round(roll, 1)
+        low, high = DEATH_ROLL_RANGE
+        if not low <= roll <= high:
+            out.append(finding("TRIPO-DEATH-SIDE", clip, f"the dead torso ends rolled {roll:.0f} degrees from upright ({low:.0f} to {high:.0f}): it does not lie on its side", degrees=round(roll, 1)))
+    return out
+
+
+def side_reach(mesh, matrices, sides, torso: np.ndarray, chest: int, front: np.ndarray) -> List[float]:
+    """TRIPO-WING-SIDE-REACH's measure per wing: the most, over the clip, of the wing points' 99th percentile distance to their own side
+    of the torso's midline, in the Chest bone's rest frame (the posed points taken back through the chest's turn)."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    across = tripo_chains.unit(np.cross(up, front))
+    middle = float(np.median(mesh.positions[torso] @ across)) if torso.any() else 0.0
+    signs = [1.0 if float(np.median(mesh.positions[mask] @ across)) > middle else -1.0 for mask in sides]
+    best = [0.0 for _ in sides]
+    for frame in range(matrices.shape[0]):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        turn, shift = matrices[frame][chest][:3, :3], matrices[frame][chest][:3, 3]
+        local = (posed - shift) @ turn  # each row R^T (p - t): back through the chest's turn
+        for index, mask in enumerate(sides):
+            if mask.any():
+                reach = float(np.percentile(signs[index] * (local[mask] @ across - middle), SIDE_REACH_PERCENTILE))
+                best[index] = max(best[index], reach)
+    return best
+
+
+def head_facing_turn(mesh, matrices, head_bone: int, snout: int, chest: int, front: np.ndarray) -> Tuple[float, int]:
+    """TRIPO-HEAD-FACING's measure: the most the head's facing (its joint to its snout, carried by the Head bone) turns from its rest facing
+    over the clip, in degrees within the vertical plane of the chest's forward direction, and the frame."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    joint = np.linalg.inv(mesh.inverse_bind[head_bone])[:3, 3]
+    rest_facing = mesh.positions[snout] - joint
+
+    def below(direction: np.ndarray, forward: np.ndarray) -> float:
+        ahead = forward - (forward @ up) * up
+        ahead = ahead / max(float(np.linalg.norm(ahead)), 1e-9)
+        return math.degrees(math.atan2(-float(direction @ up), float(direction @ ahead)))
+
+    rest = below(rest_facing, front)
+    worst, worst_frame = 0.0, 0
+    for frame in range(matrices.shape[0]):
+        facing = matrices[frame][head_bone][:3, :3] @ rest_facing
+        forward = matrices[frame][chest][:3, :3] @ front
+        turn = abs((below(facing, forward) - rest + 180.0) % 360.0 - 180.0)
+        if turn > worst:
+            worst, worst_frame = turn, frame
+    return worst, worst_frame
+
+
+def torso_roll(matrix_frame: np.ndarray, chest: int) -> float:
+    """Degrees the Chest bone's up axis lies from the vertical (0 upright, 90 on its side, 180 on its back)."""
+
+    up = np.array([0.0, 1.0, 0.0])
+    carried = matrix_frame[chest][:3, :3] @ up
+    return math.degrees(math.acos(max(-1.0, min(1.0, float(carried @ up) / max(float(np.linalg.norm(carried)), 1e-9)))))
+
+
+def _snout_lead(mesh, clip: str, matrices, c: dict, row: dict) -> List[dict]:
+    """TRIPO-ATTACK-HEAD-LEAD: the snout's largest drop on the game camera's screen from its first frame, and where it lies at that frame
+    against the shoulders and the fore hooves."""
+
+    snout = c["snout"]
+    right, up = map_read.map_axes(c["front"])
+    start = pdx_deform.skin(mesh, matrices[0])[snout]
+    drop, best = -np.inf, 0
+    for frame in range(matrices.shape[0]):
+        point = pdx_deform.skin(mesh, matrices[frame])[snout]
+        value = float((start - point) @ up) / mesh.height
+        if value > drop:
+            drop, best = value, frame
+    posed = pdx_deform.skin(mesh, matrices[best])
+    ground = float(mesh.positions[:, 1].min())
+    below = float(c["shoulder"] - posed[snout][1]) / mesh.height if c.get("shoulder") is not None else 0.0
+    ahead = float(posed[snout] @ c["front"] - (posed[c["fore_hooves"]] @ c["front"]).max()) / mesh.height if c["fore_hooves"].any() else 0.0
+    row.update(snout_screen_drop=round(drop, 3), snout_frame=best, snout_below_shoulders=round(below, 3), snout_ahead_of_forefeet=round(ahead, 3),
+               snout_height=round(float(posed[snout][1] - ground) / mesh.height, 3))
+    if drop < ATTACK_SNOUT_DROP or below <= 0 or ahead <= 0:
+        return [finding("TRIPO-ATTACK-HEAD-LEAD", clip, f"at its lowest on the game camera's screen (frame {best}) the snout has dropped {drop:.0%} of the height (at least {ATTACK_SNOUT_DROP:.0%}, the orc's and the ogre's blows 17% and 24%), lies {below:+.0%} below the shoulders and {ahead:+.0%} ahead of the forefeet (both must be above 0): the head does not drive the strike forward and down", drop=round(drop, 3), below=round(below, 3), ahead=round(ahead, 3), frame=best)]
+    return []
+
+
+def _death_end_findings(mesh, clip: str, matrices, c: dict, row: dict) -> List[dict]:
+    out = []
+    above, clear = death_end_numbers(mesh, matrices, c["sides"], c["head"], c["head_neck"], c["torso"])
+    row.update(wing_above_join=round(above, 4), head_clear=round(clear, 3))
+    if above > DEATH_WING_ABOVE:
+        out.append(finding("TRIPO-DEATH-WING-HIGH", clip, f"at the end a wing stands {above:.0%} of the height over where it joins the body (limit {DEATH_WING_ABOVE:.0%}): it reads as a sail, not a wing lying flat", share=round(above, 4)))
+    if clear < DEATH_HEAD_CLEAR:
+        out.append(finding("TRIPO-DEATH-HEAD-HIDDEN", clip, f"at the end {clear:.0%} of the head and neck shows clear of the body, legs, wings and tail from the game camera (at least {DEATH_HEAD_CLEAR:.0%}): the head is lost in the heap", share=round(clear, 3)))
+    tent, frame = death_wing_tent(mesh, matrices, c["wings"], c["torso"])
+    row.update(wing_tent=round(tent, 3), wing_tent_frame=frame)
+    if tent > DEATH_WING_TENT:
+        out.append(finding("TRIPO-DEATH-WING-TENT", clip, f"in frame {frame} the wings fill {tent:.2f} times the lying torso's screen cells above its outline from the game camera (at most {DEATH_WING_TENT:.2f}): they stand over the dead body as a tent or a sail", share=round(tent, 3), frame=frame))
+    roll, roll_frame = death_wing_tent(mesh, matrices, c["wings"], c["torso"], DEATH_TENT_ROLL_FROM, DEATH_TENT_FROM)
+    row.update(wing_tent_roll=round(roll, 3), wing_tent_roll_frame=roll_frame)
+    if roll > DEATH_WING_TENT:
+        out.append(finding("TRIPO-DEATH-WING-TENT", clip, f"while the body rolls (frame {roll_frame}) the wings fill {roll:.2f} times the torso's screen cells above its outline from the game camera (at most {DEATH_WING_TENT:.2f}): a wing stands up as the body falls", share=round(roll, 3), frame=roll_frame))
+    eye = {view: death_wing_tent(mesh, matrices, c["wings"], c["torso"], cameras=[_view_axes(mesh, view)]) for view in ("front", "left", "right")}
+    row["wing_tent_eye"] = {view: round(value, 3) for view, (value, _frame) in eye.items()}
+    for view, (value, eye_frame) in eye.items():
+        if value > DEATH_WING_TENT_EYE:
+            out.append(finding("TRIPO-DEATH-WING-TENT", clip, f"in frame {eye_frame} from the {view} view the wings fill {value:.2f} times the lying torso's cells above its outline (at most {DEATH_WING_TENT_EYE:.2f}): a wing lies over the dead body as a mound", share=round(value, 3), frame=eye_frame, view=view))
+    if c["head"].any():
+        end_frames = sorted(set(range(int(DEATH_TENT_FROM * (matrices.shape[0] - 1)), matrices.shape[0], 2)) | {matrices.shape[0] - 1})
+        shares = [head_findable(mesh, pdx_deform.skin(mesh, matrices[frame]), c["head"]) for frame in end_frames]
+        findable, lost_frame = min(shares), end_frames[int(np.argmin(shares))]
+        row.update(head_findable=round(findable, 3), head_findable_frame=lost_frame)
+        if findable < DEATH_HEAD_FINDABLE:
+            out.append(finding("TRIPO-DEATH-HEAD-LOST", clip, f"in frame {lost_frame} only {findable:.0%} of the head stands clear of every other part from the game camera (at least {DEATH_HEAD_FINDABLE:.0%}, by {DEATH_HEAD_MARGIN} cells): it is lost among the legs and the wings", share=round(findable, 3)))
+    return out
+
+
+def _attack_reach(mesh, clip: str, role: str, matrices, c: dict, row: dict) -> Tuple[List[dict], int]:
+    head, front, length = c["head"], c["front"], c["length"]
+    reach = [float((pdx_deform.skin(mesh, matrices[f])[head] @ front).mean() - (mesh.positions[head] @ front).mean()) / length for f in range(matrices.shape[0])]
+    best = int(np.argmax(reach)) if role == "attack" else matrices.shape[0] // 2
+    peak = len(_cells(pdx_deform.skin(mesh, matrices[best])[c["wings"]], _view_axes(mesh, "map"), c["cell"]))
+    out = []
+    if role == "attack":
+        row["head_reach"], row["reach_frame"] = round(reach[best], 3), best
+        if reach[best] < ATTACK_REACH_MIN:
+            out.append(finding("TRIPO-ATTACK-REACH", clip, f"the head drives forward {reach[best]:.0%} of the body's length at most (frame {best}; at least {ATTACK_REACH_MIN:.0%}): the attack does not strike", share=round(reach[best], 3)))
+    return out, peak
+
+
+def quadruped_view_findings(mesh, anims: Dict[str, object], sides) -> (List[dict], dict):
+    """TRIPO-WING-SLIVER, TRIPO-WING-HEAD-FRONT, TRIPO-ATTACK-REACH, TRIPO-ATTACK-DEFEND-ALIKE, TRIPO-WING-CRUSH, TRIPO-WING-THROUGH-BODY,
+    TRIPO-DEATH-WING-HIGH, TRIPO-DEATH-HEAD-HIDDEN, TRIPO-DEATH-WING-TENT, TRIPO-STEP-READ, TRIPO-WING-SIDE-REACH, TRIPO-HEAD-FACING, TRIPO-ATTACK-HEAD-LEAD and
+    TRIPO-DEATH-SIDE for a winged quadruped."""
+
+    out, numbers = [], {}
+    wings = sides[0] | sides[1]
+    head, head_neck, trunk = _parts(mesh, wings)
+    front = front_direction(mesh)
+    length = max(float(np.ptp(mesh.positions[trunk] @ front)), 1e-6) if trunk.any() else 1.0
+    cell = SILHOUETTE_CELL_SHARE * mesh.height
+    flat = []
+    for mask in sides:
+        _centre, axes, _values = T.principal_axes(mesh.positions[mask])
+        flat.append(_aspect(np.stack([mesh.positions[mask] @ axes[0], mesh.positions[mask] @ axes[1]], axis=1)))
+    peaks = {}
+    edges, rest = wing_edges(mesh, wings)
+    names = np.array(mesh.bones).astype(str)
+    named = names[np.clip(pdx_deform.dominant_bones(mesh), 0, None)]
+    torso_only = np.isin(named, ["Pelvis", "Spine", "Chest"]) & ~wings
+    hooves = np.char.endswith(named, "_Hoof")
+    chest = mesh.bones.index("Chest") if "Chest" in mesh.bones else None
+    head_bone = mesh.bones.index("Head") if "Head" in mesh.bones and head.any() else None
+    snout = int(np.flatnonzero(head)[np.argmax(mesh.positions[head] @ front)]) if head_bone is not None else None
+    shoulder = float(np.linalg.inv(mesh.inverse_bind[mesh.bones.index("Neck_01")])[1, 3]) if "Neck_01" in mesh.bones else None
+    fore_hooves = np.isin(named, ["Front_Left_Hoof", "Front_Right_Hoof"])
+    context = dict(all_edges=pdx_deform.mesh_edges(mesh), wings=wings, head=head, head_neck=head_neck, front=front, length=length, cell=cell, flat=flat, edges=edges, rest=rest,
+                   torso=torso_only, hooves=hooves, sides=sides, chest=chest, head_bone=head_bone, snout=snout, shoulder=shoulder,
+                   fore_hooves=fore_hooves, chest_skin=(named == "Chest") & ~wings)
+    for clip, anim in anims.items():
+        found, row, peak = _winged_clip_findings(mesh, clip, anim, context)
+        out += found
+        numbers[clip] = row
+        if peak is not None:
+            peaks[clip_role(clip)] = peak
+    out += _pair_findings(mesh, anims, numbers, peaks, context)
+    return out, numbers
+
+
+def _pair_findings(mesh, anims: Dict[str, object], numbers: dict, peaks: Dict[str, int], c: dict) -> List[dict]:
+    """The findings that compare a winged quadruped's clips: TRIPO-WING-SIDE-REACH and TRIPO-GAME-READ against the idle, TRIPO-ATTACK-
+    DEFEND-ALIKE between the attack and the defend, and TRIPO-DEFORM-PASSED-BOUND per clip."""
+
+    out: List[dict] = []
+    idle_clip = next((clip for clip in anims if clip_role(clip) == "idle"), None)
+    idle = numbers.get(idle_clip, {}).get("side_reach") if idle_clip else None
+    for clip, row in numbers.items():
+        if not isinstance(row, dict):
+            continue
+        role = clip_role(clip)
+        if idle is not None and role in SIDE_REACH_ROLES and "side_reach" in row:
+            ratios = [reach / max(base, 1e-6) for reach, base in zip(row["side_reach"], idle)]
+            row["side_reach_over_idle"] = [round(value, 3) for value in ratios]
+            if max(ratios) > MAX_SIDE_REACH_OVER_IDLE:
+                out.append(finding("TRIPO-WING-SIDE-REACH", clip, f"a wing reaches {max(ratios):.2f} times as far to its side as in the idle's fold (at most {MAX_SIDE_REACH_OVER_IDLE:.2f}): the wings held back stand out to the sides", ratio=round(max(ratios), 3)))
+        if idle_clip is not None and role in GAME_READ_ROLES:
+            read = map_read.clip_reading(mesh, anims[clip], anims[idle_clip])
+            row["game_read"] = round(read, 3)
+            if read < MIN_GAME_READ:
+                out.append(finding("TRIPO-GAME-READ", clip, f"from the game camera the {role} changes {read:.0%} of the idle's silhouette (at least {MIN_GAME_READ:.0%}, the clips of the units reviewers passed 28% to 45%): at game size it reads as the idle", share=round(read, 3)))
+        share = deformed_share(mesh, anims[clip], c["all_edges"])
+        row["deformed_share"] = round(share, 4)
+        if share > DEFORM_PASSED_BOUND:
+            out.append(finding("TRIPO-DEFORM-PASSED-BOUND", clip, f"{share:.1%} of the edges stretch or squash 1.5 times in the worst frame (at most {DEFORM_PASSED_BOUND:.1%}, the worst clip of a unit reviewers passed)", share=round(share, 4)))
+    if len(peaks) == 2:
+        ratio = min(peaks.values()) / max(max(peaks.values()), 1)
+        fold = len(_cells(pdx_deform.skin(mesh, pdx_deform.skinning_matrices(mesh, anims[idle_clip])[0])[c["wings"]], _view_axes(mesh, "map"), c["cell"])) if idle_clip else 0
+        numbers["attack_defend_wings"] = round(ratio, 3)
+        numbers["wings_over_fold"] = round(max(peaks.values()) / max(fold, 1), 3) if fold else None
+        opened = not fold or max(peaks.values()) > WINGS_OPEN_SHARE * fold
+        if ratio > MAX_ATTACK_DEFEND_WINGS and opened:
+            clip = next(clip for clip in anims if clip_role(clip) == "attack")
+            out.append(finding("TRIPO-ATTACK-DEFEND-ALIKE", clip, f"at the attack's farthest reach and the defend's middle the wings fill {ratio:.0%} as much of the map view as each other (at most {MAX_ATTACK_DEFEND_WINGS:.0%}): at map size the two clips read alike", share=round(ratio, 3)))
+    return out
+
+
+def deformed_share(mesh, anim, edges: np.ndarray) -> float:
+    """TRIPO-DEFORM-PASSED-BOUND's measure: the most, over the clip's frames, of the share of the mesh's edges stretched or squashed past
+    `pdx_deform`'s ratio (1.5) and by its significant share of the height (0.5%)."""
+
+    rest = np.linalg.norm(mesh.positions[edges[:, 0]] - mesh.positions[edges[:, 1]], axis=1)
+    usable = rest > 1e-9
+    if not usable.any():
+        return 0.0
+    height = max(mesh.height, 1e-6)
+    matrices = pdx_deform.skinning_matrices(mesh, anim)
+    worst = 0.0
+    for frame in range(matrices.shape[0]):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        length = np.linalg.norm(posed[edges[:, 0]] - posed[edges[:, 1]], axis=1)
+        ratio = length[usable] / rest[usable]
+        growth = (length[usable] - rest[usable]) / height
+        bad = ((ratio > pdx_deform.STRETCH_RATIO) & (growth > pdx_deform.SIGNIFICANT_SHARE)) | ((ratio < pdx_deform.SQUASH_RATIO) & (-growth > pdx_deform.SIGNIFICANT_SHARE))
+        worst = max(worst, float(bad.mean()))
+    return worst
+
 def idle_move_findings(rows: Dict[str, dict]) -> List[dict]:
     """TRIPO-WING-IDLE-MOVE: the move's wings move at map size at least `MIN_MOVE_IDLE_MOTION_RATIO` times as much as the idle's."""
 
@@ -629,6 +1334,10 @@ def chain_findings(mesh, anims: Dict[str, object], wings: bool, cloak: bool, ste
         out += idle_move_findings(numbers["clips"])
         if quadruped_checks.is_quadruped(mesh):
             found, numbers["mirror"] = wing_mirror_findings(mesh, anims, sides)
+            out += found
+            found, numbers["flank_hang"] = wing_flank_findings(mesh, anims, sides)
+            out += found
+            found, numbers["views"] = quadruped_view_findings(mesh, anims, sides)
             out += found
     return out, numbers
 
@@ -1198,6 +1907,32 @@ def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List
     return out, numbers
 
 
+def wing_span_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List[dict], dict):
+    """TRIPO-WING-SPAN: a clip that spreads the wings (a role in `tripo_chains.WING_ROLES` that folds them less than fully, has no forward
+    wrap and is not a death) reaches in its widest frame at least `MIN_WING_SPAN_SHARE` of the rest pose's width across the lateral axis."""
+
+    front = front_direction(mesh)
+    lateral = T.unit(np.cross(np.array([0.0, 1.0, 0.0]), front))
+    rest = float(np.ptp(np.asarray(mesh.positions, float) @ lateral))
+    out, numbers = [], {}
+    if rest <= 0:
+        return out, numbers
+    for clip, anim in anims.items():
+        rule = tripo_chains.WING_ROLES.get(clip_role(clip))
+        if rule is None or "fold_end" in rule or float(rule.get("fold", 0.0)) >= 1.0 or float(rule.get("wrap", 0.0)) > 0:
+            continue
+        spans = [float(np.ptp(posed @ lateral)) for posed in posed_frames(mesh, anim, step)]
+        if not spans:
+            continue
+        widest = int(np.argmax(spans))
+        share = spans[widest] / rest
+        numbers[clip] = {"span_share": round(share, 3), "frame": widest * step}
+        if share < MIN_WING_SPAN_SHARE:
+            out.append(finding("TRIPO-WING-SPAN", clip, f"the wings spread at most {share:.0%} of the drawn span (frame {widest * step}, limit "
+                               f"{MIN_WING_SPAN_SHARE:.0%} of the rest pose's width): the clip shows a smaller wing than the picture", share=round(share, 3), frame=widest * step))
+    return out, numbers
+
+
 # For a winged humanoid's attack and defend the game camera decides (D-83): their wings aim at it (lib/tripo_chains.SCREEN_ROLES), so the
 # side views' cover and edge-on rules only report there. They block in the map view, and in the side views of every other clip.
 SIDE_ADVISORY_RULES = ("TRIPO-WING-FRONT", "TRIPO-WING-EDGE-ON")
@@ -1222,7 +1957,8 @@ def wing_checks(mesh, anims: Dict[str, object], wings: bool, cape: bool, numbers
     found, advisory = side_view_advisory(found, mesh)
     if wings:
         screen, numbers["wing_screen"] = wing_screen_findings(mesh, anims)
-        found += screen
+        span, numbers["wing_span"] = wing_span_findings(mesh, anims)
+        found += screen + span
     return found, advisory
 
 

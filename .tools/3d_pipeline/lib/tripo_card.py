@@ -45,7 +45,7 @@ HAND_MESSAGE = (
 # The card's picture sentence starts with this unless the preset gives its own start (a building asks for a small yard and thick bracing).
 DEFAULT_PICTURE_PREFIX = "Redraw this exact <subject> for 3D modelling. Keep <every detail>. Invent nothing."
 
-BLOCK = re.compile(r"<!-- (armed|unarmed|shield|tripo_rig|kit_rig|static|model|unit) -->\n(.*?)<!-- /\1 -->\n", re.S)
+BLOCK = re.compile(r"<!-- (armed|unarmed|shield|tripo_rig|kit_rig|static|model|unit|winged) -->\n(.*?)<!-- /\1 -->\n", re.S)
 
 
 def job_entry(config: Path, slug: str) -> Dict[str, Any]:
@@ -101,6 +101,41 @@ def is_armed(spec: Dict[str, Any]) -> bool:
     return bool((spec.get("tripo") or {}).get("weapon"))
 
 
+def is_winged(spec: Dict[str, Any]) -> bool:
+    """A Tripo-rigged job (a winged humanoid) whose anatomy has wings or whose `tripo.chains` names the wings region. A winged quadruped is
+    rigged by the kit and has its own wing rules."""
+
+    try:
+        if route_of(spec) != "tripo_rig":
+            return False
+    except (KeyError, ValueError):
+        return False
+    chains = (spec.get("tripo") or {}).get("chains") or []
+    return bool((spec.get("anatomy") or {}).get("wings")) or any(isinstance(c, dict) and c.get("region") == "wings" for c in chains)
+
+
+def wing_problems(spec: Dict[str, Any]) -> List[str]:
+    """A winged job needs the wings chains: Tripo's humanoid rig has no wing bones."""
+
+    chains = (spec.get("tripo") or {}).get("chains") or []
+    if is_winged(spec) and not any(isinstance(c, dict) and c.get("region") == "wings" for c in chains):
+        return ["the anatomy has wings, so tripo.chains needs {\"region\": \"wings\"}: Tripo's humanoid rig has no wing bones, and without "
+                "the chains the membrane follows the arms (docs/3d-units.md, Secondary chains)"]
+    return []
+
+
+# A burn death (lib/tripo_burn.py) plays a standing reaction, not a fall: the route burns the body away where it stands.
+BURN_DEATH_CLIPS = ["hit_to_stomach"]
+
+
+def clip_candidates(spec: Dict[str, Any], preset: Dict[str, Any]) -> Dict[str, Any]:
+    """The preset with its death candidates swapped for a standing reaction when the job's death burns (`tripo.death_kind` `burn`)."""
+
+    if (spec.get("tripo") or {}).get("death_kind") != "burn":
+        return preset
+    return {**preset, "clips": {**preset["clips"], "death": list(BURN_DEATH_CLIPS)}}
+
+
 def has_shield(spec: Dict[str, Any]) -> bool:
     return isinstance((spec.get("tripo") or {}).get("shield"), dict)
 
@@ -131,6 +166,7 @@ def problems(spec: Dict[str, Any]) -> List[str]:
     route = _preset_problems(spec, found)
     if unit_type and unit_type in ARMED_TYPES and not is_armed(spec):
         found.append(f"unit_type {unit_type} holds a weapon, so the job needs tripo.weapon (an unarmed unit takes infantry_unarmed or beast_biped)")
+    found += wing_problems(spec)
     if is_armed(spec):
         found += _weapon_problems(block["weapon"])
     if has_shield(spec):
@@ -267,7 +303,8 @@ def keep_blocks(text: str, spec: Dict[str, Any]) -> str:
 
     route = route_of(spec)
     wanted = {"armed": is_armed(spec), "unarmed": not is_armed(spec), "shield": has_shield(spec), "tripo_rig": route == "tripo_rig",
-              "kit_rig": route == "kit_rig", "static": route == "static", "model": route != "static", "unit": route != "static"}
+              "kit_rig": route == "kit_rig", "static": route == "static", "model": route != "static", "unit": route != "static",
+              "winged": is_winged(spec)}
     # Blocks nest (an armed block inside the Tripo rig's steps), so resolve the outer ones first and repeat until none is left.
     while True:
         kept = BLOCK.sub(lambda match: match.group(2) if wanted[match.group(1)] else "", text)
@@ -290,7 +327,7 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     sources = [sources] if isinstance(sources, str) else sources
     # The preset's values go first: some of them hold placeholders of their own (the armed attack prompt names <weapon>).
     values = {
-        "<clip table>": tripo_presets.clip_table(preset) if preset["route"] == "tripo_rig" else "",
+        "<clip table>": tripo_presets.clip_table(clip_candidates(spec, preset)) if preset["route"] == "tripo_rig" else "",
         "<paid clip>": paid_prompt(preset, is_armed(spec)),
         "<paid clip when>": (preset.get("paid_clip") or {}).get("when", "only when step 6 says no attack passes"),
         "<free attacks>": " ".join(tripo_presets.free_attacks(preset, is_armed(spec))),

@@ -26,7 +26,7 @@ One card per unit or static model. Write it with `py -3.13 -B .tools/3d_pipeline
 The picture is made from existing references, never from a text prompt alone. Every reference is already in the Sources row and the job's `reference_sources`.
 
 1. Open **Image**, model Nano Banana 2.
-2. Add the subject's own reference and every researched reference from the Sources row.
+2. Add the subject's own reference and every researched reference from the Sources row, except a source marked `private, never uploaded`: an owner's drawing never goes to Tripo or any other online service (D-123). Its 3D-ready picture is made offline or by the mod's own image lane, and only that picture comes here.
 3. Write the redraw instruction below. Fill each part in angle brackets.
 4. Check that the button reads 0, then press it.
 5. Compare the result with the art, detail by detail, before you go on.
@@ -76,13 +76,14 @@ How to write `<every detail>`:
 1. **Model**, **HD Model**. Add the body picture.
 2. Settings under **Geometry & Texture**: Ultra Mesh Quality off, Texture on, 2K, Remove Lighting on, PBR on, Triangle, polycount 20000. AI model H3.1. Generate in Parts off.
 3. The button must read **Generate 30**. Press it once. Turn the model and look at every side.
+4. **Export** the model (GLB, free) and run `py -3.13 -B .tools/3d_pipeline/tripo/span_check.py <model.glb> <picture>`. It must print `pass`. On `fail` (TRIPO-SPAN-PICTURE: wings, arms or tail not as wide as drawn) make the model again and do not rig it.
 <!-- armed -->
-4. For the weapon, start a new asset. Tripo keeps the settings of the last asset but not its picture, so add the weapon picture and read the settings again.
-5. The button must read **Generate 30**. Press it once. Look at every side.
-6. On the weapon's Model page press **Export**: GLB, 2K. Tripo names the file after the model's title (for example `orc character 3d model.glb`). Save it as `<job folder>/armed/<asset_slug>_weapon__model.glb`.
+5. For the weapon, start a new asset. Tripo keeps the settings of the last asset but not its picture, so add the weapon picture and read the settings again.
+6. The button must read **Generate 30**. Press it once. Look at every side.
+7. On the weapon's Model page press **Export**: GLB, 2K. Tripo names the file after the model's title (for example `orc character 3d model.glb`). Save it as `<job folder>/armed/<asset_slug>_weapon__model.glb`.
 <!-- /armed -->
 <!-- shield -->
-7. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
+8. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
 <!-- /shield -->
 <!-- /model -->
 <!-- tripo_rig -->
@@ -90,12 +91,26 @@ How to write `<every detail>`:
 ## 3. Rig (20)
 
 **Rig**: Humanoid, skeleton preset Mixamo, **Auto Rig**.
+<!-- winged -->
+
+**When Tripo says "Not Ready for Auto-Rigging".** Large wings make Tripo's pre-rig check doubt a humanoid rig. It shows this dialog about ten seconds after the press, with **Generate with T-Pose** and **Try Rigging Anyway**. Neither is needed: the picture's pose is the one the route wants, and a T-pose picture means a new model (30). On the devil (2026-11-22) **Try Rigging Anyway** sent the rig request and Tripo refused it (HTTP 406, no charge). A press after reopening the page did nothing, and the next press rigged and charged once. What worked:
+
+1. Read the balance in the header. It must not have dropped. If it dropped, the rig is running: wait and do not press again.
+2. Open the rigging page again by its address, `studio.tripo3d.ai/workspace/rigging/<asset id>`.
+3. Check that **Auto Rig** reads 20, then press it once.
+4. Wait 30 seconds. The rig runs without the dialog. The page then shows "Rigged models can be used for animation", the balance has dropped by 20 once, and the button reads **Retry 20**.
+5. Do not press **Retry**: it rigs again, charges 20 again and drops every clip applied. A rig that `rig_check.py` fails is repaired with `arm_seat.py` (step 6). Write the ledger's balance after only when the drop shows.
+<!-- /winged -->
 
 ## 4. Candidate animations (free)
 
 **Animate**, **Preset**. Type each name into the search box and click the middle of its tile once. Wait until **Retargeting** has gone before the next tile. The search matches names only.
 
 <clip table>
+<!-- winged -->
+
+**The wings.** Tripo's rig has no wing bones. The route adds them and moves the wings by fixed rules per role (`docs/3d-units.md`, Secondary chains: cloaks and wings), so pick each clip for the body alone. The job keeps `"chains": [{"region": "wings"}]`, `"defend_pose": "guard"` (the guard is posed by rule, the wings wrap forward) and `"retreat_pose": "look_back"` (the wings fold along the back, the head looks back) in its `tripo` block. A burn death (`"death_kind": "burn"`) takes a standing reaction, so its row lists `hit_to_stomach`.
+<!-- /winged -->
 
 Every clip must fit the unit: its era, its weapon and its kind of creature. Never a modern boxing, kick or dance preset, even when it passes the checks (D-127). The table lists only presets that may fit, and `make_card.py` and the intake refuse a job whose roles name one of the `never_fitting` patterns in `config/tripo_presets.json`.
 
@@ -136,6 +151,8 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 ## 6. Before you leave Tripo (free)
 
 Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
+
+First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. For a winged unit repair it free: `py -3.13 -B .tools/3d_pipeline/tripo/arm_seat.py <the rigged export> --out <job folder>/inbox/<asset_slug>__rigged.glb`, then run `rig_check.py` on that file. It moves the arm joints onto the mesh's own arm and gives the wing skin to the shoulder for the route's wing chains, and every clip already applied keeps working. Do not press **Retry** on the Rig page instead: it charges 20, drops every applied clip, and on the devil its second rig was worse (91% of the skin on the head, no right hand joint). When `arm_seat.py` refuses or the check still fails, stop and ask before any paid step.
 
 <!-- unarmed -->
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.

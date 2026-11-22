@@ -6,7 +6,7 @@ You need no 3D knowledge. You choose what kind of model you want, give your agen
 
 ## 1. Choose the type
 
-Tell your agent what the unit is. It picks the preset:
+Say "make a 3D unit from this picture" and give your agent the picture and a few words about it. It answers a few plain questions from the picture (what it is, how many legs, wings, a weapon and in which hand, its size, a rider) and `tripo/pick_preset.py` turns them into the preset by fixed rules. It then shows you one sentence to confirm, with the cost on the card and on the Canvas, for example: "A goblin with an axe: humanoid with a weapon (preset armed_humanoid). The card costs about 80 to 100 credits, the Canvas workflow Armed unit about 110 to 130, cap 120. Right?" Say yes, or correct it. The presets:
 
 | You want | Preset | Credits |
 | --- | --- | --- |
