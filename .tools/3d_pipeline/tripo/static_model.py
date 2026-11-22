@@ -183,21 +183,30 @@ def hole_texel(glb: Path, colour: Path) -> Optional[dict]:
         return None
 
 
-def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None, front: Optional[str] = None, game: Optional[Path] = None) -> Dict[str, dict]:
+# A geometry check of an untextured source (a Smart Mesh trial before its paid texture) packs this flat grey.
+GEOMETRY_ONLY_GREY = (178, 178, 178)
+
+
+def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None, front: Optional[str] = None, game: Optional[Path] = None, geometry_only: bool = False) -> Dict[str, dict]:
     """The GLB's base colour, normal and metallic-roughness maps as the kind's PDX diffuse, normal and specular DDS. The
-    colour map is delighted first; `delight` (when given) receives what was lifted."""
+    colour map is delighted first; `delight` (when given) receives what was lifted. With `geometry_only` an untextured
+    GLB gets flat placeholder maps instead, so its geometry can be checked before a texture is paid for."""
 
     images = embedded_images(glb)
-    if not images["diffuse"]:
-        raise SystemExit(f"{glb.name} has no base colour map")
+    if not images["diffuse"] and not geometry_only:
+        raise SystemExit(f"{glb.name} has no base colour map (an untextured trial: add --geometry-only to check its geometry first)")
     if len(images["diffuse"]) > 1:
         raise SystemExit(f"{glb.name} has {len(images['diffuse'])} base colour maps; the route packs one atlas")
     size = int(contract["texture_size"])
     work.mkdir(parents=True, exist_ok=True)
     found = delight if delight is not None else {}
-    lifted = delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, found)
-    lifted = ring_seamed(lifted, glb, contract, front, found)
-    colour = _resize(contrasted(lifted, glb, contract, front, game, found).convert("RGBA"), size)
+    if images["diffuse"]:
+        lifted = delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, found)
+        lifted = ring_seamed(lifted, glb, contract, front, found)
+        colour = _resize(contrasted(lifted, glb, contract, front, game, found).convert("RGBA"), size)
+    else:
+        found["geometry_only"] = True
+        colour = Image.new("RGBA", (size, size), (*GEOMETRY_ONLY_GREY, 255))
     colour = Image.merge("RGBA", (*colour.split()[:3], Image.new("L", (size, size), 255)))
     if images["normal"]:
         source = _resize(Image.open(io.BytesIO(images["normal"][0])).convert("RGB"), size)
@@ -420,6 +429,19 @@ def run_blender(request_path: Path, log: Path) -> None:
         raise SystemExit("Blender did not finish the model; see " + str(log) + "\n" + "\n".join(tail))
 
 
+def summary(name: str, kind: str, files: Path, report: dict, code: int, geometry_only: bool) -> dict:
+    """The one-line verdict. A geometry-only run (flat placeholder maps from an untextured source) is marked beside its
+    files and in the verdict: its geometry and file checks count, its look does not, and it is never shipped."""
+
+    if geometry_only:
+        (files / "GEOMETRY_ONLY.txt").write_text("Flat placeholder textures from an untextured source. Geometry check only, never ship.\n", encoding="utf-8", newline="\n")
+    verdict = "pass" if code == 0 else "fail"
+    return {"tool": "static_model", "name": name, "kind": kind, "files": str(files), "triangles": report.get("triangles"),
+            "parts": report.get("parts", {}).get("triangles_per_part"), "reduction_problems": report.get("reduction", {}).get("problems"),
+            "source_parts": parts_summary(report),
+            "geometry_only": geometry_only, "check": f"geometry {verdict}" if geometry_only else verdict}
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("job", type=Path, help="the inbox's <name>.json (name, model_kind, optional glb and front)")
@@ -428,6 +450,8 @@ def main(argv=None) -> int:
     parser.add_argument("--plan", action="store_true", help="only run the geometry rules on the GLB and print them")
     parser.add_argument("--keep-blend", action="store_true", help="also save the Blender scene (tens of megabytes) for a look by hand")
     parser.add_argument("--game", type=Path, help="the game folder (default: the one .tools/lib/game.py finds)")
+    parser.add_argument("--geometry-only", action="store_true",
+                        help="check an untextured GLB (a Smart Mesh trial) with flat grey maps before paying for its texture; the result is never shipped")
     args = parser.parse_args(argv)
     job = json.loads(args.job.read_text(encoding="utf-8"))
     name, kind = job["name"], job["model_kind"]
@@ -447,7 +471,7 @@ def main(argv=None) -> int:
     files.mkdir(parents=True)
     delight: dict = {}
     glb, atlas = atlas_source(glb, out)
-    textures = pack_textures(glb, contract, name, files, out / "textures", delight, front, game)
+    textures = pack_textures(glb, contract, name, files, out / "textures", delight, front, game, geometry_only=args.geometry_only)
     motion, barrel_length = clip_motion(game, contract) if contract.get("clips") else ({}, None)
     hole = hole_texel(glb, out / "textures" / f"{name}_diffuse.png") if kind == "vehicle" else None
     request = {
@@ -458,6 +482,7 @@ def main(argv=None) -> int:
         "hole_uv": [hole["uv"][0], 1.0 - hole["uv"][1]] if hole else None,
         "report": str(out / "blender_report.json"), "blend": str(out / f"{name}.blend") if args.keep_blend else None,
         "parts": job.get("parts", "auto"), "part_shape_iou": job.get("part_shape_iou"),
+        "geometry_only": bool(delight.get("geometry_only")),
     }
     request_path = out / "blender_request.json"
     request_path.write_text(json.dumps(request), encoding="utf-8", newline="\n")
@@ -467,9 +492,7 @@ def main(argv=None) -> int:
     entities = out / "mod" / "gfx" / "entities"
     entities.mkdir(parents=True, exist_ok=True)
     (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
-    report["textures"] = textures
-    report["delight"] = delight
-    report.update(hole=hole, atlas=atlas)
+    report.update(textures=textures, delight=delight, hole=hole, atlas=atlas)
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files
@@ -483,10 +506,7 @@ def main(argv=None) -> int:
         # STATIC-SHAPE: the reduction to vanilla's budget lost part of the silhouette (lib/tripo_shape.py)
         print(f"STATIC-SHAPE: reducing {name} to {report['reduction']['budget']} triangles changed its outline: " + "; ".join(problems))
         code = 1
-    print(json.dumps({"tool": "static_model", "name": name, "kind": kind, "files": str(files), "triangles": report.get("triangles"),
-                      "parts": report.get("parts", {}).get("triangles_per_part"), "reduction_problems": report.get("reduction", {}).get("problems"),
-                      "source_parts": parts_summary(report),
-                      "check": "pass" if code == 0 else "fail"}))
+    print(json.dumps(summary(name, kind, files, report, code, bool(delight.get("geometry_only")))))
     return code
 
 
