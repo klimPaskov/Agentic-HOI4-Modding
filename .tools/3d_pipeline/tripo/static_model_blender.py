@@ -473,10 +473,16 @@ assert model.vertex_groups["thickened_cards"].index == CARD_GROUP
 report["cards"] = thicken_cards(bm, size)
 report["cards"]["triangles_kept_back"] = cards_cost
 report["winding_after_cards"] = consistent_winding(bm)
-# A tank's small fittings that the reduction crumpled into lumps become their convex hull (static_mesh_ops.hull_crumpled_pieces)
-if kind == "vehicle":
+# A tank's small fittings that the reduction crumpled into lumps become their convex hull (static_mesh_ops.hull_crumpled_pieces).
+# A model under its target was not reduced, so nothing was crumpled: its fittings stay as made. On the M2A4 Smart Mesh tank
+# (6,257 triangles, target 7,095) the hulls turned 35 clean fittings (vision flaps, hinges) into jumbled blocks and left
+# 29 edges between faces facing opposite ways (UNIT-WINDING).
+if kind == "vehicle" and current > target:
     report["crumpled_pieces"] = hull_crumpled_pieces(bm, contract["rules"].get("wheels"))
     report["winding_after_hulls"] = consistent_winding(bm)
+elif kind == "vehicle":
+    report["crumpled_pieces"] = {"skipped": "not reduced", "triangles": current, "target": target}
+if kind == "vehicle":
     # A wall that faces into the hull (nothing behind its back) shows the inside through it from outside: it gets a reversed copy
     report["inside_out_walls"] = double_inside_out_walls(bm)
 bm.to_mesh(model.data)
