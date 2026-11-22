@@ -70,6 +70,29 @@ class PresetFile(unittest.TestCase):
         listed = re.findall(r"^\| `(\w+)` \|", section, re.M)
         self.assertEqual(sorted(listed), sorted(P.names()))
 
+    def test_every_preset_names_a_canvas_workflow_the_canvas_page_describes(self):
+        workflows = json.loads(P.WORKFLOWS.read_text(encoding="utf-8"))["workflows"]
+        page = (PIPELINE_ROOT.parents[1] / "docs" / "3d-canvas.md").read_text(encoding="utf-8")
+        for name in P.names():
+            self.assertIn(P.get(name)["canvas"], workflows)
+            self.assertIn(f"`{name}`", page.split("## Price by type", 1)[1].split("\n## ", 1)[0])
+        for flow in workflows.values():
+            self.assertIn(f"**{flow['title'].split(' (')[0]}**", page)
+        self.assertIn("**45**", page)
+        self.assertEqual(workflows["rigged_unit"]["extra_credits"], 45 - P.load()["prices"]["hd_model"]["credits"])
+
+    def test_the_quick_start_credits_are_the_presets(self):
+        page = (PIPELINE_ROOT.parents[1] / "docs" / "3d-quick-start.md").read_text(encoding="utf-8")
+        rows = re.findall(r"^\| [^|]+ \| ((?:`\w+`(?:, )?)+) \| ([^|]+) \|$", page, re.M)
+        self.assertTrue(rows)
+        seen = set()
+        for names, credits in rows:
+            for name in re.findall(r"`(\w+)`", names):
+                low, high = P.get(name)["expected_credits"]
+                self.assertTrue(credits.strip().startswith(f"{low}" if low == high else f"{low} to {high}"), (name, credits))
+                seen.add(name)
+        self.assertEqual(set(P.names()) - seen, {"rider"})  # the rider is part of mount_with_rider
+
     def test_every_type_the_task_names_has_a_preset(self):
         names = set(P.names())
         for name in ("humanoid", "armed_humanoid", "large_creature", "winged_humanoid", "winged_quadruped", "mount_with_rider",

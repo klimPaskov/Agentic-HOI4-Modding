@@ -13,7 +13,7 @@ One card per unit or static model. Write it with `py -3.13 -B .tools/3d_pipeline
 | Idle posture | `<posture>` (the job's `tripo.posture`, see step 7) |
 <!-- /tripo_rig -->
 | Credit budget | <credit_budget> (the preset: <preset budget>) |
-| Canvas workflow | <canvas> (the same steps on Tripo's Agentic Canvas, for an account that has it) |
+| Canvas workflow | <canvas>. The same steps on Tripo's Agentic Canvas, for an account that has it |
 | Job folder | `<job folder>` |
 | Balance before | |
 <!-- armed -->

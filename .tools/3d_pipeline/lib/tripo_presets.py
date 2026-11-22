@@ -223,18 +223,24 @@ def polycount(preset: Dict[str, Any], *, config: Path = CONFIG) -> Dict[str, str
             "<polycount reason>": f"vanilla's most detailed {preset['model_kind']} has {budget['value']:,} triangles, from `config/static_kinds.json`"}
 
 
-def canvas_line(preset: Dict[str, Any], *, config: Path = CONFIG) -> str:
+def canvas_name(preset: Dict[str, Any], armed: bool) -> str:
+    """The Canvas workflow a job follows: an armed preset's job with empty hands (a large creature without a weapon) takes the rigged one."""
+
+    return "rigged_unit" if preset["canvas"] == "armed_unit" and not armed else preset["canvas"]
+
+
+def canvas_line(preset: Dict[str, Any], *, armed: bool = False, config: Path = CONFIG) -> str:
     """The card's line about the type's Agentic Canvas workflow: its name, its price against the page and its link when shared."""
 
     path = config / WORKFLOWS.name
     if not path.exists():
         return "none yet"
     workflows = _load(path)
-    flow = workflows["workflows"].get(preset["canvas"])
+    flow = workflows["workflows"].get(canvas_name(preset, armed))
     if not flow:
         return "none yet"
     link = (workflows.get("links") or {}).get(preset.get("name") or "") or flow.get("link")
-    where = f"[{flow['title']}]({link})" if link else f"{flow['title']} (not shared yet: build it from `docs/3d-canvas.md`)"
+    where = f"[{flow['title']}]({link})" if link else f"{flow['title']}, built from `docs/3d-canvas.md` (no shared link yet)"
     if flow.get("extra_credits") is None:
         return f"{where}, its node prices not read yet: read each node before you run it"
     return f"{where}, {flow['extra_credits']} more credits than the card for the same model"
