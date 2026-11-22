@@ -279,6 +279,8 @@ DEATH_WING_TENT = 0.45
 #   from the game camera);
 # - the game camera's measure while the body rolls too, from DEATH_TENT_ROLL_FROM of the clip: in run 19 one wing stood upright from
 #   frame 16 to 31 (both reviews), 1.61 at frame 25.
+# Run 20 (round 13, calibration): both fresh reviews saw the top wing stand over the body as a mound or tent from every eye-level view
+# (0.15 to 0.19 here) and a wing stand up as a sail while the body rolled (0.72), so neither limit is loosened.
 DEATH_WING_TENT_EYE = 0.10
 DEATH_TENT_ROLL_FROM = 0.3
 # TRIPO-DEATH-HEAD-LOST: over the death's end (as TRIPO-DEATH-WING-TENT judges it), from the game camera and its mirror, at least DEATH_HEAD_FINDABLE of the head's screen cells
@@ -290,20 +292,28 @@ DEATH_HEAD_MARGIN = 2
 # Round 13: the head's own neck is not another part. It always joins the head, so counting it held the best lying pose found to 0.38,
 # with the head clear of the legs and wings. Left out, run 18 reads 0.48 and run 19 0.47 (both failed by fresh reviews) and that pose
 # 0.59.
+# Run 20 (round 13, calibration) read 0.543 and neither fresh review could find the head.
 DEATH_HEAD_FINDABLE = 0.55
 # TRIPO-NECK-SQUASH: in every frame of a winged quadruped's clips but the death, the distance from the middle of the head's skin to the
 # middle of the Chest's skin stays at least NECK_SQUASH_MIN of its rest value. Both fresh reviews of run 19 saw the strike fold the neck
 # into the shoulders (0.75 at frame 35). Run 18's strike, which one review read clearly, keeps 0.87, its defend 0.83.
-NECK_SQUASH_MIN = 0.8
+# Run 20 (round 13, calibration): its strike kept 0.83 and both fresh reviews again saw the neck fold into the shoulders. Run 18's 0.87
+# read clearly to one review. The limit lies between them.
+NECK_SQUASH_MIN = 0.85
 # TRIPO-DEFEND-HEAD-BOXED: in every frame of the defend, the middle of the head's skin lies at least DEFEND_HEAD_LEAD of the height ahead of
 # the wings' front (their 99th percentile along the facing). Both fresh reviews of run 19 saw the raised wing forearms box the head in
 # like a hood: it lay 0.038 behind their front (run 18 0.032 behind). The idle, whose head both reviews read clearly, keeps it 0.12 ahead.
 DEFEND_HEAD_LEAD = 0.02
+# Run 20 (round 13, calibration) showed the measure does not predict the reviews: its defend held the head 5.7% ahead of the wings and both
+# fresh reviews still saw the wings box it in, while run 18's held it 3% behind and neither named a box. So the number is reported, and
+# no finding is made from it until a measure that tells those two apart replaces it.
+DEFEND_HEAD_BOXED_JUDGED = False
 # TRIPO-WING-FOLD-SPIKE: in a winged quadruped's idle, from the game camera and its mirror, the arm of the folded wing (the leading
 # chain, `Wing<side>_4_*`) rises at most FOLD_SPIKE_MAX of the height above the top of the body without its wings (each part's
 # 99.5th percentile on the screen). Both fresh reviews of run 19 named the idle's near wing a spike standing up over the back (0.126).
 # The other clips are reported, not judged: the attack (0.07) was named, the retreat (0.12) was not, so the measure does not yet tell
 # them apart.
+# Run 20 (round 13, calibration), its idle unchanged, read 0.126 and both fresh reviews again called the arm a spike or a horn (major).
 FOLD_SPIKE_MAX = 0.10
 FOLD_SPIKE_ROLES = ("idle",)
 # TRIPO-STEP-READ: in a winged quadruped's move and retreat the hooves travel, from the game camera, at least MIN_STEP_READ of the body's
@@ -1073,7 +1083,7 @@ def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], d
     if role == "defend" and c["head"].any():
         lead, lead_frame = head_lead_over_wings(mesh, matrices, c["head"], c["wings"], c["front"])
         row.update(head_lead=round(lead, 3), head_lead_frame=lead_frame)
-        if lead < DEFEND_HEAD_LEAD:
+        if DEFEND_HEAD_BOXED_JUDGED and lead < DEFEND_HEAD_LEAD:
             out.append(finding("TRIPO-DEFEND-HEAD-BOXED", clip, f"in frame {lead_frame} the head lies {lead:.1%} of the height ahead of the wings' front (at least {DEFEND_HEAD_LEAD:.0%}): the wings box it in", share=round(lead, 3), frame=lead_frame))
     if role != "death" and c["head_neck"].any():
         share = head_front_share(mesh, matrices, c["wings"], head_front_region(c["head"], c["head_neck"]))
