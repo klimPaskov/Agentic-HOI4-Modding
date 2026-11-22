@@ -216,6 +216,12 @@ class NewJobCommand(unittest.TestCase):
                 self.assertEqual(new_job.main(["--jobs-config", str(registry), "--preset", "ship", "galley", "--source", "a photo"]), 0)
                 static = json.loads((root / "galley" / "inbox" / "galley.json").read_text(encoding="utf-8"))
                 self.assertEqual(static, {"name": "galley", "model_kind": "ship"})
+                code = new_job.main(["--jobs-config", str(registry), "--preset", "tank", "m2a4", "--source", "a photo",
+                                     "--set", 'size_reference="USA_tank_light"'])
+                self.assertIn(code, (0, 3))
+                static = json.loads((root / "m2a4" / "inbox" / "m2a4.json").read_text(encoding="utf-8"))
+                self.assertEqual(static, {"name": "m2a4", "model_kind": "vehicle", "running_gear_triangles": 3600,
+                                          "part_shape_iou": 0.97, "size_reference": "USA_tank_light"})
 
     def test_list_prints_every_preset(self):
         with mock.patch("sys.stdout") as out:

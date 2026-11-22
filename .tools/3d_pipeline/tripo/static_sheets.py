@@ -24,7 +24,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -140,8 +140,8 @@ def _span(mesh: Path) -> float:
     return float((loaded.positions[visible].max(axis=0) - loaded.positions[visible].min(axis=0)).max())
 
 
-def game_review(folder: Path, kind: str, out: Path, game: Path) -> Path:
-    contract = sk.kind_contract(kind)
+def game_review(folder: Path, kind: str, out: Path, game: Path, size_reference: Optional[str] = None) -> Path:
+    contract = sk.with_size_reference(sk.kind_contract(kind), size_reference)
     mesh = sorted(folder.glob("*.mesh"))[0]
     # the vanilla model nearest the kind's median size, at its own entity scale; the model at the reference entity's
     nearest = contract["size"]["nearest"]
@@ -206,6 +206,7 @@ def main(argv=None) -> int:
     parser.add_argument("--only", choices=("close", "game"), help="one Blender start: the close-up review or the game-size sheet")
     parser.add_argument("--note", action="append", default=[], help="a fixed note added to the kind's own (repeatable)")
     parser.add_argument("--game", type=Path, help="the game folder (default: the one .tools/lib/game.py finds)")
+    parser.add_argument("--size-reference", metavar="MODEL", help="the vanilla model the job is sized to (the job's size_reference): the game-size sheet draws it")
     heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
     heavy_job.apply(args)
@@ -215,7 +216,7 @@ def main(argv=None) -> int:
     if args.only in (None, "game"):
         from tripo.static_model import game_dir
 
-        print(game_review(folder, args.model_kind, out, args.game or game_dir()))
+        print(game_review(folder, args.model_kind, out, args.game or game_dir(), args.size_reference))
     add_game_sheet(out)
     print(out / "REVIEW_REQUEST.md")
     return 0

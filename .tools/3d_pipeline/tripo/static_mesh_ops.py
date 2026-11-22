@@ -312,3 +312,92 @@ def card_cost(bm, size):
         rim = sum(1 for faces in sk._edge_faces(chosen).values() if len(faces) == 1)
         cost += len(chosen) + 2 * rim
     return cost
+
+
+SNAP_SHARE = 0.0025
+"""A reduced vertex farther than this share of the model's size from the source surface is moved back onto it."""
+SNAP_UV_REACH = 0.05
+"""A moved corner takes the source's UV at its new place only when that UV is this close to its old one (else it is
+across a seam, where the source's UV belongs to the other island, and the old UV stays)."""
+
+
+def _source_trees(source, layer_name):
+    """One BVH tree per source part (by the part face attribute, or one for a model in one piece), with each tree's
+    triangles' corner positions and UVs for the UV lookup."""
+
+    from mathutils.bvhtree import BVHTree
+
+    bm = bmesh.new()
+    bm.from_mesh(source)
+    bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    layer = bm.faces.layers.int.get(layer_name)
+    uv_layer = bm.loops.layers.uv.active
+    groups = {}
+    for face in bm.faces:
+        groups.setdefault(face[layer] if layer is not None else 0, []).append(face)
+    trees = {}
+    for part, faces in groups.items():
+        verts = sorted({v for f in faces for v in f.verts}, key=lambda v: v.index)
+        index = {v: i for i, v in enumerate(verts)}
+        polygons = [[index[v] for v in f.verts] for f in faces]
+        corners = np.array([[list(v.co) for v in f.verts] for f in faces])
+        uvs = np.array([[list(loop[uv_layer].uv) for loop in f.loops] for f in faces]) if uv_layer is not None else None
+        trees[part] = (BVHTree.FromPolygons([v.co.copy() for v in verts], polygons), corners, uvs)
+    bm.free()
+    return trees
+
+
+def _barycentric(p, corners):
+    a, b, c = corners
+    v0, v1, v2 = b - a, c - a, p - a
+    d00, d01, d11, d20, d21 = v0 @ v0, v0 @ v1, v1 @ v1, v2 @ v0, v2 @ v1
+    denom = d00 * d11 - d01 * d01
+    if abs(denom) < 1e-20:
+        return np.array([1.0, 0.0, 0.0])
+    v = (d11 * d20 - d01 * d21) / denom
+    w = (d00 * d21 - d01 * d20) / denom
+    return np.array([1.0 - v - w, v, w])
+
+
+def snap_to_source(bm, source, size, layer_name, share=SNAP_SHARE):
+    """Move each vertex the reduction left farther than `share` of `size` from the source surface (`source`, the mesh
+    before the reduction) back onto the nearest point of its own part's source surface. A collapse puts a merged vertex
+    where its error quadric is least, which on a generated model's dense running gear can be well off the surface: a
+    reviewer saw the result as spikes and crumpled shards on the bogies and the turret roof. The triangles stay as
+    they are, so nothing is removed and the budget is kept; the moved corners take the source's UV at their new place
+    when it is near their old one. Returns how many vertices moved, and the largest and median distances before and
+    after (as shares of `size`)."""
+
+    trees = _source_trees(source, layer_name)
+    layer = bm.faces.layers.int.get(layer_name)
+    uv_layer = bm.loops.layers.uv.active
+    limit = share * size
+    before, after, moved, uv_kept = [], [], 0, 0
+    for vert in bm.verts:
+        parts = {f[layer] for f in vert.link_faces} if layer is not None else set(trees)
+        found = [trees[p][0].find_nearest(vert.co) + (p,) for p in parts if p in trees]
+        found = [f for f in found if f[0] is not None]
+        if not found:
+            continue
+        location, _normal, triangle, distance, part = min(found, key=lambda f: f[3])
+        before.append(distance)
+        if distance <= limit:
+            after.append(distance)
+            continue
+        vert.co = location
+        moved += 1
+        after.append(0.0)
+        _tree, corners, uvs = trees[part]
+        if uv_layer is None or uvs is None:
+            continue
+        weights = _barycentric(np.array(location), corners[triangle])
+        new_uv = weights @ uvs[triangle]
+        for loop in vert.link_loops:
+            old = np.array(loop[uv_layer].uv)
+            if np.linalg.norm(new_uv - old) <= SNAP_UV_REACH:
+                loop[uv_layer].uv = Vector(new_uv)
+            else:
+                uv_kept += 1
+    shares = lambda values: (round(float(np.max(values)) / size, 5), round(float(np.median(values)) / size, 6)) if values else (0.0, 0.0)
+    return {"moved": moved, "share": share, "uv_kept_across_seams": uv_kept,
+            "before_max_median": shares(before), "after_max_median": shares(after)}

@@ -206,10 +206,21 @@ class TreadToneTests(unittest.TestCase):
         self.assertIn("track_tone", report)
         self.assertLess(max(written["colour"]), 200)
 
-    def test_a_run_already_darker_than_vanillas_tread_is_left_alone(self):
-        written, report, _tone = self.run_tread((60, 60, 40))
+    def test_a_run_within_vanillas_tread_tone_is_left_alone(self):
+        written, report, _tone = self.run_tread((110, 110, 90))
         self.assertNotIn("track_tone", report)
-        self.assertEqual(written["colour"], [60.0, 60.0, 40.0])
+        self.assertEqual(written["colour"], [110.0, 110.0, 90.0])
+
+    def test_a_near_black_run_is_lifted_so_its_links_show(self):
+        # the M2A4 Smart Mesh tank's run: median texel (24, 24, 22), one black band at close up
+        written, report, tone = self.run_tread((24, 24, 22))
+        self.assertIn("track_tone", report)
+        self.assertAlmostEqual(report["track_tone"]["luma_after"], sk.TREAD_LUMA_FLOOR * tone, places=1)
+        colour = written["colour"]
+        self.assertGreater(colour[0], colour[2])  # its own olive tint is kept
+        images = sk.tread_images(np.array(colour), 5, (64, 32))
+        luma = images["diffuse"][..., :3].astype(float) @ np.array([0.299, 0.587, 0.114])
+        self.assertGreater(luma.max() - luma.min(), 40.0)  # gaps, plates and grousers apart at a glance
 
 
 class ContrastTests(unittest.TestCase):

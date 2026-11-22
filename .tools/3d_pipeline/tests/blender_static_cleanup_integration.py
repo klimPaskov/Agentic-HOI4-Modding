@@ -4,7 +4,8 @@ Run with the lock-selected Blender:
     blender --background --factory-startup --python-exit-code 1 --python .tools/3d_pipeline/tests/blender_static_cleanup_integration.py
 The model is a closed hull box with a closed thin barrel, an open wedge flake on its deck, a needle sliver hanging off an
 open plate, and a flat one-sided disc card beside it. Then the shading rule (`crease_shading`) runs on a box carrying
-smooth imported normals, a pointed cone and a sphere with one face asked flat. It fails on the first unmet expectation.
+smooth imported normals, a pointed cone and a sphere with one face asked flat. Last, `snap_to_source` moves vertices
+pushed off a sphere back onto it and leaves one pushed less than its limit. It fails on the first unmet expectation.
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from mathutils import Matrix
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, bm_arrays, card_cost, crease_shading, remove_slivers, thicken_cards
+from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, bm_arrays, card_cost, crease_shading, remove_slivers, snap_to_source, thicken_cards
 
 from lib import static_kinds as sk
 
@@ -97,7 +98,8 @@ def main() -> None:
     weighted = sum(1 for v in mesh.vertices for g in v.groups if g.group == CARD_GROUP and g.weight > 0.5)
     expect(weighted == len(marked), "the marks reach the mesh's vertex group")
     shading = check_shading()
-    print("STATIC_CLEANUP_INTEGRATION_OK", sliver, cards["thickened"], round(thickness, 4), shading)
+    snap = check_snap()
+    print("STATIC_CLEANUP_INTEGRATION_OK", sliver, cards["thickened"], round(thickness, 4), shading, snap)
 
 
 def worst_lean(mesh) -> float:
@@ -139,6 +141,30 @@ def check_shading() -> dict:
     other = sphere.polygons[asked + 30]
     expect(any(sphere.corner_normals[i].vector.dot(other.normal) < 0.9999 for i in other.loop_indices), "the rest of the sphere stays smooth")
     return {"box": round(worst_lean(box), 3), "cone": round(worst_lean(cone), 2), "sphere": round(worst_lean(sphere), 2)}
+
+
+def check_snap() -> dict:
+    # the source: a UV sphere of radius 1 (size 2); the reduced copy has three vertices pushed 0.1 out and one 0.002 out
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=16, ring_count=8, radius=1.0, location=(0, 0, 0))
+    source = bpy.context.active_object.data
+    bm = bmesh.new()
+    bm.from_mesh(source)
+    faces = len(bm.faces)
+    bm.verts.ensure_lookup_table()
+    far = [bm.verts[i] for i in (5, 40, 90)]
+    kept = [co.copy() for co in (v.co for v in far)]
+    for vert in far:
+        vert.co = vert.co * 1.1
+    near = bm.verts[60]
+    near.co = near.co * 1.002
+    found = snap_to_source(bm, source, 2.0, "static_part")
+    expect(found["moved"] == 3, f"the three far vertices move, got {found}")
+    expect(all((v.co - k).length < 1e-4 for v, k in zip(far, kept)), "they land back on the sphere's vertices")
+    expect(abs(near.co.length - 1.002) < 1e-6, "the vertex inside the limit stays")
+    expect(found["after_max_median"][0] <= found["share"] + 1e-6, f"nothing is left past the limit, got {found}")
+    expect(len(bm.faces) == faces, "no face is added or removed")
+    bm.free()
+    return {"moved": found["moved"], "before_max": found["before_max_median"][0]}
 
 
 main()
