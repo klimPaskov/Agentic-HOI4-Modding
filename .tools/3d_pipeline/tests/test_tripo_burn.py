@@ -112,18 +112,6 @@ class Burn(WingedBiped):
                                           B.mesh_locators(self.mesh_path))
         self.assertIn("BURN-KEPT", [item["rule"] for item in found])
 
-    def test_fire_locators_sit_on_their_bones(self) -> None:
-        from lib import tripo_locators as L
-
-        names = pdx_deform.load_mesh(self.mesh_path).bones
-        entries = [entry for entry in L.FIRE if entry["bone"] in names]
-        self.assertTrue(entries)
-        placed = L.add_locators(self.mesh_path, entries)
-        self.assertEqual([item["name"] for item in placed], [entry["name"] for entry in entries])
-        self.assertTrue(set(item["name"] for item in placed) <= set(B.mesh_locators(self.mesh_path)))
-        L.add_locators(self.mesh_path, entries)  # a rerun replaces, never doubles
-        self.assertEqual(len(B.mesh_locators(self.mesh_path)), len(set(B.mesh_locators(self.mesh_path))))
-
     def test_the_heap_is_its_own_stream_with_its_own_ash_maps(self) -> None:
         self.burnt()
         shape = B._shape(read(self.mesh_path))

@@ -608,8 +608,6 @@ To give any unit a burn death, follow these steps:
 
 **A part that outlasts the burn.** Set `"burn_keep": ["Head"]` in the job's `tripo` block to keep a bone's skin when the rest burns away. The ZIN devil leaves his skull on the ground, because his revival needs it (ZIN card 46). The kept bone keeps its full size in the world while the body shrinks under it. It comes down with the burn until its lowest point rests on the ground, inside the ash heap (`lib/tripo_burn.keep_parts`). BURN-KEPT fails a kept part that ends at another size, off the ground or outside the heap. The shrink rules leave its skin out, and the standing rule judges the torso by the bone below it.
 
-**Locators for fire and other effects.** Add `"locators": [...]` to the job's `tripo` block to place named points for particle events on the unit's own skin (`lib/tripo_locators.py`). Each entry names the locator, its bone and where it sits: `mouth` (the front of the jaw), `tip` (the skin point farthest from the joint, a claw's tip) or `joint`. The kit's fire names are `fire_mouth` on `Head`, `fire_hand_l` on `LeftHand` and `fire_hand_r` on `RightHand` (`tripo_locators.FIRE`). On the demon's mesh the mouth sits 0.61 ahead of the head joint and each claw tip 1.1 below its wrist (a 7.57 tall unit). A rerun replaces a locator of the same name.
-
 What vanilla shows that this rests on:
 
 - **Particles in a death state.** GER rifle infantry's death state fires `blood_particle` at its `head` locator at `time = 0`. Ship deaths fire `ship_explosion_particle` at `hit_effect_locator` locators, and plane crashes fire `explosion_particle`.
