@@ -17,6 +17,7 @@ Always apply:
 
 - Route file production to the narrow asset subagents with a bounded prompt: `hoi4_icon_artist` (icons, tech icons, counters), `hoi4_generated_feature_art` (generated non-icon art), `hoi4_asset_source_researcher` (real or archival non-portrait images), `hoi4_portrait_creator` (every character portrait). They do not edit `.gfx`, localisation, GUI or gameplay scripts unless the parent grants it (the portrait worker may edit portrait `.gfx` entries). The main agent wires and validates.
 - Focus, idea, spirit, decision, category, achievement, tech and the other icon families are separate asset types. Never satisfy one by resizing, cropping or recolouring another.
+- Variants of a country's flag, emblem, portrait or icon (ideology, route, cosmetic tag or formable versions) are complete reimaginings of that country under that government or path, true to its culture, crown and history. A variant is never the base design with colours, a border, a band, a crown, a dye or any other mark added. A new variant method gets a small pilot, two or three variants judged side by side with the base and accepted, before production. Details are in `event-images-and-flags.md` and `generation-and-review.md`.
 - Animated finals come from planned source frames through `hoi4-frame-animation`, never from transforming one still.
 - Final DDS files go into the engine folders, feature-scoped except for achievements and flags, and nothing at runtime may point into `docs/assets/`.
 - Never substitute an asset that cannot be made cleanly: mark it blocked.

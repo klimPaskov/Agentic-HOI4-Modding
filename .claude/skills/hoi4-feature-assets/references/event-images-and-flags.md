@@ -81,7 +81,11 @@ Avoid generated text unless the design absolutely requires it and the final outp
 
 Always use the image generator for fictional flags and user-provided or internet source images for historical or real-world flags.
 
-For existing countries that already have game-provided or repository-approved base flags, do not replace the no-suffix base flag as part of an ideology pass. Keep the base flag unchanged, or restore it from the approved prior asset if an asset pass damaged it, unless the user explicitly asks for that base flag to be redone or the country receives a deliberate focus/event/cosmetic-tag transformation. Ideology variants should be separate assets for `_communism`, `_democratic`, `_fascism`, and `_neutrality`, not mutations of the base flag with one small shape, a palette swap, a color filter, a vertical flip, or a copied emblem.
+For existing countries that already have game-provided or repository-approved base flags, do not replace the no-suffix base flag as part of an ideology pass. Keep the base flag unchanged, or restore it from the approved prior asset if an asset pass damaged it, unless the user explicitly asks for that base flag to be redone or the country receives a deliberate focus/event/cosmetic-tag transformation. Ideology variants should be separate assets for `_communism`, `_democratic`, `_fascism`, and `_neutrality`, not mutations of the base flag with one small shape, a palette swap, a color filter, a vertical flip, a copied emblem, an added border, band, crown or dye, or any other mark laid over the same arms.
+
+Every ideology, route, cosmetic-tag and formable flag is a complete reimagining of the country under that government or path. Keep the culture, the crown, the history and the colours the country can plausibly use, and redesign the whole flag: its layout, its main charge and its arrangement. Before drawing, write one line per variant that names what the design changes at the layout level and which history or culture it draws on. Hold the base and every variant side by side at normal and small size. If a viewer would say it is the same flag with something added, redo it from a new composition. The same rule covers emblems, portraits and icons: a variant portrait is a new picture of that person or office under that government, and a variant icon is a new picture, never the base with a tint, frame or badge.
+
+A new variant method gets a pilot first. Make two or three variants for one country by that method, judge them side by side with the base, and record the maintainer's or parent's acceptance before producing the rest.
 
 For focus-tree or event route flag changes, use explicit cosmetic tags or route-specific flag files and document the trigger/focus that changes the flag. Do not create default flag overrides or new base flags for vanilla-supported or already-existing countries just because they participate in an event.
 
@@ -97,6 +101,8 @@ Before marking any flag complete, verify normal, medium, and small TGA files:
 - correct visual orientation in a contact sheet
 - TGA origin/header convention consistent with vanilla HOI4 flags; `file` output must not show `- top`
 - `python -B .tools/gfx/gfx.py flags --paths gfx/flags` reports wrong sizes as errors and missing ladder sizes and top-origin files as warnings
+- `python -B .tools/gfx/gfx.py flags --paths gfx/flags` reports `GFX-FLAG-VARIANT` when a variant keeps 70% or more of the base flag's edge structure, mirrored or not. Treat every hit as a defect and redo that variant as a new composition, never waive it
+- no ideology, route or cosmetic-tag flag that is the base with colours, a border, a band, a crown or a dye added, even when the checker stays silent. Look at the contact sheet
 - no byte-identical ideology variants unless the design is intentionally shared and documented
 - no upside-down copies
 - no accidental no-suffix base-flag replacement for countries that were only meant to receive ideology variants

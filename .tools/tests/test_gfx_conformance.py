@@ -183,5 +183,62 @@ class RuntimeBinaries(unittest.TestCase):
 		self.assertEqual(gfx.dds_payload_bytes(bytes(header)), 4 * 4 * 8)
 
 
+class FlagVariants(unittest.TestCase):
+	"""D-118: a variant that keeps the base design (recolour, added border or band) is flagged."""
+
+	@staticmethod
+	def save(root, name, draw):
+		image = Image.new("RGB", (82, 52), (200, 30, 30))
+		draw(image)
+		path = Path(root) / "gfx" / "flags" / f"{name}.tga"
+		path.parent.mkdir(parents=True, exist_ok=True)
+		image.save(path)
+
+	@staticmethod
+	def base(image):
+		pixels = image.load()
+		for x in range(82):
+			for y in range(52):
+				if (x // 9 + y // 9) % 2:
+					pixels[x, y] = (240, 220, 40)
+		for y in range(10, 42):
+			for x in range(30, 52):
+				pixels[x, y] = (20, 20, 120)
+
+	def rules(self, variant):
+		with tempfile.TemporaryDirectory() as root:
+			self.save(root, "AAA", self.base)
+			self.save(root, "AAA_fascism", variant)
+			return [f.rule for f in gfx.check_flag_variants(root) if f.rule == "GFX-FLAG-VARIANT"]
+
+	def test_recolour_border_and_mirror_are_flagged(self):
+		def recolour(image):
+			self.base(image)
+			r, g, b = image.split(); image.paste(Image.merge("RGB", (b, g, r)))
+
+		def border(image):
+			self.base(image)
+			from PIL import ImageDraw
+			ImageDraw.Draw(image).rectangle((0, 0, 81, 51), outline=(0, 0, 0), width=3)
+
+		def mirror(image):
+			base = Image.new("RGB", (82, 52))
+			self.base(base)
+			image.paste(base.transpose(Image.FLIP_LEFT_RIGHT))
+
+		for variant in (recolour, border, mirror):
+			self.assertEqual(self.rules(variant), ["GFX-FLAG-VARIANT"], variant.__name__)
+
+	def test_a_different_design_passes(self):
+		def other(image):
+			from PIL import ImageDraw
+			draw = ImageDraw.Draw(image)
+			draw.rectangle((0, 0, 81, 51), fill=(10, 60, 30))
+			draw.polygon([(0, 51), (60, 0), (81, 0), (81, 20), (30, 51)], fill=(250, 250, 250))
+			draw.ellipse((5, 5, 22, 22), fill=(220, 160, 20))
+
+		self.assertEqual(self.rules(other), [])
+
+
 if __name__ == "__main__":
 	unittest.main()

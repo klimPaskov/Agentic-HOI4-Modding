@@ -65,8 +65,8 @@ Every formable nation needs visible identity assets.
 Asset planning should cover:
 
 - formable flag in normal, medium, and small sizes
-- ideology variants where relevant
-- cosmetic-tag flags where relevant
+- ideology variants where relevant, each a complete reimagining and never the base with marks added
+- cosmetic-tag flags where relevant, designed the same way
 - leader portrait or council portrait
 - animated leader portrait when the formable is a rare dramatic route
 - focus icons for the formation route
