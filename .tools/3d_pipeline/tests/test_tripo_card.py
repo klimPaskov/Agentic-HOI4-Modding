@@ -66,7 +66,7 @@ def write_glb(path: Path, names) -> None:
 
 class CardTests(unittest.TestCase):
     def test_the_template_blocks_are_balanced(self) -> None:
-        for kind in ("armed", "unarmed", "shield"):
+        for kind in ("armed", "unarmed", "shield", "winged"):
             self.assertEqual(TEMPLATE.count(f"<!-- {kind} -->"), TEMPLATE.count(f"<!-- /{kind} -->"), kind)
 
     def test_an_armed_card_has_the_weapon_steps_with_the_hand_and_the_file_names(self) -> None:
@@ -81,6 +81,23 @@ class CardTests(unittest.TestCase):
         self.assertNotIn("<!--", card)
         for placeholder in FILLED:
             self.assertNotIn(placeholder, card, placeholder)
+
+    def test_a_winged_card_has_the_wing_note_the_rig_dialog_and_a_standing_burn_death(self) -> None:
+        spec = unarmed_spec()
+        spec["anatomy"] = {"wings": True}
+        spec["tripo"].update({"chains": [{"region": "wings"}], "death_kind": "burn"})
+        card = fill(spec)
+        for wanted in ("**The wings.**", "Not Ready for Auto-Rigging", "--attack slash chop", "rig_check.py", "Do not press **Retry**: it rigs again", "| death | `hit_to_stomach` |"):
+            self.assertIn(wanted, card)
+        self.assertNotIn("<!--", card)
+        plain = fill(unarmed_spec())
+        self.assertNotIn("**The wings.**", plain)
+        self.assertNotIn("Not Ready for Auto-Rigging", plain)
+
+    def test_wings_without_their_chains_are_refused(self) -> None:
+        spec = unarmed_spec()
+        spec["anatomy"] = {"wings": True}
+        self.assertTrue(any("tripo.chains" in item for item in C.problems(spec)))
 
     def test_an_unarmed_card_has_no_weapon_steps(self) -> None:
         card = fill(unarmed_spec())
