@@ -47,6 +47,18 @@ class RigCheck(unittest.TestCase):
         found, _numbers = R.rig_findings(layout(0.12, forearm_points=0))
         self.assertEqual([item["rule"] for item in found], ["TRIPO-RIG-ARMS", "TRIPO-RIG-ARMS"])
 
+    def test_an_arm_that_carries_a_wing_fails_even_with_no_hand_skin(self) -> None:
+        """The devil's uploaded rig bound each whole wing to the upper arm or the forearm, and the hands to nothing."""
+
+        model = layout(0.12)
+        far = np.array([[-2.5, 1.4 + 0.1 * i, -0.3] for i in range(60)])
+        model["positions"] = np.concatenate([model["positions"], far])
+        model["dominant"] = np.concatenate([np.where(np.char.startswith(model["dominant"].astype(str), "LeftHand"), "LeftForeArm", model["dominant"]),
+                                            ["LeftForeArm"] * len(far)])
+        found, numbers = R.rig_findings(model)
+        self.assertIn("Left", {item["subject"] for item in found}, numbers)
+        self.assertGreater(numbers["Left"]["arm_skin_reach"], R.MAX_ARM_SKIN_REACH)
+
     @unittest.skipUnless(REAL_EXPORT.is_file(), "no real Tripo export on this machine")
     def test_a_real_humanoid_rig_passes(self) -> None:
         found, numbers = R.rig_findings(R.skin_layout(REAL_EXPORT))

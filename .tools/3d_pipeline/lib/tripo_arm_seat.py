@@ -167,17 +167,34 @@ def segment_distance(points: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.nda
     return np.linalg.norm(points - (a + t[:, None] * ab), axis=1)
 
 
+def body_axes(heads: Dict[str, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """(across, ahead): the level left-to-right axis from the thigh joints and the level way the body faces, from the heels to the toes.
+    Tripo's own exports face +z with x across, but an upload Tripo was told to turn (its angle dialog) faces another way: the ZIN devil's
+    upload came back with its wings along z (2026-11-22)."""
+
+    across = np.asarray(heads["RightUpLeg"], float) - np.asarray(heads["LeftUpLeg"], float)
+    across[1] = 0.0
+    across /= max(float(np.linalg.norm(across)), 1e-12)
+    ahead = np.cross(across, [0.0, 1.0, 0.0])
+    toes = [np.asarray(heads[f"{s}ToeBase"], float) - np.asarray(heads[f"{s}Foot"], float) for s in ("Left", "Right")
+            if f"{s}ToeBase" in heads and f"{s}Foot" in heads]
+    if toes and float(np.mean(toes, axis=0) @ ahead) < 0:
+        ahead = -ahead
+    return across, ahead
+
+
 def seat_side(side: str, positions: np.ndarray, triangles: np.ndarray, dominant: np.ndarray, heads: Dict[str, np.ndarray],
               body_height: float) -> dict:
     """The new arm joints and the arm and wing masks of one side, by the rules of the module docstring."""
 
     family = np.array([str(name).startswith(side) and ("Arm" in str(name) or "Hand" in str(name)) for name in dominant])
-    lateral = positions[:, 0] - heads["Hips"][0]
-    width = float(np.ptp(positions[:, 0]))
+    across, ahead = body_axes(heads)
+    lateral = (positions - heads["Hips"]) @ across
+    width = float(np.ptp(lateral))
     wing = family & (np.abs(lateral) > WING_SHARE * width)
     if wing.sum() < MIN_ARM_VERTICES:
         raise SeatError(f"{side}: the arm family has no wing beyond {WING_SHARE:.0%} of the width ({int(wing.sum())} vertices): not a winged rig")
-    centre, normal = plane(positions[wing], np.array([0.0, 0.0, 1.0]))
+    centre, normal = plane(positions[wing], ahead)
     depth = (positions - centre) @ normal
     thickness = float(np.percentile(np.abs(depth[wing]), 95))
     shoulder_y = float(heads[f"{side}Arm"][1])
