@@ -29,7 +29,7 @@ import numpy as np
 PIPELINE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE))
 
-from lib import body_measure  # noqa: E402
+from lib import body_measure
 
 # The model's width over height may differ from the picture's by this share of it. A redraw's own spread between two pictures of one subject
 # is a few percent; a wing a tenth shorter is a visibly smaller creature.
