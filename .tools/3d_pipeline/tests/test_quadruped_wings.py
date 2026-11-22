@@ -486,8 +486,9 @@ class Round8(unittest.TestCase):
         self.assertGreater(sum(d for _a, d in middle["Tail_01"]), 0.0, "the tail lifts as the body sinks")
         self.assertAlmostEqual(sum(d for _a, d in middle["Tail_01"]) + sum(d for _a, d in middle["Tail_02"]), 0.0, places=6)
         neck = {name: sum(d for _a, d in middle[name] if tuple(_a) == ql.X_AXIS) for name in ("Neck_01", "Neck_02", "Head")}
-        self.assertLess(neck["Neck_01"], 0.0, "the neck's root draws back")
-        self.assertGreater(neck["Neck_02"], 0.0, "its upper half bends forward, so the head is drawn back over the chest")
+        # round 12: the neck leans forward from the shoulders, so the head stays ahead of the raised wings (TRIPO-DEFEND-HEAD-BOXED)
+        self.assertGreater(neck["Neck_01"], 0.0, "the neck leans forward from the shoulders")
+        self.assertGreater(neck["Neck_02"], 0.0, "and on along its upper half")
         self.assertLess(neck["Head"], 0.0, "and the head turns up at its end")
         self.assertAlmostEqual(sum(neck.values()), ql.GUARD_NECK_S["Head"], places=6, msg="so it faces the enemy as GUARD_NECK_S says")
         for frame in (0, total - 1):

@@ -211,6 +211,41 @@ class Rerig(unittest.TestCase):
         share = tc.head_front_share(mesh, screen[None], left | right, region)
         self.assertGreater(share, tc.MAX_HEAD_FRONT_SHARE, f"wings standing behind the head frame it ({share:.2f})")
 
+    def test_round_12_measures_catch_a_folded_neck_a_boxed_head_and_a_lost_head(self) -> None:
+        """TRIPO-NECK-SQUASH, TRIPO-DEFEND-HEAD-BOXED and TRIPO-DEATH-HEAD-LOST on the rerigged block dragon: each reads its rest pose as
+        fine and fails the pose a fresh review of run 19 failed."""
+
+        import tripo_checks as tc
+
+        mesh = pdx_deform.load_mesh(self.out / "beast.mesh")
+        left, right = tc.wing_sides(mesh)
+        wings = left | right
+        head, _head_neck, _trunk = tc._parts(mesh, wings)
+        named = np.asarray(mesh.bones)[pdx_deform.dominant_bones(mesh)]
+        chest = (named == "Chest") & ~wings
+        front = tc.front_direction(mesh)
+        rest = np.stack([np.eye(4)] * len(mesh.bones))
+
+        def moved(prefixes, shift_rig):
+            out = rest.copy()
+            shift = np.eye(4)
+            shift[:3, 3] = shift_rig
+            for index, name in enumerate(mesh.bones):
+                if name.startswith(prefixes):
+                    out[index] = TO_FILE @ shift @ np.linalg.inv(TO_FILE)
+            return out
+
+        self.assertGreater(tc.neck_squash(mesh, rest[None], head, chest)[0], tc.NECK_SQUASH_MIN)
+        folded = moved(("Head",), (0.0, 0.45, -0.4))  # the head pulled back and down onto the chest
+        self.assertLess(tc.neck_squash(mesh, np.stack([rest, folded]), head, chest)[0], tc.NECK_SQUASH_MIN)
+        self.assertGreater(tc.head_lead_over_wings(mesh, rest[None], head, wings, front)[0], tc.DEFEND_HEAD_LEAD)
+        hood = moved(("WingLeft_", "WingRight_"), (0.0, -1.0, 0.0))  # the wings brought forward past the head
+        self.assertLess(tc.head_lead_over_wings(mesh, np.stack([rest, hood]), head, wings, front)[0], tc.DEFEND_HEAD_LEAD)
+        alone = pdx_deform.skin(mesh, moved(("Head",), (0.0, -1.5, 0.0)))  # the head well clear of everything
+        self.assertGreater(tc.head_findable(mesh, alone, head), tc.DEATH_HEAD_FINDABLE)
+        buried = pdx_deform.skin(mesh, moved(("Head",), (0.0, 0.9, -0.5)))  # the head pushed into the chest
+        self.assertLess(tc.head_findable(mesh, buried, head), tc.DEATH_HEAD_FINDABLE)
+
     def test_a_rerigged_folder_plays_its_clips(self) -> None:
         clips = [{"name": "idle", "style": "winged_idle", "times": [0.0]}, {"name": "attack", "style": "winged_rear", "times": [0.435]}]
         report = pp.write_folder(self.out, pp.read_landmarks(self.out / "landmarks.json"), self.out, clips)
