@@ -1625,6 +1625,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
       hull bob on its suspension); only the hull may bob.
     - STATIC-SHADOW: the colour texture has no cast shadow painted into it (`lib/static_delight.py`).
     - STATIC-SLAB: a building's or landmark's base slab is flat, square and shades flat (`lib/static_slab.py`).
+    - STATIC-YARD: a map building's ground yard reaches no further past the building than a thin skirt
+      (`lib/static_yard.py`).
     """
 
     from lib import pdx_binary, pdx_deform
@@ -1725,6 +1727,10 @@ def _surface_findings(mesh_path: Path, mesh, visible: np.ndarray, kind: str) -> 
         normals = np.array([to_blender(p) for p in mesh.normals])
         triangles = mesh.triangles[visible[mesh.triangles].all(axis=1)]
         findings += static_slab.slab_findings(points, triangles, normals)
+        if kind == "building":
+            from lib import static_yard
+
+            findings += static_yard.yard_findings(points, triangles)
     return findings
 
 
