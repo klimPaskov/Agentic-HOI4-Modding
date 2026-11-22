@@ -37,6 +37,12 @@ Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json
 | `building` | buildings on the map | static, Smart Mesh |
 | `landmark` | landmarks | static, Smart Mesh |
 
+**Which preset.** `tripo/pick_preset.py` works it out from a few plain answers about the picture, by fixed rules, and prints one sentence to confirm with the cost of the card and of the Canvas workflow, then the `new_job.py` command to run after a yes. It refuses when no reference is given (a picture is made from references, never from a prompt alone), and a reference given with `--private` (an owner's drawing) is recorded in the job as never uploaded: it never goes to Tripo or any other online service, and the 3D-ready picture is made from it offline or by the mod's own image lane.
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --kind unit --legs 2 --weapon --hand LeftHand --name "A goblin with an axe" --slug goblin_axe --reference "the mod's art: gfx/units/goblin.png"
+```
+
 Start a job from a preset, then write its card:
 
 ```

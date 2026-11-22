@@ -42,8 +42,9 @@ Each gate is defined once in the guide:
   hands), model, rig, candidate presets, export, clips picked by measurement
   and by their outline on the map camera (`pose_check.py --map`, the job's
   `tripo.posture`, TRIPO-MAP-POSTURE, -SPREAD, -REACH and -SAME),
-  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Pick the
-  preset for the kind of model (`tripo/new_job.py --list`) and write the job
+  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Work out the
+  preset with `tripo/pick_preset.py` from plain answers about the picture,
+  show the user its confirm sentence and wait for a yes, then write the job
   entry with `tripo/new_job.py --preset <preset>`, giving only what the
   user knows with `--set`. Do the picture review of step 2 in
   `docs/3d-units.md` (a Tripo job needs `init_pilot_jobs.py` for its picture
