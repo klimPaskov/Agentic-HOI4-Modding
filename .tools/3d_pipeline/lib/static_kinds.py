@@ -51,6 +51,22 @@ def kind_contract(kind: str, path: Optional[Path] = None) -> dict:
     return kinds[kind]
 
 
+def with_running_gear(contract: dict, extra: int) -> dict:
+    """The contract with its triangle budget raised by `extra` for a tracked vehicle's running gear (tracks, bogies and
+    wheels), which a detailed model made in parts cannot fit into vanilla's budget without crumpling. The raise stays
+    visible: STATIC-TRIANGLES-RAISED warns on every check, because the model then has more triangles than any vanilla
+    model of its kind and the user decides whether to accept that."""
+
+    if not extra:
+        return contract
+    if extra < 0 or not (contract.get("rules", {}).get("tracks")):
+        raise ValueError(f"running_gear_triangles is a positive raise for a tracked vehicle kind, not {extra!r} for a {contract['kind']}")
+    raised = dict(contract)
+    raised["triangle_budget"] = {**contract["triangle_budget"], "value": contract["triangle_budget"]["value"] + int(extra),
+                                 "running_gear": int(extra), "vanilla": contract["triangle_budget"]["value"]}
+    return raised
+
+
 def to_blender(vector: Sequence[float]) -> np.ndarray:
     return SWAP @ np.asarray(vector, dtype=float)
 
@@ -1580,6 +1596,11 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     budget = contract["triangle_budget"]["value"]
     if triangles > budget:
         findings.append(("STATIC-TRIANGLES", "error", f"{triangles} triangles; the most detailed vanilla {kind} ({contract['triangle_budget']['mesh']}) has {budget}"))
+    if contract["triangle_budget"].get("running_gear"):
+        vanilla = contract["triangle_budget"]["vanilla"]
+        findings.append(("STATIC-TRIANGLES-RAISED", "warning",
+                         f"{triangles} triangles against a budget raised by {contract['triangle_budget']['running_gear']} for the running gear; "
+                         f"the most detailed vanilla {kind} has {vanilla}. Ask the user before shipping a model over vanilla's budget"))
     findings += _structure(summary, contract)
     findings += _surface_findings(mesh_path, mesh, visible, kind)
     if contract.get("rigid") and mesh.skinned:

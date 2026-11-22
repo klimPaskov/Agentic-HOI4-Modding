@@ -410,7 +410,8 @@ def main(argv=None) -> int:
     job = json.loads(args.job.read_text(encoding="utf-8"))
     name, kind = job["name"], job["model_kind"]
     glb = (args.job.parent / job.get("glb", f"{name}.glb")).resolve()
-    contract = sk.kind_contract(kind)
+    running_gear = int(job.get("running_gear_triangles") or 0)
+    contract = sk.with_running_gear(sk.kind_contract(kind), running_gear)
     front = args.front or job.get("front")
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -452,7 +453,8 @@ def main(argv=None) -> int:
     import check_unit_files
 
     verdict = out / "verdict_check.json"
-    code = check_unit_files.main([str(files), "--model-kind", kind, "--mod-root", str(out / "mod"), "--verdict", str(verdict)])
+    code = check_unit_files.main([str(files), "--model-kind", kind, "--mod-root", str(out / "mod"), "--verdict", str(verdict)]
+                                 + (["--running-gear-triangles", str(running_gear)] if running_gear else []))
     problems = report.get("reduction", {}).get("problems") or []
     if problems:
         # STATIC-SHAPE: the reduction to vanilla's budget lost part of the silhouette (lib/tripo_shape.py)

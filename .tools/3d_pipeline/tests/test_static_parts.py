@@ -261,5 +261,21 @@ class PartsGlb(unittest.TestCase):
             self.assertIsNone(static_model.parts_plan(path, contract, {"parts": False}))
 
 
+class RunningGear(unittest.TestCase):
+    def test_a_raise_for_the_running_gear_widens_the_budget_and_always_warns(self) -> None:
+        from lib import static_kinds as sk
+
+        vehicle = sk.kind_contract("vehicle")
+        self.assertIs(sk.with_running_gear(vehicle, 0), vehicle)
+        raised = sk.with_running_gear(vehicle, 3600)
+        self.assertEqual(raised["triangle_budget"]["value"], vehicle["triangle_budget"]["value"] + 3600)
+        self.assertEqual(raised["triangle_budget"]["vanilla"], vehicle["triangle_budget"]["value"])
+        self.assertEqual(vehicle["triangle_budget"].get("running_gear"), None)
+        with self.assertRaises(ValueError):
+            sk.with_running_gear(sk.kind_contract("building"), 100)
+        with self.assertRaises(ValueError):
+            sk.with_running_gear(vehicle, -5)
+
+
 if __name__ == "__main__":
     unittest.main()

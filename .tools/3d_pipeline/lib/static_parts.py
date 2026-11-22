@@ -204,7 +204,7 @@ def reduce_parts(names: Sequence[str], originals: Sequence[Mesh], target: int, r
         table = "; ".join(f"{names[i]} needs {least[i]} of its {counts[i]} (its share by need was {first[i]}: {tries[i][min(counts[i], first[i])][1][0] if tries[i][min(counts[i], first[i])][1] else 'passed'})"
                           for i in range(len(needs)) if least[i] > first[i])
         raise PartsBudgetError(f"the parts need {sum(least)} triangles to keep their shape at part_shape_iou {min_iou}, over the target of {target}: {table}. "
-                               "Do not simplify the model: ask the user whether to accept a lower part_shape_iou or a larger budget for this kind")
+                               "Do not simplify the model: ask the user whether to accept a lower part_shape_iou or a larger budget for this kind (a tank's job field running_gear_triangles)")
     final = allocate(needs, target, lower=least)
     for i, share in enumerate(final):
         if attempt(i, share)[1]:
