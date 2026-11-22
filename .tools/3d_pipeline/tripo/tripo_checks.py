@@ -1050,6 +1050,28 @@ def step_read(mesh, matrices, hooves: np.ndarray, torso: np.ndarray, length: flo
     return float(np.linalg.norm(np.ptp(np.stack(paths), axis=0), axis=1).mean()) / length
 
 
+def _neck_and_fold_findings(mesh, clip: str, role: str, matrices, c: dict, row: dict) -> List[dict]:
+    """TRIPO-NECK-SQUASH, TRIPO-WING-FOLD-SPIKE and TRIPO-DEFEND-HEAD-BOXED (reported only) for one winged quadruped clip."""
+
+    out: List[dict] = []
+    if role != "death" and c["head"].any() and c["chest_skin"].any():
+        squash, squash_frame = neck_squash(mesh, matrices, c["head"], c["chest_skin"])
+        row.update(neck_gap=round(squash, 3), neck_gap_frame=squash_frame)
+        if squash < NECK_SQUASH_MIN:
+            out.append(finding("TRIPO-NECK-SQUASH", clip, f"in frame {squash_frame} the head comes within {squash:.0%} of its rest distance from the chest (at least {NECK_SQUASH_MIN:.0%}): the neck folds into the shoulders", share=round(squash, 3), frame=squash_frame))
+    if role != "death" and c["arm"].any():
+        spike, spike_frame = fold_spike(mesh, matrices, c["arm"], ~c["wings"])
+        row.update(fold_spike=round(spike, 3), fold_spike_frame=spike_frame)
+        if role in FOLD_SPIKE_ROLES and spike > FOLD_SPIKE_MAX:
+            out.append(finding("TRIPO-WING-FOLD-SPIKE", clip, f"in frame {spike_frame} the folded wing's arm stands {spike:.0%} of the height above the body on the game camera's screen (at most {FOLD_SPIKE_MAX:.0%}): it reads as a spike or a horn", share=round(spike, 3), frame=spike_frame))
+    if role == "defend" and c["head"].any():
+        lead, lead_frame = head_lead_over_wings(mesh, matrices, c["head"], c["wings"], c["front"])
+        row.update(head_lead=round(lead, 3), head_lead_frame=lead_frame)
+        if DEFEND_HEAD_BOXED_JUDGED and lead < DEFEND_HEAD_LEAD:
+            out.append(finding("TRIPO-DEFEND-HEAD-BOXED", clip, f"in frame {lead_frame} the head lies {lead:.1%} of the height ahead of the wings' front (at least {DEFEND_HEAD_LEAD:.0%}): the wings box it in", share=round(lead, 3), frame=lead_frame))
+    return out
+
+
 def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], dict, Optional[int]]:
     """One clip's part of `quadruped_view_findings`: its findings, its numbers and, for the attack and the defend, the wings' map view
     cells at the attack's farthest reach or the defend's middle."""
@@ -1070,21 +1092,7 @@ def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], d
         row["step_read"] = round(steps, 3)
         if steps < MIN_STEP_READ:
             out.append(finding("TRIPO-STEP-READ", clip, f"from the game camera the hooves travel {steps:.0%} of the body's length (at least {MIN_STEP_READ:.0%}): only the wings read as moving", share=round(steps, 3)))
-    if role != "death" and c["head"].any() and c["chest_skin"].any():
-        squash, squash_frame = neck_squash(mesh, matrices, c["head"], c["chest_skin"])
-        row.update(neck_gap=round(squash, 3), neck_gap_frame=squash_frame)
-        if squash < NECK_SQUASH_MIN:
-            out.append(finding("TRIPO-NECK-SQUASH", clip, f"in frame {squash_frame} the head comes within {squash:.0%} of its rest distance from the chest (at least {NECK_SQUASH_MIN:.0%}): the neck folds into the shoulders", share=round(squash, 3), frame=squash_frame))
-    if role != "death" and c["arm"].any():
-        spike, spike_frame = fold_spike(mesh, matrices, c["arm"], ~c["wings"])
-        row.update(fold_spike=round(spike, 3), fold_spike_frame=spike_frame)
-        if role in FOLD_SPIKE_ROLES and spike > FOLD_SPIKE_MAX:
-            out.append(finding("TRIPO-WING-FOLD-SPIKE", clip, f"in frame {spike_frame} the folded wing's arm stands {spike:.0%} of the height above the body on the game camera's screen (at most {FOLD_SPIKE_MAX:.0%}): it reads as a spike or a horn", share=round(spike, 3), frame=spike_frame))
-    if role == "defend" and c["head"].any():
-        lead, lead_frame = head_lead_over_wings(mesh, matrices, c["head"], c["wings"], c["front"])
-        row.update(head_lead=round(lead, 3), head_lead_frame=lead_frame)
-        if DEFEND_HEAD_BOXED_JUDGED and lead < DEFEND_HEAD_LEAD:
-            out.append(finding("TRIPO-DEFEND-HEAD-BOXED", clip, f"in frame {lead_frame} the head lies {lead:.1%} of the height ahead of the wings' front (at least {DEFEND_HEAD_LEAD:.0%}): the wings box it in", share=round(lead, 3), frame=lead_frame))
+    out += _neck_and_fold_findings(mesh, clip, role, matrices, c, row)
     if role != "death" and c["head_neck"].any():
         share = head_front_share(mesh, matrices, c["wings"], head_front_region(c["head"], c["head_neck"]))
         row["head_front_share"] = round(share, 3)
