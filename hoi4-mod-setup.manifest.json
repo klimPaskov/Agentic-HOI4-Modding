@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "3d35d440469d0b5c01efa57f6aafa1c44bd41533",
+  "generated_for_revision": "07890a0ddc975f1c24cccba37c09bfac2e9f211d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16573,8 +16573,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_presets.py",
-          "sha256": "85bb2c070f07782d78bcd34ddac890308436a4508312870e94e26edaf252081e",
-          "size": 14129
+          "sha256": "d7e2193a44571557b12c4aded3e67c38fe7de23da3ced746fd743b81700ebbab",
+          "size": 14598
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_rig.py",
@@ -16763,8 +16763,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/new_job.py",
-          "sha256": "a39c4228c89cac74aef81f00164b90f8e20732a1ba5f114c58b184f114404d99",
-          "size": 7503
+          "sha256": "bfb4bc7f91c71065ffac24f0f471a4b3f0700a16d819e255fecfa535cf37d95c",
+          "size": 8389
         },
         {
           "path": ".tools/3d_pipeline/tripo/pose_check.py",
