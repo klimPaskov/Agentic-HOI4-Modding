@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "144318f40cf0651ed470285ca778ab9143c80eed",
+  "generated_for_revision": "025b3c682a518e22a748ffc8d0a9b2f35a4ee47c",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -237,8 +237,8 @@
         },
         {
           "path": ".tools/gfx/README.md",
-          "sha256": "ff46e51a00182510b297f58e27ad9a4afc49e5b24dbf88b336f4ecd034a7c1e3",
-          "size": 16197
+          "sha256": "0b05f0b0601bf96c734ff4b0b319fb3e115be9a70c05e77f4eafa11de467de6c",
+          "size": 16686
         },
         {
           "path": ".tools/gfx/family_ids.json",
@@ -247,8 +247,8 @@
         },
         {
           "path": ".tools/gfx/gfx.py",
-          "sha256": "b3ae3f400293d2a463220a4fb7fa1f53b8277034571cf8aab367e70080c5ffd7",
-          "size": 52641
+          "sha256": "3b4c835fc55be5f6827ff8100e74b5069856ae1ee17a4bf90933823b3eb51c0d",
+          "size": 56063
         },
         {
           "path": ".tools/gfx/profiles.json",
@@ -502,8 +502,8 @@
         },
         {
           "path": ".tools/tests/test_gfx_conformance.py",
-          "sha256": "f8197f26ef235de0c64de0155b881d45b378f24e0764b3e45df95d5ecfd88faf",
-          "size": 8059
+          "sha256": "ee8695569ce4b7c33b7bc95a591e4ff48517406ab77e44c284ef336593049b7c",
+          "size": 10064
         },
         {
           "path": ".tools/tests/test_gui_rules.py",
@@ -2212,8 +2212,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -6167,13 +6167,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -6182,8 +6182,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
-          "size": 8032
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -6192,8 +6192,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -7671,8 +7671,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -11626,13 +11626,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -11641,8 +11641,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
-          "size": 8032
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -11651,8 +11651,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -20288,8 +20288,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -24243,13 +24243,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -24258,8 +24258,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
-          "size": 8032
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -24268,8 +24268,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -25786,8 +25786,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -29741,13 +29741,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -29756,8 +29756,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
-          "size": 8032
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -29766,8 +29766,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -31284,8 +31284,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -35239,13 +35239,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -35254,8 +35254,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
-          "size": 8032
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -35264,8 +35264,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
