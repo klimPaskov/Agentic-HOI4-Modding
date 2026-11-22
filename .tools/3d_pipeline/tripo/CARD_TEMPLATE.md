@@ -29,6 +29,7 @@ The picture must show one subject, full body, front view, on a plain light backg
 1. **Model**, **HD Model**. Add the picture.
 2. Settings under **Geometry & Texture**: Ultra Mesh Quality off, Texture on, 2K, Remove Lighting on, PBR on, Triangle, polycount 20000. AI model H3.1. Generate in Parts off.
 3. The button must read **Generate 30**. Press it once. Turn the model and look at every side.
+4. **Export** the model (GLB, free) and run `py -3.13 -B .tools/3d_pipeline/tripo/span_check.py <model.glb> <picture>`. It must print `pass`. On `fail` (TRIPO-SPAN-PICTURE: wings, arms or tail not as wide as drawn) make the model again and do not rig it.
 
 ## 2. Rig (20, units only)
 
