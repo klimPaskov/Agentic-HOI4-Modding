@@ -190,6 +190,13 @@ class Intake(unittest.TestCase):
         self.assertLess(int(ends[0].split("=")[1]), 120)
         self.assertNotIn("--trim", command)
 
+    def test_a_jobs_trim_end_cuts_the_role_at_that_frame_and_wins_over_the_auto_trim(self) -> None:
+        # The D-94 zombie's lunge ends before its own bow (2026-11-21): the job names the frame.
+        self.spec["tripo"]["trim_end"] = {"attack": 30}
+        command = self.command()
+        ends = [command[i + 1] for i, item in enumerate(command) if item == "--trim-end"]
+        self.assertEqual(ends, ["attack=30"])
+
     def test_every_looped_role_settles_back_to_its_first_pose_and_the_job_can_limit_it(self) -> None:
         command = self.command()
         settled = command[command.index("--settle") + 1:]

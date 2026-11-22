@@ -565,6 +565,20 @@ At game size a defend must read as a guard and must differ from the attack. A fr
 3. Run `tripo/tripo_checks.py`. TRIPO-MAP-READ compares the attack and the defend with the idle, and TRIPO-MAP-ALIKE compares the defend with the attack on the map camera, in pixels at game size. Its limit, 125, is the lowest reading of the humanoids fresh reviewers passed (orc_k 407, ogre_l 129, dwarf_f 508). On a winged unit the wings fill most of the silhouette, so the pixels can pass a defend that a reviewer reads as the attack: the demon_c defend read 404. Look at the defend's hoi4 tiles yourself, beside the attack's.
 4. The wings stay at the defend's own pose. Bringing them forward round the body as a cloak is not a rule yet.
 
+### An unarmed unit's posture on the map camera
+
+An unarmed unit (the D-94 zombie soldier) reads as its kind only through its outline and motion, because the face and the hands are a few pixels at map zoom. The route has job settings in the `tripo` block for the poses Tripo's text clips get wrong, all applied on the staged files before the weights are fitted:
+
+| Setting | What it does | Reviewed result (2026-11-21 and 22) |
+| --- | --- | --- |
+| `"idle_pose": "hunch"` | Bends the spine forward until the line from the hips to the head leans 20 degrees forward on the first frame, the neck turned back up by 0.6 of the bend so the head juts forward, every frame the same (`lib/tripo_hunch.py`). Tripo's "slightly hunched" idle leaned 2 to 4 degrees and read as a live soldier | Passed: four fresh reviewers over two runs read the idle as hunched at game size |
+| `"trim_end": {"attack": <frame>}` | Cuts a role at exactly that frame of the imported clip (24 a second), for a lunge that should end before the clip's own follow-through. The settle then blends it back to the first pose | Took off the zombie lunge's long head-down bow, which reviewers read as a slump |
+| `tripo.lunge` | The kept step now holds to the provider clip's end before it eases back (`lib/tripo_lunge.py`), so a cut attack does not swing the hips back at its peak | The attack's map reading went from 268 to 358 px |
+| `"attack_pose": "grab"` or `"grab_wide"` | Poses both arms as a two-handed reach in front, blended in by the lunge (`grab`), or opening wide on the approach and closing in front at the peak (`grab_wide`) (`lib/tripo_grab.py`) | Not passed. From the map camera, which looks at the unit's front from above, a forward reach foreshortens into the body, and a wide opening reads as a flail or a T-pose |
+| `"defend_pose": "recoil"` | The guard's rule with another shape: the torso thrown back 28 degrees and both arms flung out and down (`tripo_guard.RECOIL`) | Not passed. Reviewers read the arms-out sway as a T-pose and as the wide grab's peak |
+
+What this means for a new unarmed unit: TRIPO-MAP-READ and TRIPO-MAP-ALIKE count changed pixels, not what the change reads as, so an arm pose can pass them and still fail review. A pose that reads from the map camera changes the whole body's outline (its height, its lean or its place), not only where the arms point. Look at the `hoi4` tiles of `game_size_x3.png` yourself before the reviews, and ask whether each clip's key frame would read as its role from above and in front.
+
 ## Tripo checks
 
 `tripo/tripo_checks.py` reads the unit's runtime files and fails what a viewer fails on a Tripo unit. Each limit is measured on vanilla clips or on clips a reviewer failed.
