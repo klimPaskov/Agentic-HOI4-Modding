@@ -338,12 +338,12 @@ def sprite_registry(root: Union[str, Path]) -> List[Dict[str, Any]]:
 #   ships incomplete ladders (89 normal flags without a small file), so a gap is not an engine failure.
 # - GFX-FLAG-ORIGIN (warning): the skill forbids top-origin flag TGAs; vanilla ships 5 of 2,203, so the
 #   engine loads them and the rule stays a warning.
-# - GFX-FLAG-VARIANT (warning, D-118): a variant flag (`TAG_ideology`, or any `TAG_suffix` next to a `TAG` base)
-#   is a complete reimagining, never the base design with colours, a border, a band, a crown or a dye added.
-#   The check compares edge structure at 82x52: if at least FLAG_VARIANT_CONTAINMENT (0.70) of the base flag's
-#   edge pixels reappear within one pixel in the variant (also when mirrored), the base design survived and the
-#   variant is flagged. Recolours keep every edge, and added marks keep the base edges. It is a warning because
-#   vanilla ships a few legitimately related pairs; in a mod, treat each hit as a defect to redo, not to waive.
+# - GFX-FLAG-VARIANTS-UNIFORM (warning, D-118): a prompt to review, never a verdict on one flag. A small change can be
+#   right (a communist emblem on an otherwise kept national flag, as real states did) and a country with a new
+#   identity may break with its old flag entirely, so no single variant fails. The check flags a country only when
+#   it has two or more variants (`TAG_suffix` beside a base `TAG`) and EVERY one of them keeps at least
+#   FLAG_VARIANT_CONTAINMENT (0.70) of the base flag's edge pixels within one pixel at 82x52, also when mirrored.
+#   That is the mechanical pattern D-118 forbids: the same design with colours or a mark added for every variant.
 #   Bases with fewer than FLAG_VARIANT_MIN_EDGES edge pixels (plain fields) cannot be judged and are skipped.
 # - GFX-ACHIEVEMENT-SIZE (error): achievement art is 64x64 (882 of 882 vanilla files;
 #   `process_achievement_icons.py`). The base, `_grey` and `_not_eligible` files of every defined
@@ -362,7 +362,7 @@ RUNTIME_BINARY_DIRS = ('gfx', 'sound', 'music')
 RUNTIME_BINARY_SUFFIXES = {'.dds', '.tga', '.png', '.mesh', '.anim', '.wav', '.ogg'}
 GFX_LEVELS = {
     'GFX-FRAME-WIDTH': 'warning', 'GFX-FLAG-SIZE': 'error', 'GFX-FLAG-LADDER': 'warning', 'GFX-FLAG-ORIGIN': 'warning',
-    'GFX-FLAG-VARIANT': 'warning', 'GFX-ACHIEVEMENT-SIZE': 'error', 'GFX-LFS-POINTER': 'error', 'GFX-TRUNCATED': 'error',
+    'GFX-FLAG-VARIANTS-UNIFORM': 'warning', 'GFX-ACHIEVEMENT-SIZE': 'error', 'GFX-LFS-POINTER': 'error', 'GFX-TRUNCATED': 'error',
 }
 # Bytes per 4x4 block (compressed) or per pixel (uncompressed) for DDS formats with a known payload size.
 DDS_BLOCK_BYTES = {b'DXT1': 8, b'DXT2': 16, b'DXT3': 16, b'DXT4': 16, b'DXT5': 16, b'ATI1': 8, b'BC4U': 8, b'ATI2': 16, b'BC5U': 16}
@@ -552,24 +552,28 @@ def flag_containment(base: Any, variant: Any) -> float:
 
 
 def check_flag_variants(root: Union[str, Path] = ROOT, paths: Optional[Sequence[str]] = None) -> List[Finding]:
-    """GFX-FLAG-VARIANT: a variant flag must not keep the base flag's design (D-118)."""
+    """GFX-FLAG-VARIANTS-UNIFORM: every variant of a country keeps the base design (D-118). A prompt to review."""
     selector, findings = PathFilter(paths), []
     base_dir = Path(root) / 'gfx' / 'flags'
     files = {p.stem: p for p in base_dir.glob('*.tga')} if base_dir.is_dir() else {}
-    for stem, path in sorted(files.items()):
+    groups: Dict[str, List[Path]] = {}
+    for stem, path in files.items():
         tag, _, suffix = stem.partition('_')
-        if not suffix or tag not in files:
-            continue
-        rel = path.relative_to(root).as_posix()
-        if not selector.matches(rel):
+        if suffix and tag in files:
+            groups.setdefault(tag, []).append(path)
+    for tag, variants in sorted(groups.items()):
+        rel = files[tag].relative_to(root).as_posix()
+        if len(variants) < 2 or not selector.matches(rel):
             continue
         try:
-            ratio = flag_containment(flag_edges(files[tag]), flag_edges(path))
+            base = flag_edges(files[tag])
+            ratios = [flag_containment(base, flag_edges(path)) for path in sorted(variants)]
         except (OSError, ValueError, struct.error):
             continue
-        if ratio >= FLAG_VARIANT_CONTAINMENT:
-            findings.append(gfx_finding('GFX-FLAG-VARIANT', rel, 0, f'flag {stem} keeps {ratio:.0%} of the edge structure of base flag {tag}; '
-                                        'a variant is a complete reimagining, not the base with colours or marks added'))
+        if min(ratios) >= FLAG_VARIANT_CONTAINMENT:
+            findings.append(gfx_finding('GFX-FLAG-VARIANTS-UNIFORM', rel, 0, f'all {len(ratios)} variants of flag {tag} keep at least {min(ratios):.0%} of its edge structure, '
+                                        'so each reads as the base with colours or marks added. Review them: how would this country really present itself under each government or path? '
+                                        'A small change is right for some, but not as a rule for every variant'))
     return findings
 
 

@@ -184,7 +184,7 @@ class RuntimeBinaries(unittest.TestCase):
 
 
 class FlagVariants(unittest.TestCase):
-	"""D-118: a variant that keeps the base design (recolour, added border or band) is flagged."""
+	"""D-118: a country whose every variant keeps the base design is a prompt to review. One close variant is fine."""
 
 	@staticmethod
 	def save(root, name, draw):
@@ -205,39 +205,44 @@ class FlagVariants(unittest.TestCase):
 			for x in range(30, 52):
 				pixels[x, y] = (20, 20, 120)
 
-	def rules(self, variant):
+	def recolour(self, image):
+		self.base(image)
+		r, g, b = image.split()
+		image.paste(Image.merge("RGB", (b, g, r)))
+
+	def border(self, image):
+		from PIL import ImageDraw
+		self.base(image)
+		ImageDraw.Draw(image).rectangle((0, 0, 81, 51), outline=(0, 0, 0), width=3)
+
+	def mirror(self, image):
+		base = Image.new("RGB", (82, 52))
+		self.base(base)
+		image.paste(base.transpose(Image.FLIP_LEFT_RIGHT))
+
+	@staticmethod
+	def other(image):
+		from PIL import ImageDraw
+		draw = ImageDraw.Draw(image)
+		draw.rectangle((0, 0, 81, 51), fill=(10, 60, 30))
+		draw.polygon([(0, 51), (60, 0), (81, 0), (81, 20), (30, 51)], fill=(250, 250, 250))
+		draw.ellipse((5, 5, 22, 22), fill=(220, 160, 20))
+
+	def rules(self, *variants):
 		with tempfile.TemporaryDirectory() as root:
 			self.save(root, "AAA", self.base)
-			self.save(root, "AAA_fascism", variant)
-			return [f.rule for f in gfx.check_flag_variants(root) if f.rule == "GFX-FLAG-VARIANT"]
+			for index, variant in enumerate(variants):
+				self.save(root, f"AAA_v{index}", variant)
+			return [f.rule for f in gfx.check_flag_variants(root)]
 
-	def test_recolour_border_and_mirror_are_flagged(self):
-		def recolour(image):
-			self.base(image)
-			r, g, b = image.split(); image.paste(Image.merge("RGB", (b, g, r)))
+	def test_every_variant_keeping_the_base_is_flagged_for_review(self):
+		self.assertEqual(self.rules(self.recolour, self.border, self.mirror), ["GFX-FLAG-VARIANTS-UNIFORM"])
 
-		def border(image):
-			self.base(image)
-			from PIL import ImageDraw
-			ImageDraw.Draw(image).rectangle((0, 0, 81, 51), outline=(0, 0, 0), width=3)
+	def test_one_close_variant_beside_a_new_design_is_not_flagged(self):
+		self.assertEqual(self.rules(self.border, self.other), [])
 
-		def mirror(image):
-			base = Image.new("RGB", (82, 52))
-			self.base(base)
-			image.paste(base.transpose(Image.FLIP_LEFT_RIGHT))
-
-		for variant in (recolour, border, mirror):
-			self.assertEqual(self.rules(variant), ["GFX-FLAG-VARIANT"], variant.__name__)
-
-	def test_a_different_design_passes(self):
-		def other(image):
-			from PIL import ImageDraw
-			draw = ImageDraw.Draw(image)
-			draw.rectangle((0, 0, 81, 51), fill=(10, 60, 30))
-			draw.polygon([(0, 51), (60, 0), (81, 0), (81, 20), (30, 51)], fill=(250, 250, 250))
-			draw.ellipse((5, 5, 22, 22), fill=(220, 160, 20))
-
-		self.assertEqual(self.rules(other), [])
+	def test_a_single_close_variant_is_not_flagged(self):
+		self.assertEqual(self.rules(self.border), [])
 
 
 if __name__ == "__main__":
