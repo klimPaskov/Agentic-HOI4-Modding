@@ -31,6 +31,10 @@ RAMP_SHARE = 0.25
 UPPER_ARM = (0.8, -0.45, 0.4)
 FOREARM = (0.35, 0.9, -0.3)
 TORSO = ("Spine", "Spine01", "Spine02")
+# The recoil (`"defend_pose": "recoil"`): a body thrown back by a blow, the torso leaning back further and both arms flung out and down to the
+# sides. Two fresh reviews of the D-94 zombie (zombie_f, 2026-11-21) could not tell its defend from its hunched idle and its attack on the map
+# camera, and a boxer's guard reads as a live fighter, not a zombie.
+RECOIL = {"lean_back": 28.0, "upper_arm": (-0.2, -0.35, 0.9), "forearm": (0.15, -0.15, 0.95)}
 ARMS = {"Left": ("LeftArm", "LeftForeArm", "LeftHand"), "Right": ("RightArm", "RightForeArm", "RightHand")}
 
 
@@ -67,8 +71,10 @@ def _set_world(channels, mesh, name: str, frame: int, world: np.ndarray, rotatio
     channels[name]["q"][frame] = q if float(q @ old) >= 0 else -q
 
 
-def guard_defend(mesh_path: Path, anim_path: Path, idle_path: Optional[Path], front: np.ndarray) -> Dict[str, float]:
-    """Pose the exported defend clip as a guard (see the module text), in place. `front` is the unit's facing (the mesh's own axes)."""
+def guard_defend(mesh_path: Path, anim_path: Path, idle_path: Optional[Path], front: np.ndarray, lean_back: float = LEAN_BACK,
+                 upper_arm=UPPER_ARM, forearm=FOREARM) -> Dict[str, float]:
+    """Pose the exported defend clip as a guard (see the module text), in place. `front` is the unit's facing (the mesh's own axes).
+    `lean_back`, `upper_arm` and `forearm` give another braced pose the same way, for example the recoil (`RECOIL`)."""
 
     mesh = pdx_deform.load_mesh(mesh_path)
     anim = pdx_deform.load_anim(anim_path)
@@ -100,12 +106,12 @@ def guard_defend(mesh_path: Path, anim_path: Path, idle_path: Optional[Path], fr
                 channels[name]["q"][frame] = tripo_pose.slerp(channels[name]["q"][frame], stance.channels[name]["q"][0], w)
         rotations, _positions = tripo_pose._world_rotations(mesh, pdx_deform.Animation(anim.fps, anim.frames, channels))
         body_turn = rotations[frame, chest] @ chest_rest.T
-        lean = tripo_pose._axis_angle(body_turn @ lateral, -LEAN_BACK * w)
+        lean = tripo_pose._axis_angle(body_turn @ lateral, -lean_back * w)
         _set_world(channels, mesh, leaning, frame, lean @ rotations[frame, mesh.bones.index(leaning)], rotations)
         for side, (upper, fore, hand) in ARMS.items():
             out = outward[side]
             frame_axes = np.stack([front, up, out], axis=1)
-            for bone, child, target in ((upper, fore, UPPER_ARM), (fore, hand, FOREARM)):
+            for bone, child, target in ((upper, fore, upper_arm), (fore, hand, forearm)):
                 rotations, positions = tripo_pose._world_rotations(mesh, pdx_deform.Animation(anim.fps, anim.frames, channels))
                 body_turn = rotations[frame, chest] @ chest_rest.T
                 i, c = mesh.bones.index(bone), mesh.bones.index(child)
@@ -118,4 +124,4 @@ def guard_defend(mesh_path: Path, anim_path: Path, idle_path: Optional[Path], fr
     joints = [name for name in torso + list(ARMS["Left"][:2] + ARMS["Right"][:2]) if name in keyed]
     tripo_pose._write_rotations(data, keyed, joints, result, (weight > 0).astype(float))
     Path(anim_path).write_bytes(bytes(data))
-    return {"changed": True, "frames": int((weight > 0).sum()), "lean_back_degrees": LEAN_BACK, "joints": joints}
+    return {"changed": True, "frames": int((weight > 0).sum()), "lean_back_degrees": lean_back, "joints": joints}

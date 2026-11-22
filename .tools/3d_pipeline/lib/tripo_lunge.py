@@ -11,8 +11,8 @@ So the route restores the step on the staged attack, after the export:
    rigged GLB that `lunge_clip.py` made): the hips' sideways and forward travel from the first key, in hip heights, along its own final
    direction, signed forward when it goes the way the rig faces (glTF +Z).
 2. Each exported frame takes the step at its own time. Frames past the provider clip's end (the settle the route appends) hold its last step.
-3. Over the last `RETURN_SHARE` of the clip the step eases back to zero (smoothstep), so the looped attack starts and ends where the unit
-   stands, as the in-place clip did.
+3. Over the last `RETURN_SHARE` of the clip, but not before the provider clip's own end (and over at least `MIN_RETURN_FRAMES`), the step
+   eases back to zero (smoothstep), so the looped attack starts and ends where the unit stands, as the in-place clip did.
 4. The step is added to the `Hips` translation keys along the unit's front (`map_read.front_of`), scaled by the mesh's own hip height (the
    Hips joint's rest height above the lowest vertex). Only the Hips translation samples change.
 """
@@ -28,6 +28,7 @@ from . import glb_root, map_read, pdx_deform, tripo_pose
 from .pdx_binary import read
 
 RETURN_SHARE = 0.3
+MIN_RETURN_FRAMES = 6  # the fewest frames the step eases back over
 
 
 def provider_step(glb: Path) -> Dict[str, np.ndarray]:
@@ -64,7 +65,11 @@ def step_per_frame(step: Dict[str, np.ndarray], frames: int, fps: float, return_
 
     t = np.arange(frames) / max(fps, 1e-6)
     out = np.interp(t, step["times"], step["forward"], left=float(step["forward"][0]), right=float(step["forward"][-1]))
-    start = int(round(frames * (1.0 - return_share)))
+    # The return starts no earlier than the provider clip's end, so the step holds through the lunge and eases back over the settle the
+    # route appends. With the attack cut before its follow-through (`trim_end`, zombie_f, 2026-11-21) a return from a fixed share of the clip
+    # swung the hips back at the lunge's peak, and the attack read 268 px against the idle on the map camera where its peak frame read 353.
+    end = int(np.ceil(float(step["times"][-1]) * max(fps, 1e-6)))
+    start = min(max(int(round(frames * (1.0 - return_share))), end), frames - MIN_RETURN_FRAMES)
     if frames - start >= 2:
         share = np.clip((np.arange(frames) - start) / (frames - 1 - start), 0.0, 1.0)
         out = out * (1.0 - share * share * (3.0 - 2.0 * share))
