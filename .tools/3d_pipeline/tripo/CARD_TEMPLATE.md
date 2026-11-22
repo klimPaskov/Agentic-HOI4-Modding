@@ -1,15 +1,19 @@
 # Tripo card: <asset_slug>
 
-One card per unit or static model. Write it with `py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.json> <asset_slug>`, which fills this template from the job entry, keeps only the steps the job needs and refuses an entry that would leave a step open. Follow the card top to bottom in [Tripo Studio](https://studio.tripo3d.ai). Write the credit balance where it asks. Press each paid button once.
+One card per unit or static model. Write it with `py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.json> <asset_slug>`, which fills this template from the job entry and its preset (`config/tripo_presets.json`), keeps only the steps the job needs and refuses an entry that would leave a step open. Start a new job with `tripo/new_job.py`, which writes the entry from the preset. Follow the card top to bottom in [Tripo Studio](https://studio.tripo3d.ai). Write the credit balance where it asks. Press each paid button once.
 
 | | |
 | --- | --- |
 | Kit commit | `<kit commit>` (the card follows the kit at this commit. If you pull a newer kit mid-run, write a new card) |
+| Preset | `<preset>`: <preset label>. <preset proven> |
 | Picture | `<picture>` |
 | Sources | <sources> |
 | Unit type | `<unit_type>` |
+<!-- tripo_rig -->
 | Idle posture | `<posture>` (the job's `tripo.posture`, see step 7) |
-| Credit budget | <credit_budget> |
+<!-- /tripo_rig -->
+| Credit budget | <credit_budget> (the preset: <preset budget>) |
+| Canvas workflow | <canvas> (the same steps on Tripo's Agentic Canvas, for an account that has it) |
 | Job folder | `<job folder>` |
 | Balance before | |
 <!-- armed -->
@@ -27,19 +31,21 @@ The picture is made from existing references, never from a text prompt alone. Ev
 4. Check that the button reads 0, then press it.
 5. Compare the result with the art, detail by detail, before you go on.
 
-`Redraw this exact <subject> for 3D modelling. Keep <every detail>. Invent nothing. Neutral pose for rigging: arms hanging about 30 degrees away from the body, both hands empty, open and relaxed. Full body, front view, feet visible, plain light grey background, even soft lighting.`
+`<picture sentence>`
 
-For a building or landmark, use this instead. The Image tool takes three uploads at most, so put related photos side by side in one picture.
-
-`A 3D-ready picture of one <building> in the style of the references. Keep <every detail>. Only a small yard just round the building, with a ragged edge that can sink into the terrain, no square paved plate. Every post, brace and beam thick and chunky. Elevated three-quarter view, the whole building in frame, plain light grey background, soft even light with no cast shadows, no smoke, no people, no trees.`
-
-Before you go on, look at the picture: no plate base, and no brace thinner than about 1.5 % of the building's longest side. Redraw it (free) if either fails.
+<picture rules>
 
 How to write `<every detail>`:
 
+<!-- unit -->
 - Name each piece of gear by the viewer's side: "a leather bracer on the viewer's left wrist".
 - Gear the art shows on one side only stays on that side: "only on the viewer's left wrist".
 - Gear on a side the art hides (behind a weapon, behind the body) is not guessed: write "the viewer's right wrist is not visible, do not add a bracer there".
+<!-- /unit -->
+<!-- static -->
+- Name every part the references show, where it sits and its colour: "a short-barrelled gun in a round turret set to the front", "three road wheels a side".
+- A part the references do not show is not guessed: write "the rear is not visible, do not add an engine deck there".
+<!-- /static -->
 <!-- armed -->
 - End with `Remove the <weapon> completely. Both hands are empty.` The weapon is its own model (step 2).
 <!-- /armed -->
@@ -56,6 +62,15 @@ How to write `<every detail>`:
 5. Make the shield's picture the same way: `Redraw only the <shield> from this picture ...`, the shield seen from the front.
 <!-- /shield -->
 
+<!-- static -->
+## 2. Model (Smart Mesh, free while it shows Trial, else 100, and its texture 20)
+
+1. On the home page add the picture and pick **Clean Topology** (Smart Mesh). Set Triangle and polycount <polycount> (<polycount reason>).
+2. The button shows **Trial** or a struck price while this account has a Smart Mesh trial. Then it is free. Otherwise it must read **100**. Press it once. It makes 4 variants.
+3. Turn each variant and look at every side. Pick the one whose parts are cleanest and closest to the picture: round wheels and a round barrel, closed walls and roofs, no loose slabs or wedges.
+4. Press **Texture** on that variant. It must read **20**. Press it once.
+<!-- /static -->
+<!-- model -->
 ## 2. Model (30)
 
 1. **Model**, **HD Model**. Add the body picture.
@@ -69,44 +84,32 @@ How to write `<every detail>`:
 <!-- shield -->
 7. Make and export the shield the same way, as `<job folder>/armed/<asset_slug>_shield__model.glb`.
 <!-- /shield -->
+<!-- /model -->
+<!-- tripo_rig -->
 
-## 3. Rig (20, units only)
+## 3. Rig (20)
 
 **Rig**: Humanoid, skeleton preset Mixamo, **Auto Rig**.
 
-## 4. Candidate animations (free, units only)
+## 4. Candidate animations (free)
 
 **Animate**, **Preset**. Type each name into the search box and click the middle of its tile once. Wait until **Retargeting** has gone before the next tile. The search matches names only.
 
-<!-- unarmed -->
-| Role | Candidates |
-| --- | --- |
-| idle | `idle` |
-| move | `walk` |
-| attack | `box_01`, and every earlier clip under **AI Animation** made for an unarmed unit |
-| defend | `hit_to_stomach`, `hit_to_body_01` |
-| retreat | `flee_01` |
-| death | `defeat`, `defeat_02`, `fall` |
+<clip table>
 
-Text-to-motion (20), only when step 6 says no attack passes: name the motion, both hands, their height and the stance, for example `lunges one huge fast step, both arms thrust straight forward at chest height, then jerks back`. At most 280 characters.
+<!-- unarmed -->
+Text-to-motion (20), only when step 6 says no attack passes: name the motion, both hands, their height and the stance, for example `<paid clip>`. At most 266 characters.
 <!-- /unarmed -->
 <!-- armed -->
-| Role | Candidates |
-| --- | --- |
-| idle | `idle` |
-| move | `walk` |
-| attack | `chop`, and every earlier clip under **AI Animation** made for a weapon in one hand |
-| defend | `hit_to_stomach`, `hit_to_body_01` |
-| retreat | `flee_01` |
-| death | `defeat`, `defeat_02`, `fall` |
-
 The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). `box_01` is an empty-hand punch and does not read as a weapon swing. For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
 
-Text-to-motion (20): `A heavy warrior raises the <weapon> in his own <hand words> high over his head, then smashes it down hard in front of him, torso leaning forward, feet planted.` Change the body words to fit the unit. Name the hand by the character's own side, which is the rig's `<hand>`. At most 280 characters.
+Text-to-motion (20): `<paid clip>` Change the body words to fit the unit. Name the hand by the character's own side, which is the rig's `<hand>`. At most 266 characters.
 <!-- /armed -->
+<!-- /tripo_rig -->
 
 ## 5. Export
 
+<!-- tripo_rig -->
 1. On the Animate page press **Export**. Format GLB.
 2. **Export Skeleton** must read on. **Animation stay in Place** must read on. Tripo remembers each switch from the last export, so read it first (its `aria-checked` is `true` when on) and click it only when it reads off.
 3. Under **Number of Animations** press **Select All**.
@@ -119,8 +122,14 @@ Text-to-motion (20): `A heavy warrior raises the <weapon> in his own <hand words
 <!-- /armed -->
 
 Tripo renames two presets on export: the tile `defeat` exports as `defeat_02`, and `defeat_02` as `defeat_03`. Read clip names from the file, not from the tiles.
-
-A static model: on the Model page press **Export**, GLB, 2K, and save it as `<job folder>/inbox/<asset_slug>__model.glb`. Steps 3 to 8 do not apply.
+<!-- /tripo_rig -->
+<!-- kit_rig -->
+On the Model page press **Export**, GLB, 2K, with no rig. Save it as `<job folder>/inbox/<asset_slug>__model.glb`. The kit rigs and animates it in step 9, for free. Your Tripo steps are done: release the Tripo tab.
+<!-- /kit_rig -->
+<!-- static -->
+On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/<asset_slug>.glb`, next to the job file `<job folder>/inbox/<asset_slug>.json` that `new_job.py` wrote (it names the model and its kind, `<model_kind>`). Your Tripo steps are done: release the Tripo tab.
+<!-- /static -->
+<!-- tripo_rig -->
 
 ## 6. Before you leave Tripo (free)
 
@@ -137,7 +146,7 @@ Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip
 4. Export again in a fresh browser tab (step 5) and run step 6 again.
 5. When the attack budget is spent and still none passes, stop and ask before more credits.
 
-## 7. Clip choice on the map camera (free, units only)
+## 7. Clip choice on the map camera (free)
 
 The game shows the unit about 60 pixels tall from above and in front. There only the outline reads, so pick each clip by how its outline reads there, against the unit's other clips.
 
@@ -161,6 +170,7 @@ The game shows the unit about 60 pixels tall from above and in front. There only
 | defend | | spread |
 
 After the run, `tripo_checks.py` judges the exported clips by the same rules (TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME). A unit that fails one goes back to this step, not to review.
+<!-- /tripo_rig -->
 <!-- armed -->
 
 ## 8. Put the weapon in the hand (free, Blender)
@@ -172,7 +182,15 @@ After the run, `tripo_checks.py` judges the exported clips by the same rules (TR
 
 ## 9. The run (free, Blender)
 
+<!-- static -->
+1. Run `py -3.13 -B .tools/3d_pipeline/tripo/static_model.py <job folder>/inbox/<asset_slug>.json --out <job folder>`. It turns the model into HOI4 files under `<job folder>/mod` and runs the checks. Read its one-line verdict.
+2. Run `py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <job folder>/mod/<static folder>/<asset_slug> --model-kind <model_kind> --out <job folder>/review`, look at the sheets yourself, then give them to a fresh reviewer.
+<!-- /static -->
+<!-- unit -->
 Follow step 2 of `docs/3d-units.md` for the picture review if it is not recorded yet, then steps 8 to 10 there: `tripo_intake.py`, `run_pilot.py` and the checks. Every one of them waits for the machine by itself.
+<!-- /unit -->
+
+Then let your agent wire the model into the mod (step 12 of `docs/3d-units.md`).
 
 | | |
 | --- | --- |
