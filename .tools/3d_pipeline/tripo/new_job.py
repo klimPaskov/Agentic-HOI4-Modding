@@ -30,6 +30,8 @@ from lib.paths import resolve_job_root
 
 CONFIG = PIPELINE_ROOT / "config"
 JOB_PREFIX = "hoi4_3d_model_jobs"
+# A private reference is recorded in the job's sources with this mark, and the card says it never goes to Tripo (D-123).
+PRIVATE_PREFIX = "private, never uploaded: "
 
 
 def parse_value(text: str) -> Any:
@@ -96,6 +98,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--preset")
     parser.add_argument("slug", nargs="?")
     parser.add_argument("--source", action="append", default=[], help="a reference the picture is made from (repeat for each)")
+    parser.add_argument("--private-source", action="append", default=[], dest="private_sources",
+                        help="a private reference, such as an owner's drawing: recorded, never given to Tripo or any online service (D-123)")
     parser.add_argument("--brief", default="", help="one sentence: what the unit is")
     parser.add_argument("--set", action="append", default=[], dest="answers", help="<key>=<value>, see the module help")
     parser.add_argument("--replace", action="store_true", help="overwrite a job of the same name")
@@ -110,6 +114,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.preset not in data["presets"]:
         parser.error(f"no preset {args.preset!r}. The presets are: {', '.join(data['presets'])}")
     answers = answers_from(args.answers)
+    args.source = [*args.source, *[PRIVATE_PREFIX + item for item in args.private_sources]]
     registry = json.loads(args.jobs_config.read_text(encoding="utf-8")) if args.jobs_config.exists() else {"jobs": {}}
     jobs = registry.setdefault("jobs", {})
     if args.slug in jobs and not args.replace:
