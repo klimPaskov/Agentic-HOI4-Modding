@@ -271,6 +271,9 @@
   ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 4
   },
+  ".tools/3d_pipeline/tripo/tripo_checks.py": {
+   "PLR0915 main": 51
+  },
   ".tools/3d_pipeline/verify_environment.py": {
    "RUF100 Unused `noqa` directive (non-enabled: `E402`)": 2
   },
