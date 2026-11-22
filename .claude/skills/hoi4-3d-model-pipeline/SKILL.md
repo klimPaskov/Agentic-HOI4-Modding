@@ -39,14 +39,27 @@ Each gate is defined once in the guide:
 - **Generator**: Tripo is the default (`"provider": "tripo"`). It runs in the
   Tripo web app under the user's own sign-in, never through an API, and follows
   the route in `docs/3d-units.md`: a 3D-ready picture (neutral pose, empty
-  hands), model, rig, candidate presets, export, clips picked by measurement,
-  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Copy the complete
-  job entry and the picture review of step 2 in `docs/3d-units.md` (a Tripo
-  job needs `init_pilot_jobs.py` for its picture too). An unarmed soldier-sized
+  hands), model, rig, candidate presets, export, clips picked by measurement
+  and by their outline on the map camera (`pose_check.py --map`, the job's
+  `tripo.posture`, TRIPO-MAP-POSTURE, -SPREAD, -REACH and -SAME),
+  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Pick the
+  preset for the kind of model (`tripo/new_job.py --list`) and write the job
+  entry with `tripo/new_job.py --preset <preset>`, giving only what the
+  user knows with `--set`. Do the picture review of step 2 in
+  `docs/3d-units.md` (a Tripo job needs `init_pilot_jobs.py` for its picture
+  too). Write the card with `tripo/make_card.py`, never by hand. An armed unit names
+  `tripo.weapon.hand` by the rig's side and gets its weapon from
+  `tripo/arm_unit.py`. An unarmed soldier-sized
   unit takes `infantry_unarmed`. Every command that starts Blender waits for
   the machine first (`lib/heavy_job.py`). Never type the user's password. Proven on armed humanoids, a large creature, a mount, a
   plane and a ship. Winged units, tanks, buildings and landmarks are not
   proven yet.
+- **Picture sources**: a 3D reference picture is made from existing
+  references and research, never from a text prompt alone. Start from the
+  subject's own reference (the owner's drawing, the mod's art), research real
+  references for a real-world subject, give them to the image tool, and list
+  them in the job's `reference_sources` and the card's Sources row. The
+  picture review refuses a job without them.
 - **Detail and look**: never simplify a subject, picture, clip choice or
   requirement to make a step easier or a check pass, and never change a look
   by a tint, filter or recolour of its texture. Change the method, or make a

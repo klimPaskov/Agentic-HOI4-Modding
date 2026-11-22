@@ -73,6 +73,16 @@ Where supported, add visible, hidden, containment, and centering expectations ag
 
 Treat the production MCP render as the required visual-review surface. It does not execute Hearts of Iron IV, so preserve the renderer's fidelity limits and leave runtime behavior unverified when the route cannot establish it. Every visible defect in the in-scope GUI blocks completion, including warnings the tool does not classify as fatal. An offscreen or blank window, generated reference, timeout, or truncated response does not establish a successful production render. Match the exact fixture and source revision for every comparison. If a current-source final render times out, retain earlier images only as prior-source evidence and leave the final visual gate open. Never dismiss bad alignment, spacing, clipping, backgrounds, states, assets, or click regions as a renderer discrepancy. Read every capture yourself against [the visual-review checklist](references/visual-review.md) before reporting it; an unread capture is not evidence.
 
+Some engine behaviour never appears in a render, because the game lays it out by code at run time. Before you build or restyle a window, read [references/engine-behaviour.md](references/engine-behaviour.md) and follow its rules:
+- negative sizes count from the element's own place;
+- a text box takes only a plain scrollbar;
+- quoted words are read as written;
+- the event window is placed by its text's height;
+- some grounds are set by sprite name, and a button-state effect greys a disabled ground;
+- a restyle rule must not replace certain textures.
+
+Run `python -B .tools/check.py quick --paths <changed .gui files>`: its `gui-rules` check catches the mechanical cases, and the reference names the capture that settles the rest.
+
 If required inspection or render evidence, artifacts, scenarios, or dependencies are unavailable, record the exact call, selector, error, and affected evidence as blocked. Source-only review is not equivalent. An incidental defect outside authorized scope becomes a parent-owned finding, not permission to edit another interface.
 
 ## Content and interaction budget

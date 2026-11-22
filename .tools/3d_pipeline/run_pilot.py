@@ -3810,15 +3810,18 @@ def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoi
 
 
 def guard_staged_defend(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
-    """The defend posed as a guard on the staged files when the job asks (`"defend_pose": "guard"`, lib/tripo_guard.py), recorded."""
+    """The defend posed as a guard or a recoil on the staged files when the job asks (`"defend_pose": "guard"` or `"recoil"`,
+    lib/tripo_guard.py), recorded."""
 
-    if (spec.get("tripo") or {}).get("defend_pose") != "guard" or "defend" not in roles:
+    pose = (spec.get("tripo") or {}).get("defend_pose")
+    if pose not in ("guard", "recoil") or "defend" not in roles:
         return
     from lib import map_read, pdx_deform, tripo_guard
 
     mesh = staged / f"{stem}.mesh"
-    records[f"{stem}_defend.anim"]["guard"] = tripo_guard.guard_defend(mesh, staged / f"{stem}_defend.anim", staged / f"{stem}_idle.anim",
-                                                                         map_read.front_of(pdx_deform.load_mesh(mesh)))
+    shape = tripo_guard.RECOIL if pose == "recoil" else {}  # the recoil: thrown back, the arms flung out (an unarmed zombie's defend)
+    records[f"{stem}_defend.anim"][pose] = tripo_guard.guard_defend(mesh, staged / f"{stem}_defend.anim", staged / f"{stem}_idle.anim",
+                                                                      map_read.front_of(pdx_deform.load_mesh(mesh)), **shape)
 
 
 def look_back_staged_retreat(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
@@ -3832,11 +3835,47 @@ def look_back_staged_retreat(staged: Path, stem: str, spec: Dict[str, Any], role
     records[f"{stem}_retreat.anim"]["look_back"] = tripo_look_back.look_back(staged / f"{stem}.mesh", staged / f"{stem}_retreat.anim")
 
 
-def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
-    """The role poses a job asks for on the staged files: the defend's guard, then the retreat's look back."""
+def hunch_staged_idle(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The idle posed hunched with the head forward on the staged files when the job asks (`"idle_pose": "hunch"`, lib/tripo_hunch.py),
+    recorded."""
 
+    if (spec.get("tripo") or {}).get("idle_pose") != "hunch" or "idle" not in roles:
+        return
+    from lib import map_read, pdx_deform, tripo_hunch
+
+    mesh = staged / f"{stem}.mesh"
+    records[f"{stem}_idle.anim"]["hunch"] = tripo_hunch.hunch_idle(mesh, staged / f"{stem}_idle.anim", map_read.front_of(pdx_deform.load_mesh(mesh)))
+
+
+def grab_staged_attack(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The attack's arms posed as a two-handed grab on the staged files when the job asks (`"attack_pose": "grab"`, lib/tripo_grab.py),
+    recorded."""
+
+    pose = (spec.get("tripo") or {}).get("attack_pose")
+    if pose not in ("grab", "grab_wide") or "attack" not in roles:
+        return
+    from lib import map_read, pdx_deform, tripo_grab
+
+    mesh = staged / f"{stem}.mesh"
+    records[f"{stem}_attack.anim"]["grab"] = tripo_grab.grab_attack(mesh, staged / f"{stem}_attack.anim", map_read.front_of(pdx_deform.load_mesh(mesh)),
+                                                                     wide=pose == "grab_wide")
+
+
+def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The role poses a job asks for on the staged files: the idle's hunch first (the guard turns the torso toward the idle's stance), then
+    the defend's guard, the retreat's look back and the attack's grab (after the lunge step is restored, which it follows)."""
+
+    hunch_staged_idle(staged, stem, spec, roles, records)
     guard_staged_defend(staged, stem, spec, roles, records)
     look_back_staged_retreat(staged, stem, spec, roles, records)
+    grab_staged_attack(staged, stem, spec, roles, records)
+
+
+def step_and_pose_staged_roles(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), on the staged files."""
+
+    restore_staged_lunges(job, staged, stem, spec, roles, records)
+    pose_staged_roles(staged, stem, spec, roles, records)
 
 
 def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
@@ -3887,14 +3926,26 @@ def clear_staged_props(job: Path, staged: Path, spec: Dict[str, Any], roles: Lis
         records[name]["staged"] = file_record(staged / name, relative_to=job)
 
 
-def lift_sunk_neck(mesh: Path, anim: Path, role: str) -> Dict[str, Any]:
+def restore_staged_lunges(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """Each role the job's `tripo.lunge` names gets its kept step back on the staged clip, read from the role's provider file
+    (lib/tripo_lunge.py), recorded."""
+
+    from lib import tripo_lunge
+
+    for role in (spec.get("tripo") or {}).get("lunge") or {}:
+        provider = job / "provider" / "downloads" / f"animation_{role}_provider.glb"
+        if role in roles and provider.is_file():
+            records[f"{stem}_{role}.anim"]["lunge"] = tripo_lunge.restore_step(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", provider)
+
+
+def lift_sunk_neck(mesh: Path, anim: Path, role: str, unarmed: bool = False) -> Dict[str, Any]:
     """The Tripo route's neck rule on a staged humanoid clip (lib/tripo_neck.py, TRIPO-NECK-SUNK): where the head sinks between the shoulders
     past vanilla's worst, the neck (or the clavicles, whichever the measure blames) is turned toward the rest pose by the smallest share that
     brings the head's base back above the shoulder line. It runs before the weights are smoothed and fitted, so they fit the lifted clip."""
 
     from lib import tripo_neck
 
-    lift = tripo_neck.lift_neck(mesh, anim, anim, role)
+    lift = tripo_neck.lift_neck(mesh, anim, anim, role, hands_guard=unarmed)  # an unarmed unit's lift never raises its hands (TRIPO-HANDS-HIGH)
     return {"changed": lift.changed, "group": lift.group, "joints": list(lift.joints), "share": lift.share, "frames_changed": lift.frames_changed,
             "ramp_frames": lift.ramp_frames, "neck_before": round(lift.neck_before, 3), "neck_after": round(lift.neck_after, 3), "tried": lift.tried,
             "note": lift.note}
@@ -4376,11 +4427,13 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # switches it off.
         if not tripo_quadruped(spec) and (spec.get("tripo") or {}).get("lift_neck", True) is not False:
             for role in sorted(exports["animations"]):
-                records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role)
-        # A defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands before
-        # the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before the
-        # weights are fitted to the clips.
-        pose_staged_roles(staged, stem, spec, exports["animations"], records)
+                records[f"{stem}_{role}.anim"]["neck_lift"] = lift_sunk_neck(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim", role,
+                                                                                     unarmed=not weapon_cfg)
+        # A lunge the job keeps (`tripo.lunge`, lib/tripo_lunge.py) gets its step back: the Blender stage retargets every clip in place.
+        # Then a defend posed as a guard (`"defend_pose": "guard"`, lib/tripo_guard.py): torso to the stance and leaning back, both hands
+        # before the face, and a retreat that looks back over the shoulder (`"retreat_pose": "look_back"`, lib/tripo_look_back.py), before
+        # the weights are fitted to the clips.
+        step_and_pose_staged_roles(job, staged, stem, spec, exports["animations"], records)
         # After the mesh repairs, on the staged files: weights smoothed where the unit's own clips stretch it (lib/stretch_smooth.py), the
         # weapon bone locked. `"smooth_weights": false` in the job's tripo block switches it off.
         # Then the weights where the clips still deform the skin are fitted to those clips (lib/weight_fit.py), the same bones and the armour

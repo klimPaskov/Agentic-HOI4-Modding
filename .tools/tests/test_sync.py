@@ -71,7 +71,8 @@ class Mod:
 	def write(self, rel, text):
 		target = self.path(rel)
 		target.parent.mkdir(parents=True, exist_ok=True)
-		target.write_text(text, encoding="utf-8", newline="\n")
+		# Bytes keep LF on Windows and run on Python 3.9, where Path.write_text has no newline argument.
+		target.write_bytes(text.encode("utf-8"))
 
 	def read(self, rel):
 		return self.path(rel).read_text(encoding="utf-8")

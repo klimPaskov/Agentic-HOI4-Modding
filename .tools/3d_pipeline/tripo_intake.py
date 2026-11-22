@@ -34,7 +34,8 @@ roles in which the unit lets go of it: the kit grounds those clips by the body a
 judge that bone's part for drifting. `shield` is optional too: `{"part": "tripo_part_2", "bone": "Shield", "release_roles": ["death"]}`
 (those are the defaults but for the roles) names the shield `tripo/shield_stage.py` put in the free hand, bound rigidly to its own bone,
 with the same release rule as the weapon. `trim` is optional: it cuts a
-long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth.
+long clip to at most that many frames, ending on the frame closest to frame 0 so the loop is smooth. `trim_end` cuts a role at exactly
+that frame of the imported clip (24 a second), for a lunge that should end before the clip's own follow-through.
 A clip that ends still is trimmed by rule without it (`lib/tripo_trim.py`): attack, defend and retreat drop the part after the motion fell under
 5% of the clip's own peak and keep half a second of settle. `trim` for a role wins, and `"auto_trim": false` (or a list of roles) switches the rule off (or limits it).
 `settle` (default attack, defend and retreat, `false` or a shorter list to limit it) appends frames that blend the clip's last pose back to its first, because the game loops it (`lib/tripo_trim.py`).
@@ -112,6 +113,17 @@ def intake_files(spec: Dict[str, Any], slug: str, inbox: Path) -> Dict[str, Path
     return found  # type: ignore[return-value]
 
 
+def refuse_unfitting_clips(spec: Dict[str, Any]) -> None:
+    """Refuse a job whose role clips do not fit the unit (D-127): a modern boxing, kick or dance preset never does, whatever the checks say
+    (`config/tripo_presets.json`, `never_fitting`)."""
+
+    from lib import tripo_presets
+
+    found = tripo_presets.unfitting_clips(spec)
+    if found:
+        raise ValueError(f"{spec.get('asset_id', 'the job')}: {tripo_presets.unfitting_message(found)}.")
+
+
 def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
     """Refuse a rigged export whose role clips carry travel in the hips (lib/glb_root.py): the route's loop, grounding and weapon-drop
     rules expect clips exported with Tripo's "Animation in Place" switch on."""
@@ -123,6 +135,12 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
         travelling = glb_root.travelling_clips(rigged, [clip for role, clip in roles.items() if role != "death"], deaths=[roles["death"]] if roles.get("death") else None)
     except ValueError:  # not a binary glTF: the Blender stage reads it and says what is wrong
         return
+    # A lunge the job keeps (`tripo.lunge`, {role: cap in hip heights}, written by tripo/lunge_clip.py) may travel up to its cap.
+    for role, cap in ((spec.get("tripo") or {}).get("lunge") or {}).items():
+        clip = roles.get(role)
+        for name in [name for name in travelling if clip and name.startswith(clip)]:
+            if travelling[name] <= float(cap) + 0.01:
+                travelling.pop(name)
     if travelling:
         listed = ", ".join(f"{clip.strip()} {travel:.2f}" for clip, travel in sorted(travelling.items()))
         raise ValueError(
@@ -166,6 +184,22 @@ def loop_arguments(config: Dict[str, Any], wanted: Sequence[str], explicit: Dict
     return arguments, windows
 
 
+def trim_arguments(config: Dict[str, Any]):
+    """(the prepare stage's `--trim` and `--trim-end` arguments, {role: frames} the job cuts itself). `trim` cuts to a loop point,
+    `trim_end` cuts a role at exactly that frame (no loop point is searched): the end of a lunge before the clip's own follow-through, which
+    the settle then blends back to the first pose. Both win over the loop window and the auto trim."""
+
+    explicit = dict(config.get("trim") or {})
+    arguments: List[str] = []
+    for role, frames in explicit.items():
+        arguments += ["--trim", f"{role}={int(frames)}"]
+    for role, frames in (config.get("trim_end") or {}).items():
+        if role not in explicit:
+            arguments += ["--trim-end", f"{role}={int(frames)}"]
+            explicit[role] = frames
+    return arguments, explicit
+
+
 def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path], out_dir: Path, report: Path) -> List[str]:
     """The headless Blender command that makes the base model and one GLB per role."""
 
@@ -186,9 +220,8 @@ def prepare_command(blender: Path, spec: Dict[str, Any], files: Dict[str, Path],
         command += ["--part-triangles", f"{part}={budget if budget == 'auto' else int(budget)}"]
     if config.get("part_shape_iou") is not None:
         command += ["--shape-iou", str(float(config["part_shape_iou"]))]
-    explicit = config.get("trim") or {}
-    for role, frames in explicit.items():
-        command += ["--trim", f"{role}={int(frames)}"]
+    trimming, explicit = trim_arguments(config)
+    command += trimming
     # The looped gait (lib/tripo_loop.py): the move and the retreat are cut to their best whole strides and closed with no stop. A job's own trim wins.
     looping, windows = loop_arguments(config, wanted, explicit, roles, files["rigged"])
     command += looping
@@ -338,6 +371,7 @@ def run_intake(
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     files = intake_files(spec, slug, Path(inbox))
+    refuse_unfitting_clips(spec)
     if "rigged" in files:
         refuse_travelling_clips(spec, files["rigged"])
     sources = [

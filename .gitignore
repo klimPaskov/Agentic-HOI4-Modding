@@ -55,3 +55,8 @@
 
 # Blender adapter config written by the bootstrap (machine paths)
 /.tools/3d_pipeline/config/blender_hoi4_adapter.json
+# Machine-local tooling files (check.py setup).
+/.tools/.venv/
+
+# 3D job registry, job folders and pictures (private pictures must never be committed)
+/docs/assets/hoi4_3d_model_jobs/

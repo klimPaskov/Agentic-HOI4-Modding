@@ -64,6 +64,12 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-MAP-READ: from the map camera at game size (the unit 60 pixels tall), a humanoid's attack or defend changes fewer pixels of the
   idle's silhouette than `map_read.MIN_HUMANOID_READ_PIXELS` (attack 300, defend 160) in its 90th percentile frame: it reads as the idle on the
   map. The limits are the lowest readings of the humanoids fresh reviewers passed at game size (`lib/map_read.py`).
+- TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME: what a humanoid's clips read as from the map camera at game size, by
+  their outline (`lib/map_outline.py`). The idle's body outline must match the posture the job asks for (`tripo.posture`: `hunched` at most
+  0.93 of the rest pose's height, `upright` above it). The attack and the defend must not spread both hands wider than 0.80 of the body's
+  height (a T-pose), nor both hold that spread (they read as each other). A melee attack's striking end (the weapon, or each hand's middle)
+  must show at least 5 pixels outside the body's outline at the strike, or the reach foreshortens into the body. Not judged for a winged
+  unit's reach. The limits sit between the D-94 zombie runs reviewers failed and the humanoids they passed.
 - TRIPO-LOOP-STANDS: in a humanoid's move or retreat the feet stop striding in some frame step (one ankle moves against the other slower than
   0.14 heights a second, smoothed over a sixth of a second around the loop; vanilla's slowest locomotion clip keeps 0.179), or the last step does
   not flow into the first (across the seam a joint's speed against the pelvis changes by more than 1.2 times the largest change between two
@@ -111,7 +117,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from lib import map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
+from lib import map_outline, map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -994,6 +1000,16 @@ def advisory_rules(args) -> set:
     return {"TRIPO-GRIP-ENCLOSURE"} if advisory else set()
 
 
+def job_lunges(args) -> bool:
+    """Whether the job keeps its attack's lunge step (`tripo.lunge` names `attack`, tripo/lunge_clip.py): TRIPO-ATTACK-NO-STRIKE then measures
+    an unarmed unit's hands against the ground (lib/tripo_strike.strike_numbers). False without a job."""
+
+    if getattr(args, "jobs_config", None) and getattr(args, "slug", None):
+        job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+        return "attack" in ((job.get("tripo") or {}).get("lunge") or {})
+    return False
+
+
 def shield_bone(args) -> str:
     """The shield's bone: `--shield-bone`, or the job's `tripo.shield` (its `bone`, `Shield` by default). Empty for a unit without a shield."""
 
@@ -1013,6 +1029,17 @@ def split_advisory(findings: List[dict], rules: set, reported: Sequence[dict] = 
     """(the findings that fail the unit, the ones only reported, `reported` among them)."""
 
     return [item for item in findings if item["rule"] not in rules], [item for item in findings if item["rule"] in rules] + list(reported)
+
+
+def job_posture(args) -> str:
+    """The idle posture TRIPO-MAP-POSTURE judges: `--posture`, else the job's (`lib/map_outline.posture_of`: `tripo.posture`, or `hunched` for
+    `"idle_pose": "hunch"`), else `upright`."""
+
+    if getattr(args, "posture", None):
+        return args.posture
+    if getattr(args, "jobs_config", None) and getattr(args, "slug", None):
+        return map_outline.posture_of(json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug])
+    return "upright"
 
 
 def job_regions(args) -> (bool, bool, bool):
@@ -1222,9 +1249,27 @@ def burn_filtered(findings: List[dict], burn: Optional[dict]) -> List[dict]:
     return [item for item in findings if not (item["subject"] == burn["clip"] and item["rule"] in tripo_burn.LYING_RULES)] + burn["findings"]
 
 
-def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = ()) -> List[dict]:
+def map_findings(mesh, anims: Dict[str, object], numbers: dict, posture: str = "upright", weapon_bone: str = "",
+                 winged: Optional[bool] = None) -> List[dict]:
+    """A humanoid's map camera rules: TRIPO-MAP-READ and TRIPO-MAP-ALIKE (lib/map_read.py) and the outline rules (lib/map_outline.py, with
+    the idle `posture` the job asks for). Fills `numbers`."""
+
+    findings: List[dict] = []
+    found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
+    findings += found
+    found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
+    findings += found
+    if map_outline.is_humanoid(mesh):
+        found, numbers["map_outline"] = map_outline.outline_findings(mesh, anims, posture, weapon_bone, winged)
+        findings += found
+    return findings
+
+
+def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Sequence[str] = (), posture: str = "upright",
+                  weapon_bone: str = "", winged: Optional[bool] = None) -> List[dict]:
     """The checks that depend on the body: the kit's quadruped rig (a Tripo mount or beast) gets its own loop, hoof, lying-down and load
-    rules (lib/quadruped_checks.py), any other body the death and pose checks; every body the hand bleed check. Fills `numbers`."""
+    rules (lib/quadruped_checks.py), any other body the death and pose checks and the map camera's outline rules (lib/map_outline.py, with
+    the idle `posture` the job asks for); every body the hand bleed check. Fills `numbers`."""
 
     findings: List[dict] = []
     if quadruped_checks.is_quadruped(mesh):
@@ -1245,10 +1290,7 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
         findings += found
         found, numbers["gait"] = tripo_loop.loop_findings(mesh, anims)
         findings += found
-        found, numbers["map_read"] = map_read.humanoid_findings(mesh, anims)
-        findings += found
-        found, numbers["map_alike"] = map_read.alike_findings(mesh, anims)
-        findings += found
+        findings += map_findings(mesh, anims, numbers, posture, weapon_bone, winged)
     found, numbers["hand_bleed"] = hand_bleed_findings(mesh)
     return findings + found
 
@@ -1266,6 +1308,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--cape", action="store_true", help="the unit has a cloak or cape: run the cloak check (the job's `cape: true` does the same with --jobs-config and --slug)")
     parser.add_argument("--wings", action="store_true", help="the unit has wings: run the wing stretch, in-body and ground checks")
     parser.add_argument("--plates", action="store_true", help="the unit wears armour plates: run the plate stretch check")
+    parser.add_argument("--posture", choices=map_outline.POSTURES, help="the idle posture TRIPO-MAP-POSTURE judges (default: the job's tripo.posture, or upright)")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--slug")
     parser.add_argument("--json", type=Path)
@@ -1284,13 +1327,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     if plates:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
-    findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone])
+    findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone], job_posture(args), args.weapon_bone, wings or None)
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
         findings += found
     if not quadruped_checks.is_quadruped(mesh):
         strike_hand = holding_hand(mesh, args.weapon_bone) if args.weapon_bone and args.weapon_bone in mesh.bones else ""
-        found, numbers["strike"] = tripo_strike.strike_findings(mesh, anims, strike_hand)
+        found, numbers["strike"] = tripo_strike.strike_findings(mesh, anims, strike_hand, lunge=job_lunges(args))
         findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)

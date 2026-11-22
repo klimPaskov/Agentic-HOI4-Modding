@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "a05be52f20264f979bc980d1fe91eb22d9e48fb9",
+  "generated_for_revision": "07890a0ddc975f1c24cccba37c09bfac2e9f211d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -197,13 +197,18 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "012303c0ea4ab5f012cf3601b0f4dc19cceca0f8b4a770871cef89479b48e148",
-          "size": 15490
+          "sha256": "6d5ce6dd14eb06a4fb085ffbea9a1110b4af5566a6999b261ddf1ae8fd4f5a47",
+          "size": 15847
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
           "sha256": "7c4443ff9067ac49b7f686814fe9e068efa6fd47b57f43bf8ee3f8e21890118b",
           "size": 57273
+        },
+        {
+          "path": ".tools/audits/audit_gui_rules.py",
+          "sha256": "738ae2cad79d02bf9f1ec8ff19b30dd04cf449a867a0d2b4a1deebea50bdacbb",
+          "size": 10487
         },
         {
           "path": ".tools/audits/audit_localisation_static.py",
@@ -227,13 +232,13 @@
         },
         {
           "path": ".tools/check.py",
-          "sha256": "ccd9de040408afdb081f2914f1861246caab7d94b35df759114d38a61937e8fa",
-          "size": 20940
+          "sha256": "c69d3ffcd1743c26cd5ba6e71a40d5973d70e0e3a430af4e215048fa4120d113",
+          "size": 21365
         },
         {
           "path": ".tools/gfx/README.md",
-          "sha256": "ff46e51a00182510b297f58e27ad9a4afc49e5b24dbf88b336f4ecd034a7c1e3",
-          "size": 16197
+          "sha256": "0b05f0b0601bf96c734ff4b0b319fb3e115be9a70c05e77f4eafa11de467de6c",
+          "size": 16686
         },
         {
           "path": ".tools/gfx/family_ids.json",
@@ -242,8 +247,8 @@
         },
         {
           "path": ".tools/gfx/gfx.py",
-          "sha256": "b3ae3f400293d2a463220a4fb7fa1f53b8277034571cf8aab367e70080c5ffd7",
-          "size": 52641
+          "sha256": "3b4c835fc55be5f6827ff8100e74b5069856ae1ee17a4bf90933823b3eb51c0d",
+          "size": 56063
         },
         {
           "path": ".tools/gfx/profiles.json",
@@ -317,8 +322,8 @@
         },
         {
           "path": ".tools/quality_baseline.json",
-          "sha256": "90e9f9912badffd6a8b2ea353ef485e25444c2529e6882c28008178e568dda81",
-          "size": 13382
+          "sha256": "267d9226de6d372cf99f3a2cf2f8840403ff71f807bbd49f4cfbcb071b37a5d9",
+          "size": 13457
         },
         {
           "path": ".tools/requirements-dev.txt",
@@ -497,8 +502,13 @@
         },
         {
           "path": ".tools/tests/test_gfx_conformance.py",
-          "sha256": "f8197f26ef235de0c64de0155b881d45b378f24e0764b3e45df95d5ecfd88faf",
-          "size": 8059
+          "sha256": "ee8695569ce4b7c33b7bc95a591e4ff48517406ab77e44c284ef336593049b7c",
+          "size": 10064
+        },
+        {
+          "path": ".tools/tests/test_gui_rules.py",
+          "sha256": "b1960aab3f58380c84a0d481d21d094620f66e2de3756c527367c75476839b64",
+          "size": 2620
         },
         {
           "path": ".tools/tests/test_report_provenance.py",
@@ -527,8 +537,8 @@
         },
         {
           "path": ".tools/tests/test_sync.py",
-          "sha256": "873ad76353ec584dd1c198c29891ecbd042361956627301ae7cb0cbcab452e7a",
-          "size": 31159
+          "sha256": "594a8f20f0bd29c639e2b3c8a617ab00a28033b4d9a94bceb61c25ae00390ac9",
+          "size": 31243
         },
         {
           "path": ".tools/tests/test_validate_scripts_mcp.py",
@@ -1787,8 +1797,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
-          "size": 6936
+          "sha256": "ac78db6a201e5c58a69b6a730aa4025d6c46c61c2039d40286aaeaab8c55c4fd",
+          "size": 7811
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -2202,8 +2212,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -6157,13 +6167,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -6172,8 +6182,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -6182,8 +6192,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -6687,8 +6697,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -7241,8 +7256,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
-          "size": 6936
+          "sha256": "ac78db6a201e5c58a69b6a730aa4025d6c46c61c2039d40286aaeaab8c55c4fd",
+          "size": 7811
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -7656,8 +7671,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -11611,13 +11626,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -11626,8 +11641,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -11636,8 +11651,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -12141,8 +12156,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -12916,7 +12936,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "ae30cd373e739777ea14130d7cecf3ef617d765cb5fa07a1da47d45b47d2439b",
+          "sha256": "b9370a26bf4551e4d1524a85ba638e0f025e8e0e9a82077dcbe6b49fe8ca6e4a",
           "size": 36990
         }
       ]
@@ -12963,7 +12983,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.18.0",
+          "version": "4.19.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -12982,8 +13002,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.18.0",
-            "package_integrity": "sha512-pNWpHKqKH7PP75ACNZwt2n6kVp/w+ciYJ6JAzcQsT15DjX5+AgUQcLFeBsmtkBsA3FX2IBsluHKsdoTubL7o3w==",
+            "package_version": "4.19.0",
+            "package_integrity": "sha512-oHGpxKt1zz4Qa24J431MjrRCzKs+zzqSMI19WYj5HgbFOWVnBbKxFkPwPlfo5rqhiCp1sjKIw68/HwkH0Y/pPQ==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
             "runtime_entry_size": 4587,
@@ -13006,8 +13026,8 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
-            "package_file_count": 5899,
+            "package_tree_sha256": "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035",
+            "package_file_count": 5934,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools",
@@ -13015,15 +13035,15 @@
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
-                "package_file_count": 5899,
+                "package_tree_sha256": "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035",
+                "package_file_count": 5934,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "7a3960150dedae3c00dbd5357fc104261449701a3be922adc241bd9c60a10765",
-                "package_file_count": 5763,
+                "package_tree_sha256": "f3cd35def973709760c0cfdc44bd2ed94d264cfed6a8c1e8d4d9f1dd18b0a701",
+                "package_file_count": 5798,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
@@ -13033,8 +13053,8 @@
                 }
               },
               "macos": {
-                "package_tree_sha256": "5a9ff8793f9bb7c3f1299facd83e84926a758ddfc3c685e3a9d8f1156602aa41",
-                "package_file_count": 5752,
+                "package_tree_sha256": "50289d38ed56433bc39d7a72e587cd8d608c3fc5b7b9b0a29ea6952cfd4cc6ce",
+                "package_file_count": 5787,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
@@ -13174,8 +13194,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "6a51431da45d7c60666681e5e6f945fabc5cee38d2b20d47bf936533db1774e3",
-          "size": 31895
+          "sha256": "893895da780d0f98599784e6c6d6e6a8ded4c8a1af23180333b55ac7fac65cb7",
+          "size": 32605
         }
       ]
     },
@@ -15092,6 +15112,16 @@
           "size": 39966
         },
         {
+          "path": ".tools/3d_pipeline/config/tripo_canvas_workflows.json",
+          "sha256": "9375c125e6bd80763e6c13c4cbdfb03f277c4fc27e55373eaf6a216f85c39369",
+          "size": 4628
+        },
+        {
+          "path": ".tools/3d_pipeline/config/tripo_presets.json",
+          "sha256": "7c7079e06f90d1b1fdffad40d594a88c1c9eb9be87f1f972f4dd71ba30695631",
+          "size": 22810
+        },
+        {
           "path": ".tools/3d_pipeline/config/unit_types.json",
           "sha256": "6372528373553f9cb4436fc2c18b4f113cb1a888e3fdfdcca78d313dc1a5bb23",
           "size": 20753
@@ -15113,8 +15143,8 @@
         },
         {
           "path": ".tools/3d_pipeline/init_pilot_jobs.py",
-          "sha256": "1edeee12bb442a78e5b0da153ce4b5d2055d622c84a5fb972cc14c2fefe02788",
-          "size": 22877
+          "sha256": "fbe3705125cc8a29e1cb111ceae582b2763f2e4bb26bb148e1a0c3451b85a104",
+          "size": 25226
         },
         {
           "path": ".tools/3d_pipeline/lib/__init__.py",
@@ -15145,6 +15175,11 @@
           "path": ".tools/3d_pipeline/lib/heavy_job.py",
           "sha256": "15265324f21be4adbd4a5f1bb5fa77c4ef08407323371a01f07c6c8aea596401",
           "size": 11103
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/map_outline.py",
+          "sha256": "b586dfe465a5e35807d1c848bdfb8144e908f51e14a5f6ac0cd4b2b6fad2087c",
+          "size": 19633
         },
         {
           "path": ".tools/3d_pipeline/lib/map_read.py",
@@ -15262,6 +15297,11 @@
           "size": 34325
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_card.py",
+          "sha256": "4d83be3d331a6f4f06db15ef1e0f2c0116f601935a6863439f5a1b6f65b44097",
+          "size": 17972
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_chain_lift.py",
           "sha256": "801de87f5159a8b0d760a5e37cfa99ee1b4a7ad938c6ac8a9d4183253b98eeed",
           "size": 10433
@@ -15312,19 +15352,29 @@
           "size": 13667
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_grab.py",
+          "sha256": "32e33126705f760fe3e0c81f918480d84dd696469d02d1bc8ff264c59207d256",
+          "size": 8306
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_grip.py",
           "sha256": "c66b412d763ecbdab82ef2124402268ca65665d2e62fdd682b31e1d1ee63d51b",
           "size": 27301
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_guard.py",
-          "sha256": "ef0d21fd44f8dd69d11070952dcfa6c0f7eb8d65c11a5bfe14c3ee56b9aefcec",
-          "size": 6907
+          "sha256": "69cb6bf84b013f94af2ae618c79bdabe48ca06e9036d9aadf481cfdb7081d587",
+          "size": 7558
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/tripo_hunch.py",
+          "sha256": "ea70e97ba1ce2440b52aae58a0e104851fef286a776a038dc1b71c1717abd578",
+          "size": 5367
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_kick.py",
-          "sha256": "1bff9b6a8c04d01ea833f6fa14a389c29b24a59801b903a79011bbcf9ad435ee",
-          "size": 21623
+          "sha256": "4969056760a005d87b958a1578ec7f35e7af2befd80740573eb65bb369fd0c73",
+          "size": 22894
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_look_back.py",
@@ -15337,14 +15387,24 @@
           "size": 22706
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_lunge.py",
+          "sha256": "4c10a2c1ef07ac344a941343b181dfdb0b509f5162a4f5a4ff74a8bda93f4d9e",
+          "size": 6846
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_neck.py",
-          "sha256": "6ff8b0c27d8b77e016b9bf915c9995a54bf9038e9e509c359be3db69046fd3c0",
-          "size": 17132
+          "sha256": "0a394e4709b4bb9626437478886ba735b903a265640e77dac20c29d89dea5ddd",
+          "size": 18892
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_pose.py",
           "sha256": "4e983411b13ac770f25e9576839f23de737fa200a4f49cc1d9617e74b2433318",
           "size": 55601
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/tripo_presets.py",
+          "sha256": "5dbb54b9691a51eb2d39a72aaaeb854769ead6ea0315d04dd9a4c84b5594db3b",
+          "size": 15633
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_rig.py",
@@ -15368,13 +15428,13 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_splay.py",
-          "sha256": "460fcd5a91357cb5831298b60921b64cee7b3556c73cf6ae1e9abfc7dc64eb1d",
-          "size": 35382
+          "sha256": "9605a04a230f4ed036ce0df4f0cc8d619ef612f5d67ed7d2aab862057b7e3554",
+          "size": 37160
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_strike.py",
-          "sha256": "5737f87b400c8d7ff62d8331ee452f47fd6b7913c730c084e0e6328d3d53e704",
-          "size": 8258
+          "sha256": "5a246056ac7b79d947f39b744c2c32bfec67b2360a021a136a7fb34279582c24",
+          "size": 9304
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_swing.py",
@@ -15443,8 +15503,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "243bb7d2f70928a750ea9c93786b98e9eb2e104b8813c91adda42af1b48e37a4",
-          "size": 202382
+          "sha256": "bbf82522433c9c54bb96066da230786ce62a5cf34259eeb6bffe93c0abc738c6",
+          "size": 205653
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16177,6 +16237,11 @@
           "size": 9355
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_join_clips.py",
+          "sha256": "405618fe0f5c0e603df1926f739353f94d2ff277ddb2d5ec121f7e1c04c2477e",
+          "size": 3726
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_live_helpers.py",
           "sha256": "6d4830216ac65c4e3e365c6b74b595bde0be4506d5a2c9843c7e3d3f2b502218",
           "size": 7181
@@ -16195,6 +16260,11 @@
           "path": ".tools/3d_pipeline/tests/test_manual_creature_rig_contract.py",
           "sha256": "fe07256a68bd4843e81e7fc2813e3f5112b711c0e067413c0fab7bf6cecfe3a0",
           "size": 2962
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_map_outline.py",
+          "sha256": "b2c4a58b33e39027f0d8241d4a644c453a17026f499dfd3b94f86c02fa5083d1",
+          "size": 15466
         },
         {
           "path": ".tools/3d_pipeline/tests/test_map_read_humanoid.py",
@@ -16397,6 +16467,11 @@
           "size": 10158
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_card.py",
+          "sha256": "856ffb7f0a903ad7895dfb63492c57f8e3ede859016170f598b107e22fe67b39",
+          "size": 10705
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_chain_lift.py",
           "sha256": "8f0f6a63e60e9e6e31f872834fa9ccf529baaa515ae3f15a5264159bb44a0b81",
           "size": 7155
@@ -16447,6 +16522,11 @@
           "size": 6429
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_grab_hunch.py",
+          "sha256": "d08eb473164586f963aa33b1a436bfd87f8d80a4fa791ad1a5d4fa57612e9e09",
+          "size": 6889
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_grip.py",
           "sha256": "f46927ca1dd205b422eccb12deb4e099beeb09ce02c0bfee9a6af2b1f7e599fb",
           "size": 13455
@@ -16463,8 +16543,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_kick.py",
-          "sha256": "ecf7fef3d65bec8e7f8dbbb426f1ec4c1928bcba6b09e0ff48f4f547e24a8394",
-          "size": 8295
+          "sha256": "068fb716f36edfa83baae31c1433114cb9e1edec644d1a5c33c8255bf2b2d4f1",
+          "size": 9133
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_loop.py",
@@ -16472,9 +16552,14 @@
           "size": 22247
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_lunge.py",
+          "sha256": "c63ebc27c8e573a491bc541df29ccc007180aaa99dcee80ba60d4ed4ccbc07d7",
+          "size": 6044
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_neck.py",
-          "sha256": "6a197c2d1e156c8b9dca89c19f2123c6032fd032a177d728fcbb88a595e8ec8d",
-          "size": 11172
+          "sha256": "e66a8db0511d333b551b925d1dae8da6c408c9208c84b9d2e9ed79103d924fb4",
+          "size": 12383
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_pose.py",
@@ -16485,6 +16570,11 @@
           "path": ".tools/3d_pipeline/tests/test_tripo_pose_upper.py",
           "sha256": "34059ab9fcfa2375b9194b67ebb3c30829d5875c3864f4610cc626814c2be8ee",
           "size": 17200
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_tripo_presets.py",
+          "sha256": "d7e2193a44571557b12c4aded3e67c38fe7de23da3ced746fd743b81700ebbab",
+          "size": 14598
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_rig.py",
@@ -16513,13 +16603,18 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_splay.py",
-          "sha256": "7058431c8e432f940294562f40395cd2438f8b31ba9c44103078bcd07e093b2f",
-          "size": 12210
+          "sha256": "4dae5e7b505651fefce8f0dd704332788c8e4e7787277926ed524f0b95844db5",
+          "size": 13813
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_strike.py",
           "sha256": "ddc27a9fe5eef1f067124feb0d1b05b5300c81f947ac27468f3bccc8824a1a09",
           "size": 5959
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_tripo_studio_prompt.py",
+          "sha256": "ddb5247761fb713597563c8202578b9dbde1ce847c9b6bcc87ad5cf6b4004335",
+          "size": 1525
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_swing.py",
@@ -16528,8 +16623,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_trim.py",
-          "sha256": "20e5a3c8c5d9af5ca436171b6c276b8e1571e060604f673d96069fe261486aa8",
-          "size": 12135
+          "sha256": "0f21641e84551806e81d967ae63f52b0d93e386d720616456915798d24955187",
+          "size": 12558
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_weapon_runtime.py",
@@ -16553,8 +16648,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_visual_preflight.py",
-          "sha256": "c7011334098eab48bb7c3f4949c4c5899186661402e349fdfe4ec568fcc9b919",
-          "size": 12158
+          "sha256": "63d58cbf00438ccbe4d1282d78ea55d1afbb6828c96781bbf783f39735fe9252",
+          "size": 16147
         },
         {
           "path": ".tools/3d_pipeline/tests/test_weapon_location_contract.py",
@@ -16583,8 +16678,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "55ab8a831546a269b737b96c46f487b8c1042c928773b1d37653192df5f6b65d",
-          "size": 2551
+          "sha256": "837ecfc0572be77f5bbb95707aea5f63533cf63a20efca4702b1830562ba2e85",
+          "size": 13661
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/arm_unit.py",
+          "sha256": "0bd1934823d6bfdc8df9276da2e2f3c8a411da0f8bf9242ce28cb7764f2226cd",
+          "size": 5573
         },
         {
           "path": ".tools/3d_pipeline/tripo/assemble_separate.py",
@@ -16603,8 +16703,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_check.py",
-          "sha256": "0538a1066d31720a3e5fd1731118608b0a317d8e0e8716c6d4f6cdc7bec052b2",
-          "size": 34706
+          "sha256": "d2ba465a062ea71f1c2a52af82858fee14f0cf3a1e82ff7fbd6f4c956e4131ac",
+          "size": 36849
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_frames.py",
@@ -16647,14 +16747,34 @@
           "size": 7425
         },
         {
+          "path": ".tools/3d_pipeline/tripo/join_clips.py",
+          "sha256": "86d98829779d84a059805d27c8c6024f75e38fc3d5a5c21328cf217f3b9e1438",
+          "size": 7157
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/lunge_clip.py",
+          "sha256": "f67ed2fa3748c11e61c27941d7f11aa45c35ac17f3bcef5f0dc62c337cfeb632",
+          "size": 6461
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/make_card.py",
+          "sha256": "4b3c4636135b10c9fb771279ee3ecabbfd65922b09dbbbd2592da976a2457f0a",
+          "size": 2881
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/new_job.py",
+          "sha256": "bfb4bc7f91c71065ffac24f0f471a4b3f0700a16d819e255fecfa535cf37d95c",
+          "size": 8389
+        },
+        {
           "path": ".tools/3d_pipeline/tripo/pose_check.py",
-          "sha256": "2497d58ec7822cc308d7b45be3256b039b9ae17fc01379f0395cfbffba8ec84b",
-          "size": 22283
+          "sha256": "f5fc8c78f392816a465d5aea6bee7b4998338b9206c6219d17f979b8b4abb120",
+          "size": 25137
         },
         {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
-          "sha256": "a89ac58928c436f505e7f5d418d21a2763d58b6d47db468db2c263f8f1a9a5f9",
-          "size": 82365
+          "sha256": "0219a3e528bd228a6167cc886c31b951a3a4c42a496dcb4f495780d373778ddd",
+          "size": 83675
         },
         {
           "path": ".tools/3d_pipeline/tripo/shield_stage.py",
@@ -16688,13 +16808,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "1cb959998d00629f310de48b9497650f497fecf8cf8c14b1cb23ddc875818e10",
-          "size": 86423
+          "sha256": "9162e4dcb9bae25e4eff1f8c26393c75bc0b75f97283597891d7a37166d8f4db",
+          "size": 89394
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
-          "sha256": "9e37816d1d882afe8caa0d436d46fa9286d865090b69b5ab2bc96a2f30fa8896",
-          "size": 14815
+          "sha256": "e79680682c5eceb543123f3ac6a75b839a908e86a5c6c3ab665ce4a32aef8dd0",
+          "size": 15772
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
@@ -16703,8 +16823,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "6e5e2251be151b494edd62f193b7791e5c3d7aaaa269315c2e1c6a5d968f9f20",
-          "size": 26109
+          "sha256": "16880545ccebf26a1a7085009a4e32011fb4a81ce41e1f29d1c7f6aa392c654e",
+          "size": 27923
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
@@ -17419,7 +17539,7 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "8205df6b6e1d6541dd27ce4d6619e0f7183bcf7dced6b6dd9fc6ca946b3a3740",
+          "sha256": "769df5092cfdff81c24ff3474520e05cf324d31c1524e91c6077c7f9751a0244",
           "size": 109057
         },
         {
@@ -19788,8 +19908,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
-          "size": 6936
+          "sha256": "ac78db6a201e5c58a69b6a730aa4025d6c46c61c2039d40286aaeaab8c55c4fd",
+          "size": 7811
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -20203,8 +20323,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -24158,13 +24278,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -24173,8 +24293,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -24183,8 +24303,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -24688,8 +24808,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -25281,8 +25406,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
-          "size": 6936
+          "sha256": "ac78db6a201e5c58a69b6a730aa4025d6c46c61c2039d40286aaeaab8c55c4fd",
+          "size": 7811
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -25696,8 +25821,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -29651,13 +29776,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -29666,8 +29791,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -29676,8 +29801,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -30181,8 +30306,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -30774,8 +30904,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "e456e8e2dd85eeb8863db76ae41d993ea2be7f96ae9e0068e84fe9abe480e41d",
-          "size": 6936
+          "sha256": "ac78db6a201e5c58a69b6a730aa4025d6c46c61c2039d40286aaeaab8c55c4fd",
+          "size": 7811
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -31189,8 +31319,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/SKILL.md",
-          "sha256": "ca3573b92e3bc93a5565eb79403afb96988cfa452be83386affef5deb3c0b649",
-          "size": 13812
+          "sha256": "aee61943cdd525498b62ff210e792047a0f032dbd6463fb300cef4403445f3fc",
+          "size": 14641
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/assets/vanilla_reference/CATALOG.md",
@@ -35144,13 +35274,13 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "71c02eea0b146dbdb4d1073053506fcf45443757c94f2190067ac9b9ecbe0b04",
-          "size": 7149
+          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
+          "size": 7646
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
-          "sha256": "3caceb1db6506327cdda30f93621d2ccdfcb400f96a6cd95d2fb1e6a5a613bb4",
-          "size": 7821
+          "sha256": "aa0b14ffb186e9969dc7ade3d618b659e27f5b2c9f6b2aa364d5cfe2439dd0c2",
+          "size": 9999
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/gameplay-icon-families.md",
@@ -35159,8 +35289,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
+          "size": 8894
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -35169,8 +35299,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/interface-formable-and-animation-assets.md",
-          "sha256": "c73e5137d27472c52f51fa1aa82670d0d78dd838959d81c0037440f8eceea10f",
-          "size": 7569
+          "sha256": "608cba905913e2e5068a8ce0e64795e8543cf1090fa8e952237dd255d24e524c",
+          "size": 7691
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/package-manifest-dds-and-gfx-handoff.md",
@@ -35674,8 +35804,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -36915,7 +37050,7 @@
           "source_repository": "https://github.com/klimPaskov/hoi4-imagegen-mcp",
           "source_revision": null,
           "package_name": "hoi4-imagegen",
-          "package_version": "0.4.1",
+          "package_version": "0.4.3",
           "package_tree_sha256": null,
           "source_tree_sha256": null,
           "package_lock_sha256": null,
@@ -37036,57 +37171,57 @@
           ],
           "requires_primary_coding_environment": null,
           "release_binary": {
-            "version": "0.4.1",
+            "version": "0.4.3",
             "install_root": ".tools/image_generation/hoi4-imagegen",
             "targets": {
               "x86_64-pc-windows-msvc": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-x86_64-pc-windows-msvc.zip",
-                "sha256": "6cd39a82da33098714c05d37dee66a779bde92b127e306773ee44cd4e26f0f46",
-                "size": 20115260,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-x86_64-pc-windows-msvc.zip",
+                "sha256": "a472cf6035a54245f45efb7553a4d80136c9db25cfd0b00f60bd9ebad6f99102",
+                "size": 20120536,
                 "archive": "zip",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
-                  "cli": "hoi4-imagegen-v0.4.1-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
+                  "mcp": "hoi4-imagegen-v0.4.3-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
+                  "cli": "hoi4-imagegen-v0.4.3-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
                 }
               },
               "aarch64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-aarch64-apple-darwin.tar.gz",
-                "sha256": "6060ee1b19f31ea6e9621da260711aee9cee7e1617cee4cbd881f1f8bdf98f88",
-                "size": 20098322,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-aarch64-apple-darwin.tar.gz",
+                "sha256": "b20103fe8cad55d94206cfd8f28485f4b6006f9b201123212add040dcd44203d",
+                "size": 20107860,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-aarch64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-aarch64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-aarch64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-aarch64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-x86_64-apple-darwin.tar.gz",
-                "sha256": "0a8ddf29c8bfc0fbc1dfe191503c9dc9d0917d7fb2899d24bea3d8682b796e3c",
-                "size": 22087028,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-x86_64-apple-darwin.tar.gz",
+                "sha256": "c73e9e4732acf19efa952862f5d15b9691aaeac20ac0053eafb8334a941f394f",
+                "size": 22098298,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-x86_64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-x86_64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-x86_64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-x86_64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-x86_64-unknown-linux-gnu.tar.gz",
-                "sha256": "890b5504087458e56a377e30c2f12590a8204da0d8a5b2387a050a61628dc205",
-                "size": 24398152,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-x86_64-unknown-linux-gnu.tar.gz",
+                "sha256": "d0d634e78113804a0db5a4a5a2e3048214e99e76813d94037f97d8ceedd2e8aa",
+                "size": 24416771,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-x86_64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-x86_64-unknown-linux-gnu/hoi4-imagegen"
                 }
               },
               "aarch64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-aarch64-unknown-linux-gnu.tar.gz",
-                "sha256": "e28d20323fb0d5d04674b46aa61f7d7bdd9bc5dd46d66c29d98be1cc58627d0b",
-                "size": 23474023,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-aarch64-unknown-linux-gnu.tar.gz",
+                "sha256": "61458c05a133d9e7fbf077206c3582112b478fcd293c4aa11f241a781735045b",
+                "size": 23490554,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-aarch64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-aarch64-unknown-linux-gnu/hoi4-imagegen"
                 }
               }
             }
@@ -37365,7 +37500,7 @@
             "hoi4.image_unit",
             "hoi4.image_interface"
           ],
-          "version": "0.4.1"
+          "version": "0.4.3"
         }
       },
       {
