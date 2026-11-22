@@ -816,11 +816,13 @@ WINGED_LYING_RELAX = 0.6
 # Round 11 (D-107): the neck bends from the shoulders (`detect_neck`), and laid 90 and 35 degrees it puts the head ahead of the chest,
 # clear of the body from the game camera (TRIPO-DEATH-HEAD-HIDDEN 0.64 offline on run 18's files re-rigged, 0.52 at 75 and 30). Aimed
 # (WINGED_DEAD_HEAD 20 or -20) the head turned in against the chest or the forelegs (0.03 to 0.26).
-WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 35.0}
+# Round 13: 90 and 15, turned 20 degrees toward the side the body lies on (WINGED_DEAD_NECK_DOWN), so the head lies out ahead of the
+# folded forelegs: TRIPO-DEATH-HEAD-LOST 0.59 (at least 0.55, run 19 0.47), offline on run 19's files.
+WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 15.0}
 # Z turns (degrees at full fall) that swing the laid neck about the body's up axis toward the side the body lies on. Lying on its side that
 # axis is level, so the turn lowers a neck laid forward to the ground ahead of the forelegs. The drop about the long axis (`neck_drop`)
 # turns a forward neck about itself and barely moves the head.
-WINGED_DEAD_NECK_DOWN = {"Neck_01": 0.0, "Neck_02": 0.0}
+WINGED_DEAD_NECK_DOWN = {"Neck_01": 20.0, "Neck_02": 0.0}
 # Where the dead head faces (`aim_head`, degrees below its rest facing at full fall), or None to let the laid neck carry it.
 WINGED_DEAD_HEAD = None
 # A winged death's clock runs ahead early (clip time to this power): the body starts to roll at a tenth of the clip and lies by 0.54 of it.

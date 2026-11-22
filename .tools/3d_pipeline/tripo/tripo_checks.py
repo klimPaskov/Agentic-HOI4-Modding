@@ -299,6 +299,13 @@ NECK_SQUASH_MIN = 0.8
 # the wings' front (their 99th percentile along the facing). Both fresh reviews of run 19 saw the raised wing forearms box the head in
 # like a hood: it lay 0.038 behind their front (run 18 0.032 behind). The idle, whose head both reviews read clearly, keeps it 0.12 ahead.
 DEFEND_HEAD_LEAD = 0.02
+# TRIPO-WING-FOLD-SPIKE: in a winged quadruped's idle, from the game camera and its mirror, the arm of the folded wing (the leading
+# chain, `Wing<side>_4_*`) rises at most FOLD_SPIKE_MAX of the height above the top of the body without its wings (each part's
+# 99.5th percentile on the screen). Both fresh reviews of run 19 named the idle's near wing a spike standing up over the back (0.126).
+# The other clips are reported, not judged: the attack (0.07) was named, the retreat (0.12) was not, so the measure does not yet tell
+# them apart.
+FOLD_SPIKE_MAX = 0.10
+FOLD_SPIKE_ROLES = ("idle",)
 # TRIPO-STEP-READ: in a winged quadruped's move and retreat the hooves travel, from the game camera, at least MIN_STEP_READ of the body's
 # length (each hoof's screen path against the torso's, its range, the mean over the hooves). Run 12's move measured 0.24 offline and a
 # fresh review saw only the wings move.
@@ -874,6 +881,20 @@ def head_lead_over_wings(mesh, matrices, head: np.ndarray, wings: np.ndarray, fr
     return min(leads), int(np.argmin(leads))
 
 
+def fold_spike(mesh, matrices, arm: np.ndarray, body: np.ndarray, step: int = 3) -> Tuple[float, int]:
+    """TRIPO-WING-FOLD-SPIKE's measure: the most the wing's arm rises over the clip above the body's top on the game camera's screen and its
+    mirror, as a share of the height, and its frame."""
+
+    worst, worst_frame = -np.inf, 0
+    for frame in range(0, matrices.shape[0], step):
+        posed = pdx_deform.skin(mesh, matrices[frame])
+        for axes in game_cameras(mesh):
+            rise = float(np.percentile(posed[arm] @ axes[1], 99.5) - np.percentile(posed[body] @ axes[1], 99.5)) / mesh.height
+            if rise > worst:
+                worst, worst_frame = rise, frame
+    return worst, worst_frame
+
+
 def head_front_region(head: np.ndarray, head_neck: np.ndarray) -> np.ndarray:
     """The skin TRIPO-WING-HEAD-FRONT judges: the head alone (MAX_HEAD_FRONT_SHARE says why), or the head and neck when no skin is the
     head's."""
@@ -1044,6 +1065,11 @@ def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], d
         row.update(neck_gap=round(squash, 3), neck_gap_frame=squash_frame)
         if squash < NECK_SQUASH_MIN:
             out.append(finding("TRIPO-NECK-SQUASH", clip, f"in frame {squash_frame} the head comes within {squash:.0%} of its rest distance from the chest (at least {NECK_SQUASH_MIN:.0%}): the neck folds into the shoulders", share=round(squash, 3), frame=squash_frame))
+    if role != "death" and c["arm"].any():
+        spike, spike_frame = fold_spike(mesh, matrices, c["arm"], ~c["wings"])
+        row.update(fold_spike=round(spike, 3), fold_spike_frame=spike_frame)
+        if role in FOLD_SPIKE_ROLES and spike > FOLD_SPIKE_MAX:
+            out.append(finding("TRIPO-WING-FOLD-SPIKE", clip, f"in frame {spike_frame} the folded wing's arm stands {spike:.0%} of the height above the body on the game camera's screen (at most {FOLD_SPIKE_MAX:.0%}): it reads as a spike or a horn", share=round(spike, 3), frame=spike_frame))
     if role == "defend" and c["head"].any():
         lead, lead_frame = head_lead_over_wings(mesh, matrices, c["head"], c["wings"], c["front"])
         row.update(head_lead=round(lead, 3), head_lead_frame=lead_frame)
@@ -1237,7 +1263,8 @@ def quadruped_view_findings(mesh, anims: Dict[str, object], sides) -> (List[dict
     fore_hooves = np.isin(named, ["Front_Left_Hoof", "Front_Right_Hoof"])
     context = dict(all_edges=pdx_deform.mesh_edges(mesh), wings=wings, head=head, head_neck=head_neck, front=front, length=length, cell=cell, flat=flat, edges=edges, rest=rest,
                    torso=torso_only, hooves=hooves, sides=sides, chest=chest, head_bone=head_bone, snout=snout, shoulder=shoulder,
-                   fore_hooves=fore_hooves, chest_skin=(named == "Chest") & ~wings)
+                   fore_hooves=fore_hooves, chest_skin=(named == "Chest") & ~wings,
+                   arm=(np.char.startswith(named, "WingLeft_4") | np.char.startswith(named, "WingRight_4")))
     for clip, anim in anims.items():
         found, row, peak = _winged_clip_findings(mesh, clip, anim, context)
         out += found
@@ -1955,12 +1982,26 @@ def side_view_advisory(findings: List[dict], mesh) -> (List[dict], List[dict]):
     return keep, report
 
 
+# QUADRUPED_SCOPE: TRIPO-WING-SCREEN and TRIPO-WING-SPAN were calibrated on a winged humanoid (the demon) and read each clip's wing role from
+# its table (`tripo_chains.WING_ROLES`). A winged quadruped's rig folds its wings back toward the tail in every clip but the move
+# (`adapter/quadruped_wings.py`), and the game camera stands in front of the unit, so a folded wing points straight up its screen: the
+# Tripo dragon read 80 to 90 degrees in every clip, the idle included (runs 18 and 19, limit 60), and its attack opens the wings 0.3 of the
+# way by design (0.67 of the drawn span, limit 0.85). Earlier dragon rounds that swung the wings out to the sides failed fresh reviews
+# as sails and skirts. So a winged quadruped is judged by TRIPO-WING-SPAN in the move alone (run 19 0.85), and its folded wing's spike by
+# its own measure (TRIPO-WING-FOLD-SPIKE). The winged humanoid's checks are unchanged.
+QUADRUPED_SPAN_ROLES = ("move",)
+
+
 def wing_checks(mesh, anims: Dict[str, object], wings: bool, cape: bool, numbers: dict) -> (List[dict], List[dict]):
     """The chain checks and, for wings, TRIPO-WING-SCREEN: (the findings that fail the unit, the side-view ones that only report)."""
 
     found, numbers["chains"] = chain_findings(mesh, anims, wings, cape)
     found, advisory = side_view_advisory(found, mesh)
-    if wings:
+    if wings and quadruped_checks.is_quadruped(mesh):
+        # QUADRUPED_SCOPE says why: no TRIPO-WING-SCREEN, and TRIPO-WING-SPAN in the move only
+        span, numbers["wing_span"] = wing_span_findings(mesh, {clip: anim for clip, anim in anims.items() if clip_role(clip) in QUADRUPED_SPAN_ROLES})
+        found += span
+    elif wings:
         screen, numbers["wing_screen"] = wing_screen_findings(mesh, anims)
         span, numbers["wing_span"] = wing_span_findings(mesh, anims)
         found += screen + span
