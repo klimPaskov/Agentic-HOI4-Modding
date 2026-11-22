@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "509a04a6ca4fa5077a36163a47ec8b790c88ddec",
+  "generated_for_revision": "04398420d7fe1652199d40838ae4c4515fd1ad7d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -12916,7 +12916,7 @@
       "expected_files": [
         {
           "path": ".tools/mcp/bootstrap_hoi4_agent_tools.py",
-          "sha256": "ae30cd373e739777ea14130d7cecf3ef617d765cb5fa07a1da47d45b47d2439b",
+          "sha256": "b9370a26bf4551e4d1524a85ba638e0f025e8e0e9a82077dcbe6b49fe8ca6e4a",
           "size": 36990
         }
       ]
@@ -12963,7 +12963,7 @@
           "id": "hoi4-agent-tools.cmd",
           "required": true,
           "version_policy": "manifest",
-          "version": "4.18.0",
+          "version": "4.19.0",
           "health_checks": [
             "hoi4-agent-tools.cmd resolves",
             "MCP initialize succeeds"
@@ -12982,8 +12982,8 @@
           "target": "hoi4-agent-tools.cmd",
           "parameters": {
             "package_name": "hoi4-agent-tools",
-            "package_version": "4.18.0",
-            "package_integrity": "sha512-pNWpHKqKH7PP75ACNZwt2n6kVp/w+ciYJ6JAzcQsT15DjX5+AgUQcLFeBsmtkBsA3FX2IBsluHKsdoTubL7o3w==",
+            "package_version": "4.19.0",
+            "package_integrity": "sha512-oHGpxKt1zz4Qa24J431MjrRCzKs+zzqSMI19WYj5HgbFOWVnBbKxFkPwPlfo5rqhiCp1sjKIw68/HwkH0Y/pPQ==",
             "runtime_entry": "dist/bin/stdio.js",
             "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
             "runtime_entry_size": 4587,
@@ -13006,8 +13006,8 @@
             "expected_writes": [],
             "privilege": "current_user",
             "rollback_boundary": "The health action performs no writes and starts no tool call.",
-            "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
-            "package_file_count": 5899,
+            "package_tree_sha256": "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035",
+            "package_file_count": 5934,
             "platform_targets": {
               "windows": "hoi4-agent-tools.cmd",
               "linux": "hoi4-agent-tools",
@@ -13015,15 +13015,15 @@
             },
             "platform_pins": {
               "windows": {
-                "package_tree_sha256": "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030",
-                "package_file_count": 5899,
+                "package_tree_sha256": "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035",
+                "package_file_count": 5934,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {}
               },
               "linux": {
-                "package_tree_sha256": "7a3960150dedae3c00dbd5357fc104261449701a3be922adc241bd9c60a10765",
-                "package_file_count": 5763,
+                "package_tree_sha256": "f3cd35def973709760c0cfdc44bd2ed94d264cfed6a8c1e8d4d9f1dd18b0a701",
+                "package_file_count": 5798,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
@@ -13033,8 +13033,8 @@
                 }
               },
               "macos": {
-                "package_tree_sha256": "5a9ff8793f9bb7c3f1299facd83e84926a758ddfc3c685e3a9d8f1156602aa41",
-                "package_file_count": 5752,
+                "package_tree_sha256": "50289d38ed56433bc39d7a72e587cd8d608c3fc5b7b9b0a29ea6952cfd4cc6ce",
+                "package_file_count": 5787,
                 "runtime_entry_sha256": "60e5c3031bf583e1129c4d2d27017a26c4cf2dd6bd086c31ce9cb9c068eb13ec",
                 "runtime_entry_size": 4587,
                 "package_symlinks": {
@@ -13174,8 +13174,8 @@
       "expected_files": [
         {
           "path": "docs/systems/hoi4_agent_tools_mcp_integration.md",
-          "sha256": "6a51431da45d7c60666681e5e6f945fabc5cee38d2b20d47bf936533db1774e3",
-          "size": 31895
+          "sha256": "893895da780d0f98599784e6c6d6e6a8ded4c8a1af23180333b55ac7fac65cb7",
+          "size": 32605
         }
       ]
     },
@@ -17439,7 +17439,7 @@
       "expected_files": [
         {
           "path": ".tools/image_generation/runtime/provider_catalog.json",
-          "sha256": "8205df6b6e1d6541dd27ce4d6619e0f7183bcf7dced6b6dd9fc6ca946b3a3740",
+          "sha256": "769df5092cfdff81c24ff3474520e05cf324d31c1524e91c6077c7f9751a0244",
           "size": 109057
         },
         {
@@ -36935,7 +36935,7 @@
           "source_repository": "https://github.com/klimPaskov/hoi4-imagegen-mcp",
           "source_revision": null,
           "package_name": "hoi4-imagegen",
-          "package_version": "0.4.1",
+          "package_version": "0.4.3",
           "package_tree_sha256": null,
           "source_tree_sha256": null,
           "package_lock_sha256": null,
@@ -37056,57 +37056,57 @@
           ],
           "requires_primary_coding_environment": null,
           "release_binary": {
-            "version": "0.4.1",
+            "version": "0.4.3",
             "install_root": ".tools/image_generation/hoi4-imagegen",
             "targets": {
               "x86_64-pc-windows-msvc": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-x86_64-pc-windows-msvc.zip",
-                "sha256": "6cd39a82da33098714c05d37dee66a779bde92b127e306773ee44cd4e26f0f46",
-                "size": 20115260,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-x86_64-pc-windows-msvc.zip",
+                "sha256": "a472cf6035a54245f45efb7553a4d80136c9db25cfd0b00f60bd9ebad6f99102",
+                "size": 20120536,
                 "archive": "zip",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
-                  "cli": "hoi4-imagegen-v0.4.1-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
+                  "mcp": "hoi4-imagegen-v0.4.3-x86_64-pc-windows-msvc/hoi4-imagegen-mcp.exe",
+                  "cli": "hoi4-imagegen-v0.4.3-x86_64-pc-windows-msvc/hoi4-imagegen.exe"
                 }
               },
               "aarch64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-aarch64-apple-darwin.tar.gz",
-                "sha256": "6060ee1b19f31ea6e9621da260711aee9cee7e1617cee4cbd881f1f8bdf98f88",
-                "size": 20098322,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-aarch64-apple-darwin.tar.gz",
+                "sha256": "b20103fe8cad55d94206cfd8f28485f4b6006f9b201123212add040dcd44203d",
+                "size": 20107860,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-aarch64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-aarch64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-aarch64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-aarch64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-apple-darwin": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-x86_64-apple-darwin.tar.gz",
-                "sha256": "0a8ddf29c8bfc0fbc1dfe191503c9dc9d0917d7fb2899d24bea3d8682b796e3c",
-                "size": 22087028,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-x86_64-apple-darwin.tar.gz",
+                "sha256": "c73e9e4732acf19efa952862f5d15b9691aaeac20ac0053eafb8334a941f394f",
+                "size": 22098298,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-x86_64-apple-darwin/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-x86_64-apple-darwin/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-x86_64-apple-darwin/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-x86_64-apple-darwin/hoi4-imagegen"
                 }
               },
               "x86_64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-x86_64-unknown-linux-gnu.tar.gz",
-                "sha256": "890b5504087458e56a377e30c2f12590a8204da0d8a5b2387a050a61628dc205",
-                "size": 24398152,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-x86_64-unknown-linux-gnu.tar.gz",
+                "sha256": "d0d634e78113804a0db5a4a5a2e3048214e99e76813d94037f97d8ceedd2e8aa",
+                "size": 24416771,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-x86_64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-x86_64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-x86_64-unknown-linux-gnu/hoi4-imagegen"
                 }
               },
               "aarch64-unknown-linux-gnu": {
-                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.1/hoi4-imagegen-v0.4.1-aarch64-unknown-linux-gnu.tar.gz",
-                "sha256": "e28d20323fb0d5d04674b46aa61f7d7bdd9bc5dd46d66c29d98be1cc58627d0b",
-                "size": 23474023,
+                "url": "https://github.com/klimPaskov/hoi4-imagegen-mcp/releases/download/v0.4.3/hoi4-imagegen-v0.4.3-aarch64-unknown-linux-gnu.tar.gz",
+                "sha256": "61458c05a133d9e7fbf077206c3582112b478fcd293c4aa11f241a781735045b",
+                "size": 23490554,
                 "archive": "tar.gz",
                 "entries": {
-                  "mcp": "hoi4-imagegen-v0.4.1-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
-                  "cli": "hoi4-imagegen-v0.4.1-aarch64-unknown-linux-gnu/hoi4-imagegen"
+                  "mcp": "hoi4-imagegen-v0.4.3-aarch64-unknown-linux-gnu/hoi4-imagegen-mcp",
+                  "cli": "hoi4-imagegen-v0.4.3-aarch64-unknown-linux-gnu/hoi4-imagegen"
                 }
               }
             }
@@ -37385,7 +37385,7 @@
             "hoi4.image_unit",
             "hoi4.image_interface"
           ],
-          "version": "0.4.1"
+          "version": "0.4.3"
         }
       },
       {
