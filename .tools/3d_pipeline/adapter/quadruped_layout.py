@@ -261,7 +261,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
         muzzle_y = float(np.percentile(head_region[:, 1], 1))
         tip = head_region[head_region[:, 1] < muzzle_y + 0.05 * length]
         muzzle = np.array([cx, muzzle_y, float(np.median(tip[:, 2]))])
-        top = head_region[head_region[:, 2] > np.percentile(head_region[:, 2], 95)]
+        top = head_region[head_region[:, 2] >= np.percentile(head_region[:, 2], 95)]  # >=: a flat-topped head has no point above it
         poll = np.array([cx, float(np.median(top[:, 1])), float(np.percentile(head_region[:, 2], 97))])
         if poll[1] <= muzzle[1] + 0.02 * length:
             poll[1] = muzzle[1] + 0.12 * length
@@ -336,6 +336,76 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
     }
 
 
+# The neck of a winged quadruped (round 11). The withers and the poll place a horse's neck well, but a dragon's neck is a thin column that
+# rises from its shoulders below the withers and ends in a large horned head: on the Tripo dragon the column runs from 0.57 to 0.72 of the
+# height, the withers sit at 0.67 and the poll (the top of the horns) at 0.90. Its two neck bones lay inside the head, the column took the
+# Chest's weights and never bent, and the dead head could lie at most 0.22 of the height ahead of the chest. `detect_neck` measures the
+# column in horizontal slices NECK_SLICE of the height thick, in front of the forelegs (NECK_ZONE of the length behind them at most): the
+# shoulders are the widest slice between the belly and the back, the neck the first run of slices above them no wider than NECK_NARROW of
+# the shoulders, and the head starts where a slice reaches NECK_HEAD_LEAD of the length ahead of the neck's front or grows wider again. The
+# neck bones then run up the column's middle and the head bone from the head's root to the muzzle.
+NECK_SLICE = 0.03
+NECK_ZONE = 0.03
+NECK_NARROW = 0.45
+NECK_HEAD_LEAD = 0.05
+NECK_MIN = 0.05  # a measured neck shorter than this share of the height is not used
+
+
+def detect_neck(points: np.ndarray, landmarks: Dict[str, object]) -> Optional[Dict[str, List[float]]]:
+    """The neck column of a standing quadruped's body (its wings left out): {"base", "middle", "head"} joints above the ground, or None
+    when no thin column rises between the shoulders and the head (a horse's neck reaches forward, and the withers place it)."""
+
+    ground = float(landmarks["ground_offset"])
+    height, length, width = (float(landmarks[key]) for key in ("height", "length", "width"))
+    belly_z, back_z, front_y = (float(landmarks[key]) for key in ("belly_z", "back_z", "front_y"))
+    cx = float(landmarks["centre_x"])
+    p = np.asarray(points, dtype=float) - np.array([0.0, 0.0, ground])
+    zone = p[(p[:, 1] < front_y + NECK_ZONE * length) & (p[:, 2] > belly_z) & (np.abs(p[:, 0] - cx) < 0.5 * width)]
+    if len(zone) < 50:
+        return None
+    step = NECK_SLICE * height
+    rows = []
+    for z in np.arange(belly_z + 0.5 * step, float(zone[:, 2].max()), step):
+        band = zone[np.abs(zone[:, 2] - z) < 0.5 * step]
+        if len(band) < 6:
+            rows.append(None)
+            continue
+        low, high = np.percentile(band[:, 0], [2, 98])
+        rows.append({"z": float(z), "width": float(high - low), "front": float(np.percentile(band[:, 1], 2)), "y": float(np.median(band[:, 1]))})
+    shoulders = [index for index, row in enumerate(rows) if row is not None and row["z"] <= back_z]
+    if not shoulders:
+        return None
+    widest = max(shoulders, key=lambda index: rows[index]["width"])
+    narrow = NECK_NARROW * rows[widest]["width"]
+    base = next((index for index in range(widest + 1, len(rows)) if rows[index] is not None and rows[index]["width"] <= narrow), None)
+    if base is None:
+        return None
+    # a slice with too few points to measure (a coarse mesh) neither ends the column nor starts the head
+    neck_front, head = rows[base]["front"], None
+    for index in range(base + 1, len(rows)):
+        row = rows[index]
+        if row is None:
+            continue
+        if row["width"] > narrow or row["front"] < neck_front - NECK_HEAD_LEAD * length:
+            head = index
+            break
+        neck_front = min(neck_front, row["front"])
+    if head is None or (rows[head]["z"] - rows[base]["z"]) < NECK_MIN * height:
+        return None
+    column = [rows[index] for index in range(base, head) if rows[index] is not None]
+    lower, upper = column[0], column[-1]
+    middle = column[len(column) // 2]
+
+    def joint(row: Dict[str, float], z: float) -> List[float]:
+        return [cx, row["y"], z]
+
+    return {
+        "base": joint(lower, lower["z"] - 0.5 * step),
+        "middle": joint(middle, middle["z"]),
+        "head": joint(upper, rows[head]["z"] - 0.5 * step),
+    }
+
+
 def _t(vector: np.ndarray, ground: float) -> Tuple[float, float, float]:
     return (float(vector[0]), float(vector[1]), float(vector[2] + ground))
 
@@ -356,9 +426,13 @@ def build_layout(landmarks: Dict[str, object]) -> Layout:
     add(Bone("Pelvis", _t(v([cx, rear_y, mid_z]), g), _t(v([cx, mid_y, mid_z]), g), "Root"))
     add(Bone("Spine", _t(v([cx, mid_y, mid_z]), g), _t(v([cx, front_y, mid_z + 0.03 * h]), g), "Pelvis"))
     withers = v([cx, front_y - 0.04 * float(landmarks["length"]), back_z - 0.04 * h])
-    add(Bone("Chest", _t(v([cx, front_y, mid_z + 0.03 * h]), g), _t(withers, g), "Spine"))
     poll = np.asarray(landmarks["poll"], dtype=float)
     neck_mid = withers + 0.5 * (poll - withers)
+    neck = landmarks.get("neck")
+    if neck:
+        # a measured neck column (detect_neck): the neck bones run up it from the shoulders and the head turns at its root
+        withers, neck_mid, poll = (np.asarray(neck[key], dtype=float) for key in ("base", "middle", "head"))
+    add(Bone("Chest", _t(v([cx, front_y, mid_z + 0.03 * h]), g), _t(withers, g), "Spine"))
     add(Bone("Neck_01", _t(withers, g), _t(neck_mid, g), "Chest"))
     add(Bone("Neck_02", _t(neck_mid, g), _t(poll, g), "Neck_01"))
     add(Bone("Head", _t(poll, g), _t(np.asarray(landmarks["muzzle"], dtype=float), g), "Neck_02"))
@@ -702,8 +776,13 @@ FLEE_TURN_IN = 0.35
 # Round 9: the neck's root drives forward 75 degrees and its upper half 30, so the head ends below the shoulders and ahead of the forefeet.
 # At 50 and 50 both fresh reviews of run 17 saw the head stay at its rest height with the upper neck curled back. The neck, head and
 # chest deform more (the whole clip's edges past 1.5 times 1.5%, run 17 1.0%), within DEFORM_PASSED_BOUND (D-83).
-STRIKE_NECK = {"Neck_01": (-10.0, 75.0), "Neck_02": (-5.0, 30.0), "Head": (-10.0, 0.0)}
-STRIKE_SNAP = 15.0
+# Round 11 (D-107): the neck bends from the shoulders (`detect_neck`), so the same turns lift the bite: at 75 and 30 with a 15 degree snap
+# the snout ended 5.7% of the height above the shoulders (TRIPO-ATTACK-HEAD-LEAD, offline on run 18's files re-rigged). At 90 and 45 with
+# a 30 degree snap it ends 2.2% below them and 34% of the height ahead of the forefeet, the head faces 30 degrees below its rest facing
+# (TRIPO-HEAD-FACING, at most 40) and 1.7% of the edges deform (DEFORM_PASSED_BOUND 2.4%). At 90 and 60 the head, held to its facing
+# against the faster neck, turned 40 degrees in one frame (UNIT-ANIM-SPIN, vanilla's fastest joint 37).
+STRIKE_NECK = {"Neck_01": (-10.0, 90.0), "Neck_02": (-5.0, 45.0), "Head": (-10.0, 0.0)}
+STRIKE_SNAP = 30.0
 # The share of the shared rear (`_rear`: the body pitched 32 degrees up about the hind feet, the forelegs lifted) the attack keeps while it
 # gathers. The whole rear lifted the head 8% of the height and drew it back 37% before the blow, and both fresh reviews of run 15 read a rear,
 # not a strike.
@@ -718,7 +797,9 @@ ATTACK_HIP = 8.0
 ATTACK_BEND = 48.0
 # No neck joint bends more than STRIKE_JOINT_MAX degrees in the strike: at 80 degrees at the neck's root and a 35 degree snap at the head the
 # upper neck kinked behind the head and read as squashed (fresh reviews of run 12). The forward turn is spread over the neck instead.
-STRIKE_JOINT_MAX = 75.0
+# Round 11: that kink was a neck bending at the withers, inside the head. The measured neck bends at its own base, and at 90 its
+# deformation stays within DEFORM_PASSED_BOUND.
+STRIKE_JOINT_MAX = 90.0
 STRIKE_DROP = 1.0
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
@@ -731,11 +812,16 @@ WINGED_LYING_RELAX = 0.6
 # back, so a body on its side held the head out beyond the back among the lying wings (both fresh reviews of run 7).
 # Round 7 lays it straighter (75 and 30 degrees, 90 and 50 before): bent further the head curled back beside the chest and the forelegs, and
 # from the game camera 52% of the head and neck showed clear of the rest of the body (62% now, offline, TRIPO-DEATH-HEAD-HIDDEN).
-WINGED_DEAD_NECK = {"Neck_01": 75.0, "Neck_02": 30.0}
+# Round 11 (D-107): the neck bends from the shoulders (`detect_neck`), and laid 90 and 35 degrees it puts the head ahead of the chest,
+# clear of the body from the game camera (TRIPO-DEATH-HEAD-HIDDEN 0.64 offline on run 18's files re-rigged, 0.52 at 75 and 30). Aimed
+# (WINGED_DEAD_HEAD 20 or -20) the head turned in against the chest or the forelegs (0.03 to 0.26).
+WINGED_DEAD_NECK = {"Neck_01": 90.0, "Neck_02": 35.0}
 # Z turns (degrees at full fall) that swing the laid neck about the body's up axis toward the side the body lies on. Lying on its side that
 # axis is level, so the turn lowers a neck laid forward to the ground ahead of the forelegs. The drop about the long axis (`neck_drop`)
 # turns a forward neck about itself and barely moves the head.
 WINGED_DEAD_NECK_DOWN = {"Neck_01": 0.0, "Neck_02": 0.0}
+# Where the dead head faces (`aim_head`, degrees below its rest facing at full fall), or None to let the laid neck carry it.
+WINGED_DEAD_HEAD = None
 # A winged death's clock runs ahead early (clip time to this power): the body starts to roll at a tenth of the clip and lies by 0.54 of it.
 # At the shared collapse's pace the first fifth of the clip only bent the legs, which a fresh review of run 9 read as an unchanged hold.
 WINGED_DEATH_EASE = 0.7
@@ -929,6 +1015,8 @@ def _lay_dead_neck(pose: Dict[str, List[Rotation]], names: set, neck_drop: float
     for name, degrees in WINGED_DEAD_NECK_DOWN.items():
         if name in names and degrees:
             pose[name] = pose.get(name, []) + [(Z_AXIS, math.copysign(1.0, roll) * degrees * fall)]
+    if WINGED_DEAD_HEAD is not None:
+        aim_head(pose, names, WINGED_DEAD_HEAD * fall)
 
 
 def _foot_travel(joints: Dict[str, np.ndarray], upper: float, lower: float) -> np.ndarray:

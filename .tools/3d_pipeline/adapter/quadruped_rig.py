@@ -230,6 +230,10 @@ def author_rig(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     landmarks = _landmarks_from_payload(body, payload, back_z=(load.cut_z - ground) if load is not None else None)
     if wing_plans:
         landmarks["wings"] = wing_plans
+        # a winged body's neck is a thin column under a large head: the neck bones run up it (quadruped_layout.detect_neck)
+        neck = ql.detect_neck(body, landmarks)
+        if neck is not None:
+            landmarks["neck"] = neck
     load_report = _seat_on_load(points, triangles, load, landmarks, options) if load is not None else {}
     ear_masks = _find_ears(points, triangles, landmarks, load, wing_any if wing_any.any() else None)
     layout = ql.build_layout(landmarks)

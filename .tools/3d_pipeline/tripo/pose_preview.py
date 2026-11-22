@@ -24,6 +24,9 @@ A plan names the candidates. Without one, the six roles are written with the kit
 the clip (0 to 1) as a short clip of key poses, one frame each: a batch of candidate poses renders as one sheet. `collapse` fixes a
 death's side and rest (`{"roll": -82.0, "neck_drop": 30.0, ...}`) instead of searching for them.
 
+`--rerig` tries a rig change on files made with the old rig: it moves the neck to the measured column (`rerig`) and weights its skin again
+by the rig's rule. `--fit` then fits the weights to the written clips as the route does and writes the clips again (`fit_weights`).
+
 On the Tripo dragon the clips this writes from run 14's landmarks lie within 0.05% of the height of the clips the route exported
 (`--compare`), and the checks read the same three findings on them. A death lies up to 2.7% of the height aside and may rest its
 neck 10 degrees differently: the route picks a death's rest and its spot on the mesh before the weights are smoothed.
@@ -48,7 +51,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(PIPELINE_ROOT / "adapter"))
 
-from lib import pdx_deform
+from lib import pdx_deform, stretch_smooth
 
 import quadruped_layout as ql
 import quadruped_wings as qw
@@ -473,7 +476,7 @@ def write_folder(folder: Path, landmarks: dict, out: Path, clips: Sequence[dict]
     mesh_path = sorted(folder.glob("*.mesh"))[0]
     out.mkdir(parents=True, exist_ok=True)
     for path in folder.iterdir():
-        if path.suffix.lower() in (".mesh", ".dds"):
+        if path.suffix.lower() in (".mesh", ".dds") and folder.resolve() != out.resolve():
             shutil.copy2(path, out / path.name)
     mesh = pdx_deform.load_mesh(mesh_path)
     report = []
@@ -486,6 +489,96 @@ def write_folder(folder: Path, landmarks: dict, out: Path, clips: Sequence[dict]
             report.append({"name": clip["name"], "style": clip["style"], "frames": len(frames), "frame_fit": round(stage.miss / stage.height, 5),
                            **({"collapse": tuned} if tuned else {})})
     return report
+
+
+NECK_BONES = ("Neck_01", "Neck_02", "Head")
+
+
+def _write_binds(mesh_path: Path, out_path: Path, inverse: Dict[str, np.ndarray]) -> None:
+    """Write `out_path`: `mesh_path` with the named joints' inverse bind matrices (`tx`, io_pdx_mesh's column-major 3x4) replaced."""
+
+    data = bytearray(Path(mesh_path).read_bytes())
+    position, path = 4, []
+    while position < len(data):
+        if data[position] == ord("["):
+            depth, name, position = stretch_smooth._object(bytes(data), position)
+            del path[depth - 1:]
+            path.append(name)
+            continue
+        name, count, values, position = stretch_smooth._property(bytes(data), position)
+        if len(path) == 4 and path[2] == "skeleton" and name == "tx" and count == 12 and path[3] in inverse:
+            struct.pack_into("<12f", data, values, *inverse[path[3]][:3, :4].T.ravel().tolist())
+    Path(out_path).write_bytes(bytes(data))
+
+
+def rerig(folder: Path, landmarks: dict, out: Path) -> dict:
+    """Try the measured neck (`quadruped_layout.detect_neck`) on a run's files made with the withers' neck: copy the unit folder to `out`
+    with the neck and head bones moved to the measured column and the skin of the neck and head weighted again by the rig's rule
+    (`quadruped_layout.skin_weights`, before the route's smoothing, so seams read a little worse than a run's), and write the new
+    landmarks to `out/landmarks.json` for the next `--landmarks`. Wing skin keeps its weights."""
+
+    folder, out = Path(folder), Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    mesh_path = sorted(folder.glob("*.mesh"))[0]
+    for path in folder.iterdir():
+        if path.suffix.lower() == ".dds":
+            shutil.copy2(path, out / path.name)
+    mesh = pdx_deform.load_mesh(mesh_path)
+    old = Stage(mesh, copy.deepcopy(landmarks))
+    wings = np.char.startswith(old.dominant, qw.WING_PREFIX)
+    neck = ql.detect_neck(old.points[~wings], landmarks)
+    if neck is None:
+        raise ValueError("no neck column measured: the withers' neck stays")
+    measured = copy.deepcopy(landmarks)
+    measured["neck"] = neck
+    layout = ql.build_layout(measured)
+    inverse = {}
+    for name in ("Chest",) + NECK_BONES:
+        bind = old.bind[mesh.bones.index(name)].copy()
+        bind[:3, 3] = old.to_file[:3, :3] @ np.asarray(layout.bone(name).head, float) + old.to_file[:3, 3]
+        inverse[name] = np.linalg.inv(bind)
+    order, raw = ql.skin_weights(old.points, layout)
+    names = np.asarray(layout.names())
+    raw_neck = (np.isin(names[order], NECK_BONES) & (raw > 0)).any(axis=1)
+    old_neck = (np.isin(np.asarray(mesh.bones)[np.clip(mesh.joints, 0, None)], NECK_BONES) & (mesh.weights > 0)).any(axis=1)
+    again = (raw_neck | old_neck) & ~wings
+    joints, weights = mesh.joints.copy(), mesh.weights.copy()
+    index = {name: mesh.bones.index(name) for name in names if name in mesh.bones}
+    joints[again] = np.vectorize(lambda column: index.get(names[column], -1))(order[again])
+    weights[again] = raw[again]
+    weighted = out / mesh_path.name
+    stretch_smooth.write_weights(mesh_path, weighted, joints, weights, mesh.bones)
+    _write_binds(weighted, weighted, inverse)
+    (out / "landmarks.json").write_text(json.dumps(_jsonable(measured), indent=1), encoding="utf-8")
+    return {"neck": neck, "reweighted": int(again.sum())}
+
+
+def fit_weights(out: Path) -> dict:
+    """The route's weight rules on a written folder (`run_pilot.smooth_stretched_weights`, then `fit_clip_weights`): smooth, then fit the
+    weights to the folder's own clips, with the chain stage's wing and cloak bones locked. A re-rigged folder needs it: raw weights fail
+    checks the route's fitted weights pass (offline on run 18's files, the wing roots 5.5% and a leg root 5.7% raw, both within limits fitted).
+    The clips must then be written again on the fitted mesh, so every frame is set on the ground again."""
+
+    from lib import tripo_chains, weight_fit
+
+    mesh = sorted(Path(out).glob("*.mesh"))[0]
+    anims = sorted(Path(out).glob("*.anim"))
+    locked = tuple(tripo_chains.REGION_PREFIX.values())
+    smoothed = stretch_smooth.smooth(mesh, anims, mesh, locked_prefixes=locked)
+    fitted = weight_fit.fit_rounds(mesh, anims, mesh, locked_prefixes=locked)
+    return {"smoothed": smoothed.changed, "fitted": fitted.changed, "note": fitted.note}
+
+
+def _jsonable(value):
+    if isinstance(value, dict):
+        return {key: _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_jsonable(item) for item in value]
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
 
 
 def compare(folder: Path, out: Path) -> Dict[str, float]:
@@ -517,6 +610,8 @@ def main() -> int:
     parser.add_argument("--plan", type=Path, help="JSON: {\"clips\": [{\"name\", \"style\", \"set\", \"times\"}]}")
     parser.add_argument("--unit-type", default="winged_quadruped", help="names the six roles' styles when there is no plan")
     parser.add_argument("--compare", action="store_true", help="measure the written clips against the folder's own")
+    parser.add_argument("--rerig", action="store_true", help="move the neck to the measured column first (rerig), for files made with the withers' neck")
+    parser.add_argument("--fit", action="store_true", help="then fit the weights to the written clips as the route does (fit_weights) and write the clips again")
     parser.add_argument("--sheet", action="store_true", help="render the clips with tripo/clip_sheet.py (starts Blender: run it through the gate)")
     parser.add_argument("--views", nargs="+", default=["hoi4", "front", "left"])
     parser.add_argument("--frames", type=int, default=6)
@@ -527,7 +622,15 @@ def main() -> int:
     else:
         clips = [{"name": role, "style": style} for role, style in role_styles(args.unit_type).items()]
     landmarks = read_landmarks(args.landmarks)
-    report = {"clips": write_folder(args.folder, landmarks, args.out, clips)}
+    folder = args.folder
+    report = {}
+    if args.rerig and not landmarks.get("neck"):
+        report["rerig"] = rerig(folder, landmarks, args.out)
+        folder, landmarks = args.out, read_landmarks(args.out / "landmarks.json")
+    report["clips"] = write_folder(folder, landmarks, args.out, clips)
+    if args.fit:
+        report["fit"] = fit_weights(args.out)
+        report["clips"] = write_folder(args.out, landmarks, args.out, clips)
     if args.compare:
         report["compare"] = compare(args.folder, args.out)
     print(json.dumps(report, indent=1))

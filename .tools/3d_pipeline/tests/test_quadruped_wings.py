@@ -217,7 +217,9 @@ class Poses(unittest.TestCase):
             world = qw.rotation((0.0, 1.0, 0.0), -80.0) @ frame
             self.assertLess(world[2, 0], 0.05, f"{side}: the span does not rise from its root")
             self.assertLess(abs(world[2, 1]), 0.05, f"{side}: the membrane lies level")
-            self.assertGreater(world[1, 0], 0.5, f"{side}: the wing lies toward the tail, behind the shoulders")
+            # round 11: the wing on top lies toward the tail, the one underneath nearly straight out beyond the back, where the dead
+            # head lay before the neck bent from the shoulders
+            self.assertGreater(world[1, 0], 0.5 if upper else 0.2, f"{side}: the wing lies behind the shoulders")
 
 
 class Round4(unittest.TestCase):
@@ -251,7 +253,8 @@ class Round4(unittest.TestCase):
         self.assertTrue(qw.lies_under(plans["Left"], landmarks))
         self.assertFalse(qw.lies_under(plans["Right"], landmarks))
         pose = qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, None, upper=True)
-        self.assertEqual(pose["curl"], qw.FOLDED["curl"])
+        self.assertEqual(pose["curl"], qw.DEAD_UPPER["curl"], "it bends further only at its joints (round 11)")
+        self.assertEqual(pose["spread"], qw.FOLDED["spread"], "the fan stays as folded")
         self.assertNotIn("frame", pose)
 
 
@@ -285,8 +288,10 @@ class Round5(unittest.TestCase):
             self.assertGreater(frame[2, 0], 0.05, "the span rises over the back")
 
     def test_the_dead_wings_lie_behind_the_shoulders(self) -> None:
-        for sweep, _tip in (qw.LYING_UPPER, qw.LYING_LOWER):
-            self.assertGreaterEqual(sweep, 60.0, "toward the tail, clear of the head and neck laid forward")
+        self.assertGreaterEqual(qw.LYING_UPPER[0], 60.0, "the wing on top toward the tail, clear of the head and neck laid forward")
+        # round 11: the head lies ahead of the chest, so the wing underneath lies out beyond the back, where it stays below the torso
+        # on the game camera's screen (toward the tail it stood over it as a tent)
+        self.assertTrue(0.0 <= qw.LYING_LOWER[0] <= 45.0)
 
     def test_the_falling_body_tucks_its_lower_legs_and_lays_its_neck_forward(self) -> None:
         _points, _triangles, landmarks, _plans, _masks = _found()
@@ -369,18 +374,21 @@ class Round8(unittest.TestCase):
 
     def test_both_dead_wings_keep_the_idle_fold(self) -> None:
         for upper in (True, False):
+            dead = qw.DEAD_UPPER if upper else qw.DEAD_LOWER
             for t in (0.0, 0.3, 0.6, 1.0):
                 pose = qw.role_pose("winged_collapse", t, qw.WING_BONES, None, upper=upper)
-                self.assertEqual(pose["curl"], qw.FOLDED["curl"], "folded at the joints as in the idle")
-                self.assertEqual(pose["spread"], qw.FOLDED["spread"])
+                self.assertEqual(pose["spread"], qw.FOLDED["spread"], "the fan never opens or closes")
                 self.assertEqual(pose.get("flap", 0.0), 0.0, "no beat and no lift on the way down")
+                self.assertTrue(min(qw.FOLDED["curl"], dead["curl"]) <= pose["curl"] <= max(qw.FOLDED["curl"], dead["curl"]))
+            self.assertEqual(qw.role_pose("winged_collapse", 0.0, qw.WING_BONES, None, upper=upper)["curl"], qw.FOLDED["curl"], "the idle's fold first")
+            self.assertEqual(qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, None, upper=upper)["curl"], dead["curl"], "the lying bend last")
 
     def test_the_dead_wings_turn_only_while_the_body_rolls(self) -> None:
         _points, _triangles, landmarks, plans, _masks = _found()
         landmarks["death"] = {"roll": -82.0}
         frame = qw.lying_pose(plans["Left"], landmarks, True)
         self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_START, qw.WING_BONES, frame, upper=True)["frame_share"], 0.0)
-        self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_END, qw.WING_BONES, frame, upper=True)["frame_share"], 1.0)
+        self.assertEqual(qw.role_pose("winged_collapse", qw.DEAD_WINGS_END, qw.WING_BONES, frame, upper=True)["frame_share"], qw.LYING_UPPER_SHARE)
 
     def test_the_side_search_holds_the_wings_in_the_idle_fold_and_a_tie_lays_the_body_on_its_right_side(self) -> None:
         _points, _triangles, landmarks, plans, _masks = _found()
@@ -400,7 +408,7 @@ class Round8(unittest.TestCase):
         landmarks["death"] = {"roll": -82.0}
         plan = plans["Left"]
         frame = qw.lying_pose(plan, landmarks, True)
-        self.assertEqual(qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, frame, upper=True)["frame_share"], 1.0)
+        self.assertEqual(qw.role_pose("winged_collapse", 1.0, qw.WING_BONES, frame, upper=True)["frame_share"], qw.LYING_UPPER_SHARE)
         saved_share, saved_upper = qw.LYING_UPPER_SHARE, qw.LYING_UPPER
         try:
             qw.LYING_UPPER_SHARE = 0.4
@@ -760,6 +768,89 @@ class Size(unittest.TestCase):
         self.assertGreater(found["wing_vertices"], 0)
         self.assertLess(float(np.ptp(body[:, 0])), 1.0, "the wings are left out of the width")
         self.assertGreater(float(np.ptp(body[:, 1])), 3.5, "the length runs from the head to the tail along Y")
+
+
+def _found_necked():
+    """The blocky dragon with a thin neck column rising from its shoulders under a large head, as the Tripo dragon's: the column 0.12 wide
+    from the torso's top (1.6) to 2.0, the head 0.4 wide from 2.0 to 2.35 and reaching 0.55 ahead of the column. The wings root
+    0.4 behind the forelegs."""
+
+    parts = [((x - 0.08, y - 0.08, 0.0), (x + 0.08, y + 0.08, 1.0), 8) for x in (-0.22, 0.22) for y in (0.0, 1.6)]
+    parts.append(((-0.35, -0.2, 1.0), (0.35, 1.8, 1.6), 8))
+    parts.append(((-0.06, -0.3, 1.55), (0.06, -0.1, 2.0), (2, 3, 8)))  # the neck column
+    parts.append(((-0.2, -0.85, 2.0), (0.2, -0.1, 2.35), 8))  # the head
+    parts.append(((-0.04, 2.25, 0.0), (0.04, 3.6, 0.05), (2, 16, 1)))
+    parts.append(((-0.04, 1.8, 0.3), (0.04, 2.25, 1.2), (2, 4, 8)))
+    parts.append(((-0.04, 2.2, 0.05), (0.04, 2.25, 0.3), (2, 1, 4)))
+    # the wings root behind the forelegs, as the Tripo dragon's (0.11 of its length behind them)
+    parts.append(((0.25, 0.4, 1.3), (1.6, 0.42, 2.2), (16, 1, 10)))
+    parts.append(((-1.6, 0.4, 1.3), (-0.25, 0.42, 2.2), (16, 1, 10)))
+    points, triangles = [], []
+    for lo, hi, steps in parts:
+        p, t = _box(lo, hi, steps)
+        triangles.append(t + sum(len(x) for x in points))
+        points.append(p)
+    points, triangles = np.vstack(points), np.vstack(triangles)
+    first = ql.detect_landmarks(points)
+    feet, _dragged = ql.ground_contacts(points)
+    plans, masks = qw.detect_wings(points, triangles, first, feet)
+    wing = masks["Left"] | masks["Right"]
+    landmarks = ql.detect_landmarks(points[~wing])
+    landmarks["wings"] = plans
+    return points, triangles, landmarks, plans, masks
+
+
+def _necked_dragon():
+    """The necked dragon's points, its wing mask and its landmarks (no neck measured yet)."""
+
+    points, _triangles, landmarks, _plans, masks = _found_necked()
+    return points, masks["Left"] | masks["Right"], landmarks
+
+
+class Neck(unittest.TestCase):
+    """Round 11 (D-107): a winged body's neck bones run up its measured neck column, so the neck bends from the shoulders."""
+
+    def test_the_neck_column_is_measured_from_the_shoulders_to_the_head(self) -> None:
+        points, wing, landmarks = _necked_dragon()
+        neck = ql.detect_neck(points[~wing], landmarks)
+        self.assertIsNotNone(neck)
+        base, middle, head = (np.asarray(neck[key]) for key in ("base", "middle", "head"))
+        height = float(landmarks["height"])
+        self.assertLess(abs(base[2] - 1.6), 0.06 * height, "the neck starts on the shoulders")
+        self.assertLess(abs(head[2] - 2.0), 0.06 * height, "the head turns at its root")
+        self.assertLess(base[2], middle[2])
+        self.assertLess(middle[2], head[2])
+        self.assertTrue(-0.3 <= head[1] <= -0.1, "the joints run up the column's middle")
+
+    def test_a_block_head_on_the_body_has_no_neck_column(self) -> None:
+        _points, _triangles, landmarks, _plans, masks = _found()
+        points, _triangles = _dragon()
+        wing = masks["Left"] | masks["Right"]
+        self.assertIsNone(ql.detect_neck(points[~wing], landmarks))
+
+    def test_the_column_bends_with_the_neck_bones(self) -> None:
+        points, wing, landmarks = _necked_dragon()
+        withers_layout = ql.build_layout(landmarks)
+        landmarks["neck"] = ql.detect_neck(points[~wing], landmarks)
+        layout = ql.build_layout(landmarks)
+        self.assertEqual(len(layout.bones), len(withers_layout.bones), "no bone is added: the rig stays within the engine's 50")
+        self.assertTrue(np.allclose(layout.bone("Neck_01").head, layout.bone("Chest").tail), "the chest ends where the neck starts")
+        column = (np.abs(points[:, 0]) <= 0.06) & (points[:, 1] > -0.3) & (points[:, 1] < -0.1) & (points[:, 2] > 1.7) & (points[:, 2] < 1.95)
+
+        def neck_share(layout) -> float:
+            indices, weights = ql.skin_weights(points, layout)
+            names = np.array(layout.names())
+            on_neck = np.where(np.isin(names[indices], ["Neck_01", "Neck_02"]), weights, 0.0).sum(axis=1)
+            return float(on_neck[column].mean())
+
+        self.assertGreater(neck_share(layout), 0.7, "the column follows the neck bones")
+        self.assertGreater(withers_layout.bone("Neck_02").tail[2], 2.3, "the withers' neck ends at the top of the head (the poll)")
+        self.assertLess(abs(layout.bone("Neck_02").tail[2] - 2.0), 0.06 * float(landmarks["height"]), "the measured neck ends at the head's root")
+        indices, weights = ql.skin_weights(points, layout)
+        names = np.array(layout.names())
+        skull = (points[:, 2] > 2.1) & (points[:, 1] < -0.5)
+        on_head = np.where(names[indices] == "Head", weights, 0.0).sum(axis=1)
+        self.assertGreater(float(on_head[skull].mean()), 0.9, "the skull turns whole with the head bone")
 
 
 if __name__ == "__main__":

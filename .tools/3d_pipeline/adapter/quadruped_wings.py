@@ -457,7 +457,12 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # turn their membrane up toward the game camera: held upright one of the two read from it as a thin spike (its width over length on
 # the screen 0.31 of its flat shape's in run 9). Turned fully level (roll -80) they stretched the wing roots 5.9% (run 10, limit 5%).
 FOLDED = {"sweep": 85.0, "rise": 15.0, "roll": -60.0, "spread": 1.0, "curl": 20.0, "curl_out": 0.0}
-HALF = {"sweep": 60.0, "rise": 25.0, "roll": -55.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
+# Round 11: the membrane rolled -62 degrees, not -55. With the neck bones on the measured neck column (quadruped_layout.detect_neck) the
+# neck's base counts as neck, and from the front the half folded wings stood behind 25.3% of the head and neck in the move's first frame
+# (TRIPO-WING-HEAD-FRONT, limit 25%), 12.7% at -62 (offline on run 18's files re-rigged). Its wing root then reads 5.2% offline
+# (TRIPO-WING-ROOT-STRETCH, limit 5%), where run 18's own clips read 5.0% offline and 4.3% in the route: the offline fit adds about 0.6%.
+# A beat of 22 degrees instead of 25 left the root as it was and moved the wings only 2.8 times as much as the idle's (TRIPO-WING-IDLE-MOVE).
+HALF = {"sweep": 60.0, "rise": 25.0, "roll": -62.0, "spread": 1.0, "curl": 22.0, "curl_out": 0.0}
 SPREAD = {"sweep": 35.0, "rise": 38.0, "roll": -20.0, "spread": 1.0, "curl": 0.0, "curl_out": 0.0}
 # The defend no longer shields with the wings: spread forward they opened to the sides and left the head and neck exposed between them,
 # a wing display that read as the attack at map size (both fresh reviews of run 9). The dragon crouches with its head drawn back and
@@ -482,7 +487,10 @@ def held_back(**where: float) -> Dict[str, float]:
 # Round 9: the mantle turns the fold's membrane up toward the game camera (roll -30, the fold -60), so the defend's silhouette from the
 # game camera differs from the idle's (TRIPO-GAME-READ 0.30, 0.20 with the fold's roll, offline on run 17's files). Turned down (roll -85)
 # the trailing edge swings out past the idle's reach (TRIPO-WING-SIDE-REACH 1.15).
-MANTLE = held_back(sweep=95.0, rise=35.0, roll=-30.0)
+# Round 11: raised 30 degrees, not 35. With the neck bones on the measured neck column (quadruped_layout.detect_neck) the near wing's
+# raised fold hid 10.8% of the legs, neck and head from the side (TRIPO-WING-FRONT, limit 10%), 8.2% at 30. Lowered to 25 or swept to 85
+# it reads as the idle from the game camera (TRIPO-GAME-READ 0.25, at least 0.27).
+MANTLE = held_back(sweep=95.0, rise=30.0, roll=-30.0)
 # Round 7: the retreat runs with its wings half folded and swept back, beating little (FLEE, FLEE_BEAT). Held half open and beating hard
 # (swept 50 degrees, raised 30, a 20 degree beat) it read as the move (fresh reviews of runs 9 and 12).
 FLEE = held_back(sweep=85.0, rise=20.0)
@@ -496,14 +504,21 @@ FLEE = held_back(sweep=85.0, rise=20.0)
 # top slopes down from the upper flank, and the wing underneath, whose root is at the ground, starts lower still and is lifted by the
 # rest's `wing_lift` until its far bones are off the ground (quadruped_layout.choose_winged_rest): offline on the Tripo dragon it comes
 # to rest 12 degrees under level, 0.22 of the height thick, the fold's own depth.
-DEAD_UPPER = dict(FOLDED)
-DEAD_LOWER = dict(FOLDED)
-LYING_UPPER = (80.0, -20.0)
-LYING_LOWER = (75.0, -22.0)
+# Round 11 (D-107): with the neck bending from the shoulders (quadruped_layout.detect_neck) the dead head lies ahead of the chest, so the
+# wing underneath can lie nearly straight out beyond the back (20 degrees toward the tail, tipped 45 down and bent 50 at its joints) where
+# the head lay before, and the top wing drapes down the upper flank: 0.6 of its turn at the root, the rest a bend of 40 degrees per joint,
+# 60 degrees toward the tail and tipped 32 down. Offline on run 18's files re-rigged to the measured neck TRIPO-DEATH-WING-TENT reads 0.37
+# (1.13 before, at most 0.45) and TRIPO-DEATH-HEAD-HIDDEN 0.64 (at least 0.5). Toward the tail (75 degrees, round 10) the wing underneath
+# stood over the torso's outline (0.6 of its share alone), and the top wing tipped only 25 down read 0.54. Bent 55 per joint it crushes
+# (TRIPO-WING-CRUSH 6.3%), and taken whole at the root and bent 40 it reaches under the body and lifts it (TRIPO-NOT-DOWN).
+DEAD_UPPER = {**FOLDED, "curl": 40.0}
+DEAD_LOWER = {**FOLDED, "curl": 50.0}
+LYING_UPPER = (60.0, -32.0)
+LYING_LOWER = (20.0, -45.0)
 DEAD_WINGS_START, DEAD_WINGS_END = 0.2, 0.65
 # The share of the turn to its lying frame each dead wing takes at its root (`lying_pose`). The rest of its change is the bend of its bones
 # past the root (DEAD_UPPER's and DEAD_LOWER's curl).
-LYING_UPPER_SHARE = 1.0
+LYING_UPPER_SHARE = 0.6
 LYING_LOWER_SHARE = 1.0
 # Beats: (degrees at the root, beats per clip, the wave's bend per bone past the root as a share of the root's beat, its lag per bone as a
 # share of a beat). The idle breathes: one slow rise and fall of the folded wings per loop.
