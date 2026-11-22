@@ -492,9 +492,7 @@ def main(argv=None) -> int:
     entities = out / "mod" / "gfx" / "entities"
     entities.mkdir(parents=True, exist_ok=True)
     (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
-    report["textures"] = textures
-    report["delight"] = delight
-    report.update(hole=hole, atlas=atlas)
+    report.update(textures=textures, delight=delight, hole=hole, atlas=atlas)
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files
