@@ -3889,6 +3889,18 @@ def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
         return {}
 
 
+def place_staged_locators(job: Path, staged: Path, stem: str, spec: Dict[str, Any], records: Dict[str, Any]) -> None:
+    """The job's `tripo.locators` (lib/tripo_locators.py) added to the staged mesh, and the mesh's record renewed."""
+
+    entries = (spec.get("tripo") or {}).get("locators")
+    if not entries:
+        return
+    from lib import tripo_locators
+
+    records[f"{stem}.mesh"]["locators"] = tripo_locators.add_locators(staged / f"{stem}.mesh", entries)
+    records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+
+
 def burn_staged_death(staged: Path, stem: str, roles: List[str], keep: Sequence[str] = ()) -> Dict[str, Any]:
     """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
     keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
@@ -4458,11 +4470,7 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
             for name in [f"{stem}.mesh"] + [f"{stem}_{role}.anim" for role in sorted(exports["animations"])]:
                 records[name]["staged"] = file_record(staged / name, relative_to=job)
         # Named locators for particle effects (`tripo.locators`, lib/tripo_locators.py), placed on the final skin.
-        if (spec.get("tripo") or {}).get("locators"):
-            from lib import tripo_locators
-
-            records[f"{stem}.mesh"]["locators"] = tripo_locators.add_locators(staged / f"{stem}.mesh", spec["tripo"]["locators"])
-            records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
+        place_staged_locators(job, staged, stem, spec, records)
         # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
         # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
         clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)
