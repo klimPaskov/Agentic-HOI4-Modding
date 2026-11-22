@@ -784,7 +784,13 @@ FLEE_TURN_IN = 0.35
 # Round 12: both fresh reviews of run 19 saw 90 and 45 fold the short neck into the shoulders, a hunch with no strike (TRIPO-NECK-SQUASH,
 # the head 0.75 of its rest distance from the chest). At 75 and 30 with the 30 degree snap the head keeps 0.87 of it, the snout drops 27%
 # of the height on the game camera's screen and ends 1.4% below the shoulders (offline on run 19's files).
-STRIKE_NECK = {"Neck_01": (-10.0, 75.0), "Neck_02": (-5.0, 30.0), "Head": (-10.0, 0.0)}
+# Round 14: the neck's base (Neck_01, on the measured column) holds still and the upper neck and the head make the strike, as the
+# withers' neck did in run 18, whose strike both fresh reviews of runs 19 and 20 read better: bending at the column's base folded the
+# neck into the shoulders (TRIPO-NECK-SQUASH 0.83 in run 20). Held still, with the upper neck at 85 degrees, the head keeps 0.857 of its
+# rest distance (at least 0.85) and the snout drops 23% of the height on the game camera's screen to 0.8% below the shoulders (offline
+# on run 20's files, weights fitted). At 75 it ended level with them (TRIPO-ATTACK-HEAD-LEAD), at 90 the neck folded (0.845). The two
+# limits leave the strike about 1% each way.
+STRIKE_NECK = {"Neck_01": (0.0, 0.0), "Neck_02": (-10.0, 85.0), "Head": (-10.0, 10.0)}
 STRIKE_SNAP = 30.0
 # The share of the shared rear (`_rear`: the body pitched 32 degrees up about the hind feet, the forelegs lifted) the attack keeps while it
 # gathers. The whole rear lifted the head 8% of the height and drew it back 37% before the blow, and both fresh reviews of run 15 read a rear,
@@ -800,7 +806,7 @@ ATTACK_HIP = 8.0
 ATTACK_BEND = 48.0
 # No neck joint bends more than STRIKE_JOINT_MAX degrees in the strike: at 80 degrees at the neck's root and a 35 degree snap at the head the
 # upper neck kinked behind the head and read as squashed (fresh reviews of run 12). The forward turn is spread over the neck instead.
-STRIKE_JOINT_MAX = 75.0
+STRIKE_JOINT_MAX = 85.0  # round 14: the upper neck's 85, with the base held still
 STRIKE_DROP = 1.0
 # The forelegs lift this share of the rear's: the blow is the neck's, and the full lift drew the raised forearm out into a flat paddle (a
 # fresh review of run 3).
@@ -858,7 +864,9 @@ LEG_PREFIX_NAMES = ("Front_", "Rear_")
 # fresh reviews of run 19 saw them box it in like a hood (TRIPO-DEFEND-HEAD-BOXED, 3.8% of the height behind). The neck now leans forward
 # from the shoulders (35 and 40 degrees) and the head faces 15 degrees above its rest facing: 5.8% ahead of the wings, the head 0.94 of
 # its rest distance from the chest, and the clip still reads 0.30 against the idle (TRIPO-GAME-READ, offline on run 19's files).
-GUARD_NECK_S = {"Neck_01": 35.0, "Neck_02": 40.0, "Head": -15.0}
+# Round 14: the neck's base holds still and the upper neck leans 30 degrees forward, as the withers' neck carried the head in run 18,
+# whose defend neither fresh review called boxed. Bending the column's base (round 12) read as the neck pulled into the chest in run 20.
+GUARD_NECK_S = {"Neck_01": 0.0, "Neck_02": 30.0, "Head": -30.0}
 GUARD_HIP = 12.0  # degrees the hips and shoulders may turn in the crouch (`planted_crouch` says why)
 GUARD_BEND = 60.0  # degrees the joint below them may bend
 CROUCH_MATCH = 0.005  # of the height: how near the hind feet's travel must come to the forefeet's before it is matched exactly
