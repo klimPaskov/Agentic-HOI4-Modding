@@ -511,11 +511,12 @@ def _write_binds(mesh_path: Path, out_path: Path, inverse: Dict[str, np.ndarray]
     Path(out_path).write_bytes(bytes(data))
 
 
-def rerig(folder: Path, landmarks: dict, out: Path) -> dict:
+def rerig(folder: Path, landmarks: dict, out: Path, thigh_skin: bool = False) -> dict:
     """Try the measured neck (`quadruped_layout.detect_neck`) on a run's files made with the withers' neck: copy the unit folder to `out`
     with the neck and head bones moved to the measured column and the skin of the neck and head weighted again by the rig's rule
     (`quadruped_layout.skin_weights`, before the route's smoothing, so seams read a little worse than a run's), and write the new
-    landmarks to `out/landmarks.json` for the next `--landmarks`. Wing skin keeps its weights."""
+    landmarks to `out/landmarks.json` for the next `--landmarks`. Wing skin keeps its weights. Files already rigged on the column keep
+    their neck. `thigh_skin` (round 15) also gives each leg's Upper bone the thigh skin above the belly (`quadruped_layout._thigh_mass`)."""
 
     folder, out = Path(folder), Path(out)
     out.mkdir(parents=True, exist_ok=True)
@@ -526,11 +527,13 @@ def rerig(folder: Path, landmarks: dict, out: Path) -> dict:
     mesh = pdx_deform.load_mesh(mesh_path)
     old = Stage(mesh, copy.deepcopy(landmarks))
     wings = np.char.startswith(old.dominant, qw.WING_PREFIX)
-    neck = ql.detect_neck(old.points[~wings], landmarks)
+    neck = landmarks.get("neck") or ql.detect_neck(old.points[~wings], landmarks)
     if neck is None:
         raise ValueError("no neck column measured: the withers' neck stays")
     measured = copy.deepcopy(landmarks)
     measured["neck"] = neck
+    if thigh_skin:
+        measured["thigh_skin"] = True
     layout = ql.build_layout(measured)
     inverse = {}
     for name in ("Chest",) + NECK_BONES:
@@ -542,6 +545,11 @@ def rerig(folder: Path, landmarks: dict, out: Path) -> dict:
     raw_neck = (np.isin(names[order], NECK_BONES) & (raw > 0)).any(axis=1)
     old_neck = (np.isin(np.asarray(mesh.bones)[np.clip(mesh.joints, 0, None)], NECK_BONES) & (mesh.weights > 0)).any(axis=1)
     again = (raw_neck | old_neck) & ~wings
+    if thigh_skin:
+        uppers = [name for name in names if name.endswith("_Upper")]
+        raw_upper = (np.isin(names[order], uppers) & (raw > 0)).any(axis=1)
+        old_upper = (np.isin(np.asarray(mesh.bones)[np.clip(mesh.joints, 0, None)], uppers) & (mesh.weights > 0)).any(axis=1)
+        again |= (raw_upper | old_upper) & ~wings
     joints, weights = mesh.joints.copy(), mesh.weights.copy()
     index = {name: mesh.bones.index(name) for name in names if name in mesh.bones}
     joints[again] = np.vectorize(lambda column: index.get(names[column], -1))(order[again])
@@ -611,6 +619,7 @@ def main() -> int:
     parser.add_argument("--unit-type", default="winged_quadruped", help="names the six roles' styles when there is no plan")
     parser.add_argument("--compare", action="store_true", help="measure the written clips against the folder's own")
     parser.add_argument("--rerig", action="store_true", help="move the neck to the measured column first (rerig), for files made with the withers' neck")
+    parser.add_argument("--thigh-skin", action="store_true", help="give the legs' Upper bones the thigh skin above the belly first (round 15)")
     parser.add_argument("--fit", action="store_true", help="then fit the weights to the written clips as the route does (fit_weights) and write the clips again")
     parser.add_argument("--sheet", action="store_true", help="render the clips with tripo/clip_sheet.py (starts Blender: run it through the gate)")
     parser.add_argument("--views", nargs="+", default=["hoi4", "front", "left"])
@@ -624,8 +633,8 @@ def main() -> int:
     landmarks = read_landmarks(args.landmarks)
     folder = args.folder
     report = {}
-    if args.rerig and not landmarks.get("neck"):
-        report["rerig"] = rerig(folder, landmarks, args.out)
+    if (args.rerig and not landmarks.get("neck")) or (args.thigh_skin and not landmarks.get("thigh_skin")):
+        report["rerig"] = rerig(folder, landmarks, args.out, thigh_skin=args.thigh_skin)
         folder, landmarks = args.out, read_landmarks(args.out / "landmarks.json")
     report["clips"] = write_folder(folder, landmarks, args.out, clips)
     if args.fit:

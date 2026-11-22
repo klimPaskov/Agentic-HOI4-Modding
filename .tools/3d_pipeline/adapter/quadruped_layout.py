@@ -543,6 +543,25 @@ def _near_legs(q: np.ndarray, legs: Dict[str, Dict[str, np.ndarray]], leg_keys: 
     return near
 
 
+# Thigh and shoulder skin (D-137, round 15). The rig's hip and shoulder pivot inside the body (a leg's top joint, midway between the belly
+# and the back), but a leg's Upper bone took only the skin below the belly line, so a thick thigh above it stayed with the torso and tore
+# where the two met when the leg folded far: on the Tripo dragon a fold of 1.4 to 2 times the death's tore 10% to 29% of a leg root's
+# edges (TRIPO-LEG-ROOT-STRETCH, limit 2%). With `thigh_skin` in the landmarks (the rig sets it for a winged quadruped only), the Upper bone
+# may also take the skin around its own segment above the belly, within THIGH_REACH of the leg's radius, up to THIGH_TOP of the way from
+# the belly to the top joint. The weights there blend with the torso's by distance, as everywhere in the rig. Mounts keep their weights.
+THIGH_REACH = 2.5
+THIGH_TOP = 0.8
+
+
+def _thigh_mass(q: np.ndarray, joints: Dict[str, np.ndarray], belly_z: float, height: float) -> np.ndarray:
+    """(N,) the skin around a leg's Upper segment above the belly that the leg's Upper bone may take (`thigh_skin`)."""
+
+    top, upper = np.asarray(joints["top"], dtype=float), np.asarray(joints["upper"], dtype=float)
+    ceiling = belly_z + THIGH_TOP * (float(top[2]) - belly_z)
+    near = _segment_distance(q, upper, top) < THIGH_REACH * float(joints["radius"])
+    return near & (q[:, 2] >= belly_z - 0.02 * height) & (q[:, 2] <= ceiling)
+
+
 def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) -> Tuple[np.ndarray, np.ndarray]:
     """Return (bone indices, weights) per vertex, each row normalized, at most `max_influences` bones.
 
@@ -586,6 +605,8 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
                 mask &= q[:, 2] < belly_z
             leg_base[index] = mask
             allowed[:, index] = mask & near_leg[:, leg_keys.index(key)]
+            if name.endswith("_Upper") and lm.get("thigh_skin"):
+                allowed[:, index] |= _thigh_mass(q, legs[key], belly_z, h)
         elif name.startswith("Tail_"):
             tail_root_y = float(np.asarray(lm["tail"][0])[1]) if lm.get("tail") else rear_y
             lying = q[:, 1] > float(lm["tail_ground_y"]) if lm.get("tail_ground_y") is not None else np.zeros(len(q), bool)
