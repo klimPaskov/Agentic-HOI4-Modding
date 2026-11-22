@@ -25,21 +25,21 @@ import urllib.request
 
 
 PACKAGE_NAME = "hoi4-agent-tools"
-PACKAGE_VERSION = "4.18.0"
+PACKAGE_VERSION = "4.19.0"
 PACKAGE_SPEC = f"{PACKAGE_NAME}@{PACKAGE_VERSION}"
 # Reviewed npm registry integrity and clean published installation evidence.
-PACKAGE_INTEGRITY = "sha512-pNWpHKqKH7PP75ACNZwt2n6kVp/w+ciYJ6JAzcQsT15DjX5+AgUQcLFeBsmtkBsA3FX2IBsluHKsdoTubL7o3w=="
-PACKAGE_TREE_SHA256 = "c07048ef22f91f328198bb399b6da6afd1d962270f2ce726bf25951c8c2f8030"
-PACKAGE_FILE_COUNT = 5899
-LINUX_PACKAGE_TREE_SHA256 = "7a3960150dedae3c00dbd5357fc104261449701a3be922adc241bd9c60a10765"
-LINUX_PACKAGE_FILE_COUNT = 5763
+PACKAGE_INTEGRITY = "sha512-oHGpxKt1zz4Qa24J431MjrRCzKs+zzqSMI19WYj5HgbFOWVnBbKxFkPwPlfo5rqhiCp1sjKIw68/HwkH0Y/pPQ=="
+PACKAGE_TREE_SHA256 = "7e1997075278604d37cb49f3b945a1c6e8f0cc24f2d0785229fbeb2161792035"
+PACKAGE_FILE_COUNT = 5934
+LINUX_PACKAGE_TREE_SHA256 = "f3cd35def973709760c0cfdc44bd2ed94d264cfed6a8c1e8d4d9f1dd18b0a701"
+LINUX_PACKAGE_FILE_COUNT = 5798
 LINUX_PACKAGE_SYMLINKS = {
     "node_modules/.bin/node-which": "../which/bin/node-which",
     "node_modules/.bin/opencollective-postinstall": "../opencollective-postinstall/index.js",
     "node_modules/.bin/semver": "../semver/bin/semver.js",
 }
-MACOS_PACKAGE_TREE_SHA256 = "5a9ff8793f9bb7c3f1299facd83e84926a758ddfc3c685e3a9d8f1156602aa41"
-MACOS_PACKAGE_FILE_COUNT = 5752
+MACOS_PACKAGE_TREE_SHA256 = "50289d38ed56433bc39d7a72e587cd8d608c3fc5b7b9b0a29ea6952cfd4cc6ce"
+MACOS_PACKAGE_FILE_COUNT = 5787
 MACOS_PACKAGE_SYMLINKS = dict(LINUX_PACKAGE_SYMLINKS)
 # macOS has no reviewed system Node.js location, so the bootstrap installs the official Node.js build into the
 # private prefix. Archive and binary SHA-256 come from https://nodejs.org/dist/v24.22.0/SHASUMS256.txt and the

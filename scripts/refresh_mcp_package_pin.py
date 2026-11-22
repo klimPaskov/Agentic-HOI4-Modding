@@ -19,9 +19,11 @@ import re
 ROOT = Path(__file__).resolve().parents[1]
 BOOTSTRAP = ROOT / ".tools/mcp/bootstrap_hoi4_agent_tools.py"
 MANIFEST = ROOT / "hoi4-mod-setup.manifest.json"
-# Reviewed 39-route contract of 4.13.0 to 4.18.0: the 34 routes of 4.11.0 and 4.12.0 plus
-# hoi4.explain_error, hoi4.mod_health, hoi4.script_guard, hoi4.localisation_write and
-# hoi4.compat_check. The server lists it when HOI4_AGENT_TOOLS_PROFILES=all.
+# Reviewed 45-route contract of 4.19.0: the 39 routes of 4.13.0 to 4.18.0 (the 34 routes of 4.11.0 and
+# 4.12.0 plus hoi4.explain_error, hoi4.mod_health, hoi4.script_guard, hoi4.localisation_write and
+# hoi4.compat_check) plus the six definition writers hoi4.idea_write, hoi4.character_write,
+# hoi4.event_write, hoi4.decision_write, hoi4.tech_write and hoi4.doctrine_write.
+# The server lists it when HOI4_AGENT_TOOLS_PROFILES=all.
 ROUTE_CONTRACT = tuple(sorted((
     "hoi4.reference_context", "hoi4.reference_search", "hoi4.reference_read",
     "hoi4.source_lookup", "hoi4.script_validate", "hoi4.error_log", "hoi4.mod_index",
@@ -36,6 +38,8 @@ ROUTE_CONTRACT = tuple(sorted((
     "hoi4.job_inspect", "hoi4.job_cancel",
     "hoi4.explain_error", "hoi4.mod_health", "hoi4.script_guard",
     "hoi4.localisation_write", "hoi4.compat_check",
+    "hoi4.idea_write", "hoi4.character_write", "hoi4.event_write", "hoi4.decision_write",
+    "hoi4.tech_write", "hoi4.doctrine_write",
 )))
 # The core profile, which a stdio server lists when nothing chooses profiles (4.13.0, R-4).
 # HOI4 Mod Setup's health check starts the server with a cleared environment, so the manifest
