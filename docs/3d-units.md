@@ -386,7 +386,7 @@ The intake records each file's name, size and SHA-256, then prepares it for the 
 - It prints one line saying why it waits, and gives up with an error after six hours (`HOI4_KIT_HEAVY_WAIT_MINUTES`).
 - `--skip-heavy-check`, or `HOI4_KIT_SKIP_HEAVY_CHECK=1`, starts at once.
 
-The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py` and `tripo/static_sheets.py`. `tripo/arm_unit.py` waits too, before each of its grip and shield stages. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
+The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py`, `tripo/static_sheets.py` and `tripo/effects_sheet.py`. `tripo/arm_unit.py` waits too, before each of its grip and shield stages. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
 
 **One gate per step.** The kit needs no other gate. Some machines add their own gate script around Blender (a wrapper that also waits for a game or a shared hold file). Such a script lives on that machine, outside the kit, and the kit does not ship one. When your machine has one, run each Blender step through it and nothing more. Never take that machine's hold yourself for the steps you then run through its gate: the gate waits while any hold exists, so the step would wait for your own hold until its timeout. A hold is only for heavy work that does not go through the gate.
 
@@ -436,6 +436,8 @@ The first writes `sheets/game_size.png` (the unit about 60 pixels tall from the 
 
 A welded non-manifold edge (an edge shared by more than two faces) stops `run_pilot.py` at its candidate gate when the profile allows none. Tripo HD models made of many closed parts can bring a few. No repair for them runs before the export yet. When `check_holes.py` and `measure_body.py` pass on the provider GLB, record a reasoned exception for that one job (the measured count, the reason and the job as its scope, in the form `profile_exceptions` reads) and continue. Never widen the profile for every job. For colour, `tripo/colour_compare.py` renders the unit and a vanilla unit under the same light and prints the brightness and saturation of each.
 
+**Effects.** A unit that fires, casts, burns or blows up gets its particles in [the effects step](3d-effects.md), after these checks and before the review: `tripo/effects_stage.py` places the locators, times the events and checks them, and `tripo/effects_sheet.py` draws them as stamped stand-ins. Each effect must fit the unit (D-127): a world without gunpowder never gets a muzzle flash.
+
 ### 11. Hand-over and in game
 
 The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text. The newest copy that passed its check is the one you review. Put it into the mod only after a fresh reviewer passes it, with step 12. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
@@ -452,7 +454,7 @@ It writes the `pdxmesh`, animation and entity blocks, each between `# wire_unit 
 
 It never writes sub-units or localisation. It checks that a sub-unit has `sprite = <stem>` and that the keys `<id>` and `<id>_desc` exist, and lists what is missing. It lists the counter sprites `GFX_unit_<sprite>_icon_medium` and `_medium_white` and whether the mod or only the game defines each.
 
-Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <frame> sound = { soundeffect = "..." } }` into the entity state for that role. Whether the game reads `time` as frames or seconds is not verified yet, so check the sound in game. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
+Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <seconds> sound = { soundeffect = "..." } }` into the entity state for that role, at the frame divided by 30. An event's `time` is seconds of the clip: vanilla's destroyed landmarks fire their explosions within 0.3 s of the frame their clip hides a part ([effects](3d-effects.md#what-an-effect-is-in-hoi4)). Earlier versions wrote the frame number itself, so a sound planned at frame 12 played 12 seconds in, after the clip had ended. The effects step's sounds join the plan at their particles' frames. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
 
 After writing, it runs `check_unit_files.py --mod-root` and the static wiring audit and prints one verdict, PASS or FAIL with the list. A missing sprite or localisation key is a FAIL but does not stop the write. Only audit errors about this unit count, and `--strict-audit` counts every error in the mod. `--dry-run` prints the plan, changes nothing, and ends `DRY-RUN` or `DRY-RUN-FAIL`. The exit code is 1 on any FAIL and 2 on unreadable input.
 
@@ -636,7 +638,6 @@ The kit's deformation checks (`check_unit_files.py`) and the other Tripo checks 
 The review renders draw the fire and the smoke as a stand-in: orange puffs that rise fast and fade, and grey ones that rise slowly and grow, at the locator, timed as the plan says. Each tile that shows them is stamped "particles: stand-in", because only the game draws the real particles. These things are left for an in-game check:
 
 - How large the fire and the smoke are against the unit at map zoom (both are registered at scale 1).
-- The unit of an event's `time`. The burn's events use 0, which is the same in seconds and in frames.
 - How long the game holds the death's last frame before it removes the unit, and so how long the heap shows.
 
 ### A defend that reads as a guard

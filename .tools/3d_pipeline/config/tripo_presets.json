@@ -54,6 +54,7 @@
       "expected_credits": [50, 70],
       "cap": 120,
       "canvas": "rigged_unit",
+      "effects": ["necro_eyes", "necro_cast", "necro_unravel", "spell_cast", "firearm"],
       "proven": "An unarmed zombie passed every check but still read as an ordinary soldier at map size (November 2026). Follow the map-read step (card step 7) with care."
     },
     "armed_humanoid": {
@@ -84,6 +85,7 @@
       "cap": 120,
       "cap_note": "A shield is a third model (30): the cap is then 150, and the coordinator or the owner agrees first.",
       "canvas": "armed_unit",
+      "effects": ["firearm", "necro_eyes", "necro_cast", "necro_unravel", "spell_cast"],
       "proven": "Passed two fresh reviews on an orc with a poleaxe and a dwarf with a glaive and shield (November 2026)."
     },
     "large_creature": {
@@ -117,6 +119,7 @@
       "expected_credits": [70, 100],
       "cap": 120,
       "canvas": "armed_unit",
+      "effects": ["stone_dust", "fire_breath", "hellfire", "lava_fire", "ember_idle"],
       "proven": "Passed two fresh reviews on an ogre with a club (November 2026). Long arms and fur (an ape, a yeti) are not proven yet."
     },
     "winged_humanoid": {
@@ -151,6 +154,7 @@
       "expected_credits": [50, 70],
       "cap": 120,
       "canvas": "rigged_unit",
+      "effects": ["hellfire", "lava_fire", "ember_idle", "wing_gust"],
       "proven": "Passed two fresh reviews on a bat-winged demon (November 2026). Very wide thin wings and feathered wings are not proven yet."
     },
     "winged_quadruped": {
@@ -170,6 +174,7 @@
       "expected_credits": [30, 30],
       "cap": 60,
       "canvas": "plain_model",
+      "effects": ["fire_breath", "wing_gust"],
       "proven": "Not proven: a four-legged dragon has not passed review yet (November 2026). Ask before you spend."
     },
     "mount_with_rider": {
@@ -190,6 +195,7 @@
       "expected_credits": [80, 100],
       "cap": 120,
       "canvas": "plain_model",
+      "effects": ["firearm", "spell_cast"],
       "proven": "A war elephant with a tower passed (November 2026). A horse with a slim body and seated rider is not proven yet."
     },
     "quadruped": {
@@ -209,6 +215,7 @@
       "expected_credits": [30, 30],
       "cap": 60,
       "canvas": "plain_model",
+      "effects": ["fire_breath"],
       "proven": "A war elephant passed on the same rig (November 2026). A slim runner (a wolf, a horse) is not proven yet."
     },
     "rider": {
@@ -237,6 +244,7 @@
       "expected_credits": [50, 50],
       "cap": 70,
       "canvas": "rigged_unit",
+      "effects": ["firearm", "spell_cast"],
       "proven": "Not proven with a seated Tripo rider yet (November 2026)."
     },
     "tank": {
@@ -259,6 +267,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["tank_cannon", "heavy_cannon", "tank_wreck"],
       "proven": "Not proven: the M2A4 Smart Mesh tank passes every check, and its strict close-up review still fails (November 2026)."
     },
     "plane": {
@@ -277,6 +286,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["plane_crash"],
       "proven": "Passed two fresh reviews (November 2026)."
     },
     "ship": {
@@ -295,6 +305,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["ship_death"],
       "proven": "Passed two fresh reviews (November 2026)."
     },
     "building": {
@@ -319,6 +330,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["building_destroyed"],
       "proven": "Not proven: earlier passes were on simplified redraws and do not count (November 2026)."
     },
     "landmark": {
@@ -343,6 +355,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["building_destroyed"],
       "proven": "Not proven: earlier passes were on simplified redraws and do not count (November 2026)."
     }
   }

@@ -1,0 +1,210 @@
+{
+ "schema_version": "1.1.0",
+ "about": "The effects layer of the 3D route (docs/3d-effects.md). HOI4 effects are not part of a model: they are particle systems fired by `event` lines in the entity's states at a locator, a named point of the .mesh that follows a bone. A profile is one effect of a unit: its slots (a locator, the spot it is measured at, the roles whose states fire it, the frame rule) and the particles each slot fires. A Tripo preset lists the profiles that fit its type (`effects` in tripo_presets.json), a job picks among them and states its setting. `needs` names what the unit's world must have for the profile to fit (D-127): a Middle Lands unit of ZIN has no gunpowder, so it can never take a muzzle flash. Particles marked `vanilla` are fired by their registered vanilla name, untouched. Particles with `from` are copied from that vanilla particle's file into the mod under the unit's own name, and changed by colour and scale only. Locator names are `<effect>_<part>`, with `_l` or `_r` by the rig's side (fire_mouth, fire_hand_l, glow_eye_r), so every type uses one scheme, except the vanilla names a static model keeps (barrel, hit_effect_locator1). lib/unit_effects.py reads this file and refuses a profile that names an unknown spot, frame rule, particle or vanilla particle (checked against effects_vanilla.json, which calibrate_effects.py writes from the game).",
+ "setting_tags": {
+  "gunpowder": "the unit's world has firearms, cannons and explosives (HOI4's own era, Chaos Redux's modern factions)",
+  "magic": "the unit casts spells (ZIN's necromancer mage Elzon)",
+  "fire_creature": "the unit shoots or breathes fire by its own nature (ZIN's demons and devils, a dragon)"
+ },
+ "spots": {
+  "locator": "an existing locator of the mesh, named by `locator` (the static route's measured barrel tip, a ship's hit locators)",
+  "hand_tip": "the tip of a hand: the mean of the hand region's vertices farthest along the forearm-to-hand direction (the bone and its children)",
+  "head_front": "the front of the head or snout: the mean of the head region's vertices farthest toward the unit's front, in the lower part of the head (the mouth)",
+  "eye": "one eye (`side` l or r): the upper front of the head region on that side, pushed back by `inset` of the head's depth (default 0.25), so it sits inside a hood's opening and not on its rim",
+  "wing_tip": "a wing's tip (`side` l or r): the farthest 5% from the mid-plane of the vertices whose strongest bone is a wing bone, parented to the wing bone that carries most of them",
+  "bone_top": "the top centre of a bone's own part, without the parts mounted on it (a hull's deck under its turret)",
+  "bone_bottom": "the bottom centre of a bone's own part (a turret's ring)",
+  "bone_centre": "the centre of a bone's own part. A slot's `parent` hangs the locator from another bone: measured on the turret, hung from the hull, a blast stays where the turret was as it flies off",
+  "box_share": "a point of the model's box, as shares of its size per axis (`share`), parented to `bone` or to none"
+ },
+ "frame_rules": {
+  "start": "frame 0, as vanilla fires most effects. A looping particle (duration_s loop) starts here and glows all through the state",
+  "recoil": "the first frame the gun recoils: the bone among the locator's bone and its two parents whose own translation channel moves most, at the frame it first passes 10% of that move",
+  "strike": "the frame the locator reaches farthest toward the unit's front, measured from the unit's centre in that frame (a claw's rake, a cast's thrust, a breath's lunge, a wing's beat)",
+  "part_leaves": "the first frame the locator has moved more than 2% of the model's height from where it was at frame 0 (a turret blown off)",
+  "peak": "the frame the locator is farthest from where it was at frame 0 (a hand raised to cast)"
+ },
+ "particles": {
+  "tank_cannon_flash": {"vanilla": "light_tank_attack_barrel_particle", "standin": "flash", "duration_s": 0.1},
+  "tank_cannon_smoke": {"vanilla": "light_tank_attack_barrel_smoke_particle", "standin": "smoke", "duration_s": 1.5},
+  "heavy_cannon_flash": {"vanilla": "heavy_tank_attack_barrel_particle", "standin": "flash", "duration_s": 0.1},
+  "heavy_cannon_smoke": {"vanilla": "heavy_tank_attack_barrel_smoke_particle", "standin": "smoke", "duration_s": 1.5},
+  "rifle_flash": {"vanilla": "rifle_muzzle_particle", "standin": "flash", "duration_s": 0.1},
+  "rifle_smoke": {"vanilla": "mg_muzzle_smoke_particle", "standin": "smoke", "duration_s": 1.0},
+  "vehicle_explosion": {"vanilla": "vehicle_explode_effect", "standin": "blast", "duration_s": 1.0},
+  "wreck_smoke": {"from": "ship_damaged_smoke_particle", "standin": "smoke", "duration_s": "clip", "scale": 1.0},
+  "wreck_fire": {"from": "building_fire_particle", "standin": "fire", "duration_s": "clip", "scale": 0.8},
+  "ship_explosion": {"vanilla": "ship_explosion_particle", "standin": "blast", "duration_s": 1.0},
+  "plane_explosion": {"vanilla": "explosion_particle", "standin": "blast", "duration_s": 1.0},
+  "building_explosion": {"vanilla": "building_explode_effect", "standin": "blast", "duration_s": 1.0},
+  "building_fire": {"vanilla": "building_fire_particle", "standin": "fire", "duration_s": "clip"},
+  "dust_burst": {"vanilla": "building_damaged_particle", "standin": "smoke", "duration_s": 1.0},
+  "hellfire": {"from": "flamethrower_particle", "standin": "fire", "duration_s": 0.3, "colour": [255, 70, 12], "scale": 0.7},
+  "hellfire_smoke": {"vanilla": "flamethrower_smoke_effect", "standin": "smoke", "duration_s": 1.5},
+  "lava_fire": {"from": "flamethrower_particle", "standin": "fire", "duration_s": 0.6, "colour": [255, 96, 0], "scale": 0.9},
+  "lava_smoke": {"from": "flamethrower_smoke_effect", "standin": "smoke", "duration_s": 2.0, "colour": [34, 28, 26], "tint_grey": true, "scale": 1.0},
+  "embers": {"from": "sparks_effect", "standin": "fire", "duration_s": "loop", "colour": [255, 110, 20], "scale": 0.3},
+  "wing_dust": {"vanilla": "dustcloud_particle", "standin": "smoke", "duration_s": 1.0},
+  "stone_dust": {"vanilla": "building_damaged_particle", "standin": "smoke", "duration_s": 1.0},
+  "eye_glow": {"from": "lamp_red_particle", "standin": "spell", "duration_s": "loop", "colour": [176, 64, 255], "scale": 0.15},
+  "necro_swirl": {"from": "flamethrower_particle", "standin": "spell", "duration_s": 0.6, "colour": [196, 40, 255], "scale": 0.5},
+  "necro_wisps": {"from": "flamethrower_smoke_effect", "standin": "smoke", "duration_s": 1.5, "colour": [44, 20, 70], "tint_grey": true, "scale": 0.6},
+  "necro_smoke": {"from": "city_smoke_particle", "standin": "smoke", "duration_s": "clip", "colour": [110, 40, 170], "tint_grey": true, "scale": 1.0},
+  "spell_bolt": {"from": "flamethrower_particle", "standin": "spell", "duration_s": 0.5, "colour": [120, 150, 255], "scale": 0.4},
+  "fire_breath": {"vanilla": "flamethrower_particle", "standin": "fire", "duration_s": 0.8},
+  "fire_breath_smoke": {"vanilla": "flamethrower_smoke_effect", "standin": "smoke", "duration_s": 1.5}
+ },
+ "profiles": {
+  "tank_cannon": {
+   "label": "a tank's main gun: muzzle flash and gun smoke at the barrel tip when it fires",
+   "needs": ["gunpowder"],
+   "slots": [
+    {"locator": "barrel", "spot": "locator", "roles": ["attack", "defend", "support_attack"], "frame": "recoil",
+     "particles": ["tank_cannon_flash", "tank_cannon_smoke"], "sound": "light_armour_fire"}
+   ],
+   "vanilla": "light tanks fire light_tank_attack_barrel_particle and its smoke at the barrel locator (bone barrel_tip) in attack, defend and support_attack (28 entities)"
+  },
+  "heavy_cannon": {
+   "label": "a heavy tank's or gun's main gun",
+   "needs": ["gunpowder"],
+   "slots": [
+    {"locator": "barrel", "spot": "locator", "roles": ["attack", "defend", "support_attack"], "frame": "recoil",
+     "particles": ["heavy_cannon_flash", "heavy_cannon_smoke"], "sound": "heavy_armour_fire"}
+   ],
+   "vanilla": "heavy tanks fire heavy_tank_attack_barrel_particle and its smoke at barrel (bone barrel_tip)"
+  },
+  "tank_wreck": {
+   "label": "a tank's death: an explosion at the turret ring as the turret blows off, then the hull burns and smokes",
+   "needs": ["gunpowder"],
+   "slots": [
+    {"locator": "blast_ring", "spot": "bone_bottom", "bone": "turret", "parent": "chassie", "roles": ["death"], "frame": "part_leaves",
+     "particles": ["vehicle_explosion"], "sound": "explosion_fuel_small"},
+    {"locator": "fire_deck", "spot": "bone_top", "bone": "chassie", "roles": ["death"], "frame": "part_leaves", "frame_from": "blast_ring",
+     "particles": ["wreck_fire", "wreck_smoke"]}
+   ],
+   "vanilla": "vanilla tanks have no death particles. Planes fire vehicle_explode_effect in their explode state and destroyed landmarks fire it at impact locators, so the wreck takes those"
+  },
+  "firearm": {
+   "label": "a rifle or musket: muzzle flash and smoke at the weapon's tip",
+   "needs": ["gunpowder"],
+   "slots": [
+    {"locator": "muzzle", "spot": "locator", "roles": ["attack", "defend", "support_attack"], "frame": "recoil",
+     "particles": ["rifle_flash", "rifle_smoke"]}
+   ],
+   "vanilla": "infantry weapons fire rifle_muzzle_particle (or mg_muzzle_particle) and mg_muzzle_smoke_particle at a muzzle locator of the weapon entity"
+  },
+  "ship_death": {
+   "label": "a ship's death: explosions at the hull's hit locators",
+   "needs": [],
+   "slots": [
+    {"locator": "hit_effect_locator1", "spot": "locator", "roles": ["death"], "frame": "start", "particles": ["ship_explosion"]},
+    {"locator": "hit_effect_locator2", "spot": "locator", "roles": ["death"], "frame": "start", "offset_s": 0.5, "particles": ["ship_explosion"]}
+   ],
+   "vanilla": "ship deaths fire ship_explosion_particle at hit_effect_locator1 and 2 (bone root or none), 0 to 1.2 s apart (26 entities)"
+  },
+  "plane_crash": {
+   "label": "a plane's crash: an explosion at the engine",
+   "needs": [],
+   "slots": [
+    {"locator": "engine1", "spot": "box_share", "share": [0.5, 0.5, 0.1], "bone": "root", "roles": ["death"], "frame": "start", "particles": ["plane_explosion"]}
+   ],
+   "vanilla": "plane crash states fire explosion_particle at engine1 to engine4 (bone root, 24 entities)"
+  },
+  "building_destroyed": {
+   "label": "a building's or landmark's destruction: timed explosions, then fire and smoke",
+   "needs": [],
+   "slots": [
+    {"locator": "explosion1", "spot": "box_share", "share": [0.5, 0.75, 0.5], "bone": "root", "roles": ["death"], "frame": "start", "particles": ["building_explosion"]},
+    {"locator": "fire1", "spot": "box_share", "share": [0.35, 0.5, 0.4], "bone": "root", "roles": ["death"], "frame": "start", "offset_s": 1.5, "particles": ["building_fire", "dust_burst"]}
+   ],
+   "vanilla": "destroyed landmarks fire ship_explosion_particle, building_explode_effect, vehicle_explode_effect and building_fire_particle at locators on root, timed over the destroy clip"
+  },
+  "hellfire": {
+   "label": "ZIN's demons: fire shot from both hands and the mouth at the strike, orange-red with dark smoke (bestiary cards 47, 48, 51)",
+   "needs": ["fire_creature"],
+   "slots": [
+    {"locator": "fire_hand_r", "spot": "hand_tip", "bone": "RightHand", "roles": ["attack"], "frame": "strike", "particles": ["hellfire", "hellfire_smoke"]},
+    {"locator": "fire_hand_l", "spot": "hand_tip", "bone": "LeftHand", "roles": ["attack"], "frame": "strike", "particles": ["hellfire", "hellfire_smoke"]},
+    {"locator": "fire_mouth", "spot": "head_front", "bone": "Head", "roles": ["attack"], "frame": "strike", "particles": ["hellfire"]}
+   ],
+   "vanilla": "no vanilla unit shoots fire from hand or mouth. The flame is vanilla's flamethrower_particle (flame tanks, at the barrel tip), recoloured orange-red, with the flame tank's own smoke"
+  },
+  "lava_fire": {
+   "label": "ZIN's devils: a heavy lava-orange gout from the mouth and hands at the attack, with black smoke (bestiary cards 45, 46)",
+   "needs": ["fire_creature"],
+   "slots": [
+    {"locator": "fire_mouth", "spot": "head_front", "bone": "Head", "roles": ["attack"], "frame": "strike", "particles": ["lava_fire", "lava_smoke"]},
+    {"locator": "fire_hand_r", "spot": "hand_tip", "bone": "RightHand", "roles": ["attack"], "frame": "strike", "particles": ["lava_fire"]},
+    {"locator": "fire_hand_l", "spot": "hand_tip", "bone": "LeftHand", "roles": ["attack"], "frame": "strike", "particles": ["lava_fire"]}
+   ],
+   "vanilla": "the flame tank's flamethrower_particle, recoloured a deeper lava orange and larger, and its smoke tinted near black"
+  },
+  "ember_idle": {
+   "label": "a devil's slow embers from the body while it stands (optional, at most this at idle)",
+   "needs": ["fire_creature"],
+   "slots": [
+    {"locator": "ember_body", "spot": "bone_centre", "bone": "Spine02", "roles": ["idle"], "frame": "start", "particles": ["embers"]}
+   ],
+   "vanilla": "vanilla's sparks_effect (power line sparks), recoloured ember orange and small, kept looping"
+  },
+  "wing_gust": {
+   "label": "a winged creature's physical wing beat: dust thrown from both wing tips at the strike, nothing glowing (ZIN's angel, bestiary cards 49, 50)",
+   "needs": [],
+   "slots": [
+    {"locator": "gust_wing_l", "spot": "wing_tip", "side": "l", "roles": ["attack"], "frame": "strike", "particles": ["wing_dust"]},
+    {"locator": "gust_wing_r", "spot": "wing_tip", "side": "r", "roles": ["attack"], "frame": "strike", "particles": ["wing_dust"]}
+   ],
+   "vanilla": "vanilla's dustcloud_particle as it is. Vanilla has no feather particle, and a copy may change only colour and scale, so the loose feathers of the canon need a new particle (a decision, not a route step)"
+  },
+  "stone_dust": {
+   "label": "a stone creature's blow: stone dust and chips at both fists at the strike (ZIN's Kror)",
+   "needs": [],
+   "slots": [
+    {"locator": "dust_hand_r", "spot": "hand_tip", "bone": "RightHand", "roles": ["attack"], "frame": "strike", "particles": ["stone_dust"]},
+    {"locator": "dust_hand_l", "spot": "hand_tip", "bone": "LeftHand", "roles": ["attack"], "frame": "strike", "particles": ["stone_dust"]}
+   ],
+   "vanilla": "vanilla's building_damaged_particle (dust and debris of a damaged building) as it is"
+  },
+  "necro_eyes": {
+   "label": "a necromancer's eyes: a constant faint purple glow of two eyes in the hood, in every state but death (ZIN's Elzon, bestiary cards 60, 61)",
+   "needs": ["magic"],
+   "slots": [
+    {"locator": "glow_eye_l", "spot": "eye", "side": "l", "bone": "Head", "roles": ["idle", "move", "attack", "defend", "retreat", "support_attack"], "frame": "start", "particles": ["eye_glow"]},
+    {"locator": "glow_eye_r", "spot": "eye", "side": "r", "bone": "Head", "roles": ["idle", "move", "attack", "defend", "retreat", "support_attack"], "frame": "start", "particles": ["eye_glow"]}
+   ],
+   "vanilla": "vanilla's map lamp (lamp_red_particle, one pulsing glow kept at its locator, local_space on), recoloured purple and small, kept looping, as vanilla's infantry keeps cigarette smoke at its head locator in idle"
+  },
+  "necro_cast": {
+   "label": "a necromancer's spell: a purple-magenta swirl with dark wisps from the raised hand at the attack",
+   "needs": ["magic"],
+   "slots": [
+    {"locator": "cast_hand_r", "spot": "hand_tip", "bone": "RightHand", "roles": ["attack", "support_attack"], "frame": "peak", "particles": ["necro_swirl", "necro_wisps"]}
+   ],
+   "vanilla": "vanilla has no spells. The swirl is the flame tank's flamethrower_particle recoloured magenta-purple and smaller, the wisps its smoke tinted dark purple"
+  },
+  "necro_unravel": {
+   "label": "a necromancer's death: he unravels into purple smoke",
+   "needs": ["magic"],
+   "slots": [
+    {"locator": "smoke_body", "spot": "bone_centre", "bone": "Spine02", "roles": ["death"], "frame": "start", "particles": ["necro_smoke", "necro_swirl"]}
+   ],
+   "vanilla": "vanilla's city_smoke_particle tinted purple for the length of the death, with the spell's swirl"
+  },
+  "spell_cast": {
+   "label": "a caster's spell of another world: an arcane glow at the casting hand as the spell is thrown (its colour set by the job)",
+   "needs": ["magic"],
+   "slots": [
+    {"locator": "cast_hand_r", "spot": "hand_tip", "bone": "RightHand", "roles": ["attack", "support_attack"], "frame": "strike", "particles": ["spell_bolt"]}
+   ],
+   "vanilla": "vanilla has no spells. The glow is vanilla's flamethrower_particle recoloured to the spell's colour and scaled down"
+  },
+  "fire_breath": {
+   "label": "a fire-breathing beast: a flame and its smoke from the mouth as it lunges",
+   "needs": ["fire_creature"],
+   "slots": [
+    {"locator": "fire_mouth", "spot": "head_front", "bone": "Head", "roles": ["attack"], "frame": "strike", "particles": ["fire_breath", "fire_breath_smoke"]}
+   ],
+   "vanilla": "flame tanks fire flamethrower_particle at the flamethrower locator (bone barrel_tip) at 0.1 s and flamethrower_smoke_effect at 0.2 s"
+  }
+ }
+}

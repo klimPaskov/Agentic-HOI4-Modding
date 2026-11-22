@@ -390,23 +390,48 @@ def render(clip, frames):
     index["clips"].append({"name": clip, "rows": rows})
 
 
-# ---- the burn's fire and smoke, drawn as a stand-in (lib/tripo_burn.py) ----
-# The game draws a death's particles; Blender cannot. When the unit's burn plan lies beside the mesh, its death clip's tiles get billboards
-# at the plan's locator: orange fire rising fast and fading, grey smoke rising slowly and growing, from each particle's `time` for its
-# `duration_s`, at the game's 30 frames a second. Every tile that shows them is stamped "particles: stand-in", since only the game shows
-# the real ones.
+# ---- particles drawn as a stand-in (lib/tripo_burn.py's burn, lib/unit_effects.py's effects) ----
+# The game draws particles; Blender cannot. When the unit's burn plan (`<stem>_burn.json`) or effects plan (`<stem>_effects.json`) lies
+# beside the mesh, the tiles of each clip that fires one get billboards at its locator: a flash that blooms and dies at once, fire rising
+# fast and fading, grey smoke rising slowly and growing, a spell's glow in its own colour, a blast that swells. Each starts at its event's
+# `time` and emits for its `duration_s`, at the game's 30 frames a second. Every tile that shows one is stamped "particles: stand-in",
+# since only the game shows the real ones.
 STANDIN = {"fire": {"count": 24, "life": 0.8, "rise": 0.45, "size": (0.10, 0.05), "colour": (1.0, 0.45, 0.08), "alpha": 0.9, "strength": 6.0},
-           "smoke": {"count": 20, "life": 2.5, "rise": 0.22, "size": (0.12, 0.42), "colour": (0.22, 0.21, 0.2), "alpha": 0.55, "strength": 0.0}}
+           "smoke": {"count": 20, "life": 2.5, "rise": 0.22, "size": (0.12, 0.42), "colour": (0.22, 0.21, 0.2), "alpha": 0.55, "strength": 0.0},
+           "gunsmoke": {"count": 10, "life": 1.5, "rise": 0.06, "size": (0.05, 0.16), "colour": (0.42, 0.41, 0.4), "alpha": 0.6, "strength": 0.0},
+           "flash": {"count": 4, "life": 0.1, "rise": 0.0, "size": (0.09, 0.05), "colour": (1.0, 0.62, 0.2), "alpha": 1.0, "strength": 3.0},
+           "spell": {"count": 14, "life": 0.45, "rise": 0.08, "size": (0.07, 0.02), "colour": (0.47, 0.59, 1.0), "alpha": 0.95, "strength": 8.0},
+           "blast": {"count": 18, "life": 1.0, "rise": 0.12, "size": (0.22, 0.45), "colour": (1.0, 0.5, 0.12), "alpha": 0.85, "strength": 5.0}}
+# The burn's fire and smoke are sized on the model's largest extent, as they were reviewed. An effect is sized on the model's height: a
+# demon's wingspan made a claw's flame rise far above its head as a string of beads (fresh review of the first effects sheet).
 _mesh_path = Path(request["mesh"])
 _plan_path = _mesh_path.with_name(f"{_mesh_path.stem}_burn.json")
 burn_plan = json.loads(_plan_path.read_text(encoding="utf-8")) if _plan_path.is_file() else None
-standin = []  # (kind, object, phase, offset)
+_effects_path = _mesh_path.with_name(f"{_mesh_path.stem}_effects.json")
+effects_plan = json.loads(_effects_path.read_text(encoding="utf-8")) if _effects_path.is_file() else None
+emitters = []  # {clip, locator, bone, time, duration_s, kind, colour, scale}
+for particle in (burn_plan or {}).get("particles", []):
+    emitters.append({"clip": burn_plan.get("clip"), "locator": burn_plan.get("locator"), "bone": burn_plan.get("locator_bone"),
+                     "time": float(particle["time"]), "duration_s": float(particle["duration_s"]), "kind": particle["standin"], "colour": None, "scale": 1.0})
+_scales = {p["name"]: float(p.get("scale", 1) or 1) for p in (effects_plan or {}).get("particles", [])}
+for event in (effects_plan or {}).get("events", []):
+    if event.get("standin") in STANDIN:
+        kind = "gunsmoke" if event["standin"] == "smoke" and event.get("role") != "death" else event["standin"]  # a shot's puff, not a wreck's plume
+        emitters.append({"clip": event["clip"], "locator": event["node"], "bone": event.get("bone"), "time": float(event["time"]),
+                         "duration_s": float(event["duration_s"]), "kind": kind, "height": True, "still": bool(event.get("loop")),
+                         "colour": [c / 255.0 for c in event["colour"]] if event.get("colour") else None, "scale": _scales.get(event["particle"], 1.0)})
+_unique = {}
+for emitter in emitters:  # one set of billboards for a locator, clip, kind and start
+    _unique.setdefault((emitter["clip"], emitter["locator"], emitter["kind"], emitter["time"]), emitter)
+emitters = list(_unique.values())
+standin = []  # (emitter, object, phase, offset)
 
 
-def _standin_material(kind):
+def _standin_material(kind, colour=None):
     rule = STANDIN[kind]
+    colour = tuple(colour) if colour else rule["colour"]
     material = bpy.data.materials.new(f"standin_{kind}")
-    material.diffuse_color = (*rule["colour"], rule["alpha"])
+    material.diffuse_color = (*colour, rule["alpha"])
     material.use_nodes = True
     tree = material.node_tree
     tree.nodes.clear()
@@ -423,7 +448,7 @@ def _standin_material(kind):
     tree.links.new(gradient.outputs["Fac"], alpha.inputs[0])
     material["standin_alpha"] = alpha.name
     emission = tree.nodes.new("ShaderNodeEmission")
-    emission.inputs["Color"].default_value = (*rule["colour"], 1.0)
+    emission.inputs["Color"].default_value = (*colour, 1.0)
     emission.inputs["Strength"].default_value = max(rule["strength"], 1.0)
     clear = tree.nodes.new("ShaderNodeBsdfTransparent")
     mix = tree.nodes.new("ShaderNodeMixShader")
@@ -439,27 +464,28 @@ def _standin_material(kind):
     return material
 
 
-def _locator_world():
-    empty = next((o for o in scene.objects if o.type == "EMPTY" and o.name.split(".")[0] == (burn_plan or {}).get("locator")), None)
+def _locator_world(emitter):
+    empty = next((o for o in scene.objects if o.type == "EMPTY" and o.name.split(".")[0] == emitter.get("locator")), None)
     if empty is not None:
         return empty.matrix_world.translation.copy()
-    bone = (burn_plan or {}).get("locator_bone")
+    bone = emitter.get("bone")
     if rig is not None and bone in rig.pose.bones:
         return rig.matrix_world @ rig.pose.bones[bone].head
     return (rest_low + rest_high) / 2
 
 
-if burn_plan:
+if emitters:
     import random
 
     chance = random.Random(11)
-    for kind, rule in STANDIN.items():
-        material = _standin_material(kind)
+    for number, emitter in enumerate(emitters):
+        rule = STANDIN[emitter["kind"]]
+        material = _standin_material(emitter["kind"], emitter.get("colour"))
         for k in range(rule["count"]):
-            plane = bpy.data.meshes.new(f"standin_{kind}_{k}")
+            plane = bpy.data.meshes.new(f"standin_{emitter['kind']}_{number}_{k}")
             plane.from_pydata([(-0.5, -0.5, 0.0), (0.5, -0.5, 0.0), (0.5, 0.5, 0.0), (-0.5, 0.5, 0.0)], [], [(0, 1, 2, 3)])
             plane.materials.append(material)
-            obj = bpy.data.objects.new(f"standin_{kind}_{k}", plane)
+            obj = bpy.data.objects.new(f"standin_{emitter['kind']}_{number}_{k}", plane)
             scene.collection.objects.link(obj)
             track = obj.constraints.new("TRACK_TO")
             track.target = camera
@@ -467,29 +493,33 @@ if burn_plan:
             track.up_axis = "UP_Y"
             obj.hide_render = True
             offset = Vector((chance.uniform(-1, 1), chance.uniform(-1, 1), chance.uniform(-0.3, 0.3)))
-            standin.append((kind, obj, k / rule["count"], offset))
+            standin.append((emitter, obj, k / rule["count"], offset))
 
 
 def update_standin(clip, frame):
     """Place the stand-in particles for this frame of `clip`; True when any is shown (the tile is then stamped)."""
 
     shown = False
-    active = bool(burn_plan) and clip == burn_plan.get("clip")
     seconds = (frame - 1) / 30.0
-    centre = _locator_world() if active else None
-    for kind, obj, phase, offset in standin:
-        rule = STANDIN[kind]
-        particle = next((p for p in burn_plan.get("particles", []) if p.get("standin") == kind), None) if active else None
-        if particle is None or not (particle["time"] <= seconds <= particle["time"] + particle["duration_s"] + rule["life"]):
+    centres = {}
+    for emitter, obj, phase, offset in standin:
+        rule = STANDIN[emitter["kind"]]
+        start, duration = emitter["time"], emitter["duration_s"]
+        if clip != emitter["clip"] or not (start <= seconds <= start + duration + rule["life"]):
             obj.hide_render = True
             continue
-        age = ((seconds - particle["time"]) / rule["life"] + phase) % 1.0
+        age = ((seconds - start) / rule["life"] + phase) % 1.0
         born = seconds - age * rule["life"]
-        if born < particle["time"] or born > particle["time"] + particle["duration_s"]:
+        if born < start or born > start + duration:
             obj.hide_render = True
             continue
-        size = span * (rule["size"][0] + (rule["size"][1] - rule["size"][0]) * age)
-        obj.location = centre + offset * span * 0.06 + Vector((0.0, 0.0, rule["rise"] * span * age * rule["life"]))
+        key = emitter["locator"]
+        if key not in centres:
+            centres[key] = _locator_world(emitter)
+        grow = emitter.get("scale", 1.0)
+        measure = (rest_high.z - rest_low.z) if emitter.get("height") else span
+        size = measure * grow * (rule["size"][0] + (rule["size"][1] - rule["size"][0]) * age)
+        obj.location = centres[key] + offset * measure * 0.06 * grow + Vector((0.0, 0.0, 0.0 if emitter.get("still") else rule["rise"] * measure * grow * age * rule["life"]))
         obj.scale = (size, size, size)
         obj.hide_render = False
         shown = True
