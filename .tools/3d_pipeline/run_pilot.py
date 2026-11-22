@@ -3889,7 +3889,7 @@ def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
         return {}
 
 
-def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, Any]:
+def burn_staged_death(staged: Path, stem: str, roles: List[str], keep: Sequence[str] = ()) -> Dict[str, Any]:
     """The burn death (lib/tripo_burn.py) on the staged files: the heap, its bone and the fire's locator added to the mesh, the heap's bone
     keyed at rest in every other clip, the death held at its peak and burnt to ash, and the plan written beside the files."""
 
@@ -3900,7 +3900,7 @@ def burn_staged_death(staged: Path, stem: str, roles: List[str]) -> Dict[str, An
     for role in roles:
         if role != "death":
             tripo_burn.add_rest_joint(mesh, staged / f"{stem}_{role}.anim")
-    death = tripo_burn.burn_death(mesh, staged / f"{stem}_death.anim")
+    death = tripo_burn.burn_death(mesh, staged / f"{stem}_death.anim", keep)
     return tripo_burn.write_plan(staged, stem, heap, death)
 
 
@@ -4453,9 +4453,16 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
                                                                                 humanoid=not tripo_quadruped(spec))
             records[f"{stem}_{role}.anim"]["staged"] = file_record(staged / f"{stem}_{role}.anim", relative_to=job)
         if burning:
-            records[f"{stem}.mesh"]["burn"] = burn_staged_death(staged, stem, sorted(exports["animations"]))
+            # `tripo.burn_keep` names bones whose skin outlasts the burn: the ZIN devil leaves his skull on the ground (card 46).
+            records[f"{stem}.mesh"]["burn"] = burn_staged_death(staged, stem, sorted(exports["animations"]), (spec.get("tripo") or {}).get("burn_keep") or ())
             for name in [f"{stem}.mesh"] + [f"{stem}_{role}.anim" for role in sorted(exports["animations"])]:
                 records[name]["staged"] = file_record(staged / name, relative_to=job)
+        # Named locators for particle effects (`tripo.locators`, lib/tripo_locators.py), placed on the final skin.
+        if (spec.get("tripo") or {}).get("locators"):
+            from lib import tripo_locators
+
+            records[f"{stem}.mesh"]["locators"] = tripo_locators.add_locators(staged / f"{stem}.mesh", spec["tripo"]["locators"])
+            records[f"{stem}.mesh"]["staged"] = file_record(staged / f"{stem}.mesh", relative_to=job)
         # Last of all, after the grounding and the death settles, no held weapon or shield is left in the body in any frame: the retarget and the
         # export put back what the grip stage cleared. `"clear_props": false` in the job's tripo block switches it off.
         clear_staged_props(job, staged, spec, sorted(exports["animations"]), weapon_cfg, records)

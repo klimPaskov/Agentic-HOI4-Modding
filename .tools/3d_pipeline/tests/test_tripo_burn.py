@@ -92,6 +92,38 @@ class Burn(WingedBiped):
         self.assertAlmostEqual(numbers["end_scale"], B.END_SCALE, places=3)
         self.assertIn(B.HEAP_BONE, pdx_deform.load_anim(idle).channels, "every clip keys the heap's bone")
 
+    def test_a_kept_skull_stays_full_size_on_the_ground_and_the_rest_burns(self) -> None:
+        death, idle = self.bowed()
+        heap = B.add_heap(self.mesh_path, None)
+        B.add_rest_joint(self.mesh_path, idle)
+        plan = B.write_plan(self.folder, "unit", heap, B.burn_death(self.mesh_path, death, keep=["Head"]))
+        self.assertEqual(plan["kept"], ["Head"])
+        mesh = pdx_deform.load_mesh(self.mesh_path)
+        found, numbers = B.burn_findings(mesh, pdx_deform.load_anim(death), plan, "unit_death", B.mesh_locators(self.mesh_path))
+        self.assertEqual(found, [], numbers)
+        self.assertAlmostEqual(numbers["kept_scale"], 1.0, places=2)
+        self.assertLessEqual(abs(numbers["kept_lowest"]), B.GROUND_TOLERANCE)
+        self.assertAlmostEqual(numbers["end_scale"], B.END_SCALE, places=3)
+
+    def test_a_kept_part_that_shrinks_fails(self) -> None:
+        plan, death, _idle = self.burnt()
+        plan["kept"] = ["Head"]
+        found, _numbers = B.burn_findings(pdx_deform.load_mesh(self.mesh_path), pdx_deform.load_anim(death), plan, "unit_death",
+                                          B.mesh_locators(self.mesh_path))
+        self.assertIn("BURN-KEPT", [item["rule"] for item in found])
+
+    def test_fire_locators_sit_on_their_bones(self) -> None:
+        from lib import tripo_locators as L
+
+        names = pdx_deform.load_mesh(self.mesh_path).bones
+        entries = [entry for entry in L.FIRE if entry["bone"] in names]
+        self.assertTrue(entries)
+        placed = L.add_locators(self.mesh_path, entries)
+        self.assertEqual([item["name"] for item in placed], [entry["name"] for entry in entries])
+        self.assertTrue(set(item["name"] for item in placed) <= set(B.mesh_locators(self.mesh_path)))
+        L.add_locators(self.mesh_path, entries)  # a rerun replaces, never doubles
+        self.assertEqual(len(B.mesh_locators(self.mesh_path)), len(set(B.mesh_locators(self.mesh_path))))
+
     def test_the_heap_is_its_own_stream_with_its_own_ash_maps(self) -> None:
         self.burnt()
         shape = B._shape(read(self.mesh_path))

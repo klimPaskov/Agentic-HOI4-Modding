@@ -345,8 +345,39 @@ def _sink(mesh: pdx_deform.SkinnedMesh, channels, frames: int, ground: float, st
     return lift
 
 
-def burn_death(mesh_path: Path, anim_path: Path) -> dict:
-    """Make the exported death clip a burn (see the module text), in place. Returns the plan's numbers."""
+def keep_parts(mesh: pdx_deform.SkinnedMesh, channels, frames: int, start: int, ground: float, scale: np.ndarray, limb: np.ndarray,
+               keep: Sequence[str]) -> List[str]:
+    """Bones whose skin outlasts the burn (the job's `tripo.burn_keep`, the ZIN devil's skull, which his revival needs): each keeps its full
+    world size while the body shrinks under it (its scale divided by what the burn put on the bones above it), and comes down with the
+    body's burn until its lowest point rests on the ground. Returns the bones kept."""
+
+    kept = [name for name in keep if name in mesh.bones and name in channels]
+    roots = set(limb_roots(mesh))
+    dominant = pdx_deform.dominant_bones(mesh)
+    lower = smoothstep(((np.arange(frames) - start) / float(BURN_FRAMES) - BODY_DELAY) / (1.0 - BODY_DELAY))
+    for name in kept:
+        index = mesh.bones.index(name)
+        above, parent = [], mesh.parents[index]
+        while parent >= 0:
+            above.append(mesh.bones[parent])
+            parent = mesh.parents[parent]
+        factor = scale * (limb if roots & set(above) else 1.0)
+        channels[name]["s"] = channels[name]["s"] / np.maximum(factor, 1e-6)
+        anim = pdx_deform.Animation(30.0, frames, channels)
+        skinning = pdx_deform.skinning_matrices(mesh, anim)
+        world = skinning @ np.linalg.inv(mesh.inverse_bind)[None]
+        own = dominant == index
+        parent = mesh.parents[index]
+        for frame in range(start, frames):
+            low = float(pdx_deform.skin(mesh, skinning[frame])[own, 1].min())
+            drop = np.array([0.0, float(lower[frame]) * (ground - low), 0.0])
+            channels[name]["t"][frame] = channels[name]["t"][frame] + np.linalg.solve(world[frame, parent, :3, :3], drop)
+    return kept
+
+
+def burn_death(mesh_path: Path, anim_path: Path, keep: Sequence[str] = ()) -> dict:
+    """Make the exported death clip a burn (see the module text), in place. Bones in `keep` outlast it (`keep_parts`). Returns the plan's
+    numbers."""
 
     mesh = pdx_deform.load_mesh(mesh_path)
     anim = pdx_deform.load_anim(anim_path)
@@ -378,6 +409,7 @@ def burn_death(mesh_path: Path, anim_path: Path) -> dict:
     for name in limb_roots(mesh):
         channels[name]["s"] = channels[name]["s"] * limb
     channels[hips]["t"][:, 1] -= _sink(mesh, channels, frames, ground, start)
+    kept = keep_parts(mesh, channels, frames, start, ground, scale, limb, keep)
     rest_t, rest_q, rest_s = _decompose(_rest_local(mesh, HEAP_BONE))
     heap = {"t": np.tile(rest_t, (frames, 1)), "q": np.tile(rest_q, (frames, 1)), "s": np.full(frames, rest_s)}
     # From the burn's start the hidden heap moves from where the hips carry it to the ground point and turns upright (a smoothstep up to the
@@ -398,7 +430,7 @@ def burn_death(mesh_path: Path, anim_path: Path) -> dict:
     channels[HEAP_BONE] = heap
     write_anim(anim_path, channels, frames, {HEAP_BONE: {"t": rest_t, "q": rest_q, "s": [rest_s]}})
     return {"kind": KIND, "burn_start": start, "burn_frames": BURN_FRAMES, "heap_start": int(start + round(HEAP_FROM * BURN_FRAMES)),
-            "frames": frames, "fps": anim.fps, "end_scale": END_SCALE, "ground_point": [round(float(v), 4) for v in point]}
+            "frames": frames, "fps": anim.fps, "end_scale": END_SCALE, "ground_point": [round(float(v), 4) for v in point], "kept": kept}
 
 
 def write_plan(folder: Path, stem: str, heap: dict, death: dict) -> dict:
@@ -451,8 +483,10 @@ def _map_extent(points: np.ndarray) -> float:
     return float(np.ptp(points @ first) * np.ptp(points @ second))
 
 
-def _stands(mesh, joints, hips: int, clip: str, out: List[dict], numbers: dict) -> None:
+def _stands(mesh, joints, hips: int, clip: str, out: List[dict], numbers: dict, kept: Sequence[int] = ()) -> None:
     head = next((i for i, n in enumerate(mesh.bones) if n.lower() == "head"), None)
+    while head is not None and head in kept:  # a kept skull comes down to the ground on its own: judge the torso by the bone below it
+        head = mesh.parents[head] if mesh.parents[head] >= 0 else None
     lean = 0.0
     if head is not None:
         axis = joints[:, head] - joints[:, hips]
@@ -507,6 +541,30 @@ def _end_state(mesh, skinning, scales, plan, masks, end: int, start: int, hips: 
         out.append(_finding("BURN-END", clip, "the burn's end state is wrong: " + ", ".join(problems)))
 
 
+def _kept_state(mesh, skinning, scales, plan, kept, kept_bones, end: int, clip: str, out: List[dict], numbers: dict) -> None:
+    """BURN-KEPT: a part the burn keeps (the devil's skull) ends at its full size, resting on the ground, within the ash heap's reach of
+    where the body burnt."""
+
+    height = max(mesh.height, 1e-6)
+    ground = float(mesh.positions[:, 1].min())
+    last = pdx_deform.skin(mesh, skinning[end - 1])[kept]
+    size = float(scales[end - 1, kept_bones].min())
+    low = float(last[:, 1].min() - ground) / height
+    point = np.asarray(plan["ground_point"], float)
+    reach = float(np.linalg.norm((last.mean(axis=0) - point)[[0, 2]]))
+    radius = float((plan.get("heap") or {}).get("radius", reach))
+    numbers.update(kept_scale=round(size, 3), kept_lowest=round(low, 4), kept_reach=round(reach, 4))
+    problems = []
+    if abs(size - 1.0) > 0.02:
+        problems.append(f"it is {size:.2f} of its size")
+    if abs(low) > GROUND_TOLERANCE:
+        problems.append(f"its lowest point is {low:.1%} of the height off the ground")
+    if reach > radius:
+        problems.append("it lies outside the ash heap")
+    if problems:
+        out.append(_finding("BURN-KEPT", clip, "the part the burn keeps is wrong at the end: " + ", ".join(problems)))
+
+
 def burn_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, plan: dict, clip: str, locators: Sequence[str] = ()) -> tuple:
     """The burn death's rules on the exported clip (see the module text). Returns (findings, numbers)."""
 
@@ -516,7 +574,9 @@ def burn_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, plan
     dominant = pdx_deform.dominant_bones(mesh)
     heap = dominant == (mesh.bones.index(HEAP_BONE) if HEAP_BONE in mesh.bones else -2)
     wing_bones = [i for i, name in enumerate(mesh.bones) if name.startswith("Wing")]
-    body = ~heap
+    kept_bones = [mesh.bones.index(name) for name in plan.get("kept") or [] if name in mesh.bones]
+    kept = np.isin(dominant, kept_bones)
+    body = ~heap & ~kept
     legs = pdx_motion.find_legs(mesh)
     joints = pdx_motion.posed_joints(mesh, anim)
     skinning = pdx_deform.skinning_matrices(mesh, anim)
@@ -526,7 +586,7 @@ def burn_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, plan
     rest_hips = float(pdx_motion.rest_joints(mesh)[hips, 1] - ground)
     out: List[dict] = []
     numbers: Dict[str, float] = {}
-    _stands(mesh, joints, hips, clip, out, numbers)
+    _stands(mesh, joints, hips, clip, out, numbers, kept_bones)
     travel = float(np.ptp(joints[:, hips][:, [0, 2]], axis=0).max()) / max(rest_hips, 1e-6)
     numbers["hip_travel"] = round(travel, 3)
     if travel > TRAVEL_LIMIT:
@@ -547,6 +607,8 @@ def burn_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, plan
     if low < -GROUND_TOLERANCE or high > GROUND_TOLERANCE:
         out.append(_finding("BURN-GROUNDED", clip, f"the lowest point goes from {low:.1%} to {high:.1%} of the height off the ground (limit {GROUND_TOLERANCE:.0%} either way): it floats or sinks"))
     _end_state(mesh, skinning, scales, plan, (heap, body, np.isin(dominant, wing_bones)), end, start, hips, clip, out, numbers)
+    if kept_bones:
+        _kept_state(mesh, skinning, scales, plan, kept, kept_bones, end, clip, out, numbers)
     locator_ok = plan.get("locator") in set(locators)
     timed = particles_cover(plan)
     if not locator_ok or not timed:
