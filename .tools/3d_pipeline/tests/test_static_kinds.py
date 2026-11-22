@@ -759,5 +759,22 @@ class TrackLoopTests(unittest.TestCase):
         v = np.concatenate([face[:, 1] for face in uvs])
         self.assertAlmostEqual(float(np.ptp(v)), round(total * 0.9), delta=1.0)  # a whole number of tiles round the loop
 
+
+class MountSurfaceTests(unittest.TestCase):
+    def test_a_part_on_a_large_flat_triangle_rests_on_it_away_from_its_vertices(self):
+        # a reduced hull top: one 4 x 4 square of two triangles, and a turret ring point over its middle
+        positions = np.array([[0, 0, 0], [4, 0, 0], [4, 4, 0], [0, 4, 0], [9, 9, 9]], dtype=float)
+        triangles = np.array([[0, 1, 2], [0, 2, 3], [4, 4, 4]])
+        mount = np.array([True, True, True, True, False])
+        ring = np.array([[2.0, 2.0, 0.0]])
+        self.assertGreater(sk._nearest_gap(ring, positions[mount]), 2.8)
+        seat = sk.mount_surface(positions, triangles, mount)
+        self.assertLess(sk._nearest_gap(ring, seat), 0.15)
+        self.assertTrue((seat[:, 2] == 0).all() and seat[:, :2].min() >= 0 and seat[:, :2].max() <= 4)
+        lifted = ring + [0, 0, 0.5]
+        self.assertGreater(sk._nearest_gap(lifted, seat), 0.49)  # a real lift still shows
+        np.testing.assert_array_equal(seat, sk.mount_surface(positions, triangles, mount))  # repeats
+
+
 if __name__ == "__main__":
     unittest.main()

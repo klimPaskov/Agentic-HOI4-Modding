@@ -1776,7 +1776,8 @@ def _part_gaps(mesh, visible, anims: Sequence[Path], contract: dict, measure: fl
             b = visible & (dominant == index[base])
             if a.sum() < 3 or b.sum() < 3:
                 continue
-            rest_gap = _nearest_gap(mesh.positions[a], mesh.positions[b])
+            seat = mount_surface(mesh.positions, mesh.triangles, b)
+            rest_gap = _nearest_gap(mesh.positions[a], seat)
             low, high = mesh.positions[b].min(axis=0), mesh.positions[b].max(axis=0)
             for f in range(0, matrices.shape[0], max(1, matrices.shape[0] // 24)):
                 pa = _apply(matrices[f, index[part]], mesh.positions[a])
@@ -1785,7 +1786,7 @@ def _part_gaps(mesh, visible, anims: Sequence[Path], contract: dict, measure: fl
                 local = _apply(np.linalg.inv(matrices[f, index[base]]), pa)
                 if ((local >= low) & (local <= high)).all(axis=1).any():
                     continue
-                pb = _apply(matrices[f, index[base]], mesh.positions[b])
+                pb = _apply(matrices[f, index[base]], seat)
                 gap = _nearest_gap(pa, pb) - rest_gap
                 if gap > worst[0]:
                     worst = (gap, part, f)
@@ -1985,6 +1986,34 @@ def _death_rigid(mesh, visible, anims: Sequence[Path], contract: dict, measure: 
 
 def _apply(matrix: np.ndarray, points: np.ndarray) -> np.ndarray:
     return points @ matrix[:3, :3].T + matrix[:3, 3]
+
+
+SEAT_SAMPLES = 2000
+"""Points spread over a mount's surface for STATIC-PART-GAP: a reduced hull's top can be a few large triangles, and a
+turned turret's ring then sits far from every hull vertex while it still rests on the hull."""
+
+
+def mount_surface(positions: np.ndarray, triangles: np.ndarray, mask: np.ndarray, count: int = SEAT_SAMPLES) -> np.ndarray:
+    """The mount's surface as `count` points spread by area over its triangles (fixed seed, so a check repeats), for the
+    distance from a mounted part to the surface it sits on rather than to the nearest vertex. A mount without
+    triangles is its vertices."""
+
+    points = positions[mask]
+    tris = np.asarray(triangles, dtype=np.int64).reshape(-1, 3)
+    tris = tris[mask[tris].all(axis=1)]
+    if not len(tris):
+        return points
+    corners = positions[tris]
+    area = 0.5 * np.linalg.norm(np.cross(corners[:, 1] - corners[:, 0], corners[:, 2] - corners[:, 0]), axis=1)
+    if area.sum() <= 0:
+        return points
+    rng = np.random.default_rng(0)
+    pick = rng.choice(len(corners), count, p=area / area.sum())
+    root, r2 = np.sqrt(rng.random(count)), rng.random(count)
+    spread = (corners[pick, 0] * (1 - root)[:, None] + corners[pick, 1] * (root * (1 - r2))[:, None]
+              + corners[pick, 2] * (root * r2)[:, None])
+    # `_nearest_gap` keeps at most 2000 points of the mount, so the spread replaces the vertices rather than joining them
+    return spread
 
 
 def _nearest_gap(a: np.ndarray, b: np.ndarray) -> float:

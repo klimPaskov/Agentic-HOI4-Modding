@@ -328,9 +328,10 @@ def glb_parts(path: Path) -> List[Tuple[str, np.ndarray, np.ndarray]]:
 
 
 def write_parts_glb(parts: Sequence[Tuple[str, np.ndarray, np.ndarray]], path: Path, uvs: Optional[Sequence[np.ndarray]] = None,
-                    image: Optional[bytes] = None) -> Path:
+                    image=None) -> Path:
     """A GLB with one mesh node per part (positions in Blender space), for tests and offline trials of the parts route.
-    With `uvs` and a PNG `image`, the parts share one textured material, as a part export's atlas does."""
+    With `uvs` and a PNG `image`, the parts share one textured material, as a part export's atlas does. With a list of
+    PNGs, one a part, each part has its own material and map, as a part export may have."""
 
     chunks = bytearray()
     views, accessors, meshes, nodes = [], [], [], []
@@ -360,12 +361,17 @@ def write_parts_glb(parts: Sequence[Tuple[str, np.ndarray, np.ndarray]], path: P
         accessors.append({"bufferView": index, "componentType": 5125, "count": int(np.asarray(triangles).size), "type": "SCALAR"})
         primitive = {"attributes": attributes, "indices": len(accessors) - 1}
         if material:
-            primitive["material"] = 0
+            primitive["material"] = k if isinstance(image, list) else 0
         meshes.append({"name": name, "primitives": [primitive]})
         nodes.append({"name": name, "mesh": k})
     document = {"asset": {"version": "2.0", "generator": "hoi4 kit static_parts"}, "scene": 0, "scenes": [{"nodes": list(range(len(nodes)))}],
                 "nodes": nodes, "meshes": meshes, "accessors": accessors, "bufferViews": views}
-    if material:
+    if material and isinstance(image, list):
+        pictures = [add(png) for png in image]
+        document.update(images=[{"bufferView": v, "mimeType": "image/png"} for v in pictures], textures=[{"source": i} for i in range(len(pictures))],
+                        materials=[{"name": parts[i][0], "pbrMetallicRoughness": {"baseColorTexture": {"index": i}, "metallicFactor": 0.0}}
+                                   for i in range(len(pictures))])
+    elif material:
         picture = add(image)
         document.update(images=[{"bufferView": picture, "mimeType": "image/png"}], textures=[{"source": 0}],
                         materials=[{"name": "atlas", "pbrMetallicRoughness": {"baseColorTexture": {"index": 0}, "metallicFactor": 0.0}}])

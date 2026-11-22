@@ -43,7 +43,7 @@ from PIL import Image
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import heavy_job, model_dds, pdx_deform, static_delight, static_parts
+from lib import glb_atlas, heavy_job, model_dds, pdx_deform, static_delight, static_parts
 from lib import static_kinds as sk
 from lib.texture_lineage import embedded_images
 from pack_pdx_material import remap_gloss_table
@@ -361,6 +361,25 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
     return "\n".join(parts) + "\n"
 
 
+def job_contract(job: dict) -> tuple:
+    """The kind's contract for this job and the job's raise for a tank's running gear (`running_gear_triangles`)."""
+
+    running_gear = int(job.get("running_gear_triangles") or 0)
+    return sk.with_running_gear(sk.kind_contract(job["model_kind"]), running_gear), running_gear
+
+
+def atlas_source(glb: Path, out: Path) -> tuple:
+    """The GLB the stage reads, and the atlas receipt: a GLB whose parts carry their own maps is rewritten with one
+    atlas (`lib/glb_atlas.py`) under <out>/atlas, or the source and None when it has one map. STATIC-ATLAS stops the
+    stage when the maps cannot share an atlas without changing the look."""
+
+    try:
+        receipt = glb_atlas.merged_glb(glb, out / "atlas" / glb.name)
+    except glb_atlas.AtlasError as problem:
+        raise SystemExit(f"STATIC-ATLAS: {problem}") from problem
+    return (out / "atlas" / glb.name, receipt) if receipt else (glb, None)
+
+
 def parts_plan(glb: Path, contract: dict, job: dict) -> Optional[dict]:
     """What the stage would do with a GLB made in parts: each part's triangles, need and first share of the reduction
     target (the stage keeps back a little more for the cards it thickens), or None for a model in one piece."""
@@ -410,8 +429,7 @@ def main(argv=None) -> int:
     job = json.loads(args.job.read_text(encoding="utf-8"))
     name, kind = job["name"], job["model_kind"]
     glb = (args.job.parent / job.get("glb", f"{name}.glb")).resolve()
-    running_gear = int(job.get("running_gear_triangles") or 0)
-    contract = sk.with_running_gear(sk.kind_contract(kind), running_gear)
+    contract, running_gear = job_contract(job)
     front = args.front or job.get("front")
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -425,6 +443,7 @@ def main(argv=None) -> int:
         shutil.rmtree(files)
     files.mkdir(parents=True)
     delight: dict = {}
+    glb, atlas = atlas_source(glb, out)
     textures = pack_textures(glb, contract, name, files, out / "textures", delight, front, game)
     motion, barrel_length = clip_motion(game, contract) if contract.get("clips") else ({}, None)
     hole = hole_texel(glb, out / "textures" / f"{name}_diffuse.png") if kind == "vehicle" else None
@@ -447,7 +466,7 @@ def main(argv=None) -> int:
     (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
     report["textures"] = textures
     report["delight"] = delight
-    report["hole"] = hole
+    report.update(hole=hole, atlas=atlas)
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files
