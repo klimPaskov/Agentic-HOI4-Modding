@@ -189,6 +189,28 @@ class Rerig(unittest.TestCase):
         wings = np.char.startswith(np.asarray(old.bones)[old.joints[:, 0]].astype(str), "Wing") & (old.weights[:, 0] > 0.5)
         np.testing.assert_allclose(mesh.weights[wings], old.weights[wings], atol=1e-6, err_msg="wing skin keeps its weights")
 
+    def test_the_head_front_check_still_fails_wings_behind_the_head(self) -> None:
+        """TRIPO-WING-HEAD-FRONT judges the head alone since round 11: wings raised behind the head itself must still fail it."""
+
+        import tripo_checks as tc
+
+        mesh = pdx_deform.load_mesh(self.out / "beast.mesh")
+        left, right = tc.wing_sides(mesh)
+        head, head_neck, _trunk = tc._parts(mesh, left | right)
+        region = tc.head_front_region(head, head_neck)
+        self.assertTrue(region.any())
+        rest = np.stack([np.eye(4)] * len(mesh.bones))
+        self.assertLess(tc.head_front_share(mesh, rest[None], left | right, region), tc.MAX_HEAD_FRONT_SHARE, "wings beside the body")
+        # move each wing plate in toward the middle and up, behind the head as seen from the front (the screen of run 9)
+        screen = rest.copy()
+        for index, name in enumerate(mesh.bones):
+            if name.startswith(("WingLeft_", "WingRight_")):
+                shift = np.eye(4)
+                shift[:3, 3] = (-0.6 if name.startswith("WingLeft_") else 0.6, 0.0, 0.3)
+                screen[index] = TO_FILE @ shift @ np.linalg.inv(TO_FILE)
+        share = tc.head_front_share(mesh, screen[None], left | right, region)
+        self.assertGreater(share, tc.MAX_HEAD_FRONT_SHARE, f"wings standing behind the head frame it ({share:.2f})")
+
     def test_a_rerigged_folder_plays_its_clips(self) -> None:
         clips = [{"name": "idle", "style": "winged_idle", "times": [0.0]}, {"name": "attack", "style": "winged_rear", "times": [0.435]}]
         report = pp.write_folder(self.out, pp.read_landmarks(self.out / "landmarks.json"), self.out, clips)

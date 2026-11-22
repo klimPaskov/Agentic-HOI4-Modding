@@ -72,8 +72,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-WING-FLANK-HANG: in a winged quadruped's move or retreat (between the ease from and back to the folded wings), more than
   `MAX_WING_FLANK_HANG` of a wing hangs over the flank below the lowest point where it joins the body (`wing_flank_shares`).
 - TRIPO-WING-SLIVER: from the game camera a winged quadruped's beating wing keeps less than `MIN_WING_SLIVER` of its flat shape.
-- TRIPO-WING-HEAD-FRONT: in a clip's first frame a winged quadruped's wings stand behind more than `MAX_HEAD_FRONT_SHARE` of the head and
-  neck seen from the front.
+- TRIPO-WING-HEAD-FRONT: in a clip's first frame a winged quadruped's wings stand behind more than `MAX_HEAD_FRONT_SHARE` of the head
+  seen from the front.
 - TRIPO-ATTACK-REACH: a winged quadruped's attack drives the head forward less than `ATTACK_REACH_MIN` of the body's length.
 - TRIPO-WING-CRUSH: a winged quadruped's membrane has more than `MAX_WING_CRUSH` of its edges squashed or stretched in some frame.
 - TRIPO-WING-THROUGH-BODY: more than `MAX_WING_BELOW_SHARE` of a winged quadruped's wing points hang below the belly in some frame.
@@ -183,6 +183,10 @@ MIN_WING_SLIVER = 0.6
 # TRIPO-WING-HEAD-FRONT: in the first frame of each clip (the folded pose every clip starts and ends in) the wings' front view silhouette
 # covers at most MAX_HEAD_FRONT_SHARE of the head and neck's, depth aside: wings standing behind the head framed it as a box in run 9
 # (both fresh reviews), at 95% of the head and neck offline, which TRIPO-WING-FRONT (wings nearer the camera than the body) measured as 0.
+# Round 11 judges the head alone (the Head and Jaw skin). With the neck bones on the measured neck column (quadruped_layout.detect_neck)
+# the neck is the short column at the shoulders, and from the front the folded wings stand behind it in any pose: the dragon's idle fold,
+# unchanged since run 18, read 0.246 by the head and neck in run 19 against 0.059 in run 18, and by the head alone 0.068 against 0.056.
+# On run 18 and run 17, rigged with the withers' neck, the head alone reads within 0.02 of the head and neck in every clip.
 MAX_HEAD_FRONT_SHARE = 0.25
 # TRIPO-ATTACK-REACH: a winged quadruped's attack drives the head forward at least ATTACK_REACH_MIN of the body's length (pelvis to head
 # along the facing): run 9 reached 9% offline and both fresh reviews saw no strike. TRIPO-ATTACK-DEFEND-ALIKE: at the attack's farthest
@@ -753,8 +757,15 @@ def _parts(mesh, wings: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]
     return head, head_neck, np.isin(named, ["Pelvis", "Spine", "Chest"]) | head_neck
 
 
+def head_front_region(head: np.ndarray, head_neck: np.ndarray) -> np.ndarray:
+    """The skin TRIPO-WING-HEAD-FRONT judges: the head alone (MAX_HEAD_FRONT_SHARE says why), or the head and neck when no skin is the
+    head's."""
+
+    return head if head.any() else head_neck
+
+
 def head_front_share(mesh, matrices, wings: np.ndarray, head_neck: np.ndarray) -> float:
-    """TRIPO-WING-HEAD-FRONT's share in the first frame: head and neck front view cells the wings' silhouette also fills."""
+    """TRIPO-WING-HEAD-FRONT's share in the first frame: the front view cells of `head` (the head's skin) the wings' silhouette also fills."""
 
     posed = pdx_deform.skin(mesh, matrices[0])
     axes, cell = _view_axes(mesh, "front"), SILHOUETTE_CELL_SHARE * mesh.height
@@ -909,10 +920,10 @@ def _winged_clip_findings(mesh, clip: str, anim, c: dict) -> Tuple[List[dict], d
         if steps < MIN_STEP_READ:
             out.append(finding("TRIPO-STEP-READ", clip, f"from the game camera the hooves travel {steps:.0%} of the body's length (at least {MIN_STEP_READ:.0%}): only the wings read as moving", share=round(steps, 3)))
     if role != "death" and c["head_neck"].any():
-        share = head_front_share(mesh, matrices, c["wings"], c["head_neck"])
+        share = head_front_share(mesh, matrices, c["wings"], head_front_region(c["head"], c["head_neck"]))
         row["head_front_share"] = round(share, 3)
         if share > MAX_HEAD_FRONT_SHARE:
-            out.append(finding("TRIPO-WING-HEAD-FRONT", clip, f"in the first frame the wings stand behind {share:.0%} of the head and neck seen from the front (limit {MAX_HEAD_FRONT_SHARE:.0%}): they frame the head as a screen", share=round(share, 3)))
+            out.append(finding("TRIPO-WING-HEAD-FRONT", clip, f"in the first frame the wings stand behind {share:.0%} of the head seen from the front (limit {MAX_HEAD_FRONT_SHARE:.0%}): they frame the head as a screen", share=round(share, 3)))
     if role in QUADRUPED_BEATING:
         sliver = wing_sliver(mesh, matrices, c["sides"], c["flat"])
         row["sliver"] = round(sliver, 3)

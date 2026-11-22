@@ -810,6 +810,15 @@ def _necked_dragon():
 class Neck(unittest.TestCase):
     """Round 11 (D-107): a winged body's neck bones run up its measured neck column, so the neck bends from the shoulders."""
 
+    def test_the_head_front_check_judges_the_head_alone(self) -> None:
+        from tripo import tripo_checks as TC
+
+        head = np.array([True, True, False, False])
+        head_neck = np.array([True, True, True, False])
+        self.assertTrue((TC.head_front_region(head, head_neck) == head).all(), "the neck column behind the folded wings is not the head")
+        nothing = np.zeros(4, bool)
+        self.assertTrue((TC.head_front_region(nothing, head_neck) == head_neck).all(), "a rig with no head skin keeps the head and neck")
+
     def test_the_neck_column_is_measured_from_the_shoulders_to_the_head(self) -> None:
         points, wing, landmarks = _necked_dragon()
         neck = ql.detect_neck(points[~wing], landmarks)
