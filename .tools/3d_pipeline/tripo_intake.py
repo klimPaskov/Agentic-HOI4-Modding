@@ -83,6 +83,19 @@ from lib.tripo_shield import SHIELD_BONE, SHIELD_PART
 DEFAULT_EASE_SNAPS = 14.0
 PREPARE_SCRIPT = PIPELINE_ROOT / "tripo" / "prepare_tripo_unit.py"
 RECEIPT = "provider/tripo_intake.json"
+
+
+def receipt_name(stage: str) -> str:
+    """Each generation stage keeps its own receipt, so a re-export under a new `generation_stage` is not refused by the first one's."""
+
+    return RECEIPT if stage == "generation" else RECEIPT.replace(".json", f"_{stage}.json")
+
+
+def next_stage(stage: str) -> str:
+    """`generation` -> `generation_2` -> `generation_3`."""
+
+    head, _, tail = stage.rpartition("_")
+    return f"{head}_{int(tail) + 1}" if head and tail.isdigit() else f"{stage}_2"
 SUCCEEDED = "SUCCEEDED"
 
 
@@ -379,17 +392,17 @@ def run_intake(
         for kind, path in sorted(files.items())
     ]
     task_id = task_id or default_task_id(files)
-    receipt_path = job / RECEIPT
+    generation_stage = run_pilot.generation_stage_for(spec)
+    receipt_path = job / receipt_name(generation_stage)
     if receipt_path.is_file():
         previous = read_json(receipt_path)
         if previous["sources"] == sources:
             return {**previous, "state": "already_ingested"}
         raise RuntimeError(
-            f"{slug} already took other Tripo files (task {previous['task_id']}). A new export is a new stage: "
-            f"set \"generation_stage\": \"generation_2\" in the job entry, then run the intake again."
+            f"{slug} already took other Tripo files under \"generation_stage\": \"{generation_stage}\" (task {previous['task_id']}). "
+            f"A new export is a new stage: set \"generation_stage\": \"{next_stage(generation_stage)}\" in the job entry, then run the intake again."
         )
     downloads = job / "provider" / "downloads"
-    generation_stage = run_pilot.generation_stage_for(spec)
     base = downloads / run_pilot.generation_download_name(spec, "glb")
     outputs: Dict[str, Any] = {}
     prepared: Optional[Dict[str, Any]] = None
