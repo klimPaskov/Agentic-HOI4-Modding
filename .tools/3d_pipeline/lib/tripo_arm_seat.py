@@ -27,7 +27,7 @@ from __future__ import annotations
 import json
 import struct
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Tuple
 
 import numpy as np
 
@@ -220,69 +220,89 @@ def arm_weights(share: float) -> Dict[str, float]:
 # ---- The repair ------------------------------------------------------------------------------------
 
 
-def seat_arms(source: Path, target: Path) -> dict:
-    doc, blob = read_glb(source)
+def load_rig(doc: dict, blob: bytearray) -> dict:
+    """The skin's arrays and joints, after the checks the repair needs (one primitive, nodes at the bind pose, both arm chains)."""
+
     skin = doc["skins"][0]
     meshes = [n for n in doc["nodes"] if "skin" in n and "mesh" in n]
     primitives = doc["meshes"][meshes[0]["mesh"]]["primitives"] if meshes else []
     if len(meshes) != 1 or len(primitives) != 1:
         raise SeatError("one skinned mesh with one primitive is needed")
-    attributes = primitives[0]["attributes"]
     joints_index = skin["joints"]
     names = [short(doc["nodes"][j].get("name", "")) for j in joints_index]
-    node_of = {name: joints_index[k] for k, name in enumerate(names)}
     ibm = get(doc, blob, skin["inverseBindMatrices"]).astype(float).reshape(-1, 4, 4).transpose(0, 2, 1)
     world = worlds(doc)
     drift = max(float(np.abs(np.linalg.inv(ibm[k]) - world[j]).max()) for k, j in enumerate(joints_index))
     if drift > 1e-4:
         raise SeatError(f"the nodes' rest transforms differ from the bind pose by {drift:.2g}")
-    positions = get(doc, blob, attributes["POSITION"]).astype(float)
-    triangles = get(doc, blob, primitives[0]["indices"]).astype(int).reshape(-1, 3)
-    joint_ids = get(doc, blob, attributes["JOINTS_0"]).astype(int)
-    weights = get(doc, blob, attributes["WEIGHTS_0"]).astype(float)
-    dominant = np.array([names[j] for j in joint_ids[np.arange(len(joint_ids)), weights.argmax(axis=1)]])
-    heads = {name: world[node_of[name]][:3, 3] for name in names}
+    attributes = primitives[0]["attributes"]
+    rig = {"skin": skin, "attributes": attributes, "names": names, "node_of": {name: joints_index[k] for k, name in enumerate(names)},
+           "positions": get(doc, blob, attributes["POSITION"]).astype(float),
+           "triangles": get(doc, blob, primitives[0]["indices"]).astype(int).reshape(-1, 3),
+           "joint_ids": get(doc, blob, attributes["JOINTS_0"]).astype(int), "weights": get(doc, blob, attributes["WEIGHTS_0"]).astype(float)}
+    rig["dominant"] = np.array([names[j] for j in rig["joint_ids"][np.arange(len(rig["joint_ids"])), rig["weights"].argmax(axis=1)]])
+    rig["heads"] = {name: world[rig["node_of"][name]][:3, 3] for name in names}
     for side in ("Left", "Right"):
-        missing = [f"{side}{part}" for part in ("Shoulder", "Arm", "ForeArm", "Hand") if f"{side}{part}" not in heads]
+        missing = [f"{side}{part}" for part in ("Shoulder", "Arm", "ForeArm", "Hand") if f"{side}{part}" not in rig["heads"]]
         if missing:
             raise SeatError(f"the rig has no {', '.join(missing)}: export a rig that has the arm chain")
+    return rig
+
+
+def move_joints(doc: dict, rig: dict, side: str, joints: Dict[str, np.ndarray], moved: Dict[int, np.ndarray]) -> None:
+    """New local translations of one side's arm joints, parent first, each against its parent's new world matrix."""
+
+    for part in ("Arm", "ForeArm", "Hand"):
+        node = rig["node_of"][f"{side}{part}"]
+        parent = next(i for i, n in enumerate(doc["nodes"]) if node in n.get("children", []))
+        local = np.linalg.inv(worlds(doc)[parent]) @ np.append(joints[part], 1.0)
+        moved[node] = local[:3] - np.asarray(doc["nodes"][node].get("translation", [0.0, 0.0, 0.0]), float)
+        doc["nodes"][node]["translation"] = local[:3].tolist()
+
+
+def rebind(rig: dict, side: str, seat: dict) -> None:
+    index = {name: rig["names"].index(f"{side}{name}") for name in ("Shoulder", "Arm", "ForeArm", "Hand")}
+    for v in np.where(seat["arm"])[0]:
+        row = arm_weights(float(seat["share"][v]))
+        rig["joint_ids"][v] = [index[k] for k in row] + [0] * (4 - len(row))
+        rig["weights"][v] = list(row.values()) + [0.0] * (4 - len(row))
+    rig["joint_ids"][seat["wing"]] = [index["Shoulder"], 0, 0, 0]
+    rig["weights"][seat["wing"]] = [1.0, 0.0, 0.0, 0.0]
+
+
+def shift_translation_keys(doc: dict, blob: bytearray, moved: Dict[int, np.ndarray]) -> int:
+    """Every clip's translation keys of a moved joint move by the joint's offset (each sampler output once). Returns how many moved."""
+
+    shifted = set()
+    for animation in doc.get("animations", []):
+        for channel in animation["channels"]:
+            node = channel["target"].get("node")
+            output = animation["samplers"][channel["sampler"]]["output"]
+            if channel["target"]["path"] == "translation" and node in moved and output not in shifted:
+                put(doc, blob, output, get(doc, blob, output).astype(float) + moved[node])
+                shifted.add(output)
+    return len(shifted)
+
+
+def seat_arms(source: Path, target: Path) -> dict:
+    """Repair `source` into `target` by the rules of the module docstring, and report each side's numbers."""
+
+    doc, blob = read_glb(source)
+    rig = load_rig(doc, blob)
+    positions, heads = rig["positions"], rig["heads"]
     body_height = float(heads["Head"][1] - positions[:, 1].min())
     report = {"source": str(source), "sides": {}}
     moved: Dict[int, np.ndarray] = {}
     for side in ("Left", "Right"):
-        seat = seat_side(side, positions, triangles, dominant, heads, body_height)
+        seat = seat_side(side, positions, rig["triangles"], rig["dominant"], heads, body_height)
         report["sides"][side] = seat["numbers"]
-        # new local translations, parent first, each against its parent's new world matrix
-        for part in ("Arm", "ForeArm", "Hand"):
-            node = node_of[f"{side}{part}"]
-            parent_world = worlds(doc)[next(i for i, n in enumerate(doc["nodes"]) if node in n.get("children", []))]
-            local = np.linalg.inv(parent_world) @ np.append(seat["joints"][part], 1.0)
-            old = np.asarray(doc["nodes"][node].get("translation", [0.0, 0.0, 0.0]), float)
-            moved[node] = local[:3] - old
-            doc["nodes"][node]["translation"] = local[:3].tolist()
-        index = {name: names.index(f"{side}{name}") for name in ("Shoulder", "Arm", "ForeArm", "Hand")}
-        for v in np.where(seat["arm"])[0]:
-            row = arm_weights(float(seat["share"][v]))
-            joint_ids[v] = [index[k] for k in row] + [0] * (4 - len(row))
-            weights[v] = list(row.values()) + [0.0] * (4 - len(row))
-        joint_ids[seat["wing"]] = [index["Shoulder"], 0, 0, 0]
-        weights[seat["wing"]] = [1.0, 0.0, 0.0, 0.0]
+        move_joints(doc, rig, side, seat["joints"], moved)
+        rebind(rig, side, seat)
     world = worlds(doc)
-    new_ibm = np.stack([np.linalg.inv(world[j]) for j in joints_index]).transpose(0, 2, 1).reshape(-1, 16)
-    put(doc, blob, skin["inverseBindMatrices"], new_ibm)
-    put(doc, blob, attributes["JOINTS_0"], joint_ids)
-    put(doc, blob, attributes["WEIGHTS_0"], weights)
-    shifted = set()
-    for animation in doc.get("animations", []):
-        for channel in animation["channels"]:
-            node, path = channel["target"].get("node"), channel["target"]["path"]
-            if path != "translation" or node not in moved:
-                continue
-            output = animation["samplers"][channel["sampler"]]["output"]
-            if output in shifted:
-                continue
-            put(doc, blob, output, get(doc, blob, output).astype(float) + moved[node])
-            shifted.add(output)
+    skin, attributes = rig["skin"], rig["attributes"]
+    put(doc, blob, skin["inverseBindMatrices"], np.stack([np.linalg.inv(world[j]) for j in skin["joints"]]).transpose(0, 2, 1).reshape(-1, 16))
+    put(doc, blob, attributes["JOINTS_0"], rig["joint_ids"])
+    put(doc, blob, attributes["WEIGHTS_0"], rig["weights"])
+    report["translation_tracks_shifted"] = shift_translation_keys(doc, blob, moved)
     write_glb(target, doc, blob)
-    report["translation_tracks_shifted"] = len(shifted)
     return report
