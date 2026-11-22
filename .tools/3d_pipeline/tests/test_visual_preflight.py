@@ -266,6 +266,24 @@ class ReferenceSourcesTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, "No paid call"):
                     self.initialize()
 
+    def test_sources_added_to_the_entry_after_initializing_count_at_the_review(self) -> None:
+        # The hobgoblin run (2026-11-22) filled reference_sources after the first init_pilot_jobs.py run, and the review refused until
+        # the job was initialized again. The review now reads the entry's current list.
+        sources = self.spec.pop("reference_sources")
+        self.initialize(require_review=False)
+        self.spec["reference_sources"] = sources
+        review = self.root / "review.json"
+        review.write_text(json.dumps(ALL_TRUE), encoding="utf-8")
+        config = self.root / "jobs.json"
+        config.write_text(json.dumps({"jobs": {"unit_slug": {**self.spec, "provider": "tripo"}}}), encoding="utf-8")
+        argv = ["init_pilot_jobs.py", "--jobs-config", str(config), "--record-visual-review", "unit_slug",
+                "--reviewer", "parent_agent", "--review-file", str(review)]
+        with mock.patch.object(init, "REPO_ROOT", self.root), mock.patch.object(sys, "argv", argv), mock.patch("builtins.print"):
+            self.assertEqual(init.main(), 0)
+        self.assertEqual(self.preflight()["reference_sources"], sources)
+        self.assertEqual(self.read("refs/derived/reference_provenance.json")["reference_sources"], sources)
+        self.assertEqual(self.read("validation/reference_preflight.json")["status"], "passed")
+
     def test_a_recorded_review_with_an_empty_sources_list_fails(self) -> None:
         reviewed = {**ALL_TRUE, "reference_sources": [], "review": {"status": "reviewed"}}
         self.assertEqual(init.visual_preflight_status(reviewed), "failed")
