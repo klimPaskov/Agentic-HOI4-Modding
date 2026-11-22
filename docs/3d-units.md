@@ -4,7 +4,7 @@ This page is for modders who want their own 3D units on the HOI4 map: soldiers, 
 
 Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
 
-**What is proven.** Six asset types have each gone the whole route below with at least one model made from its full, detailed reference, and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe, a dwarf with a glaive and a shield), a large creature (an ogre with a club), a mount (a war elephant), a winged humanoid (a bat-winged demon whose death burns him to ash), a plane and a ship. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. **Not proven yet**: winged beasts (a four-legged dragon has not passed review), tanks, buildings and landmarks (their earlier passes were on simplified redraws of the subject and do not count), and an unarmed zombie soldier, which still reads as an ordinary soldier at map size. Do not plan a mod on those yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
+**What is proven.** Six asset types have each gone the whole route below with at least one model made from its full, detailed reference, and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe), a large creature (an ogre with a club), a mount (a war elephant), a winged humanoid (a bat-winged demon whose death burns him to ash), a plane and a ship. A dwarf with a glaive and a shield passed both reviews too, but its picture had lost a shoulder detail of the art, so it counts only after a run from the full picture. A review judges the unit at the size players see it, and faults that show only in close-up are noted and fixed later. **Not proven yet**: winged beasts (a four-legged dragon has not passed review), tanks, buildings and landmarks (their earlier passes were on simplified redraws of the subject and do not count), and an unarmed zombie soldier, which still reads as an ordinary soldier at map size. Do not plan a mod on those yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
 
 ## How to use it
 
@@ -100,7 +100,7 @@ Tripo copies the picture's pose into the rig, so the picture must be ready for r
 - Both hands empty, open and relaxed. A held weapon or a clenched fist rigs badly and deforms.
 - Every detail of your art kept: face, clothing, gear on the correct side.
 
-If your art is not like this, the agent redraws it in Tripo's image tool (**Image**, model Nano Banana 2, free within the quota) with an instruction that names every detail to keep and only the pose and hands to change. The tool's page is `studio.tripo3d.ai/workspace/generate-image`. In Tripo Studio it is the **Image** icon at the top of the left sidebar. Name gear by the side of the picture ("on the viewer's left"), because "his left" gets swapped. Check the result against the original before you pay for a model. You approve the picture and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
+If your art is not like this, the agent redraws it in Tripo's image tool (**Image**, model Nano Banana 2, free within the quota) with an instruction that names every detail to keep and only the pose and hands to change. The tool's page is `studio.tripo3d.ai/workspace/generate-image`. In Tripo Studio it is the **Image** icon at the top of the left sidebar. Name gear by the side of the picture ("on the viewer's left"), because "his left" gets swapped. Gear the art shows on one side only is named "only on the viewer's left". Where the art hides a side (a wrist behind a weapon, an arm behind the body), write that it is not visible and must not be added ("the viewer's right wrist is not visible, do not add a bracer there"), or the redraw copies the gear to both sides. Check the result against the original before you pay for a model. You approve the picture and answer the anatomy questions in `.tools/3d_pipeline/config/body_presets.json`.
 
 **A look change is also a redraw.** When the unit's look must change (another colour, another uniform, damage), make a new 3D-ready picture in the same tool: the instruction names the new look and every other detail kept, and a new model comes from it. Never apply a tint or filter to the old picture or to a model's texture.
 
@@ -147,7 +147,8 @@ Three rules hold for every unit and asset, at every step:
       },
       "tripo": {
         "roles": {"idle": "idle", "move": "walk", "attack": "box_01", "defend": "hit_to_body_01", "retreat": "flee_01", "death": "fall"},
-        "trim": {"idle": 120}
+        "trim": {"idle": 120},
+        "posture": "hunched"
       }
     },
     "axe_soldier": {
@@ -181,7 +182,9 @@ Three rules hold for every unit and asset, at every step:
       "tripo": {
         "roles": {"idle": "idle", "move": "walk", "attack": "A soldier swings an axe down", "defend": "hit_to_body_01", "retreat": "flee_01", "death": "defeat_02"},
         "trim": {"idle": 120},
-        "weapon": {"part": "tripo_part_1", "bone": "Weapon", "source": "rigged", "release_roles": ["death"]}
+        "posture": "upright",
+        "weapon": {"part": "tripo_part_1", "bone": "Weapon", "source": "rigged", "release_roles": ["death"],
+                   "hand": "RightHand", "name": "bearded axe", "grip_options": {"length_ratio": 0.55, "grip": 0.2}}
       }
     }
   }
@@ -207,7 +210,11 @@ What each field is for:
 | `target_height_m`, `runtime_entity_scale` | The size (see Size above) |
 | `vanilla_scale_reference` | The vanilla soldier the size is judged against. Copy it as it is. The `mesh` is a file of the installed game, found by the kit's game folder rule |
 | `tripo.roles` | One clip name for each of the six roles, read from the export (step 7). `tripo.trim` and the other optional `tripo` keys are in `tripo_intake.py` |
+| `tripo.posture` | `upright` or `hunched`, the idle's outline on the map camera (step 7) |
 | `tripo.weapon` | Only for an armed unit: the weapon's mesh, its bone and where it comes from (see [Armed units](#armed-units)). An unarmed unit has none. The rest of `tripo` is explained in [Tripo defaults](#tripo-defaults) |
+| `tripo.weapon.hand` | The hand that holds the weapon, `LeftHand` or `RightHand`, named by the rig's side. The picture is a front view, so a weapon on the viewer's right is in the `LeftHand` |
+| `tripo.weapon.name` | The weapon as the art shows it ("wooden mallet"). The card's weapon steps use it |
+| `tripo.weapon.grip_options` | The grip stage's numbers. `length_ratio` is the weapon's length over the body's height and `grip` is where the hand holds it, as a share of the length from the butt, both read from the art. `hold_hand`, `roll` and `head_toward` are optional (`tripo/grip_weapon.py`) |
 
 **The job folder and the picture.** Make the folder `docs/assets/hoi4_3d_model_jobs/models_3d/<unit>/refs/original` and put the approved picture in it, as a real PNG named as in `reference_path` (Tripo's image tool saves WebP under a `.png` name, so convert it first). It is the only file there.
 
@@ -232,9 +239,15 @@ py -3.13 -B .tools/3d_pipeline/init_pilot_jobs.py --jobs-config <your 3d_jobs.js
 }
 ```
 
-If the entry lacks a field the script needs, it stops and names the missing fields. The intake (step 8) does not need this step to run, but `run_pilot.py` does.
+If the entry lacks a field the script needs, it stops and names the missing fields. The review reads `reference_sources` from the entry as it is when you record the review, so sources added after the first run count without initializing the job again. The intake (step 8) does not need this step to run, but `run_pilot.py` does.
 
-**The card and the inbox.** The agent writes one card per model from `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` and makes the job's inbox folder. The card names the picture, every Tripo setting, the candidate presets for each role and the file name to save under. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
+**The card and the inbox.** Write the card with the kit, not by hand:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.json> <unit>
+```
+
+It fills `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` from the job entry into `<job folder>/CARD.md`: the picture, the Sources row, every Tripo setting, the candidate presets for each role, the file name to save under and the kit commit it was written from. An armed unit's card also has the weapon picture, the weapon model and the grip step, with the hand and the file names filled in. It refuses, and lists what to add, an entry that would leave a step open: no `reference_sources`, an armed unit type without `tripo.weapon`, a weapon without `hand`, `name` or `grip_options`, or a unit without `tripo.posture`. If you pull a newer kit during a run, write the card again. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
 
 ### 3. Model (Tripo, 30 credits)
 
@@ -252,7 +265,9 @@ If no candidate can read as the attack, write one text-to-motion clip (20 credit
 
 ### 6. Export into the inbox
 
-On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on. Under **Number of Animations** press **Select All**. Tripo builds the file in about a minute and saves it as `tripo_convert_<id>.glb`. Move it into the job's inbox as `<asset>__rigged.glb`.
+On the Animate page press **Export**: format **GLB**, **Export Skeleton** on, **Animation stay in Place** on. The dialog remembers each switch from the last export, so read a switch before you touch it (`aria-checked` is `true` when it is on) and click it only when it reads off. `TS.setStayInPlace(true)` in `tripo/tripo_studio.js` does this for an agent, and `TS.startExport()` refuses while the switch reads off. Under **Number of Animations** press **Select All**. Tripo builds the file in about a minute and saves it as `tripo_convert_<id>.glb`. Move it into the job's inbox as `<asset>__rigged.glb`. An armed unit's body goes to `<job folder>/armed/<asset>__body.glb` instead, and the grip stage writes the inbox file (see [Armed units](#armed-units)).
+
+A Model page export is named after the model's title (`orc character 3d model.glb`), so rename it as the card says. A new asset on the Generate page keeps the last asset's settings but not its picture: add the picture again and read the settings before you press.
 
 **What the body is called.** A one-piece model (step 3 with **Generate in Parts** off) exports as one skinned mesh. Its mesh node is named `tripo_node_<id>` and its mesh `tripo_mesh_<id>`, not `tripo_part_0`. No Segment step is needed for it. Segment is only for a separately modelled weapon or shield (see [Armed units](#armed-units)). A tool that takes a body name (`clip_check.py --body`) uses the one skinned mesh when you leave the name out. An unarmed unit has no `tripo_part_1` either, so such a tool checks the body alone.
 
@@ -270,7 +285,9 @@ The agent measures every clip in the export and writes the role map into the job
 py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset>__rigged.glb --samples all --json <job folder>/evidence/clips.json
 ```
 
-For an unarmed unit this command is complete. It finds the body and no weapon by itself, prints `no weapon`, and measures stretch and the ground only. An armed unit names its weapon part with `--weapon`.
+For an unarmed unit this command is complete. It finds the body and no weapon by itself, prints `no weapon`, and measures stretch and the ground only. An armed unit's body export (`armed/<asset>__body.glb`) has no weapon yet, so the same command measures it the same way.
+
+**Decide the attack before you leave Tripo.** A text-to-motion clip is made on the same rigged model, so measure the first export while the Tripo tab is still open. Add `--attack <candidates>` to the command above: it ends with one `attack:` line, `attack: pass <clips>` or `attack: none passes` with exit code 3. On `none passes`, make the text-to-motion attack now, export again in a fresh tab and measure again. The hobgoblin run (2026-11-22) left Tripo first and learnt only then that `chop`, its one free candidate, failed the stretch (8.9%, limit 5%).
 
 **Each clip must read as its role and as the unit's kind from the game's camera.** At map zoom a unit is about 60 pixels tall: a face, the skin's colour and small wounds are a few pixels, and the outline and its motion are what the player reads. A clean clip can still fail review because it reads as something else. Before the run, measure the candidates on the game camera with `tripo/pose_check.py --map` (it reads each clip's silhouette against the idle and reports TRIPO-MAP-READ, and it reads each clip's outline by the rules of `lib/map_outline.py`, see [Tripo checks](#tripo-checks)), and pick for each role:
 
@@ -285,7 +302,7 @@ When no preset reads, make the role's clip with Tripo's text-to-motion (20 credi
 
 1. Write the idle posture into the job's `tripo` block: `"posture": "upright"` for a soldier, `"posture": "hunched"` for an undead, a beast-man or a cowering creature. TRIPO-MAP-POSTURE holds the exported idle to it.
 2. Apply every free candidate on the model's Animate page: the presets on the card, and every earlier clip under **AI Animation** that was made for the same kind of unit (they apply to a new model for nothing). Click the middle of a tile, not the round mark in its corner, and wait until **Retargeting** has gone before the next tile.
-3. Export once (step 6) and run `tripo/pose_check.py <rigged.glb> <earlier run's .mesh> --unarmed --map --idle "<first words of the idle you plan>" --attack <attack candidates> --gait <move and retreat candidates>`. Without an earlier run of the same body, run the unit once with the defaults and use its mesh.
+3. Export once (step 6) and run `tripo/pose_check.py <rigged.glb> <earlier run's .mesh> --unarmed --map --idle "<first words of the idle you plan>" --attack <attack candidates> --gait <move and retreat candidates>`. A first run has no earlier `.mesh` of the same body. Then write each role by the `clip_check.py` numbers (the candidate with the lowest stretch that passes), run the unit once to the end, and do this step again on that run's `runtime/files/<runtime_stem>.mesh`. An armed unit runs it on `armed/<asset>__body.glb` with `--hand <the job's tripo.weapon.hand>` in place of `--unarmed`.
 4. Pick the idle first, because every map reading is taken against it. Read the `idle posture` line: it must name the posture the job asks for. When the job asks for `hunched` and no Tripo idle reads hunched (Tripo's "slightly hunched" idle reads 0.98, upright), keep the best idle and set `"idle_pose": "hunch"`. The route then bends it, and the hunch reads 0.88.
 5. Then pick, by the tool's lines: the attack that passes `verdict` and reads at least 300 px, the defend that passes and reads at least 160 px, and the move and the retreat with a loop window. A clip that misses a limit is not picked.
 6. Read the `outline` lines for the attack and the defend. Each hand spread must stay under 0.80, or the clip reads as a T-pose or a flail. The attack's strike must show at least 5 px outside the body, or its reach foreshortens into the body from the high front camera and reads as nothing. The attack and the defend must not both be wide spreads, or they read as each other. The `attack pick` line already leaves out an attack that fails these. On the D-94 zombie's export (2026-11-22) Tripo's idle read 0.98, the sudden lunge spread 0.41 and struck 11 px outside the body, the clawing swipe struck 7 px, and `box_01` struck 0 px.
@@ -318,7 +335,9 @@ The intake records each file's name, size and SHA-256, then prepares it for the 
 - It prints one line saying why it waits, and gives up with an error after six hours (`HOI4_KIT_HEAVY_WAIT_MINUTES`).
 - `--skip-heavy-check`, or `HOI4_KIT_SKIP_HEAVY_CHECK=1`, starts at once.
 
-The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py` and `tripo/static_sheets.py`. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
+The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py` and `tripo/static_sheets.py`. `tripo/arm_unit.py` waits too, before each of its grip and shield stages. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
+
+**One gate per step.** The kit needs no other gate. Some machines add their own gate script around Blender (a wrapper that also waits for a game or a shared hold file). Such a script lives on that machine, outside the kit, and the kit does not ship one. When your machine has one, run each Blender step through it and nothing more. Never take that machine's hold yourself for the steps you then run through its gate: the gate waits while any hold exists, so the step would wait for your own hold until its timeout. A hold is only for heavy work that does not go through the gate.
 
 ### 9. Blender stage and export (free)
 
@@ -642,7 +661,20 @@ The flail and the long bow of run d's attack draw no outline finding: its arm fl
 
 ## Armed units
 
-Tripo's rig bends a weapon modelled into the hand, and Tripo's clips animate an empty-handed body. The kit has a separate-weapon route in progress: the body is modelled with empty hands, the weapon is its own model, and the kit puts the weapon in the hand, closes the fingers around it (`tripo/grip_weapon.py`) and keeps it out of the body by turning the wrist. It was tested on an orc with a long axe in November 2026 and did not pass review yet:
+Tripo's rig bends a weapon modelled into the hand, and Tripo's clips animate an empty-handed body. So the body is modelled with empty hands, the weapon is its own model, and the kit puts the weapon in the hand, closes the fingers around it (`tripo/grip_weapon.py`) and keeps it out of the body by turning the wrist. An orc with a poleaxe passed two fresh reviews this way in November 2026, and a dwarf with a glaive and a shield passed too (it counts after a run from its full picture, see the top of this page). No weaker model has run the armed route from the card alone yet.
+
+**The armed route, in order.** `tripo/make_card.py` writes these steps into the card with the job's names filled in.
+
+1. In the job's `tripo.weapon`, write `hand` by the rig's side: the picture is a front view, so a weapon on the viewer's right is in the `LeftHand`. Every stage defaults to `RightHand`, so a job without `hand` is refused by `make_card.py` and `arm_unit.py`. Write `name`, and `grip_options` with `length_ratio` and `grip` read from the art.
+2. Redraw the body with empty hands (step 1 of the route, ending `Remove the <weapon> completely`), and redraw the weapon alone from the same art: `Redraw only the <weapon> from this picture for 3D modelling. Keep its exact shape, proportions, materials, colours and every mark. Remove the hand and everything else. Invent nothing. The whole <weapon> standing upright, head at the top, seen from the side that shows the head's shape, on a plain light grey background, even soft lighting.`
+3. Make the body model (30), then the weapon model (30) as a new asset with the same settings. Export the weapon on its Model page, GLB 2K, as `<job folder>/armed/<asset>_weapon__model.glb`. A shield goes the same way as `<asset>_shield__model.glb`.
+4. Rig the body (20) and apply the candidates. The free library has no overhead weapon blow: searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22), and `box_01` is an empty-hand punch that does not read as a weapon swing. Apply `chop` and every earlier text-to-motion clip made for a weapon in one hand (they cost nothing). For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start, and name the hand by the character's own side (`in his own left hand` for the `LeftHand`).
+5. Export the body as `<job folder>/armed/<asset>__body.glb`, and run `clip_check.py ... --attack chop <earlier clips>` before you leave Tripo (step 7 of the route).
+6. Pick the clips (step 7) and write them into `tripo.roles`.
+7. Run `py -3.13 -B .tools/3d_pipeline/tripo/arm_unit.py --jobs-config <your 3d_jobs.json> <unit>`. It runs the grip stage with the job's hand, the weapon on its own `Weapon` bone, the hold in idle, move, defend and retreat, the hold fading as the attack starts, the drop at the death's fall and the clearance in every role, then the shield stage for the other hand when the job has `tripo.shield`. It writes `<job folder>/inbox/<asset>__rigged.glb` and the stage reports in `<job folder>/evidence`. `--dry-run` prints the commands and starts nothing.
+8. Go on with the intake (step 8), `run_pilot.py` and the checks, as for any unit.
+
+What the route still does not do well:
 
 - The rule keeps the weapon out of the body in idle, move, defend and retreat without changing how they read.
 - An attack made for an empty hand does not become a weapon swing. With the weapon cleared from the body it reads as a stiff hold. A weapon attack needs a clip made for the weapon.
@@ -665,7 +697,7 @@ Tripo's rig bends a weapon modelled into the hand, and Tripo's clips animate an 
 
 The weapon checks judge the exported `.mesh` and `.anim` files, the ones the game loads. TRIPO-WEAPON-IN-BODY and TRIPO-WEAPON-BELOW-GROUND are measured there, frame by frame. The grip stage's own GLB is only a diagnostic. In a death clip the weapon is dropped before the body falls: the hand lets go at the start of the fall, and the weapon tumbles to the ground on its own path, flat and clear of where the body will lie. The retarget keeps the weapon bone's location for this. A coarse Tripo hand cannot wrap a haft tightly. A job may set `tripo.weapon.grip_check` to `"advisory"`, so TRIPO-GRIP-ENCLOSURE is reported but does not fail the unit, and a reviewer judges the hand at game zoom. TRIPO-GRIP-THUMB still counts.
 
-Until an armed unit passes a fresh review, keep armed units to weapons held low and short, or plan live work in Blender for the attack.
+An attack made for an empty hand still does not become a weapon swing, so an armed unit needs a clip made for its weapon (step 4 above).
 
 ### Shields
 
@@ -918,7 +950,7 @@ It renders the unit in Blender from 17 views (eight around it, low and high, and
 
 ### Put the weapon in the hand
 
-Soldiers, riders, giants and other armed units hold their weapon, which is generated as a separate model. `fit_prop.py` puts it in the hand:
+Soldiers, riders, giants and other armed units hold their weapon, which is generated as a separate model. A Tripo unit gets it from `tripo/arm_unit.py` (see [Armed units](#armed-units)). For an old Meshy job, `fit_prop.py` puts it in the hand. Name `--bone` by the rig's side, as `tripo.weapon.hand` is:
 
 ```
 py -3.13 -B .tools/3d_pipeline/fit_prop.py <unit folder> --prop <weapon job>/provider/downloads/generation_model.glb --bone RightHand --length 0.55 --grip 0.15 --out <job folder>/props
@@ -1059,7 +1091,7 @@ The notes below come from models made by hand before the [static route](#static-
 
 ## Known limits
 
-- **Armed units.** The separate-weapon route has not passed review yet (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, and a long weapon carried down in a death clip passes through the body or the ground.
+- **Armed units.** The separate-weapon route passed review on the orc (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, so each armed unit needs an attack made for its weapon. No weaker model has run the route from the card alone yet.
 - **Quadruped mounts.** The Tripo quadruped route has not passed review yet (see [Tripo quadrupeds and mounts](#tripo-quadrupeds-and-mounts)). Its distance weights stretch the skin at the leg joints in the rear and the fall.
 - **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. [Secondary chains](#secondary-chains-cloaks-and-wings) give wings their own bones and motion, but the membrane can still cross in front of the body in some clips. Tails and extra limbs have no step yet.
 - **Cloaks and armour.** [Secondary chains](#secondary-chains-cloaks-and-wings) stop a long cloak stretching, but some of it can still pass into the body in hard clips. Armour plates whose weight Tripo split between bones still bend a little.

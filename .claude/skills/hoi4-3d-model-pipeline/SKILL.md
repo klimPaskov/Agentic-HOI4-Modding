@@ -44,7 +44,10 @@ Each gate is defined once in the guide:
   `tripo.posture`, TRIPO-MAP-POSTURE, -SPREAD, -REACH and -SAME),
   `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Copy the complete
   job entry and the picture review of step 2 in `docs/3d-units.md` (a Tripo
-  job needs `init_pilot_jobs.py` for its picture too). An unarmed soldier-sized
+  job needs `init_pilot_jobs.py` for its picture too). Write the card with
+  `tripo/make_card.py`, never by hand. An armed unit names
+  `tripo.weapon.hand` by the rig's side and gets its weapon from
+  `tripo/arm_unit.py`. An unarmed soldier-sized
   unit takes `infantry_unarmed`. Every command that starts Blender waits for
   the machine first (`lib/heavy_job.py`). Never type the user's password. Proven on armed humanoids, a large creature, a mount, a
   plane and a ship. Winged units, tanks, buildings and landmarks are not
