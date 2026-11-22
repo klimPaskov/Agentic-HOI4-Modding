@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "53a29a7ed5ae84f8ce3c089dee38902cd3bc81a8",
+  "generated_for_revision": "eff3aa5743a08c7a9ebea9f477d47842588df1df",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14968,8 +14968,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
-          "sha256": "abf6406a9f42b0605b224d801c76191ba43a31046622fd0f788fbfd2f91b6741",
-          "size": 75286
+          "sha256": "8479b98d47dfb34118ae9338594e48890a84be1bb07a56541c09851022195e25",
+          "size": 101068
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_load.py",
@@ -14978,13 +14978,13 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_rig.py",
-          "sha256": "67a95dfec847a5c9986a619fa5ef2b1c4b48ab96379b83049c2c90f540bddb44",
-          "size": 27639
+          "sha256": "d959740d4d2898493e276923bc4f6464ea39c499e1a9f040f073dbd360b29204",
+          "size": 27933
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_wings.py",
-          "sha256": "c8dcf37ae9e270e2b2dd0ed09dd88702964ddd2d822dd1ec0e6435edf3028470",
-          "size": 34989
+          "sha256": "6f8f83597516e00eb0104b15d1dc28274f457063a8ce51a5d6296910e775bc8f",
+          "size": 44401
         },
         {
           "path": ".tools/3d_pipeline/adapter/retarget_root_motion.py",
@@ -15238,8 +15238,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/quadruped_checks.py",
-          "sha256": "c2bb074bde132537b0afd61c2a6f54771b6cefa693f457341af8f19315ec5063",
-          "size": 24304
+          "sha256": "fd4adcb7c8e7092025ef3a66a89ac29b24c6efc34c6c120b4f263d2305619dfc",
+          "size": 25688
         },
         {
           "path": ".tools/3d_pipeline/lib/reuse.py",
@@ -16352,14 +16352,19 @@
           "size": 4383
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_pose_preview.py",
+          "sha256": "2907fa745886ba56e5e9326f5076776b5498f118413e273fec23ace520c05915",
+          "size": 14389
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_profile_gates.py",
           "sha256": "a154e564bbe061de1f69b42f670dd9f943b361ff04d323de4fb7cf3aac8e999f",
           "size": 33591
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_clips.py",
-          "sha256": "36ac397a1c7c746041cce8a307e26d4c77ad8ce124c2ec896a6cf998cc659f90",
-          "size": 26998
+          "sha256": "e6d42b009e191ccc858da2b33b99e78567f8e76c7f13b3448a555c911dae4ae6",
+          "size": 29803
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_ears.py",
@@ -16378,8 +16383,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_wings.py",
-          "sha256": "734cbc847ee67e4b5a6b50f7f7030ca50ff80b5819803749bda0b4ec505f645c",
-          "size": 16879
+          "sha256": "4d6fef32088ed54240640b4cbdb25bf0295da5c33cb0bd0d60a76d91bb239d68",
+          "size": 52191
         },
         {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
@@ -16807,6 +16812,11 @@
           "size": 25137
         },
         {
+          "path": ".tools/3d_pipeline/tripo/pose_preview.py",
+          "sha256": "4dcb84c3f5bb61e9c134f2f37833aa64a40725768501e8cc767fc31bb193c157",
+          "size": 32171
+        },
+        {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
           "sha256": "0219a3e528bd228a6167cc886c31b951a3a4c42a496dcb4f495780d373778ddd",
           "size": 83675
@@ -16853,8 +16863,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "54cb4d2212044940053f2daaa88064a1173e69fac86b7fb3336e3043cd60dcd9",
-          "size": 91846
+          "sha256": "72713722465726a60a8fc3e1f2dbbce5e6e2dc7b34fe102d1216f08101115b16",
+          "size": 142434
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
