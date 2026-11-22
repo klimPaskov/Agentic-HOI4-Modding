@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "c59a5c7e66142d751dd024166c9e5c1023922fc9",
+  "generated_for_revision": "0b7c86992d4a4344c0beda3c165f51cb30b192a4",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16678,8 +16678,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
-          "sha256": "bce6a1135b1ab648bbac2fb831fce81b792ab3916e4f46764d86cd52813ee12d",
-          "size": 34608
+          "sha256": "db969442a3e5919a2ef6afbcf4b10568d4244cb796a4c401bd03225d1715cfb2",
+          "size": 35576
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shape.py",
@@ -16958,8 +16958,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "16880545ccebf26a1a7085009a4e32011fb4a81ce41e1f29d1c7f6aa392c654e",
-          "size": 27923
+          "sha256": "8ec33c3955538d96d32ac25a8c281a0510544f50a21e0be6dee5df3132c30378",
+          "size": 28505
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
