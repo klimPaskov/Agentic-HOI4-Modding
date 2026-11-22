@@ -23,13 +23,13 @@ Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json
 
 | Preset | For | Route |
 | --- | --- | --- |
-| `humanoid` | soldier-sized people and creatures with empty hands | Tripo rig and clips |
-| `armed_humanoid` | soldier-sized fighters with one weapon, with or without a shield | Tripo rig and clips, the weapon its own model |
-| `large_creature` | ogres, trolls, giants, yetis, apes, golems, armed or not | Tripo rig and clips |
-| `winged_humanoid` | demons, devils, angels | Tripo rig and clips, wing chains by the kit |
-| `winged_quadruped` | dragons, griffins | a plain model the kit rigs |
-| `mount_with_rider` | horses, camels, elephants that carry a rider | a plain model the kit rigs, the rider its own job |
-| `quadruped` | four-legged beasts without wings or a rider | a plain model the kit rigs |
+| `humanoid` | soldier-sized bodies on two legs with empty hands | Tripo rig and clips |
+| `armed_humanoid` | soldier-sized bodies on two legs with one weapon, with or without a shield | Tripo rig and clips, the weapon its own model |
+| `large_creature` | two-legged bodies much bigger than a soldier, armed or not | Tripo rig and clips |
+| `winged_humanoid` | two-legged bodies with wings, armed or not | Tripo rig and clips, wing chains by the kit |
+| `winged_quadruped` | four-legged bodies with wings | a plain model the kit rigs |
+| `mount_with_rider` | four-legged mounts that carry a rider | a plain model the kit rigs, the rider its own job |
+| `quadruped` | four-legged bodies without wings or a rider | a plain model the kit rigs |
 | `rider` | the person on a mount | Tripo rig and clips, seated by the kit |
 | `tank` | tanks and armoured cars | static, Smart Mesh |
 | `plane` | aircraft | static, Smart Mesh |
@@ -40,7 +40,7 @@ Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json
 **Which preset.** `tripo/pick_preset.py` works it out from a few plain answers about the picture, by fixed rules, and prints one sentence to confirm with the cost of the card and of the Canvas workflow, then the `new_job.py` command to run after a yes. It refuses when no reference is given (a picture is made from references, never from a prompt alone), and a reference given with `--private` (an owner's drawing) is recorded in the job as never uploaded: it never goes to Tripo or any other online service, and the 3D-ready picture is made from it offline or by the mod's own image lane.
 
 ```
-py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --kind unit --legs 2 --weapon --hand LeftHand --name "A goblin with an axe" --slug goblin_axe --reference "the mod's art: gfx/units/goblin.png"
+py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --kind unit --legs 2 --weapon --hand LeftHand --name "A fighter with an axe" --slug axe_fighter --reference "the mod's art: gfx/units/axe_fighter.png"
 ```
 
 Start a job from a preset, then write its card:
@@ -851,7 +851,7 @@ Pick one type per unit in the job's `unit_type`. The type sets the rig, the clip
 | `rider`, `mounted_archer` | the person on a mount | humanoid | Tripo humanoid, seated by Blender | the upper body plays the clip, the legs stay astride |
 | `mount` | horses, camels, dead horses | quadruped | Blender quadruped with a `Saddle_Node` | idle, trot, charge, rear, gallop, collapse |
 | `quadruped_beast` | wolves, war beasts, elephants | quadruped | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
-| `winged_quadruped` | dragons, griffins | winged quadruped | Blender quadruped with wing chains | folded idle, heavy walk with a slow beat, rear and strike, braced recoil with the wings mantled back, turned run with the wings swept back, collapse onto its side with both wings folded |
+| `winged_quadruped` | four-legged bodies with wings | winged quadruped | Blender quadruped with wing chains | folded idle, heavy walk with a slow beat, rear and strike, braced recoil with the wings mantled back, turned run with the wings swept back, collapse onto its side with both wings folded |
 | `vehicle` | tanks, armoured cars, other wheeled or tracked units | none | live in Blender | idle, drive, fire, brace, reverse, wreck |
 
 **An unarmed soldier-sized humanoid** (an undead soldier, a zombie, a civilian) takes `infantry_unarmed`, with the anatomy answers of any person (legs 2, arms 2, and no for the rest) and no `tripo.weapon` in the job. Do not take `infantry_melee` for it, whose clips are sword clips, and not `beast_biped`, which is for a large body (a yeti, a large ghoul) and is checked against the large-biped body preset that a soldier-sized model does not fit. The anatomy has no question about a held weapon, so an unarmed unit adds no key for it.

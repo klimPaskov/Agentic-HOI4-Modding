@@ -18,7 +18,7 @@ from lib import tripo_presets as P
 import new_job
 import pick_preset as K
 
-REF = ["the mod's art: gfx/units/goblin.png"]
+REF = ["the mod's art: gfx/units/axe_fighter.png"]
 ANSWERS = {
     "humanoid": {"kind": "unit", "legs": 2},
     "armed_humanoid": {"kind": "unit", "legs": 2, "weapon": True, "hand": "LeftHand"},
@@ -65,9 +65,9 @@ class PickPreset(unittest.TestCase):
             K.run({"kind": "unit", "legs": 2, "weapon": True}, REF, [], "x")
 
     def test_the_confirm_sentence_gives_both_costs_and_the_cap(self):
-        result = K.run({**ANSWERS["armed_humanoid"], "name": "A goblin with an axe"}, REF, [], "goblin")
+        result = K.run({**ANSWERS["armed_humanoid"], "name": "A fighter with an axe"}, REF, [], "axe_fighter")
         self.assertEqual(result["preset"], "armed_humanoid")
-        self.assertIn("A goblin with an axe: humanoid with a weapon (preset armed_humanoid).", result["confirm"])
+        self.assertIn("A fighter with an axe: humanoid with a weapon (preset armed_humanoid).", result["confirm"])
         self.assertIn("The card costs about 80 to 100 credits", result["confirm"])
         self.assertIn("the Canvas workflow Armed unit about 95 to 115", result["confirm"])
         self.assertIn("cap 120", result["confirm"])
@@ -79,21 +79,21 @@ class PickPreset(unittest.TestCase):
         self.assertEqual(K.costs("large_creature", True)["canvas_workflow"], "Armed unit")
 
     def test_a_private_reference_is_marked_and_never_offered_to_tripo(self):
-        result = K.run(ANSWERS["humanoid"], [*REF, "the owner's drawing 35"], ["the owner's drawing 35"], "goblin")
+        result = K.run(ANSWERS["humanoid"], [*REF, "the owner's drawing 35"], ["the owner's drawing 35"], "axe_fighter")
         self.assertIn("D-123", result["private_note"])
         self.assertIn('--private-source "the owner\'s drawing 35"', result["next"])
-        self.assertIn('--source "the mod\'s art: gfx/units/goblin.png"', result["next"])
+        self.assertIn('--source "the mod\'s art: gfx/units/axe_fighter.png"', result["next"])
 
     def test_the_next_command_writes_a_job_of_that_preset(self):
-        result = K.run({**ANSWERS["armed_humanoid"]}, REF, ["the owner's drawing 35"], "goblin")
-        self.assertIn("--preset armed_humanoid goblin", result["next"])
+        result = K.run({**ANSWERS["armed_humanoid"]}, REF, ["the owner's drawing 35"], "axe_fighter")
+        self.assertIn("--preset armed_humanoid axe_fighter", result["next"])
         self.assertIn("--set weapon.hand=LeftHand", result["next"])
         with tempfile.TemporaryDirectory() as tmp:
             registry = Path(tmp) / "jobs.json"
             with mock.patch.object(new_job, "resolve_job_root", lambda slug: Path(tmp) / slug):
-                new_job.main(["--jobs-config", str(registry), "--preset", "armed_humanoid", "goblin", "--source", REF[0],
+                new_job.main(["--jobs-config", str(registry), "--preset", "armed_humanoid", "axe_fighter", "--source", REF[0],
                               "--private-source", "the owner's drawing 35", "--set", "weapon.hand=LeftHand"])
-            job = json.loads(registry.read_text(encoding="utf-8"))["jobs"]["goblin"]
+            job = json.loads(registry.read_text(encoding="utf-8"))["jobs"]["axe_fighter"]
         self.assertEqual(job["reference_sources"], [REF[0], "private, never uploaded: the owner's drawing 35"])
         self.assertEqual(job["tripo"]["weapon"]["hand"], "LeftHand")
 

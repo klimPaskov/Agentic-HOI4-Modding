@@ -149,7 +149,9 @@ def never_fitting(preset: Optional[Dict[str, Any]] = None, data: Optional[Dict[s
     """The name patterns of clips that never fit (D-127): the shared list and the preset's own."""
 
     data = data or load()
-    return [*data.get("never_fitting", {}).get("patterns", []), *((preset or {}).get("never_fitting") or [])]
+    preset = preset or {}
+    own = [*(preset.get("never_fitting") or []), *((preset.get("never_fits") or {}).get("clips") or [])]
+    return [*data.get("never_fitting", {}).get("patterns", []), *[item.lower() for item in own]]
 
 
 def unfitting_clips(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Dict[str, str]:

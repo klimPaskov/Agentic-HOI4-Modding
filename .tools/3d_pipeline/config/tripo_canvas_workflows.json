@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "about": "The Tripo Agentic Canvas workflows of the presets in tripo_presets.json (D-120). Each workflow is a chain of Canvas nodes built by hand, never planned by the Canvas assistant: on 2026-11-14 the assistant planned its own chain for an orc (two untextured models, two Retopologies, two Textures), which cost 160 against 70 on the page, and it stopped before the rig. The node settings are the card's. Per-type values (the picture sentence, the rig, the clip candidates, the polycount) come from the preset. Node prices were read on 2026-11-22 on a Pro account, with nothing pressed: the HD Model node reads 45 at the route's settings where the page reads 30, and the Rigging node 20 as on the page. `extra_credits` is what the Canvas costs above the card for the same model, null where a node's price has not been read yet. `links` holds each preset's shared project link once it is shared (Share, Anyone with the link): a modder opens it, clones it into their own account and replaces the input picture. A shared project never holds an owner's private drawing.",
+  "about": "The Tripo Agentic Canvas workflows of the presets in tripo_presets.json (D-120). Each workflow is a chain of Canvas nodes built by hand, never planned by the Canvas assistant: on 2026-11-14 the assistant planned its own chain for an armed humanoid (two untextured models, two Retopologies, two Textures), which cost 160 against 70 on the page, and it stopped before the rig. The node settings are the card's. Per-type values (the picture sentence, the rig, the clip candidates, the polycount) come from the preset. Node prices were read on 2026-11-22 on a Pro account, with nothing pressed: the HD Model node reads 45 at the route's settings where the page reads 30, and the Rigging node 20 as on the page. `extra_credits` is what the Canvas costs above the card for the same model, null where a node's price has not been read yet. `links` holds each preset's shared project link once it is shared (Share, Anyone with the link): a modder opens it, clones it into their own account and replaces the input picture. A shared project never holds an owner's private drawing.",
   "links": {},
   "workflows": {
     "rigged_unit": {
@@ -79,7 +79,7 @@
         }
       ],
       "after": "join_clips",
-      "proven": "2026-11-22, a ZIN goblin with a hand axe: Canvas body 45, page axe 30, Canvas rig 20, nine free presets, 95 credits, attack check passed on chop"
+      "proven": "2026-11-22, the armed-humanoid route test (one hand axe): Canvas body 45, page axe 30, Canvas rig 20, nine free presets, 95 credits, attack check passed on chop"
     },
     "plain_model": {
       "title": "Plain model",

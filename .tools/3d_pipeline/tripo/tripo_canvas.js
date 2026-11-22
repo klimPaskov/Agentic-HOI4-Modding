@@ -11,7 +11,7 @@
 // page re-renders and old references die. Never click by fixed coordinates:
 // the browser frame changes width between calls.
 //
-// Run as written end to end on 2026-11-22 (a goblin, nine clips) for:
+// Run as written end to end on 2026-11-22 (an armed humanoid, nine clips) for:
 // CV.stubPicker, CV.applyIn, CV.exportPrep and CV.exportClick.
 //
 // Facts this file relies on:

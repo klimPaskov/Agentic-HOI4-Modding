@@ -7,8 +7,8 @@ Tripo's [Agentic Canvas](https://studio.tripo3d.ai/canvas) chains Tripo's tools 
 - **Cost.** A Canvas HD Model node costs 45 credits at the route's settings, where the page's HD Model costs 30 (read on both on 2026-11-22). The rig costs 20 on both and the free preset clips are free on both. So every Canvas model costs 15 credits more than the card. The table below gives each type's price.
 - **Access.** Tripo is rolling the Canvas out step by step: Max and Team plans first, other plans later, free accounts may get a trial. If you do not see Agentic Canvas in Tripo's top bar, use the card.
 - **One clip per file.** A Canvas Animation node holds one clip and exports one GLB. The kit joins the files for free (`tripo/join_clips.py`, step 6 below).
-- **No assistant plans.** Build the workflow node by node as written here, or clone a shared one. Do not ask the Canvas assistant to plan it: on an orc it planned two untextured models, two retopologies and two textures (160 credits against 70 on the page) and stopped before the rig.
-- **The assistant cannot pick the type.** It cannot see an Upload node's picture, and with the picture attached in its chat it called a goblin with empty hands an armed humanoid. The kit's `tripo/pick_preset.py` picks the type by fixed rules.
+- **No assistant plans.** Build the workflow node by node as written here, or clone a shared one. Do not ask the Canvas assistant to plan it: on an armed humanoid it planned two untextured models, two retopologies and two textures (160 credits against 70 on the page) and stopped before the rig.
+- **The assistant cannot pick the type.** It cannot see an Upload node's picture, and with the picture attached in its chat it called a test picture of a humanoid with empty hands an armed humanoid. The kit's `tripo/pick_preset.py` picks the type by fixed rules.
 - **Credits back.** Tripo returns the credits of a failed node. It also gives 30 credits once a day for one download or share (November 2026).
 
 ## Price by type
@@ -23,7 +23,7 @@ Tripo's [Agentic Canvas](https://studio.tripo3d.ai/canvas) chains Tripo's tools 
 
 Make an armed unit's weapon on the page, as the card's step 2 does, and the body and rig on the Canvas: that keeps it at 95, or 115 with a made attack, inside the preset's cap of 120. With the weapon on the Canvas too it costs 130 with a made attack, over the cap.
 
-**Proven on 2026-11-22.** A goblin with a hand axe ran the armed workflow this way: the Canvas body 45, the axe on the page 30, the Canvas rig 20, nine free preset clips, 95 credits in all. The joined clips passed the card's attack check (`chop`), so no made attack was needed.
+**Proven on 2026-11-22.** The armed-humanoid route test, a unit with a hand axe, ran the armed workflow this way: the Canvas body 45, the axe on the page 30, the Canvas rig 20, nine free preset clips, 95 credits in all. The joined clips passed the card's attack check (`chop`), so no made attack was needed.
 
 ## The workflows
 
