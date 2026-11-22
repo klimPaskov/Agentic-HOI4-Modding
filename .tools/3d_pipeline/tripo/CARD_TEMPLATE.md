@@ -97,11 +97,13 @@ How to write `<every detail>`:
 
 <clip table>
 
+Every clip must fit the unit: its era, its weapon and its kind of creature. Never a modern boxing, kick or dance preset, even when it passes the checks (D-127). The table lists only presets that may fit, and `make_card.py` and the intake refuse a job whose roles name one of the `never_fitting` patterns in `config/tripo_presets.json`.
+
 <!-- unarmed -->
-Text-to-motion (20), only when step 6 says no attack passes: name the motion, both hands, their height and the stance, for example `<paid clip>`. At most 266 characters.
+Text-to-motion (20), <paid clip when>: name the motion, both hands, their height and the stance, written to fit the unit on the first try, for example `<paid clip>`. At most 266 characters.
 <!-- /unarmed -->
 <!-- armed -->
-The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). `box_01` is an empty-hand punch and does not read as a weapon swing. For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
+The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). The boxing and kick presets never fit a unit (D-127). For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
 
 Text-to-motion (20): `<paid clip>` Change the body words to fit the unit. Name the hand by the character's own side, which is the rig's `<hand>`. At most 266 characters.
 <!-- /armed -->
@@ -136,12 +138,12 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
 
 <!-- unarmed -->
-1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack box_01 <earlier clips> --json <job folder>/evidence/clips.json`.
+1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /unarmed -->
 <!-- armed -->
-1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/armed/<asset_slug>__body.glb --samples all --attack chop <earlier clips> --json <job folder>/evidence/clips.json`.
+1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/armed/<asset_slug>__body.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /armed -->
-2. Read the `attack:` line. `attack: pass` names the candidates that pass. Go to step 7.
+2. Read the `attack:` line. `attack: pass` names the candidates that pass. Go to step 7. With no free or earlier attack to check (the table names none for this unit), go to 3.
 3. `attack: none passes` (exit code 3): make the text-to-motion clip of step 4 now (20). Write the ledger row first.
 4. Export again in a fresh browser tab (step 5) and run step 6 again.
 5. When the attack budget is spent and still none passes, stop and ask before more credits.
