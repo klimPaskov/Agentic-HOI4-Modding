@@ -99,7 +99,7 @@ VISUAL_PREFLIGHT_CHECKS = (
 SOURCES_MESSAGE = (
     "The job's reference_sources is empty. A 3D reference picture is made from existing references and research, never from a text "
     "prompt alone. List the subject's own reference (the owner's drawing or the mod's art) and, for a real-world subject, the real "
-    "references research found and gave to the image tool, one entry each, then initialize the job again."
+    "references research found and gave to the image tool, one entry each, in the job entry, then record the review again."
 )
 
 
@@ -185,8 +185,13 @@ def record_visual_preflight_review(
     *,
     reviewer: str,
     notes: str = "",
+    sources: Optional[list] = None,
 ) -> Dict[str, Any]:
-    """Record the parent agent's answer to every visual preflight check."""
+    """Record the parent agent's answer to every visual preflight check.
+
+    `sources` is the job entry's current `reference_sources`. When it names any, it replaces the list the job was initialized with, so
+    sources added to the entry after the first `init_pilot_jobs.py` run count without initializing the job again (the hobgoblin run,
+    2026-11-22, filled the list after the first run and the review refused until the job was initialized a second time)."""
 
     if not isinstance(reviewer, str) or not reviewer.strip():
         raise ValueError("A visual preflight review needs a non-empty reviewer.")
@@ -201,6 +206,8 @@ def record_visual_preflight_review(
     if not provenance_path.is_file():
         raise FileNotFoundError(f"Initialize the job before reviewing its reference: {provenance_path}")
     provenance = read_json(provenance_path)
+    if sources:
+        provenance["reference_sources"] = list(sources)
     sources = provenance.get("reference_sources") or []
     if not sources:
         raise ValueError(SOURCES_MESSAGE)
@@ -570,7 +577,8 @@ def main() -> int:
         notes = answers.pop("notes", "")
         reviewed_slug = jobs[args.record_visual_review]["asset_id"].rsplit(".", 1)[-1]
         outcome = record_visual_preflight_review(
-            resolve_job_root(reviewed_slug), answers, reviewer=args.reviewer, notes=str(notes or "")
+            resolve_job_root(reviewed_slug), answers, reviewer=args.reviewer, notes=str(notes or ""),
+            sources=reference_sources(jobs[args.record_visual_review]),
         )
         print(json.dumps(outcome, indent=2))
         return 0 if outcome["status"] == "passed" else 1
