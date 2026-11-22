@@ -261,8 +261,11 @@ def armed_files(job_root: Path, slug: str) -> Dict[str, Path]:
 
 
 def role_clips(spec: Dict[str, Any], clip_names: Sequence[str]) -> Dict[str, str]:
-    """Each role's clip name in the export, from the job's `tripo.roles` (an exact name or its first words). The stages take the names
-    as a comma separated list, so a role that names a clip with a comma is refused: give the words before the first comma."""
+    """Each role's clip as the stages take it, from the job's `tripo.roles` (an exact name or its first words), checked to name exactly
+    one clip of the export. The stages take the names as a comma separated list and resolve each by its first words themselves, so
+    the job's own words are passed, never the full export name: Tripo names a made clip after its prompt, which may hold a comma
+    ("A small goblin stands ready, the axe held low"), and a full name with a comma would split in two. A role that names a clip
+    with a comma is refused: give the words before the first comma."""
 
     from lib.tripo import resolve_clip_name
 
@@ -274,7 +277,8 @@ def role_clips(spec: Dict[str, Any], clip_names: Sequence[str]) -> Dict[str, str
     for role in ROLES:
         if "," in roles[role]:
             raise ValueError(f"tripo.roles.{role} {roles[role]!r} holds a comma: give only the clip's first words, before the first comma")
-        found[role] = resolve_clip_name(roles[role], clip_names)
+        resolve_clip_name(roles[role], clip_names)  # refuses a name that matches no clip, or more than one
+        found[role] = roles[role]
     return found
 
 

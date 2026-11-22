@@ -169,13 +169,29 @@ class ArmTests(unittest.TestCase):
         self.assertEqual(arg("--hand"), "LeftHand")
         self.assertIn("--weapon-bone", grip)
         self.assertEqual(arg("--hold-clips"), "idle,walk,hit_to_stomach,flee_01")
-        self.assertEqual(arg("--hold-fade-clips"), CLIPS[-1])
+        self.assertEqual(arg("--hold-fade-clips"), ATTACK)  # the job's words: the stage resolves them itself
         self.assertEqual(arg("--release-clips"), "defeat_03")
         self.assertEqual(arg("--clearance-clips").split(",")[-1], "defeat_03")
         self.assertEqual(arg("--out"), str(self.files["rigged"]))
         self.assertEqual(arg("--length-ratio"), "1.4")
         self.assertEqual(arg("--grip"), "0.3")
         self.assertEqual(arg("--hold-hand"), "0.26,0.07,0.69")
+
+    def test_a_made_clip_whose_export_name_holds_a_comma_stays_one_clip(self) -> None:
+        # Tripo names a made clip after its prompt, commas and all. The grip stage once got the full names joined with commas and
+        # split "A small goblin stands ready, the axe held low" in two (a goblin route test, 2026-11-22).
+        made = "A small goblin stands ready, the axe held low in his own left hand"
+        write_glb(self.files["body"], [*CLIPS, made])
+        self.files["weapon"].write_bytes(b"glTF")
+        spec = armed_spec()
+        spec["tripo"]["roles"]["idle"] = "A small goblin stands ready"
+        grip, = arm_unit.plan(spec, "hob", "blender", self.root)
+        held = grip[grip.index("--hold-clips") + 1].split(",")
+        self.assertEqual(held[0], "A small goblin stands ready")
+        self.assertEqual(len(held), 4)
+        from lib.tripo import resolve_clip_name
+
+        self.assertEqual(resolve_clip_name(held[0], [*CLIPS, made]), made)
 
     def test_a_shield_goes_in_the_other_hand_and_writes_the_inbox_file(self) -> None:
         write_glb(self.files["body"], CLIPS)
