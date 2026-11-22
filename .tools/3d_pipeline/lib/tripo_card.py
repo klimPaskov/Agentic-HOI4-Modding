@@ -42,7 +42,7 @@ HAND_MESSAGE = (
     "so a weapon on the viewer's right is in the character's left hand: \"LeftHand\". A weapon on the viewer's left is \"RightHand\"."
 )
 
-BLOCK = re.compile(r"<!-- (armed|unarmed|shield) -->\n(.*?)<!-- /\1 -->\n", re.S)
+BLOCK = re.compile(r"<!-- (armed|unarmed|shield|tripo_rig|kit_rig|static|model|unit) -->\n(.*?)<!-- /\1 -->\n", re.S)
 
 
 def job_entry(config: Path, slug: str) -> Dict[str, Any]:
@@ -55,6 +55,36 @@ def job_entry(config: Path, slug: str) -> Dict[str, Any]:
     if slug not in jobs:
         raise KeyError(f"{config} has no job {slug!r}. It has: {', '.join(sorted(jobs)) or 'none'}")
     return jobs[slug]
+
+
+def preset_of(spec: Dict[str, Any]) -> Dict[str, Any]:
+    """The job's preset (`config/tripo_presets.json`): its own `preset`, else the one its unit type or kind belongs to."""
+
+    from lib import tripo_presets
+
+    name = tripo_presets.for_job(spec)
+    if name is None:
+        raise ValueError("the job fits no Tripo preset: set \"preset\" to one of " + ", ".join(tripo_presets.names()))
+    return {"name": name, **tripo_presets.get(name)}
+
+
+def static_folder(kind: str) -> str:
+    """Where `tripo/static_model.py` writes a static model of this kind inside its mod tree."""
+
+
+    path = Path(__file__).resolve().parents[1] / "tripo" / "static_model.py"
+    source = path.read_text(encoding="utf-8")
+    # Read the FOLDERS table without importing the stage, which needs numpy and Pillow.
+    match = re.search(r"^FOLDERS = (\{.*?\})\n", source, re.S | re.M)
+    if not match:
+        raise ValueError("tripo/static_model.py has no FOLDERS table")
+    import ast
+
+    return ast.literal_eval(match.group(1))[kind]
+
+
+def route_of(spec: Dict[str, Any]) -> str:
+    return preset_of(spec)["route"]
 
 
 def is_armed(spec: Dict[str, Any]) -> bool:
@@ -88,29 +118,57 @@ def problems(spec: Dict[str, Any]) -> List[str]:
                      "real-world subject, the real references research found. The picture is made from them, never from a text prompt alone")
     unit_type = spec.get("unit_type")
     block = spec.get("tripo") or {}
+    route = _preset_problems(spec, found)
     if unit_type and unit_type in ARMED_TYPES and not is_armed(spec):
         found.append(f"unit_type {unit_type} holds a weapon, so the job needs tripo.weapon (an unarmed unit takes infantry_unarmed or beast_biped)")
     if is_armed(spec):
-        weapon = block["weapon"]
-        if weapon.get("hand") not in HANDS:
-            found.append(HAND_MESSAGE)
-        if weapon.get("part", WEAPON_PART) != WEAPON_PART or weapon.get("bone", WEAPON_BONE) != WEAPON_BONE:
-            found.append(f"tripo.weapon for a separately modelled weapon is part {WEAPON_PART} on bone {WEAPON_BONE}, the names the grip stage gives it")
-        options = weapon.get("grip_options") or {}
-        for key, meaning in (("length_ratio", "the weapon's length over the body's height, read from the art (the grip stage scales the weapon "
-                                              "to it, and its default of 1.06 makes a short weapon as long as the body is tall)"),
-                             ("grip", "where the hand holds the weapon, as a share of its length from the butt, read from the art")):
-            if not isinstance(options.get(key), (int, float)):
-                found.append(f"tripo.weapon.grip_options.{key}: {meaning}")
-        if not str(weapon.get("name") or "").strip():
-            found.append("tripo.weapon.name names the weapon as the picture shows it, for example \"wooden mallet\": the card's weapon steps use it")
+        found += _weapon_problems(block["weapon"])
     if has_shield(spec):
         if not is_armed(spec):
             found.append("a shield goes in the free hand of an armed unit: the job needs tripo.weapon too")
         elif block["shield"].get("hand", OTHER_HAND.get(block["weapon"].get("hand"))) != OTHER_HAND.get(block["weapon"].get("hand")):
             found.append("tripo.shield.hand must be the other hand than tripo.weapon.hand")
-    if unit_type and block.get("posture") not in ("upright", "hunched"):
+    if unit_type and route == "tripo_rig" and block.get("posture") not in ("upright", "hunched"):
         found.append("tripo.posture must be \"upright\" or \"hunched\" (see the card's clip choice step)")
+    return found
+
+
+def _preset_problems(spec: Dict[str, Any], found: List[str]) -> str | None:
+    """Add what the job lacks for its preset to `found`, and return the preset's route (None when no preset fits)."""
+
+    from lib import tripo_presets
+
+    try:
+        name = tripo_presets.for_job(spec)
+    except KeyError as error:
+        found.append(str(error).strip("'\""))
+        return None
+    if name is None:
+        found.append("the job fits no Tripo preset: set \"preset\" to one of " + ", ".join(tripo_presets.names())
+                     + " (tripo/new_job.py writes a job from a preset)")
+        return None
+    preset = tripo_presets.get(name)
+    if preset["route"] == "static" and spec.get("model_kind") != preset["model_kind"]:
+        found.append(f"the preset {name} makes a {preset['model_kind']}: set model_kind to \"{preset['model_kind']}\"")
+    if preset["route"] != "static" and not spec.get("unit_type"):
+        found.append(f"the preset {name} is a unit: set unit_type (the preset's is \"{preset['unit_type']}\")")
+    return preset["route"]
+
+
+def _weapon_problems(weapon: Dict[str, Any]) -> List[str]:
+    found: List[str] = []
+    if weapon.get("hand") not in HANDS:
+        found.append(HAND_MESSAGE)
+    if weapon.get("part", WEAPON_PART) != WEAPON_PART or weapon.get("bone", WEAPON_BONE) != WEAPON_BONE:
+        found.append(f"tripo.weapon for a separately modelled weapon is part {WEAPON_PART} on bone {WEAPON_BONE}, the names the grip stage gives it")
+    options = weapon.get("grip_options") or {}
+    for key, meaning in (("length_ratio", "the weapon's length over the body's height, read from the art (the grip stage scales the weapon "
+                                          "to it, and its default of 1.06 makes a short weapon as long as the body is tall)"),
+                         ("grip", "where the hand holds the weapon, as a share of its length from the butt, read from the art")):
+        if not isinstance(options.get(key), (int, float)):
+            found.append(f"tripo.weapon.grip_options.{key}: {meaning}")
+    if not str(weapon.get("name") or "").strip():
+        found.append("tripo.weapon.name names the weapon as the picture shows it, for example \"wooden mallet\": the card's weapon steps use it")
     return found
 
 
@@ -190,10 +248,19 @@ def shield_command(spec: Dict[str, Any], files: Dict[str, Path], clips: Dict[str
 
 
 def keep_blocks(text: str, spec: Dict[str, Any]) -> str:
-    """Keep the template's `<!-- armed -->`, `<!-- unarmed -->` and `<!-- shield -->` blocks the job needs and drop the others."""
+    """Keep the template's blocks the job needs and drop the others: `armed`, `unarmed` and `shield` by the weapon, and by the preset's
+    route `tripo_rig` (Tripo rigs and animates), `kit_rig` (a plain model the kit rigs), `static`, `model` (an HD Model, any route but
+    static) and `unit` (any route but static)."""
 
-    wanted = {"armed": is_armed(spec), "unarmed": not is_armed(spec), "shield": has_shield(spec)}
-    return BLOCK.sub(lambda match: match.group(2) if wanted[match.group(1)] else "", text)
+    route = route_of(spec)
+    wanted = {"armed": is_armed(spec), "unarmed": not is_armed(spec), "shield": has_shield(spec), "tripo_rig": route == "tripo_rig",
+              "kit_rig": route == "kit_rig", "static": route == "static", "model": route != "static", "unit": route != "static"}
+    # Blocks nest (an armed block inside the Tripo rig's steps), so resolve the outer ones first and repeat until none is left.
+    while True:
+        kept = BLOCK.sub(lambda match: match.group(2) if wanted[match.group(1)] else "", text)
+        if kept == text:
+            return text
+        text = kept
 
 
 def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit_commit: str) -> str:
@@ -202,19 +269,38 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     problems_found = problems(spec)
     if problems_found:
         raise ValueError("The job entry is not ready for a card:\n- " + "\n- ".join(problems_found))
-    block = spec["tripo"]
+    from lib import tripo_presets
+
+    block = spec.get("tripo") or {}
+    preset = preset_of(spec)
     sources = spec["reference_sources"]
     sources = [sources] if isinstance(sources, str) else sources
+    # The preset's values go first: some of them hold placeholders of their own (the armed attack prompt names <weapon>).
     values = {
+        "<clip table>": tripo_presets.clip_table(preset) if preset["route"] == "tripo_rig" else "",
+        "<paid clip>": (preset.get("paid_clip") or {}).get("prompt", ""),
+        "<picture pose>": preset["picture"]["pose"],
+        "<picture rules>": "\n".join(f"- {rule}" for rule in preset["picture"].get("rules") or []),
+        "<preset>": preset["name"],
+        "<preset label>": preset["label"],
+        "<preset proven>": preset["proven"],
+        "<preset budget>": tripo_presets.budget_line(preset),
+        "<canvas>": tripo_presets.canvas_line(preset),
+    }
+    if preset["route"] == "static":
+        values.update({"<model_kind>": preset["model_kind"], "<static folder>": static_folder(preset["model_kind"]),
+                       **tripo_presets.polycount(preset)})
+    values.update({
         "<asset_slug>": slug,
+        "<runtime_stem>": str(spec.get("runtime_stem") or "<runtime_stem>"),
         "<kit commit>": kit_commit,
         "<picture>": f"{job_folder}/{spec.get('reference_path', 'refs/original/<picture>.png')}",
         "<sources>": "<br>".join(str(item).strip() for item in sources if str(item).strip()),
-        "<unit_type>": str(spec.get("unit_type") or "static model"),
+        "<unit_type>": str(spec.get("unit_type") or f"static model, {spec.get('model_kind')}"),
         "<posture>": str(block.get("posture") or "none (static model)"),
         "<credit_budget>": str(spec.get("credit_budget", "")),
         "<job folder>": job_folder,
-    }
+    })
     if is_armed(spec):
         hand = weapon_hand(spec)
         values.update({

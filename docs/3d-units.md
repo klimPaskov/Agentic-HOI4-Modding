@@ -9,13 +9,42 @@ Tripo is the default generator since November 2026. Models made earlier with Mes
 ## How to use it
 
 1. In HOI4 Mod Setup, tick **3D models workflow** (see [Setup](#setup)). Sign in to [Tripo Studio](https://studio.tripo3d.ai) in your browser.
-2. Tell your coding agent: "Make a 3D unit for `<unit>` with the `hoi4-3d-model-pipeline` skill." That skill is the one entry point.
+2. Tell your coding agent: "Make a 3D unit for `<unit>` with the `hoi4-3d-model-pipeline` skill." That skill is the one entry point. It picks the [preset](#presets) for your kind of model, which holds every Tripo setting, so you never set one by hand.
 3. Approve the reference picture and the credit budget when it asks.
 4. Pick how Tripo is driven:
    - **By hand.** The agent gives you one short card per model. You click through Tripo and save the export into the inbox folder. About ten minutes a model.
    - **By agent.** The agent drives Tripo in your Chrome through Claude in Chrome, while you stay signed in.
 5. The agent picks the export up, picks the clips by measurement, runs the Blender stage and the checks, and shows you renders. Every step prints a one-line verdict: `pass` names the next command, `fail` names the free fix, `escalate` means no script can fix it.
 6. A reviewer that did not make the unit looks at the renders. The unit is finished when it passes. Then look at it in game. If a step fails, see [When something fails](#when-something-fails).
+
+## Presets
+
+Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json`. It holds that kind's Tripo steps and settings, the picture's pose, the free clip candidates for each role, the paid clip it may need, the checks, the credit cap and its Agentic Canvas workflow. It points at the kit's other files for the rest: the unit type in `config/unit_types.json` (its body, rig and Blender clips) or the static kind in `config/static_kinds.json` (its size, triangle budget and clips). `py -3.13 -B .tools/3d_pipeline/tripo/new_job.py --list` prints them with their credits and whether the route is proven for them.
+
+| Preset | For | Route |
+| --- | --- | --- |
+| `humanoid` | soldier-sized people and creatures with empty hands | Tripo rig and clips |
+| `armed_humanoid` | soldier-sized fighters with one weapon, with or without a shield | Tripo rig and clips, the weapon its own model |
+| `large_creature` | ogres, trolls, giants, yetis, apes, golems, armed or not | Tripo rig and clips |
+| `winged_humanoid` | demons, devils, angels | Tripo rig and clips, wing chains by the kit |
+| `winged_quadruped` | dragons, griffins | a plain model the kit rigs |
+| `mount_with_rider` | horses, camels, elephants that carry a rider | a plain model the kit rigs, the rider its own job |
+| `quadruped` | four-legged beasts without wings or a rider | a plain model the kit rigs |
+| `rider` | the person on a mount | Tripo rig and clips, seated by the kit |
+| `tank` | tanks and armoured cars | static, Smart Mesh |
+| `plane` | aircraft | static, Smart Mesh |
+| `ship` | ships | static, Smart Mesh |
+| `building` | buildings on the map | static, Smart Mesh |
+| `landmark` | landmarks | static, Smart Mesh |
+
+Start a job from a preset, then write its card:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/new_job.py --jobs-config <your 3d_jobs.json> --preset armed_humanoid orc_axeman --source "the owner's drawing: refs/drawings/orc.jpg" --set posture=upright --set weapon.name="bearded axe" --set weapon.hand=LeftHand --set weapon.grip_options.length_ratio=0.55 --set weapon.grip_options.grip=0.2
+py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.json> orc_axeman
+```
+
+`new_job.py` writes the whole entry of [step 2](#2-job-entry-picture-card-and-inbox) from the preset: the unit type and its anatomy, the size reference of the type's profile, the cap as the credit budget and the `tripo` block, and for a static model the job file `static_model.py` reads. It then lists what only you can answer (the sources, the posture, the weapon's name, hand and grip), and you give each with `--set` on the same command. `make_card.py` keeps only the steps of the preset's route: a static model's card has no rig or clip steps, a winged quadruped's ends at the plain model's export.
 
 ## What it is
 
@@ -112,7 +141,7 @@ Three rules hold for every unit and asset, at every step:
 
 ### 2. Job entry, picture, card and inbox
 
-**The job entry.** One file, `3d_jobs.json`, anywhere inside the repository, holds an entry for each unit. This is a complete entry for an unarmed foot soldier and one for an armed one. Copy it and change the values.
+**The job entry.** One file, `3d_jobs.json`, anywhere inside the repository, holds an entry for each unit. Write it with `tripo/new_job.py` from the unit's [preset](#presets). This is what it writes for an unarmed foot soldier and an armed one, with the answers filled in, so you can read what each field does.
 
 ```json
 {
@@ -247,7 +276,7 @@ If the entry lacks a field the script needs, it stops and names the missing fiel
 py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.json> <unit>
 ```
 
-It fills `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` from the job entry into `<job folder>/CARD.md`: the picture, the Sources row, every Tripo setting, the candidate presets for each role, the file name to save under and the kit commit it was written from. An armed unit's card also has the weapon picture, the weapon model and the grip step, with the hand and the file names filled in. It refuses, and lists what to add, an entry that would leave a step open: no `reference_sources`, an armed unit type without `tripo.weapon`, a weapon without `hand`, `name` or `grip_options`, or a unit without `tripo.posture`. If you pull a newer kit during a run, write the card again. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
+It fills `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` from the job entry and its preset into `<job folder>/CARD.md`: the preset, the picture, the Sources row, every Tripo setting, the candidate presets for each role, the file name to save under and the kit commit it was written from. An armed unit's card also has the weapon picture, the weapon model and the grip step, with the hand and the file names filled in. It refuses, and lists what to add, an entry that would leave a step open: no `reference_sources`, an armed unit type without `tripo.weapon`, a weapon without `hand`, `name` or `grip_options`, or a unit without `tripo.posture`. If you pull a newer kit during a run, write the card again. In the by-hand mode you follow it. In the by-agent mode the agent follows it.
 
 ### 3. Model (Tripo, 30 credits)
 

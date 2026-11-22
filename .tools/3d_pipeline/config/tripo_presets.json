@@ -1,0 +1,330 @@
+{
+  "schema_version": "1.0.0",
+  "about": "One preset per kind of model a modder can make with Tripo (D-120). A preset holds what is Tripo-specific for its type: the Tripo steps and their settings, the picture rules, the free clip candidates per role, the paid clip that may be needed, the checks, the credit cap and the Agentic Canvas workflow. It never copies what another file already holds: the body, rig and Blender clips come from the unit type in unit_types.json and its body in body_presets.json, a static model's size, triangle budget and clips from its kind in static_kinds.json. `tripo/new_job.py` writes a job entry from a preset, `tripo/make_card.py` writes the card from the job and its preset, and `lib/tripo_presets.py` reads this file and refuses a preset that names a unit type, body, kind, step or Canvas workflow that does not exist. Prices were read on the buttons of a Pro account in November 2026: the card asks to read each one again before the press.",
+  "prices": {
+    "picture": {"credits": 0, "what": "Image tool, Nano Banana 2, inside the free monthly picture quota"},
+    "hd_model": {"credits": 30, "what": "Model, HD Model, H3.1, Ultra Mesh off, Texture on 2K, Remove Lighting on, PBR on, Triangle, 20,000, Generate in Parts off"},
+    "auto_rig": {"credits": 20, "what": "Rig, Humanoid, Mixamo skeleton, Auto Rig"},
+    "preset_clip": {"credits": 0, "what": "Animate, Preset tile, or a clip this account made before"},
+    "text_to_motion": {"credits": 20, "what": "Animate, text to motion, one clip up to 5 seconds, prompt under 266 characters"},
+    "smart_mesh": {"credits": 100, "what": "Smart Mesh, 4 variants, Triangle, at the polycount the preset names. A Smart Mesh trial makes it free while the button shows Trial"},
+    "smart_mesh_texture": {"credits": 20, "what": "Texture on the chosen Smart Mesh variant"},
+    "export": {"credits": 0, "what": "Export, GLB, 2K"}
+  },
+  "steps": {
+    "picture": "A 3D-ready picture from the subject's own reference and researched references, in the Image tool (card step 0)",
+    "weapon_picture": "The weapon alone, redrawn from the same art (card step 1)",
+    "hd_model": "The HD Model of the body picture (card step 2)",
+    "weapon_model": "The HD Model of the weapon picture (card step 2)",
+    "auto_rig": "Tripo's humanoid auto-rig (card step 3)",
+    "preset_clips": "The free preset candidates for every role (card step 4)",
+    "export_rigged": "Export with skeleton and stay in place on, all clips (card step 5)",
+    "export_model": "Export of the plain textured model, no rig (card step 5)",
+    "smart_mesh": "Smart Mesh of the picture, 4 variants at the preset's polycount, pick the cleanest (card step 2)",
+    "smart_mesh_texture": "Texture on the picked Smart Mesh variant (card step 2)"
+  },
+  "presets": {
+    "humanoid": {
+      "label": "Humanoid, empty hands",
+      "for": "Soldier-sized people and creatures with empty hands: zombies, undead soldiers, rat men, mages, civilians.",
+      "route": "tripo_rig",
+      "unit_type": "infantry_unarmed",
+      "armed": false,
+      "job": {"target_height_m": 7.35, "tripo": {}},
+      "asks": ["posture"],
+      "picture": {
+        "pose": "Neutral pose for rigging: arms hanging about 30 degrees away from the body, both hands empty, open and relaxed. Full body, front view, feet visible, plain light grey background, even soft lighting.",
+        "rules": ["A long robe or coat keeps the legs readable: the hem stops above the ankles or parts between the feet."]
+      },
+      "tripo_steps": ["picture", "hd_model", "auto_rig", "preset_clips", "export_rigged"],
+      "clips": {
+        "idle": ["idle"],
+        "move": ["walk"],
+        "attack": ["box_01", "every earlier clip under AI Animation made for an unarmed unit"],
+        "defend": ["hit_to_stomach", "hit_to_body_01"],
+        "retreat": ["flee_01"],
+        "death": ["defeat", "defeat_02", "fall"]
+      },
+      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`", "prompt": "lunges one huge fast step, both arms thrust straight forward at chest height, then jerks back"},
+      "checks": ["clip_check", "pose_check_map", "tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [50, 70],
+      "cap": 120,
+      "canvas": "rigged_unit",
+      "proven": "An unarmed zombie passed every check but still read as an ordinary soldier at map size (November 2026). Follow the map-read step (card step 7) with care."
+    },
+    "armed_humanoid": {
+      "label": "Humanoid with a weapon",
+      "for": "Soldier-sized fighters holding one weapon, with or without a shield: orcs, dwarves, goblins, hobgoblins, knights. A spear or pike takes the unit type spearman.",
+      "route": "tripo_rig",
+      "unit_type": "infantry_melee",
+      "unit_types": ["infantry_melee", "spearman"],
+      "armed": true,
+      "job": {"target_height_m": 7.35, "tripo": {"weapon": {"part": "tripo_part_1", "bone": "Weapon", "source": "rigged", "release_roles": ["death"]}}},
+      "asks": ["posture", "weapon.name", "weapon.hand", "weapon.grip_options.length_ratio", "weapon.grip_options.grip"],
+      "picture": {
+        "pose": "Neutral pose for rigging: arms hanging about 30 degrees away from the body, both hands empty, open and relaxed. Full body, front view, feet visible, plain light grey background, even soft lighting.",
+        "rules": ["The weapon is removed from the body picture and made as its own model from its own picture."]
+      },
+      "tripo_steps": ["picture", "weapon_picture", "hd_model", "weapon_model", "auto_rig", "preset_clips", "export_rigged"],
+      "clips": {
+        "idle": ["idle"],
+        "move": ["walk"],
+        "attack": ["chop", "every earlier clip under AI Animation made for a weapon in one hand"],
+        "defend": ["hit_to_stomach", "hit_to_body_01"],
+        "retreat": ["flee_01"],
+        "death": ["defeat", "defeat_02", "fall"]
+      },
+      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`, and from the start for a hammer, club, mallet or an axe swung overhead (the free library has no overhead weapon blow)", "prompt": "A heavy warrior raises the <weapon> in his own <hand words> high over his head, then smashes it down hard in front of him, torso leaning forward, feet planted."},
+      "checks": ["clip_check", "pose_check_map", "arm_unit", "tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [80, 100],
+      "cap": 120,
+      "cap_note": "A shield is a third model (30): the cap is then 150, and the coordinator or the owner agrees first.",
+      "canvas": "armed_unit",
+      "proven": "Passed two fresh reviews on an orc with a poleaxe and a dwarf with a glaive and shield (November 2026)."
+    },
+    "large_creature": {
+      "label": "Large creature on two legs",
+      "for": "Big two-legged bodies: ogres, trolls, giants, yetis, apes, stone golems. With a weapon it takes heavy_brute, with empty hands beast_biped.",
+      "route": "tripo_rig",
+      "unit_type": "heavy_brute",
+      "unit_types": ["heavy_brute", "beast_biped", "tree_creature"],
+      "unarmed_unit_type": "beast_biped",
+      "armed": "optional",
+      "job": {"target_height_m": 9.9, "tripo": {}},
+      "asks": ["posture", "armed", "weapon.name", "weapon.hand", "weapon.grip_options.length_ratio", "weapon.grip_options.grip", "target_height_m"],
+      "picture": {
+        "pose": "Neutral pose for rigging: arms hanging about 30 degrees away from the body, both hands empty, open and relaxed. Full body, front view, feet visible, plain light grey background, even soft lighting.",
+        "rules": [
+          "Keep the creature's own anatomy: a small head and long limbs, never a human body with creature parts.",
+          "A hand-sculpted, hand-painted maquette look, neither clean photoreal CG nor cartoon."
+        ]
+      },
+      "tripo_steps": ["picture", "weapon_picture", "hd_model", "weapon_model", "auto_rig", "preset_clips", "export_rigged"],
+      "clips": {
+        "idle": ["idle"],
+        "move": ["walk"],
+        "attack": ["chop", "box_01", "every earlier clip under AI Animation made for this body"],
+        "defend": ["hit_to_stomach", "hit_to_body_01"],
+        "retreat": ["flee_01"],
+        "death": ["defeat", "defeat_02", "fall"]
+      },
+      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`", "prompt": "A huge heavy brute raises the <weapon> in its own <hand words> high over its head, then smashes it down hard in front of it, torso leaning forward, feet planted."},
+      "checks": ["clip_check", "pose_check_map", "arm_unit", "tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [70, 100],
+      "cap": 120,
+      "canvas": "armed_unit",
+      "proven": "Passed two fresh reviews on an ogre with a club (November 2026). Long arms and fur (an ape, a yeti) are not proven yet."
+    },
+    "winged_humanoid": {
+      "label": "Winged humanoid",
+      "for": "Two-legged bodies with wings on the back: demons, devils, angels, gargoyles. With a weapon (a trident) it is also armed.",
+      "route": "tripo_rig",
+      "unit_type": "infantry_unarmed",
+      "unit_types": ["infantry_unarmed", "infantry_melee"],
+      "armed": "optional",
+      "anatomy_changes": {"wings": true},
+      "job": {"target_height_m": 7.35, "tripo": {"chains": [{"region": "wings"}]}},
+      "asks": ["posture", "armed", "tail"],
+      "picture": {
+        "pose": "Neutral pose for rigging: arms hanging about 30 degrees away from the body, both hands empty, open and relaxed, both wings spread wide behind the body and fully visible. Full body, front view, feet visible, plain light grey background, even soft lighting.",
+        "rules": [
+          "Wings, horns and weapons are big and dominant: keep their full span from the art.",
+          "target_height_m is the body without the wings at a soldier's height."
+        ]
+      },
+      "tripo_steps": ["picture", "hd_model", "auto_rig", "preset_clips", "export_rigged"],
+      "clips": {
+        "idle": ["idle"],
+        "move": ["walk"],
+        "attack": ["box_01", "every earlier clip under AI Animation made for this body"],
+        "defend": ["hit_to_body_01", "hit_to_stomach"],
+        "retreat": ["flee_01"],
+        "death": ["fall", "defeat", "defeat_02"]
+      },
+      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`", "prompt": "lunges one huge fast step, both arms thrust straight forward at chest height, then jerks back"},
+      "checks": ["clip_check", "pose_check_map", "tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [50, 70],
+      "cap": 120,
+      "canvas": "rigged_unit",
+      "proven": "Passed two fresh reviews on a bat-winged demon (November 2026). Very wide thin wings and feathered wings are not proven yet."
+    },
+    "winged_quadruped": {
+      "label": "Winged beast on four legs",
+      "for": "Four legs and two membrane wings, no rider: dragons, wyverns on four legs, griffins.",
+      "route": "kit_rig",
+      "unit_type": "winged_quadruped",
+      "armed": false,
+      "job": {"tripo": {}, "size_vs_longest_land_unit": 1.0, "size_reason": ""},
+      "asks": ["size_vs_longest_land_unit", "size_reason", "tail"],
+      "picture": {
+        "pose": "Standing on all four feet, wings spread wide and fully visible, tail behind, three-quarter front view, the whole body in frame, plain light grey background, even soft lighting.",
+        "rules": ["Keep the creature's own anatomy and the full wing span from the art."]
+      },
+      "tripo_steps": ["picture", "hd_model", "export_model"],
+      "checks": ["tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [30, 30],
+      "cap": 60,
+      "canvas": "plain_model",
+      "proven": "Not proven: a four-legged dragon has not passed review yet (November 2026). Ask before you spend."
+    },
+    "mount_with_rider": {
+      "label": "Mount with a rider",
+      "for": "A horse, camel, elephant or other mount carrying a rider. Two jobs: the mount (a plain model the kit rigs) and the rider (a humanoid seated by Blender).",
+      "route": "kit_rig",
+      "unit_type": "mount",
+      "armed": false,
+      "rider_preset": "rider",
+      "job": {"tripo": {}, "size_vs_horse": 1.0, "size_vs_horse_reason": "", "rider": {"folder": "", "stem": "", "roles": {"move": "idle", "retreat": "idle", "death": "idle"}}},
+      "asks": ["size_vs_horse", "size_vs_horse_reason", "load", "rider"],
+      "picture": {
+        "pose": "The mount alone, without its rider, standing on all four feet, saddle or load on, three-quarter side view, the whole body in frame, plain light grey background, even soft lighting.",
+        "rules": ["The rider is its own picture and its own job (the rider preset)."]
+      },
+      "tripo_steps": ["picture", "hd_model", "export_model"],
+      "checks": ["tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [80, 100],
+      "cap": 120,
+      "canvas": "plain_model",
+      "proven": "A war elephant with a tower passed (November 2026). A horse with a slim body and seated rider is not proven yet."
+    },
+    "quadruped": {
+      "label": "Beast on four legs",
+      "for": "Four-legged beasts without wings or a rider: wolves, war beasts, bears, war elephants without a crew.",
+      "route": "kit_rig",
+      "unit_type": "quadruped_beast",
+      "armed": false,
+      "job": {"tripo": {}, "size_vs_horse": 1.0, "size_vs_horse_reason": ""},
+      "asks": ["size_vs_horse", "size_vs_horse_reason", "tail"],
+      "picture": {
+        "pose": "Standing on all four feet, tail behind, three-quarter side view, the whole body in frame, plain light grey background, even soft lighting.",
+        "rules": ["Keep the creature's own anatomy: its own leg build, head and tail from the art."]
+      },
+      "tripo_steps": ["picture", "hd_model", "export_model"],
+      "checks": ["tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [30, 30],
+      "cap": 60,
+      "canvas": "plain_model",
+      "proven": "A war elephant passed on the same rig (November 2026). A slim runner (a wolf, a horse) is not proven yet."
+    },
+    "rider": {
+      "label": "Rider for a mount",
+      "for": "The person on a mount. Made standing and seated by Blender, its upper body plays the clip.",
+      "route": "tripo_rig",
+      "unit_type": "rider",
+      "unit_types": ["rider", "mounted_archer"],
+      "armed": false,
+      "job": {"target_height_m": 7.35, "tripo": {}},
+      "asks": ["posture"],
+      "picture": {
+        "pose": "Neutral pose for rigging: standing, arms hanging about 30 degrees away from the body, both hands empty, open and relaxed. Full body, front view, feet visible, plain light grey background, even soft lighting.",
+        "rules": ["Draw the rider standing, never seated: the kit seats it."]
+      },
+      "tripo_steps": ["picture", "hd_model", "auto_rig", "preset_clips", "export_rigged"],
+      "clips": {
+        "idle": ["idle"],
+        "move": ["idle"],
+        "attack": ["chop", "box_01"],
+        "defend": ["hit_to_body_01"],
+        "retreat": ["idle"],
+        "death": ["fall"]
+      },
+      "checks": ["clip_check", "tripo_checks", "check_unit_files", "review"],
+      "expected_credits": [50, 50],
+      "cap": 70,
+      "canvas": "rigged_unit",
+      "proven": "Not proven with a seated Tripo rider yet (November 2026)."
+    },
+    "tank": {
+      "label": "Tank or armoured car",
+      "for": "Tanks, armoured cars and other tracked or wheeled vehicles.",
+      "route": "static",
+      "model_kind": "vehicle",
+      "polycount": 7000,
+      "polycount_reason": "Smart Mesh builds the low poly itself, so the wheels stay round, where a 20,000-triangle model reduced to the kind's 3,948 crumpled its running gear",
+      "job": {},
+      "asks": [],
+      "picture": {
+        "pose": "Three-quarter front view from slightly above, the whole vehicle in frame, turret facing forward, plain light grey background, even soft lighting with no cast shadows.",
+        "rules": ["Made from real reference photos of the vehicle (public-domain or openly licensed) when it is a real vehicle."]
+      },
+      "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
+      "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
+      "expected_credits": [20, 120],
+      "cap": 150,
+      "canvas": "static_model",
+      "proven": "Not proven: the strict close-up review still fails tanks (November 2026)."
+    },
+    "plane": {
+      "label": "Plane",
+      "for": "Propeller planes and other aircraft.",
+      "route": "static",
+      "model_kind": "plane",
+      "job": {},
+      "asks": [],
+      "picture": {
+        "pose": "Three-quarter front view from slightly above, wings level, the whole plane in frame, plain light grey background, even soft lighting with no cast shadows.",
+        "rules": ["Made from real reference photos of the aircraft (public-domain or openly licensed) when it is a real aircraft."]
+      },
+      "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
+      "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
+      "expected_credits": [20, 120],
+      "cap": 150,
+      "canvas": "static_model",
+      "proven": "Passed two fresh reviews (November 2026)."
+    },
+    "ship": {
+      "label": "Ship",
+      "for": "Warships, galleys and other hulls.",
+      "route": "static",
+      "model_kind": "ship",
+      "job": {},
+      "asks": [],
+      "picture": {
+        "pose": "Side three-quarter view from slightly above, the whole hull in frame including the waterline, no water, plain light grey background, even soft lighting with no cast shadows.",
+        "rules": ["Made from real reference photos of the ship or its class when it is a real ship."]
+      },
+      "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
+      "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
+      "expected_credits": [20, 120],
+      "cap": 150,
+      "canvas": "static_model",
+      "proven": "Passed two fresh reviews (November 2026)."
+    },
+    "building": {
+      "label": "Building",
+      "for": "Factories, forges, barracks and other buildings on the map.",
+      "route": "static",
+      "model_kind": "building",
+      "job": {},
+      "asks": [],
+      "picture": {
+        "pose": "Three-quarter view from above at about 45 degrees, the whole building and its base in frame, plain light grey background, even soft lighting with no cast shadows.",
+        "rules": ["Closed walls and roofs: no open wall shells or loose roof slabs."]
+      },
+      "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
+      "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
+      "expected_credits": [20, 120],
+      "cap": 150,
+      "canvas": "static_model",
+      "proven": "Not proven: earlier passes were on simplified redraws and do not count (November 2026)."
+    },
+    "landmark": {
+      "label": "Landmark",
+      "for": "Castles, palaces, monuments and other one-off landmarks.",
+      "route": "static",
+      "model_kind": "landmark",
+      "job": {},
+      "asks": [],
+      "picture": {
+        "pose": "Three-quarter view from above at about 45 degrees, the whole landmark and its base in frame, plain light grey background, even soft lighting with no cast shadows.",
+        "rules": ["Made from real reference photos when it is a real place."]
+      },
+      "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
+      "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
+      "expected_credits": [20, 120],
+      "cap": 150,
+      "canvas": "static_model",
+      "proven": "Not proven: earlier passes were on simplified redraws and do not count (November 2026)."
+    }
+  }
+}
