@@ -90,12 +90,26 @@ How to write `<every detail>`:
 ## 3. Rig (20)
 
 **Rig**: Humanoid, skeleton preset Mixamo, **Auto Rig**.
+<!-- winged -->
+
+**When Tripo says "Not Ready for Auto-Rigging".** Large wings make Tripo's pre-rig check doubt a humanoid rig. It shows this dialog about ten seconds after the press, with **Generate with T-Pose** and **Try Rigging Anyway**. Neither is needed: the picture's pose is the one the route wants, and a T-pose picture means a new model (30). On the devil (2026-11-22) **Try Rigging Anyway** closed the dialog and started nothing, and two more presses on the same page did nothing. What worked:
+
+1. Read the balance in the header. It must not have dropped. If it dropped, the rig is running: wait and do not press again.
+2. Open the rigging page again by its address, `studio.tripo3d.ai/workspace/rigging/<asset id>`.
+3. Check that **Auto Rig** reads 20, then press it once.
+4. Wait 30 seconds. The rig runs without the dialog. The page then shows "Rigged models can be used for animation", the balance has dropped by 20 once, and the button reads **Retry 20**.
+5. Never press **Retry**: it rigs again and charges again. Write the ledger's balance after only when the drop shows.
+<!-- /winged -->
 
 ## 4. Candidate animations (free)
 
 **Animate**, **Preset**. Type each name into the search box and click the middle of its tile once. Wait until **Retargeting** has gone before the next tile. The search matches names only.
 
 <clip table>
+<!-- winged -->
+
+**The wings.** Tripo's rig has no wing bones. The route adds them and moves the wings by fixed rules per role (`docs/3d-units.md`, Secondary chains: cloaks and wings), so pick each clip for the body alone. The job keeps `"chains": [{"region": "wings"}]`, `"defend_pose": "guard"` (the guard is posed by rule, the wings wrap forward) and `"retreat_pose": "look_back"` (the wings fold along the back, the head looks back) in its `tripo` block. A burn death (`"death_kind": "burn"`) takes a standing reaction, so its row lists `hit_to_stomach`.
+<!-- /winged -->
 
 <!-- unarmed -->
 Text-to-motion (20), only when step 6 says no attack passes: name the motion, both hands, their height and the stance, for example `<paid clip>`. At most 266 characters.
