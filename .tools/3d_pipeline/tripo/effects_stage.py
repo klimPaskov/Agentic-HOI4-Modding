@@ -7,7 +7,7 @@
 `mod/gfx/models/<folder>/<name>`. The job (a job entry, or any JSON file) holds an `effects` block, at the top level or under `tripo`:
 
     "effects": {"profiles": ["tank_cannon", "tank_wreck"], "setting": ["gunpowder"],
-                "colour": {"spell_bolt": [90, 200, 255]}, "frames": {"cast_hand_r": 31}}
+                "colour": {"spell_swirl": [90, 200, 255]}, "frames": {"cast_hand_r": 31}}
 
 `profiles` are keys of `config/effects.json`. `setting` says what the unit's world has (`gunpowder`, `magic`, `fire_creature`): a profile
 that needs what the setting lacks is refused (EFFECT-FIT, D-127). `colour` overrides an adapted particle's colour, `frames` a slot's frame.

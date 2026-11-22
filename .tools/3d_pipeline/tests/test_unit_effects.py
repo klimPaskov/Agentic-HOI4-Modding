@@ -21,8 +21,8 @@ from lib.pdx_write import write
 from test_tripo_chain_lift import WingedBiped, local
 from test_tripo_pose_upper import turn
 
-FIRE = {"profiles": ["hellfire"], "setting": ["fire_creature"]}
-EYES = {"profiles": ["necro_eyes"], "setting": ["magic"]}
+FIRE = {"profiles": ["hand_mouth_fire"], "setting": ["fire_creature"]}
+EYES = {"profiles": ["eye_glow"], "setting": ["magic"]}
 
 
 class Config(unittest.TestCase):

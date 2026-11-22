@@ -519,7 +519,7 @@ _COLOUR = re.compile(r"(color\s*=\s*\{\s*x\s*=\s*)([-\d.]+)(\s*y\s*=\s*)([-\d.]+
 
 def recolour(text: str, colour: Sequence[float], tint_grey: bool = False) -> str:
     """Each coloured subsystem takes `colour`'s hue and saturation at its own brightness. Grey ones (smoke) keep their colour, unless
-    `tint_grey` (a necromancer's purple smoke), when they take the hue too."""
+    `tint_grey` (a caster's coloured smoke), when they take the hue too."""
 
     hue, saturation, _value = colorsys.rgb_to_hsv(*[max(0.0, min(255.0, float(c))) / 255.0 for c in colour])
 

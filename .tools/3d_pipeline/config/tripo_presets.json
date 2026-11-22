@@ -54,7 +54,7 @@
       "expected_credits": [50, 70],
       "cap": 120,
       "canvas": "rigged_unit",
-      "effects": ["necro_eyes", "necro_cast", "necro_unravel", "spell_cast", "firearm"],
+      "effects": ["eye_glow", "spell_cast", "smoke_death", "firearm"],
       "proven": "An unarmed zombie passed every check but still read as an ordinary soldier at map size (November 2026). Follow the map-read step (card step 7) with care."
     },
     "armed_humanoid": {
@@ -85,7 +85,7 @@
       "cap": 120,
       "cap_note": "A shield is a third model (30): the cap is then 150, and the coordinator or the owner agrees first.",
       "canvas": "armed_unit",
-      "effects": ["firearm", "necro_eyes", "necro_cast", "necro_unravel", "spell_cast"],
+      "effects": ["firearm", "eye_glow", "spell_cast", "smoke_death"],
       "proven": "Passed two fresh reviews on an orc with a poleaxe and a dwarf with a glaive and shield (November 2026)."
     },
     "large_creature": {
@@ -119,7 +119,7 @@
       "expected_credits": [70, 100],
       "cap": 120,
       "canvas": "armed_unit",
-      "effects": ["stone_dust", "fire_breath", "hellfire", "lava_fire", "ember_idle"],
+      "effects": ["strike_dust", "fire_breath", "hand_mouth_fire", "heavy_fire", "ember_idle"],
       "proven": "Passed two fresh reviews on an ogre with a club (November 2026). Long arms and fur (an ape, a yeti) are not proven yet."
     },
     "winged_humanoid": {
@@ -154,7 +154,7 @@
       "expected_credits": [50, 70],
       "cap": 120,
       "canvas": "rigged_unit",
-      "effects": ["hellfire", "lava_fire", "ember_idle", "wing_gust"],
+      "effects": ["hand_mouth_fire", "heavy_fire", "ember_idle", "wing_gust"],
       "proven": "Passed two fresh reviews on a bat-winged demon (November 2026). Very wide thin wings and feathered wings are not proven yet."
     },
     "winged_quadruped": {

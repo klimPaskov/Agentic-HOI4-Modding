@@ -12,17 +12,17 @@ An effect is not part of a model. Three things make one, and the game draws it:
 
 `time` is in seconds of the clip, the frame divided by 30. `calibrate_effects.py` measured it on vanilla's destroyed landmarks: each one that fires after its start does so within 0.3 s of the frame its clip hides a part. The Forbidden City hides its roof at frame 186 (6.2 s) and fires at 6.0, Nanjing hides a corner at frame 126 (4.2 s) and fires at 4.1. Read as frames, those explosions would go off in the first fifth of a second of a six-second collapse.
 
-A glow that never stops, such as a necromancer's eyes, is the same thing with an endless particle: an event at time 0 in each state, whose particle keeps vanilla's `duration=-1`. Vanilla's infantry keeps its cigarette smoke at the `head` locator in idle this way, and its buildings keep their map lamps lit. The unit shader (`PdxMeshAdvanced`) also takes emission from the normal map's blue channel, but that lights only the texels already painted, which are too few to read at map size, and it changes the unit's maps (D-86). So a glow is always a particle.
+A glow that never stops, such as a hooded caster's eyes, is the same thing with an endless particle: an event at time 0 in each state, whose particle keeps vanilla's `duration=-1`. Vanilla's infantry keeps its cigarette smoke at the `head` locator in idle this way, and its buildings keep their map lamps lit. The unit shader (`PdxMeshAdvanced`) also takes emission from the normal map's blue channel, but that lights only the texels already painted, which are too few to read at map size, and it changes the unit's maps (D-86). So a glow is always a particle.
 
 ## Effects that fit the unit
 
-Every effect fits its unit (D-127): its era, its weapon and its kind of creature. A world without gunpowder has no muzzle flash, and a medieval or fantasy unit never gets modern gunfire. ZIN's Middle Lands have no gunpowder, for example. The kit enforces this with a **setting**: each job says what its unit's world has, and a profile that needs something the setting lacks is refused (EFFECT-FIT). Which effect a creature has comes from its mod's own canon (for ZIN, the bestiary cards, through ZIN's lead), never from a guess.
+Every effect fits its unit (D-127): its era, its weapon and its kind of creature. A world without gunpowder has no muzzle flash, and a medieval or fantasy unit never gets modern gunfire. The kit enforces this with a **setting**: each job says what its unit's world has, and a profile that needs something the setting lacks is refused (EFFECT-FIT). Which effect a creature has comes from its mod's own canon, never from a guess. The kit's profiles are general, one per kind of effect (D-134). The choice for a mod's creature lives in that mod's own job files, in the job's `effects` block, never in the kit.
 
 | Setting tag | Means |
 | --- | --- |
-| `gunpowder` | firearms, cannons and explosives (HOI4's own era, Chaos Redux's modern factions) |
-| `magic` | the unit casts spells (ZIN's necromancer mage Elzon) |
-| `fire_creature` | the unit shoots or breathes fire by its own nature (ZIN's demons and devils, a dragon) |
+| `gunpowder` | firearms, cannons and explosives (HOI4's own era, a modern faction) |
+| `magic` | the unit casts spells (a mage, a necromancer) |
+| `fire_creature` | the unit shoots or breathes fire by its own nature (a fire demon, a dragon) |
 
 Physical effects (a wing's dust, a stone fist's chips) and ship, plane and building deaths need no tag.
 
@@ -57,20 +57,19 @@ A profile is one effect of a unit, in `.tools/3d_pipeline/config/effects.json`. 
 | `ship_death` | none | `hit_effect_locator1` and `2` | death | start, 0.5 s apart | vanilla's `ship_explosion_particle` |
 | `plane_crash` | none | `engine1` | death | start | vanilla's `explosion_particle` |
 | `building_destroyed` | none | `explosion1`, `fire1` | death | start, fire 1.5 s later | vanilla's building explosion, fire and dust |
-| `hellfire` | fire_creature | `fire_hand_l`, `fire_hand_r`, `fire_mouth` | attack | strike | flame from both hands and the mouth, orange-red, with dark smoke (ZIN's demons) |
-| `lava_fire` | fire_creature | `fire_mouth`, `fire_hand_l`, `fire_hand_r` | attack | strike | a heavier lava-orange flame with near-black smoke (ZIN's devils) |
-| `ember_idle` | fire_creature | `ember_body` | idle | start, looping | slow embers, copied from vanilla's sparks (a devil's idle, optional) |
-| `wing_gust` | none | `gust_wing_l`, `gust_wing_r` | attack | strike | vanilla's dust cloud thrown from the wing tips (ZIN's angel) |
-| `stone_dust` | none | `dust_hand_l`, `dust_hand_r` | attack | strike | vanilla's dust and debris of a damaged building (ZIN's Kror) |
-| `necro_eyes` | magic | `glow_eye_l`, `glow_eye_r` | every state but death | start, looping | a faint purple glow, copied from vanilla's map lamp (ZIN's Elzon) |
-| `necro_cast` | magic | `cast_hand_r` | attack, support_attack | peak | a purple-magenta swirl with dark purple wisps |
-| `necro_unravel` | magic | `smoke_body` | death | start | purple smoke for the whole death, with the swirl |
-| `spell_cast` | magic | `cast_hand_r` | attack, support_attack | strike | an arcane glow in a colour the job sets (another mod's caster) |
+| `hand_mouth_fire` | fire_creature | `fire_hand_l`, `fire_hand_r`, `fire_mouth` | attack | strike | flame from both hands and the mouth, orange-red, with dark smoke |
+| `heavy_fire` | fire_creature | `fire_mouth`, `fire_hand_l`, `fire_hand_r` | attack | strike | a heavier lava-orange flame with near-black smoke |
+| `ember_idle` | fire_creature | `ember_body` | idle | start, looping | slow embers, copied from vanilla's sparks |
+| `wing_gust` | none | `gust_wing_l`, `gust_wing_r` | attack | strike | vanilla's dust cloud thrown from the wing tips |
+| `strike_dust` | none | `dust_hand_l`, `dust_hand_r` | attack | strike | vanilla's dust and debris of a damaged building (a stone or earth creature's blow) |
+| `eye_glow` | magic | `glow_eye_l`, `glow_eye_r` | every state but death | start, looping | a faint glow, purple by default, copied from vanilla's map lamp |
+| `spell_cast` | magic | `cast_hand_r` | attack, support_attack | peak | a swirl with dark wisps, purple by default |
+| `smoke_death` | magic | `smoke_body` | death | start | coloured smoke for the whole death, with the swirl, purple by default |
 | `fire_breath` | fire_creature | `fire_mouth` | attack | strike | vanilla's flamethrower flame and smoke as they are |
 
-Vanilla has no spells and no creature that shoots fire. Those effects copy the nearest vanilla particle and change only its colour and its size: the flame tank's `flamethrower_particle` for fire and spells, its smoke for wisps, the map lamp `lamp_red_particle` for the eyes, the power line `sparks_effect` for embers, `city_smoke_particle` for the necromancer's death. Each coloured subsystem takes the new hue at its own brightness. Grey ones (smoke) keep their colour, unless the particle is marked `tint_grey` (dark or purple smoke). The size is the `scale` of the registration. Nothing else of the particle changes.
+Vanilla has no spells and no creature that shoots fire. Those effects copy the nearest vanilla particle and change only its colour and its size: the flame tank's `flamethrower_particle` for fire and spells, its smoke for wisps, the map lamp `lamp_red_particle` for the eyes, the power line `sparks_effect` for embers, `city_smoke_particle` for a death in smoke. Each coloured subsystem takes the new hue at its own brightness. Grey ones (smoke) keep their colour, unless the particle is marked `tint_grey` (dark or coloured smoke). The size is the `scale` of the registration. Nothing else of the particle changes.
 
-Not covered: ZIN's angel scatters loose feathers in its wing beat and its death. Vanilla has no feather particle, and a copy may change only colour and scale, so feathers need a new particle with its own texture. That is a decision for the maintainer, not a route step. A demon's teleport flash waits for a teleport-like clip.
+Not covered: loose feathers in a wing beat or a death. Vanilla has no feather particle, and a copy may change only colour and scale, so feathers need a new particle with its own texture. That is a decision for the maintainer, not a route step. A teleport flash waits for a teleport-like clip.
 
 ### Where a new locator goes
 
@@ -105,10 +104,10 @@ Run it after the unit's files pass their checks and before the review sheets. No
 1. Add an `effects` block to the job entry (at the top level or in its `tripo` block). Name only profiles the preset lists and the mod's canon gives the unit, and give the setting the unit's world has:
 
    ```json
-   "effects": {"profiles": ["hellfire"], "setting": ["fire_creature"]}
+   "effects": {"profiles": ["hand_mouth_fire"], "setting": ["fire_creature"]}
    ```
 
-   A tank: `{"profiles": ["tank_cannon", "tank_wreck"], "setting": ["gunpowder"]}`. A necromancer: `{"profiles": ["necro_eyes", "necro_cast", "necro_unravel"], "setting": ["magic"]}`. Another colour: `"colour": {"spell_bolt": [90, 200, 255]}`. A fixed frame: `"frames": {"cast_hand_r": 31}`.
+   A tank: `{"profiles": ["tank_cannon", "tank_wreck"], "setting": ["gunpowder"]}`. A hooded caster: `{"profiles": ["eye_glow", "spell_cast", "smoke_death"], "setting": ["magic"]}`. Another colour: `"colour": {"spell_swirl": [90, 200, 255]}`. A fixed frame: `"frames": {"cast_hand_r": 31}`.
 
 2. Run the step on the unit's files. A Tripo unit:
 
@@ -130,7 +129,7 @@ Run it after the unit's files pass their checks and before the review sheets. No
    py -3.13 -B .tools/3d_pipeline/tripo/effects_sheet.py <unit files folder> --out <job folder>/review/effects.png
    ```
 
-   Each clip that fires gets a row per view, at the frame before its first event, the event's frame and 2, 6 and 15 frames after. The particles are stand-ins, stamped "particles: stand-in": a short orange flash, a small grey gun-smoke puff, fire that rises, grey smoke that rises slowly and grows, a spell's or eye's glow in its colour, a blast that swells. Look that each one starts on its frame, at its locator, on the right part, and stays with the part. The game-size and close-up sheets (`review_unit.py`, `tripo/weapon_sheets.py`, `tripo/clip_sheet.py`, `tripo/static_sheets.py`) draw the same stand-ins. Give the sheet to a fresh reviewer with this question: does each effect start at its place on its frame and stay on its part? A finding on a creature's effect can come from its clip: the first demon's right-hand fire sat by its face because its attack, a boxing guard, held that fist there.
+   Each clip that fires gets a row per view, at the frame before its first event, the event's frame and 2, 6 and 15 frames after. The particles are stand-ins, stamped "particles: stand-in": a short orange flash, a small grey gun-smoke puff, fire that rises, grey smoke that rises slowly and grows, a spell's or eye's glow in its colour, a blast that swells. Look that each one starts on its frame, at its locator, on the right part, and stays with the part. The game-size and close-up sheets (`review_unit.py`, `tripo/weapon_sheets.py`, `tripo/clip_sheet.py`, `tripo/static_sheets.py`) draw the same stand-ins. Give the sheet to a fresh reviewer with this question: does each effect start at its place on its frame and stay on its part? A finding on a creature's effect can come from its clip: a creature's right-hand fire sat by its face because its attack clip, a boxing guard, held that fist there.
 
 4. Wire the unit (`wire_unit.py`, step 12 of the route). It writes the plan's events into the entity's states, the copied particle files to `gfx/particles/<stem>_<particle>.asset` and their registration to `gfx/entities/<stem>_effects_particles.gfx`. The plan's sounds join the job's `sound_plan` at the same frames. A frame the job's own `sound_plan` already gives the role keeps the job's sound.
 
@@ -164,10 +163,10 @@ Only the game draws the real particles. These are checked later by the night run
 | `tank_cannon`, `heavy_cannon`, `firearm` | The flash is at the muzzle, not inside the barrel or in front of it, on the shot's recoil, and the gun's sound plays with it |
 | `tank_wreck` | The explosion bursts at the turret ring as the turret leaves and stays at the hull, the deck burns and smokes after it, and the smoke lasts as long as the wreck shows. Note how long the game holds the death's last frame |
 | `ship_death`, `plane_crash`, `building_destroyed` | The explosions come where the hull, engine or roof is, in the order and spacing of the plan |
-| `hellfire`, `lava_fire`, `fire_breath` | The flame comes from each hand and the mouth on the strike, toward the front, in its colour, with its smoke, and does not read as a gunshot or hide the head |
-| `ember_idle`, `necro_eyes` | The glow stays at its place through every state that plays it, faint, and does not grow brighter each time the unit changes state (an endless particle fired again on each state change) |
-| `necro_cast`, `necro_unravel`, `spell_cast` | The swirl is at the raised hand on the cast, the death's smoke covers the body as it unravels, in purple and not fire |
-| `wing_gust`, `stone_dust` | The dust comes from the wing tips or the fists on the strike, and nothing glows |
+| `hand_mouth_fire`, `heavy_fire`, `fire_breath` | The flame comes from each hand and the mouth on the strike, toward the front, in its colour, with its smoke, and does not read as a gunshot or hide the head |
+| `ember_idle`, `eye_glow` | The glow stays at its place through every state that plays it, faint, and does not grow brighter each time the unit changes state (an endless particle fired again on each state change) |
+| `spell_cast`, `smoke_death` | The swirl is at the raised hand on the cast, the death's smoke covers the body as it unravels, in its colour and not fire |
+| `wing_gust`, `strike_dust` | The dust comes from the wing tips or the fists on the strike, and nothing glows |
 | sounds | Each sound lands on its particle's frame (the seconds rule), not 30 times later |
 
 ## What vanilla does
