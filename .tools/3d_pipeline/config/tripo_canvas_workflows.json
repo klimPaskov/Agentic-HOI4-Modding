@@ -7,38 +7,103 @@
       "title": "Rigged unit",
       "extra_credits": 15,
       "nodes": [
-        {"node": "Upload", "settings": "the subject's own reference and the researched references (D-110)"},
-        {"node": "Generate Image", "settings": "Nano Banana 2, the card's step 0 sentence with the preset's pose", "credits": 0},
-        {"node": "HD Model", "settings": "Image input, Texture on, Remove Lighting on, 2K, PBR on, Generate in Parts off, Triangle, 20000", "credits": 45},
-        {"node": "Rigging", "settings": "Humanoid, skeleton preset Mixamo", "credits": 20},
-        {"node": "Animation", "settings": "one node per candidate of the card's clip table, each from the Rigging node, Library tab, tick the preset", "credits": 0},
-        {"node": "Export", "settings": "on each Animation node: GLB, Export Skeleton on, Animation stay in Place on. Save each as <job folder>/inbox/clips/<clip>.glb", "credits": 0}
+        {
+          "node": "Upload",
+          "settings": "the subject's own reference and the researched references (D-110)"
+        },
+        {
+          "node": "Generate Image",
+          "settings": "Nano Banana 2, the card's step 0 sentence with the preset's pose",
+          "credits": 0
+        },
+        {
+          "node": "HD Model",
+          "settings": "Image input, Texture on, Remove Lighting on, 2K, PBR on, Generate in Parts off, Triangle, 20000",
+          "credits": 45
+        },
+        {
+          "node": "Rigging",
+          "settings": "Humanoid, skeleton preset Mixamo",
+          "credits": 20
+        },
+        {
+          "node": "Animation",
+          "settings": "one node per candidate of the card's clip table, each from the Rigging node's Animation chip, Library tab, tick the preset. They generate in parallel. Its Generate tab is text to motion at 20",
+          "credits": 0
+        },
+        {
+          "node": "Export",
+          "settings": "each Animation node from its Export chip: GLB, Select All, Export Skeleton on, Animation stay in Place on. One download per page load, so reload before each. Save each as <job folder>/inbox/clips/<clip>.glb",
+          "credits": 0
+        }
       ],
       "after": "join_clips"
     },
     "armed_unit": {
       "title": "Armed unit",
-      "extra_credits": 30,
+      "extra_credits": 15,
       "nodes": [
-        {"node": "Upload", "settings": "the subject's own reference and the researched references (D-110)"},
-        {"node": "Generate Image", "settings": "Nano Banana 2, the card's step 0 sentence with the weapon removed", "credits": 0},
-        {"node": "Generate Image", "settings": "Nano Banana 2, the card's step 1 weapon sentence, from the same Upload", "credits": 0},
-        {"node": "HD Model", "settings": "the body picture, Texture on, Remove Lighting on, 2K, PBR on, Generate in Parts off, Triangle, 20000", "credits": 45},
-        {"node": "HD Model", "settings": "the weapon picture, the same settings", "credits": 45},
-        {"node": "Rigging", "settings": "on the body model: Humanoid, skeleton preset Mixamo", "credits": 20},
-        {"node": "Animation", "settings": "one node per candidate of the card's clip table, each from the Rigging node", "credits": 0},
-        {"node": "Export", "settings": "each Animation node as <job folder>/armed/clips/<clip>.glb, the weapon's HD Model as <job folder>/armed/<asset_slug>_weapon__model.glb", "credits": 0}
+        {
+          "node": "Upload",
+          "settings": "the subject's own reference and the researched references (D-110)"
+        },
+        {
+          "node": "Generate Image",
+          "settings": "Nano Banana 2, the card's step 0 sentence with the weapon removed",
+          "credits": 0
+        },
+        {
+          "node": "Generate Image",
+          "settings": "Nano Banana 2, the card's step 1 weapon sentence, from the same Upload. The weapon model itself is made on Tripo's page (card step 2, 30), which saves 15 against a Canvas HD Model node",
+          "credits": 0
+        },
+        {
+          "node": "HD Model",
+          "settings": "the body picture, Texture on, Remove Lighting on, 2K, PBR on, Generate in Parts off, Triangle, 20000",
+          "credits": 45
+        },
+        {
+          "node": "Rigging",
+          "settings": "on the body model: Humanoid, skeleton preset Mixamo",
+          "credits": 20
+        },
+        {
+          "node": "Animation",
+          "settings": "one node per candidate of the card's clip table, each from the Rigging node",
+          "credits": 0
+        },
+        {
+          "node": "Export",
+          "settings": "each Animation node from its Export chip (Select All, Export Skeleton on, Animation stay in Place on, one download per page load) as <job folder>/armed/clips/<clip>.glb, then tripo/join_clips.py into <job folder>/armed/<asset_slug>__body.glb",
+          "credits": 0
+        }
       ],
-      "after": "join_clips"
+      "after": "join_clips",
+      "proven": "2026-11-22, a ZIN goblin with a hand axe: Canvas body 45, page axe 30, Canvas rig 20, nine free presets, 95 credits, attack check passed on chop"
     },
     "plain_model": {
       "title": "Plain model",
       "extra_credits": 15,
       "nodes": [
-        {"node": "Upload", "settings": "the subject's own reference and the researched references (D-110)"},
-        {"node": "Generate Image", "settings": "Nano Banana 2, the card's step 0 sentence with the preset's pose", "credits": 0},
-        {"node": "HD Model", "settings": "Texture on, Remove Lighting on, 2K, PBR on, Generate in Parts off, Triangle, 20000", "credits": 45},
-        {"node": "Export", "settings": "GLB, no rig, as <job folder>/inbox/<asset_slug>__model.glb", "credits": 0}
+        {
+          "node": "Upload",
+          "settings": "the subject's own reference and the researched references (D-110)"
+        },
+        {
+          "node": "Generate Image",
+          "settings": "Nano Banana 2, the card's step 0 sentence with the preset's pose",
+          "credits": 0
+        },
+        {
+          "node": "HD Model",
+          "settings": "Texture on, Remove Lighting on, 2K, PBR on, Generate in Parts off, Triangle, 20000",
+          "credits": 45
+        },
+        {
+          "node": "Export",
+          "settings": "GLB, no rig, as <job folder>/inbox/<asset_slug>__model.glb",
+          "credits": 0
+        }
       ],
       "after": null
     },
@@ -46,11 +111,30 @@
       "title": "Static model",
       "extra_credits": null,
       "nodes": [
-        {"node": "Upload", "settings": "the subject's own reference and the real reference photos (D-110)"},
-        {"node": "Generate Image", "settings": "Nano Banana 2, the card's step 0 sentence with the preset's view", "credits": 0},
-        {"node": "Smart Mesh", "settings": "Triangle, the card's polycount", "credits": null},
-        {"node": "Texture Generation", "settings": "on the picked variant, PBR on, 2K", "credits": null},
-        {"node": "Export", "settings": "GLB, as <job folder>/inbox/<asset_slug>.glb", "credits": 0}
+        {
+          "node": "Upload",
+          "settings": "the subject's own reference and the real reference photos (D-110)"
+        },
+        {
+          "node": "Generate Image",
+          "settings": "Nano Banana 2, the card's step 0 sentence with the preset's view",
+          "credits": 0
+        },
+        {
+          "node": "Smart Mesh",
+          "settings": "Triangle, the card's polycount",
+          "credits": null
+        },
+        {
+          "node": "Texture Generation",
+          "settings": "on the picked variant, PBR on, 2K",
+          "credits": null
+        },
+        {
+          "node": "Export",
+          "settings": "GLB, as <job folder>/inbox/<asset_slug>.glb",
+          "credits": 0
+        }
       ],
       "after": null
     }

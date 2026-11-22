@@ -69,7 +69,7 @@ class PickPreset(unittest.TestCase):
         self.assertEqual(result["preset"], "armed_humanoid")
         self.assertIn("A goblin with an axe: humanoid with a weapon (preset armed_humanoid).", result["confirm"])
         self.assertIn("The card costs about 80 to 100 credits", result["confirm"])
-        self.assertIn("the Canvas workflow Armed unit about 110 to 130", result["confirm"])
+        self.assertIn("the Canvas workflow Armed unit about 95 to 115", result["confirm"])
         self.assertIn("cap 120", result["confirm"])
         self.assertTrue(result["confirm"].endswith("Right?"))
         self.assertIn("chop", " ".join(result["fitting_clips"]["attack"]))
