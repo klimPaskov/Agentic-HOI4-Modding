@@ -86,8 +86,8 @@ class CardTests(unittest.TestCase):
         card = fill(unarmed_spec())
         self.assertIn("inbox/hob__rigged.glb", card)
         self.assertIn("--unarmed", card)
-        self.assertIn("--attack box_01", card)
-        for absent in ("Weapon picture", "arm_unit.py", "_weapon__model", "--hand ", "<!--"):
+        self.assertIn("--attack <earlier clips>", card)  # D-127: no free unarmed attack fits, box_01 never
+        for absent in ("Weapon picture", "arm_unit.py", "_weapon__model", "--hand ", "<!--", "box_01"):
             self.assertNotIn(absent, card)
 
     def test_a_shield_adds_its_own_picture_and_model(self) -> None:

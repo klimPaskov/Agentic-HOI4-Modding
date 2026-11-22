@@ -113,6 +113,17 @@ def intake_files(spec: Dict[str, Any], slug: str, inbox: Path) -> Dict[str, Path
     return found  # type: ignore[return-value]
 
 
+def refuse_unfitting_clips(spec: Dict[str, Any]) -> None:
+    """Refuse a job whose role clips do not fit the unit (D-127): a modern boxing, kick or dance preset never does, whatever the checks say
+    (`config/tripo_presets.json`, `never_fitting`)."""
+
+    from lib import tripo_presets
+
+    found = tripo_presets.unfitting_clips(spec)
+    if found:
+        raise ValueError(f"{spec.get('asset_id', 'the job')}: {tripo_presets.unfitting_message(found)}.")
+
+
 def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
     """Refuse a rigged export whose role clips carry travel in the hips (lib/glb_root.py): the route's loop, grounding and weapon-drop
     rules expect clips exported with Tripo's "Animation in Place" switch on."""
@@ -360,6 +371,7 @@ def run_intake(
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     files = intake_files(spec, slug, Path(inbox))
+    refuse_unfitting_clips(spec)
     if "rigged" in files:
         refuse_travelling_clips(spec, files["rigged"])
     sources = [
