@@ -31,15 +31,9 @@ The picture is made from existing references, never from a text prompt alone. Ev
 4. Check that the button reads 0, then press it.
 5. Compare the result with the art, detail by detail, before you go on.
 
-`Redraw this exact <subject> for 3D modelling. Keep <every detail>. Invent nothing. <picture pose>`
+`<picture sentence>`
 
 <picture rules>
-
-For a building or landmark, use this instead. The Image tool takes three uploads at most, so put related photos side by side in one picture.
-
-`A 3D-ready picture of one <building> in the style of the references. Keep <every detail>. Only a small yard just round the building, with a ragged edge that can sink into the terrain, no square paved plate. Every post, brace and beam thick and chunky. Elevated three-quarter view, the whole building in frame, plain light grey background, soft even light with no cast shadows, no smoke, no people, no trees.`
-
-Before you go on, look at the picture: no plate base, and no brace thinner than about 1.5 % of the building's longest side. Redraw it (free) if either fails.
 
 How to write `<every detail>`:
 

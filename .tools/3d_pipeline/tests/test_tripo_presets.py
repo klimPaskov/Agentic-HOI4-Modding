@@ -122,6 +122,8 @@ class JobFromPreset(unittest.TestCase):
         self.assertEqual(P.for_job({"unit_type": "heavy_brute"}), "large_creature")
         self.assertEqual(P.for_job({"unit_type": "mount"}), "mount_with_rider")
         self.assertEqual(P.for_job({"model_kind": "ship"}), "ship")
+        # A dragon's job says it has wings: its unit type has one preset, which takes it.
+        self.assertEqual(P.for_job({"unit_type": "winged_quadruped", "anatomy": {"wings": True}}), "winged_quadruped")
         self.assertIsNone(P.for_job({"unit_type": "archer"}))
 
 
@@ -156,6 +158,14 @@ class CardFromPreset(unittest.TestCase):
         self.assertIn(f"polycount {budget['value']:,}", text)
         self.assertIn("mod/gfx/models/units/ships/t_ship", text)
         self.assertIn("polycount 7,000", card("tank"))
+
+    def test_only_a_building_or_landmark_card_asks_for_a_small_yard_and_thick_bracing(self):
+        for name in P.names():
+            with self.subTest(preset=name):
+                text = card(name)
+                building = name in ("building", "landmark")
+                self.assertEqual("no square paved plate" in text, building)
+                self.assertEqual("Redraw this exact <subject> for 3D modelling" in text, not building)
 
 
 class NewJobCommand(unittest.TestCase):

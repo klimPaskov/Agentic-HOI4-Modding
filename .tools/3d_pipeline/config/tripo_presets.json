@@ -298,8 +298,14 @@
       "job": {},
       "asks": [],
       "picture": {
-        "pose": "Three-quarter view from above at about 45 degrees, the whole building and its base in frame, plain light grey background, even soft lighting with no cast shadows.",
-        "rules": ["Closed walls and roofs: no open wall shells or loose roof slabs."]
+        "sentence_prefix": "A 3D-ready picture of one <building> in the style of the references. Keep <every detail>. Only a small yard just round the building, with a ragged edge that can sink into the terrain, no square paved plate. Every post, brace and beam thick and chunky.",
+        "pose": "Elevated three-quarter view, the whole building in frame, plain light grey background, soft even light with no cast shadows, no smoke, no people, no trees.",
+        "rules": [
+          "The Image tool takes three uploads at most, so put related photos side by side in one picture.",
+          "Before you go on, look at the picture: no plate base, and no brace thinner than about 1.5 % of the building's longest side. Redraw it (free) if either fails.",
+          "Keep the mod's own look: when the mod wants a hand-sculpted, hand-painted maquette, ask for that and not for \"photographic\".",
+          "Closed walls and roofs: no open wall shells or loose roof slabs."
+        ]
       },
       "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
       "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
@@ -316,8 +322,14 @@
       "job": {},
       "asks": [],
       "picture": {
-        "pose": "Three-quarter view from above at about 45 degrees, the whole landmark and its base in frame, plain light grey background, even soft lighting with no cast shadows.",
-        "rules": ["Made from real reference photos when it is a real place."]
+        "sentence_prefix": "A 3D-ready picture of one <building> in the style of the references. Keep <every detail>. Only a small yard just round the building, with a ragged edge that can sink into the terrain, no square paved plate. Every post, brace and beam thick and chunky.",
+        "pose": "Elevated three-quarter view, the whole building in frame, plain light grey background, soft even light with no cast shadows, no smoke, no people, no trees.",
+        "rules": [
+          "The Image tool takes three uploads at most, so put related photos side by side in one picture.",
+          "Before you go on, look at the picture: no plate base, and no brace thinner than about 1.5 % of the building's longest side. Redraw it (free) if either fails.",
+          "Keep the mod's own look: when the mod wants a hand-sculpted, hand-painted maquette, ask for that and not for \"photographic\".",
+          "Made from real reference photos when it is a real place."
+        ]
       },
       "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
       "checks": ["static_model", "check_unit_files", "static_sheets", "review"],

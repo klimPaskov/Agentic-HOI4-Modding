@@ -42,6 +42,9 @@ HAND_MESSAGE = (
     "so a weapon on the viewer's right is in the character's left hand: \"LeftHand\". A weapon on the viewer's left is \"RightHand\"."
 )
 
+# The card's picture sentence starts with this unless the preset gives its own start (a building asks for a small yard and thick bracing).
+DEFAULT_PICTURE_PREFIX = "Redraw this exact <subject> for 3D modelling. Keep <every detail>. Invent nothing."
+
 BLOCK = re.compile(r"<!-- (armed|unarmed|shield|tripo_rig|kit_rig|static|model|unit) -->\n(.*?)<!-- /\1 -->\n", re.S)
 
 
@@ -279,7 +282,7 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     values = {
         "<clip table>": tripo_presets.clip_table(preset) if preset["route"] == "tripo_rig" else "",
         "<paid clip>": (preset.get("paid_clip") or {}).get("prompt", ""),
-        "<picture pose>": preset["picture"]["pose"],
+        "<picture sentence>": " ".join([preset["picture"].get("sentence_prefix") or DEFAULT_PICTURE_PREFIX, preset["picture"]["pose"]]),
         "<picture rules>": "\n".join(f"- {rule}" for rule in preset["picture"].get("rules") or []),
         "<preset>": preset["name"],
         "<preset label>": preset["label"],

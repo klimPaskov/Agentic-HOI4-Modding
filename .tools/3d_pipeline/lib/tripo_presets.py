@@ -134,15 +134,16 @@ def for_job(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Opti
     unit_type, kind = spec.get("unit_type"), spec.get("model_kind")
     wings = bool((spec.get("anatomy") or {}).get("wings")) or any(
         (chain or {}).get("region") == "wings" for chain in (spec.get("tripo") or {}).get("chains") or [])
-    for name, preset in data["presets"].items():
-        if kind and preset.get("model_kind") == kind:
-            return name
-        if not unit_type or preset.get("route") == "static":
-            continue
-        types = [preset.get("unit_type"), *(preset.get("unit_types") or []), preset.get("unarmed_unit_type")]
-        if unit_type in types and wings == bool((preset.get("anatomy_changes") or {}).get("wings")):
-            return name
-    return None
+    if kind:
+        return next((name for name, preset in data["presets"].items() if preset.get("model_kind") == kind), None)
+    if not unit_type:
+        return None
+    # Presets of the unit type. Where several share it (an armed humanoid and a winged one), wings decide: a preset that adds wings
+    # takes a winged job, the others an unwinged one. A type with one preset (a dragon's winged_quadruped) takes it whatever the anatomy.
+    fitting = [name for name, preset in data["presets"].items() if preset.get("route") != "static"
+               and unit_type in [preset.get("unit_type"), *(preset.get("unit_types") or []), preset.get("unarmed_unit_type")]]
+    exact = [name for name in fitting if wings == bool((data["presets"][name].get("anatomy_changes") or {}).get("wings"))]
+    return (exact or fitting or [None])[0]
 
 
 def steps_for(preset: Dict[str, Any], armed: bool) -> List[str]:
