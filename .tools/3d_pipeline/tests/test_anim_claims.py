@@ -136,6 +136,43 @@ class InTheRoute(unittest.TestCase):
         self.assertEqual(cli.main(["claim", "--jobs-config", str(registry), "axe_fighter"]), 3)
 
 
+class OutsideRegistry(unittest.TestCase):
+    """The record never ships with the mod. A job's `anim_registry`, or the command's --registry, keeps it as a .json file elsewhere."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.dir = Path(self.tmp.name)
+        self.registry = self.dir / "notes" / "mod_a.json"
+        A.claim(self.registry, "other_unit", {"defend": "hit_to_stomach"})
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def test_a_json_path_is_the_registry_itself(self):
+        self.assertTrue(self.registry.exists())
+        self.assertFalse((self.dir / "notes" / ".hoi4_3d").exists())
+        self.assertEqual(A.holders(self.registry)["hit_to_stomach"]["unit"], "other_unit")
+
+    def test_the_jobs_anim_registry_is_read_by_the_card_and_the_intake(self):
+        job = new_job.build_entry("humanoid", "walker", ["the mod's art"], "", {"posture": "upright"})
+        job["anim_registry"] = str(self.registry)
+        job["tripo"]["roles"] = {**ROLES, "attack": "a soldier lunges"}
+        self.assertTrue(any("UNIT-ANIM-SHARED" in item for item in C.problems(job)))
+        with self.assertRaises(ValueError):
+            tripo_intake.refuse_shared_clips(job, "walker")
+
+    def test_the_command_takes_registry(self):
+        jobs = self.dir / "jobs.json"
+        job = {"provider": "tripo", "tripo": {"roles": {"idle": "idle"}}}
+        jobs.write_text(json.dumps({"jobs": {"walker": job}}), encoding="utf-8")
+        self.assertEqual(cli.main(["claim", "--jobs-config", str(jobs), "walker", "--registry", str(self.registry)]), 0)
+        self.assertEqual(A.holders(self.registry)["idle"]["unit"], "walker")
+        from unittest import mock
+
+        with mock.patch("sys.stdout"):
+            self.assertEqual(cli.main(["list", "--registry", str(self.registry)]), 0)
+
+
 class OwnClipsPerType(unittest.TestCase):
     def test_every_tripo_rigged_type_has_an_own_clip_prompt_for_each_state(self):
         for name in P.names():

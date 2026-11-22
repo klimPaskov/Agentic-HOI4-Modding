@@ -141,12 +141,12 @@ def held_by_others(spec: Dict[str, Any]) -> Dict[str, str]:
 
     from lib import anim_claims
 
-    root = anim_claims.mod_root(spec)
-    if root is None:
+    registry = anim_claims.registry_for(spec)
+    if registry is None or not registry.exists():
         return {}
-    data = anim_claims.load(root)
+    data = anim_claims.load(registry)
     family = anim_claims._family(unit_slug(spec), spec.get("reskin_of"), data)
-    return {clip: owner["unit"] for clip, owner in anim_claims.holders(root).items() if owner["unit"] not in family}
+    return {clip: owner["unit"] for clip, owner in anim_claims.holders(registry).items() if owner["unit"] not in family}
 
 
 def has_shield(spec: Dict[str, Any]) -> bool:

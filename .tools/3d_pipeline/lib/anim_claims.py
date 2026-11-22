@@ -11,6 +11,10 @@ A claim is written under a lock (a directory made beside the file, which is atom
 so two workers who claim at once never both win: the earliest claim holds the clip. `check` is the route's UNIT-ANIM-SHARED: it fails a
 job whose role clips another unit of the mod holds, before any Blender step, not only when the finished files are compared.
 
+The record never ships with the mod: `.hoi4_3d/` is a development folder like `.tools/` and `.claude/`, which the game ignores and which
+stays out of a Workshop upload. A job's `anim_registry` (or the command's `--registry`) keeps the record outside the mod instead, as a
+.json path.
+
 A clip is named as the export names it (Tripo exports the tile `defeat` as `defeat_02` and `defeat_02` as `defeat_03`), lower case,
 spaces as underscores. A made clip is named by its text, as the job's `tripo.roles` names it.
 """
@@ -61,7 +65,21 @@ def mod_root(spec: Dict[str, Any], jobs_config: Optional[Path] = None) -> Option
 
 
 def registry_path(root: Path) -> Path:
-    return Path(root) / REGISTRY
+    """The registry file: `root` itself when it names a .json file (a registry kept outside the mod), else the mod's own."""
+
+    root = Path(root)
+    return root if root.suffix.lower() == ".json" else root / REGISTRY
+
+
+def registry_for(spec: Dict[str, Any], jobs_config: Optional[Path] = None) -> Optional[Path]:
+    """The job's registry: its `anim_registry` (a .json path, relative to the jobs file), else the mod's `.hoi4_3d/anim_claims.json`."""
+
+    if spec.get("anim_registry"):
+        path = Path(spec["anim_registry"])
+        base = Path(jobs_config).resolve().parent if jobs_config else Path.cwd()
+        return (path if path.is_absolute() else base / path).resolve()
+    root = mod_root(spec, jobs_config)
+    return registry_path(root) if root else None
 
 
 def load(root: Path) -> Dict[str, Any]:
@@ -172,10 +190,10 @@ def job_conflicts(spec: Dict[str, Any], unit: str, jobs_config: Optional[Path] =
     roles = (spec.get("tripo") or {}).get("roles") or {}
     if not roles:
         return {}
-    root = mod_root(spec, jobs_config)
-    if root is None or not registry_path(root).exists():
+    registry = registry_for(spec, jobs_config)
+    if registry is None or not registry.exists():
         return {}
-    return conflicts(root, unit, roles.values(), spec.get("reskin_of"))
+    return conflicts(registry, unit, roles.values(), spec.get("reskin_of"))
 
 
 def conflict_message(found: Dict[str, Dict[str, Any]]) -> str:

@@ -5,7 +5,8 @@
     py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py list --mod-root <mod>
     py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py import --mod-root <mod> --mod <name in the table> <claims.md>
 
-`claim` takes the clips of the job's `tripo.roles` and writes them for the job under a lock: the earliest claim holds a clip. It exits 3
+`--registry <file.json>` (or the job's `anim_registry`) keeps the record outside the mod. `.hoi4_3d/` is a development folder: it never
+ships with the mod. `claim` takes the clips of the job's `tripo.roles` and writes them for the job under a lock: the earliest claim holds a clip. It exits 3
 and writes nothing when another unit of the mod already holds one of them, and names that unit. A reskin of another unit sets
 `reskin_of` in its job and shares that unit's clips. `check` reports without writing (exit 3 on a clash). Claim as soon as you pick a
 clip for a role, before you export or run the Blender stage, so the next worker sees it.
@@ -32,6 +33,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("slug", nargs="?")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--mod-root", type=Path)
+    parser.add_argument("--registry", type=Path, help="a registry .json kept outside the mod (instead of <mod root>/.hoi4_3d/anim_claims.json)")
     parser.add_argument("--mod", help="import: the mod's name in the table's first column")
     parser.add_argument("--source", default="", help="claim: where the clips come from (free preset, or made with its task id)")
     args = parser.parse_args(argv)
@@ -40,7 +42,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         if not (args.jobs_config and args.slug):
             parser.error("claim and check need --jobs-config and the job's name")
         spec = tripo_card.job_entry(args.jobs_config, args.slug)
-        root = args.mod_root or A.mod_root(spec, args.jobs_config)
+        root = args.registry or args.mod_root or A.registry_for(spec, args.jobs_config)
         if root is None:
             print("no mod root: set `mod_root` in the job, or keep the jobs file inside the mod's git repository", file=sys.stderr)
             return 2
@@ -62,8 +64,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps({"tool": "anim_claims", "registry": A.registry_path(root).as_posix(), **result}))
         return 0
 
+    if args.registry:
+        args.mod_root = args.registry
     if not args.mod_root:
-        parser.error(f"{args.action} needs --mod-root")
+        parser.error(f"{args.action} needs --mod-root or --registry")
     if args.action == "list":
         for clip, owner in sorted(A.holders(args.mod_root).items()):
             print(f"{clip:40} {owner['unit']:24} {owner.get('role', ''):8} {owner.get('time', '')}")

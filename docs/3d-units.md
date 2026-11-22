@@ -54,7 +54,7 @@ py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.js
 
 ### Every unit type has its own animations
 
-Different peoples and creatures move differently, so every distinct unit type of a mod has its own clips (D-136). A clip, a free preset or a made one, belongs to one unit type of the mod. Only a reskin or a variant of the same people shares a set: its job sets `reskin_of` to the unit it reskins. The mod keeps one record of who holds which clip, `.hoi4_3d/anim_claims.json` in the mod's root, committed with the mod.
+Different peoples and creatures move differently, so every distinct unit type of a mod has its own clips (D-136). A clip, a free preset or a made one, belongs to one unit type of the mod. Only a reskin or a variant of the same people shares a set: its job sets `reskin_of` to the unit it reskins. The mod keeps one record of who holds which clip, `.hoi4_3d/anim_claims.json` in the mod's root. It is a development file like `.tools/` and `.claude/`: the game ignores it, and it never ships with the mod, so leave `.hoi4_3d/` out of a Workshop upload. To keep it outside the mod, set the job's `anim_registry` to a `.json` path (relative to the jobs file) or pass `--registry <file.json>`.
 
 ```
 py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py check --jobs-config <your 3d_jobs.json> <unit>
