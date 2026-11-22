@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "025b3c682a518e22a748ffc8d0a9b2f35a4ee47c",
+  "generated_for_revision": "9a1eeb65b41a16251475f4c3dc799d16b3b3706d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16653,8 +16653,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "2bb44bcc21f52a113089e21c2aa21bda8d3c4a6cda75cfc21785715f457b480c",
-          "size": 11724
+          "sha256": "fa09fdb84447f47a384e7daabf51662c7cd99ae678e2602a578313988d62c70b",
+          "size": 12436
         },
         {
           "path": ".tools/3d_pipeline/tripo/arm_unit.py",
