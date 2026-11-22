@@ -20,6 +20,9 @@ route makes. Those depend on the route's weights, which only an earlier run of t
    (`tripo_shoulder.clavicle_animation`), and the swell, the girdle's tear (TRIPO-SHOULDER-TEAR), the neck and the raise again. On ogre_o's
    skin (2026-11-18) the tear after the rules read chop 0.125, the poleaxe attack 0.129, the defend hit_to_stomach 0.121.
 
+With `--map` the outline rules of `lib/map_outline.py` are read too, after the route's rules: the idle's posture (its body outline's height over
+the rest pose's, TRIPO-MAP-POSTURE), each clip's hand spread (TRIPO-MAP-SPREAD) and an attack's strike outside the body's outline
+(TRIPO-MAP-REACH), and an attack that fails either is not picked.
 With `--map` each clip's map-size reading against the idle (`lib/map_read.read_pixels`, the pixels of the idle's silhouette it changes at game
 size in its 90th percentile frame, TRIPO-MAP-READ) is given as made and after the rules, and an attack under the limit is not picked. `--trim
 CLIP=FRAMES` cuts a clip as the job's `tripo.trim` would (frames at 24 a second), for the idle too. On zombie_w's skin (2026-11-18, the idle
@@ -55,7 +58,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import clip_check
-from lib import map_read, pdx_deform, pdx_motion, tripo_cloak_bend, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike, tripo_trim
+from lib import map_outline, map_read, pdx_deform, pdx_motion, tripo_cloak_bend, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_strike, tripo_trim
 
 FRAME_RATE = 30.0
 MIN_ATTACK_SCORE = 0.2  # docs/3d-units.md, the attack's raise or reach plus the pelvis's travel
@@ -237,6 +240,8 @@ def pick_attack(report: dict) -> Optional[str]:
         after = row["route"]
         if after.get("map_pixels", math.inf) < map_read.MIN_HUMANOID_READ_PIXELS["attack"]:
             continue  # with --map: an attack that reads as the idle from the map camera (TRIPO-MAP-READ) is not picked
+        if after.get("map_spread", 0.0) >= map_outline.SPREAD_LIMIT or after.get("map_reach", math.inf) < map_outline.MIN_REACH_PIXELS:
+            continue  # with --map: an attack that reads as a T-pose, or whose reach foreshortens into the body (lib/map_outline.py), is not picked
         score = max(after.get("raise_", 0.0), after["reach"]) + after["pelvis_travel"]
         if score >= best_score:
             best, best_score = name, score
@@ -263,6 +268,10 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
     idle = next((transfer.animation(tracks, cut(name, end)) for name, tracks, end in every if name == idle_name), None)
     camera = map_read.MapCamera(mesh) if map_size and idle is not None else None
     idle_map = camera.frames(idle) if camera is not None else None
+    # the outline rules (lib/map_outline.py): the idle's posture, each clip's hand spread and an attack's reach outside the body's outline
+    outline = map_outline.OutlineCamera(mesh) if camera is not None and map_outline.is_humanoid(mesh) else None
+    posture = map_outline.posture_reading(outline, idle) if outline is not None else None
+    armed = outline is not None and not unarmed and bool(outline.parts["weapon"].any())
     report = {}
     for name, tracks, end in every:
         if clips and not any(name.startswith(c) for c in clips):
@@ -276,6 +285,12 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
             # the map-size reading against the idle (lib/map_read.read_pixels), as Tripo made the clip and after the route's pose rules
             raw["map_pixels"] = map_read.read_pixels(camera.frames(anim), idle_map)
             after["map_pixels"] = map_read.read_pixels(camera.frames(routed), idle_map)
+        if outline is not None:
+            spread = map_outline.spread_reading(outline, routed, posture["idle_height_px"])
+            if spread is not None:
+                after["map_spread"] = spread["p90"]
+            if attack:
+                after["map_reach"] = map_outline.reach_reading(outline, routed, armed).get("pixels", 0)
         report[name] = {"raw": raw, "route": after, "verdict": after["verdict"], "reasons": list(after["reasons"]), "attack": attack}
         if is_attack(name, gaits):
             found = gait(mesh, anim)
@@ -287,7 +302,7 @@ def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, han
             "limits": {"swell": tripo_shoulder.SWELL_LIMIT, "tear": tripo_shoulder.GIRDLE_LIMIT, "neck": tripo_neck.NECK_LIMIT, "strike_travel": tripo_strike.MIN_TRAVEL,
                        "strike_speed": tripo_strike.MIN_SPEED, "attack_score": MIN_ATTACK_SCORE,
                        "stride_speed": tripo_loop.MIN_STRIDE_SPEED},
-            "clips": report, "attack_pick": pick_attack(report)}
+            "clips": report, "attack_pick": pick_attack(report), "idle_posture": posture}
 
 
 def print_table(result: dict) -> None:
@@ -303,6 +318,19 @@ def print_table(result: dict) -> None:
         if "map_pixels" in c["route"]:
             print(f"map {name[:36]:<36}: {c['raw']['map_pixels']:>6.0f} px as made, {c['route']['map_pixels']:>6.0f} px after the rules against the idle at game size"
                   f" (attack at least {map_read.MIN_HUMANOID_READ_PIXELS['attack']:.0f}, defend {map_read.MIN_HUMANOID_READ_PIXELS['defend']:.0f})")
+    if result.get("idle_posture"):
+        ratio = result["idle_posture"]["ratio"]
+        print(f"idle posture: the body outline stands {ratio:.2f} of the rest pose's height on the map camera "
+              f"({'hunched' if ratio <= map_outline.POSTURE_LIMIT else 'upright'}: hunched is {map_outline.POSTURE_LIMIT:.2f} or less, TRIPO-MAP-POSTURE)")
+    for name, c in result["clips"].items():
+        after = c["route"]
+        if "map_spread" in after or "map_reach" in after:
+            spread = after.get("map_spread")
+            line = f"outline {name[:36]:<36}: hand spread {spread:.2f}" if spread is not None else f"outline {name[:36]:<36}: hand spread -"
+            line += f" (a T-pose at {map_outline.SPREAD_LIMIT:.2f} or more)"
+            if "map_reach" in after:
+                line += f", strike {after['map_reach']} px outside the body (at least {map_outline.MIN_REACH_PIXELS})"
+            print(line)
     for name, c in result["clips"].items():
         found = c.get("gait")
         if found and found["window"]:
@@ -323,7 +351,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--gait", nargs="*", help="the move and retreat candidates (clips whose name starts with one of these): judged as a looped gait, with the loop window the route would cut")
     parser.add_argument("--unarmed", action="store_true", help="the unit holds no weapon: the striking hand is the faster one")
     parser.add_argument("--trim", nargs="*", default=[], metavar="CLIP=FRAMES", help="cut a clip (named by its first words) after FRAMES frames at 24 a second, as the job's tripo.trim")
-    parser.add_argument("--map", action="store_true", help="also measure each clip's map-size reading against the idle (lib/map_read.read_pixels, TRIPO-MAP-READ)")
+    parser.add_argument("--map", action="store_true", help="also measure each clip's map-size reading against the idle (lib/map_read.read_pixels, TRIPO-MAP-READ) and its outline (lib/map_outline.py: the idle's posture, the hand spread, an attack's strike outside the body)")
     parser.add_argument("--lunge", action="store_true", help="the job keeps the attack's lunge step (tripo.lunge, tripo/lunge_clip.py): an unarmed attack's hands are measured against the ground")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
