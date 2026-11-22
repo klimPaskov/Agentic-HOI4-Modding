@@ -55,6 +55,12 @@ Each gate is defined once in the guide:
   the machine first (`lib/heavy_job.py`). Never type the user's password. Proven on armed humanoids, a large creature, a mount, a
   plane and a ship. Winged units, tanks, buildings and landmarks are not
   proven yet.
+- **Effects**: muzzle flashes, spells, fire and explosions are particles at
+  locators, fired by entity events, never part of the model. Add them with
+  `tripo/effects_stage.py` from the job's `effects` block (profiles the
+  preset lists, and the unit's `setting`), look at `tripo/effects_sheet.py`,
+  and list the in-game checks of `docs/3d-effects.md`. Each effect must fit
+  the unit: a world without gunpowder never gets a muzzle flash.
 - **Picture sources**: a 3D reference picture is made from existing
   references and research, never from a text prompt alone. Start from the
   subject's own reference (the owner's drawing, the mod's art), research real
