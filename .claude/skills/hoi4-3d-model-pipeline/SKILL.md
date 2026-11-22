@@ -49,6 +49,12 @@ Each gate is defined once in the guide:
   the machine first (`lib/heavy_job.py`). Never type the user's password. Proven on armed humanoids, a large creature, a mount, a
   plane and a ship. Winged units, tanks, buildings and landmarks are not
   proven yet.
+- **Picture sources**: a 3D reference picture is made from existing
+  references and research, never from a text prompt alone. Start from the
+  subject's own reference (the owner's drawing, the mod's art), research real
+  references for a real-world subject, give them to the image tool, and list
+  them in the job's `reference_sources` and the card's Sources row. The
+  picture review refuses a job without them.
 - **Detail and look**: never simplify a subject, picture, clip choice or
   requirement to make a step easier or a check pass, and never change a look
   by a tint, filter or recolour of its texture. Change the method, or make a

@@ -5,6 +5,7 @@ One card per model. Follow it top to bottom in [Tripo Studio](https://studio.tri
 | | |
 | --- | --- |
 | Picture | `<path to the approved 3D-ready picture>` |
+| Sources | `<the subject's own reference, and for a real-world subject the real references research found, one per line>` (fill before the first paid press) |
 | Kind | unit or static model |
 | Unit type | `<unit_type from the job>` |
 | Idle posture | `upright` or `hunched` (the job's `tripo.posture`, see step 5) |
@@ -13,6 +14,13 @@ One card per model. Follow it top to bottom in [Tripo Studio](https://studio.tri
 | Balance before | |
 
 ## 0. 3D-ready picture (free, only when the art is not ready)
+
+The picture is made from existing references, never from a text prompt alone.
+
+1. Start from the subject's own reference: the owner's drawing or the mod's art.
+2. For a real-world subject (a tank, a ship, a uniform, a building style), research real references first: photographs, plans, museum pieces, period art. Save each in the job's `refs` folder or note its link.
+3. Give the subject's reference and the researched references to the Image tool together.
+4. Write every reference into the Sources row above and into the job's `reference_sources`. The picture review refuses a job whose list is empty.
 
 The picture must show one subject, full body, front view, on a plain light background, arms hanging about 30 degrees away from the body and both hands empty and open. If the art is not like this, open **Image**, model Nano Banana 2, add the art and write: `Redraw this exact <subject> for 3D modelling. Keep <every detail, gear named by the viewer's side>. Invent nothing. Neutral pose for rigging: <pose and hands>. Full body, front view, feet visible, plain light grey background, even soft lighting.` The button must read 0. Compare the result with the art before you go on.
 

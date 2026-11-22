@@ -86,6 +86,13 @@ Make or fix this picture in Tripo's own Image tool (in the Tripo web app, under 
 
 **The picture decides the look.** A model's colours come from its picture and the generator's texture. They are never changed afterwards by a tint, a filter or a recolour over that texture, for any unit. When the look must change (a unit that does not read as what it is at map size), make a new picture and generate the model again. The Blender stage refuses a Tripo unit whose diffuse map differs from the generator's export by a global colour transform: one 3 by 3 colour matrix and offset that explains the change with a residual of at most 35% of it, for a change of at least 3 of 255 RMS (`lib/texture_look.py`, `diffuse_look` in the texture report).
 
+**The picture comes from references, never from nothing.** A text prompt alone never makes a reference picture. Follow these steps for every unit and static model:
+
+1. Start from the subject's own reference: the owner's drawing, or the mod's existing art for it.
+2. When the subject is a real thing (a tank, a ship, a uniform, a building style), research it first. Find real references: photographs, plans, museum pieces, period art. Save each in the job's `refs` folder, or note its link or book and page.
+3. Give the subject's reference and the researched references to the Image tool together, and name in the instruction what each one shows.
+4. List every reference in the job's `reference_sources` (one entry each: a repository path, a link, or a book and page) and in the card's Sources row, before the first paid press. The picture review (`init_pilot_jobs.py --record-visual-review`) refuses a job whose list is empty, and a picture without its sources is not used.
+
 Tripo copies the picture's pose into the rig, so the picture must be ready for rigging:
 
 - One subject, full body, front view, feet visible, on a plain light background.
@@ -118,6 +125,7 @@ Three rules hold for every unit and asset, at every step:
       "credit_budget": 70,
       "anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
       "reference_path": "refs/original/undead_soldier.png",
+      "reference_sources": ["mod art: gfx/interface/counters/undead_soldier.png", "the owner's drawing: refs/drawings/undead_soldier.jpg"],
       "reference_source_mode": "agent_generated",
       "reference_generator_output": "tripo-image",
       "asset_brief": "An undead soldier in a ragged field uniform, unarmed, arms relaxed, hands empty.",
@@ -150,6 +158,7 @@ Three rules hold for every unit and asset, at every step:
       "credit_budget": 120,
       "anatomy": {"legs": 2, "arms": 2, "wings": false, "tail": false, "extra_limbs": false, "vehicle": false, "rider_on_mount": false},
       "reference_path": "refs/original/axe_soldier.png",
+      "reference_sources": ["the owner's drawing: refs/drawings/axe_soldier.jpg", "period reference: refs/research/bearded_axe_museum_photo.jpg"],
       "reference_source_mode": "agent_generated",
       "reference_generator_output": "tripo-image",
       "asset_brief": "A foot soldier in a leather coat, empty hands. The axe is modelled apart and put in the hand later.",
@@ -191,6 +200,7 @@ What each field is for:
 | `credit_budget` | The credits you approved. The scripts only print it, and the agent stops spending at it |
 | `anatomy` | Answers to the questions in `config/body_presets.json`, from the picture. `init_pilot_jobs.py` copies them and `unit_type` into the job, and `measure_body.py` checks them against the model. These seven keys are the only ones it reads, and a weapon is not one of them |
 | `reference_path` | The picture, relative to the job folder. It must be a real PNG in `refs/original`, the only image there |
+| `reference_sources` | Every reference the picture was made from, one entry each: the subject's own reference (the owner's drawing, the mod's art), and for a real-world subject the real references research found (a repository path, a link, or a book and page). It goes into the provenance record, and the picture review refuses a job whose list is empty (see step 1) |
 | `reference_source_mode`, `reference_generator_output` | Where the picture came from. They go into the job's provenance record |
 | `asset_brief`, `required_components`, `forbidden_additions` | What the unit is, what must be in it and what must not. They go into the job's brief and the reviewer's checklist |
 | `proposed_runtime_identifiers` | `{}` until the unit is wired into a mod |
