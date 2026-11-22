@@ -456,6 +456,11 @@ def wing_weights(points: np.ndarray, triangles: np.ndarray, names: Sequence[str]
 # up over the back they stood as a box framing the head, and this pose starts and ends every clip. The half folded and retreat wings
 # turn their membrane up toward the game camera: held upright one of the two read from it as a thin spike (its width over length on
 # the screen 0.31 of its flat shape's in run 9). Turned fully level (roll -80) they stretched the wing roots 5.9% (run 10, limit 5%).
+# Round 13: both fresh reviews of run 19 named the idle's near wing a spike standing up over the back (TRIPO-WING-FOLD-SPIKE, its arm
+# 0.126 of the height above the body's top on the game camera's screen, at most 0.10). Swept 95 and raised 5 it reads 0.09, but every
+# clip measured against the idle's fold then fails (offline on run 19's files): the attack and the defend read 0.21 and 0.16 against the
+# new idle (TRIPO-GAME-READ, at least 0.27), the retreat's wings reach 1.24 times its side (TRIPO-WING-SIDE-REACH), the move moves its
+# wings only 2.4 times the idle's (TRIPO-WING-IDLE-MOVE) and the dead body no longer lies down. The fold stays until run 20's reviews.
 FOLDED = {"sweep": 85.0, "rise": 15.0, "roll": -60.0, "spread": 1.0, "curl": 20.0, "curl_out": 0.0}
 # Round 11: the membrane rolled -62 degrees, not -55. With the neck bones on the measured neck column (quadruped_layout.detect_neck) the
 # neck's base counts as neck, and from the front the half folded wings stood behind 25.3% of the head and neck in the move's first frame
@@ -515,7 +520,10 @@ DEAD_UPPER = {**FOLDED, "curl": 40.0}
 DEAD_LOWER = {**FOLDED, "curl": 50.0}
 LYING_UPPER = (60.0, -32.0)
 LYING_LOWER = (20.0, -45.0)
-DEAD_WINGS_START, DEAD_WINGS_END = 0.2, 0.65
+# Round 13: the wings turn to their lying frames between 0.1 and 0.45 of the clip (0.2 and 0.65 before), mostly before the body rolls
+# far. Turning later, one wing stood upright while the body rolled (both fresh reviews of run 19, frames 16 to 31): TRIPO-DEATH-WING-TENT
+# over the roll read 1.5, here 0.76 (offline on run 19's files). Run 20 is the calibration run for that limit.
+DEAD_WINGS_START, DEAD_WINGS_END = 0.1, 0.45
 # The share of the turn to its lying frame each dead wing takes at its root (`lying_pose`). The rest of its change is the bend of its bones
 # past the root (DEAD_UPPER's and DEAD_LOWER's curl).
 LYING_UPPER_SHARE = 0.6
