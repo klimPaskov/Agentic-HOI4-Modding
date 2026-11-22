@@ -323,10 +323,11 @@ def tread_textures(report: dict, contract: dict, name: str, files: Path, work: P
     if tone:
         # no brighter than vanilla's light tanks' treads (their texture's mean luma): a run painted in a light hull colour is darkened to it
         luma = float((images["diffuse"][..., :3].astype(float) @ np.array([0.299, 0.587, 0.114])).mean())
-        if luma > tone:
-            colour = colour * tone / luma
+        target = sk.tread_target_luma(luma, tone)
+        if target != luma:
+            colour = sk.tread_colour_at(colour, luma, target)
             images = sk.tread_images(colour, rule["links"], tuple(rule["texture_size"]))
-            report["track_tone"] = {"luma_before": round(luma, 1), "luma_after": round(tone, 1)}
+            report["track_tone"] = {"luma_before": round(luma, 1), "luma_after": round(target, 1)}
     written = {}
     for role, array in images.items():
         staged = work / f"{name}_tracks_{role}.png"

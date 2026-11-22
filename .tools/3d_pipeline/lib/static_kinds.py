@@ -1431,6 +1431,30 @@ def tread_links(rows) -> int:
     return max(1, int(starts.sum()) or 1)
 
 
+TREAD_LUMA_FLOOR = 0.7  # of vanilla's tread luma: a run darker than this loses its links (kit rule)
+
+
+def tread_target_luma(luma: float, tone: float, floor: float = TREAD_LUMA_FLOOR) -> float:
+    """The mean luma a tread is drawn at: no brighter than vanilla's light tanks' treads (`tone`, a run painted in a
+    light hull colour is darkened to it) and no darker than `floor` of it. The M2A4 Smart Mesh tank's run was painted
+    near black (median texel 24, 24, 22), so its tread's plates, grousers and gaps all read as one black band at close
+    up and at game size; vanilla's treads average 96.5."""
+
+    return min(max(luma, floor * tone), tone)
+
+
+def tread_colour_at(colour, luma: float, target: float) -> np.ndarray:
+    """`colour` brought to a tread mean luma of `target` (from `luma`), keeping its hue: scaled when that stays in range,
+    else mixed toward a grey of the target luma, so a near-black run keeps its own tint."""
+
+    colour = np.asarray(colour, dtype=float)[:3]
+    scale = target / max(luma, 1e-6)
+    if float(colour.max()) * scale <= 255.0:
+        return colour * scale
+    grey = np.full(3, target / max(luma, 1e-6) * float(colour @ np.array([0.299, 0.587, 0.114])))
+    return np.clip(grey, 0, 255)
+
+
 def tread_images(colour, links: int, size=(64, 32)) -> dict:
     """A tileable tread (RGBA arrays, width across the run, height along it): `links` track links a tile, each a plate
     with a raised grouser across it and a dark gap after it, a guide line down the middle, darker edges. `colour` is
@@ -1871,6 +1895,69 @@ def mount_seam_masks(rest: np.ndarray, moving_triangles: np.ndarray, base_triang
     band = MOUNT_SEAM_SHARE * max(high - low, 1e-9)
     middle = lambda edges: (rest[edges[:, 0], up] + rest[edges[:, 1], up]) / 2 if len(edges) else np.zeros(0)
     return middle(moving_edges) <= low + band, np.abs(middle(base_edges) - low) <= band
+
+
+TRAVERSE_STEP = 2.0  # degrees between the turret angles tried by turret_clear_yaw
+
+
+def turret_clear_yaw(points: np.ndarray, moving_triangles: np.ndarray, base_triangles: np.ndarray, pivot: Sequence[float],
+                     up: int = 2, step: float = TRAVERSE_STEP) -> Tuple[float, float]:
+    """How far a tank's turret (`moving_triangles`, with its gun) turns each way about the `up` axis through `pivot`
+    before an edge of it and the body (`base_triangles`) pass through each other, as STATIC-PART-CLIP counts them (edges
+    crossing in the rest pose and the seam band at the cut left out). Returns (most negative, most positive) clear turn
+    in degrees, each at most 180. A tall fitting on the turret can sweep through a deck fitting behind it: on the M2A4
+    the anti-aircraft post's foot met a fitting 1.2 m from the turret's centre, so vanilla's idle traverse clipped it
+    (STATIC-PART-CLIP, 14 edges)."""
+
+    points = np.asarray(points, float)
+    moving_triangles = np.asarray(moving_triangles).reshape(-1, 3)
+    base_triangles = np.asarray(base_triangles).reshape(-1, 3)
+    if not len(moving_triangles) or not len(base_triangles):
+        return (-180.0, 180.0)
+    rest_hits = part_crossing_masks(points, moving_triangles, points, base_triangles)
+    seam = mount_seam_masks(points, moving_triangles, base_triangles, up)
+    modelled = (rest_hits[0] | seam[0], rest_hits[1] | seam[1])
+    axes = [a for a in range(3) if a != up]
+    centre = np.asarray(pivot, float)
+    used = np.unique(moving_triangles)
+    reach = float(np.max(np.linalg.norm(points[used][:, axes] - centre[axes], axis=1)))
+    low, high = float(points[used, up].min()), float(points[used, up].max())
+    # only the body triangles the turret can sweep near are tested; the rest keep their edges but are moved out of reach
+    corners = points[base_triangles]
+    near = ((np.linalg.norm(corners[:, :, axes] - centre[axes], axis=2).min(axis=1) <= reach * 1.05)
+            & (corners[:, :, up].max(axis=1) >= low - 1e-6) & (corners[:, :, up].min(axis=1) <= high + 1e-6))
+    base_near = base_triangles[near]
+    lookup = {tuple(e): k for k, e in enumerate(_edges_of(base_triangles))}
+    near_edges = _edges_of(base_near)
+    near_modelled = np.array([modelled[1][lookup[tuple(e)]] for e in near_edges], dtype=bool) if len(near_edges) else np.zeros(0, bool)
+    turned = {}
+    for side in (-1.0, 1.0):
+        angle = 0.0
+        while angle + step <= 180.0 + 1e-9:
+            theta = math.radians(side * (angle + step))
+            c, s = math.cos(theta), math.sin(theta)
+            moved = points.copy()
+            rel = points[used][:, axes] - centre[axes]
+            moved[used, axes[0]] = centre[axes[0]] + c * rel[:, 0] - s * rel[:, 1]
+            moved[used, axes[1]] = centre[axes[1]] + s * rel[:, 0] + c * rel[:, 1]
+            hits = part_crossing_masks(moved, moving_triangles, moved, base_near)
+            if (hits[0] & ~modelled[0]).any() or (hits[1] & ~near_modelled).any():
+                break
+            angle += step
+        turned[side] = side * angle
+    return (turned[-1.0], turned[1.0])
+
+
+def scaled_turns(yaws: Sequence[float], clear: Tuple[float, float]) -> Tuple[np.ndarray, Tuple[float, float]]:
+    """A clip's turret turns (degrees, one a frame, unwrapped) scaled toward the rest angle, each side by the one share
+    that keeps its furthest turn inside `clear` (turret_clear_yaw), so the motion keeps its shape and timing and
+    only turns less. Returns the new turns and the (negative, positive) shares used."""
+
+    yaws = np.asarray(yaws, float)
+    most, least = float(yaws.max(initial=0.0)), float(yaws.min(initial=0.0))
+    positive = min(1.0, clear[1] / most) if most > 1e-9 else 1.0
+    negative = min(1.0, clear[0] / least) if least < -1e-9 else 1.0
+    return np.where(yaws >= 0, yaws * positive, yaws * negative), (negative, positive)
 
 
 def _mounted_on(part: str, mounts: Dict[str, str]) -> set:

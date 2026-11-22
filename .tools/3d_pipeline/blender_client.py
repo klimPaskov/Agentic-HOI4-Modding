@@ -39,15 +39,26 @@ class BlenderAdapterClient:
         if not self.wrapper.exists():
             raise FileNotFoundError(self.wrapper)
 
+    def adapter_config(self) -> Dict[str, Any]:
+        """The worktree's own adapter config (git-ignored, written by bootstrap_3d_workflow.py). A new worktree has none,
+        and a copy from another worktree points its jobs there: both stop here with the fix."""
+
+        path = self.repo_root / ".tools/3d_pipeline/config/blender_hoi4_adapter.json"
+        if not path.exists():
+            raise FileNotFoundError(f"{path} is missing: this worktree has no Blender adapter config yet. Run "
+                                    "py -3.13 -B .tools/3d_pipeline/bootstrap_3d_workflow.py in this worktree first (it writes the file).")
+        config = json.loads(path.read_text(encoding="utf-8"))
+        root = config.get("repository_root")
+        if root and Path(root).resolve() != self.repo_root.resolve():
+            raise ValueError(f"{path} belongs to {root}, not this worktree ({self.repo_root}): run bootstrap_3d_workflow.py here, "
+                             "or replace that path in the file with this worktree's.")
+        return config
+
     def call(self, tool: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
         arguments = dict(arguments)
         raw_job_id = arguments.get("job_id")
         if isinstance(raw_job_id, str) and Path(raw_job_id).name == raw_job_id:
-            config = json.loads(
-                (self.repo_root / ".tools/3d_pipeline/config/blender_hoi4_adapter.json").read_text(
-                    encoding="utf-8"
-                )
-            )
+            config = self.adapter_config()
             configured_root = Path(config["job_root"]).resolve()
             arguments["job_id"] = resolve_job_root(raw_job_id).relative_to(configured_root).as_posix()
         command = ["cmd.exe", "/d", "/c", "call", str(self.wrapper)]

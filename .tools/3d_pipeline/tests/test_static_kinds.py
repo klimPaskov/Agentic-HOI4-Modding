@@ -776,5 +776,55 @@ class MountSurfaceTests(unittest.TestCase):
         np.testing.assert_array_equal(seat, sk.mount_surface(positions, triangles, mount))  # repeats
 
 
+def _box(points, triangles, low, high):
+    """Append a closed box (12 triangles) to the lists and return its triangle indices."""
+
+    base = len(points)
+    for x in (low[0], high[0]):
+        for y in (low[1], high[1]):
+            for z in (low[2], high[2]):
+                points.append((x, y, z))
+    quads = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    start = len(triangles)
+    for a, b, c, d in quads:
+        triangles.append((base + a, base + b, base + c))
+        triangles.append((base + a, base + c, base + d))
+    return list(range(start, len(triangles)))
+
+
+class TurretTraverseTests(unittest.TestCase):
+    """A turret with a post on its side turns until the post would pass through a deck block at a quarter turn."""
+
+    def setUp(self) -> None:
+        points, triangles = [], []
+        hull = _box(points, triangles, (-1.0, -1.0, 0.0), (1.0, 1.0, 1.0))
+        hull += _box(points, triangles, (-0.05, 0.55, 1.0), (0.05, 0.65, 1.3))  # a deck block at 90 degrees, radius 0.6
+        turret = _box(points, triangles, (-0.3, -0.3, 1.0), (0.3, 0.3, 1.5))
+        turret += _box(points, triangles, (0.3, -0.02, 1.2), (0.62, 0.02, 1.25))  # an arm out from the turret side
+        turret += _box(points, triangles, (0.58, -0.02, 1.05), (0.62, 0.02, 1.45))  # and a post at its end
+        self.points = np.array(points, float)
+        triangles = np.array(triangles)
+        self.hull, self.turret = triangles[hull], triangles[turret]
+
+    def test_the_turn_stops_short_of_the_deck_block_on_its_side_only(self) -> None:
+        negative, positive = sk.turret_clear_yaw(self.points, self.turret, self.hull, (0.0, 0.0, 1.0))
+        self.assertEqual(negative, -180.0)  # nothing stands on the other side
+        self.assertGreater(positive, 60.0)
+        self.assertLess(positive, 90.0)  # the post meets the block before the quarter turn
+
+    def test_a_clear_turret_turns_all_the_way(self) -> None:
+        hull = self.hull[:12]  # the hull box alone
+        self.assertEqual(sk.turret_clear_yaw(self.points, self.turret, hull, (0.0, 0.0, 1.0)), (-180.0, 180.0))
+
+    def test_the_clip_keeps_its_shape_and_only_turns_less(self) -> None:
+        yaws = np.array([0.0, 40.0, 120.0, 60.0, -30.0, -90.0, 0.0])
+        turns, shares = sk.scaled_turns(yaws, (-180.0, 80.0))
+        self.assertEqual(shares, (1.0, 80.0 / 120.0))
+        np.testing.assert_allclose(turns, [0.0, 40.0 * 2 / 3, 80.0, 40.0, -30.0, -90.0, 0.0])
+        same, kept = sk.scaled_turns(yaws, (-180.0, 180.0))
+        self.assertEqual(kept, (1.0, 1.0))
+        np.testing.assert_array_equal(same, yaws)
+
+
 if __name__ == "__main__":
     unittest.main()

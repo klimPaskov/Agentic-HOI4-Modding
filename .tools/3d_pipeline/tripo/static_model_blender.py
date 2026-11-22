@@ -990,7 +990,33 @@ if rig is not None and request.get("motion"):
             m[:3, 3] = vector
             world[b] = m @ world[b]
 
+    # A tank's turret turns only as far as it clears the hull (sk.turret_clear_yaw, measured on this model): vanilla's
+    # idle traverse swept the M2A4's anti-aircraft post through a deck fitting. Each clip but the death keeps its turns'
+    # shape and timing, scaled toward rest on the side that went past the clear angle (sk.scaled_turns).
+    turret_bone = (contract.get("parts") or {}).get("turret")
+    clear_yaw = None
+    if kind == "vehicle" and turret_bone in parents and "turret" in pivots:
+        mounted = sk._mounted_on("turret", contract.get("mounts", {}))
+        part_of_face = np.array(face_part)
+        turning = triangles[np.isin(part_of_face, sorted(mounted))]
+        hull = triangles[part_of_face == "body"]
+        clear_yaw = sk.turret_clear_yaw(positions, turning, hull, pivots["turret"], up=2)
+        parts_report["turret_clear_yaw"] = [round(clear_yaw[0], 1), round(clear_yaw[1], 1)]
+
+    def twist_degrees(q):
+        """The turn of a channel's rotation about the up axis (its twist), in degrees."""
+        return math.degrees(2.0 * math.atan2(q[3], q[0]))
+
     for role, clip in request["motion"].items():
+        turret_channel = clip["bones"].get(turret_bone) if turret_bone else None
+        turret_turns = None
+        if clear_yaw is not None and role != "death" and turret_channel:
+            raw = np.unwrap(np.radians([twist_degrees(q) for q in turret_channel["q"]]))
+            turns, shares = sk.scaled_turns(np.degrees(raw), clear_yaw)
+            if shares != (1.0, 1.0):
+                turret_turns = turns
+            clip_reports.setdefault(role, {})["turret_traverse"] = {"clip": [round(float(np.degrees(raw).min()), 1), round(float(np.degrees(raw).max()), 1)],
+                                                                    "shares": [round(shares[0], 3), round(shares[1], 3)]}
         action = bpy.data.actions.new(f"{name}_{role}")
         rig.animation_data_create()
         rig.animation_data.action = action
@@ -1003,6 +1029,10 @@ if rig is not None and request.get("motion"):
                 # a wheel turns only by the spin: vanilla's wheel channels also park its spare wheel bones far away
                 channel = None if bone in wheel_parts else clip["bones"].get(bone)
                 rotation = Quaternion(channel["q"][f]) if channel else Quaternion()
+                if turret_turns is not None and bone == turret_bone:
+                    # keep the channel's swing, replace its twist about the up axis by the scaled turn
+                    twist = Quaternion(Vector((0.0, 0.0, 1.0)), math.radians(twist_degrees(channel["q"][f])))
+                    rotation = Quaternion(Vector((0.0, 0.0, 1.0)), math.radians(float(turret_turns[f]))) @ twist.inverted() @ rotation
                 shift = Vector(channel["d"][f]) * (barrel_scale / clip["scale"] if bone.startswith("barrel") and channel else 1.0) if channel else Vector()
                 spin = clip.get("wheel_spin")
                 if spin and bone in wheel_parts:
@@ -1109,7 +1139,7 @@ if rig is not None and request.get("motion"):
         bpy.context.view_layer.objects.active = rig
         scene.frame_start, scene.frame_end = 1, frames
         bie.export_animfile(str(path), frame_start=1, frame_end=frames, uniform_scale=True)
-        clip_reports[role] = {"frames": frames, "file": path.name, **rules}
+        clip_reports[role] = {**clip_reports.get(role, {}), "frames": frames, "file": path.name, **rules}
     for pose in rig.pose.bones:
         pose.location, pose.rotation_quaternion = Vector(), Quaternion()
     rig.animation_data.action = None
