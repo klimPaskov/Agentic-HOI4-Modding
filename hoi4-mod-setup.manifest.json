@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "ab3e811ead8eb21a510d628e3092883eb57df850",
+  "generated_for_revision": "f0a3af0e30cd961f9fab84ffd469036bed1f239b",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -197,13 +197,18 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "012303c0ea4ab5f012cf3601b0f4dc19cceca0f8b4a770871cef89479b48e148",
-          "size": 15490
+          "sha256": "6d5ce6dd14eb06a4fb085ffbea9a1110b4af5566a6999b261ddf1ae8fd4f5a47",
+          "size": 15847
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
           "sha256": "7c4443ff9067ac49b7f686814fe9e068efa6fd47b57f43bf8ee3f8e21890118b",
           "size": 57273
+        },
+        {
+          "path": ".tools/audits/audit_gui_rules.py",
+          "sha256": "738ae2cad79d02bf9f1ec8ff19b30dd04cf449a867a0d2b4a1deebea50bdacbb",
+          "size": 10487
         },
         {
           "path": ".tools/audits/audit_localisation_static.py",
@@ -227,8 +232,8 @@
         },
         {
           "path": ".tools/check.py",
-          "sha256": "ccd9de040408afdb081f2914f1861246caab7d94b35df759114d38a61937e8fa",
-          "size": 20940
+          "sha256": "c69d3ffcd1743c26cd5ba6e71a40d5973d70e0e3a430af4e215048fa4120d113",
+          "size": 21365
         },
         {
           "path": ".tools/gfx/README.md",
@@ -501,6 +506,11 @@
           "size": 8059
         },
         {
+          "path": ".tools/tests/test_gui_rules.py",
+          "sha256": "b1960aab3f58380c84a0d481d21d094620f66e2de3756c527367c75476839b64",
+          "size": 2620
+        },
+        {
           "path": ".tools/tests/test_report_provenance.py",
           "sha256": "4c6f184ff718afd7ac61827fd43effd80b14b07963e7a08b229a9a8189fbf3f5",
           "size": 3166
@@ -527,8 +537,8 @@
         },
         {
           "path": ".tools/tests/test_sync.py",
-          "sha256": "873ad76353ec584dd1c198c29891ecbd042361956627301ae7cb0cbcab452e7a",
-          "size": 31159
+          "sha256": "594a8f20f0bd29c639e2b3c8a617ab00a28033b4d9a94bceb61c25ae00390ac9",
+          "size": 31243
         },
         {
           "path": ".tools/tests/test_validate_scripts_mcp.py",
@@ -6172,8 +6182,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
+          "size": 8032
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -6687,8 +6697,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -11626,8 +11641,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
+          "size": 8032
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -12141,8 +12156,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -24208,8 +24228,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
+          "size": 8032
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -24723,8 +24743,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -29701,8 +29726,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
+          "size": 8032
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -30216,8 +30241,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
@@ -35194,8 +35224,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "ef3b67e9bd8400dbcf7475dd49d07a8933293166768ce4226769fd31f76af3ea",
-          "size": 7464
+          "sha256": "3b2b274fa5178e8e503863840f89b458b47f958e4db0357451ad9c4418f0bdc7",
+          "size": 8032
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -35709,8 +35739,13 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/SKILL.md",
-          "sha256": "1d706d41130fc5ab8f67457e6c63265f8a65c4cae98d3fdacaa65f940846867a",
-          "size": 19117
+          "sha256": "f2329792015d0cab43d6bc1912b3a323e1f65a903ee65f8161c6ef51bcbe1264",
+          "size": 19852
+        },
+        {
+          "path": ".claude/skills/hoi4-scripted-gui/references/engine-behaviour.md",
+          "sha256": "80857abd38affb97d8b88fc082290f6605ed2c56b54a65914641e4feea863876",
+          "size": 5956
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
