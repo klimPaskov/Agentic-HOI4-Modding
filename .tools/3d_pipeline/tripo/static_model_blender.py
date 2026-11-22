@@ -632,8 +632,11 @@ if cuts:
     filled = bmesh.ops.holes_fill(bm, edges=rim, sides=0)["faces"]
     caps = len(filled)
     if ring_layer is not None:
+        # Only the turret's underside (facing down) takes the dark hole texel below. The hull's lid over the ring keeps
+        # its rim's colour, the roof's, as a vanilla hull keeps its roof when the turret flies off: on the M2A4 a dark
+        # lid followed the faceted cut and two strict reviewers saw "a jagged black blob" on the roof in the death.
         for face in filled:
-            if abs(face.normal.z) > 0.99 and abs(centre(face).z - turret["cut_z"]) < 1e-4 * size:
+            if face.normal.z < -0.99 and abs(centre(face).z - turret["cut_z"]) < 1e-4 * size:
                 face[ring_layer] = 1
     # holes_fill copies the rim's UVs across the cap, which smears the texture into a swirl a reviewer sees when the
     # turret is gone (the death clip): every corner of a cap takes one rim UV, so the cap is one flat colour

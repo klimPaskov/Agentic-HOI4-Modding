@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Static tanks: a job may name the vanilla model it stands beside (`size_reference`), which sets its size, its STATIC-SIZE target and the model on its game-size sheet. The tank preset raises the running-gear budget so a Smart Mesh tank is not reduced, asks for the size reference and states the picture rules (D-110, three references, D-130). `new_job.py` writes these fields into the static job file.
 - The Blender adapter client stops with the fix when a worktree has no adapter config (run bootstrap_3d_workflow.py there) or one copied from another worktree, instead of a bare file-not-found error in run_pilot.
 - Tanks on the static route: a model under its triangle target keeps its fittings as made (the convex-hull step for crumpled fittings runs only after a reduction), the turret turns only as far as it clears the hull in every clip but the death (`turret_clear_yaw`, `scaled_turns`, with tests), and a near-black track run is lifted to at least 70 % of vanilla's tread luma so its links show. Found on the M2A4 Smart Mesh tank.
 - The static route moves each vertex the reduction left more than 0.25 % of the model's size off its own part's source surface back onto it (`snap_to_source`, receipt `snap`), with a Blender test. On the parts tank it did not clear the crumpled bogies, which come from too few triangles for the source's wheels, so the docs say to ask the user for a larger running-gear budget or a rebuilt running gear instead.

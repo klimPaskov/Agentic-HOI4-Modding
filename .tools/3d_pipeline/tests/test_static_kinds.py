@@ -826,5 +826,23 @@ class TurretTraverseTests(unittest.TestCase):
         np.testing.assert_array_equal(same, yaws)
 
 
+class SizeReferenceTests(unittest.TestCase):
+    def test_a_named_vanilla_tank_sets_the_size_and_the_sheet_model(self) -> None:
+        contract = sk.kind_contract("vehicle")
+        sized = sk.with_size_reference(contract, "USA_tank_light")
+        row = next(r for r in contract["size"]["per_model"] if r["rel"].endswith("USA_tank_light.mesh"))
+        self.assertAlmostEqual(sized["size"]["runtime"], row["runtime"])
+        self.assertAlmostEqual(sized["size"]["source"] * contract["entity"]["scale"], row["runtime"])
+        self.assertEqual(sized["size"]["nearest"]["rel"], row["rel"])
+        self.assertLess(sized["size"]["source"], contract["size"]["source"])  # vanilla's US light tank is smaller than the median
+        self.assertEqual(sk.with_size_reference(contract, row["rel"])["size"]["source"], sized["size"]["source"])
+
+    def test_no_name_keeps_the_median_and_an_unknown_name_is_refused(self) -> None:
+        contract = sk.kind_contract("vehicle")
+        self.assertIs(sk.with_size_reference(contract, None), contract)
+        with self.assertRaisesRegex(ValueError, "USA_tank_light"):
+            sk.with_size_reference(contract, "M2A4")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -245,18 +245,20 @@
       "model_kind": "vehicle",
       "polycount": 7000,
       "polycount_reason": "Smart Mesh builds the low poly itself, so the wheels stay round, where a 20,000-triangle model reduced to the kind's 3,948 crumpled its running gear",
-      "job": {},
-      "asks": [],
+      "job": {"running_gear_triangles": 3600, "part_shape_iou": 0.97},
+      "job_reason": "A Smart Mesh tank at 7,000 comes out near 6,300 triangles. The raise keeps it under the route’s target, so it is not reduced: reduced to vanilla’s 3,948 the M2A4’s running gear crumpled. STATIC-TRIANGLES-RAISED warns on it, as it should.",
+      "asks": ["size_reference"],
+      "asks_reason": "size_reference: the vanilla light tank of the same nation (USA_tank_light for a US tank), so the model is that tank’s size and the game-size sheet draws it. Left out, the model is sized to the kind’s median (ITA_tank_light).",
       "picture": {
         "pose": "Three-quarter front view from slightly above, the whole vehicle in frame, turret facing forward, plain light grey background, even soft lighting with no cast shadows.",
-        "rules": ["Made from real reference photos of the vehicle (public-domain or openly licensed) when it is a real vehicle."]
+        "rules": ["Made from real reference photos of the vehicle (public-domain or openly licensed) when it is a real vehicle, never from a prompt alone, each one listed in reference_sources (D-110).", "Tripo’s Image tool takes at most three reference pictures: a side view, a front three-quarter view and the other side.", "All hatches and vision flaps closed, no crew, no markings, the vehicle’s own paint, aspect 4:3.", "Before any paid step, check the picture against the photos: road wheel count, bogies, sprocket and idler, turret shape, gun.", "Smart Mesh makes the road wheels solid discs with the spokes painted on. That is accepted (D-130): pick the variant whose wheels are round, sprocket toothed and fittings whole."]
       },
       "tripo_steps": ["picture", "smart_mesh", "smart_mesh_texture", "export_model"],
       "checks": ["static_model", "check_unit_files", "static_sheets", "review"],
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
-      "proven": "Not proven: the strict close-up review still fails tanks (November 2026)."
+      "proven": "Not proven: the M2A4 Smart Mesh tank passes every check, and its strict close-up review still fails (November 2026)."
     },
     "plane": {
       "label": "Plane",

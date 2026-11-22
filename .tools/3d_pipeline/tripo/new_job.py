@@ -90,6 +90,10 @@ def build_entry(preset_name: str, slug: str, sources: List[str], brief: str, ans
     return entry
 
 
+STATIC_JOB_FIELDS = ("running_gear_triangles", "part_shape_iou", "size_reference", "parts", "front")
+"""The job fields static_model.py reads, carried from the preset and the answers into the static job file."""
+
+
 def describe(name: str, preset: Dict[str, Any]) -> str:
     low, high = preset["expected_credits"]
     credits = f"{low}" if low == high else f"{low} to {high}"
@@ -141,7 +145,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     if entry.get("model_kind"):
         static_job = job_root / "inbox" / f"{args.slug}.json"
         static_job.parent.mkdir(parents=True, exist_ok=True)
-        static_job.write_bytes((json.dumps({"name": args.slug, "model_kind": entry["model_kind"]}, indent=2) + "\n").encode("utf-8"))
+        static_fields = {key: entry[key] for key in STATIC_JOB_FIELDS if key in entry}
+        static_job.write_bytes((json.dumps({"name": args.slug, "model_kind": entry["model_kind"], **static_fields}, indent=2) + "\n").encode("utf-8"))
         print(f"static job file written: {static_job.as_posix()}")
     missing = tripo_card.problems(entry)
     if entry.get("unit_type") and not entry.get("required_components"):

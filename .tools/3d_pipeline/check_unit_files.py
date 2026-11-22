@@ -736,13 +736,13 @@ def model_kind_type(kind: str) -> dict:
     return {"roles": {role: {} for role in contract["clips"]}, "calibration_group": MODEL_KIND_GROUP[kind], "entity_states": {}}
 
 
-def model_kind_findings(folder: Path, kind: str, stem: Optional[str] = None, running_gear: int = 0) -> List[Finding]:
+def model_kind_findings(folder: Path, kind: str, stem: Optional[str] = None, running_gear: int = 0, size_reference: Optional[str] = None) -> List[Finding]:
     """The STATIC-* rules of `lib/static_kinds.kind_findings` on each mesh of the folder (`running_gear`: the job's
     raise of the triangle budget for a tracked vehicle's running gear, `static_kinds.with_running_gear`)."""
 
     from lib import static_kinds
 
-    contract = static_kinds.with_running_gear(static_kinds.kind_contract(kind), running_gear)
+    contract = static_kinds.with_running_gear(static_kinds.with_size_reference(static_kinds.kind_contract(kind), size_reference), running_gear)
     findings = []
     for mesh_path in sorted(folder.glob("*.mesh")):
         if stem and mesh_path.stem != stem:
@@ -830,6 +830,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--profile", help="an asset profile for the triangle budget (default: the unit type's)")
     parser.add_argument("--model-kind", choices=("building", "landmark", "ship", "vehicle", "plane"),
                         help="check a static or rigid-part model against its kind's vanilla contract (config/static_kinds.json) instead of a unit type")
+    parser.add_argument("--size-reference", metavar="MODEL",
+                        help="with --model-kind: the vanilla model the job is sized to (its size.per_model path or file stem), instead of the median")
     parser.add_argument("--running-gear-triangles", type=int, default=0, metavar="N",
                         help="with --model-kind vehicle: the job's raise of the triangle budget for the running gear (warns STATIC-TRIANGLES-RAISED)")
     parser.add_argument("--mod-root", type=Path, help="also check the mod's registration of the unit, and compare its clips with the mod's other units")
@@ -865,7 +867,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         unit_type = dict(unit_type or {}, fps=args.fps)
     findings, facts = check_files(folder, unit_type, profile, args.stem, weapon_bones=args.weapon_bone)
     if args.model_kind:
-        findings.extend(model_kind_findings(folder, args.model_kind, args.stem, args.running_gear_triangles))
+        findings.extend(model_kind_findings(folder, args.model_kind, args.stem, args.running_gear_triangles, args.size_reference))
     if args.mod_root:
         findings.extend(check_unit_registration(folder, args.mod_root, unit_type))
     units_root = args.compare_units or (args.mod_root / "gfx" / "models" / "units" if args.mod_root else None)

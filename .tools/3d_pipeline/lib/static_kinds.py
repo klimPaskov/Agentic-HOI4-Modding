@@ -67,6 +67,29 @@ def with_running_gear(contract: dict, extra: int) -> dict:
     return raised
 
 
+def with_size_reference(contract: dict, reference: Optional[str]) -> dict:
+    """The contract sized to one named vanilla model of the kind instead of the median: `reference` is one of
+    `size.per_model` (its path, or its file stem such as `USA_tank_light`). The model gets that model's runtime measure
+    and the game-size sheet draws it beside the model. Vanilla's light tanks differ by nation (2.13 to 2.94 at runtime),
+    and a US M2A4 sized to the median, the Italian tank, read as two thirds to four fifths of it to two reviewers,
+    while it was 104 % of vanilla's US light tank. None or an empty name keeps the median."""
+
+    if not reference:
+        return contract
+    size = contract.get("size", {})
+    rows = size.get("per_model") or []
+    row = next((r for r in rows if r.get("rel") == reference or Path(str(r.get("rel"))).stem == reference), None)
+    if row is None or not row.get("runtime"):
+        names = ", ".join(Path(str(r.get("rel"))).stem for r in rows if r.get("runtime"))
+        raise ValueError(f"size_reference {reference!r} is not one of the {contract['kind']} references with an entity scale: {names}")
+    sized = dict(contract)
+    entity_scale = float(contract["entity"]["scale"])
+    sized["size"] = {**size, "runtime": float(row["runtime"]), "source": float(row["runtime"]) / entity_scale,
+                     "nearest": {"rel": row["rel"], "measure": row["measure"], "scale": row["scale"], "runtime": row["runtime"]},
+                     "reference_named": row["rel"], "median_runtime": size.get("runtime")}
+    return sized
+
+
 def to_blender(vector: Sequence[float]) -> np.ndarray:
     return SWAP @ np.asarray(vector, dtype=float)
 

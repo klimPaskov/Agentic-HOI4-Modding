@@ -363,10 +363,12 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
 
 
 def job_contract(job: dict) -> tuple:
-    """The kind's contract for this job and the job's raise for a tank's running gear (`running_gear_triangles`)."""
+    """The kind's contract for this job and the job's raise for a tank's running gear (`running_gear_triangles`), sized
+    to the vanilla model the job names (`size_reference`, sk.with_size_reference) when it names one."""
 
     running_gear = int(job.get("running_gear_triangles") or 0)
-    return sk.with_running_gear(sk.kind_contract(job["model_kind"]), running_gear), running_gear
+    contract = sk.with_size_reference(sk.kind_contract(job["model_kind"]), job.get("size_reference"))
+    return sk.with_running_gear(contract, running_gear), running_gear
 
 
 def atlas_source(glb: Path, out: Path) -> tuple:
@@ -474,7 +476,8 @@ def main(argv=None) -> int:
 
     verdict = out / "verdict_check.json"
     code = check_unit_files.main([str(files), "--model-kind", kind, "--mod-root", str(out / "mod"), "--verdict", str(verdict)]
-                                 + (["--running-gear-triangles", str(running_gear)] if running_gear else []))
+                                 + (["--running-gear-triangles", str(running_gear)] if running_gear else [])
+                                 + (["--size-reference", str(job["size_reference"])] if job.get("size_reference") else []))
     problems = report.get("reduction", {}).get("problems") or []
     if problems:
         # STATIC-SHAPE: the reduction to vanilla's budget lost part of the silhouette (lib/tripo_shape.py)
