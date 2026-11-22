@@ -13,7 +13,7 @@ TRIPO-RIG-ARMS fails a side when either holds:
   times the arm's own length (upper arm plus forearm): the hand carries more than a hand.
 
 Joint positions come from the skin's inverse bind matrices, so no node hierarchy is read. The model faces +z with y up. Reading files only:
-no Blender, no cost. What to do on a fail: press Retry once on Tripo's Rig page (20, there is no free rig retry), then check again.
+no Blender, no cost. What to do on a fail: for a winged unit run tripo/arm_seat.py (free), then check again. A paid Retry on Tripo's Rig page made the devil's rig worse.
 """
 
 from __future__ import annotations
@@ -90,14 +90,20 @@ def side_numbers(layout: Dict[str, object], side: str) -> Dict[str, float]:
 def rig_findings(layout: Dict[str, object]) -> (List[dict], dict):
     found, numbers = [], {}
     for side in ("Left", "Right"):
+        missing = [f"{side}{part}" for part in ("Arm", "ForeArm", "Hand") if f"{side}{part}" not in layout["heads"]]
+        if missing:
+            # the paid retry of the devil's rig dropped RightHand and bound 91% of the skin to the head
+            numbers[side] = {"missing_joints": missing}
+            found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"the rig has no {', '.join(missing)} joint: Tripo's rig missed the arm"})
+            continue
         row = side_numbers(layout, side)
         numbers[side] = row
         if row["forearm_vertices"] == 0:
             found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"no skin is bound mostly to the {side.lower()} forearm: Tripo's rig "
-                          "missed the arm. Press Retry once on Tripo's Rig page (20)"})
+                          "missed the arm. For a winged unit repair it free with tripo/arm_seat.py"})
         if row["hand_reach"] > MAX_HAND_REACH:
             found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"the {side.lower()} hand carries skin {row['hand_reach']:.1f} arm lengths from "
-                          f"the wrist (limit {MAX_HAND_REACH:g}): the hand holds more than a hand, such as a wing. Press Retry once on Tripo's Rig page (20)"})
+                          f"the wrist (limit {MAX_HAND_REACH:g}): the hand holds more than a hand, such as a wing. For a winged unit repair it free with tripo/arm_seat.py"})
     return found, numbers
 
 
@@ -108,6 +114,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
     found, numbers = rig_findings(skin_layout(args.glb))
     for side, row in numbers.items():
+        if "missing_joints" in row:
+            print(f"{side}: no joint {', '.join(row['missing_joints'])}")
+            continue
         print(f"{side}: arm {row['arm_length']:.3f}, forearm skin {row['forearm_vertices']}, hand skin {row['hand_vertices']} reaching {row['hand_reach']:.2f} arm lengths")
     for item in found:
         print(f"{item['rule']} [{item['subject']}] {item['message']}")

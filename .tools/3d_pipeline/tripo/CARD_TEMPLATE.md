@@ -92,13 +92,13 @@ How to write `<every detail>`:
 **Rig**: Humanoid, skeleton preset Mixamo, **Auto Rig**.
 <!-- winged -->
 
-**When Tripo says "Not Ready for Auto-Rigging".** Large wings make Tripo's pre-rig check doubt a humanoid rig. It shows this dialog about ten seconds after the press, with **Generate with T-Pose** and **Try Rigging Anyway**. Neither is needed: the picture's pose is the one the route wants, and a T-pose picture means a new model (30). On the devil (2026-11-22) **Try Rigging Anyway** closed the dialog and started nothing, and two more presses on the same page did nothing. What worked:
+**When Tripo says "Not Ready for Auto-Rigging".** Large wings make Tripo's pre-rig check doubt a humanoid rig. It shows this dialog about ten seconds after the press, with **Generate with T-Pose** and **Try Rigging Anyway**. Neither is needed: the picture's pose is the one the route wants, and a T-pose picture means a new model (30). On the devil (2026-11-22) **Try Rigging Anyway** sent the rig request and Tripo refused it (HTTP 406, no charge). A press after reopening the page did nothing, and the next press rigged and charged once. What worked:
 
 1. Read the balance in the header. It must not have dropped. If it dropped, the rig is running: wait and do not press again.
 2. Open the rigging page again by its address, `studio.tripo3d.ai/workspace/rigging/<asset id>`.
 3. Check that **Auto Rig** reads 20, then press it once.
 4. Wait 30 seconds. The rig runs without the dialog. The page then shows "Rigged models can be used for animation", the balance has dropped by 20 once, and the button reads **Retry 20**.
-5. Do not press **Retry** to make sure: it rigs again and charges 20 again. Press it only when `rig_check.py` fails (step 6). Write the ledger's balance after only when the drop shows.
+5. Do not press **Retry**: it rigs again, charges 20 again and drops every clip applied. A rig that `rig_check.py` fails is repaired with `arm_seat.py` (step 6). Write the ledger's balance after only when the drop shows.
 <!-- /winged -->
 
 ## 4. Candidate animations (free)
@@ -149,7 +149,7 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 
 Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
 
-First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. No free step re-places an arm chain, and the Rig page has no free retry: press **Retry** there once (20, the ledger row first, with the reason), apply the clips again, export in a fresh browser tab and check again. Pay for no clip on a rig that fails. When a retry fails too, stop and ask.
+First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. For a winged unit repair it free: `py -3.13 -B .tools/3d_pipeline/tripo/arm_seat.py <the rigged export> --out <job folder>/inbox/<asset_slug>__rigged.glb`, then run `rig_check.py` on that file. It moves the arm joints onto the mesh's own arm and gives the wing skin to the shoulder for the route's wing chains, and every clip already applied keeps working. Do not press **Retry** on the Rig page instead: it charges 20, drops every applied clip, and on the devil its second rig was worse (91% of the skin on the head, no right hand joint). When `arm_seat.py` refuses or the check still fails, stop and ask before any paid step.
 
 <!-- unarmed -->
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
