@@ -57,6 +57,7 @@ def check(data: Optional[Dict[str, Any]] = None, *, config: Path = CONFIG) -> Li
         "bodies": _load(config / "body_presets.json")["presets"],
         "kinds": _load(config / "static_kinds.json")["kinds"],
         "workflows": _load(config / WORKFLOWS.name)["workflows"] if (config / WORKFLOWS.name).exists() else {},
+        "effects": _load(config / "effects.json")["profiles"] if (config / "effects.json").exists() else {},
     }
     found: List[str] = []
     for name, preset in data["presets"].items():
@@ -88,6 +89,7 @@ def _reference_problems(preset: Dict[str, Any], refs: Dict[str, Dict[str, Any]])
             found.append(f"its unit type's body {body!r} is not in body_presets.json")
         found += [f"anatomy_changes names {key!r}, which the body {body} has no answer for"
                   for key in (preset.get("anatomy_changes") or {}) if body in bodies and key not in bodies[body]["anatomy"]]
+    found += [f"effect profile {name!r} is not in effects.json" for name in preset.get("effects", []) if refs["effects"] and name not in refs["effects"]]
     if refs["workflows"] and preset.get("canvas") not in refs["workflows"]:
         found.append(f"Canvas workflow {preset.get('canvas')!r} is not in {WORKFLOWS.name}")
     return found
@@ -149,7 +151,9 @@ def never_fitting(preset: Optional[Dict[str, Any]] = None, data: Optional[Dict[s
     """The name patterns of clips that never fit (D-127): the shared list and the preset's own."""
 
     data = data or load()
-    return [*data.get("never_fitting", {}).get("patterns", []), *((preset or {}).get("never_fitting") or [])]
+    preset = preset or {}
+    own = [*(preset.get("never_fitting") or []), *((preset.get("never_fits") or {}).get("clips") or [])]
+    return [*data.get("never_fitting", {}).get("patterns", []), *[item.lower() for item in own]]
 
 
 def unfitting_clips(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Dict[str, str]:

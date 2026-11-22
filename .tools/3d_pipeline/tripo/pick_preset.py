@@ -3,13 +3,13 @@
     py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --reference "<the subject's own reference>" [--reference ...]
         (--kind unit --legs 2|4 [--wings] [--weapon --hand LeftHand|RightHand] [--large] [--rider]
          | --kind vehicle|plane|ship|building|landmark)
-        [--name "a goblin with an axe"] [--private <reference>] [--json]
+        [--name "a fighter with an axe"] [--private <reference>] [--json]
 
 The modder says "make a 3D unit from this picture". The agent looks at the picture and the description and answers only these questions:
 
 - What is it: a unit (a person, creature or beast), a vehicle (tank, armoured car), a plane, a ship, a building or a landmark?
 - A unit: how many legs reach the ground (2 or 4)? Does it have wings? Does it hold a weapon, and in which hand by its own side?
-  Is it much bigger than a soldier (an ogre, a giant, a golem)? Does a four-legged mount carry a rider?
+  Is it much bigger and heavier than a soldier? Does a four-legged mount carry a rider?
 
 Fixed rules turn the answers into a preset, so the type never rests on judgement alone. The tool prints one sentence to confirm, with the
 cost of the card (the default) and of the preset's Agentic Canvas workflow, and the next command (`tripo/new_job.py`). It refuses before
@@ -141,9 +141,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--wings", action="store_true")
     parser.add_argument("--weapon", action="store_true", help="it holds a weapon")
     parser.add_argument("--hand", choices=HANDS, help="the hand that holds the weapon, by the character's own side")
-    parser.add_argument("--large", action="store_true", help="much bigger than a soldier: an ogre, a giant, a golem")
+    parser.add_argument("--large", action="store_true", help="much bigger and heavier than a soldier")
     parser.add_argument("--rider", action="store_true", help="a four-legged mount that carries a rider")
-    parser.add_argument("--name", default="", help="what it is, in a few words: 'a goblin with an axe'")
+    parser.add_argument("--name", default="", help="what it is, in a few words: 'a fighter with an axe'")
     parser.add_argument("--slug", default="<asset_slug>", help="the job's name, for the next command")
     parser.add_argument("--reference", action="append", default=[], help="a reference the picture is made from (repeat)")
     parser.add_argument("--private", action="append", default=[], help="a reference that is private, such as an owner's drawing")

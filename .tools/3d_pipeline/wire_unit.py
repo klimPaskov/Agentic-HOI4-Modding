@@ -16,7 +16,7 @@ Reads the job's `runtime/registration.md`, `runtime/files/` and `job.yaml`, then
    (`<id>`, `<id>_desc`) exist. It lists what is missing and never writes either.
 3. lists the counter sprites the unit needs (`GFX_unit_<sprite>_icon_medium` and `_medium_white`) and whether
    the mod or only the game defines each. Report only.
-4. writes `event = { time = <frame> sound = { soundeffect = "..." } }` lines for the job's `sound_plan`
+4. writes `event = { time = <seconds> sound = { soundeffect = "..." } }` lines (seconds = frame / 30) for the job's `sound_plan`
    (a list in job.yaml of `{role, soundeffect, frame}`). Without a plan it warns "no sound plan". Sound is
    never generated.
 5. runs `check_unit_files.py --mod-root` and `.tools/audits/audit_asset_wiring_static.py --root` on the mod
@@ -48,8 +48,8 @@ from lib import unit_wiring as wiring
 JOB_ID_PREFIX = "hoi4_3d_model_jobs_"
 CHECK_TIMEOUT_SECONDS = 900
 SOUND_TIME_WARNING = (
-    "sound events: the unit of `time` in an entity event is unverified (vanilla uses values like 0.1 and 14, see .tools/wiki/kit/entity_modding.md); "
-    "the tool writes the plan's frame number as it is, so check the timing in the game"
+    "sound events: each plan frame is written as time = frame / 30, the clip's seconds (vanilla's destroyed landmarks fire their first "
+    "explosion within 0.2 s of the frame their clip hides the part, calibrate_effects.py); hear in the game that the sound lands on its frame"
 )
 
 
@@ -173,13 +173,15 @@ def load_clip_samples(job: Path) -> Dict[str, int]:
     return {name: item["samples"] for name, item in animations.items() if isinstance(item, dict) and isinstance(item.get("samples"), int)}
 
 
-def plan_sound(spec: Dict[str, Any], registration: wiring.Registration, clip_samples: Dict[str, int], errors: List[str], warnings: List[str]) -> Tuple[str, Dict[str, Any]]:
+def plan_sound(spec: Dict[str, Any], registration: wiring.Registration, clip_samples: Dict[str, int], errors: List[str], warnings: List[str],
+               job: Optional[Path] = None) -> Tuple[str, Dict[str, Any]]:
     """The entity block with the job's sound events written in, and what the sound plan said."""
 
     sound: Dict[str, Any] = {"plan": False, "events": [], "problems": []}
     entity_block = registration.entity_block
     try:
         events = wiring.parse_sound_plan(spec.get("sound_plan") or plan_section(spec).get("sound_plan"))
+        events += effect_sounds((job / "runtime" / "files") if job else None, registration.stem, events)
         if not events:
             warnings.append("no sound plan: the unit's entity has no sound events (sounds are never generated; add a sound_plan to job.yaml or write them by hand)")
             return entity_block, sound
@@ -229,6 +231,44 @@ def plan_particles(job: Path, registration: wiring.Registration, entity_block: s
         warnings.append(PARTICLE_TIME_WARNING)
     except wiring.WiringError as error:
         errors.append(f"burn particles: {error}")
+    return entity_block, report
+
+
+def effect_sounds(folder: Optional[Path], stem: str, planned: Sequence[Any]) -> List[Any]:
+    """The effects plan's sounds (lib/unit_effects.py) as sound plan events, at the frames of their particles. A role the job's own
+    sound_plan already gives a sound at that frame keeps the job's."""
+
+    from lib import unit_effects
+
+    plan = unit_effects.read_plan(folder, stem) if folder else None
+    taken = {(e.role, e.frame) for e in planned}
+    return [wiring.SoundEvent(s["role"], s["soundeffect"], int(s["frame"]), "") for s in (plan or {}).get("sounds", [])
+            if (s["role"], int(s["frame"])) not in taken]
+
+
+def plan_effects(job: Path, registration: wiring.Registration, entity_block: str, errors: List[str], warnings: List[str]) -> Tuple[str, Dict[str, Any]]:
+    """The entity block with the effects layer's particle events (`<stem>_effects.json` beside the runtime files, written by
+    tripo/effects_stage.py), and the adapted particle files with their `.gfx` registration."""
+
+    from lib import unit_effects
+
+    stem = registration.stem
+    folder = job / "runtime" / "files"
+    plan = unit_effects.read_plan(folder, stem)
+    report: Dict[str, Any] = {"plan": bool(plan), "events": [], "files": []}
+    if not plan:
+        return entity_block, report
+    files, problems = unit_effects.particle_files(plan, game_dir())
+    errors += [f"effects: {problem}" for problem in problems]
+    report["files"] = files
+    report["events"] = [{"role": e["role"], "time": e["time"], "node": e["node"], "particle": e["particle"]} for e in plan["events"]]
+    try:
+        entity_block = wiring.apply_effect_events(entity_block, plan["events"])
+    except wiring.WiringError as error:
+        errors.append(f"effects: {error}")
+    found = unit_effects.findings(folder, stem, plan, game=game_dir())
+    errors += [f"effects {f['rule']}: {f['message']}" for f in found]
+    warnings.append("effects: only the game draws the real particles; ask for the in-game checks of docs/3d-effects.md")
     return entity_block, report
 
 
@@ -307,8 +347,11 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
     warnings: List[str] = []
     if spec_stem and spec_stem != stem:
         errors.append(f"job.yaml's runtime stem {spec_stem} differs from the registration's {stem}")
-    entity_block, sound = plan_sound(spec, registration, load_clip_samples(job), errors, warnings)
+    entity_block, sound = plan_sound(spec, registration, load_clip_samples(job), errors, warnings, job)
     entity_block, particles = plan_particles(job, registration, entity_block, errors, warnings)
+    entity_block, effects = plan_effects(job, registration, entity_block, errors, warnings)
+    particles["files"] = particles.get("files", []) + effects.pop("files", [])
+    particles["effects"] = effects
     plan = wiring.build_plan(
         mod_root=mod_root,
         registration=registration,

@@ -311,6 +311,26 @@ def disc_mesh(centre, radius, thickness, sides=16):
     return points, np.array(faces)
 
 
+def loop_mesh(x0, width, length, height, thick, segments=16):
+    """A track run seen from the side as a closed band round a stadium (from y = -length/2, z = 0), extruded across x."""
+
+    radius = height / 2
+    outline = [(-length / 2 + radius + radius * np.cos(a), radius + radius * np.sin(a)) for a in np.linspace(np.pi / 2, 1.5 * np.pi, segments)]
+    outline += [(length / 2 - radius + radius * np.cos(a), radius + radius * np.sin(a)) for a in np.linspace(-np.pi / 2, np.pi / 2, segments)]
+    outer = np.array(outline)
+    inner = np.array([0.0, radius]) + (outer - [0.0, radius]) * (1 - thick / radius)
+    n = len(outer)
+    points = np.array([[x, y, z] for x in (x0, x0 + width) for ring in (outer, inner) for y, z in ring])
+    faces = []
+    for k in range(n):
+        j = (k + 1) % n
+        for side in (0, 2 * n):
+            faces += [(side + k, side + j, side + n + j), (side + k, side + n + j, side + n + k)]
+        for ring in (0, n):
+            faces += [(ring + k, 2 * n + ring + k, 2 * n + ring + j), (ring + k, 2 * n + ring + j, ring + j)]
+    return points, np.array(faces)
+
+
 def assemble(parts):
     points, triangles, offset = [], [], 0
     for p, t in parts:
@@ -326,7 +346,7 @@ class RunningGearTests(unittest.TestCase):
     def test_wheels_and_tracks_of_a_tank_in_pieces(self):
         parts = [box_mesh([-1.5, -4.0, 0.6], [1.5, 4.0, 2.5])]  # hull
         for side in (-1, 1):
-            parts.append(box_mesh([side * 2.0 - 0.3, -4.0, 0.0], [side * 2.0 + 0.3, 4.0, 1.4]))  # a track run
+            parts.append(loop_mesh(side * 2.0 - 0.3, 0.6, 8.0, 1.4, 0.1))  # a track run: a loop round the wheels
             for y in (-2.4, -0.8, 0.8, 2.4):
                 parts.append(disc_mesh([side * 1.8, y, 0.5], 0.45, 0.25))  # road wheels inside the track loop
         parts.append(disc_mesh([1.9, 0.0, 3.0], 0.2, 0.1))  # a round fitting high on the hull: not a wheel
@@ -336,7 +356,7 @@ class RunningGearTests(unittest.TestCase):
         for wheel in gear["wheels"]:
             self.assertAlmostEqual(wheel["radius"], 0.45, delta=0.02)
             self.assertAlmostEqual(wheel["centre"][2], 0.5, delta=0.02)
-        self.assertEqual(len(gear["tracks"]), 16)  # both track boxes, 8 vertices each
+        self.assertEqual(len(gear["tracks"]), 2 * 4 * 32)  # both loops, 4 rings of 32 vertices each
         self.assertEqual([round(w["centre"][1], 1) for w in gear["wheels"][:2]], [-2.4, -2.4])  # front first, left then right
 
     def test_a_coarse_piece_does_not_spin(self):
@@ -738,6 +758,91 @@ class TrackLoopTests(unittest.TestCase):
         self.assertTrue(all(spans[k] > 0.05 for k in ends))  # the curved ends get tread too, not one stretched row
         v = np.concatenate([face[:, 1] for face in uvs])
         self.assertAlmostEqual(float(np.ptp(v)), round(total * 0.9), delta=1.0)  # a whole number of tiles round the loop
+
+
+class MountSurfaceTests(unittest.TestCase):
+    def test_a_part_on_a_large_flat_triangle_rests_on_it_away_from_its_vertices(self):
+        # a reduced hull top: one 4 x 4 square of two triangles, and a turret ring point over its middle
+        positions = np.array([[0, 0, 0], [4, 0, 0], [4, 4, 0], [0, 4, 0], [9, 9, 9]], dtype=float)
+        triangles = np.array([[0, 1, 2], [0, 2, 3], [4, 4, 4]])
+        mount = np.array([True, True, True, True, False])
+        ring = np.array([[2.0, 2.0, 0.0]])
+        self.assertGreater(sk._nearest_gap(ring, positions[mount]), 2.8)
+        seat = sk.mount_surface(positions, triangles, mount)
+        self.assertLess(sk._nearest_gap(ring, seat), 0.15)
+        self.assertTrue((seat[:, 2] == 0).all() and seat[:, :2].min() >= 0 and seat[:, :2].max() <= 4)
+        lifted = ring + [0, 0, 0.5]
+        self.assertGreater(sk._nearest_gap(lifted, seat), 0.49)  # a real lift still shows
+        np.testing.assert_array_equal(seat, sk.mount_surface(positions, triangles, mount))  # repeats
+
+
+def _box(points, triangles, low, high):
+    """Append a closed box (12 triangles) to the lists and return its triangle indices."""
+
+    base = len(points)
+    for x in (low[0], high[0]):
+        for y in (low[1], high[1]):
+            for z in (low[2], high[2]):
+                points.append((x, y, z))
+    quads = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+    start = len(triangles)
+    for a, b, c, d in quads:
+        triangles.append((base + a, base + b, base + c))
+        triangles.append((base + a, base + c, base + d))
+    return list(range(start, len(triangles)))
+
+
+class TurretTraverseTests(unittest.TestCase):
+    """A turret with a post on its side turns until the post would pass through a deck block at a quarter turn."""
+
+    def setUp(self) -> None:
+        points, triangles = [], []
+        hull = _box(points, triangles, (-1.0, -1.0, 0.0), (1.0, 1.0, 1.0))
+        hull += _box(points, triangles, (-0.05, 0.55, 1.0), (0.05, 0.65, 1.3))  # a deck block at 90 degrees, radius 0.6
+        turret = _box(points, triangles, (-0.3, -0.3, 1.0), (0.3, 0.3, 1.5))
+        turret += _box(points, triangles, (0.3, -0.02, 1.2), (0.62, 0.02, 1.25))  # an arm out from the turret side
+        turret += _box(points, triangles, (0.58, -0.02, 1.05), (0.62, 0.02, 1.45))  # and a post at its end
+        self.points = np.array(points, float)
+        triangles = np.array(triangles)
+        self.hull, self.turret = triangles[hull], triangles[turret]
+
+    def test_the_turn_stops_short_of_the_deck_block_on_its_side_only(self) -> None:
+        negative, positive = sk.turret_clear_yaw(self.points, self.turret, self.hull, (0.0, 0.0, 1.0))
+        self.assertEqual(negative, -180.0)  # nothing stands on the other side
+        self.assertGreater(positive, 60.0)
+        self.assertLess(positive, 90.0)  # the post meets the block before the quarter turn
+
+    def test_a_clear_turret_turns_all_the_way(self) -> None:
+        hull = self.hull[:12]  # the hull box alone
+        self.assertEqual(sk.turret_clear_yaw(self.points, self.turret, hull, (0.0, 0.0, 1.0)), (-180.0, 180.0))
+
+    def test_the_clip_keeps_its_shape_and_only_turns_less(self) -> None:
+        yaws = np.array([0.0, 40.0, 120.0, 60.0, -30.0, -90.0, 0.0])
+        turns, shares = sk.scaled_turns(yaws, (-180.0, 80.0))
+        self.assertEqual(shares, (1.0, 80.0 / 120.0))
+        np.testing.assert_allclose(turns, [0.0, 40.0 * 2 / 3, 80.0, 40.0, -30.0, -90.0, 0.0])
+        same, kept = sk.scaled_turns(yaws, (-180.0, 180.0))
+        self.assertEqual(kept, (1.0, 1.0))
+        np.testing.assert_array_equal(same, yaws)
+
+
+class SizeReferenceTests(unittest.TestCase):
+    def test_a_named_vanilla_tank_sets_the_size_and_the_sheet_model(self) -> None:
+        contract = sk.kind_contract("vehicle")
+        sized = sk.with_size_reference(contract, "USA_tank_light")
+        row = next(r for r in contract["size"]["per_model"] if r["rel"].endswith("USA_tank_light.mesh"))
+        self.assertAlmostEqual(sized["size"]["runtime"], row["runtime"])
+        self.assertAlmostEqual(sized["size"]["source"] * contract["entity"]["scale"], row["runtime"])
+        self.assertEqual(sized["size"]["nearest"]["rel"], row["rel"])
+        self.assertLess(sized["size"]["source"], contract["size"]["source"])  # vanilla's US light tank is smaller than the median
+        self.assertEqual(sk.with_size_reference(contract, row["rel"])["size"]["source"], sized["size"]["source"])
+
+    def test_no_name_keeps_the_median_and_an_unknown_name_is_refused(self) -> None:
+        contract = sk.kind_contract("vehicle")
+        self.assertIs(sk.with_size_reference(contract, None), contract)
+        with self.assertRaisesRegex(ValueError, "USA_tank_light"):
+            sk.with_size_reference(contract, "M2A4")
+
 
 if __name__ == "__main__":
     unittest.main()

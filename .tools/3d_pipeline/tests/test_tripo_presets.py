@@ -93,6 +93,15 @@ class PresetFile(unittest.TestCase):
                 seen.add(name)
         self.assertEqual(set(P.names()) - seen, {"rider"})  # the rider is part of mount_with_rider
 
+    def test_presets_and_canvas_workflows_name_no_creature_or_mod(self):
+        """D-134: the presets and Canvas workflows are general, one per unit type, never per creature. A creature's or a mod's own
+        wording (its name, its canon, its prompts) belongs in that mod's job files. size_vs_horse is the kit's own size measure."""
+        names = ("goblin", "orc", "ogre", "troll", "dwarf", "demon", "devil", "angel", "dragon", "griffin", "zombie", "golem", "yeti",
+                 "kror", "zin", "elephant", "camel", "wolf")
+        for path in (P.PRESETS, P.WORKFLOWS, PIPELINE_ROOT / "tripo" / "tripo_canvas.js"):
+            words = set(re.findall(r"[a-z]+", path.read_text(encoding="utf-8").lower()))
+            self.assertEqual(sorted(words & set(names)), [], path.name)
+
     def test_every_type_the_task_names_has_a_preset(self):
         names = set(P.names())
         for name in ("humanoid", "armed_humanoid", "large_creature", "winged_humanoid", "winged_quadruped", "mount_with_rider",
@@ -145,7 +154,7 @@ class JobFromPreset(unittest.TestCase):
         self.assertEqual(P.for_job({"unit_type": "heavy_brute"}), "large_creature")
         self.assertEqual(P.for_job({"unit_type": "mount"}), "mount_with_rider")
         self.assertEqual(P.for_job({"model_kind": "ship"}), "ship")
-        # A dragon's job says it has wings: its unit type has one preset, which takes it.
+        # A winged four-legged job says it has wings: its unit type has one preset, which takes it.
         self.assertEqual(P.for_job({"unit_type": "winged_quadruped", "anatomy": {"wings": True}}), "winged_quadruped")
         self.assertIsNone(P.for_job({"unit_type": "archer"}))
 
@@ -216,6 +225,12 @@ class NewJobCommand(unittest.TestCase):
                 self.assertEqual(new_job.main(["--jobs-config", str(registry), "--preset", "ship", "galley", "--source", "a photo"]), 0)
                 static = json.loads((root / "galley" / "inbox" / "galley.json").read_text(encoding="utf-8"))
                 self.assertEqual(static, {"name": "galley", "model_kind": "ship"})
+                code = new_job.main(["--jobs-config", str(registry), "--preset", "tank", "m2a4", "--source", "a photo",
+                                     "--set", 'size_reference="USA_tank_light"'])
+                self.assertIn(code, (0, 3))
+                static = json.loads((root / "m2a4" / "inbox" / "m2a4.json").read_text(encoding="utf-8"))
+                self.assertEqual(static, {"name": "m2a4", "model_kind": "vehicle", "running_gear_triangles": 3600,
+                                          "part_shape_iou": 0.97, "size_reference": "USA_tank_light"})
 
     def test_list_prints_every_preset(self):
         with mock.patch("sys.stdout") as out:
@@ -226,7 +241,7 @@ class NewJobCommand(unittest.TestCase):
 
 
 class ClipsFitTheUnit(unittest.TestCase):
-    """D-127: box_01 and front_kick_01 passed the strike checks on the devil, Kror and the rider, and do not fit any of them."""
+    """D-127: box_01 and front_kick_01 passed the strike checks on a winged unit, a large creature and a rider, and fit none of them."""
 
     def test_no_preset_offers_a_never_fitting_clip(self):
         for name in P.names():
@@ -262,8 +277,8 @@ class ClipsFitTheUnit(unittest.TestCase):
     def test_step_6_checks_only_fitting_free_attacks(self):
         self.assertIn("--attack chop <earlier clips>", card("armed_humanoid"))
         self.assertIn("--attack <earlier clips> --json", card("humanoid"))
-        unarmed = new_job.build_entry("large_creature", "kror", SOURCES, "", {"posture": "hunched", "armed": False})
-        text = C.fill(TEMPLATE, unarmed, "kror", job_folder="jobs/kror", kit_commit="abc")
+        unarmed = new_job.build_entry("large_creature", "big_unarmed", SOURCES, "", {"posture": "hunched", "armed": False})
+        text = C.fill(TEMPLATE, unarmed, "big_unarmed", job_folder="jobs/big_unarmed", kit_commit="abc")
         self.assertNotIn("--attack chop", text)
         self.assertIn("raises both fists high over its head", text)
         self.assertIn("raises the wooden mallet", card("large_creature"))

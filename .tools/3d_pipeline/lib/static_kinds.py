@@ -51,6 +51,45 @@ def kind_contract(kind: str, path: Optional[Path] = None) -> dict:
     return kinds[kind]
 
 
+def with_running_gear(contract: dict, extra: int) -> dict:
+    """The contract with its triangle budget raised by `extra` for a tracked vehicle's running gear (tracks, bogies and
+    wheels), which a detailed model made in parts cannot fit into vanilla's budget without crumpling. The raise stays
+    visible: STATIC-TRIANGLES-RAISED warns on every check, because the model then has more triangles than any vanilla
+    model of its kind and the user decides whether to accept that."""
+
+    if not extra:
+        return contract
+    if extra < 0 or not (contract.get("rules", {}).get("tracks")):
+        raise ValueError(f"running_gear_triangles is a positive raise for a tracked vehicle kind, not {extra!r} for a {contract['kind']}")
+    raised = dict(contract)
+    raised["triangle_budget"] = {**contract["triangle_budget"], "value": contract["triangle_budget"]["value"] + int(extra),
+                                 "running_gear": int(extra), "vanilla": contract["triangle_budget"]["value"]}
+    return raised
+
+
+def with_size_reference(contract: dict, reference: Optional[str]) -> dict:
+    """The contract sized to one named vanilla model of the kind instead of the median: `reference` is one of
+    `size.per_model` (its path, or its file stem such as `USA_tank_light`). The model gets that model's runtime measure
+    and the game-size sheet draws it beside the model. Vanilla's light tanks differ by nation (2.13 to 2.94 at runtime),
+    and a US M2A4 sized to the median, the Italian tank, read as two thirds to four fifths of it to two reviewers,
+    while it was 104 % of vanilla's US light tank. None or an empty name keeps the median."""
+
+    if not reference:
+        return contract
+    size = contract.get("size", {})
+    rows = size.get("per_model") or []
+    row = next((r for r in rows if r.get("rel") == reference or Path(str(r.get("rel"))).stem == reference), None)
+    if row is None or not row.get("runtime"):
+        names = ", ".join(Path(str(r.get("rel"))).stem for r in rows if r.get("runtime"))
+        raise ValueError(f"size_reference {reference!r} is not one of the {contract['kind']} references with an entity scale: {names}")
+    sized = dict(contract)
+    entity_scale = float(contract["entity"]["scale"])
+    sized["size"] = {**size, "runtime": float(row["runtime"]), "source": float(row["runtime"]) / entity_scale,
+                     "nearest": {"rel": row["rel"], "measure": row["measure"], "scale": row["scale"], "runtime": row["runtime"]},
+                     "reference_named": row["rel"], "median_runtime": size.get("runtime")}
+    return sized
+
+
 def to_blender(vector: Sequence[float]) -> np.ndarray:
     return SWAP @ np.asarray(vector, dtype=float)
 
@@ -635,12 +674,33 @@ def half_turn_mismatch(points: np.ndarray, centre: np.ndarray, radius: float) ->
     return float(np.percentile(gaps, 90) / max(radius, 1e-9))
 
 
+TRACK_FILL_MAX = 0.5  # kit rule: the most of its side box a track run's side view may fill
+
+
+def side_fill(points: np.ndarray, triangles: np.ndarray, vertices: np.ndarray) -> float:
+    """The share of a piece's side-view box (along the hull and up) that its side view covers, at 128 pixels."""
+
+    from lib import tripo_shape
+
+    mine = np.zeros(len(points), dtype=bool)
+    mine[np.asarray(vertices, dtype=np.int64)] = True
+    faces = np.asarray(triangles, dtype=np.int64)
+    faces = faces[mine[faces].all(axis=1)]
+    if not len(faces):
+        return 0.0
+    used, inverse = np.unique(faces, return_inverse=True)
+    q = points[used][:, 1:]
+    low, span = q.min(axis=0), np.maximum(np.ptp(q, axis=0), 1e-12)
+    return float(tripo_shape.rasterize((q - low) / span, inverse.reshape(-1, 3), 128).mean())
+
+
 def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
     """A tank's road wheels and track runs, from its separate pieces (a Smart Mesh tank models them apart).
 
     Pieces are the position-welded connected shells. Of those on the outer side (centre at least `rule.x_share` of the
     half-width out) and in the lower half:
-    - a track run is a piece at least `rule.track_length_share` of the hull's length long;
+    - a track run is a piece at least `rule.track_length_share` of the hull's length long whose side view fills at most
+      `TRACK_FILL_MAX` of its box (a loop, not a band with its bogies);
     - a wheel is a round piece (its length and height within `rule.round_ratio` of each other, thinner across than
       round) whose diameter lies in `rule.diameter_share` (of the hull's length), whose top stays under the track's, and
       whose vertices spread from its centre no more than vanilla's wheels' do (`rule.radius_spread`), reach round it as
@@ -668,7 +728,9 @@ def running_gear(points: np.ndarray, triangles: np.ndarray, rule: dict) -> dict:
         if abs(c[0] - centre_x) < rule["x_share"] * half or c[2] > (low[2] + high[2]) / 2:
             continue
         pieces.append((vertices, c, e))
-    tracks = [v for v, _c, e in pieces if e[1] >= rule["track_length_share"] * span[1]]
+    # a track run is a loop: seen from the side it fills little of its box (Smart Mesh runs 0.13 to 0.21). A long piece that
+    # fills it (a parts export's track band with its bogies and fender, 0.76) is no run: scrolled, its wheels would wear tread.
+    tracks = [v for v, _c, e in pieces if e[1] >= rule["track_length_share"] * span[1] and side_fill(points, triangles, v) <= TRACK_FILL_MAX]
     # a wheel sits inside the track loop: its top under the track's top (with a margin)
     track_top = max((points[v][:, 2].max() for v in tracks), default=high[2]) + rule["top_margin_share"] * span[2]
     lo_d, hi_d = rule["diameter_share"]
@@ -1392,6 +1454,30 @@ def tread_links(rows) -> int:
     return max(1, int(starts.sum()) or 1)
 
 
+TREAD_LUMA_FLOOR = 0.7  # of vanilla's tread luma: a run darker than this loses its links (kit rule)
+
+
+def tread_target_luma(luma: float, tone: float, floor: float = TREAD_LUMA_FLOOR) -> float:
+    """The mean luma a tread is drawn at: no brighter than vanilla's light tanks' treads (`tone`, a run painted in a
+    light hull colour is darkened to it) and no darker than `floor` of it. The M2A4 Smart Mesh tank's run was painted
+    near black (median texel 24, 24, 22), so its tread's plates, grousers and gaps all read as one black band at close
+    up and at game size; vanilla's treads average 96.5."""
+
+    return min(max(luma, floor * tone), tone)
+
+
+def tread_colour_at(colour, luma: float, target: float) -> np.ndarray:
+    """`colour` brought to a tread mean luma of `target` (from `luma`), keeping its hue: scaled when that stays in range,
+    else mixed toward a grey of the target luma, so a near-black run keeps its own tint."""
+
+    colour = np.asarray(colour, dtype=float)[:3]
+    scale = target / max(luma, 1e-6)
+    if float(colour.max()) * scale <= 255.0:
+        return colour * scale
+    grey = np.full(3, target / max(luma, 1e-6) * float(colour @ np.array([0.299, 0.587, 0.114])))
+    return np.clip(grey, 0, 255)
+
+
 def tread_images(colour, links: int, size=(64, 32)) -> dict:
     """A tileable tread (RGBA arrays, width across the run, height along it): `links` track links a tile, each a plate
     with a raised grouser across it and a dark gap after it, a guide line down the middle, darker edges. `colour` is
@@ -1539,6 +1625,8 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
       hull bob on its suspension); only the hull may bob.
     - STATIC-SHADOW: the colour texture has no cast shadow painted into it (`lib/static_delight.py`).
     - STATIC-SLAB: a building's or landmark's base slab is flat, square and shades flat (`lib/static_slab.py`).
+    - STATIC-YARD: a map building's ground yard reaches no further past the building than a thin skirt
+      (`lib/static_yard.py`).
     """
 
     from lib import pdx_binary, pdx_deform
@@ -1557,6 +1645,11 @@ def kind_findings(mesh_path: Path, contract: dict, anims: Sequence[Path] = ()) -
     budget = contract["triangle_budget"]["value"]
     if triangles > budget:
         findings.append(("STATIC-TRIANGLES", "error", f"{triangles} triangles; the most detailed vanilla {kind} ({contract['triangle_budget']['mesh']}) has {budget}"))
+    if contract["triangle_budget"].get("running_gear"):
+        vanilla = contract["triangle_budget"]["vanilla"]
+        findings.append(("STATIC-TRIANGLES-RAISED", "warning",
+                         f"{triangles} triangles against a budget raised by {contract['triangle_budget']['running_gear']} for the running gear; "
+                         f"the most detailed vanilla {kind} has {vanilla}. Ask the user before shipping a model over vanilla's budget"))
     findings += _structure(summary, contract)
     findings += _surface_findings(mesh_path, mesh, visible, kind)
     if contract.get("rigid") and mesh.skinned:
@@ -1634,6 +1727,10 @@ def _surface_findings(mesh_path: Path, mesh, visible: np.ndarray, kind: str) -> 
         normals = np.array([to_blender(p) for p in mesh.normals])
         triangles = mesh.triangles[visible[mesh.triangles].all(axis=1)]
         findings += static_slab.slab_findings(points, triangles, normals)
+        if kind == "building":
+            from lib import static_yard
+
+            findings += static_yard.yard_findings(points, triangles)
     return findings
 
 
@@ -1732,7 +1829,8 @@ def _part_gaps(mesh, visible, anims: Sequence[Path], contract: dict, measure: fl
             b = visible & (dominant == index[base])
             if a.sum() < 3 or b.sum() < 3:
                 continue
-            rest_gap = _nearest_gap(mesh.positions[a], mesh.positions[b])
+            seat = mount_surface(mesh.positions, mesh.triangles, b)
+            rest_gap = _nearest_gap(mesh.positions[a], seat)
             low, high = mesh.positions[b].min(axis=0), mesh.positions[b].max(axis=0)
             for f in range(0, matrices.shape[0], max(1, matrices.shape[0] // 24)):
                 pa = _apply(matrices[f, index[part]], mesh.positions[a])
@@ -1741,7 +1839,7 @@ def _part_gaps(mesh, visible, anims: Sequence[Path], contract: dict, measure: fl
                 local = _apply(np.linalg.inv(matrices[f, index[base]]), pa)
                 if ((local >= low) & (local <= high)).all(axis=1).any():
                     continue
-                pb = _apply(matrices[f, index[base]], mesh.positions[b])
+                pb = _apply(matrices[f, index[base]], seat)
                 gap = _nearest_gap(pa, pb) - rest_gap
                 if gap > worst[0]:
                     worst = (gap, part, f)
@@ -1826,6 +1924,69 @@ def mount_seam_masks(rest: np.ndarray, moving_triangles: np.ndarray, base_triang
     band = MOUNT_SEAM_SHARE * max(high - low, 1e-9)
     middle = lambda edges: (rest[edges[:, 0], up] + rest[edges[:, 1], up]) / 2 if len(edges) else np.zeros(0)
     return middle(moving_edges) <= low + band, np.abs(middle(base_edges) - low) <= band
+
+
+TRAVERSE_STEP = 2.0  # degrees between the turret angles tried by turret_clear_yaw
+
+
+def turret_clear_yaw(points: np.ndarray, moving_triangles: np.ndarray, base_triangles: np.ndarray, pivot: Sequence[float],
+                     up: int = 2, step: float = TRAVERSE_STEP) -> Tuple[float, float]:
+    """How far a tank's turret (`moving_triangles`, with its gun) turns each way about the `up` axis through `pivot`
+    before an edge of it and the body (`base_triangles`) pass through each other, as STATIC-PART-CLIP counts them (edges
+    crossing in the rest pose and the seam band at the cut left out). Returns (most negative, most positive) clear turn
+    in degrees, each at most 180. A tall fitting on the turret can sweep through a deck fitting behind it: on the M2A4
+    the anti-aircraft post's foot met a fitting 1.2 m from the turret's centre, so vanilla's idle traverse clipped it
+    (STATIC-PART-CLIP, 14 edges)."""
+
+    points = np.asarray(points, float)
+    moving_triangles = np.asarray(moving_triangles).reshape(-1, 3)
+    base_triangles = np.asarray(base_triangles).reshape(-1, 3)
+    if not len(moving_triangles) or not len(base_triangles):
+        return (-180.0, 180.0)
+    rest_hits = part_crossing_masks(points, moving_triangles, points, base_triangles)
+    seam = mount_seam_masks(points, moving_triangles, base_triangles, up)
+    modelled = (rest_hits[0] | seam[0], rest_hits[1] | seam[1])
+    axes = [a for a in range(3) if a != up]
+    centre = np.asarray(pivot, float)
+    used = np.unique(moving_triangles)
+    reach = float(np.max(np.linalg.norm(points[used][:, axes] - centre[axes], axis=1)))
+    low, high = float(points[used, up].min()), float(points[used, up].max())
+    # only the body triangles the turret can sweep near are tested; the rest keep their edges but are moved out of reach
+    corners = points[base_triangles]
+    near = ((np.linalg.norm(corners[:, :, axes] - centre[axes], axis=2).min(axis=1) <= reach * 1.05)
+            & (corners[:, :, up].max(axis=1) >= low - 1e-6) & (corners[:, :, up].min(axis=1) <= high + 1e-6))
+    base_near = base_triangles[near]
+    lookup = {tuple(e): k for k, e in enumerate(_edges_of(base_triangles))}
+    near_edges = _edges_of(base_near)
+    near_modelled = np.array([modelled[1][lookup[tuple(e)]] for e in near_edges], dtype=bool) if len(near_edges) else np.zeros(0, bool)
+    turned = {}
+    for side in (-1.0, 1.0):
+        angle = 0.0
+        while angle + step <= 180.0 + 1e-9:
+            theta = math.radians(side * (angle + step))
+            c, s = math.cos(theta), math.sin(theta)
+            moved = points.copy()
+            rel = points[used][:, axes] - centre[axes]
+            moved[used, axes[0]] = centre[axes[0]] + c * rel[:, 0] - s * rel[:, 1]
+            moved[used, axes[1]] = centre[axes[1]] + s * rel[:, 0] + c * rel[:, 1]
+            hits = part_crossing_masks(moved, moving_triangles, moved, base_near)
+            if (hits[0] & ~modelled[0]).any() or (hits[1] & ~near_modelled).any():
+                break
+            angle += step
+        turned[side] = side * angle
+    return (turned[-1.0], turned[1.0])
+
+
+def scaled_turns(yaws: Sequence[float], clear: Tuple[float, float]) -> Tuple[np.ndarray, Tuple[float, float]]:
+    """A clip's turret turns (degrees, one a frame, unwrapped) scaled toward the rest angle, each side by the one share
+    that keeps its furthest turn inside `clear` (turret_clear_yaw), so the motion keeps its shape and timing and
+    only turns less. Returns the new turns and the (negative, positive) shares used."""
+
+    yaws = np.asarray(yaws, float)
+    most, least = float(yaws.max(initial=0.0)), float(yaws.min(initial=0.0))
+    positive = min(1.0, clear[1] / most) if most > 1e-9 else 1.0
+    negative = min(1.0, clear[0] / least) if least < -1e-9 else 1.0
+    return np.where(yaws >= 0, yaws * positive, yaws * negative), (negative, positive)
 
 
 def _mounted_on(part: str, mounts: Dict[str, str]) -> set:
@@ -1941,6 +2102,34 @@ def _death_rigid(mesh, visible, anims: Sequence[Path], contract: dict, measure: 
 
 def _apply(matrix: np.ndarray, points: np.ndarray) -> np.ndarray:
     return points @ matrix[:3, :3].T + matrix[:3, 3]
+
+
+SEAT_SAMPLES = 2000
+"""Points spread over a mount's surface for STATIC-PART-GAP: a reduced hull's top can be a few large triangles, and a
+turned turret's ring then sits far from every hull vertex while it still rests on the hull."""
+
+
+def mount_surface(positions: np.ndarray, triangles: np.ndarray, mask: np.ndarray, count: int = SEAT_SAMPLES) -> np.ndarray:
+    """The mount's surface as `count` points spread by area over its triangles (fixed seed, so a check repeats), for the
+    distance from a mounted part to the surface it sits on rather than to the nearest vertex. A mount without
+    triangles is its vertices."""
+
+    points = positions[mask]
+    tris = np.asarray(triangles, dtype=np.int64).reshape(-1, 3)
+    tris = tris[mask[tris].all(axis=1)]
+    if not len(tris):
+        return points
+    corners = positions[tris]
+    area = 0.5 * np.linalg.norm(np.cross(corners[:, 1] - corners[:, 0], corners[:, 2] - corners[:, 0]), axis=1)
+    if area.sum() <= 0:
+        return points
+    rng = np.random.default_rng(0)
+    pick = rng.choice(len(corners), count, p=area / area.sum())
+    root, r2 = np.sqrt(rng.random(count)), rng.random(count)
+    spread = (corners[pick, 0] * (1 - root)[:, None] + corners[pick, 1] * (root * (1 - r2))[:, None]
+              + corners[pick, 2] * (root * r2)[:, None])
+    # `_nearest_gap` keeps at most 2000 points of the mount, so the spread replaces the vertices rather than joining them
+    return spread
 
 
 def _nearest_gap(a: np.ndarray, b: np.ndarray) -> float:
