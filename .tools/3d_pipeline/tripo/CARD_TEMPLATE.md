@@ -98,7 +98,7 @@ How to write `<every detail>`:
 2. Open the rigging page again by its address, `studio.tripo3d.ai/workspace/rigging/<asset id>`.
 3. Check that **Auto Rig** reads 20, then press it once.
 4. Wait 30 seconds. The rig runs without the dialog. The page then shows "Rigged models can be used for animation", the balance has dropped by 20 once, and the button reads **Retry 20**.
-5. Never press **Retry**: it rigs again and charges again. Write the ledger's balance after only when the drop shows.
+5. Do not press **Retry** to make sure: it rigs again and charges 20 again. Press it only when `rig_check.py` fails (step 6). Write the ledger's balance after only when the drop shows.
 <!-- /winged -->
 
 ## 4. Candidate animations (free)
@@ -149,7 +149,7 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 
 Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
 
-First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil: use the rig's free retry on the Rig page, export again in a fresh browser tab and check again. Pay for no clip on a rig that fails.
+First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. No free step re-places an arm chain, and the Rig page has no free retry: press **Retry** there once (20, the ledger row first, with the reason), apply the clips again, export in a fresh browser tab and check again. Pay for no clip on a rig that fails. When a retry fails too, stop and ask.
 
 <!-- unarmed -->
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack box_01 <earlier clips> --json <job folder>/evidence/clips.json`.

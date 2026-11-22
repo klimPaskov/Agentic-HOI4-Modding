@@ -87,7 +87,7 @@ class CardTests(unittest.TestCase):
         spec["anatomy"] = {"wings": True}
         spec["tripo"].update({"chains": [{"region": "wings"}], "death_kind": "burn"})
         card = fill(spec)
-        for wanted in ("**The wings.**", "Not Ready for Auto-Rigging", "Never press **Retry**", "| death | `hit_to_stomach` |"):
+        for wanted in ("**The wings.**", "Not Ready for Auto-Rigging", "Do not press **Retry** to make sure", "| death | `hit_to_stomach` |"):
             self.assertIn(wanted, card)
         self.assertNotIn("<!--", card)
         plain = fill(unarmed_spec())

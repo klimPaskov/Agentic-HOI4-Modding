@@ -13,7 +13,7 @@ TRIPO-RIG-ARMS fails a side when either holds:
   times the arm's own length (upper arm plus forearm): the hand carries more than a hand.
 
 Joint positions come from the skin's inverse bind matrices, so no node hierarchy is read. The model faces +z with y up. Reading files only:
-no Blender, no cost. What to do on a fail: use the rig's free retry on Tripo's Rig page, then check again.
+no Blender, no cost. What to do on a fail: press Retry once on Tripo's Rig page (20, there is no free rig retry), then check again.
 """
 
 from __future__ import annotations
@@ -94,10 +94,10 @@ def rig_findings(layout: Dict[str, object]) -> (List[dict], dict):
         numbers[side] = row
         if row["forearm_vertices"] == 0:
             found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"no skin is bound mostly to the {side.lower()} forearm: Tripo's rig "
-                          "missed the arm. Use the rig's free retry on Tripo's Rig page"})
+                          "missed the arm. Press Retry once on Tripo's Rig page (20)"})
         if row["hand_reach"] > MAX_HAND_REACH:
             found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"the {side.lower()} hand carries skin {row['hand_reach']:.1f} arm lengths from "
-                          f"the wrist (limit {MAX_HAND_REACH:g}): the hand holds more than a hand, such as a wing. Use the rig's free retry on Tripo's Rig page"})
+                          f"the wrist (limit {MAX_HAND_REACH:g}): the hand holds more than a hand, such as a wing. Press Retry once on Tripo's Rig page (20)"})
     return found, numbers
 
 
