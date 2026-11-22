@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b59f13e8feb3cdd2ca6dd501904e04b3edd3b4a2",
+  "generated_for_revision": "93eceb6088654b9faffdfff7d2dd589b8c47260b",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16523,8 +16523,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_card.py",
-          "sha256": "4cdfc22b2500a063a20a80be24103864d775b3ec8cdc0a2fa3d8ef4e538056f6",
-          "size": 11635
+          "sha256": "fbe82ad980560082c02df15db8130e12eb97ba03d66b666058cb75eba516f259",
+          "size": 11679
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_chain_lift.py",
@@ -16733,8 +16733,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "72672b0605fccbb51b84b62628e18419cd36adf1ee7b6cb173fff014aa8856a3",
-          "size": 16901
+          "sha256": "843ec8262d6eb23a921349105ef8fdd352b61a12cad7e28fbdc1fb90bccc5153",
+          "size": 17709
         },
         {
           "path": ".tools/3d_pipeline/tripo/arm_seat.py",
