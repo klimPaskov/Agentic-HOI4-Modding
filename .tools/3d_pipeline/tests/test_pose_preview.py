@@ -220,7 +220,7 @@ class Rerig(unittest.TestCase):
         mesh = pdx_deform.load_mesh(self.out / "beast.mesh")
         left, right = tc.wing_sides(mesh)
         wings = left | right
-        head, _head_neck, _trunk = tc._parts(mesh, wings)
+        head, head_neck, _trunk = tc._parts(mesh, wings)
         named = np.asarray(mesh.bones)[pdx_deform.dominant_bones(mesh)]
         chest = (named == "Chest") & ~wings
         front = tc.front_direction(mesh)
@@ -242,9 +242,12 @@ class Rerig(unittest.TestCase):
         hood = moved(("WingLeft_", "WingRight_"), (0.0, -1.0, 0.0))  # the wings brought forward past the head
         self.assertLess(tc.head_lead_over_wings(mesh, np.stack([rest, hood]), head, wings, front)[0], tc.DEFEND_HEAD_LEAD)
         alone = pdx_deform.skin(mesh, moved(("Head",), (0.0, -1.5, 0.0)))  # the head well clear of everything
-        self.assertGreater(tc.head_findable(mesh, alone, head), tc.DEATH_HEAD_FINDABLE)
+        self.assertGreater(tc.head_findable(mesh, alone, head, head_neck), tc.DEATH_HEAD_FINDABLE)
         buried = pdx_deform.skin(mesh, moved(("Head",), (0.0, 0.9, -0.5)))  # the head pushed into the chest
-        self.assertLess(tc.head_findable(mesh, buried, head), tc.DEATH_HEAD_FINDABLE)
+        self.assertLess(tc.head_findable(mesh, buried, head, head_neck), tc.DEATH_HEAD_FINDABLE)
+        # round 13 leaves the head's own neck out, but a wing laid over the head still loses it
+        covered = pdx_deform.skin(mesh, moved(("WingLeft_",), (-0.5, -0.9, 0.5)))
+        self.assertLess(tc.head_findable(mesh, covered, head, head_neck), tc.DEATH_HEAD_FINDABLE, "a wing over the head hides it")
 
     def test_a_rerigged_folder_plays_its_clips(self) -> None:
         clips = [{"name": "idle", "style": "winged_idle", "times": [0.0]}, {"name": "attack", "style": "winged_rear", "times": [0.435]}]

@@ -1064,7 +1064,7 @@ Round 12 turned each of those findings into a check first, so the next run is ju
 
 - TRIPO-NECK-SQUASH: in every clip but the death, the middle of the head stays at least 0.8 of its rest distance from the middle of the Chest's skin. Run 19's strike read 0.75 (run 18's 0.87).
 - TRIPO-DEFEND-HEAD-BOXED: in every frame of the defend the head lies at least 2% of the height ahead of the wings' front. Run 19 held it 3.8% behind. The idle, whose head both reviews read clearly, keeps it 12% ahead.
-- TRIPO-DEATH-HEAD-LOST: over the death's end, at least 0.4 of the head's screen cells from the game camera lie more than two cells from any other part. Run 18 read 0 and run 19 0.22, where TRIPO-DEATH-HEAD-HIDDEN read 0.68 and 0.67.
+- TRIPO-DEATH-HEAD-LOST: over the death's end, at least 0.55 of the head's screen cells from the game camera lie more than two cells from any other part but the head's own neck. Run 18 reads 0.48 and run 19 0.47 (both failed for a head no one could find, where TRIPO-DEATH-HEAD-HIDDEN read 0.68 and 0.67), and the best lying pose of round 13 0.59. Round 12 counted the neck as another part, and the neck always joins the head: the best pose then read 0.38 with the head clear of the legs and wings.
 - TRIPO-DEATH-WING-TENT also from the front, left and right views at the end (at most 0.10: run 19's mound read 0.15 to 0.17), and from the game camera while the body rolls, from 0.3 of the clip (run 19 1.61 at frame 25, a wing standing upright).
 
 The strike now drives the neck 75 and 30 degrees (the head keeps 0.87 of its distance, the snout ends 1.4% below the shoulders) and the defend leans the neck forward (the head 5.8% ahead of the wings), offline on run 19's files.

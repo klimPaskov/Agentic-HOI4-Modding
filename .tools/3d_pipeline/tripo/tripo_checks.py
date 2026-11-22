@@ -287,7 +287,10 @@ DEATH_TENT_ROLL_FROM = 0.3
 # other part fills, read 0.68 and 0.67 at the last frame. This measure reads 0 and 0.22 at their worst end frames (run 19 0.41 at its
 # last frame: the reviews failed frames 44 to 80). No dead head has passed a review yet: the limit is provisional.
 DEATH_HEAD_MARGIN = 2
-DEATH_HEAD_FINDABLE = 0.4
+# Round 13: the head's own neck is not another part. It always joins the head, so counting it held the best lying pose found to 0.38,
+# with the head clear of the legs and wings. Left out, run 18 reads 0.48 and run 19 0.47 (both failed by fresh reviews) and that pose
+# 0.59.
+DEATH_HEAD_FINDABLE = 0.55
 # TRIPO-NECK-SQUASH: in every frame of a winged quadruped's clips but the death, the distance from the middle of the head's skin to the
 # middle of the Chest's skin stays at least NECK_SQUASH_MIN of its rest value. Both fresh reviews of run 19 saw the strike fold the neck
 # into the shoulders (0.75 at frame 35). Run 18's strike, which one review read clearly, keeps 0.87, its defend 0.83.
@@ -836,15 +839,17 @@ def _dilate(cells: set, steps: int) -> set:
     return out
 
 
-def head_findable(mesh, posed: np.ndarray, head: np.ndarray) -> float:
+def head_findable(mesh, posed: np.ndarray, head: np.ndarray, neck: Optional[np.ndarray] = None) -> float:
     """TRIPO-DEATH-HEAD-LOST's measure in one frame: the least share, from the game camera and its mirror, of the head's screen cells that
-    lie more than DEATH_HEAD_MARGIN cells from every cell another part fills."""
+    lie more than DEATH_HEAD_MARGIN cells from every cell another part fills. The head's own `neck` is not another part: it always
+    joins the head."""
 
     cell = SILHOUETTE_CELL_SHARE * mesh.height
     least = 1.0
     for axes in game_cameras(mesh):
         seen = _cells(posed[head], axes, cell)
-        near = _dilate(_cells(posed[~head], axes, cell), DEATH_HEAD_MARGIN)
+        others = ~head if neck is None else ~(head | neck)
+        near = _dilate(_cells(posed[others], axes, cell), DEATH_HEAD_MARGIN)
         least = min(least, len(seen - near) / max(len(seen), 1))
     return least
 
@@ -1183,7 +1188,7 @@ def _death_end_findings(mesh, clip: str, matrices, c: dict, row: dict) -> List[d
             out.append(finding("TRIPO-DEATH-WING-TENT", clip, f"in frame {eye_frame} from the {view} view the wings fill {value:.2f} times the lying torso's cells above its outline (at most {DEATH_WING_TENT_EYE:.2f}): a wing lies over the dead body as a mound", share=round(value, 3), frame=eye_frame, view=view))
     if c["head"].any():
         end_frames = sorted(set(range(int(DEATH_TENT_FROM * (matrices.shape[0] - 1)), matrices.shape[0], 2)) | {matrices.shape[0] - 1})
-        shares = [head_findable(mesh, pdx_deform.skin(mesh, matrices[frame]), c["head"]) for frame in end_frames]
+        shares = [head_findable(mesh, pdx_deform.skin(mesh, matrices[frame]), c["head"], c["head_neck"]) for frame in end_frames]
         findable, lost_frame = min(shares), end_frames[int(np.argmin(shares))]
         row.update(head_findable=round(findable, 3), head_findable_frame=lost_frame)
         if findable < DEATH_HEAD_FINDABLE:
