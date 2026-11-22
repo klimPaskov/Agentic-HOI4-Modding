@@ -12,7 +12,9 @@ module repairs such an export without Blender and without credits, by fixed rule
    farthest point. The elbow sits at `ELBOW_SHARE` of that run and the wrist at `WRIST_SHARE` (human proportions: the hand with its
    claws is the last fifth). Skin of the arm family that lies within the arm's own radius of that line (the back of the arm bones, the
    joints) joins the arm.
-4. Joints: the upper arm, forearm and hand joints move to the arm's top, the elbow and the wrist. Only their positions change, never
+4. Joints: the forearm and hand joints move to the elbow and the wrist. The upper arm joint stays where Tripo put it, at the clavicle's
+   end: moved down the arm, every turn of the clavicle in the clips swung the whole arm round it (run devil_c, 2026-11-22, the shoulder
+   line turned 90 to 160 degrees in every clip and the wing rules that follow the shoulders went wild). Only positions change, never
    their rest rotations, so every clip keeps its rotations. Each clip's translation keys of those joints move by the same offset, and the
    skin's inverse bind matrices are recomputed for every joint below them.
 5. Weights: the arm takes its three joints by its run (a linear blend over `BLEND_SHARE` of the run at the elbow and the wrist). The rest of
@@ -252,7 +254,7 @@ def load_rig(doc: dict, blob: bytearray) -> dict:
 def move_joints(doc: dict, rig: dict, side: str, joints: Dict[str, np.ndarray], moved: Dict[int, np.ndarray]) -> None:
     """New local translations of one side's arm joints, parent first, each against its parent's new world matrix."""
 
-    for part in ("Arm", "ForeArm", "Hand"):
+    for part in ("ForeArm", "Hand"):  # the upper arm joint stays at the clavicle's end (module text, rule 4)
         node = rig["node_of"][f"{side}{part}"]
         parent = next(i for i, n in enumerate(doc["nodes"]) if node in n.get("children", []))
         local = np.linalg.inv(worlds(doc)[parent]) @ np.append(joints[part], 1.0)

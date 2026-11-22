@@ -1221,10 +1221,19 @@ def stance_tracks(armature, frames, height, up=2):
             lifts[foot].append(min(joint_head(armature, foot)[up] - rest[foot][up], joint_head(armature, toe)[up] - rest[toe][up]))
         if chest and "Hips" in bones:
             torso.append(np.asarray(joint_head(armature, chest)) - np.asarray(joint_head(armature, "Hips")))
+    hips = None
+    if "LeftUpLeg" in bones and "RightUpLeg" in bones:  # a steep foot (a hoof) is read by the hip line (tripo_pose.stance_twist_tracks)
+        tracks = {name: [] for name in ("LeftUpLeg", "RightUpLeg")}
+        for frame in frames:
+            scene.frame_set(frame)
+            for name in tracks:
+                tracks[name].append(joint_head(armature, name))
+        hips = (np.array(tracks["LeftUpLeg"]), np.array(tracks["RightUpLeg"]),
+                np.array(world @ bones["LeftUpLeg"].head_local), np.array(world @ bones["RightUpLeg"].head_local))
     return tripo_pose.stance_twist_tracks(
         np.array(shoulders["LeftArm"]), np.array(shoulders["RightArm"]), rest["LeftArm"], rest["RightArm"],
         [np.array(rotations[foot]) for foot, _toe in FEET], [rest[toe] - rest[foot] for foot, toe in FEET],
-        [np.array(lifts[foot]) for foot, _toe in FEET], up, height, np.array(torso) if torso else None)
+        [np.array(lifts[foot]) for foot, _toe in FEET], up, height, np.array(torso) if torso else None, hips)
 
 
 def untwist_waist(armature, action, role, body, up=2):
