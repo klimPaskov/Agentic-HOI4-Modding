@@ -124,6 +124,17 @@ def refuse_unfitting_clips(spec: Dict[str, Any]) -> None:
         raise ValueError(f"{spec.get('asset_id', 'the job')}: {tripo_presets.unfitting_message(found)}.")
 
 
+def refuse_shared_clips(spec: Dict[str, Any], slug: str) -> None:
+    """UNIT-ANIM-SHARED in the route (D-136): refuse a job whose role clips another unit type of the mod already holds in the mod's
+    claims (`.hoi4_3d/anim_claims.json`, `tripo/anim_claims.py`). A reskin sets `reskin_of` and shares its base unit's clips."""
+
+    from lib import anim_claims
+
+    found = anim_claims.job_conflicts(spec, slug)
+    if found:
+        raise ValueError(f"{spec.get('asset_id', slug)}: {anim_claims.conflict_message(found)}.")
+
+
 def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
     """Refuse a rigged export whose role clips carry travel in the hips (lib/glb_root.py): the route's loop, grounding and weapon-drop
     rules expect clips exported with Tripo's "Animation in Place" switch on."""
@@ -372,6 +383,7 @@ def run_intake(
     job = ensure_job_layout(resolve_job_root(slug))
     files = intake_files(spec, slug, Path(inbox))
     refuse_unfitting_clips(spec)
+    refuse_shared_clips(spec, slug)
     if "rigged" in files:
         refuse_travelling_clips(spec, files["rigged"])
     sources = [

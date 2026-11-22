@@ -6,20 +6,20 @@ You need no 3D knowledge. You choose what kind of model you want, give your agen
 
 ## 1. Choose the type
 
-Say "make a 3D unit from this picture" and give your agent the picture and a few words about it. It answers a few plain questions from the picture (what it is, how many legs, wings, a weapon and in which hand, its size, a rider) and `tripo/pick_preset.py` turns them into the preset by fixed rules. It then shows you one sentence to confirm, with the cost on the card and on the Canvas, for example: "A fighter with an axe: humanoid with a weapon (preset armed_humanoid). The card costs about 80 to 100 credits, the Canvas workflow Armed unit about 95 to 115, cap 120. Right?" Say yes, or correct it. The presets:
+Say "make a 3D unit from this picture" and give your agent the picture and a few words about it. It answers a few plain questions from the picture (what it is, how many legs, wings, a weapon and in which hand, its size, a rider) and `tripo/pick_preset.py` turns them into the preset by fixed rules. It then shows you one sentence to confirm, with the cost on the card and on the Canvas, for example: "A fighter with an axe: humanoid with a weapon (preset armed_humanoid). The card costs about 80 to 200 credits, the Canvas workflow Armed unit about 95 to 215, cap 200. Right?" Say yes, or correct it. The presets:
 
 | You want | Preset | Credits |
 | --- | --- | --- |
-| A soldier-sized body on two legs with empty hands | `humanoid` | 50 to 70 |
-| A soldier-sized body on two legs with a weapon | `armed_humanoid` | 80 to 100 |
-| A two-legged body much bigger than a soldier, armed or not | `large_creature` | 70 to 100 |
-| A two-legged body with wings | `winged_humanoid` | 50 to 70 |
+| A soldier-sized body on two legs with empty hands | `humanoid` | 50 to 170 |
+| A soldier-sized body on two legs with a weapon | `armed_humanoid` | 80 to 200 |
+| A two-legged body much bigger than a soldier, armed or not | `large_creature` | 50 to 200 |
+| A two-legged body with wings | `winged_humanoid` | 50 to 200 |
 | A four-legged body with wings | `winged_quadruped` | 30 |
 | A four-legged mount with a rider | `mount_with_rider` | 80 to 100 for both |
 | A four-legged body without wings or a rider | `quadruped` | 30 |
 | A tank, plane, ship, building or landmark | `tank`, `plane`, `ship`, `building`, `landmark` | 20 to 120 |
 
-Each preset holds every Tripo setting, the clips to try, the checks and a credit cap, so you never set a value by hand. Your agent tells you the cap and asks you to approve it once. Some types are not proven yet (winged four-legged bodies, tanks, buildings): the agent says so before you spend.
+Each preset holds every Tripo setting, the clips to try, the checks and a credit cap, so you never set a value by hand. Every unit type of your mod gets its own animations: a free clip another unit of the mod already uses is out, and the card plans the unit's own made clip for that state (20 credits each). That is the top of each range. Your agent tells you the cap and asks you to approve it once. Some types are not proven yet (winged four-legged bodies, tanks, buildings): the agent says so before you spend.
 
 ## 2. Make the picture from references
 

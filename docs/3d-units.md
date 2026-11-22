@@ -52,6 +52,17 @@ py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.js
 
 `new_job.py` writes the whole entry of [step 2](#2-job-entry-picture-card-and-inbox) from the preset: the unit type and its anatomy, the size reference of the type's profile, the cap as the credit budget and the `tripo` block, and for a static model the job file `static_model.py` reads. It then lists what only you can answer (the sources, the posture, the weapon's name, hand and grip), and you give each with `--set` on the same command. `make_card.py` keeps only the steps of the preset's route: a static model's card has no rig or clip steps, a winged quadruped's ends at the plain model's export.
 
+### Every unit type has its own animations
+
+Different peoples and creatures move differently, so every distinct unit type of a mod has its own clips (D-136). A clip, a free preset or a made one, belongs to one unit type of the mod. Only a reskin or a variant of the same people shares a set: its job sets `reskin_of` to the unit it reskins. The mod keeps one record of who holds which clip, `.hoi4_3d/anim_claims.json` in the mod's root, committed with the mod.
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py check --jobs-config <your 3d_jobs.json> <unit>
+py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py claim --jobs-config <your 3d_jobs.json> <unit> --source "free preset"
+```
+
+Claim a unit's clips as soon as you pick them in step 7, before the Blender stage. A claim is written under a lock and the earliest claim holds a clip, so two workers never both get one. `make_card.py` strikes out each free preset another unit of the mod holds and gives the unit's own made-clip prompt for that state, and `make_card.py` and `tripo_intake.py` refuse a job whose clips another unit holds (UNIT-ANIM-SHARED, the same rule `check_unit_files.py --mod-root` applies to the finished files). A unit whose free clips are all taken makes its own clip for each state, 20 credits each: that is the top of each preset's credit range. Trying a preset in Tripo is free and allowed, whatever the claims say. Only using it for a unit's state is refused.
+
 ## What it is
 
 | Step | Where | Who |

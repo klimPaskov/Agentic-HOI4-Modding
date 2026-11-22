@@ -136,6 +136,19 @@ def clip_candidates(spec: Dict[str, Any], preset: Dict[str, Any]) -> Dict[str, A
     return {**preset, "clips": {**preset["clips"], "death": list(BURN_DEATH_CLIPS)}}
 
 
+def held_by_others(spec: Dict[str, Any]) -> Dict[str, str]:
+    """The clips another unit type of the job's mod holds (D-136), {export name: that unit}. Empty outside a mod repository."""
+
+    from lib import anim_claims
+
+    root = anim_claims.mod_root(spec)
+    if root is None:
+        return {}
+    data = anim_claims.load(root)
+    family = anim_claims._family(unit_slug(spec), spec.get("reskin_of"), data)
+    return {clip: owner["unit"] for clip, owner in anim_claims.holders(root).items() if owner["unit"] not in family}
+
+
 def has_shield(spec: Dict[str, Any]) -> bool:
     return isinstance((spec.get("tripo") or {}).get("shield"), dict)
 
@@ -201,7 +214,18 @@ def _preset_problems(spec: Dict[str, Any], found: List[str]) -> str | None:
     unfitting = tripo_presets.unfitting_clips(spec)
     if unfitting:
         found.append(tripo_presets.unfitting_message(unfitting))
+    from lib import anim_claims
+
+    shared = anim_claims.job_conflicts(spec, unit_slug(spec))
+    if shared:
+        found.append(anim_claims.conflict_message(shared))
     return preset["route"]
+
+
+def unit_slug(spec: Dict[str, Any]) -> str:
+    """The job's name in its mod: the part of `asset_id` after the last dot."""
+
+    return str(spec.get("asset_id") or "").rsplit(".", 1)[-1]
 
 
 def _weapon_problems(weapon: Dict[str, Any]) -> List[str]:
@@ -327,7 +351,7 @@ def fill(template: str, spec: Dict[str, Any], slug: str, *, job_folder: str, kit
     sources = [sources] if isinstance(sources, str) else sources
     # The preset's values go first: some of them hold placeholders of their own (the armed attack prompt names <weapon>).
     values = {
-        "<clip table>": tripo_presets.clip_table(clip_candidates(spec, preset)) if preset["route"] == "tripo_rig" else "",
+        "<clip table>": tripo_presets.clip_table(clip_candidates(spec, preset), held_by_others(spec)) if preset["route"] == "tripo_rig" else "",
         "<paid clip>": paid_prompt(preset, is_armed(spec)),
         "<paid clip when>": (preset.get("paid_clip") or {}).get("when", "only when step 6 says no attack passes"),
         "<free attacks>": " ".join(tripo_presets.free_attacks(preset, is_armed(spec))),
