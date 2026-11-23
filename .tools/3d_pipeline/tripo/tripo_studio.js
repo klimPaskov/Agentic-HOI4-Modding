@@ -10,7 +10,7 @@
 // - Tripo's menus open on pointer events, so plain .click() or a screenshot
 //   click often does nothing. TS.fire() sends the full pointer sequence.
 // - Never reload the page. In the Claude browser pane a reload signs Tripo out.
-// - TS.generate(expected) refuses unless the button shows exactly the expected
+// - TS.generate(expected) and TS.texture(expected) refuse unless the button shows exactly the expected
 //   price, clicks once, and waits for the new task. A second click starts a
 //   second paid task.
 (() => {
@@ -185,6 +185,23 @@
         if (fresh.length) return { started: fresh.map((t) => t.id), credits: TS.credits() };
       }
       return { started: [], note: "no new task seen yet; check TS.tasks() before clicking again", credits: TS.credits() };
+    },
+    // Model page, a Smart Mesh variant: the bottom bar's "Texture 20" starts the paid texture at the
+    // FIRST click (no settings dialog, seen 2026-11-22). Write the ledger line before calling this.
+    // Refuses unless the button shows exactly the expected price, clicks it once and returns the
+    // balance before; a second call starts a second paid texture.
+    textureButton() {
+      return [...document.querySelectorAll("button")].filter((b) => /^Texture\b/.test(text(b)) && b.offsetParent)[0];
+    },
+    texture(expected) {
+      const b = TS.textureButton();
+      if (!b) throw new Error("TS.texture: no visible Texture button");
+      const nums = text(b).match(/\d+/g) || [];
+      const price = nums.length ? Number(nums[nums.length - 1]) : null;
+      if (price !== expected) throw new Error(`TS.texture: price is ${price}, expected ${expected}`);
+      const before = TS.credits();
+      b.click();
+      return { pressed: true, price, credits_before: before };
     },
     // Animate page, before pressing Generate on a text-to-motion clip: Tripo refuses a prompt
     // of about 300 characters or more without a word (no task, no charge, the button stays lit;

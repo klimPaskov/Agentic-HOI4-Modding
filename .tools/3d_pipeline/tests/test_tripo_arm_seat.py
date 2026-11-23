@@ -40,7 +40,8 @@ def side_model():
     positions = np.array(arm + wing + hips + right, float)
     triangles = np.array(strip(np.array(arm), 0) + strip(np.array(wing), len(arm)), int)
     dominant = np.array(["LeftHand"] * (len(arm) + len(wing)) + ["Hips"] * 2 + ["RightHand"] * 2)
-    heads = {"Hips": np.array([0.0, 1.0, 0.0]), "LeftArm": np.array([-0.03, 1.45, 0.0]), "Head": np.array([0.0, 1.7, 0.0])}
+    heads = {"Hips": np.array([0.0, 1.0, 0.0]), "LeftArm": np.array([-0.03, 1.45, 0.0]), "Head": np.array([0.0, 1.7, 0.0]),
+             "LeftUpLeg": np.array([-0.1, 0.95, 0.0]), "RightUpLeg": np.array([0.1, 0.95, 0.0])}
     return positions, triangles, dominant, heads, len(arm)
 
 
@@ -54,6 +55,15 @@ class ArmSeat(unittest.TestCase):
         elbow, wrist = seat["joints"]["ForeArm"], seat["joints"]["Hand"]
         self.assertAlmostEqual(elbow[1], 1.4 - 0.6 * S.ELBOW_SHARE, delta=0.05)
         self.assertAlmostEqual(wrist[1], 1.4 - 0.6 * S.WRIST_SHARE, delta=0.05)
+
+    def test_a_body_turned_a_quarter_round_is_read_by_its_own_axes(self) -> None:
+        """An upload turned in Tripo's angle dialog came back with its wings along z (the ZIN devil, 2026-11-22)."""
+
+        positions, triangles, dominant, heads, arm_count = side_model()
+        turn = np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]])
+        seat = S.seat_side("Left", positions @ turn.T, triangles, dominant, {k: v @ turn.T for k, v in heads.items()}, body_height=1.7)
+        self.assertTrue(seat["arm"][:arm_count].all(), seat["numbers"])
+        self.assertFalse(seat["arm"][arm_count:].any())
 
     def test_a_side_without_a_wing_is_refused(self) -> None:
         positions, triangles, dominant, heads, arm_count = side_model()

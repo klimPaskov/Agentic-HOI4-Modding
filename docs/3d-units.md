@@ -59,9 +59,10 @@ Different peoples and creatures move differently, so every distinct unit type of
 ```
 py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py check --jobs-config <your 3d_jobs.json> <unit>
 py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py claim --jobs-config <your 3d_jobs.json> <unit> --source "free preset"
+py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py release --registry <file.json> <unit> <clip>
 ```
 
-Claim a unit's clips as soon as you pick them in step 7, before the Blender stage. A claim is written under a lock and the earliest claim holds a clip, so two workers never both get one. `make_card.py` strikes out each free preset another unit of the mod holds and gives the unit's own made-clip prompt for that state, and `make_card.py` and `tripo_intake.py` refuse a job whose clips another unit holds (UNIT-ANIM-SHARED, the same rule `check_unit_files.py --mod-root` applies to the finished files). A unit whose free clips are all taken makes its own clip for each state, 20 credits each: that is the top of each preset's credit range. Trying a preset in Tripo is free and allowed, whatever the claims say. Only using it for a unit's state is refused.
+Claim a unit's clips as soon as you pick them in step 7, before the Blender stage. A claim is written under a lock and the earliest claim holds a clip, so two workers never both get one. `make_card.py` strikes out each free preset another unit of the mod holds and gives the unit's own made-clip prompt for that state, and `make_card.py` and `tripo_intake.py` refuse a job whose clips another unit holds (UNIT-ANIM-SHARED, the same rule `check_unit_files.py --mod-root` applies to the finished files). A unit whose free clips are all taken makes its own clip for each state, 20 credits each: that is the top of each preset's credit range. Trying a preset in Tripo is free and allowed, whatever the claims say. Only using it for a unit's state is refused. When a claimed clip fails a check later (the intake refuses its hip travel, say) or the unit takes another, give it back with `release` so another unit can use it. `release` takes the clip as `list` prints it, and refuses a clip another unit holds or one the unit never claimed.
 
 ## What it is
 
@@ -421,10 +422,12 @@ Blender scales the unit against vanilla infantry, grounds every clip, and writes
 
 ```
 py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
-py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json
+py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --weapon-bone <tripo.weapon.bone> --verdict <job folder>/evidence/check.json
 py -3.13 -B .tools/3d_pipeline/check_holes.py <unit folder> --out <job folder>/evidence/holes
 py -3.13 -B .tools/3d_pipeline/tripo/tripo_checks.py <unit folder> --jobs-config <your 3d_jobs.json> --slug <unit> --json <job folder>/evidence/tripo_checks.json
 ```
+
+Leave out `--weapon-bone` for a unit with no weapon. An armed unit that lets its weapon go in the death passes the bone its job's `tripo.weapon.bone` names, usually `Weapon`, or the dropped weapon fails UNIT-LOOSE-PART as a part that drifts off the body.
 
 `measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). `check_unit_files.py` reads the exported files (see [Automatic checks](#automatic-checks)), and `check_holes.py` looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). `tripo_checks.py` adds the checks for faults Tripo's clips make (see [Tripo checks](#tripo-checks)). Each verdict names the repair to run, or escalates.
 
@@ -476,6 +479,12 @@ It never writes sub-units or localisation. It checks that a sub-unit has `sprite
 Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <seconds> sound = { soundeffect = "..." } }` into the entity state for that role, at the frame divided by 30. An event's `time` is seconds of the clip: vanilla's destroyed landmarks fire their explosions within 0.3 s of the frame their clip hides a part ([effects](3d-effects.md#what-an-effect-is-in-hoi4)). Earlier versions wrote the frame number itself, so a sound planned at frame 12 played 12 seconds in, after the clip had ended. The effects step's sounds join the plan at their particles' frames. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
 
 After writing, it runs `check_unit_files.py --mod-root` and the static wiring audit and prints one verdict, PASS or FAIL with the list. A missing sprite or localisation key is a FAIL but does not stop the write. Only audit errors about this unit count, and `--strict-audit` counts every error in the mod. `--dry-run` prints the plan, changes nothing, and ends `DRY-RUN` or `DRY-RUN-FAIL`. The exit code is 1 on any FAIL and 2 on unreadable input.
+
+**When Tripo cannot rig the body.** Some bodies defeat Tripo's auto-rig. The ZIN devil, with wings 2.8 times its height, got five rigs and one usable one after `tripo/arm_seat.py`, and on that one Tripo's idle and walk pulled both feet to the middle. Then move the clips from a body Tripo rigs well:
+
+1. Keep one motion donor in your Tripo account: a plain humanoid that belongs to no unit, rigged once (20). One of Tripo's demo characters will do (the ZIN devil's donor was the demo goblin). Note its asset id, and reuse it for every later unit instead of rigging another. Apply the unit's claimed clips there (presets and made clips, each unit type its own, all free to apply) and export it. The clips stay claimed by your unit. The donor only lends the motion.
+2. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_transfer.py <source export> <your repaired export> --out <job folder>/inbox/<asset>__rigged.glb --clips <names>`. Each bone's turn from its rest pose is carried through the two bodies' own frames (across the thighs, up, ahead) onto your rig's rest pose, so your bones keep their lengths and the legs keep their own stance. The hips keep the source's movement, scaled by the hip heights, less the clip's mean level offset, since the route plays clips in place (`lib/clip_transfer.py`).
+3. Check the result as any export (`rig_check.py`, `clip_check.py`), then run the intake.
 
 **Tripo's newer rig.** Since November 2026 Tripo rigs new assets with its own skeleton (`BoneRoot`, `Hip`, `Pelvis`, `Waist`, `L_Thigh`, `L_Upperarm`, twist and share bones, a facial bone) instead of Mixamo's. `lib/tripo_rig.py` names both, and the tools that read a rigged GLB before Blender (`lib/glb_root.py`, `lib/tripo_loop.py`, `clip_check.py`, `death_pick.py`, `pose_check.py`) go through it. On the zombie's, the orc's and the old demon's Mixamo GLBs their results are unchanged. A GLB without a hip bone is refused loudly: the travel check once read no hips and passed every clip. The Blender stage (`prepare_tripo_unit.py`) and the grip, shield and hand stages still read Mixamo's names only, so an asset on the newer rig cannot go the route yet. What they need is in `lib/tripo_rig.py`: the bone map, the in-between bones whose motion is composed onto their children before they are dropped (`compose_basis`), and the names for the Blender stages (`BoneNamer`).
 
@@ -842,6 +851,7 @@ The agent works in your Chrome through Claude in Chrome, on the tab where you ar
 - It opens pages by their address when it knows it: the image tool at `studio.tripo3d.ai/workspace/generate-image` and a model's Animate page at `studio.tripo3d.ai/workspace/animate/<asset id>` (see steps 1 and 5).
 - It loads `.tools/3d_pipeline/tripo/tripo_studio.js` into the page. The helpers read the credit balance and the price on each button and refuse to press Generate when the price differs from the card. On the Animate page it types each preset's name into the search box (`TS.search`) and clicks the tile it finds (`TS.presetPoint`).
 - It uploads the picture with the extension's file upload, never through a file dialog.
+- To rig a model again on a fresh asset, it uploads the model's own export (**Upload 3D Model**, free). Tripo then shows **Find the Best Angle** with the model seen from its side. Confirm it unchanged: turning it there rotated the ZIN devil's mesh a quarter turn against the skeleton Tripo then built (2026-11-22).
 - It presses each paid button once, then waits for the new task. A second press starts a second paid task.
 - It never reloads the Tripo page in the middle of a paid step.
 - Exports go to your Downloads folder. The agent moves them into the inbox and renames them. It takes only a file created after its own click (newer than a marker file it touches first), never "the newest file of that type", because Downloads also holds your own files and a blocked download leaves an old file the newest.

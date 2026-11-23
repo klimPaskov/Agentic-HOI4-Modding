@@ -109,6 +109,22 @@ class StanceTwistTracks(unittest.TestCase):
         self.assertTrue(np.isnan(self.tracks(pitch=45.0)[1]))
         self.assertFalse(np.isnan(self.tracks(pitch=25.0)[1]))
 
+    def test_a_hoof_turned_about_the_up_axis_is_read_by_the_hip_line(self) -> None:
+        """Tripo's clips turned the ZIN devil's hooves about 180 degrees. A foot that far off the hip line is read by the hips."""
+
+        angle = math.radians(50.0)
+        left = np.array([[-1.0, 1.0, 0.0], [-math.cos(angle), 1.0, math.sin(angle)]])
+        right = -left * np.array([1.0, -1.0, 1.0])
+        flipped = np.array([[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, -1.0]])
+        hoof = np.array([0.0, -0.47, 0.32])  # the devil's rest heading: down more than forward
+        lifts = [np.zeros(2), np.zeros(2)]
+        hip_left, hip_right = np.array([[-0.2, 0.5, 0.0]] * 2), np.array([[0.2, 0.5, 0.0]] * 2)
+        args = (left, right, left[0], right[0], [np.stack([flipped, flipped])] * 2, [hoof] * 2, lifts, 1, 1.0)
+        twist = P.stance_twist_tracks(*args, hips=(hip_left, hip_right, hip_left[0], hip_right[0]))
+        self.assertAlmostEqual(float(twist[0]), 0.0, places=3)
+        self.assertAlmostEqual(abs(float(twist[1])), 50.0, places=3)
+        self.assertAlmostEqual(abs(float(P.stance_twist_tracks(*args)[0])), 180.0, places=3, msg="without the hips the turned hoof misreads")
+
     def test_blender_z_up_reads_as_the_files_y_up(self) -> None:
         self.assertAlmostEqual(abs(float(self.tracks(up=2)[1])), abs(float(self.tracks(up=1)[1])), places=3)
 
