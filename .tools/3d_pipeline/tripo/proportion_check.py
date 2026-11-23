@@ -20,8 +20,9 @@ Read the shares off the reference picture, in pixels, with the subject standing 
   subject's height from the feet to the top of the head, horns included and wings left out.
 - `--legs`: the height of the belly between the legs, over the same height.
 
-The model's shares are measured the way the rig measures it (`quadruped_layout.detect_landmarks` and `detect_neck` on the body without its
-wings, `lib/mount_size.winged_body`): the neck column from its base to the head's root, and the belly's height. A model with no neck
+The model's shares are measured on the body without its wings (`lib/mount_size.winged_body`): the neck from where it leaves the chest
+(`quadruped_layout.detect_neck`, the same joints the rig's neck bones use) to the head's root, and the belly's height
+(`detect_landmarks`). A model with no neck
 column the measure can find reads 0 and fails a picture that has a neck. Reading files only: no Blender, no cost.
 """
 

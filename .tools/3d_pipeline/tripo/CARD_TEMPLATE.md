@@ -197,7 +197,7 @@ A player watches a unit's animations in the game's designer preview, a frame 249
 | attack | | spread, strike px |
 | defend | | spread |
 
-After the run, `tripo_checks.py` reports the same readings on the exported clips as advice (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME, TRIPO-WING-IDLE-MOVE). They never fail the unit. The review on the designer preview sheet decides whether a clip reads as its role.
+After the run, `tripo_checks.py` reports the same readings on the exported clips as advice (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME, TRIPO-WING-IDLE-MOVE, TRIPO-WING-SCREEN). They never fail the unit. The review on the designer preview sheet decides whether a clip reads as its role.
 <!-- /tripo_rig -->
 <!-- armed -->
 
