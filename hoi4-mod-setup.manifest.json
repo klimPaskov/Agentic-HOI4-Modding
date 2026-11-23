@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "20ef30f8ae8ad01a5135e4d3dc86962c5adc4ec9",
+  "generated_for_revision": "897fc7278911cb53f3c42b83ce2f7bd23b8e8851",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15523,8 +15523,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/unit_wiring.py",
-          "sha256": "9ffcd37d3fe6d9ade53b2c3c72bcc19a0094e862af47ca2c9bf76fd2101c6e30",
-          "size": 41178
+          "sha256": "c0db7b48057b4e2b0a5f54e8403959916ca9bcfd2ec6813c97288c0c12211bb5",
+          "size": 44554
         },
         {
           "path": ".tools/3d_pipeline/lib/weight_fit.py",
@@ -16578,8 +16578,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_static_registration.py",
-          "sha256": "ea993cf9dcfe82ebce14f8469023c36cda6bb019b4a8a3d94d41ea2678379835",
-          "size": 3194
+          "sha256": "9a78e804f22ca06921aab8976cfdebcd90a44dab41728d1b8b216198ff9c7b74",
+          "size": 5019
         },
         {
           "path": ".tools/3d_pipeline/tests/test_static_yard.py",
@@ -16833,8 +16833,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_wire_unit.py",
-          "sha256": "119ddb15cfa0ef58d833b703f837ec88d20a99860997757de72c4e6e2cc509f8",
-          "size": 35400
+          "sha256": "2351646a74baebed54a0e365827c5b7ce6a89d30eb00eb809a2384b33544cefd",
+          "size": 37121
         },
         {
           "path": ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py",
@@ -17008,8 +17008,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model.py",
-          "sha256": "a6d1d2105e9922672c94cb041c58bac480c36b01183cc60f95ffbdc606362e59",
-          "size": 31889
+          "sha256": "d6bf84f8b48414a90bbf7c490252cd81b5f970c4ad30873a489f5807b85bf4ce",
+          "size": 32810
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model_blender.py",
@@ -17053,8 +17053,8 @@
         },
         {
           "path": ".tools/3d_pipeline/wire_unit.py",
-          "sha256": "c451defef1fc79d590647c2971284783dfbd7aa316662e503b6c7a7d42c9b778",
-          "size": 23296
+          "sha256": "c1d4df31cca2140657a51d497f8ef01491f08d2269d18a98813c59d87eb0aab0",
+          "size": 25555
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
