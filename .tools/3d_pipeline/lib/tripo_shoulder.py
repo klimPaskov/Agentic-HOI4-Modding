@@ -376,6 +376,16 @@ class _Clip:
     neck_rig: object = None
     neck_floor: Optional[float] = None
     strike: Optional[Tuple[int, int, float]] = None  # an attack's strike to keep (`strike_kept`)
+    twist_cap: Optional[float] = None  # the stance twist (degrees) no plan may go past: the larger of the clip's own worst and its role's limit
+
+
+def worst_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> float:
+    """The clip's largest stance twist in degrees (0 where the feet never both stand or the rig has no two legs and two upper arms)."""
+
+    twist = tripo_pose.stance_twist(mesh, anim)
+    if twist is None or not len(twist) or np.all(np.isnan(twist)):
+        return 0.0
+    return float(np.nanmax(np.abs(twist)))
 
 
 def _plan(clip: _Clip, joints: List[str]):
@@ -408,6 +418,10 @@ def _plan(clip: _Clip, joints: List[str]):
         why = "makes the clip's deformation worse"
     elif not strike_kept(mesh, clip.strike, result):
         why = "moves or slows the attack's strike"
+    elif clip.twist_cap is not None and worst_twist(mesh, result) > clip.twist_cap + 0.5:
+        # Turning the spine toward the stance can undo the waist untwist the intake made (the hobgoblin's defend: 38.3 degrees after the
+        # intake, 52 after the ease, TRIPO-WAIST-TWIST's limit 47.9)
+        why = "wrings the waist past TRIPO-WAIST-TWIST"
     if why:
         record["rejected"] = why
     return record, why, weights, result, after, added
@@ -437,6 +451,9 @@ def ease_animation(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, rol
                  role in tripo_pose.LOOP_ROLES, target, neck_rig,
                  min(tripo_neck.NECK_LIMIT, float(neck_before.min())) if neck_before is not None and len(neck_before) else None,
                  strike(mesh, anim) if role == "attack" else None)
+    waist_limit = tripo_pose.WAIST_TWIST_LIMITS.get(role)
+    if waist_limit is not None:
+        clip.twist_cap = max(worst_twist(mesh, anim), waist_limit)
     plans, tried = [], {}
     for order, (name, group) in enumerate(ease_groups(rig, mesh)):
         joints = [j for j in group if j in keyed]
