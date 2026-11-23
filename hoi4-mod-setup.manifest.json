@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "af707419bb39202b305c78f5d36adba8d44b0653",
+  "generated_for_revision": "1fc74c6e2f268915b052ce3d851904a2af19ae99",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15368,8 +15368,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_chains.py",
-          "sha256": "834fbabea6238e966284e1e27b3a0543a09cd385b3fff2adf903408220e2467d",
-          "size": 123808
+          "sha256": "5cd58e98b72d02cf2dd311eaafde6b8392dfbf2e3c30e9357cd9bd37c15fa971",
+          "size": 131172
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_checks.py",
@@ -15573,8 +15573,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "24b059046750cab178ef519688f8e8e7cdc01639f596f9548ebc82f139dbafe9",
-          "size": 206894
+          "sha256": "4341f691cf07ac6249879dae7d3720da0ac2fc62038f5c289ef2a586b7663acd",
+          "size": 207428
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16633,8 +16633,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_chains.py",
-          "sha256": "38a69ecfb4387cb77b252c679b700e4773e39c7870206e1fe491d0b0675c2e60",
-          "size": 51723
+          "sha256": "e04c2ff0d50280f140cb99cf44c41102845a2bf995ea0dd7819e6250676806a7",
+          "size": 57361
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_checks.py",
@@ -16743,8 +16743,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
-          "sha256": "9ce06385bc6ef18addf3c4055c1a5be116723a653ec8f72b74f7ea54cc9d6916",
-          "size": 36286
+          "sha256": "cacc4fd76f380588205085865e123b4f71c21478107abb3f6299c34b571451fc",
+          "size": 36580
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shape.py",
@@ -16843,8 +16843,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "dab3e84602fd33ece102f545912d87228704f35528e4a13cbb40d6f536e9e5c5",
-          "size": 19546
+          "sha256": "8e52e0b8491e4a98f1d24e312d9c77a0f55e24c295285545da477ff047036ca5",
+          "size": 19738
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -16873,8 +16873,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/chain_stage.py",
-          "sha256": "eec9f395d2ac73f9fd6128676d0ece619029c67007032501920775c0fa1d58e9",
-          "size": 46590
+          "sha256": "3c06daa23fe823d9c2cb3e5ee3fd4403a4312da7e5c8457820ce493ad63015a3",
+          "size": 46795
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_check.py",
