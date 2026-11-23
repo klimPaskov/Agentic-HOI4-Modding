@@ -67,6 +67,18 @@ LOOSE_FACTOR = 1.25
 ARM_CLEAR_FACTOR = 1.5
 # The chain weights blend into the body's over one chain bone, and over at least this many edge rings on a coarse mesh.
 BLEND_MIN_RINGS = 4
+# A thick wing (feathers laid over each other) blends into the back over at least this many times its own thickness. The wing swings at
+# the root, and the skin that carries the swing stretches by the swing's angle times its distance from the axis over the length it spreads
+# on: one chain bone was enough for the demon's and the devil's membranes (0.016 and 0.014 of the height thick, blends 0.21 and 0.18) and
+# left 19.9% of the angel's root edges stretched in the idle's fold (0.073 thick, blend 0.15), 2.2% at 0.45 (tripo/chain_replay.py on run
+# angel_a, 2026-11-23: blends of 1, 2, 3 and 5 times that bone gave 19.9%, 6.2%, 2.2% and 4.1%).
+BLEND_THICKNESS_FACTOR = 6.0
+# A wing thicker than this share of the unit's height is a slab of feathers, not a membrane (0.014 to 0.016 measured on a bat wing, 0.073 on
+# feathers). A slab moves whole: its bones are not pushed off the ground one by one (the angel's death stretched 10.2% of the wing's edges
+# with the push, 0.7% without it, 2026-11-23), the ground pass turns a wing that reaches under the ground up about its root.
+THICK_WING_SHARE = 0.04
+# The wing's thickness is measured over cells of this share of the unit's height.
+THICKNESS_CELL_SHARE = 0.03
 MIN_BONES_PER_CHAIN, MAX_BONES_PER_CHAIN = 2, 4
 MIN_CHAINS, MAX_CHAINS = 2, 6
 # A wing ridge (a finger) stands this share of the wing's largest reach above the angles beside it; smaller bumps are a ragged edge.
@@ -338,11 +350,38 @@ def with_seams(positions: np.ndarray, edges: np.ndarray, height: float) -> np.nd
     return np.concatenate([np.asarray(edges, int).reshape(-1, 2), np.stack([split, canon[split]], axis=1)])
 
 
-def blend_length_for(joints: np.ndarray, positions: np.ndarray, edges: np.ndarray, region: np.ndarray) -> float:
-    """The border blend runs over one chain bone's length, and over at least `BLEND_MIN_RINGS` of the region's median edge length."""
+def region_thickness(points: np.ndarray, height: float) -> float:
+    """The median thickness of a sheet-like region: the extent of its points along the sheet's normal (the smallest axis of the points'
+    spread) in each cell of `THICKNESS_CELL_SHARE` of `height` across the sheet, over the cells that hold at least 4 points. A membrane
+    reads 0.014 to 0.016 of the height, a wing of feathers laid over each other 0.073."""
+
+    points = np.asarray(points, float)
+    if len(points) < 8:
+        return 0.0
+    _u, _s, axes = np.linalg.svd(points - points.mean(axis=0), full_matrices=False)
+    local = (points - points.mean(axis=0)) @ axes.T
+    cell = max(THICKNESS_CELL_SHARE * height, 1e-12)
+    key = np.floor(local[:, :2] / cell).astype(int)
+    order = np.lexsort((key[:, 1], key[:, 0]))
+    key, across = key[order], local[order, 2]
+    start = np.r_[0, np.where(np.any(np.diff(key, axis=0) != 0, axis=1))[0] + 1, len(key)]
+    extents = [across[a:b].max() - across[a:b].min() for a, b in zip(start[:-1], start[1:]) if b - a >= 4]
+    return float(np.median(extents)) if extents else 0.0
+
+
+def is_slab(thickness: float, height: float) -> bool:
+    """A wing thicker than `THICK_WING_SHARE` of the unit's height is a slab of feathers. Every slab rule is gated on this, so a membrane wing
+    keeps the rules it was calibrated on."""
+
+    return float(thickness) > THICK_WING_SHARE * float(height)
+
+
+def blend_length_for(joints: np.ndarray, positions: np.ndarray, edges: np.ndarray, region: np.ndarray, thickness: float = 0.0, height: float = 1.0) -> float:
+    """The border blend runs over one chain bone's length, over at least `BLEND_MIN_RINGS` of the region's median edge length, and over at
+    least `BLEND_THICKNESS_FACTOR` times the region's `thickness` when that is a slab (`is_slab`)."""
 
     bone = float(np.mean(np.linalg.norm(np.diff(joints, axis=-2), axis=-1)))
-    return max(bone, BLEND_MIN_RINGS * ring_length(positions, edges, region))
+    return max(bone, BLEND_MIN_RINGS * ring_length(positions, edges, region), BLEND_THICKNESS_FACTOR * thickness if is_slab(thickness, height) else 0.0)
 
 
 def ring_length(positions: np.ndarray, edges: np.ndarray, region: np.ndarray) -> float:
@@ -1464,7 +1503,7 @@ def wing_pose_rotations(rest_directions: np.ndarray, chain_u: float, wing: Dict[
     # `tripo/chain_stage.screen_shares`: the share of the back swing and tilt the map's screen allows (1 to 0), and under 0 the share of the
     # beat's up-stroke taken away as well (-1: no up-stroke)
     share = float(pose.get("back_share", 1.0))
-    back, lift = max(share, 0.0), 1.0 + min(share, 0.0)
+    back, lift = max(share, 0.0), (1.0 + min(share, 0.0)) * float(pose.get("rise_share", 1.0))
     root = max(wing["sweep"] * fold, floor) * float(pose["sweep"]) * back - float(pose.get("wrap", 0.0))
     held = float(pose.get("face_back", 0.0)) * back
     outer = max(root, max(wing["sweep"] * fold * back, held) * float(pose["sweep"])) if face > 0 else root
@@ -1522,6 +1561,56 @@ def capped_rise(direction: np.ndarray, rest_direction: np.ndarray, up: np.ndarra
     if np.linalg.norm(level) < 1e-9:
         return direction
     return unit(math.cos(limit) * unit(level) + math.sin(limit) * up)
+
+
+def quaternion_multiply(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """The product of two (w, x, y, z) quaternions: `b` turns first, then `a`."""
+
+    aw, ax, ay, az = a
+    bw, bx, by, bz = b
+    return np.array([aw * bw - ax * bx - ay * by - az * bz, aw * bx + ax * bw + ay * bz - az * by,
+                     aw * by - ax * bz + ay * bw + az * bx, aw * bz + ax * by - ay * bx + az * bw])
+
+
+RISE_TOLERANCE = math.radians(0.05)
+
+
+def rise_excess(turn: np.ndarray, posed: np.ndarray, rest: np.ndarray, up: np.ndarray, degrees: float) -> float:
+    """The most (radians) any of `posed`'s bone directions, turned by `turn`, rises above its rest direction's elevation plus `degrees`."""
+
+    up = unit(up)
+    return max(math.asin(float(np.clip(unit(turn @ d) @ up, -1.0, 1.0)))
+               - min(math.radians(89.0), math.asin(float(np.clip(unit(r) @ up, -1.0, 1.0))) + math.radians(degrees)) for d, r in zip(posed, rest))
+
+
+def tilt_limited_carry(carry: np.ndarray, posed: np.ndarray, rest: np.ndarray, up: np.ndarray, degrees: float) -> np.ndarray:
+    """`carry` (the upper spine's turn from its rest pose) with its tilt reduced, for the whole wing at once, so that no bone rises more
+    than `degrees` above its rest elevation. The turn about `up` (the heading) is kept.
+
+    The wing rises when the torso leans over it. `capped_rise` turned each bone down on its own, and neighbouring bones then hit the cap
+    at different moments: on a thick feathered wing the chains tore apart (the angel's attack stretched 15.8% of the wing's edges with it,
+    0.7% without it, 2026-11-23). Here the wing follows the lean by the largest share (in steps of `TILT_SHARE_STEP`) at which no bone
+    exceeds its cap: one rigid turn for every bone, so the skin between the chains keeps its shape."""
+
+    up = unit(up)
+    q = quaternion_from_matrix(carry)
+    along = float(q[1:] @ up)
+    twist = np.array([q[0], *(along * up)])
+    norm = float(np.linalg.norm(twist))
+    twist = twist / norm if norm > 1e-9 else np.array([1.0, 0.0, 0.0, 0.0])
+    swing = quaternion_multiply(q, twist * np.array([1.0, -1.0, -1.0, -1.0]))
+    identity = np.array([1.0, 0.0, 0.0, 0.0])
+    if rise_excess(carry, posed, rest, up, degrees) <= RISE_TOLERANCE:
+        return carry
+    heading = matrix_from_quaternion(twist)
+    for share in np.arange(1.0 - TILT_SHARE_STEP, -1e-9, -TILT_SHARE_STEP):
+        trial = matrix_from_quaternion(slerp(identity, swing, float(share))) @ heading
+        if rise_excess(trial, posed, rest, up, degrees) <= RISE_TOLERANCE:
+            return trial
+    return heading
+
+
+TILT_SHARE_STEP = 0.05
 
 
 # The game's camera looks down at the unit from the front at 55 degrees (the review sheets' hoi4 view), and from there a wing swung back
@@ -1638,6 +1727,32 @@ def wing_events(role: str, track: Optional[Dict[str, np.ndarray]], stage: dict) 
     return events
 
 
+def limited_wing_pose(plan: dict, left_rest: np.ndarray, rest: np.ndarray, now: Dict[str, float], flaps: np.ndarray, carry: np.ndarray,
+                      stage: dict, mirror: np.ndarray, rise_cap: Optional[float]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+    """One frame of a wing chain's pose: (`turns`, `posed` directions, the `carry` to use, whether the cap acted).
+
+    With a `rise_cap` (a feathered wing, see `tilt_limited_carry`) the wing follows the torso's lean only as far as the cap allows, and when
+    the lean is gone and its own up-stroke still passes the cap, every bone's up-stroke shrinks by one share (`now["rise_share"]`). Without
+    one the pose is what `wing_pose_rotations` gives."""
+
+    def turned(pose_now: Dict[str, float]) -> Tuple[np.ndarray, np.ndarray]:
+        rotations = wing_pose_rotations(left_rest, plan["chain_u"], plan["wing"], stage["up"], stage["front"], pose_now, flaps)
+        rotations = mirror @ rotations @ mirror if plan["side"] == "R" else rotations
+        return rotations, np.array([unit(t @ d) for t, d in zip(rotations, rest)])
+
+    turns, posed = turned(now)
+    if rise_cap is None:
+        return turns, posed, carry, False
+    limited = tilt_limited_carry(carry, posed, rest, stage["up"], rise_cap)
+    if rise_excess(limited, posed, rest, stage["up"], rise_cap) > RISE_TOLERANCE:
+        for share in np.arange(1.0 - TILT_SHARE_STEP * 2, -1e-9, -TILT_SHARE_STEP * 2):
+            now["rise_share"] = float(share)
+            turns, posed = turned(now)
+            if rise_excess(limited, posed, rest, stage["up"], rise_cap) <= RISE_TOLERANCE:
+                break
+    return turns, posed, limited, (not np.allclose(limited, carry, atol=1e-9)) or "rise_share" in now
+
+
 def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, capsule_axes: Optional[np.ndarray] = None,
                      track: Optional[Dict[str, np.ndarray]] = None, back_share: Optional[np.ndarray] = None) -> np.ndarray:
     """(frames, bones, 4) local quaternions of one wing chain for a role clip: the role's fold, face turn and flap (`WING_ROLES`, timed by
@@ -1660,6 +1775,8 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
     for k in range(bones):
         chained = chained @ plan["rest_relative"][k]
         bone_rest.append(orthonormal(chained)[:3, :3])
+    slab = bool(plan.get("thick"))
+    ground = -1e9 if slab else stage["ground"]  # a slab of feathers is not pushed off the ground bone by bone (THICK_WING_SHARE)
     rise_cap = None if "fold_end" in WING_ROLES.get(role, {}) else WING_RISE_MAX  # a dying wing has its own rules
     if float(np.max(pose["face"])) > 0:
         most = max(FACE_SWEEP_MAX, float(wing["sweep"]))
@@ -1677,21 +1794,19 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             if guard > 0:
                 root = (parents[f] @ np.linalg.inv(parent_rest) @ np.r_[np.asarray(wing["root"], float), 1.0])[:3]
                 now["raise"] = guard * knee_raise(wing, now, flaps[f], carry, root, plan["side"], stage, float(np.max(np.asarray(track["knees"])[f] @ unit(stage["up"]))))
-        turns = wing_pose_rotations(left_rest, plan["chain_u"], wing, stage["up"], stage["front"], now, flaps[f])
-        if plan["side"] == "R":
-            turns = mirror @ turns @ mirror
-        posed = np.array([unit(t @ d) for t, d in zip(turns, rest)])
+        turns, posed, carry, lowered = limited_wing_pose(plan, left_rest, rest, now, flaps[f], carry, stage, mirror, rise_cap if slab else None)
         whole = float(now.get("face", 0.0)) > 0
-        outward = unit(carry @ (lateral if plan["side"] == "L" else -lateral))
+        outward = unit(carries[f] @ (lateral if plan["side"] == "L" else -lateral))
         current = parents[f]
         for k in range(bones):
             unposed = current @ plan["rest_relative"][k]
             head, rigid = unposed[:3, 3], unit(unposed[:3, 1])
             capsules = [] if capsule_axes is None else [(axis[0], axis[1], float(plan["radii"][k, c])) for c, axis in enumerate(capsule_axes[f])]
             wanted = unit(carry @ posed[k])
-            direction = collide_direction(head, wanted, float(plan["lengths"][k]), capsules, stage["ground"], stage["up"], outward, along=True)
-            direction = capped_rise(direction, rest[k], stage["up"], rise_cap)
-            if whole and k > 0:
+            direction = collide_direction(head, wanted, float(plan["lengths"][k]), capsules, ground, stage["up"], outward, along=True)
+            if rise_cap is not None and not slab:
+                direction = capped_rise(direction, rest[k], stage["up"], rise_cap)
+            if (whole and k > 0) or lowered:
                 # a bone past the root of a face-turned wing takes the pose's whole turn, roll included: turned by the shortest arc onto
                 # its direction alone, the bones of neighbouring chains rolled apart under the compound swing and tilt and twisted the
                 # membrane out of the wing's plane (the demon's retreat showed the map camera 38% of the face where the chains' own plane
