@@ -59,9 +59,10 @@ Different peoples and creatures move differently, so every distinct unit type of
 ```
 py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py check --jobs-config <your 3d_jobs.json> <unit>
 py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py claim --jobs-config <your 3d_jobs.json> <unit> --source "free preset"
+py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py release --registry <file.json> <unit> <clip>
 ```
 
-Claim a unit's clips as soon as you pick them in step 7, before the Blender stage. A claim is written under a lock and the earliest claim holds a clip, so two workers never both get one. `make_card.py` strikes out each free preset another unit of the mod holds and gives the unit's own made-clip prompt for that state, and `make_card.py` and `tripo_intake.py` refuse a job whose clips another unit holds (UNIT-ANIM-SHARED, the same rule `check_unit_files.py --mod-root` applies to the finished files). A unit whose free clips are all taken makes its own clip for each state, 20 credits each: that is the top of each preset's credit range. Trying a preset in Tripo is free and allowed, whatever the claims say. Only using it for a unit's state is refused.
+Claim a unit's clips as soon as you pick them in step 7, before the Blender stage. A claim is written under a lock and the earliest claim holds a clip, so two workers never both get one. `make_card.py` strikes out each free preset another unit of the mod holds and gives the unit's own made-clip prompt for that state, and `make_card.py` and `tripo_intake.py` refuse a job whose clips another unit holds (UNIT-ANIM-SHARED, the same rule `check_unit_files.py --mod-root` applies to the finished files). A unit whose free clips are all taken makes its own clip for each state, 20 credits each: that is the top of each preset's credit range. Trying a preset in Tripo is free and allowed, whatever the claims say. Only using it for a unit's state is refused. When a claimed clip fails a check later (the intake refuses its hip travel, say) or the unit takes another, give it back with `release` so another unit can use it. `release` takes the clip as `list` prints it, and refuses a clip another unit holds or one the unit never claimed.
 
 ## What it is
 

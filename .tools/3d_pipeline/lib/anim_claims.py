@@ -177,6 +177,31 @@ def claim(root: Path, unit: str, clips: Dict[str, str], *, source: str = "", res
         return {"claimed": [entry["clip"] for entry in new], "already": already, "held": {}}
 
 
+def release(root: Path, unit: str, clip: str) -> Dict[str, Any]:
+    """Give back `unit`'s claim on `clip`, for a clip that failed its checks after the claim. Returns {"released": clip, "now_held_by":
+    the next claim of that clip or None}.
+
+    Refuses (ClaimError) when `unit` holds no claim on the clip, or when another unit claimed it first: only the holder gives a clip
+    back, so a worker never frees a clip another unit type uses."""
+
+    path = registry_path(root)
+    key = clip_key(clip)
+    with _Lock(path):
+        data = load(root)
+        mine = [item for item in data["claims"] if clip_key(item["clip"]) == key and item["unit"] == unit]
+        if not mine:
+            raise ClaimError(f"{unit} holds no claim on {key} in {path}: nothing to release")
+        first = next(item for item in data["claims"] if clip_key(item["clip"]) == key)
+        if first["unit"] != unit:
+            raise ClaimError(f"{key} is held by {first['unit']} (claimed {first.get('time', '')}), not by {unit}: only the holder releases it")
+        data["claims"] = [item for item in data["claims"] if not (clip_key(item["clip"]) == key and item["unit"] == unit)]
+        tmp = path.with_suffix(".json.tmp")
+        tmp.write_bytes((json.dumps(data, indent=2, ensure_ascii=False) + "\n").encode("utf-8"))
+        os.replace(tmp, path)
+        after = next((item["unit"] for item in data["claims"] if clip_key(item["clip"]) == key), None)
+        return {"released": key, "now_held_by": after}
+
+
 def conflicts(root: Path, unit: str, clips: Iterable[str], reskin_of: Optional[str] = None) -> Dict[str, Dict[str, Any]]:
     """UNIT-ANIM-SHARED in the route: the clips another unit of the mod, outside the unit's reskin family, already holds."""
 

@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b9b971087bd782ab2ddde33ca55a83536a0ec865",
+  "generated_for_revision": "2dbd2fe3a5a57d72bbe0f1da8d018bc2b665ec98",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15168,8 +15168,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/anim_claims.py",
-          "sha256": "314b36a22f3d269181f8b702aeb7a49415d7c332c18e78214379944e26eec980",
-          "size": 10249
+          "sha256": "610fcbf85a29b3caa77fadc1731aca1981cca2275f3d0d111f6563f3ab31a56d",
+          "size": 11740
         },
         {
           "path": ".tools/3d_pipeline/lib/body_measure.py",
@@ -16173,8 +16173,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_anim_claims.py",
-          "sha256": "dab37f645ef84deb36ce18126e758c923b5e2dfa84e835fd926619d500103ed9",
-          "size": 9833
+          "sha256": "f55e6458ea95318fd0c920428b521cf9b1f035e581bf7f720c156182b84df786",
+          "size": 11380
         },
         {
           "path": ".tools/3d_pipeline/tests/test_anim_frame_range.py",
@@ -16803,8 +16803,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
-          "sha256": "3f08b80962ea460f7c8c45f639c2bf429845a047a9a295b6322207bf49fdfef1",
-          "size": 4398
+          "sha256": "b714665cfa901b8f958d8a67abab50028bf9dce25776e25036168935c59623f7",
+          "size": 5452
         },
         {
           "path": ".tools/3d_pipeline/tripo/arm_seat.py",

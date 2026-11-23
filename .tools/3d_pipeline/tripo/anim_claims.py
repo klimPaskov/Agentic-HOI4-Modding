@@ -3,13 +3,15 @@
     py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py claim --jobs-config <3d_jobs.json> <asset_slug> [--source "<free preset|made, task id>"]
     py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py check --jobs-config <3d_jobs.json> <asset_slug>
     py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py list --mod-root <mod>
+    py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py release --mod-root <mod> <unit> <clip>
     py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py import --mod-root <mod> --mod <name in the table> <claims.md>
 
 `--registry <file.json>` (or the job's `anim_registry`) keeps the record outside the mod. `.hoi4_3d/` is a development folder: it never
 ships with the mod. `claim` takes the clips of the job's `tripo.roles` and writes them for the job under a lock: the earliest claim holds a clip. It exits 3
 and writes nothing when another unit of the mod already holds one of them, and names that unit. A reskin of another unit sets
 `reskin_of` in its job and shares that unit's clips. `check` reports without writing (exit 3 on a clash). Claim as soon as you pick a
-clip for a role, before you export or run the Blender stage, so the next worker sees it.
+clip for a role, before you export or run the Blender stage, so the next worker sees it. `release` gives back a clip the unit claimed
+and then dropped (it failed a check, or the unit took another): it refuses a clip another unit holds, or one the unit never claimed.
 """
 
 from __future__ import annotations
@@ -29,8 +31,9 @@ from lib import tripo_card
 
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("action", choices=["claim", "check", "list", "import"])
+    parser.add_argument("action", choices=["claim", "check", "list", "import", "release"])
     parser.add_argument("slug", nargs="?")
+    parser.add_argument("clip", nargs="?", help="release: the clip to give back, as `list` prints it")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--mod-root", type=Path)
     parser.add_argument("--registry", type=Path, help="a registry .json kept outside the mod (instead of <mod root>/.hoi4_3d/anim_claims.json)")
@@ -64,6 +67,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(json.dumps({"tool": "anim_claims", "registry": A.registry_path(root).as_posix(), **result}))
         return 0
 
+    return _registry_action(args, parser)
+
+
+def _registry_action(args: argparse.Namespace, parser: argparse.ArgumentParser) -> int:
+    """list, release and import: actions on the registry alone, with no job."""
+
     if args.registry:
         args.mod_root = args.registry
     if not args.mod_root:
@@ -71,6 +80,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.action == "list":
         for clip, owner in sorted(A.holders(args.mod_root).items()):
             print(f"{clip:40} {owner['unit']:24} {owner.get('role', ''):8} {owner.get('time', '')}")
+        return 0
+    if args.action == "release":
+        if not (args.slug and args.clip):
+            parser.error("release needs the unit and the clip")
+        try:
+            result = A.release(args.mod_root, args.slug, args.clip)
+        except A.ClaimError as error:
+            print(error, file=sys.stderr)
+            return 3
+        print(json.dumps({"tool": "anim_claims", "registry": A.registry_path(args.mod_root).as_posix(), **result}))
         return 0
     if not (args.mod and args.slug):
         parser.error("import needs --mod and the claims file")
