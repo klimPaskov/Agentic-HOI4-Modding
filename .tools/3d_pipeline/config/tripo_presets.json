@@ -303,7 +303,7 @@
       "cap": 150,
       "canvas": "static_model",
       "effects": ["tank_cannon", "heavy_cannon", "tank_wreck"],
-      "proven": "Not proven: the M2A4 Smart Mesh tank passes every check, and its strict close-up review still fails (November 2026)."
+      "proven": "Proven on the M2A4 light tank (November 2026): every check, and two fresh reviews at the D-83 bar in each of two runs, sized to vanilla's US light tank. Known limits of a Smart Mesh source in close-up, not cuts to the design: small hatch and flap blocks on the glacis, thin machine-gun barrels, fender flanges, open-edge marks, blotchy painted spokes, and track links that do not read at game size (as vanilla's)."
     },
     "plane": {
       "label": "Plane",
