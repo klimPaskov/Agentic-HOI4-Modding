@@ -64,6 +64,22 @@ class Proportions(unittest.TestCase):
         self.assertAlmostEqual(found["neck"], 0.7 / 2.35, delta=0.05, msg="from where it leaves the torso (1.3), not from the ruff's top")
         self.assertEqual(pc.proportion_verdict(found, {"neck": 0.3, "legs": None})["verdict"], "pass")
 
+    def test_the_rig_neck_bones_start_where_the_neck_leaves_the_chest(self) -> None:
+        import quadruped_layout as ql
+        from lib import mount_size
+
+        for ruff, base in ((True, 1.3), (False, 1.6)):
+            points, found = mount_size.winged_body(*_dragon(2.0, ruff=ruff))
+            body = points[found["body"]]
+            landmarks = ql.detect_landmarks(body)
+            neck = ql.detect_neck(body, landmarks)
+            self.assertAlmostEqual(neck["base"][2], base, delta=0.08, msg=f"ruff={ruff}: the lower neck rides on the neck bones, not the Chest")
+            landmarks["neck"] = neck
+            bones = {bone.name: bone for bone in ql.build_layout(landmarks).bones}
+            self.assertAlmostEqual(bones["Neck_01"].head[2], neck["base"][2], delta=1e-6)
+            self.assertLess(neck["base"][2], neck["middle"][2])
+            self.assertLess(neck["middle"][2], neck["head"][2])
+
     def test_a_model_without_a_neck_column_fails_a_picture_with_one(self) -> None:
         self.assertEqual(pc.proportion_verdict({"neck": 0.0, "legs": 0.4}, {"neck": 0.2, "legs": None})["verdict"], "fail")
 

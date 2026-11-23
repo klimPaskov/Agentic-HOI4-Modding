@@ -399,10 +399,59 @@ def detect_neck(points: np.ndarray, landmarks: Dict[str, object]) -> Optional[Di
     def joint(row: Dict[str, float], z: float) -> List[float]:
         return [cx, row["y"], z]
 
-    return {
+    found = {
         "base": joint(lower, lower["z"] - 0.5 * step),
         "middle": joint(middle, middle["z"]),
         "head": joint(upper, rows[head]["z"] - 0.5 * step),
+    }
+    return _neck_from_the_chest(p, landmarks, found)
+
+
+# A neck can rise from the breast through a wide ruff of shoulder spikes before it narrows into the column (the remade Tripo dragon,
+# D-138: the column ran from 0.62 to 0.74 of the height, the neck left the chest at 0.54). Seen from the front that ruff is as wide as the
+# shoulders, seen from the side it is no deeper than the column. The neck's base moves down while the front of the body, in a strip
+# NECK_STRIP of the height either side of the middle, stays less than NECK_CHEST_DEPTH times as deep (front to back) as the column, so the
+# lower neck rides on the neck bones, not the Chest. A neck that leaves the chest where its column starts (the first Tripo dragon) keeps
+# its joints.
+NECK_CHEST_DEPTH = 1.4
+NECK_STRIP = 0.1
+NECK_DEPTH_SLICE = 0.0125
+
+
+def _neck_from_the_chest(p: np.ndarray, landmarks: Dict[str, object], neck: Dict[str, List[float]]) -> Dict[str, List[float]]:
+    height = float(landmarks["height"])
+    step = NECK_DEPTH_SLICE * height
+    cx = float(landmarks["centre_x"])
+    front = p[(p[:, 1] < float(landmarks["mid_y"])) & (np.abs(p[:, 0] - cx) < NECK_STRIP * height)]
+
+    def slab(z: float) -> np.ndarray:
+        return front[np.abs(front[:, 2] - z) < step]
+
+    def depth(z: float) -> Optional[float]:
+        part = slab(z)
+        return float(np.ptp(part[:, 1])) if len(part) >= 8 else None
+
+    base_z, head_z = float(neck["base"][2]), float(neck["head"][2])
+    column = [d for d in (depth(z) for z in np.arange(base_z, head_z, step)) if d is not None]
+    if not column:
+        return neck
+    limit = NECK_CHEST_DEPTH * float(np.median(column))
+    z = base_z
+    while z - step > float(landmarks["belly_z"]):
+        found = depth(z - step)
+        if found is None or found > limit:
+            break
+        z -= step
+    if z >= base_z - 0.5 * step:
+        return neck
+    middle_z = 0.5 * (z + head_z)
+    middle = slab(middle_z)
+    middle_y = float(np.median(middle[:, 1])) if len(middle) else 0.5 * (float(neck["base"][1]) + float(neck["head"][1]))
+    return {
+        "base": [cx, float(np.median(slab(z)[:, 1])), z],
+        "middle": [cx, middle_y, middle_z],
+        "head": list(neck["head"]),
+        "column_base": list(neck["base"]),
     }
 
 
