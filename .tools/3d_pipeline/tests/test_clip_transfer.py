@@ -21,6 +21,24 @@ import rig_glb as RG
 from lib import clip_transfer as C
 
 
+def renamed_copy(source: Path, target: Path) -> None:
+    """The same GLB with every Left and Right joint name swapped: its sides named the wrong way round, as Tripo named the ZIN devil's."""
+
+    data = source.read_bytes()
+    length = struct.unpack("<I", data[12:16])[0]
+    doc = json.loads(data[20:20 + length])
+    rest = data[20 + length:]
+    for node in doc["nodes"]:
+        name = node.get("name", "")
+        if ":Left" in name:
+            node["name"] = name.replace(":Left", ":Right")
+        elif ":Right" in name:
+            node["name"] = name.replace(":Right", ":Left")
+    text = json.dumps(doc).encode()
+    text += b" " * (-len(text) % 4)
+    target.write_bytes(b"glTF" + struct.pack("<II", 2, 12 + 8 + len(text) + len(rest)) + struct.pack("<I", len(text)) + b"JSON" + text + rest)
+
+
 def turned_copy(source: Path, target: Path, degrees: float) -> None:
     """The same GLB with its hips turned `degrees` about the up axis at rest: a body that faces another way."""
 
@@ -41,6 +59,12 @@ class Transfer(unittest.TestCase):
     def setUp(self) -> None:
         saved = list(RG.CHAIN)
         RG.CHAIN.append(("mixamorig:RightUpLeg", 0, (-0.1, -0.1, 0.0)))
+        # feet and toes, so the body's front comes from its anatomy (the toes point to +z)
+        RG.CHAIN.append(("mixamorig:LeftFoot", 4, (0.0, -0.45, 0.0)))
+        RG.CHAIN.append(("mixamorig:LeftToeBase", len(RG.CHAIN) - 1, (0.0, -0.05, 0.1)))
+        RG.CHAIN.append(("mixamorig:RightLeg", 7, (0.0, -0.45, 0.0)))
+        RG.CHAIN.append(("mixamorig:RightFoot", len(RG.CHAIN) - 1, (0.0, -0.45, 0.0)))
+        RG.CHAIN.append(("mixamorig:RightToeBase", len(RG.CHAIN) - 1, (0.0, -0.05, 0.1)))
         self.addCleanup(lambda: RG.CHAIN.__setitem__(slice(None), saved))
         temp = tempfile.TemporaryDirectory()
         self.addCleanup(temp.cleanup)
@@ -78,6 +102,21 @@ class Transfer(unittest.TestCase):
         rest = np.asarray(rig.nodes[rig.joints["Hips"]].get("translation", [0.0, 0.0, 0.0]))
         np.testing.assert_allclose((values - rest)[:, [0, 2]].mean(axis=0), [0.0, 0.0], atol=1e-6)
         self.assertGreater(float(np.ptp(values[:, 1])), 0.01, "the bob up and down stays")
+
+    def test_the_body_faces_its_toes_and_a_rig_named_the_wrong_way_round_is_found(self) -> None:
+        rig = C.Rig(self.source)
+        np.testing.assert_allclose(C.body_frame(rig)[:, 2], [0.0, 0.0, 1.0], atol=1e-6)
+        self.assertFalse(C.mirrored(rig))
+        swapped = self.folder / "swapped.glb"
+        renamed_copy(self.source, swapped)
+        self.assertTrue(C.mirrored(C.Rig(swapped)))
+
+    def test_a_rig_named_the_wrong_way_round_takes_each_side_from_the_same_side_of_the_body(self) -> None:
+        swapped, out = self.folder / "swapped.glb", self.folder / "out.glb"
+        renamed_copy(self.source, swapped)
+        self.assertEqual(C.limb_chains(C.Rig(self.source), C.Rig(swapped), True)[0][0], C.Rig(swapped).joints["LeftUpLeg"])
+        C.transfer(self.source, swapped, out, ["idle"])
+        np.testing.assert_allclose(np.abs(self.local_spine(out)), np.abs(np.array(RG.LEAN[1])), atol=1e-5)
 
     def test_a_missing_clip_is_named(self) -> None:
         with self.assertRaises(C.TransferError):

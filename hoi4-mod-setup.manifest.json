@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "e06b44a54417301a89758bb0be2d4cd252591b6a",
+  "generated_for_revision": "756c323394eabdd40a3319467128a412d4905463",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1797,8 +1797,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "83d8ed2f755bdc3f2a9f68e64dd42a40d40a5b1adc6042fef71b81d1867e32da",
-          "size": 8453
+          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
+          "size": 8612
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -7256,8 +7256,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "83d8ed2f755bdc3f2a9f68e64dd42a40d40a5b1adc6042fef71b81d1867e32da",
-          "size": 8453
+          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
+          "size": 8612
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -14968,8 +14968,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
-          "sha256": "aa220070b2c5b33390d629e42a8c925ac35dff65438add9bddc02c0e177b7b94",
-          "size": 101305
+          "sha256": "5e14a5b68fed919e1b8c23c9029a816984e67bfca700a30caf7667d3f324f662",
+          "size": 103566
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_load.py",
@@ -15148,8 +15148,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/visual_review_prompt.md",
-          "sha256": "f603e286ec94468c6c7749d015fa5f61e57417b773075cbe1e86866918968bd3",
-          "size": 3686
+          "sha256": "67b1ba2847ab43846a305471a7e8e1a1278a876086d6d1c41d70066fdef335b2",
+          "size": 4343
         },
         {
           "path": ".tools/3d_pipeline/fit_prop.py",
@@ -15178,13 +15178,18 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/clip_transfer.py",
-          "sha256": "06b920dad534e3982ffce5bba8f9dd08794b081ce071b5098e05b7aee30cc118",
-          "size": 13913
+          "sha256": "58b7e15e8ddc760b54e862d76671afac47f9f9bb7c24a2d6d169028d7dae217d",
+          "size": 20891
         },
         {
           "path": ".tools/3d_pipeline/lib/credits.py",
           "sha256": "60ece827b3cff8848ecc8faabe13c4ab2cf2ae3b63f46371cece8955810e4a10",
           "size": 19598
+        },
+        {
+          "path": ".tools/3d_pipeline/lib/designer_preview.py",
+          "sha256": "42a0d93551b30237b48ac6f61a854b865ef5a13bef445182d5db8a218e1e483a",
+          "size": 3319
         },
         {
           "path": ".tools/3d_pipeline/lib/generation.py",
@@ -15467,6 +15472,11 @@
           "size": 9176
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_robe_rig.py",
+          "sha256": "61dac9e685ac6aa5e61d7a012735a2be641efb942710f302a6807c005c77fc4e",
+          "size": 23900
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_shape.py",
           "sha256": "c0b536a8576734f7b06ad7d5db780507aaa14a156d84e16cdbb856ff5a566635",
           "size": 8642
@@ -15513,8 +15523,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/unit_wiring.py",
-          "sha256": "9ffcd37d3fe6d9ade53b2c3c72bcc19a0094e862af47ca2c9bf76fd2101c6e30",
-          "size": 41178
+          "sha256": "c0db7b48057b4e2b0a5f54e8403959916ca9bcfd2ec6813c97288c0c12211bb5",
+          "size": 44554
         },
         {
           "path": ".tools/3d_pipeline/lib/weight_fit.py",
@@ -16228,8 +16238,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_clip_transfer.py",
-          "sha256": "f6eff42917a732ecb1cded2ff65455403e1c592824d702e0ce6d20903f0734b2",
-          "size": 3750
+          "sha256": "ef7592877722cd5512a0802c61a978e9d9d7421ed3c1296d557776965c08e47b",
+          "size": 5969
         },
         {
           "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
@@ -16250,6 +16260,11 @@
           "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
           "sha256": "4f320cabd2ac872cb9ac02208fa19b0d917340e7dd3a1dc47bc39e21a3b53987",
           "size": 17612
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_designer_preview.py",
+          "sha256": "f5a02d4f0e693af242a39a093cb4ac4cdbf33c0d6f7b69b6d489def61f1134b2",
+          "size": 3004
         },
         {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
@@ -16343,8 +16358,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_map_outline.py",
-          "sha256": "b2c4a58b33e39027f0d8241d4a644c453a17026f499dfd3b94f86c02fa5083d1",
-          "size": 15466
+          "sha256": "a650b6b3ad5f0cf7cb6b54ccac0b26ccd4b8047002a3ed8b348a5b9348252d07",
+          "size": 15809
         },
         {
           "path": ".tools/3d_pipeline/tests/test_map_read_humanoid.py",
@@ -16438,8 +16453,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_proportion_check.py",
-          "sha256": "ba96513e5b188d05f43ebd2f79880c3f8b9d87a8fee9cd26311987c4927abc37",
-          "size": 3110
+          "sha256": "720a500a1bc9155d8e6fd9c5895389a8ef89e34f09ca057e1ad0bbd88810b40e",
+          "size": 4840
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_clips.py",
@@ -16560,6 +16575,11 @@
           "path": ".tools/3d_pipeline/tests/test_static_polish.py",
           "sha256": "0c467044b1780e25c56e324ae120ca219beb269ba8fb42d71fa111eb1900c4d3",
           "size": 10007
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_static_registration.py",
+          "sha256": "9a78e804f22ca06921aab8976cfdebcd90a44dab41728d1b8b216198ff9c7b74",
+          "size": 5019
         },
         {
           "path": ".tools/3d_pipeline/tests/test_static_yard.py",
@@ -16717,6 +16737,11 @@
           "size": 9305
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_robe_rig.py",
+          "sha256": "39f498822b39f7dc6054b3c36e884b8693526f1fcc00d56e6d65362981097ef2",
+          "size": 12671
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
           "sha256": "9ce06385bc6ef18addf3c4055c1a5be116723a653ec8f72b74f7ea54cc9d6916",
           "size": 36286
@@ -16763,13 +16788,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_weapon_runtime.py",
-          "sha256": "1dec8a59985df34e2730752d562d852f85c519e77cd3ada0d35b865fa025bf7c",
-          "size": 6631
+          "sha256": "fa49afbe4769390f7e69f8eac9b39289f7f3d94d5e5e02250eef0b1aff3dd4db",
+          "size": 7306
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_wing_screen.py",
-          "sha256": "7ddb86c719f7982cc210087343447eb18d8397f0e13636ebb8c80223daefe61f",
-          "size": 4133
+          "sha256": "19de5cd2e25d1bb91199fce8e84817207439c52c24610a58b4440a79e44d17bf",
+          "size": 4825
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_effects.py",
@@ -16808,8 +16833,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_wire_unit.py",
-          "sha256": "119ddb15cfa0ef58d833b703f837ec88d20a99860997757de72c4e6e2cc509f8",
-          "size": 35400
+          "sha256": "2351646a74baebed54a0e365827c5b7ce6a89d30eb00eb809a2384b33544cefd",
+          "size": 37121
         },
         {
           "path": ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py",
@@ -16818,8 +16843,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "dcd6a2e1dc3b63146a91ccacf073771dbd0aa5d8b02374c9021f0718f3b0a45d",
-          "size": 18950
+          "sha256": "dab3e84602fd33ece102f545912d87228704f35528e4a13cbb40d6f536e9e5c5",
+          "size": 19546
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -16853,8 +16878,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_check.py",
-          "sha256": "d2ba465a062ea71f1c2a52af82858fee14f0cf3a1e82ff7fbd6f4c956e4131ac",
-          "size": 36849
+          "sha256": "615e5de1e8cd667d471e7fde469eac34a4be056b8d736114692bc51f56dede18",
+          "size": 37134
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_frames.py",
@@ -16938,8 +16963,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/pose_check.py",
-          "sha256": "f5fc8c78f392816a465d5aea6bee7b4998338b9206c6219d17f979b8b4abb120",
-          "size": 25137
+          "sha256": "ad5d0b84df8e16b85bddb9046cbdc65909332a9a010d8c5ac05b82e959386082",
+          "size": 25640
         },
         {
           "path": ".tools/3d_pipeline/tripo/pose_preview.py",
@@ -16953,13 +16978,18 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/proportion_check.py",
-          "sha256": "f07a6926692bc79977dc1a6fc9d2528825e376731dc408ead75732fd401a16f8",
-          "size": 6501
+          "sha256": "482ed10ba27d4f83c63eb9b03a46f95d8a1719422482ee7cd5cf592422842702",
+          "size": 6524
         },
         {
           "path": ".tools/3d_pipeline/tripo/rig_check.py",
           "sha256": "aaaf453a24b3b535070816011f055579969b96be794832739cdff9b793de283f",
           "size": 9153
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/robe_rig.py",
+          "sha256": "c0ead68b9b419ff777cf9b1016b308cc58f768fe99c9ef9212b1b19da35115fc",
+          "size": 2946
         },
         {
           "path": ".tools/3d_pipeline/tripo/shield_stage.py",
@@ -16978,8 +17008,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model.py",
-          "sha256": "444de274e19e62436f9a45145d119ebc1ec65044492d47bdb93b7bbb58f32423",
-          "size": 29461
+          "sha256": "d6bf84f8b48414a90bbf7c490252cd81b5f970c4ad30873a489f5807b85bf4ce",
+          "size": 32810
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model_blender.py",
@@ -16998,8 +17028,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "c52eed430a1fb3b71e16661ede8d84f6babcda917b934bfc33541cf0cd30101a",
-          "size": 147572
+          "sha256": "8ccc385881216014e17d8e10841e37483cbed5362038b1ae507f6bd7a5767b6f",
+          "size": 148860
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
@@ -17008,8 +17038,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
-          "sha256": "51e050b43dae05fcc7eedf241d3900e99bbeeba8e2fe3155a11345aa4eab9f89",
-          "size": 9589
+          "sha256": "b63055ea2399526769177167a0e425724de22abf39d21ca83ea62dc09b06c19a",
+          "size": 10930
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
@@ -17023,8 +17053,8 @@
         },
         {
           "path": ".tools/3d_pipeline/wire_unit.py",
-          "sha256": "e4e51f72dd113d30c2f2685f2b41440d44382afd812fb7968345c735c7d7d191",
-          "size": 23184
+          "sha256": "c1d4df31cca2140657a51d497f8ef01491f08d2269d18a98813c59d87eb0aab0",
+          "size": 25555
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
@@ -20098,8 +20128,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "83d8ed2f755bdc3f2a9f68e64dd42a40d40a5b1adc6042fef71b81d1867e32da",
-          "size": 8453
+          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
+          "size": 8612
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -25596,8 +25626,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "83d8ed2f755bdc3f2a9f68e64dd42a40d40a5b1adc6042fef71b81d1867e32da",
-          "size": 8453
+          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
+          "size": 8612
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -31094,8 +31124,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "83d8ed2f755bdc3f2a9f68e64dd42a40d40a5b1adc6042fef71b81d1867e32da",
-          "size": 8453
+          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
+          "size": 8612
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",

@@ -35,7 +35,7 @@ import json
 import shutil
 import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 from PIL import Image
@@ -347,7 +347,14 @@ def tread_textures(report: dict, contract: dict, name: str, files: Path, work: P
     return written
 
 
-def registration(name: str, kind: str, contract: dict, roles: list, nodes: list, game: Path, tracks: bool = False) -> str:
+def registration(name: str, kind: str, contract: dict, roles: list, nodes: list, game: Path, tracks: bool = False) -> Dict[str, str]:
+    """The model's three registration files, mod-relative path to text, laid out as vanilla's and the unit route's are: the
+    `pdxmesh` inside `objectTypes` in a `.gfx`, the animations in an `.asset` in the model folder with file names relative to
+    that folder, and the entity alone in an `.asset` in `gfx/entities`. HOI4 1.19.4 refused the earlier single
+    `gfx/entities/<name>.asset` holding all three ("Unexpected token: objectTypes", "Could not load animation file
+    gfx/entities/gfx/models/...", "Couldn't find mesh"): an `.asset` takes no `objectTypes`, and an animation's `file` is read
+    relative to its own `.asset`'s folder."""
+
     folder = FOLDERS[kind]
     animations = {role: f"{name}_{role}_animation" for role in roles}
     entity = contract["entity"]
@@ -362,13 +369,55 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
         settings.append({"name": f"{name}Shape", "index": 1, "texture_diffuse": f"{name}_tracks_diffuse.dds", "texture_normal": f"{name}_tracks_normal.dds",
                          "texture_specular": f"{name}_tracks_specular.dds", "shader": contract["rules"]["tracks"]["shader"]})
     pdxmesh_scale = entity.get("pdxmesh_scale", 1.0)
-    parts = ["objectTypes = {",
-             sk.pdxmesh_text(name, f"{folder}/{name}/{name}.mesh", animations, settings, pdxmesh_scale if abs(pdxmesh_scale - 1.0) > 1e-9 else None),
-             "}", ""]
-    for role, animation in animations.items():
-        parts += [sk.animation_text(animation, f"{folder}/{name}/{name}_{role}.anim"), ""]
-    parts.append(sk.entity_text(reference, name, f"{name}_mesh", nodes, roles, entity.get("entity_scale", entity["scale"]), contract.get("role_aliases")))
-    return "\n".join(parts) + "\n"
+    pdxmesh = sk.pdxmesh_text(name, f"{folder}/{name}/{name}.mesh", animations, settings, pdxmesh_scale if abs(pdxmesh_scale - 1.0) > 1e-9 else None)
+    animation_blocks = "\n\n".join(sk.animation_text(animation, f"{name}_{role}.anim") for role, animation in animations.items())
+    entity_block = sk.entity_text(reference, name, f"{name}_mesh", nodes, roles, entity.get("entity_scale", entity["scale"]), contract.get("role_aliases"))
+    if "death" in roles:
+        # vanilla's light tank has no death state, so without one the model's death clip never plays (and wire_unit refuses the
+        # effects' death sound)
+        from lib import unit_wiring
+
+        entity_block = unit_wiring.apply_effect_events(entity_block, [], add_states=["death"])
+    return {f"gfx/entities/{name}.gfx": "objectTypes = {\n" + pdxmesh + "\n}\n",
+            f"{folder}/{name}/{name}.asset": animation_blocks + "\n",
+            f"gfx/entities/{name}.asset": entity_block + "\n"}
+
+
+STATIC_CHECKS = "Static checks:"  # the registration.md line that hands wire_unit.py the static checks' arguments
+
+
+def check_args(kind: str, job: dict, running_gear: int) -> List[str]:
+    """check_unit_files.py's arguments for this static model: its kind's rules, sized as the route sizes it."""
+
+    return (["--model-kind", kind] + (["--running-gear-triangles", str(running_gear)] if running_gear else [])
+            + (["--size-reference", str(job["size_reference"])] if job.get("size_reference") else []))
+
+
+def write_registration(out: Path, files: Path, written: Dict[str, str], name: str, kind: str, checks: Sequence[str] = ()) -> None:
+    """The registration files under <out>/mod, and the unit route's runtime layout beside them (`runtime/registration.md` and
+    `runtime/files/`, the model's files without the registration), so `wire_unit.py <out>` wires the model into a mod."""
+
+    for rel, text in written.items():
+        (out / "mod" / rel).parent.mkdir(parents=True, exist_ok=True)
+        (out / "mod" / rel).write_text(text, encoding="utf-8", newline="\n")
+    (out / "runtime").mkdir(parents=True, exist_ok=True)
+    (out / "runtime" / "registration.md").write_text(registration_markdown(name, kind, written, checks), encoding="utf-8", newline="\n")
+    shutil.rmtree(out / "runtime" / "files", ignore_errors=True)
+    shutil.copytree(files, out / "runtime" / "files", ignore=shutil.ignore_patterns("*.asset"))
+
+
+def registration_markdown(name: str, kind: str, files: Dict[str, str], checks: Sequence[str] = ()) -> str:
+    """`runtime/registration.md` in the unit route's form (lib/unit_registration.registration_text), so `wire_unit.py` wires a
+    static model as it wires a unit. `checks` (check_args) goes on a `Static checks:` line, so `wire_unit.py` checks the model by its
+    kind's rules, not a unit's."""
+
+    folder = FOLDERS[kind]
+    pdxmesh = files[f"gfx/entities/{name}.gfx"].strip()
+    pdxmesh = pdxmesh.removeprefix("objectTypes = {").removesuffix("}").strip("\n")
+    return "\n".join([f"# Registration for {name}_entity", "", *([f"{STATIC_CHECKS} `{' '.join(checks)}`", ""] if checks else []),
+                      "## `.gfx` (for example `gfx/entities/<mod>_units.gfx`, inside `objectTypes = { }`)", "", "```", pdxmesh, "```", "",
+                      f"## `{folder}/{name}/{name}.asset`", "", "```", files[f"{folder}/{name}/{name}.asset"].strip(), "```", "",
+                      "## Entities (`gfx/entities/<mod>_units.asset`)", "", "```", files[f"gfx/entities/{name}.asset"].strip(), "```", ""])
 
 
 def job_contract(job: dict) -> tuple:
@@ -489,18 +538,15 @@ def main(argv=None) -> int:
     run_blender(request_path, out / "blender.log")
     report = json.loads((out / "blender_report.json").read_text(encoding="utf-8"))
     nodes = list(report.get("locators", {})) + list(report.get("bones", {}))
-    entities = out / "mod" / "gfx" / "entities"
-    entities.mkdir(parents=True, exist_ok=True)
-    (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
     report.update(textures=textures, delight=delight, hole=hole, atlas=atlas)
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
+    checks = check_args(kind, job, running_gear)
+    write_registration(out, files, registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), name, kind, checks)
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files
 
     verdict = out / "verdict_check.json"
-    code = check_unit_files.main([str(files), "--model-kind", kind, "--mod-root", str(out / "mod"), "--verdict", str(verdict)]
-                                 + (["--running-gear-triangles", str(running_gear)] if running_gear else [])
-                                 + (["--size-reference", str(job["size_reference"])] if job.get("size_reference") else []))
+    code = check_unit_files.main([str(files), "--mod-root", str(out / "mod"), "--verdict", str(verdict), *checks])
     problems = report.get("reduction", {}).get("problems") or []
     if problems:
         # STATIC-SHAPE: the reduction to vanilla's budget lost part of the silhouette (lib/tripo_shape.py)

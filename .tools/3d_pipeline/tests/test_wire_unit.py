@@ -53,7 +53,7 @@ def make_job(root: Path, sound_plan=None, roles=("idle", "move", "attack", "defe
 
 def make_mod(root: Path, subunit: bool = True, localisation: bool = True, counters: bool = False) -> Path:
     mod = root / "mod"
-    write(mod / "descriptor.mod", 'name = "fixture"\n')
+    write(mod / "descriptor.mod", 'name = "fixture"\nsupported_version = "1.19.*"\n')
     if subunit:
         write(mod / "common" / "units" / "ghoul.txt", SUBUNIT)
     if localisation:
@@ -236,6 +236,31 @@ class Reports(unittest.TestCase):
         self.assertEqual(status[f"GFX_unit_{STEM}_icon_medium_white"], "missing")
         self.assertEqual(code, 0)
         self.assertTrue(any("icon_medium_white" in line for line in result["warnings"]))
+
+    def test_each_subunit_gets_its_text_icon(self) -> None:
+        # HOI4 logs "Couldnt find texticon: unit_<id>_icon_small" on every counter refresh without it (in-game run, 2026-11-23)
+        mod = make_mod(self.root)
+        code, result = run(self.job, mod)
+        self.assertEqual(code, 0, result["errors"])
+        icons = (mod / "interface" / "ab_texticons.gfx").read_text(encoding="utf-8")
+        self.assertTrue(icons.startswith("spriteTypes = {"))
+        self.assertIn('name = "GFX_unit_ghoul_infantry_icon_small"', icons)
+        self.assertIn('texturefile = "gfx/texticons/unit_infantry_icon_small.dds"', icons)
+        self.assertEqual(run(self.job, mod)[1]["texticons"][0]["status"], "written")  # a rerun replaces only its own block
+        self.assertEqual(icons, (mod / "interface" / "ab_texticons.gfx").read_text(encoding="utf-8"))
+
+    def test_a_text_icon_the_mod_defines_is_left_alone(self) -> None:
+        mod = make_mod(self.root)
+        write(mod / "interface" / "own.gfx", 'spriteTypes = {\n\tspriteType = { name = "GFX_unit_ghoul_infantry_icon_small" texturefile = "gfx/x.dds" }\n}\n')
+        _code, result = run(self.job, mod)
+        self.assertEqual(result["texticons"], [{"token": "GFX_unit_ghoul_infantry_icon_small", "status": "mod", "art": ""}])
+        self.assertFalse((mod / "interface" / "ab_texticons.gfx").exists())
+
+    def test_a_descriptor_without_supported_version_is_a_warning(self) -> None:
+        mod = make_mod(self.root)
+        write(mod / "descriptor.mod", 'name = "scratch"\n')
+        _code, result = run(self.job, mod)
+        self.assertTrue(any("supported_version" in line for line in result["warnings"]), result["warnings"])
 
     def test_check_errors_make_the_verdict_fail_with_exit_1(self) -> None:
         mod = make_mod(self.root)

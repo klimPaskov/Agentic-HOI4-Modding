@@ -40,9 +40,11 @@ Each gate is defined once in the guide:
   Tripo web app under the user's own sign-in, never through an API, and follows
   the route in `docs/3d-units.md`: a 3D-ready picture (neutral pose, empty
   hands), model, rig, candidate presets, export, clips picked by measurement
-  and by their outline on the map camera (`pose_check.py --map`, the job's
-  `tripo.posture`, TRIPO-MAP-POSTURE, -SPREAD, -REACH and -SAME),
-  `tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`. Work out the
+  with the map camera's readings as advice only (`pose_check.py --map`, the
+  job's `tripo.posture`, TRIPO-MAP-*, D-140), `tripo_intake.py`,
+  `run_pilot.py`, `tripo/tripo_checks.py`. Reviewers judge each clip on the
+  designer preview sheet (`tripo/weapon_sheets.py --sheet preview`, 249 px
+  tiles) and in close-up, and the still model on the game-size sheet. Work out the
   preset with `tripo/pick_preset.py` from plain answers about the picture,
   show the user its confirm sentence and wait for a yes, then write the job
   entry with `tripo/new_job.py --preset <preset>`, giving only what the

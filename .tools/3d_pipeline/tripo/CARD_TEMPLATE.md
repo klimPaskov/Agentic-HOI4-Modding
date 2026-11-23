@@ -155,7 +155,7 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 
 Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
 
-First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. For a winged unit repair it free: `py -3.13 -B .tools/3d_pipeline/tripo/arm_seat.py <the rigged export> --out <job folder>/inbox/<asset_slug>__rigged.glb`, then run `rig_check.py` on that file. It moves the arm joints onto the mesh's own arm and gives the wing skin to the shoulder for the route's wing chains, and every clip already applied keeps working. Do not press **Retry** on the Rig page instead: it charges 20, drops every applied clip, and on the devil its second rig was worse (91% of the skin on the head, no right hand joint). When `arm_seat.py` refuses or the check still fails, stop and ask before any paid step.
+First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. For a winged unit repair it free: `py -3.13 -B .tools/3d_pipeline/tripo/arm_seat.py <the rigged export> --out <job folder>/inbox/<asset_slug>__rigged.glb`, then run `rig_check.py` on that file. It moves the arm joints onto the mesh's own arm and gives the wing skin to the shoulder for the route's wing chains, and every clip already applied keeps working. Do not press **Retry** on the Rig page instead: it charges 20, drops every applied clip, and on the devil its second rig was worse (91% of the skin on the head, no right hand joint). When `arm_seat.py` refuses or the check still fails, stop and ask before any paid step. For a unit in a floor-length robe that hides its legs, repair a failed or misplaced rig with `robe_rig.py` instead (same arguments): it places every joint again from the mesh and moves the applied clips onto them.
 
 When a fresh rig is needed (the asset's rig is lost or its retries degenerate: on the devil both retries bound over 90% of the skin to the head), rig a fresh asset instead of retrying:
 
@@ -174,9 +174,9 @@ When a fresh rig is needed (the asset's rig is lost or its retries degenerate: o
 4. Export again in a fresh browser tab (step 5) and run step 6 again.
 5. When the attack budget is spent and still none passes, stop and ask before more credits.
 
-## 7. Clip choice on the map camera (free)
+## 7. Clip choice (free)
 
-The game shows the unit about 60 pixels tall from above and in front. There only the outline reads, so pick each clip by how its outline reads there, against the unit's other clips.
+A player watches a unit's animations in the game's designer preview, a frame 249 pixels square, so each clip is judged there and in Blender close-ups (D-140). The map camera, where the unit is about 60 pixels tall, judges only the still model beside vanilla. The map readings below are advice: they help choose between candidates that pass, and none of them blocks a clip.
 
 1. Write the idle posture into the job: `"posture": "upright"` or `"posture": "hunched"` in its `tripo` block. A soldier stands upright. An undead, a beast-man or a cowering creature is hunched. For hunched, also set `"idle_pose": "hunch"` when no Tripo idle hunches enough.
 2. A first run has no earlier `.mesh` of this body. Then write each role into the job's `tripo.roles` by the step 6 numbers (the candidate with the lowest stretch that passes), finish the card once, and come back to this step with that run's mesh, `<job folder>/runtime/files/<runtime_stem>.mesh`.
@@ -186,18 +186,18 @@ The game shows the unit about 60 pixels tall from above and in front. There only
 <!-- armed -->
 3. Run `py -3.13 -B .tools/3d_pipeline/tripo/pose_check.py <job folder>/armed/<asset_slug>__body.glb <earlier run's .mesh> --hand <hand> --map --idle "<first words of the idle>" --attack <attack candidates> --gait <move and retreat candidates>`.
 <!-- /armed -->
-4. Read the `idle posture` line. It must say `hunched` for a hunched unit and `upright` for an upright one.
-5. Read each `outline` line. The attack and the defend must each show a hand spread under 0.80, or they read as a T-pose. The attack's strike must be at least 5 px outside the body, or its reach foreshortens into the body and reads as nothing. The attack and the defend must not both be wide spreads, or they read as each other.
-6. Take the `attack pick` line. It already leaves out an attack that fails these.
+4. Read the `idle posture` line. It should say `hunched` for a hunched unit and `upright` for an upright one. When it does not, prefer another idle, or set `"idle_pose": "hunch"`.
+5. Read each `outline` line as advice. A hand spread of 0.80 or more can read as a T-pose, a strike under 5 px outside the body can foreshorten into the body, and an attack and a defend that are both wide spreads can read as each other. Prefer a candidate that avoids these.
+6. Take the `attack pick` line. It picks an attack that meets these readings before one that does not, and drops none for them.
 7. Write the chosen clip for each role into the job's `tripo.roles` and here. A text-to-motion clip is named by its first words, before the first comma.
 
-| Role | Chosen clip | Map reading |
+| Role | Chosen clip | Map reading (advice) |
 | --- | --- | --- |
 | idle | | posture |
 | attack | | spread, strike px |
 | defend | | spread |
 
-After the run, `tripo_checks.py` judges the exported clips by the same rules (TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME). A unit that fails one goes back to this step, not to review.
+After the run, `tripo_checks.py` reports the same readings on the exported clips as advice (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME, TRIPO-WING-IDLE-MOVE, TRIPO-WING-SCREEN). They never fail the unit. The review on the designer preview sheet decides whether a clip reads as its role.
 <!-- /tripo_rig -->
 <!-- armed -->
 

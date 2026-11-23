@@ -88,7 +88,19 @@ class Advisory(unittest.TestCase):
         finally:
             TC.quadruped_checks.is_quadruped = original
         self.assertEqual([(f["rule"], f["subject"]) for f in report], [("TRIPO-WING-FRONT", "u_attack"), ("TRIPO-WING-EDGE-ON", "u_defend")])
-        self.assertEqual(len(keep), 3, "the map view, the retreat and the screen check still fail the unit")
+        self.assertEqual(len(keep), 3, "the map view, the retreat and the screen check pass on to the final split")
+
+    def test_the_wing_screen_angle_is_advice_and_never_fails_a_unit(self) -> None:
+        """D-140: a wing's angle on the map screen during a clip is a map reading, reported and never failing."""
+
+        import argparse
+
+        screen = {"rule": "TRIPO-WING-SCREEN", "subject": "u_attack", "degrees": 71.0}
+        front = {"rule": "TRIPO-WING-FRONT", "subject": "u_attack", "view": "map"}
+        rules = TC.advisory_rules(argparse.Namespace(grip_advisory=False, jobs_config=None, slug=None))
+        self.assertIn("TRIPO-WING-SCREEN", rules)
+        failing, advisory = TC.split_advisory([screen, front], rules)
+        self.assertEqual((failing, advisory), ([front], [screen]))
 
 
 if __name__ == "__main__":
