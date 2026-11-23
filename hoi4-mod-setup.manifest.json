@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b7fbdf68ce1a3010c8d229d81bed02025f4df61f",
+  "generated_for_revision": "a17c6545d538af27df47e198231856559fb40331",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15472,6 +15472,11 @@
           "size": 9176
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_robe_rig.py",
+          "sha256": "61dac9e685ac6aa5e61d7a012735a2be641efb942710f302a6807c005c77fc4e",
+          "size": 23900
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_shape.py",
           "sha256": "c0b536a8576734f7b06ad7d5db780507aaa14a156d84e16cdbb856ff5a566635",
           "size": 8642
@@ -16732,6 +16737,11 @@
           "size": 9305
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_robe_rig.py",
+          "sha256": "39f498822b39f7dc6054b3c36e884b8693526f1fcc00d56e6d65362981097ef2",
+          "size": 12671
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
           "sha256": "9ce06385bc6ef18addf3c4055c1a5be116723a653ec8f72b74f7ea54cc9d6916",
           "size": 36286
@@ -16833,8 +16843,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "976cfb42ee818653e5e5ea75037292a93cc2d97c385d1c5449036cf70b4fe62c",
-          "size": 19313
+          "sha256": "662ce3147987bd72f9d4817602162773b8a0bbdbc8362a3ad2bbdd1224c43ff4",
+          "size": 19527
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -16975,6 +16985,11 @@
           "path": ".tools/3d_pipeline/tripo/rig_check.py",
           "sha256": "aaaf453a24b3b535070816011f055579969b96be794832739cdff9b793de283f",
           "size": 9153
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/robe_rig.py",
+          "sha256": "c0ead68b9b419ff777cf9b1016b308cc58f768fe99c9ef9212b1b19da35115fc",
+          "size": 2946
         },
         {
           "path": ".tools/3d_pipeline/tripo/shield_stage.py",
