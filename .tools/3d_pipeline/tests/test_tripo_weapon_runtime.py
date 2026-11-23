@@ -113,8 +113,16 @@ class GripAdvisory(unittest.TestCase):
         rules = TC.advisory_rules(self.args())
         failing, advisory = TC.split_advisory([self.ENCLOSURE, self.THUMB], rules)
         self.assertEqual((failing, advisory), ([self.ENCLOSURE, self.THUMB], []))
-        self.assertEqual(TC.advisory_rules(self.args(jobs_config=self.job(None), slug="unit")), set())
-        self.assertEqual(TC.advisory_rules(self.args(jobs_config=self.job("strict"), slug="unit")), set())
+        self.assertEqual(TC.advisory_rules(self.args(jobs_config=self.job(None), slug="unit")), set(TC.MAP_READ_RULES))
+        self.assertEqual(TC.advisory_rules(self.args(jobs_config=self.job("strict"), slug="unit")), set(TC.MAP_READ_RULES))
+
+    def test_the_map_read_rules_are_advice_and_never_fail_a_unit(self) -> None:
+        # D-140: animations are judged at the designer preview's size and in Blender close-ups, so the map camera readings only advise.
+        reach = {"rule": "TRIPO-MAP-REACH", "subject": "unit_attack", "message": "strike 3 px outside the body"}
+        wings = {"rule": "TRIPO-WING-IDLE-MOVE", "subject": "unit_move", "message": "1.6 times the idle"}
+        failing, advisory = TC.split_advisory([reach, wings, self.THUMB], TC.advisory_rules(self.args()))
+        self.assertEqual(failing, [self.THUMB])
+        self.assertEqual(advisory, [reach, wings])
 
     def test_a_job_that_says_advisory_reports_the_enclosure_without_failing_and_never_excuses_the_thumb(self) -> None:
         for arguments in (self.args(jobs_config=self.job("advisory"), slug="unit"), self.args(grip_advisory=True)):

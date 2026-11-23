@@ -266,13 +266,16 @@ class Wiring(unittest.TestCase):
         self.assertIn("TRIPO-MAP-REACH", names)
         self.assertEqual(numbers["map_outline"]["posture_asked"], "hunched")
 
-    def test_pose_check_does_not_pick_a_t_pose_or_a_foreshortened_attack(self) -> None:
-        def row(spread, reach):
-            route = {"reach": 0.4, "pelvis_travel": 0.2, "map_pixels": 500.0, "map_spread": spread, "map_reach": reach}
+    def test_pose_check_prefers_an_attack_that_reads_on_the_map_but_drops_none_for_it(self) -> None:
+        # D-140: the map-size readings are advice. An attack that meets them wins over a stronger one that does not, and when none
+        # meets them the best of the rest is still picked.
+        def row(spread, reach, travel=0.2):
+            route = {"reach": 0.4, "pelvis_travel": travel, "map_pixels": 500.0, "map_spread": spread, "map_reach": reach}
             return {"attack": True, "verdict": "pass", "route": route}
 
-        self.assertIsNone(pose_check.pick_attack({"t": row(0.9, 12), "inside": row(0.3, 3)}))
-        self.assertEqual(pose_check.pick_attack({"t": row(0.9, 12), "good": row(0.3, 12)}), "good")
+        self.assertEqual(pose_check.pick_attack({"t": row(0.9, 12, 0.5), "inside": row(0.3, 3)}), "t")
+        self.assertEqual(pose_check.pick_attack({"t": row(0.9, 12, 0.5), "good": row(0.3, 12)}), "good")
+        self.assertEqual(pose_check.map_advice(row(0.9, 3)["route"]), ["TRIPO-MAP-SPREAD", "TRIPO-MAP-REACH"])
 
 
 if __name__ == "__main__":
