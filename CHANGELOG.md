@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- 3D units: a clip that moves too little to read at map size can be amplified (`tripo.amplify`, `lib/tripo_amplify.py`): each joint turns further from the clip's first pose and the hips travel further, by the largest factor up to the job's that keeps to the vanilla stretch limits, the foot-below-ground check and the shoulder-swell check, with every frame regrounded. Tested on the zombie's defend (map reading 776 to 1,142 px, no finding).
 - `tripo/anim_claims.py release <unit> <clip>` gives back a clip a unit claimed and then dropped, for example after the intake refused it. Only the holder releases a clip, and the next claim of it then holds it.
 - 3D units: the Tripo tile `defeat` is no longer a death candidate, because it stands looking up and never lies down (zombie, ogre, and the goblin route test). The card's clip table names the file name of each tile Tripo renames on export (`defeat_02`, in the file `defeat_03`), and `make_card.py` and `tripo_intake.py` refuse a role that names the export of a tile that is no candidate for that role, since `tripo.roles` takes the exported names. The step 10 file check passes `--weapon-bone` for an armed unit that drops its weapon in the death, which otherwise fails as a loose part.
 - `run_pilot.py`: a missing vanilla scale reference names the game folder in use and the command that sets the installed game again. A local run of CI's setup step leaves a stand-in game folder in `.tools/local_settings.json`.
