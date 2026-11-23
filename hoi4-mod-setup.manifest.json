@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "897fc7278911cb53f3c42b83ce2f7bd23b8e8851",
+  "generated_for_revision": "756c323394eabdd40a3319467128a412d4905463",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16793,8 +16793,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_wing_screen.py",
-          "sha256": "7ddb86c719f7982cc210087343447eb18d8397f0e13636ebb8c80223daefe61f",
-          "size": 4133
+          "sha256": "19de5cd2e25d1bb91199fce8e84817207439c52c24610a58b4440a79e44d17bf",
+          "size": 4825
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_effects.py",
@@ -16843,8 +16843,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "662ce3147987bd72f9d4817602162773b8a0bbdbc8362a3ad2bbdd1224c43ff4",
-          "size": 19527
+          "sha256": "dab3e84602fd33ece102f545912d87228704f35528e4a13cbb40d6f536e9e5c5",
+          "size": 19546
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -17028,8 +17028,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "6f7e4d088799185b576878180fad6a1f43dee095437f0c2a6e419a5b53932603",
-          "size": 148496
+          "sha256": "8ccc385881216014e17d8e10841e37483cbed5362038b1ae507f6bd7a5767b6f",
+          "size": 148860
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
