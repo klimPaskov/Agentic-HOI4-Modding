@@ -48,7 +48,9 @@ Each gate is defined once in the guide:
   entry with `tripo/new_job.py --preset <preset>`, giving only what the
   user knows with `--set`. Do the picture review of step 2 in
   `docs/3d-units.md` (a Tripo job needs `init_pilot_jobs.py` for its picture
-  too). Write the card with `tripo/make_card.py`, never by hand. An armed unit names
+  too). Write the card with `tripo/make_card.py`, never by hand. Every unit
+  type of a mod has its own clips: claim them with `tripo/anim_claims.py`
+  as soon as they are picked (D-136). An armed unit names
   `tripo.weapon.hand` by the rig's side and gets its weapon from
   `tripo/arm_unit.py`. An unarmed soldier-sized
   unit takes `infantry_unarmed`. Every command that starts Blender waits for

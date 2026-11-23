@@ -15,13 +15,13 @@ Tripo's [Agentic Canvas](https://studio.tripo3d.ai/canvas) chains Tripo's tools 
 
 | Preset | Canvas workflow | Card | Canvas |
 | --- | --- | --- | --- |
-| `humanoid`, `winged_humanoid`, `rider` | Rigged unit | 50, 70 with a made attack | 65, 85 with a made attack |
-| `armed_humanoid`, `large_creature` with a weapon | Armed unit | 80, 100 with a made attack | 95, 115 with a made attack, the weapon made on the page. 110, 130 with the weapon on the Canvas too |
-| `large_creature` with empty hands | Rigged unit | 50, 70 with a made attack | 65, 85 with a made attack |
+| `humanoid`, `winged_humanoid`, `rider` | Rigged unit | 50 with free clips, up to 170 with the unit's own made clips | 65, up to 185 |
+| `armed_humanoid`, `large_creature` with a weapon | Armed unit | 80 with free clips, up to 200 with the unit's own made clips | 95, up to 215, the weapon made on the page. 15 more with the weapon on the Canvas too |
+| `large_creature` with empty hands | Rigged unit | 50 with free clips, up to 170 with the unit's own made clips | 65, up to 185 |
 | `winged_quadruped`, `quadruped`, `mount_with_rider` (the mount) | Plain model | 30 | 45 |
 | `tank`, `plane`, `ship`, `building`, `landmark` | Static model | 20 to 120 (Smart Mesh is free while a trial lasts) | read each node before you run it |
 
-Make an armed unit's weapon on the page, as the card's step 2 does, and the body and rig on the Canvas: that keeps it at 95, or 115 with a made attack, inside the preset's cap of 120. With the weapon on the Canvas too it costs 130 with a made attack, over the cap.
+Every unit type of a mod has its own animations (D-136): a free clip another unit of the mod already holds in the mod's claims (`tripo/anim_claims.py`) is out, and the unit gets its own made clip for that state, 20 credits each on the page and on the Canvas. Make an armed unit's weapon on the page, as the card's step 2 does, and the body and rig on the Canvas: that saves 15 credits against a weapon node on the Canvas.
 
 **Proven on 2026-11-22.** The armed-humanoid route test, a unit with a hand axe, ran the armed workflow this way: the Canvas body 45, the axe on the page 30, the Canvas rig 20, nine free preset clips, 95 credits in all. The joined clips passed the card's attack check (`chop`), so no made attack was needed.
 
