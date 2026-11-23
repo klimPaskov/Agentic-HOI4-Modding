@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "c7e6780041dbe617cee9cd1b81539e42814566bc",
+  "generated_for_revision": "7e1d6c252239a8f64574e93f3f77fa1732a10489",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16432,6 +16432,11 @@
           "size": 33591
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_proportion_check.py",
+          "sha256": "ba96513e5b188d05f43ebd2f79880c3f8b9d87a8fee9cd26311987c4927abc37",
+          "size": 3110
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_quadruped_clips.py",
           "sha256": "e6d42b009e191ccc858da2b33b99e78567f8e76c7f13b3448a555c911dae4ae6",
           "size": 29803
@@ -16930,6 +16935,11 @@
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
           "sha256": "311bd3ccddba391301da7ba95669cf270109b16d863c4030937ac51c370ffef7",
           "size": 84256
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/proportion_check.py",
+          "sha256": "f07a6926692bc79977dc1a6fc9d2528825e376731dc408ead75732fd401a16f8",
+          "size": 6501
         },
         {
           "path": ".tools/3d_pipeline/tripo/rig_check.py",
