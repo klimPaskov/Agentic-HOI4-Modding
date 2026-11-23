@@ -256,7 +256,7 @@ def plan_wings(ctx):
     arm = C.ridge_band(u, chain_u, leading)
     common = {"chain_u": chain_u, "stations": stations, "layout": layout, "root": root, "plane": plane, "front": front,
               "points": points, "body_points": positions[~(left | right)], "height": ctx["height"], "leading": leading,
-              "ridge_halfwidth": arm, "far_vertices": int(far.sum()),
+              "ridge_halfwidth": arm, "far_vertices": int(far.sum()), "thickness": C.region_thickness(points, ctx["height"]),
               "shape_inputs": {"length": round(length, 4), "width": round(width, 4), "segment": round(ctx["segment"], 4), "budget": ctx["budget"]}}
     return [
         # each wing's blend stops at the mid-plane, so the two rings never meet on the spine
@@ -313,7 +313,7 @@ def chain_rows(rows, positions, edges, sheets, limb_ends, arm_room):
     for sheet in sheets:
         names = [name for chain in bone_names(sheet) for name in chain]
         joints = sheet["joints"]
-        blend = C.blend_length_for(joints, positions, edges, sheet["mask"])
+        blend = C.blend_length_for(joints, positions, edges, sheet["mask"], float(sheet.get("thickness", 0.0)), float(sheet.get("height", 1.0)))
         # the chains fade out over a few rings before a limb end or an arm's room, and over the whole blend before the sheet's own stop
         stop_length = C.BLEND_MIN_RINGS * C.ring_length(positions, edges, sheet["mask"])
         own = C.fade_from(positions, edges, sheet["blocked"], blend) if sheet.get("blocked") is not None and np.any(sheet["blocked"]) else 1.0
@@ -504,6 +504,7 @@ def chain_plan(rest_of: Callable[[str], np.ndarray], sheets, heads, radii, heigh
                 "chains": len(sheet["chain_u"]), "tails": joints[1:], "follow": follow, "follow_torso": follow_torso, "wing": wing,
                 "rest_directions": C.unit(np.diff(joints, axis=0)), "parent_rest": parent,
                 "leading": bool(sheet.get("leading") is not None and c == int(sheet["leading"])),
+                "thick": C.is_slab(float(sheet.get("thickness", 0.0)), height),
             })
     return plans
 
