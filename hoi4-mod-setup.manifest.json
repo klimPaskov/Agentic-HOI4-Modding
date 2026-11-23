@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "4234c57d2930c28d2d53477489b2d681fcb1eed1",
+  "generated_for_revision": "b9b971087bd782ab2ddde33ca55a83536a0ec865",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15133,8 +15133,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/tripo_presets.json",
-          "sha256": "d41f6bf38f1d3a60cbabb4a4b06024eb0242e6d996519cfc455fd171f41fc30b",
-          "size": 27858
+          "sha256": "8afe80a36b3ed57969f3a7ae5f97de10f9a905e571d3a84f2b347023db11c318",
+          "size": 27818
         },
         {
           "path": ".tools/3d_pipeline/config/unit_types.json",
@@ -15348,8 +15348,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_card.py",
-          "sha256": "4a3f67a28158ad11cc3f2c51090febc3f88758502a034ee67d172ce874468074",
-          "size": 21121
+          "sha256": "bdc36251e084a4609deb587e29ab566cfdca5b94258776d40c11167c04f63e5c",
+          "size": 21187
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_chain_lift.py",
@@ -15453,8 +15453,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_presets.py",
-          "sha256": "dc60c98bf2e51979d7ceb2990e3b020e8e57fc98d407febec766381ae55a2082",
-          "size": 17160
+          "sha256": "85157b265dc91adab8a5956d5f5dc656b4559c8144b4b9a92379dffdf20b5180",
+          "size": 18772
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_rig.py",
@@ -16173,8 +16173,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_anim_claims.py",
-          "sha256": "f994cb365e5b52c5474d0dd9a2ece9f7a9cc890427245e0af64e4c5296edfee6",
-          "size": 9827
+          "sha256": "dab37f645ef84deb36ce18126e758c923b5e2dfa84e835fd926619d500103ed9",
+          "size": 9833
         },
         {
           "path": ".tools/3d_pipeline/tests/test_anim_frame_range.py",
@@ -16688,8 +16688,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_presets.py",
-          "sha256": "032f7b8e239508369d67440c4307e4edf6a0641c4cce50bf9fcea933543840e2",
-          "size": 15991
+          "sha256": "f7480d78350577da4de8bf846e0775720f669d5f7423447811277e8f250b9bed",
+          "size": 17292
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_rig.py",
@@ -16988,8 +16988,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "a425cde3a9c63d613c8c37487a6b77dc1d85d9607fed54e02e592ca89a096cd6",
-          "size": 29066
+          "sha256": "34a4889fa741e2fb3bffc0b4a09336fc2fb34a1798c1521eb9555cb7ac4b1136",
+          "size": 29228
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
