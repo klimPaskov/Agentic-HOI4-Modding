@@ -834,6 +834,7 @@ The agent works in your Chrome through Claude in Chrome, on the tab where you ar
 - It opens pages by their address when it knows it: the image tool at `studio.tripo3d.ai/workspace/generate-image` and a model's Animate page at `studio.tripo3d.ai/workspace/animate/<asset id>` (see steps 1 and 5).
 - It loads `.tools/3d_pipeline/tripo/tripo_studio.js` into the page. The helpers read the credit balance and the price on each button and refuse to press Generate when the price differs from the card. On the Animate page it types each preset's name into the search box (`TS.search`) and clicks the tile it finds (`TS.presetPoint`).
 - It uploads the picture with the extension's file upload, never through a file dialog.
+- To rig a model again on a fresh asset, it uploads the model's own export (**Upload 3D Model**, free). Tripo then shows **Find the Best Angle** with the model seen from its side. Confirm it unchanged: turning it there rotated the ZIN devil's mesh a quarter turn against the skeleton Tripo then built (2026-11-22).
 - It presses each paid button once, then waits for the new task. A second press starts a second paid task.
 - It never reloads the Tripo page in the middle of a paid step.
 - Exports go to your Downloads folder. The agent moves them into the inbox and renames them. It takes only a file created after its own click (newer than a marker file it touches first), never "the newest file of that type", because Downloads also holds your own files and a blocked download leaves an old file the newest.
