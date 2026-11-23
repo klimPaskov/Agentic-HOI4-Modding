@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "74abadb109a9c21a470d94685fc8a39c874262ca",
+  "generated_for_revision": "882cc211694c9284ff1efb9c0065d12137dbf3df",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16798,8 +16798,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "843ec8262d6eb23a921349105ef8fdd352b61a12cad7e28fbdc1fb90bccc5153",
-          "size": 17709
+          "sha256": "eb897098ec7569527f8d9b1b0fbbd4aa3ffcdac5e425bd1e527930d8c64ffd26",
+          "size": 18220
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -16978,8 +16978,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
-          "sha256": "e79680682c5eceb543123f3ac6a75b839a908e86a5c6c3ab665ce4a32aef8dd0",
-          "size": 15772
+          "sha256": "de9d551d7e3c4ab3a77292a340758c83fd26a7cea0ed308794314742c39aed73",
+          "size": 16787
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
