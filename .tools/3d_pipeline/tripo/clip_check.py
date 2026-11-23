@@ -53,11 +53,17 @@ import argparse
 import json
 import re
 import struct
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
+
+# lib/ sits beside tripo/: a lazy `from lib import ...` (canonical_names) must work when this file is imported on its own, as a test does.
+PIPELINE_ROOT = Path(__file__).resolve().parents[1]
+if str(PIPELINE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PIPELINE_ROOT))
 
 # Thresholds. Calibrated against the Tripo orc trials: the known-bad text-to-motion swing clip
 # (the haft through torso and cape in its first frames) fails clearly, idle and walk pass.
