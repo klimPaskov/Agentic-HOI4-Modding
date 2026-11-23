@@ -951,25 +951,33 @@ def plan_drop(
     sample = relative[:: max(1, len(relative) // 150)]
     start_turn = attached[release][:3, :3]
     start_point = attached[release][:3, :3] @ centre + attached[release][:3, 3]
-    after = body_frames[min(release + tumble, len(body_frames) - 1) :]
-    stride = max(1, int(sum(len(f) for f in after) // 1500))
-    occupied = np.concatenate([f[::stride, :2] for f in after])
     orientations = lying_orientations(axes)
     judged = sample[np.linalg.norm(sample, axis=1) > GRIP_RADIUS_SHARE * height]
     best = None
     judged_places = set()
     # The nearest places come first. A fall onto the back or face can leave all of them with the swing through the body, so the search widens in
-    # steps (more headings, then places nearer the body) and stops at the first plan that keeps the weapon out of it (gap 21, 25 of the hobgoblin run).
-    for keep, clear in ((candidates, LANDING_CLEAR_SHARE), (4 * candidates, LANDING_CLEAR_SHARE), (len(orientations), LANDING_CLEAR_SHARE), (len(orientations), 0.5 * LANDING_CLEAR_SHARE)):
-        places = landing_places(relative, orientations, occupied, start_point[:2], height, clear=clear, keep=keep)
-        for rank, place in enumerate(places):
-            if (place["orientation"], round(float(place["xy"][0]), 6), round(float(place["xy"][1]), 6)) in judged_places:
-                continue
-            judged_places.add((place["orientation"], round(float(place["xy"][0]), 6), round(float(place["xy"][1]), 6)))
-            row = _drop_row(place, orientations, (start_turn, start_point), relative, judged, body_frames, body_triangles, height, ground, release, tumble)
-            key = (round(max(0.0, row["in_body_share"] - 0.003), 3), round(max(0.0, -row["lowest_over_ground_share"] - 0.002), 3), rank)
-            if best is None or key < best[0]:
-                best = (key, row)
+    # steps and stops at the first plan that keeps the weapon out of it (gaps 21 and 25 of the hobgoblin run): more headings, then places nearer
+    # the body, then a quicker and a slower tumble (the weapon crosses the falling body in another frame).
+    nearer = 0.5 * LANDING_CLEAR_SHARE
+    rungs = ((candidates, LANDING_CLEAR_SHARE, (tumble,)), (4 * candidates, LANDING_CLEAR_SHARE, (tumble,)), (len(orientations), LANDING_CLEAR_SHARE, (tumble,)),
+             (len(orientations), nearer, (tumble,)),
+             (len(orientations), LANDING_CLEAR_SHARE, tuple(max(2, int(round(k * fps))) for k in (0.25, 0.6))),
+             (len(orientations), nearer, tuple(max(2, int(round(k * fps))) for k in (0.25, 0.6))))
+    for keep, clear, tumbles in rungs:
+        for length in tumbles:
+            after = body_frames[min(release + length, len(body_frames) - 1) :]
+            stride = max(1, int(sum(len(f) for f in after) // 1500))
+            occupied = np.concatenate([f[::stride, :2] for f in after])
+            places = landing_places(relative, orientations, occupied, start_point[:2], height, clear=clear, keep=keep)
+            for rank, place in enumerate(places):
+                seen = (length, place["orientation"], round(float(place["xy"][0]), 6), round(float(place["xy"][1]), 6))
+                if seen in judged_places:
+                    continue
+                judged_places.add(seen)
+                row = _drop_row(place, orientations, (start_turn, start_point), relative, judged, body_frames, body_triangles, height, ground, release, length)
+                key = (round(max(0.0, row["in_body_share"] - 0.003), 3), round(max(0.0, -row["lowest_over_ground_share"] - 0.002), 3), rank)
+                if best is None or key < best[0]:
+                    best = (key, row)
         if best is not None and best[1]["in_body_share"] <= LIMIT and best[1]["lowest_over_ground_share"] >= -GROUND_FAIL_SHARE:
             break
     if best is None:
