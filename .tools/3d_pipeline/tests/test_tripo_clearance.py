@@ -506,6 +506,24 @@ class Drop(unittest.TestCase):
         self.assertGreater(len(seen), 4)
         self.assertEqual(plan["in_body_share"], 0.0)
 
+    def test_a_quicker_and_a_slower_tumble_are_tried_when_every_place_swings_through_the_body(self) -> None:
+        real = C._drop_row
+        lengths = []
+
+        def faked(place, *args, **kwargs):
+            lengths.append(args[-1])
+            row = dict(real(place, *args, **kwargs))
+            row["in_body_share"] = 0.05
+            return row
+
+        C._drop_row = faked
+        try:
+            plan, *_ = self.plan()
+        finally:
+            C._drop_row = real
+        self.assertGreater(len(set(lengths)), 1)
+        self.assertIn(plan["tumble_frames"], set(lengths))
+
     def test_after_the_tumble_the_planned_weapon_does_not_move(self) -> None:
         plan, *_ = self.plan()
         tail = plan["points"][plan["tumble_frames"] :]

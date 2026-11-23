@@ -1,0 +1,93 @@
+{
+ "schema": 1,
+ "asset": "feather_1",
+ "kind": "effect sprite (particle texture), like vanilla gfx/particles/leaflet_1.dds",
+ "made_on": "2026-11-22",
+ "tool": {
+  "server": "hoi4-imagegen-mcp 0.3.6",
+  "ledger_chain": {
+   "entries": 26,
+   "first_bad": null,
+   "ok": true
+  }
+ },
+ "settings": {
+  "family": "gui_texture",
+  "canvas": [
+   128,
+   128
+  ],
+  "provider": "chatgpt_login",
+  "model": "gpt-6-luna",
+  "funding": "ChatGPT plan quota (no paid API)",
+  "plan_id": "plan-97e198e054a78d4c",
+  "prompt_sha256": "bbe170e0ee05ae961d8790c3cbf7f4a3c4bdb32d2a6026012faa9664c1f17400",
+  "variants_made": 4
+ },
+ "references": [
+  {
+   "role": "subject_anchor",
+   "title": "File:A single white feather closeup.jpg",
+   "page": "https://commons.wikimedia.org/wiki/File:A_single_white_feather_closeup.jpg",
+   "license": "Public domain",
+   "license_url": null,
+   "artist": "Joao Estevao Andrade de Freitas",
+   "sha256": "106d600e1a5e4d66391865d045b7766a69b83beddb9cd2f66936bf74967e1989",
+   "retrieved": "2026-11-22"
+  },
+  {
+   "role": "subject_anchor",
+   "title": "File:Hen feather 2.jpg",
+   "page": "https://commons.wikimedia.org/wiki/File:Hen_feather_2.jpg",
+   "license": "CC BY-SA 4.0",
+   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+   "artist": "Jegan12345",
+   "sha256": "6716132fea91b5e47ad31fbeac1ad9a108a69b15e615c11293601ea0737aa942",
+   "retrieved": "2026-11-22"
+  },
+  {
+   "role": "subject_anchor",
+   "title": "File:White colour feather.jpg",
+   "page": "https://commons.wikimedia.org/wiki/File:White_colour_feather.jpg",
+   "license": "CC BY 4.0",
+   "license_url": "https://creativecommons.org/licenses/by/4.0",
+   "artist": "Waran R Samay",
+   "sha256": "7dd6dabe893e9bdcf7b1601b16a37e160447ab21728d3db543070ef6e2808d4e",
+   "retrieved": "2026-11-22"
+  },
+  {
+   "role": "geometry_anchor",
+   "license": "game asset, used only as a composition reference (decision D4); not copied into the output",
+   "sha256": "d732ccc7aad0e8196605d4a144f445b5573e9c22e3ec89e9ed7a9b22d7532cb5",
+   "source": "Hearts of Iron IV 1.19.5.0 gfx/particles/leaflet_1.dds (Paradox Interactive), decoded to PNG"
+  }
+ ],
+ "candidate": {
+  "id": "effects.feather_1-v3",
+  "sha256": "bf669ac42c2323200b16f3bde2da15012cb7c6e526de35a5ecb89f037da75db5"
+ },
+ "processing": {
+  "recipe": {
+   "id": "icon",
+   "version": 1
+  },
+  "png_sha256": "ad1b601c4f5cc5d0fc01680340542abf7b41f0d0e0420104c8aa0f162ee4581e",
+  "pixels_sha256": "f1e9391454e3f25cae8cf5992b8bbc428cf9f9ec389abbf7cddd8fdedca4eca4"
+ },
+ "validation": {
+  "status": "pass",
+  "errors": 0,
+  "transparency": "proven by pixels: all four corners alpha 0, 62% of the canvas fully transparent after DXT5 decode"
+ },
+ "review": {
+  "verdict": "approved",
+  "approval_id": "apr-35fe2fbe70ccdfa0"
+ },
+ "outputs": {
+  "feather_1.dds": {
+   "sha256": "e2c86966c5087fb9cc8a75d77ca731c368c9353d3727665952526a73f6dfd3c1",
+   "format": "DXT5 (BC3), 128x128, one level, 16512 bytes, header flags and caps as vanilla leaflet_1.dds"
+  }
+ },
+ "licence": "CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0), as one reference is CC BY-SA 4.0"
+}

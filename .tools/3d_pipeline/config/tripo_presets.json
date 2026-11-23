@@ -182,7 +182,7 @@
       "expected_credits": [50, 200],
       "cap": 200,
       "canvas": "rigged_unit",
-      "effects": ["hand_mouth_fire", "heavy_fire", "ember_idle", "wing_gust"],
+      "effects": ["hand_mouth_fire", "heavy_fire", "ember_idle", "wing_gust", "feather_shed"],
       "proven": "Passed two fresh reviews on one unit with membrane wings (November 2026). Very wide thin wings and feathered wings are not proven yet."
     },
     "winged_quadruped": {
@@ -202,7 +202,7 @@
       "expected_credits": [30, 30],
       "cap": 60,
       "canvas": "plain_model",
-      "effects": ["fire_breath", "wing_gust"],
+      "effects": ["fire_breath", "wing_gust", "feather_shed"],
       "proven": "Not proven: no winged four-legged unit has passed review yet (November 2026). Ask before you spend."
     },
     "mount_with_rider": {
