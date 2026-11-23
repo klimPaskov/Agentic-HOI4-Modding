@@ -534,6 +534,11 @@ class DefaultRepairs(unittest.TestCase):
         self.assertEqual(run_pilot.default_repairs(tripo_spec()), ["winding", "holes", "normals"])
         self.assertEqual(run_pilot.default_repairs({"unit_type": "infantry_melee"}), [])
 
+    def test_a_job_with_wings_also_repairs_bridges_and_weights(self) -> None:
+        spec = tripo_spec()
+        spec["tripo"] = dict(spec["tripo"], chains=[{"region": "wings"}])
+        self.assertEqual(run_pilot.default_repairs(spec), ["winding", "bridges", "holes", "weights", "normals"])
+
     def test_the_repair_replaces_the_staged_mesh_and_records_the_counts(self) -> None:
         import repair_unit
 
