@@ -159,7 +159,7 @@ First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the
 
 When a fresh rig is needed (the asset's rig is lost or its retries degenerate: on the devil both retries bound over 90% of the skin to the head), rig a fresh asset instead of retrying:
 
-1. On the Model page press **Upload 3D Model** (free) and add the model's own export, `<job folder>/inbox/<asset_slug>__model.glb`.
+1. On the Model page press **Upload 3D Model** (free) and add the model's own export, the GLB you saved from its Model page for the span check (step 2).
 2. Tripo shows **Find the Best Angle** with the model seen from its side. Press **Confirm** without turning it. Turning it there rotated the devil's mesh a quarter turn against the skeleton Tripo then built, and the rig was unusable.
 3. Rig the new asset once (steps above), apply the clips again (the clips you made are under **AI Animation**, free), export, and run `rig_check.py` again.
 
