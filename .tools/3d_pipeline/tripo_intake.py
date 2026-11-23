@@ -135,6 +135,9 @@ def refuse_unfitting_clips(spec: Dict[str, Any]) -> None:
     found = tripo_presets.unfitting_clips(spec)
     if found:
         raise ValueError(f"{spec.get('asset_id', 'the job')}: {tripo_presets.unfitting_message(found)}.")
+    renamed = tripo_presets.renamed_tile_clips(spec)
+    if renamed:
+        raise ValueError(f"{spec.get('asset_id', 'the job')}: {' '.join(renamed.values())}")
 
 
 def refuse_shared_clips(spec: Dict[str, Any], slug: str) -> None:
