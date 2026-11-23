@@ -185,6 +185,16 @@ def _local_matrix(node: dict) -> np.ndarray:
     return out
 
 
+def _channel_moves(doc: dict, blob: bytes, animation: dict, channel: dict) -> bool:
+    """False for a channel whose every key holds one value: it moves nothing (the grip stage's export writes one for neutral_bone)."""
+
+    try:
+        values = _accessor(doc, blob, animation["samplers"][channel["sampler"]]["output"])
+    except (KeyError, IndexError, ValueError):
+        return True
+    return bool(np.ptp(np.asarray(values, float), axis=0).max() > 1e-6) if len(values) else False
+
+
 def read_skeleton(path: Path) -> Dict[str, Any]:
     """The first skin of a rigged GLB: `parents` ({joint name: parent joint name or None, the parent being the nearest ancestor node that
     is a joint}), `animated` (joints some clip keys), `heads` ({joint name: rest position}), `children`, and the first mesh's `points` and
@@ -214,18 +224,10 @@ def read_skeleton(path: Path) -> Dict[str, Any]:
 
     parents = {names[i]: (names[joint_parent(i)] if joint_parent(i) is not None else None) for i in joints}
     heads = {names[i]: tuple(float(v) for v in resolve(i)[:3, 3]) for i in joints}
-    def moves(animation: dict, channel: dict) -> bool:
-        # a channel whose every key holds one value moves nothing (the grip stage's export writes one for neutral_bone)
-        try:
-            values = _accessor(doc, blob, animation["samplers"][channel["sampler"]]["output"])
-        except (KeyError, IndexError, ValueError):
-            return True
-        return bool(np.ptp(np.asarray(values, float), axis=0).max() > 1e-6) if len(values) else False
-
     animated = {
         names[channel["target"]["node"]]
         for animation in doc.get("animations", []) for channel in animation.get("channels", [])
-        if channel.get("target", {}).get("node") in names and moves(animation, channel)
+        if channel.get("target", {}).get("node") in names and _channel_moves(doc, blob, animation, channel)
     }
     children: Dict[str, List[str]] = {name: [] for name in names.values()}
     for name, parent in parents.items():
