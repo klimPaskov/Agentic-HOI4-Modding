@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5a63d0bd4aa93cbc40d4564c20b343feae3bb2bf",
+  "generated_for_revision": "fa1e6a2150eaca99ccdf13124151a19795eafa1c",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15393,8 +15393,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_extra_joints.py",
-          "sha256": "fcc91de94e4a13d3a13fc55a75a46e54e3b6533ba48ac3bd6ac6fb796ef86a4e",
-          "size": 13380
+          "sha256": "3a580b1618f3219993014dd345d11c36f148f1a8455547c17697e8651bd5f846",
+          "size": 13917
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_fall.py",
@@ -16173,8 +16173,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/rig_glb.py",
-          "sha256": "20a93df2c69a91c1e2ccfe3a190fc5fd5f90f3625b1892b8df91e902865c57cb",
-          "size": 10009
+          "sha256": "498e45671a7223df79eb2d4f37d31b6f53ed5960daf58be89861d0a8d13069e1",
+          "size": 10212
         },
         {
           "path": ".tools/3d_pipeline/tests/test_action_phase_patch.py",
@@ -16663,8 +16663,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_extra_joints.py",
-          "sha256": "15ccac9ea41fe6aacdd6df7a89d5d305a281f1ddfc43126d5c35306b0a933236",
-          "size": 12393
+          "sha256": "f57343c421b51ccf9cfd1150238df003a092a28a2e9d31851172dad032dc1fa3",
+          "size": 12756
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_fall.py",
@@ -16978,8 +16978,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
-          "sha256": "311bd3ccddba391301da7ba95669cf270109b16d863c4030937ac51c370ffef7",
-          "size": 84256
+          "sha256": "4ea6c5aeb890b57a816cbac4659cba035365ff1d57f7d9c89f1bec41ce87a46d",
+          "size": 84550
         },
         {
           "path": ".tools/3d_pipeline/tripo/proportion_check.py",
