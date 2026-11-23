@@ -157,6 +157,12 @@ Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip
 
 First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. For a winged unit repair it free: `py -3.13 -B .tools/3d_pipeline/tripo/arm_seat.py <the rigged export> --out <job folder>/inbox/<asset_slug>__rigged.glb`, then run `rig_check.py` on that file. It moves the arm joints onto the mesh's own arm and gives the wing skin to the shoulder for the route's wing chains, and every clip already applied keeps working. Do not press **Retry** on the Rig page instead: it charges 20, drops every applied clip, and on the devil its second rig was worse (91% of the skin on the head, no right hand joint). When `arm_seat.py` refuses or the check still fails, stop and ask before any paid step.
 
+When a fresh rig is needed (the asset's rig is lost or its retries degenerate: on the devil both retries bound over 90% of the skin to the head), rig a fresh asset instead of retrying:
+
+1. On the Model page press **Upload 3D Model** (free) and add the model's own export, `<job folder>/inbox/<asset_slug>__model.glb`.
+2. Tripo shows **Find the Best Angle** with the model seen from its side. Press **Confirm** without turning it. Turning it there rotated the devil's mesh a quarter turn against the skeleton Tripo then built, and the rig was unusable.
+3. Rig the new asset once (steps above), apply the clips again (the clips you made are under **AI Animation**, free), export, and run `rig_check.py` again.
+
 <!-- unarmed -->
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/inbox/<asset_slug>__rigged.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /unarmed -->
