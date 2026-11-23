@@ -275,7 +275,7 @@ def plan_effects(job: Path, registration: wiring.Registration, entity_block: str
 
 def add_particle_files(mod_root: Path, particles: Dict[str, Any], plan: wiring.Plan) -> None:
     for rel, text in particles.get("files", []):
-        data = text.encode("utf-8")
+        data = text if isinstance(text, bytes) else text.encode("utf-8")
         dest = mod_root / rel
         status = "create" if not dest.is_file() else ("unchanged" if dest.read_bytes() == data else "update")
         plan.items.append(wiring.PlanItem("block", rel, status, "burn particle", payload=data))

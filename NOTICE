@@ -23,3 +23,9 @@ not assign them new licensing terms or claim third-party permission.
 
 The feature-assets model tools retain the license included at
 .claude/skills/hoi4-feature-assets/tools/models/LICENSE.
+
+The particle sprite .tools/3d_pipeline/assets/particles/feather_1.dds was made
+with hoi4-imagegen from photographs on Wikimedia Commons, one of them under
+CC BY-SA 4.0 and one under CC BY 4.0. The sprite is distributed under CC BY-SA 4.0
+and not under Apache-2.0. Its references, authors and licenses are listed in
+.tools/3d_pipeline/assets/particles/CREDITS.md and its record feather_1.ledger.json.

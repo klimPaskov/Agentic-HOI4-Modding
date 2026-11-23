@@ -7,10 +7,12 @@
 `mod/gfx/models/<folder>/<name>`. The job (a job entry, or any JSON file) holds an `effects` block, at the top level or under `tripo`:
 
     "effects": {"profiles": ["tank_cannon", "tank_wreck"], "setting": ["gunpowder"],
-                "colour": {"spell_swirl": [90, 200, 255]}, "frames": {"cast_hand_r": 31}}
+                "colour": {"spell_swirl": [90, 200, 255]}, "frames": {"cast_hand_r": 31},
+                "sprites": {"feather": "refs/feather.dds"}}
 
 `profiles` are keys of `config/effects.json`. `setting` says what the unit's world has (`gunpowder`, `magic`, `fire_creature`): a profile
-that needs what the setting lacks is refused (EFFECT-FIT, D-127). `colour` overrides an adapted particle's colour, `frames` a slot's frame.
+that needs what the setting lacks is refused (EFFECT-FIT, D-127). `colour` overrides an adapted particle's colour, `frames` a slot's frame, `sprites` names the sprite files a particle with a
+new texture needs (made by hoi4-imagegen, its provenance record beside it).
 With `--preset`, a profile the preset does not list in its `effects` is refused too.
 
 It writes the new locators into the `.mesh`, the plan `<stem>_effects.json` beside it, and then:
@@ -114,10 +116,13 @@ def main(argv: Optional[List[str]] = None) -> int:
                 files, problems = unit_effects.particle_files(plan, game)
                 if problems:
                     raise unit_effects.EffectsError("; ".join(problems))
-                for rel, text in files:
+                for rel, content in files:
                     dest = Path(args.mod_root) / rel
                     dest.parent.mkdir(parents=True, exist_ok=True)
-                    dest.write_text(text, encoding="utf-8", newline="\n")
+                    if isinstance(content, bytes):
+                        dest.write_bytes(content)
+                    else:
+                        dest.write_text(content, encoding="utf-8", newline="\n")
         found = unit_effects.findings(folder, stem, plan, game=game, allowed=allowed)
     except (unit_effects.EffectsError, OSError, json.JSONDecodeError, KeyError) as error:
         print(f"effects: {error}", file=sys.stderr)

@@ -372,6 +372,7 @@ def scroll(clip, frame):
 
 def render(clip, frames):
     rows = []
+    prepare_tracks(clip, frames)
     for frame in frames:
         scene.frame_set(frame)
         scroll(clip, frame)
@@ -401,7 +402,18 @@ STANDIN = {"fire": {"count": 24, "life": 0.8, "rise": 0.45, "size": (0.10, 0.05)
            "gunsmoke": {"count": 10, "life": 1.5, "rise": 0.06, "size": (0.05, 0.16), "colour": (0.42, 0.41, 0.4), "alpha": 0.6, "strength": 0.0},
            "flash": {"count": 4, "life": 0.1, "rise": 0.0, "size": (0.09, 0.05), "colour": (1.0, 0.62, 0.2), "alpha": 1.0, "strength": 3.0},
            "spell": {"count": 14, "life": 0.45, "rise": 0.08, "size": (0.07, 0.02), "colour": (0.47, 0.59, 1.0), "alpha": 0.95, "strength": 8.0},
-           "blast": {"count": 18, "life": 1.0, "rise": 0.12, "size": (0.22, 0.45), "colour": (1.0, 0.5, 0.12), "alpha": 0.85, "strength": 5.0}}
+           "blast": {"count": 18, "life": 1.0, "rise": 0.12, "size": (0.22, 0.45), "colour": (1.0, 0.5, 0.12), "alpha": 0.85, "strength": 5.0},
+           # vanilla's leaflet fall: 3 subsystems emitting 2 a second, each feather living 4 s, size 1.0 (0.15 of a unit's height at scale 1)
+           "feather": {"count": 18, "rate": 2.0, "life": 4.0, "rise": 0.0, "to_ground": True, "spread": 0.015, "drift": 0.6, "roll": True, "size": (0.15, 0.13),
+                       "colour": (0.92, 0.91, 0.88), "alpha": 1.0, "strength": 0.0}}
+# A rule with `to_ground` falls from its birth point to the ground over its life, as vanilla's leaflets fall 8 units to the ground in
+# their 4 s (a slow drift read as feathers glued to the wing in a fresh review). `roll` turns each billboard by its own angle in its
+# plane, so the sprites do not read as a row of identical streaks.
+# A rule with `rate` emits like the game: billboard k is born at start + k / rate and lives `life`. The rate is per kept subsystem of
+# the particle (`keep_subsystems`): vanilla's leaflet fall emits 2 a second from each. Otherwise `count` billboards cycle
+# through the emission at evenly spread phases. A particle released into the world (`reset_placement`, local_space no) starts where its
+# locator was at its birth and then falls on its own: a first try drew it at the locator's current place, and two fresh reviews read the
+# feathers as glued to the beating wing.
 # The burn's fire and smoke are sized on the model's largest extent, as they were reviewed. An effect is sized on the model's height: a
 # demon's wingspan made a claw's flame rise far above its head as a string of beads (fresh review of the first effects sheet).
 _mesh_path = Path(request["mesh"])
@@ -414,11 +426,16 @@ for particle in (burn_plan or {}).get("particles", []):
     emitters.append({"clip": burn_plan.get("clip"), "locator": burn_plan.get("locator"), "bone": burn_plan.get("locator_bone"),
                      "time": float(particle["time"]), "duration_s": float(particle["duration_s"]), "kind": particle["standin"], "colour": None, "scale": 1.0})
 _scales = {p["name"]: float(p.get("scale", 1) or 1) for p in (effects_plan or {}).get("particles", [])}
+_sprites = {p["name"]: p["sprite"]["source"] for p in (effects_plan or {}).get("particles", []) if p.get("sprite")}
+_released = {p["name"] for p in (effects_plan or {}).get("particles", []) if p.get("reset_placement")}
+_subsystems = {p["name"]: len(p.get("keep_subsystems") or [1]) for p in (effects_plan or {}).get("particles", [])}
 for event in (effects_plan or {}).get("events", []):
     if event.get("standin") in STANDIN:
         kind = "gunsmoke" if event["standin"] == "smoke" and event.get("role") != "death" else event["standin"]  # a shot's puff, not a wreck's plume
         emitters.append({"clip": event["clip"], "locator": event["node"], "bone": event.get("bone"), "time": float(event["time"]),
                          "duration_s": float(event["duration_s"]), "kind": kind, "height": True, "still": bool(event.get("loop")),
+                         "sprite": _sprites.get(event["particle"]), "world": event["particle"] in _released,
+                         "streams": _subsystems.get(event["particle"], 1),
                          "colour": [c / 255.0 for c in event["colour"]] if event.get("colour") else None, "scale": _scales.get(event["particle"], 1.0)})
 _unique = {}
 for emitter in emitters:  # one set of billboards for a locator, clip, kind and start
@@ -427,7 +444,9 @@ emitters = list(_unique.values())
 standin = []  # (emitter, object, phase, offset)
 
 
-def _standin_material(kind, colour=None):
+def _standin_material(kind, colour=None, sprite=None):
+    """A soft round billboard, or the particle's own sprite (a feather) tinted by its colour when it has one."""
+
     rule = STANDIN[kind]
     colour = tuple(colour) if colour else rule["colour"]
     material = bpy.data.materials.new(f"standin_{kind}")
@@ -446,9 +465,38 @@ def _standin_material(kind, colour=None):
     alpha.operation = "MULTIPLY"
     alpha.inputs[1].default_value = rule["alpha"]
     tree.links.new(gradient.outputs["Fac"], alpha.inputs[0])
+    image = None
+    if sprite and Path(sprite).is_file():
+        try:
+            image = bpy.data.images.load(str(sprite), check_existing=True)
+        except RuntimeError:
+            image = None
+    if image is not None:
+        texture = tree.nodes.new("ShaderNodeTexImage")
+        texture.image = image
+        # each billboard carries a UV layer over its corners, so a rolled quad rolls its sprite (mapping by object coordinates kept
+        # every sprite upright, and the feathers read as a row of identical streaks)
+        tree.links.new(coords.outputs["UV"], texture.inputs["Vector"])
+        texture.extension = "CLIP"
+        tree.links.new(texture.outputs["Alpha"], alpha.inputs[0])
     material["standin_alpha"] = alpha.name
     emission = tree.nodes.new("ShaderNodeEmission")
     emission.inputs["Color"].default_value = (*colour, 1.0)
+    if image is not None:
+        tint = tree.nodes.new("ShaderNodeMix") if bpy.app.version >= (3, 4, 0) else tree.nodes.new("ShaderNodeMixRGB")
+        if tint.bl_idname == "ShaderNodeMix":
+            tint.data_type = "RGBA"
+            tint.blend_type = "MULTIPLY"
+            tint.inputs["Factor"].default_value = 1.0
+            tree.links.new(texture.outputs["Color"], tint.inputs[6])
+            tint.inputs[7].default_value = (*colour, 1.0)
+            tree.links.new(tint.outputs[2], emission.inputs["Color"])
+        else:
+            tint.blend_type = "MULTIPLY"
+            tint.inputs["Fac"].default_value = 1.0
+            tree.links.new(texture.outputs["Color"], tint.inputs["Color1"])
+            tint.inputs["Color2"].default_value = (*colour, 1.0)
+            tree.links.new(tint.outputs["Color"], emission.inputs["Color"])
     emission.inputs["Strength"].default_value = max(rule["strength"], 1.0)
     clear = tree.nodes.new("ShaderNodeBsdfTransparent")
     mix = tree.nodes.new("ShaderNodeMixShader")
@@ -480,10 +528,18 @@ if emitters:
     chance = random.Random(11)
     for number, emitter in enumerate(emitters):
         rule = STANDIN[emitter["kind"]]
-        material = _standin_material(emitter["kind"], emitter.get("colour"))
+        material = _standin_material(emitter["kind"], emitter.get("colour"), emitter.get("sprite"))
         for k in range(rule["count"]):
             plane = bpy.data.meshes.new(f"standin_{emitter['kind']}_{number}_{k}")
-            plane.from_pydata([(-0.5, -0.5, 0.0), (0.5, -0.5, 0.0), (0.5, 0.5, 0.0), (-0.5, 0.5, 0.0)], [], [(0, 1, 2, 3)])
+            corners = [(-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5)]
+            if rule.get("roll"):
+                turn = chance.uniform(0.0, math.tau)
+                corners = [(x * math.cos(turn) - y * math.sin(turn), x * math.sin(turn) + y * math.cos(turn)) for x, y in corners]
+            plane.from_pydata([(x, y, 0.0) for x, y in corners], [], [(0, 1, 2, 3)])
+            # the sprite follows the corners through their UVs, so a rolled quad shows a rolled sprite
+            layer = plane.uv_layers.new(name="UVMap")
+            for loop, (u, v) in zip(layer.data, [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]):
+                loop.uv = (u, v)
             plane.materials.append(material)
             obj = bpy.data.objects.new(f"standin_{emitter['kind']}_{number}_{k}", plane)
             scene.collection.objects.link(obj)
@@ -496,30 +552,70 @@ if emitters:
             standin.append((emitter, obj, k / rule["count"], offset))
 
 
+tracks = {}  # (clip, locator) -> {frame: the locator's world point}, for particles released into the world
+
+
+def prepare_tracks(clip, frames):
+    """Record where each released emitter's locator is on every frame of `clip` up to the last rendered one, so a particle can start at
+    its locator's place at its birth. Runs before the clip's tiles, which set their own frames again."""
+
+    for emitter in emitters:
+        if emitter.get("world") and emitter["clip"] == clip and (clip, emitter["locator"]) not in tracks:
+            track = {}
+            for frame in range(1, max(frames) + 1):
+                scene.frame_set(frame)
+                track[frame] = _locator_world(emitter)
+            tracks[(clip, emitter["locator"])] = track
+
+
+def _billboard_age(rule, phase, number, seconds, start, duration, streams=1):
+    """(age as a share of life, birth second) of one billboard at `seconds`, or None when it is not alive."""
+
+    if rule.get("rate"):
+        born = start + number / (rule["rate"] * streams)
+    else:
+        age = ((seconds - start) / rule["life"] + phase) % 1.0
+        born = seconds - age * rule["life"]
+    if born < start or born > start + duration or not born <= seconds <= born + rule["life"]:
+        return None
+    return (seconds - born) / rule["life"], born
+
+
 def update_standin(clip, frame):
     """Place the stand-in particles for this frame of `clip`; True when any is shown (the tile is then stamped)."""
 
     shown = False
     seconds = (frame - 1) / 30.0
     centres = {}
+    counted = {}
     for emitter, obj, phase, offset in standin:
         rule = STANDIN[emitter["kind"]]
+        number = counted.get(id(emitter), 0)
+        counted[id(emitter)] = number + 1
         start, duration = emitter["time"], emitter["duration_s"]
-        if clip != emitter["clip"] or not (start <= seconds <= start + duration + rule["life"]):
+        alive = _billboard_age(rule, phase, number, seconds, start, duration, emitter.get("streams", 1)) if clip == emitter["clip"] else None
+        if alive is None:
             obj.hide_render = True
             continue
-        age = ((seconds - start) / rule["life"] + phase) % 1.0
-        born = seconds - age * rule["life"]
-        if born < start or born > start + duration:
-            obj.hide_render = True
-            continue
+        age, born = alive
         key = emitter["locator"]
-        if key not in centres:
-            centres[key] = _locator_world(emitter)
+        if emitter.get("world") and (clip, key) in tracks:
+            track = tracks[(clip, key)]
+            centre = track.get(1 + int(round(born * 30.0)), track[max(track)]).copy()
+        else:
+            if key not in centres:
+                centres[key] = _locator_world(emitter)
+            centre = centres[key]
         grow = emitter.get("scale", 1.0)
         measure = (rest_high.z - rest_low.z) if emitter.get("height") else span
         size = measure * grow * (rule["size"][0] + (rule["size"][1] - rule["size"][0]) * age)
-        obj.location = centres[key] + offset * measure * 0.06 * grow + Vector((0.0, 0.0, 0.0 if emitter.get("still") else rule["rise"] * measure * grow * age * rule["life"]))
+        spread = rule.get("spread", 0.06) + rule.get("drift", 0.0) * age
+        if rule.get("to_ground"):
+            # gathering speed, on the ground three quarters into its life (a slow drift read as feathers stuck to the wing)
+            fall = -(centre.z - ground_z) * min(1.0, 1.6 * age * (0.6 + 0.4 * age))
+        else:
+            fall = 0.0 if emitter.get("still") else rule["rise"] * measure * grow * age * rule["life"]
+        obj.location = centre + offset * measure * spread * grow + Vector((0.0, 0.0, fall))
         obj.scale = (size, size, size)
         obj.hide_render = False
         shown = True
@@ -533,7 +629,7 @@ def update_standin(clip, frame):
                 except (AttributeError, TypeError):
                     pass
         stamp.use_stamp_note = True
-        stamp.stamp_note_text = "particles: stand-in"
+        stamp.stamp_note_text = f"particles: stand-in, frame {frame - 1}"  # the sheet's own frame label sits under the stamp
         stamp.stamp_font_size = max(8, int(scene.render.resolution_y / 30))
     return shown
 
