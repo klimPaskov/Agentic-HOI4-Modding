@@ -454,8 +454,18 @@ def _event_inserts(states: Sequence[Tuple[int, int, str]], events: Sequence[Soun
             if name not in targets:
                 continue
             _check_event_frame(event, name, clip_samples, stem)
-            inserts.setdefault(state_first, []).append(f'\t\tevent = {{ time = {event.frame} sound = {{ soundeffect = "{_quoted(event.soundeffect)}" }} }}')
+            inserts.setdefault(state_first, []).append(sound_event_line(event.soundeffect, event.frame))
     return inserts
+
+
+CLIP_FPS = 30.0  # the kit's clips and vanilla's units
+
+
+def sound_event_line(soundeffect: str, frame: int, fps: float = CLIP_FPS, indent: str = "\t\t") -> str:
+    """An entity sound event at a clip frame. An event's `time` is seconds of the clip, frame / fps: vanilla's destroyed landmarks fire
+    their first explosion within 0.2 s of the frame their clip hides the part (calibrate_effects.py, `time_unit`)."""
+
+    return f'{indent}event = {{ time = {round(frame / fps, 3):g} sound = {{ soundeffect = "{_quoted(soundeffect)}" }} }}'
 
 
 def _splice_state(lines: Sequence[str], position: int, last: int, added: Sequence[str]) -> List[str]:
@@ -520,6 +530,61 @@ def apply_particle_events(entity_block: str, state: str, events: Sequence[Dict[s
         out.append(lines[position])
         position += 1
     return "\n".join(out)
+
+
+_EVENT_NODE = re.compile(r'^\s*event\s*=\s*\{.*\bnode\s*=\s*"([^"]+)".*\bparticle\s*=')
+
+
+def apply_effect_events(entity_block: str, events: Sequence[Dict[str, Any]], sounds: Sequence[Dict[str, Any]] = (), add_states: Sequence[str] = ()) -> str:
+    """The effects layer's events (lib/unit_effects.py plan) written into the entity's states for their roles.
+
+    An existing particle event at one of the plan's locators in a target state is replaced (the static route copies vanilla's entity,
+    whose muzzle flash fires at time 0 while the kit's clip turns the turret before the shot). A role in `add_states` that the entity has
+    no state for gets one that plays the role's clip (a vanilla light tank has no death state). `sounds` are `{role, soundeffect, frame}`.
+    """
+
+    lines = entity_block.split("\n")
+    names = [name for _f, _l, name in _entity_states(lines)]
+    for role in add_states:
+        if role in names:
+            continue
+        closing = max(i for i, line in enumerate(lines) if line.strip() == "}") if any(l.strip() == "}" for l in lines) else len(lines)
+        anchor = next((i for i in range(len(lines) - 1, -1, -1) if _STATE_START.match(lines[i])), None)
+        insert_at = closing
+        if anchor is not None:
+            last = next(l for f, l, _n in _entity_states(lines) if f == anchor)
+            insert_at = last + 1
+        lines[insert_at:insert_at] = [f'\tstate = {{ name = "{role}"\t\t\tanimation = "{role}" animation_blend_time = 0.3 looping = no }}']
+        names.append(role)
+    states = _entity_states(lines)
+    nodes = {str(e["node"]) for e in events if e.get("node")}
+    inserts: Dict[int, List[str]] = {}
+    for first, _last, name in states:
+        role = name if name in {e["role"] for e in [*events, *sounds]} else STATE_TO_ROLE.get(name, name)
+        if name == "idle" and role != "idle":
+            continue
+        added = [_effect_line(e) for e in events if e["role"] in (name, role)]
+        added += [sound_event_line(s["soundeffect"], int(s["frame"])) for s in sounds if s["role"] in (name, role)]
+        if added:
+            inserts[first] = list(dict.fromkeys(added))
+    out: List[str] = []
+    position = 0
+    by_first = {first: last for first, last, _n in states}
+    while position < len(lines):
+        if position not in inserts:
+            out.append(lines[position])
+            position += 1
+            continue
+        last = by_first[position]
+        body = [lines[position]] + [line for line in lines[position + 1: last + 1] if not ((m := _EVENT_NODE.match(line)) and m.group(1) in nodes)]
+        out += _splice_state(body, 0, len(body) - 1, inserts[position])
+        position = last + 1
+    return "\n".join(out)
+
+
+def _effect_line(event: Dict[str, Any]) -> str:
+    node = f' node = "{_quoted(str(event["node"]))}"' if event.get("node") else ""
+    return f'\t\tevent = {{ time = {float(event.get("time", 0)):g}{node} particle = "{_quoted(str(event["particle"]))}" keep_particle = yes }}'
 
 
 def finite_particle(text: str, name: str, duration: float) -> str:

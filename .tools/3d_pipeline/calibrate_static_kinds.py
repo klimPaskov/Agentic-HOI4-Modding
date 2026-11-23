@@ -584,6 +584,19 @@ def tall_base_entry(kind: str, measured: List[dict]) -> Optional[dict]:
 SPAN_MARGIN = 0.05
 
 
+def size_row(entry: dict, kind: str, definitions) -> dict:
+    """One vanilla model's row in `size.per_model`: its main measure, entity scale and runtime measure, and for a vehicle its
+    footprint (the square root of its length times width), which a job naming the model is sized to (sk.with_size_reference)."""
+
+    scale = sk.entity_scale(definitions, entry["rel"])
+    measure = sk.main_measure(entry["points"], kind)
+    row = {"rel": entry["rel"], "measure": measure, "scale": scale["scale"] if scale else None,
+           "runtime": measure * scale["scale"] if scale else None}
+    if kind == "vehicle":
+        row["footprint"] = sk.footprint(entry["points"])
+    return row
+
+
 def span_bound_entry(kind: str, measured: List[dict], nearest_rel: str) -> Optional[dict]:
     """A vehicle's height and footprint (the square root of its length times its width) as shares of its own main
     measure, on the vanilla model nearest the kind's median size (the one the game-size sheet draws beside it)."""
@@ -628,15 +641,7 @@ def calibrate(game: Path) -> dict:
     kinds = {}
     for kind, refs in REFERENCES.items():
         measured = [measure_mesh(game, rel) for rel in refs if (game / rel).is_file()]
-        rows = []
-        for entry in measured:
-            scale = sk.entity_scale(definitions, entry["rel"])
-            measure = sk.main_measure(entry["points"], kind)
-            rows.append({"rel": entry["rel"], "measure": measure, "scale": scale["scale"] if scale else None,
-                         "runtime": measure * scale["scale"] if scale else None})
-            if kind == "vehicle":
-                # the footprint a job naming this model is sized to (sk.with_size_reference)
-                rows[-1]["footprint"] = sk.footprint(entry["points"])
+        rows = [size_row(entry, kind, definitions) for entry in measured]
         with_scale = [r for r in rows if r["runtime"]]
         runtime = float(np.median([r["runtime"] for r in with_scale]))
         reference = ENTITY_REFERENCE[kind] or min(with_scale, key=lambda r: abs(r["runtime"] - runtime))["rel"]

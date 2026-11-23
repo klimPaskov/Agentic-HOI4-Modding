@@ -139,6 +139,24 @@ class IntakeRecords(unittest.TestCase):
         self.assertRegex(source["sha256"], "^[0-9A-F]{64}$")
         self.assertEqual(receipt["task_id"], f"tripo-{source['sha256'].lower()[:12]}")
 
+    def test_a_new_export_needs_the_next_stage_and_the_error_names_it(self) -> None:
+        self.intake()
+        (self.inbox / "orc_test__rigged.glb").write_bytes(b"a second export with more clips")
+        with self.assertRaises(RuntimeError) as caught:
+            self.intake()
+        self.assertIn('set "generation_stage": "generation_2"', str(caught.exception))
+        self.assertEqual(tripo_intake.next_stage("generation_2"), "generation_3")
+        spec = tripo_spec()
+        spec["generation_stage"] = "generation_2"
+
+        def run(command, **_options):
+            return fake_prepare_output(Path(command[command.index("--out-dir") + 1]), command)
+
+        with mock.patch.object(tripo_intake.heavy_job.subprocess, "run", side_effect=run):
+            result = tripo_intake.run_intake(spec, self.inbox)
+        self.assertEqual(result["state"], "ingested")
+        self.assertTrue((self.job / "provider" / "tripo_intake_generation_2.json").is_file())
+
     def intake_with_report(self, **changes) -> tuple:
         def run(command, **_options):
             done = fake_prepare_output(Path(command[command.index("--out-dir") + 1]), command)

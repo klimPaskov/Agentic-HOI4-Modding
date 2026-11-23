@@ -46,6 +46,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 from lib import static_kinds as sk
 from lib import static_parts
 from lib import static_slab
+from lib import static_yard
 from lib import tripo_shape
 from tripo.static_mesh_ops import CARD_GROUP, CREASE_DEGREES, card_cost, crease_shading, double_inside_out_walls, hull_crumpled_pieces, remove_slivers, snap_to_source, thicken_cards
 
@@ -271,6 +272,22 @@ bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
 model.name = name
 model.data.name = f"{name}Shape"
 report["source_triangles"] = triangle_count(model)
+if not model.data.uv_layers:
+    if not request.get("geometry_only"):
+        raise SystemExit(f"{request['glb']} has no UVs; only a geometry check (--geometry-only) runs without them")
+    # an untextured trial: one UV for every corner on the flat placeholder map, so the stage's UV steps run
+    model.data.uv_layers.new(name="UVMap")
+    for loop in model.data.uv_layers.active.data:
+        loop.uv = (0.5, 0.5)
+    report["geometry_only_uvs"] = True
+
+# ---- 1a. a map building's yard: a thin skirt close to its footprint (lib/static_yard.py), before it is sized ----
+if kind == "building":
+    yard_points, yard_triangles = arrays(model)
+    yard_new, report["yard"] = static_yard.yard_skirt(yard_points, yard_triangles)
+    if report["yard"].get("yard"):
+        model.data.vertices.foreach_set("co", yard_new.astype(np.float32).ravel())
+        model.data.update()
 
 positions, triangles = arrays(model)
 samples = sk.surface_samples(positions, triangles)

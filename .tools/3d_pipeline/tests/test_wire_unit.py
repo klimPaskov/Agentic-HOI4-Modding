@@ -315,8 +315,8 @@ class SoundPlan(unittest.TestCase):
             job, mod = make_job(root, sound_plan=plan), make_mod(root)
             _code, result = run(job, mod)
             entity = (mod / "gfx/entities/ab_units.asset").read_text(encoding="utf-8")
-            self.assertIn('event = { time = 12 sound = { soundeffect = "ghoul_step" } }', entity)
-            self.assertIn('event = { time = 40 sound = { soundeffect = "ghoul_snarl" } }', entity)
+            self.assertIn('event = { time = 0.4 sound = { soundeffect = "ghoul_step" } }', entity)
+            self.assertIn('event = { time = 1.333 sound = { soundeffect = "ghoul_snarl" } }', entity)
             self.assertFalse(any(line.startswith("no sound plan") for line in result["warnings"]))
             self.assertTrue(any("ghoul_step" in line and "defined in no sound" in line for line in result["warnings"]))
             first = snapshot(mod)
@@ -346,7 +346,7 @@ class SoundPlan(unittest.TestCase):
     def test_a_state_that_already_has_an_event_gets_another_before_its_brace(self) -> None:
         entity = 'entity = {\n\tstate = { name = "move" animation = "move"\n\t\tevent = { sound = { soundeffect = "a" } }\n\t}\n}'
         result = wiring.apply_sound_events(entity, [wiring.SoundEvent("move", "b", 3)])
-        self.assertEqual(result.split("\n")[-3:], ['\t\tevent = { time = 3 sound = { soundeffect = "b" } }', "\t}", "}"])
+        self.assertEqual(result.split("\n")[-3:], ['\t\tevent = { time = 0.1 sound = { soundeffect = "b" } }', "\t}", "}"])
 
 
 class Fixture(unittest.TestCase):
@@ -647,13 +647,13 @@ class SoundEventText(unittest.TestCase):
         out = wiring.apply_sound_events(entity, [wiring.SoundEvent("move", 'say "hi"', 3)])
         self.assertIn('soundeffect = "say \\"hi\\""', out)
 
-    def test_a_sound_plan_warns_that_the_time_unit_is_unverified(self) -> None:
+    def test_a_sound_plan_writes_seconds_and_says_so(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             job, mod = make_job(root, sound_plan=[{"role": "move", "soundeffect": "ghoul_step", "frame": 12}]), make_mod(root)
             _code, result = run(job, mod)
-            self.assertTrue(any("unverified" in line and "time" in line for line in result["warnings"]), result["warnings"])
-            self.assertIn('event = { time = 12 sound = { soundeffect = "ghoul_step" } }', (mod / "gfx/entities/ab_units.asset").read_text(encoding="utf-8"))
+            self.assertTrue(any("frame / 30" in line and "time" in line for line in result["warnings"]), result["warnings"])
+            self.assertIn('event = { time = 0.4 sound = { soundeffect = "ghoul_step" } }', (mod / "gfx/entities/ab_units.asset").read_text(encoding="utf-8"))
 
 
 class RealChecks(unittest.TestCase):
