@@ -346,6 +346,17 @@ class ClipNames(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "matches no clip.*walk"):
             resolve_clip_name("run", self.CLIPS)
 
+    def test_a_role_longer_than_the_glb_name_limit_matches_the_cut_clip_name(self) -> None:
+        # Blender keeps 63 characters of a prompt name, so the export holds the cut name and the role gives the whole first words.
+        from lib.tripo import resolve_clip_name
+
+        role = "A robed necromancer is struck in the chest and staggers back one step"
+        cut = role[:63]
+        self.assertEqual(resolve_clip_name(role, [cut, "idle"]), cut)
+        self.assertEqual(resolve_clip_name(role, [cut, "idle", "walk"]), cut)
+        with self.assertRaisesRegex(ValueError, "matches no clip"):
+            resolve_clip_name("A robed necromancer is struck in the chest and lies down flat", [cut, "idle"])
+
     def test_a_prompt_length_name_becomes_a_name_the_blender_stage_accepts(self) -> None:
         from lib.tripo import safe_animation_name
 
