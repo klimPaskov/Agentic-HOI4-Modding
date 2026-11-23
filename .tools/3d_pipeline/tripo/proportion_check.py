@@ -20,8 +20,9 @@ Read the shares off the reference picture, in pixels, with the subject standing 
   subject's height from the feet to the top of the head, horns included and wings left out.
 - `--legs`: the height of the belly between the legs, over the same height.
 
-The model's shares are measured the way the rig measures it (`quadruped_layout.detect_landmarks` and `detect_neck` on the body without its
-wings, `lib/mount_size.winged_body`): the neck column from its base to the head's root, and the belly's height. A model with no neck
+The model's shares are measured on the body without its wings (`lib/mount_size.winged_body`): the neck from where it leaves the chest
+(`neck_base_z`, below the thin column `quadruped_layout.detect_neck` finds) to the head's root, and the belly's height
+(`detect_landmarks`). A model with no neck
 column the measure can find reads 0 and fails a picture that has a neck. Reading files only: no Blender, no cost.
 """
 
@@ -60,8 +61,40 @@ def model_proportions(points: np.ndarray, triangles: np.ndarray, winged: bool = 
     landmarks = ql.detect_landmarks(points[body])
     height = float(landmarks["height"])
     neck = ql.detect_neck(points[body], landmarks)
-    neck_share = (float(neck["head"][2]) - float(neck["base"][2])) / height if neck else 0.0
+    neck_share = (float(neck["head"][2]) - neck_base_z(points[body], landmarks, neck)) / height if neck else 0.0
     return {"neck": round(neck_share, 3), "legs": round(float(landmarks["belly_z"]) / height, 3)}
+
+
+# A slice of the front of the body that is this much deeper (front to back) than the neck column is the chest, not the neck.
+CHEST_DEPTH = 1.4
+
+
+def neck_base_z(points: np.ndarray, landmarks: dict, neck: dict) -> float:
+    """Where the neck leaves the shoulders: down from the thin column `detect_neck` finds until the front of the body, seen from the
+    side, grows deeper than the column by `CHEST_DEPTH`. A neck that flares into the chest (an S neck rising from the breast) keeps its
+    lower part, which the column alone leaves out: the remade Tripo dragon's neck reads 0.12 from its column and 0.20 from here."""
+
+    height = float(landmarks["height"])
+    step = 0.0125 * height
+    # the front of the body in a strip around the neck's middle, so wing roots and shoulder spikes off to the sides do not count
+    front = points[(points[:, 1] < float(landmarks["mid_y"])) & (np.abs(points[:, 0] - float(neck["base"][0])) < 0.1 * height)]
+
+    def depth(z: float) -> Optional[float]:
+        part = front[np.abs(front[:, 2] - z) < step]
+        return float(np.ptp(part[:, 1])) if len(part) >= 8 else None
+
+    base, head = float(neck["base"][2]), float(neck["head"][2])
+    column = [d for d in (depth(z) for z in np.arange(base, head, step)) if d is not None]
+    if not column:
+        return base
+    limit = CHEST_DEPTH * float(np.median(column))
+    z = base
+    while z - step > float(landmarks["belly_z"]):
+        found = depth(z - step)
+        if found is None or found > limit:
+            break
+        z -= step
+    return z
 
 
 def proportion_verdict(model: Dict[str, float], picture: Dict[str, float], limit: float = MAX_PROPORTION_DIFFERENCE) -> dict:

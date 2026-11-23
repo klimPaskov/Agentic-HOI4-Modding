@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- `tripo/proportion_check.py` measures a model's neck from where it leaves the chest, seen from the side, not from the top of its thin column. A neck that rises from the breast through a ruff of shoulder spikes read short: the remade Tripo dragon's long S neck read 0.12 of its height and now reads 0.23. The first dragon model's short neck still reads 0.12 and fails.
 - 3D references: the source-reference policy and the production guide's source gate now follow D-110. A real subject (a tank, ship, plane, uniform or building style) follows public-domain or openly licensed photographs, plans, museum pieces and period art, which may go to the image generator and are recorded with their licence and SHA-256. A fantasy subject keeps the designed-art rule, with the owner's drawings or the mod's art first, and the owner's drawings never leave the mod's private folder (D-123). A test keeps both texts in line with the picture review's own message.
 - Add `tripo/proportion_check.py`: before the rig, a quadruped model's neck and leg shares of its height against the same shares read off its picture (TRIPO-PROPORTION-PICTURE). The Tripo dragon's model kept 55% of its drawn neck, which four rig rounds could not pose into a strike.
 - The tank preset is proven on the M2A4 light tank at the D-83 bar (two runs, two fresh reviews each), with the known close-up limits of a Smart Mesh source listed in the preset.
