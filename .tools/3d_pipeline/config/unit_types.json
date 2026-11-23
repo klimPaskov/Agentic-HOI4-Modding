@@ -790,11 +790,11 @@
           "loop": true
         },
         "attack": {
-          "blender": "quadruped_charge",
+          "blender": "quadruped_rear",
           "loop": false
         },
         "defend": {
-          "blender": "quadruped_rear",
+          "blender": "quadruped_brace",
           "loop": false
         },
         "retreat": {

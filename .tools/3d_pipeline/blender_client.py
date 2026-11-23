@@ -685,6 +685,11 @@ class BlenderAdapterClient:
         target_armature_name: str,
         seat_lift: float = 0.06,
         slump: bool = False,
+        barrel: Optional[List[Dict[str, float]]] = None,
+        couch: bool = False,
+        top: Optional[List[Dict[str, Any]]] = None,
+        seconds: Optional[float] = None,
+        held: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         return self.call(
             "hoi4_blender_seat_rider_action",
@@ -696,6 +701,11 @@ class BlenderAdapterClient:
                 "target_armature_name": target_armature_name,
                 "seat_lift": seat_lift,
                 "slump": slump,
+                "barrel": list(barrel or []),
+                "couch": couch,
+                "top": list(top or []),
+                "seconds": seconds,
+                "held": held,
             },
         )
 

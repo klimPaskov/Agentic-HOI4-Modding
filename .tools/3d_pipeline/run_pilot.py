@@ -3771,6 +3771,18 @@ def _parts(held: Any) -> List[Dict[str, Any]]:
     return [part for part in (held if isinstance(held, list) else [held]) if part]
 
 
+def seated_ground_skip(unit: Optional[Dict[str, Any]]) -> Optional[Dict[str, str]]:
+    """The record that stands for the ground pass on a seated rider's clip (a unit type with `seated: true`), else None.
+
+    A seated rider sits on its mount's Saddle_Node (rider_seat.py put the pelvis on the origin): no ground is under it, and its death slumps in
+    the saddle while the mount's death lays it down. The ground pass put the zinnish lancer's defend (whose Hips has translation keys) back on
+    its feet, a hip's height above the saddle, and the standing death passes closed its astride legs (2026-11-23), so neither runs on it."""
+
+    if (unit or {}).get("seated"):
+        return {"skipped": "a seated rider: the seat step places it on the mount's Saddle_Node"}
+    return None
+
+
 def ground_exported_clip(mesh: Path, anim: Path, role: str, weapon: Any, humanoid: bool = True) -> Dict[str, Any]:
     """The Tripo route's last grounding rule, on the exported clip itself (lib/tripo_pose.py says why): the clip is resampled at the game's 30 frames a
     second after Blender grounded it at 24, so a foot dips between keys. Every frame's lowest point is put on the ground (a death is only lifted), the
@@ -4200,6 +4212,70 @@ def tripo_unit_stages(spec: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def rider_barrel(job: Path, spec: Dict[str, Any]) -> Optional[Dict[str, Dict[str, List[Dict[str, Any]]]]]:
+    """The mount a seated rider rides, measured beside its Saddle_Node in rider heights (lib/rider_fit.clip_profiles): for the rest pose
+    and each of the mount's exported clips, the barrel under the seat (the legs stand outside it) and the top ahead of it (the hands stay
+    above it), widest over the clip. `seat` names the mount's exported `folder`, its `stem` and the rider's entity `scale` in the mount's
+    mesh units (the mount's mount_size.json). None without a `seat` block: the legs then take the fixed aim."""
+
+    seat = spec.get("seat") or {}
+    if not seat.get("folder"):
+        return None
+    from lib import rider_fit
+
+    folder = Path(seat["folder"])
+    stem = str(seat.get("stem") or next(folder.glob("*.mesh")).stem)
+    mount, clips = rider_fit.load_unit(folder, stem)
+    rider_height = float(spec.get("blender_target_height_m", spec["target_height_m"])) * float(seat["scale"])
+    profiles = rider_fit.clip_profiles(mount, clips, rider_height)
+    write_json(job / "blender" / "reports" / "rider_barrel.json", {"mount": str(folder / f"{stem}.mesh"), "rider_height_in_mount_mesh": rider_height,
+                                                                  "scale": float(seat["scale"]), "profiles": profiles})
+    return profiles
+
+
+def seat_held(spec: Dict[str, Any], role: str) -> Optional[Dict[str, Any]]:
+    """The held weapon a seated rider carries (`seat.held`: its `bone` and `hand`, the haft's `carry` direction and its `couch` direction
+    as forward, outward on the hand's side and up), with the mount's node path through the role's mount clip when the job lets go of it
+    in that role (`tripo.weapon.release_roles`, lib/rider_fit.drop_inputs). None without a `seat.held` block."""
+
+    seat = spec.get("seat") or {}
+    held = seat.get("held")
+    if not held:
+        return None
+    out = {"bone": str(held.get("bone", "Weapon")), "hand": str(held.get("hand", "RightHand")),
+           "carry": [float(v) for v in held.get("carry", (0.0, 0.0, 1.0))], "couch": [float(v) for v in held["couch"]] if held.get("couch") else None}
+    if out["bone"] in released_bones(held_parts(spec), role) and seat.get("folder"):
+        from lib import rider_fit
+
+        folder = Path(seat["folder"])
+        stem = str(seat.get("stem") or next(folder.glob("*.mesh")).stem)
+        mount, clips = rider_fit.load_unit(folder, stem)
+        if role in clips:
+            rider_height = float(spec.get("blender_target_height_m", spec["target_height_m"])) * float(seat["scale"])
+            out["drop"] = rider_fit.drop_inputs(mount, clips[role], rider_height)
+    return out
+
+
+def seat_seconds(profiles: Optional[Dict[str, Any]], role: str) -> Optional[float]:
+    """The length a seated rider's role is cut to: the mount clip of the same role, for the roles that end with the mount's
+    (lib/rider_fit.TIMED_ROLES, TRIPO-RIDER-CLIP-LENGTH). None for the others or without a measured mount."""
+
+    from lib import rider_fit
+
+    if not profiles or role not in rider_fit.TIMED_ROLES or role not in profiles:
+        return None
+    return profiles[role].get("seconds")
+
+
+def seat_profile(profiles: Optional[Dict[str, Dict[str, List[Dict[str, Any]]]]], role: str) -> Dict[str, List[Dict[str, Any]]]:
+    """The barrel and top a rider's role is seated against: the mount clip of the same role (the game plays the rider's clip of a role
+    on the mount's), else the rest pose; empty without a measured mount."""
+
+    if not profiles:
+        return {"barrel": [], "top": []}
+    return profiles.get(role) or profiles["rest"]
+
+
 def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
     """Finish a Meshy-rigged unit of any humanoid type: one prepared body, every role retargeted onto it.
 
@@ -4258,6 +4334,7 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         if stale.name != "unit_base_pre_export.blend":
             stale.unlink()
     roles: Dict[str, Dict[str, Any]] = {}
+    profiles = rider_barrel(job, spec) if unit.get("seated") else None
     for action in spec["required_actions"]:
         role = action["role"]
         clip_role = action.get("reuse_role") or role
@@ -4282,7 +4359,16 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
         chain = imported_rel
         if unit.get("seated"):
             finished_rel = f"blender/checkpoints/unit_{role}_seated.blend"
-            finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, slump=bool(action.get("slump")))
+            # A lancer's attack is the couched lance (rider_seat.COUCH_ARMS, D-127): the job names its roles in seat.couch_roles.
+            couch = role in set((spec.get("seat") or {}).get("couch_roles") or [])
+            # `seat.lift`: the pelvis's height over the Saddle_Node in rider heights (0.06 by default). A rider whose thighs press into the
+            # saddle past TRIPO-RIDER-SUNK sits higher: the zinnish lancer's armoured thighs sank 6.7% at 0.06 and 4.5% to 5.6% at 0.08.
+            lift = float((spec.get("seat") or {}).get("lift", 0.06))
+            # the legs and hands are fitted to the mount as the paired mount clip moves it (a brace widens the barrel, lifts the withers)
+            profile = seat_profile(profiles, role)
+            finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, seat_lift=lift, slump=bool(action.get("slump")),
+                                                  barrel=profile["barrel"], top=profile["top"], couch=couch,
+                                                  seconds=seat_seconds(profiles, role), held=seat_held(spec, role))
         else:
             finished_rel = f"blender/checkpoints/unit_{role}_grounded.blend"
             # In a clip where the unit lets go of its weapon or shield (the job names the roles in tripo.weapon.release_roles and
@@ -4448,6 +4534,10 @@ def stage_runtime_files(job: Path, spec: Dict[str, Any], exports: Dict[str, Any]
         # as the standing reaction it is, then burnt: its heap, bone and locator join the mesh, and its plan is written beside the files.
         burning = (spec.get("tripo") or {}).get("death_kind") == "burn" and "death" in exports["animations"]
         for role in sorted(exports["animations"]):
+            skipped = seated_ground_skip(unit)
+            if skipped:
+                records[f"{stem}_{role}.anim"]["runtime_ground"] = skipped
+                continue
             records[f"{stem}_{role}.anim"]["runtime_ground"] = ground_exported_clip(staged / f"{stem}.mesh", staged / f"{stem}_{role}.anim",
                                                                                 "burn_stand" if burning and role == "death" else role, weapon_cfg,
                                                                                 humanoid=not tripo_quadruped(spec))

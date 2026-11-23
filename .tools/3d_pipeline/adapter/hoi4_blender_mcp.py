@@ -1158,8 +1158,13 @@ def hoi4_blender_seat_rider_action(
     target_armature_name: str,
     seat_lift: float = 0.06,
     slump: bool = False,
+    barrel: Optional[List[Dict[str, float]]] = None,
+    couch: bool = False,
+    top: Optional[List[Dict[str, Any]]] = None,
+    seconds: Optional[float] = None,
+    held: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Seat an imported humanoid action on horseback: pelvis on the attach origin, legs astride, upper body from the clip."""
+    """Seat an imported humanoid action on horseback: pelvis on the attach origin, legs astride outside the mount's measured barrel, upper body from the clip."""
 
     return _run(
         job_id,
@@ -1171,6 +1176,11 @@ def hoi4_blender_seat_rider_action(
             "target_armature_name": target_armature_name,
             "seat_lift": seat_lift,
             "slump": slump,
+            "barrel": list(barrel or []),
+            "couch": couch,
+            "top": list(top or []),
+            "seconds": seconds,
+            "held": held,
         },
     )
 

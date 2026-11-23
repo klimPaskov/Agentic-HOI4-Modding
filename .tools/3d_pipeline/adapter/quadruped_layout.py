@@ -216,6 +216,49 @@ def _floor_radii(legs: Dict[str, Dict[str, np.ndarray]]) -> None:
         joints["radius"] = np.asarray(max(float(joints["radius"]), floor))
 
 
+# The seat of an unloaded mount is the deepest dip of its back's top line between higher ground on both sides: on a riding horse the
+# seat between the saddle's pommel and cantle, on a bare back the hollow behind the withers. The top line is the highest point of each
+# SEAT_BIN slice of the body's mid-plane strip (SEAT_MID of the width either side), searched from SEAT_FROM to SEAT_TO of the span from
+# the front hooves' centre to the rear's. The lowest point is not the seat: the bare back behind a cantle lies lower than the seat. The
+# older rule (the 98th percentile height of a band at 0.3 of the span) put the node on a war saddle's pommel or cantle, so a rider sat
+# above the saddle.
+SEAT_MID = 0.05
+SEAT_BIN = 0.03
+SEAT_FROM = 0.15
+SEAT_TO = 0.6
+
+
+def seat_point(p: np.ndarray, cx: float, width: float, front_y: float, span: float, back_z: float) -> Tuple[float, float]:
+    """(y, height) of the seat: the lowest point of the back's top line over the saddle region (see SEAT_FROM)."""
+
+    strip = p[np.abs(p[:, 0] - cx) < SEAT_MID * width]
+    edges = np.arange(front_y + SEAT_FROM * span, front_y + SEAT_TO * span + 1e-9, SEAT_BIN * span)
+    tops: List[Tuple[float, float]] = []
+    for low, high in zip(edges[:-1], edges[1:]):
+        band = strip[(strip[:, 1] >= low) & (strip[:, 1] < high)]
+        if len(band):
+            tops.append(((low + high) / 2, float(band[:, 2].max())))
+    if len(tops) < 5:
+        y = front_y + 0.3 * span
+        band = p[(np.abs(p[:, 0] - cx) < 0.12 * width) & (np.abs(p[:, 1] - y) < 0.08 * span)]
+        return y, float(np.percentile(band[:, 2], 98)) if len(band) else back_z
+    heights = np.array([z for _, z in tops])
+    # a 3-slice median keeps one sparse slice (a strap's gap) from reading as the seat
+    smooth = np.array([np.median(heights[max(0, i - 1):i + 2]) for i in range(len(heights))])
+    # How deep each slice lies below the higher ground on both sides: the seat between pommel and cantle, the hollow behind the withers.
+    # The bare back behind a cantle is often lower than the seat, but nothing higher stands behind it in the window, so it is no dip.
+    left = np.maximum.accumulate(smooth)
+    right = np.maximum.accumulate(smooth[::-1])[::-1]
+    depth = np.minimum(left, right) - smooth
+    if float(depth.max()) <= 0.0:
+        y = front_y + 0.3 * span
+        index = int(np.argmin([abs(slice_y - y) for slice_y, _ in tops]))
+        return tops[index][0], float(smooth[index])
+    deep = np.flatnonzero(depth >= 0.9 * float(depth.max()))
+    index = int(deep[len(deep) // 2])
+    return tops[index][0], float(smooth[index])
+
+
 def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict[str, object]:
     """Find the hooves, belly, back, head, tail and saddle of a standing quadruped.
 
@@ -287,9 +330,7 @@ def detect_landmarks(points: np.ndarray, back_z: Optional[float] = None) -> Dict
             points_along.append(tip)
             tail = points_along
 
-    saddle_y = front_y + 0.3 * span
-    saddle_band = column[np.abs(column[:, 1] - saddle_y) < 0.08 * span]
-    saddle_z = float(np.percentile(saddle_band[:, 2], 98)) if len(saddle_band) else back_z
+    saddle_y, saddle_z = seat_point(p, cx, width, front_y, span, back_z)
 
     legs: Dict[str, Dict[str, np.ndarray]] = {}
     for end, side in LEGS:
@@ -500,6 +541,24 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
     in_leg = q[:, 2] < belly_z + 0.02 * h
     in_body = q[:, 2] > belly_z - 0.06 * h
     near_leg = _near_legs(q, legs, leg_keys, length)
+    # A runner's thigh and shoulder are muscle above the belly line: its hip and shoulder joints (the Upper bone's head, `top`) sit at the
+    # body's middle height. Held below the belly line, the Upper bone left that mass on the torso and the skin tore along the belly line
+    # as the leg swung (a Tripo light horse's trot stretched 44% of a hind leg's root, TRIPO-LEG-ROOT-STRETCH). So a runner's Upper bone
+    # also takes the skin of its own leg's side up to RUNNER_ROOT_BAND of the way from the belly to the back, within RUNNER_ROOT_REACH of
+    # the body's length of the leg's column in plan, and the distance falloff blends it with the torso there. A pillar leg (an elephant's)
+    # swings little and keeps the belly line.
+    runner = not leg_stance(lm)["graviportal"]
+    back_z = float(lm["back_z"])
+    thigh: Dict[str, np.ndarray] = {}
+    if runner:
+        for column, key in enumerate(leg_keys):
+            plan = np.linalg.norm(q[:, :2] - columns[column], axis=1)
+            # only outside RUNNER_ROOT_INNER of the leg column's distance from the mid-plane: the brisket between the forelegs and the
+            # skin between the hind legs stay the torso's (a rear stretched them when both legs claimed them)
+            centre_x = float(lm["centre_x"])
+            outside = np.abs(q[:, 0] - centre_x) >= RUNNER_ROOT_INNER * abs(float(columns[column][0]) - centre_x)
+            thigh[key] = ((nearest_leg == column) & (plan < RUNNER_ROOT_REACH * length) & outside
+                          & (q[:, 2] < belly_z + RUNNER_ROOT_BAND * (back_z - belly_z)))
     leg_base: Dict[int, np.ndarray] = {}
     for index, bone in enumerate(bones):
         if not bone.deform:
@@ -512,6 +571,8 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
                 mask &= q[:, 2] < belly_z
             leg_base[index] = mask
             allowed[:, index] = mask & near_leg[:, leg_keys.index(key)]
+            if name.endswith("_Upper") and key in thigh:
+                allowed[:, index] |= thigh[key]
         elif name.startswith("Tail_"):
             tail_root_y = float(np.asarray(lm["tail"][0])[1]) if lm.get("tail") else rear_y
             lying = q[:, 1] > float(lm["tail_ground_y"]) if lm.get("tail_ground_y") is not None else np.zeros(len(q), bool)
@@ -528,7 +589,12 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             allowed[:, index] = in_body
     _claim_leftovers(allowed, leg_base, q, distance, bones, rear_y + 0.06 * length, 0.2 * h)
     falloff = 0.02 * h
-    raw = np.where(allowed, 1.0 / np.power(distance + falloff, 4), 0.0)
+    power = np.full(len(q), 4.0)
+    if thigh:
+        # In a runner's root band the leg and the torso blend over a wider stretch of skin (a softer falloff), so the swing's strain
+        # spreads instead of tearing one row of edges.
+        power[np.any(np.stack(list(thigh.values())), axis=0)] = RUNNER_ROOT_POWER
+    raw = np.where(allowed, 1.0 / np.power(distance + falloff, power[:, None]), 0.0)
     order = np.argsort(-raw, axis=1)[:, :max_influences]
     picked = np.take_along_axis(raw, order, axis=1)
     picked[picked < picked[:, :1] * 0.02] = 0.0
@@ -563,6 +629,16 @@ DEFAULT_STYLE = {
 }
 LOOPING = {"quadruped_idle", "quadruped_walk", "quadruped_trot", "quadruped_gallop", "quadruped_flee"}
 LEG_REACH = 2.2
+RUNNER_ROOT_BAND = 1.0  # share of the way from the belly to the back a runner's thigh or shoulder skin reaches (skin_weights)
+RUNNER_DEATH_FOLD = 0.75  # a runner's dead legs fold this share of a full fold (the elephant's DEATH_FOLD is 0.6)
+RUNNER_GALLOP_NECK = 55.0  # degrees a runner's gallop (its retreat) raises the neck in alarm
+RUNNER_STRIDE = 1.5  # a runner's gait swing and flex over the generic gait's (pose_at)
+RUNNER_TROT_NECK = 40.0  # degrees a runner's trot carries its neck lower and forward than its stand (pose_at)
+RUNNER_HIP_SHARE = 0.3  # the share of a runner's leg swing its hip and shoulder take (pose_at), in the rear and the brace
+RUNNER_GAIT_HIP_SHARE = 0.6  # the same in a gait (walk, trot, gallop): at 0.3 the stride shortened and the trot read as the idle (TRIPO-MAP-READ 0.10 against 0.15)
+RUNNER_ROOT_INNER = 0.6  # of the leg column's distance from the mid-plane: the root band lies outside it
+RUNNER_ROOT_POWER = 2.0  # the distance falloff's power in a runner's root band (4 elsewhere)
+RUNNER_ROOT_REACH = 0.12  # of the body's length: how far in plan from the leg's column that skin lies
 # Pillar legs: a leg whose radius is more than GRAVIPORTAL of its length (the belly's height) is a graviportal leg, an
 # elephant's (0.22 to 0.25), not a runner's (a horse's is about 0.05). Its joints bend FLEX_REFERENCE over that share of a
 # runner's, it never gallops, and its attack is carried by the head.
@@ -837,14 +913,15 @@ def _winged_guard(pose: Dict[str, List[Rotation]], t: float, names: set) -> None
 WINGED_HIP_SHARE = 0.4
 
 
-def _hip_to_knee(pose: Dict[str, List[Rotation]]) -> None:
+def _hip_to_knee(pose: Dict[str, List[Rotation]], share: Optional[float] = None) -> None:
+    share = WINGED_HIP_SHARE if share is None else share
     for end, side in LEGS:
         upper, lower = leg_name(end, side, "Upper"), leg_name(end, side, "Lower")
         moved = sum(degrees for axis, degrees in pose.get(upper, []) if tuple(axis) == X_AXIS)
         if not moved:
             continue
-        pose[upper] = [(axis, degrees * WINGED_HIP_SHARE) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[upper]]
-        pose[lower] = pose.get(lower, []) + [(X_AXIS, moved * (1.0 - WINGED_HIP_SHARE))]
+        pose[upper] = [(axis, degrees * share) if tuple(axis) == X_AXIS else (axis, degrees) for axis, degrees in pose[upper]]
+        pose[lower] = pose.get(lower, []) + [(X_AXIS, moved * (1.0 - share))]
 
 
 def _winged_pose(style: str, frame: float, layout: Layout, ears: bool) -> Dict[str, List[Rotation]]:
@@ -924,9 +1001,12 @@ def leg_stance(landmarks: Dict[str, object]) -> Dict[str, float]:
     return {"ratio": ratio, "graviportal": ratio > GRAVIPORTAL, "flex": min(1.0, FLEX_REFERENCE / ratio) if ratio > 0 else 1.0, "neck": neck}
 
 
-def stance_style(style: str, landmarks: Dict[str, object]) -> str:
-    """A graviportal animal walks where a runner trots and flees at a trot (an elephant's amble) where a runner gallops."""
+def stance_style(style: str, landmarks: Dict[str, object], role: str = "") -> str:
+    """A graviportal animal walks where a runner trots and flees at a trot (an elephant's amble) where a runner gallops. An attack asked as
+    a rear stays a rear for every build (a mount attacks with vanilla's horse charge, the forelegs high: quadruped_rear)."""
 
+    if role == "attack" and style == "quadruped_rear":
+        return style
     return HEAVY_GAITS.get(style, style) if leg_stance(landmarks)["graviportal"] else style
 
 
@@ -963,7 +1043,11 @@ def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[s
     free: set = set()  # leg joints that bend as far as a runner's whatever the build
     has_tail = "Tail_01" in names
     if style in GAITS:
-        _gait(pose, _pillar_gait(GAITS[style], stance), t, has_tail)
+        gait = _pillar_gait(GAITS[style], stance)
+        if not stance["graviportal"] and RUNNER_STRIDE != 1.0:
+            # a runner's stride reaches farther than the generic gait's, so its legs show from the map camera (RUNNER_STRIDE)
+            gait = replace(gait, swing_degrees=gait.swing_degrees * RUNNER_STRIDE, flex_degrees=gait.flex_degrees * RUNNER_STRIDE)
+        _gait(pose, gait, t, has_tail)
         if style == "quadruped_walk" and stance["graviportal"]:
             # A heavy walk swings the head to each side once a stride, nods it twice, and its lifted feet fold fully (they carry no
             # weight). The body keeps its heading. Under a tall load the feet barely change the map silhouette, so a plain walk read as the
@@ -1016,9 +1100,31 @@ def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[s
     elif style == "quadruped_collapse":
         death = layout.landmarks.get("death") or {}
         roll = float(death.get("roll", load.get("roll_limit", COLLAPSE_ROLL) if load else COLLAPSE_ROLL))
-        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)), bool(load))
+        # a runner's undropped legs (choose_leg_drop) bend less than dropped ones, so they fold RUNNER_DEATH_FOLD of a full fold: at the
+        # elephant's 0.6 a Tripo light horse's dead legs bent 25.0 degrees (TRIPO-DEATH-STIFF-LEGS, at least 25)
+        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)), bool(load), float(death.get("leg_drop", 1.0)),
+                  DEATH_FOLD if stance["graviportal"] else RUNNER_DEATH_FOLD)
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
+    if style == "quadruped_trot" and not stance["graviportal"]:
+        # A runner trots with its neck carried lower and forward than in its head-up stand, and with a longer stride (RUNNER_STRIDE): the map
+        # camera looks from the front and above, where a leg's swing is foreshortened. A Tripo light horse's trot with the stand's neck and the
+        # generic stride changed 11% of the idle's silhouette (TRIPO-MAP-READ needs 15%), with both 17% (h4 export at a 20 degree neck). The
+        # lower neck also sets the trot apart from the alarmed gallop: at 20 and 45 degrees the retreat changed 14% of the trot's silhouette.
+        pose["Neck_01"] = pose.get("Neck_01", []) + [(X_AXIS, RUNNER_TROT_NECK)]
+    if style == "quadruped_gallop" and not stance["graviportal"]:
+        # A runner's gallop is its retreat: the head flies up in alarm and tosses, as the heavy flee's does, so it reads apart from the
+        # trot (a Tripo light horse's plain gallop changed 7% of the trot's silhouette from the map camera, TRIPO-MAP-READ needs 15%).
+        alarm = math.sin(math.pi * t) ** 0.5
+        pose["Head"] = pose.get("Head", []) + [(X_AXIS, -RETREAT_HEAD * alarm), (Z_AXIS, RETREAT_TOSS * math.sin(4 * math.pi * t))]
+        # with no load on its back a runner's neck rises with the head (RUNNER_GALLOP_NECK): from the map camera the raised head is what shows
+        pose["Neck_01"] = pose.get("Neck_01", []) + [(X_AXIS, -RUNNER_GALLOP_NECK * alarm)]
+    hip_share = RUNNER_GAIT_HIP_SHARE if style in GAITS else RUNNER_HIP_SHARE
+    if not stance["graviportal"] and style != "quadruped_collapse" and hip_share < 1.0:
+        # A runner's hip and shoulder take RUNNER_HIP_SHARE of each swing, the joint below the rest, so the foot goes where it went: at the
+        # whole swing the hind thigh and the shoulder tore from the flank (a Tripo light horse's trot and gallop stretched 26% to 41% of a
+        # leg root, TRIPO-LEG-ROOT-STRETCH, offline). The winged quadruped's legs do the same (WINGED_HIP_SHARE).
+        _hip_to_knee(pose, hip_share)
     # A dying animal's legs give way whatever their build: the collapse bends them fully (a review saw pillar legs held straight read as
     # a rigid block tipping over).
     flex = 1.0 if style == "quadruped_collapse" else stance["flex"]
@@ -1227,6 +1333,17 @@ def choose_collapse(evaluate, start_rolls: Sequence[float]) -> Dict[str, object]
     return {"roll": best[1], "neck_lift": best[2], "torso_gap": round(best[0], 4), "tried": tried, "note": "no pair put the torso lowest"}
 
 
+def choose_leg_drop(legs_gap) -> float:
+    """The largest of LEG_DROP_SHARES whose legs end no lower than the torso by more than DOWN_TOLERANCE (`legs_gap(share)` gives the
+    legs' lowest point over the torso's, as a share of the height). A runner's long legs dropped toward the ground under its rolled body
+    hold it up; the elephant's short pillar legs keep the whole drop (it is never searched for them)."""
+
+    for share in LEG_DROP_SHARES:
+        if legs_gap(share) >= -DOWN_TOLERANCE:
+            return share
+    return LEG_DROP_SHARES[-1]
+
+
 def _held_back(pose: Dict[str, List[Rotation]], load: Dict[str, object]) -> Dict[str, List[Rotation]]:
     """A back strapped under a rigid load does not bend: the load rides the Spine, and Pelvis, Spine and Chest move as one."""
 
@@ -1237,7 +1354,8 @@ def _collapse_fall(t: float) -> float:
     return _smooth(max(0.0, min(1.0, (t - 0.2) / 0.45)))
 
 
-def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float, neck_lift: float = 0.0, loaded: bool = False) -> None:
+def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: float, neck_lift: float = 0.0, loaded: bool = False,
+              leg_drop: float = 1.0, death_fold: float = DEATH_FOLD) -> None:
     """The death: the legs buckle and fold, the body rolls `roll` degrees onto its side (less with a load, quadruped_load.roll_limit),
     and once it lies the shoulders, hips and elbows relax `COLLAPSE_RELAX` of their bend while the knees and hocks stay bent.
 
@@ -1256,7 +1374,7 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
     settle = _smooth(max(0.0, (t - 0.65) / 0.35))
     ease = 1.0 - COLLAPSE_RELAX * settle
     for end, side in LEGS:
-        fold = DEATH_FOLD * (1.0 if end == "Front" else COLLAPSE_HIND_FOLD)
+        fold = death_fold * (1.0 if end == "Front" else COLLAPSE_HIND_FOLD)
         pose[leg_name(end, side, "Upper")] = [(X_AXIS, (-25.0 if end == "Front" else 20.0) * buckle * fold * ease)]
         pose[leg_name(end, side, "Lower")] = [(X_AXIS, 50.0 * buckle * fold * ease)]
         pose[leg_name(end, side, "Cannon")] = [(X_AXIS, (70.0 if end == "Front" else -50.0) * buckle * fold * (1 - 0.3 * settle))]
@@ -1267,7 +1385,7 @@ def _collapse(pose: Dict[str, List[Rotation]], t: float, has_tail: bool, roll: f
         share = 1.0 if side == lower else DEATH_LEG_HANG_SHARE
         for segment, degrees in (DEATH_LEG_DROP if end == "Front" else DEATH_HIND_DROP).items():
             name = leg_name(end, side, segment)
-            pose[name] = pose.get(name, []) + [(Y_AXIS, sign * degrees * share * min(1.0, abs(roll) / 90.0) * fall)]
+            pose[name] = pose.get(name, []) + [(Y_AXIS, sign * degrees * share * leg_drop * min(1.0, abs(roll) / 90.0) * fall)]
     nod = 0.0 if loaded else 1.0
     pose["Neck_01"] = [(X_AXIS, (25.0 * buckle - 30.0 * settle) * nod), (Y_AXIS, -neck_lift * fall)]
     pose["Neck_02"] = [(Z_AXIS, 20.0 * settle * nod)]

@@ -1025,6 +1025,42 @@ def shield_bone(args) -> str:
     return ""
 
 
+# A seated rider (a unit type with `seated: true`, attached to its mount's Saddle_Node) is not a standing body. These rules judge a standing
+# one and do not apply (the reason is recorded in the report). The seat step's own checks are TRIPO-RIDER-SUNK and TRIPO-RIDER-OFF-SEAT,
+# run on the mount with --rider.
+SEATED_SKIPPED = {
+    "TRIPO-FOOT-BELOW-GROUND": "the legs hang below the saddle, the entity's origin (check_unit_files skips its ground rule for a seated rider too)",
+    "TRIPO-LOOP-STANDS": "a seated rider's move and retreat play its idle, and the mount's gait carries it (vanilla's riders do the same)",
+    "TRIPO-NOT-DOWN": "the seated death slumps in the saddle, and the mount's death lays it down",
+    "TRIPO-DEATH-FEET": "the seated death slumps in the saddle, and the mount's death lays it down",
+    "TRIPO-DEATH-HOVER": "the seated death slumps in the saddle, and the mount's death lays it down",
+    "TRIPO-DEATH-REST": "the seated death slumps in the saddle, and the mount's death lays it down",
+    "TRIPO-DEATH-SPLAY": "the seat step holds the thighs astride in every clip, the idle's split",
+}
+# Vanilla's riders have no attack clip: GER_infantry_cavalry_rider has idle and moving only, and the horse's charge carries the attack. The
+# rider's own strike and map read are reported, and judged by eye on the mount's sheets with the rider seated.
+SEATED_ADVISORY = {"TRIPO-MAP-READ", "TRIPO-ATTACK-NO-STRIKE"}
+
+
+def job_seated(args) -> bool:
+    """Whether the job's unit type is seated on a mount (config/unit_types.json `seated`)."""
+
+    if not (getattr(args, "jobs_config", None) and getattr(args, "slug", None)):
+        return False
+    job = json.loads(args.jobs_config.read_text(encoding="utf-8"))["jobs"][args.slug]
+    types = json.loads((PIPELINE_ROOT / "config" / "unit_types.json").read_text(encoding="utf-8"))["types"]
+    return bool((types.get(str(job.get("unit_type") or "")) or {}).get("seated"))
+
+
+def seated_filtered(findings: List[dict], seated: bool, numbers: dict) -> List[dict]:
+    """Drop the standing-body rules for a seated rider (SEATED_SKIPPED), recording each dropped finding and its reason in `numbers`."""
+
+    if not seated:
+        return findings
+    numbers["seated"] = {"skipped": [{"rule": item["rule"], "subject": item["subject"], "reason": SEATED_SKIPPED[item["rule"]]} for item in findings if item["rule"] in SEATED_SKIPPED]}
+    return [item for item in findings if item["rule"] not in SEATED_SKIPPED]
+
+
 def split_advisory(findings: List[dict], rules: set, reported: Sequence[dict] = ()) -> (List[dict], List[dict]):
     """(the findings that fail the unit, the ones only reported, `reported` among them)."""
 
@@ -1295,6 +1331,18 @@ def body_findings(mesh, anims: Dict[str, object], numbers: dict, held_bones: Seq
     return findings + found
 
 
+def rider_findings(args, mesh, anims: Dict[str, object]) -> tuple:
+    """The rider played on the mount's Saddle_Node through every mount clip (lib/rider_fit.py)."""
+
+    from lib import rider_fit
+
+    folder = args.rider.resolve()
+    stem = args.rider_stem or next(folder.glob("*.mesh")).stem
+    rider, rider_clips = rider_fit.load_unit(folder, stem)
+    roles = dict(pair.split("=", 1) for pair in args.rider_roles)
+    return rider_fit.seat_findings(rider_fit.seat_report(mesh, dict(anims), rider, rider_clips, args.rider_scale, roles))
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("folder", type=Path)
@@ -1312,6 +1360,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--slug")
     parser.add_argument("--json", type=Path)
+    parser.add_argument("--rider", type=Path, help="a mount's rider: the folder of the rider entity's .mesh and .anim files, seated on the Saddle_Node (TRIPO-RIDER-SUNK, TRIPO-RIDER-OFF-SEAT)")
+    parser.add_argument("--rider-stem", help="the rider's file stem, when its folder holds several")
+    parser.add_argument("--rider-scale", type=float, default=1.0, help="the rider entity's scale in the mount's mesh units (rider_entity_scale in mount_size.json)")
+    parser.add_argument("--rider-roles", nargs="*", default=[], metavar="ROLE=RIDER_ROLE", help="the rider clip each mount role plays, for example move=idle")
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
     findings, numbers = [], {}
@@ -1328,6 +1380,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         found, numbers["plates"] = plate_findings(mesh, anims)
         findings += found
     findings += body_findings(mesh, anims, numbers, [args.weapon_bone, args.shield_bone], job_posture(args), args.weapon_bone, wings or None)
+    if args.rider and quadruped_checks.is_quadruped(mesh):
+        found, numbers["rider"] = rider_findings(args, mesh, anims)
+        findings += found
     if not args.weapon_bone and not quadruped_checks.is_quadruped(mesh):
         found, numbers["hands"] = hands_findings(mesh, anims)
         findings += found
@@ -1340,7 +1395,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         findings += found
     findings += weapon_stage_findings(args, mesh, anims, numbers)
     findings = burn_filtered(findings, burn)
-    findings, advisory = split_advisory(findings, advisory_rules(args), side_advisory)
+    seated = job_seated(args)
+    findings = seated_filtered(findings, seated, numbers)
+    findings, advisory = split_advisory(findings, advisory_rules(args) | (SEATED_ADVISORY if seated else set()), side_advisory)
     report = {"findings": findings, "advisory": advisory, "numbers": numbers}
     if args.json:
         args.json.write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")

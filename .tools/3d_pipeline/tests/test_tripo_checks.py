@@ -228,5 +228,41 @@ class Thresholds(unittest.TestCase):
         self.assertEqual([i for i, value in enumerate(series) if value > limit], [30])
 
 
+class SeatedRider(unittest.TestCase):
+    """A seated rider is not judged as a standing body (tripo_checks.SEATED_SKIPPED), and its attack's strike and map read are reported only."""
+
+    def jobs(self, folder: Path, unit_type: str) -> Path:
+        import json
+
+        path = folder / "jobs.json"
+        path.write_text(json.dumps({"jobs": {"x": {"unit_type": unit_type}}}), encoding="utf-8")
+        return path
+
+    def test_the_rider_type_is_seated_and_a_soldier_is_not(self) -> None:
+        import argparse
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            for unit_type, seated in (("rider", True), ("infantry", False)):
+                args = argparse.Namespace(jobs_config=self.jobs(Path(tmp), unit_type), slug="x")
+                self.assertEqual(TC.job_seated(args), seated, unit_type)
+        self.assertFalse(TC.job_seated(argparse.Namespace(jobs_config=None, slug=None)))
+
+    def test_standing_rules_are_dropped_with_their_reason_and_the_rest_kept(self) -> None:
+        findings = [{"rule": "TRIPO-FOOT-BELOW-GROUND", "subject": "r_idle"}, {"rule": "TRIPO-NOT-DOWN", "subject": "r_death"},
+                    {"rule": "TRIPO-WAIST-TWIST", "subject": "r_defend"}]
+        numbers: dict = {}
+        kept = TC.seated_filtered(findings, True, numbers)
+        self.assertEqual([item["rule"] for item in kept], ["TRIPO-WAIST-TWIST"])
+        self.assertEqual({item["rule"] for item in numbers["seated"]["skipped"]}, {"TRIPO-FOOT-BELOW-GROUND", "TRIPO-NOT-DOWN"})
+        self.assertTrue(all(item["reason"] for item in numbers["seated"]["skipped"]))
+        self.assertEqual(TC.seated_filtered(findings, False, {}), findings)
+
+    def test_the_twist_and_hand_rules_still_judge_a_rider(self) -> None:
+        for rule in ("TRIPO-WAIST-TWIST", "TRIPO-LIMB-IN-TORSO", "TRIPO-LOOP-POP"):
+            self.assertNotIn(rule, TC.SEATED_SKIPPED)
+        self.assertEqual(TC.SEATED_ADVISORY, {"TRIPO-MAP-READ", "TRIPO-ATTACK-NO-STRIKE"})
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -377,11 +377,16 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     winged = bool(layout.landmarks.get("wings"))
     # a wing lies on the ground beside the dead body and a dragged tail along it: neither holds it up, and the tail is laid by its own rule
     thin = (EAR_PREFIX, WING_PREFIX, TAIL_PREFIX) if winged else (EAR_PREFIX,)
+    # A runner's long legs, dropped toward the ground under the rolled body, propped a Tripo light horse 27% of its height up at every roll
+    # (TRIPO-NOT-DOWN). Its roll is searched with the legs undropped, and the drop is then the largest share that keeps them no lower than
+    # the torso (quadruped_layout.choose_leg_drop), as a winged body's is.
+    runner = not winged and not ql.leg_stance(layout.landmarks)["graviportal"]
+    undropped = {"leg_drop": 0.0} if (winged or runner) else {}
 
     def evaluate(roll: float, lift: float):
         # a winged body's legs underneath start the search without their drop toward the ground (choose_winged_rest adds what fits): with
         # it a hoof held the Tripo dragon's body up at every roll, and the fallback rolled it only 34 degrees, the torso 17% up
-        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0} if winged else {})}
+        layout.landmarks["death"] = {"roll": roll, "neck_lift": lift, **undropped}
         pose_frame(last, 0.0)
         lowest = {name: z for name, z in _lowest_by_group(meshes, dominant).items() if not name.startswith(thin)}
         torso = min(lowest.get(name, math.inf) for name in TORSO)
@@ -389,6 +394,18 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
 
     chosen = ql.choose_collapse(evaluate, ql.roll_limits(layout.landmarks))
     layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"]}
+    if runner:
+        def legs_gap(share: float) -> float:
+            layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], "leg_drop": share}
+            pose_frame(last, 0.0)
+            lowest = _lowest_by_group(meshes, dominant)
+            torso = min(lowest.get(name, math.inf) for name in TORSO)
+            legs = min((z for name, z in lowest.items() if name.startswith(("Front_", "Rear_"))), default=torso)
+            return (legs - torso) / height
+
+        share = ql.choose_leg_drop(legs_gap)
+        layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], "leg_drop": share}
+        chosen = {**chosen, "leg_drop": share}
     if winged:
         def rest(**parts: float) -> Dict[str, float]:
             layout.landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], **parts}
@@ -479,7 +496,7 @@ def author_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     landmarks = _landmarks_from_payload(np.zeros((0, 3)), {"landmarks": json.loads(rig["hoi4_quadruped_landmarks"])})
     layout = ql.build_layout(landmarks)
     meshes = h["mesh_objects"]()
-    asked, style = style, ql.stance_style(style, landmarks)  # a graviportal animal never gallops
+    asked, style = style, ql.stance_style(style, landmarks, role)  # a graviportal animal never gallops
     total = ql.frame_count(style)
     loop = style in ql.LOOPING
     last = total if loop else total - 1

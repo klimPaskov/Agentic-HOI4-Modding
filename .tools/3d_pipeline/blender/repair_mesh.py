@@ -193,8 +193,11 @@ def bridge_pairs(edges, weights):
 
 # A side of a fusion with fewer than this share of the mesh's vertices (and at least SPECK_MIN of them) is no body part: it is a speck the rig
 # weighted to a far bone, and cutting it off leaves it floating. The Tripo dragon's run 3 kept one triangle by a forefoot, weighted to the neck,
-# that the cut left 2.3% of the height off the body (UNIT-LOOSE-PART, vanilla's parts stay within 2.0%).
-SPECK_SHARE = 0.001
+# that the cut left 2.3% of the height off the body (UNIT-LOOSE-PART, vanilla's parts stay within 2.0%). A Tripo light horse's tail strand
+# lay against its left hock (76 vertices, 0.6% of the mesh): cut off and left on the tail's last bone it swung 15% of the height off the
+# body in the death; bound to the leg it rests on it is hair lying against the hock. A real part the cut is for (an arm pressed into the
+# hips) is several percent of the mesh.
+SPECK_SHARE = 0.01
 SPECK_MIN = 8
 
 

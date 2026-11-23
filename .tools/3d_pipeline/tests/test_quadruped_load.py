@@ -17,6 +17,20 @@ import quadruped_layout as ql
 import quadruped_load as qload
 from lib import mount_size, unit_registration
 
+
+# The runner's own tuning (a longer stride, the hip share, the trot's neck, the gallop's raised neck, the dead legs' fold) set neutral, so a
+# pillar leg can be compared with the generic runner it is defined against.
+GENERIC_RUNNER = {"RUNNER_STRIDE": 1.0, "RUNNER_GAIT_HIP_SHARE": 1.0, "RUNNER_HIP_SHARE": 1.0, "RUNNER_TROT_NECK": 0.0,
+                  "RUNNER_GALLOP_NECK": 0.0, "RUNNER_DEATH_FOLD": ql.DEATH_FOLD}
+
+
+def generic_runner(test):
+    def wrapped(self, *args, **kwargs):
+        with mock.patch.multiple(ql, **GENERIC_RUNNER):
+            return test(self, *args, **kwargs)
+    wrapped.__name__, wrapped.__doc__ = test.__name__, test.__doc__
+    return wrapped
+
 BOX_FACES = np.array([[0, 2, 1], [0, 3, 2], [4, 5, 6], [4, 6, 7], [0, 1, 5], [0, 5, 4], [1, 2, 6], [1, 6, 5], [2, 3, 7], [2, 7, 6], [3, 0, 4], [3, 4, 7]])
 
 
@@ -165,6 +179,7 @@ class LoadedPoses(unittest.TestCase):
 
 
 class PillarLegs(unittest.TestCase):
+    @generic_runner
     def test_pillar_legs_bend_less_and_never_gallop(self) -> None:
         rng = np.random.default_rng(5)
         parts = [rng.normal((x, y, z), 0.03, (300, 3)) for x in (-0.25, 0.25) for y in (0.0, 1.6) for z in np.linspace(0.05, 0.95, 4)]
@@ -186,12 +201,24 @@ class PillarLegs(unittest.TestCase):
         rear = ql.pose_at("quadruped_rear", 16, ql.build_layout(heavy))["__root_pitch__"][0][1]
         self.assertAlmostEqual(rear, ql.pose_at("quadruped_rear", 16, ql.build_layout(runner))["__root_pitch__"][0][1] * ql.HEAVY_PITCH, places=6)
         lift = ql.pose_at("quadruped_rear", 16, ql.build_layout(heavy))["Front_Left_Upper"][0][1]
-        self.assertAlmostEqual(lift, ql.pose_at("quadruped_rear", 16, ql.build_layout(runner))["Front_Left_Upper"][0][1] * ql.HEAVY_PITCH * ql.HEAVY_REACH, places=6)
+        # against a runner's whole reach, before its hip share moves part of it to the elbow (RUNNER_HIP_SHARE)
+        saved = ql.RUNNER_HIP_SHARE
+        try:
+            ql.RUNNER_HIP_SHARE = 1.0
+            whole = ql.pose_at("quadruped_rear", 16, ql.build_layout(runner))["Front_Left_Upper"][0][1]
+        finally:
+            ql.RUNNER_HIP_SHARE = saved
+        self.assertAlmostEqual(lift, whole * ql.HEAVY_PITCH * ql.HEAVY_REACH, places=6)
         light, pillar = ql.build_layout(runner), ql.build_layout(heavy)
-        for frame in range(0, 20, 4):
-            a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)
-            self.assertAlmostEqual(b["Front_Left_Cannon"][0][1], a["Front_Left_Cannon"][0][1] * stance["flex"], places=6)
-            self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1] * ql.PILLAR_SWING / ql.GAITS["quadruped_trot"].swing_degrees, places=6)
+        saved = ql.RUNNER_GAIT_HIP_SHARE
+        try:
+            ql.RUNNER_GAIT_HIP_SHARE = 1.0  # the runner's whole swing, before its hip share moves part of it below
+            for frame in range(0, 20, 4):
+                a, b = ql.pose_at("quadruped_trot", frame, light), ql.pose_at("quadruped_trot", frame, pillar)
+                self.assertAlmostEqual(b["Front_Left_Cannon"][0][1], a["Front_Left_Cannon"][0][1] * stance["flex"], places=6)
+                self.assertAlmostEqual(b["Front_Left_Upper"][0][1], a["Front_Left_Upper"][0][1] * ql.PILLAR_SWING / ql.GAITS["quadruped_trot"].swing_degrees, places=6)
+        finally:
+            ql.RUNNER_GAIT_HIP_SHARE = saved
 
 
 class MountSize(unittest.TestCase):
