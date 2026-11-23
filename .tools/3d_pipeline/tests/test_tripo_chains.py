@@ -872,9 +872,9 @@ class RoundFourRules(unittest.TestCase):
         # a lean that keeps every bone under the cap is left alone
         np.testing.assert_allclose(C.tilt_limited_carry(heading, rest, rest, UP, 10.0), heading)
 
-    # The sha256 of the membrane wing's quaternions below, captured from the kit's code before the feathered-wing rules (main 255614b,
+    # The sha256 of the membrane wing quaternions below (rounded to 5 places: Linux and Windows differ past 1e-9), captured from the kit's code before the feathered-wing rules (main 255614b,
     # 2026-11-23). The devil and the dragon depend on membrane wings: any change to them must be deliberate and change this value.
-    MEMBRANE_GOLDEN = "8c696603ffd1b9b3977c7f658cafd5a8bf0e9971547591ea2f0aa9a36603aaaf"
+    MEMBRANE_GOLDEN = "d9aea3d149a536f0b8e7832069bcc56ff573d9358cf9ef816f9faff96647dfca"
 
     def membrane_quaternions(self, thick):
         lateral = np.cross(UP, FRONT)
@@ -907,7 +907,7 @@ class RoundFourRules(unittest.TestCase):
         import hashlib
 
         out = self.membrane_quaternions(None)
-        digest = hashlib.sha256(b"".join(np.round(out[key], 9).tobytes() for key in sorted(out))).hexdigest()
+        digest = hashlib.sha256(b"".join((np.round(out[key], 5) + 0.0).tobytes() for key in sorted(out))).hexdigest()
         self.assertEqual(digest, self.MEMBRANE_GOLDEN)
         self.assertEqual(self.membrane_quaternions(False).keys(), out.keys())
         for key in out:
