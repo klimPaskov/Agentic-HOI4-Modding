@@ -831,17 +831,46 @@ class SizeReferenceTests(unittest.TestCase):
         contract = sk.kind_contract("vehicle")
         sized = sk.with_size_reference(contract, "USA_tank_light")
         row = next(r for r in contract["size"]["per_model"] if r["rel"].endswith("USA_tank_light.mesh"))
-        self.assertAlmostEqual(sized["size"]["runtime"], row["runtime"])
-        self.assertAlmostEqual(sized["size"]["source"] * contract["entity"]["scale"], row["runtime"])
+        # a vehicle is sized by its footprint to the named model's (D-134), its height following its own proportions
+        self.assertEqual(sized["size"]["basis"], "footprint")
+        self.assertAlmostEqual(sized["size"]["runtime"], row["footprint"] * row["scale"])
+        self.assertAlmostEqual(sized["size"]["source"] * contract["entity"]["scale"], row["footprint"] * row["scale"])
         self.assertEqual(sized["size"]["nearest"]["rel"], row["rel"])
-        self.assertLess(sized["size"]["source"], contract["size"]["source"])  # vanilla's US light tank is smaller than the median
         self.assertEqual(sk.with_size_reference(contract, row["rel"])["size"]["source"], sized["size"]["source"])
+        self.assertNotIn("span_bound", sized["size"])
+        self.assertIsNone(sk.span_bound(sized))
+        tall = np.array([[0.0, 0.0, 0.0], [1.0, 4.0, 2.2]])  # a tall tank, 1 wide and 4 long: its footprint is 2
+        self.assertAlmostEqual(sk.contract_measure(tall, sized), 2.0)
+        low = np.array([[0.0, 0.0, 0.0], [1.0, 4.0, 0.8]])  # the same ground, lower: the same size
+        self.assertAlmostEqual(sk.contract_measure(low, sized), sk.contract_measure(tall, sized))
+        self.assertNotEqual(sk.contract_measure(low, contract), sk.contract_measure(tall, contract))  # the median's measure sees the height
 
     def test_no_name_keeps_the_median_and_an_unknown_name_is_refused(self) -> None:
         contract = sk.kind_contract("vehicle")
         self.assertIs(sk.with_size_reference(contract, None), contract)
         with self.assertRaisesRegex(ValueError, "USA_tank_light"):
             sk.with_size_reference(contract, "M2A4")
+
+
+class RecoilTests(unittest.TestCase):
+    def test_a_long_gun_recoils_by_its_own_length_and_a_short_one_no_less_than_the_model_scale(self) -> None:
+        self.assertAlmostEqual(sk.recoil_share(1.5, 0.5), 3.0)  # a barrel longer than vanilla's at the model's scale
+        self.assertEqual(sk.recoil_share(0.2, 0.5), 1.0)  # the M2A4's short gun: vanilla's recoil at the model's scale
+
+
+class FlightClearanceTests(unittest.TestCase):
+    def test_a_blown_off_turret_passes_over_the_hull_and_lands_beside_it_unlifted(self) -> None:
+        hull = np.array([[x, y, z] for x in (0.0, 2.0) for y in (0.0, 4.0) for z in (0.0, 1.0)])
+        cube = np.array([[x, y, z] for x in (0.0, 1.0) for y in (0.0, 1.0) for z in (0.0, 1.0)])
+        # in its mount, then low over the hull (its base 0.4 under the roof), then beside the hull on the ground
+        path = [(0.5, 1.5, 0.9), (0.6, 1.5, 0.9), (1.2, 1.5, 0.6), (2.5, 1.5, 0.3), (3.5, 1.5, 0.0)]
+        free = [cube + np.array(p) for p in path]
+        flying = [False, True, True, True, True]
+        lifts = sk.flight_clearance(free, [hull] * len(path), flying, margin=0.05, ease=1)
+        self.assertEqual(lifts[0], 0.0)  # still in its mount
+        self.assertAlmostEqual(lifts[2], 1.0 + 0.05 - 0.6)  # over the hull: its base goes over the roof
+        self.assertEqual(lifts[-1], 0.0)  # landed beside the hull, on the ground
+        self.assertGreater(lifts[3], 0.0)  # eased out after the hull, not dropped at once
 
 
 if __name__ == "__main__":
