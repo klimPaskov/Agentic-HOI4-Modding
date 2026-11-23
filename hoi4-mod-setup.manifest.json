@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "fa1e6a2150eaca99ccdf13124151a19795eafa1c",
+  "generated_for_revision": "c98c15dcbe3c0ab1f955829838244b811e52145b",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15512,6 +15512,11 @@
           "size": 8645
         },
         {
+          "path": ".tools/3d_pipeline/lib/turned_prop.py",
+          "sha256": "01e3d8189f9c439cbceec656b3cdf88e6f602594b7a0157c366303559aaa09e8",
+          "size": 15889
+        },
+        {
           "path": ".tools/3d_pipeline/lib/unit_effects.py",
           "sha256": "62eb729ac34d817de04642f5ee07e0f30a89a68fcf5e21014491dc74e69195cf",
           "size": 39807
@@ -16802,6 +16807,11 @@
           "size": 4825
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_turned_prop.py",
+          "sha256": "8ac62e4a085c135cefafc7073f8c0727cc86638faafd9f90e4298c0cb3b68508",
+          "size": 3737
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_unit_effects.py",
           "sha256": "2cad292c8a9a946176688a744dc99f6d0bf496c0ce16b27deaf1488a17d045a9",
           "size": 11998
@@ -17040,6 +17050,11 @@
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
           "sha256": "de9d551d7e3c4ab3a77292a340758c83fd26a7cea0ed308794314742c39aed73",
           "size": 16787
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/turned_prop.py",
+          "sha256": "3debb2aa673a492ce9b1b4ce972129a11af144541d0b87a996d74f8f15157823",
+          "size": 2405
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
