@@ -59,7 +59,7 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-DEATH-LEG-KICK: once the hips of a humanoid's death are down, a boot rises more than 3.4% of the height above where it had come down
   (vanilla's deaths 2.7%): a leg kicks up from the lying body. `lib/tripo_kick.py`, whose settle `run_pilot` applies after the legs' settle.
 - TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the
-  height against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
+  body's height (wings left out) against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
   pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
 - TRIPO-MAP-READ: from the map camera at game size (the unit 60 pixels tall), a humanoid's attack or defend changes fewer pixels of the
   idle's silhouette than `map_read.MIN_HUMANOID_READ_PIXELS` (attack 300, defend 160) in its 90th percentile frame: it reads as the idle on the
