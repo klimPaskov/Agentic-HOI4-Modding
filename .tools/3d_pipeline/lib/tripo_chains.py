@@ -1727,6 +1727,32 @@ def wing_events(role: str, track: Optional[Dict[str, np.ndarray]], stage: dict) 
     return events
 
 
+def limited_wing_pose(plan: dict, left_rest: np.ndarray, rest: np.ndarray, now: Dict[str, float], flaps: np.ndarray, carry: np.ndarray,
+                      stage: dict, mirror: np.ndarray, rise_cap: Optional[float]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+    """One frame of a wing chain's pose: (`turns`, `posed` directions, the `carry` to use, whether the cap acted).
+
+    With a `rise_cap` (a feathered wing, see `tilt_limited_carry`) the wing follows the torso's lean only as far as the cap allows, and when
+    the lean is gone and its own up-stroke still passes the cap, every bone's up-stroke shrinks by one share (`now["rise_share"]`). Without
+    one the pose is what `wing_pose_rotations` gives."""
+
+    def turned(pose_now: Dict[str, float]) -> Tuple[np.ndarray, np.ndarray]:
+        rotations = wing_pose_rotations(left_rest, plan["chain_u"], plan["wing"], stage["up"], stage["front"], pose_now, flaps)
+        rotations = mirror @ rotations @ mirror if plan["side"] == "R" else rotations
+        return rotations, np.array([unit(t @ d) for t, d in zip(rotations, rest)])
+
+    turns, posed = turned(now)
+    if rise_cap is None:
+        return turns, posed, carry, False
+    limited = tilt_limited_carry(carry, posed, rest, stage["up"], rise_cap)
+    if rise_excess(limited, posed, rest, stage["up"], rise_cap) > RISE_TOLERANCE:
+        for share in np.arange(1.0 - TILT_SHARE_STEP * 2, -1e-9, -TILT_SHARE_STEP * 2):
+            now["rise_share"] = float(share)
+            turns, posed = turned(now)
+            if rise_excess(limited, posed, rest, stage["up"], rise_cap) <= RISE_TOLERANCE:
+                break
+    return turns, posed, limited, (not np.allclose(limited, carry, atol=1e-9)) or "rise_share" in now
+
+
 def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, capsule_axes: Optional[np.ndarray] = None,
                      track: Optional[Dict[str, np.ndarray]] = None, back_share: Optional[np.ndarray] = None) -> np.ndarray:
     """(frames, bones, 4) local quaternions of one wing chain for a role clip: the role's fold, face turn and flap (`WING_ROLES`, timed by
@@ -1768,25 +1794,7 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             if guard > 0:
                 root = (parents[f] @ np.linalg.inv(parent_rest) @ np.r_[np.asarray(wing["root"], float), 1.0])[:3]
                 now["raise"] = guard * knee_raise(wing, now, flaps[f], carry, root, plan["side"], stage, float(np.max(np.asarray(track["knees"])[f] @ unit(stage["up"]))))
-        def pose_turns(pose_now):
-            turned = wing_pose_rotations(left_rest, plan["chain_u"], wing, stage["up"], stage["front"], pose_now, flaps[f])
-            return mirror @ turned @ mirror if plan["side"] == "R" else turned
-
-        turns = pose_turns(now)
-        posed = np.array([unit(t @ d) for t, d in zip(turns, rest)])
-        lowered = False
-        if rise_cap is not None and slab:
-            limited = tilt_limited_carry(carry, posed, rest, stage["up"], rise_cap)
-            if rise_excess(limited, posed, rest, stage["up"], rise_cap) > RISE_TOLERANCE:
-                # the lean is gone and the wing's own up-stroke still rises past the cap: every bone's up-stroke shrinks by one share
-                for share in np.arange(1.0 - TILT_SHARE_STEP * 2, -1e-9, -TILT_SHARE_STEP * 2):
-                    now["rise_share"] = float(share)
-                    turns = pose_turns(now)
-                    posed = np.array([unit(t @ d) for t, d in zip(turns, rest)])
-                    if rise_excess(limited, posed, rest, stage["up"], rise_cap) <= RISE_TOLERANCE:
-                        break
-            lowered = not np.allclose(limited, carry, atol=1e-9) or "rise_share" in now
-            carry = limited
+        turns, posed, carry, lowered = limited_wing_pose(plan, left_rest, rest, now, flaps[f], carry, stage, mirror, rise_cap if slab else None)
         whole = float(now.get("face", 0.0)) > 0
         outward = unit(carries[f] @ (lateral if plan["side"] == "L" else -lateral))
         current = parents[f]
