@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "2c70dbb0b1a273b2603f3e24841006ec9ebc9cf9",
+  "generated_for_revision": "4234c57d2930c28d2d53477489b2d681fcb1eed1",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15178,8 +15178,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/clip_transfer.py",
-          "sha256": "1f25b2a49c464318eb17d0bf58d97de59df6785cbe50fe96bbfe0af29bace64e",
-          "size": 13162
+          "sha256": "06b920dad534e3982ffce5bba8f9dd08794b081ce071b5098e05b7aee30cc118",
+          "size": 13913
         },
         {
           "path": ".tools/3d_pipeline/lib/credits.py",
@@ -16223,8 +16223,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_clip_transfer.py",
-          "sha256": "ebedd6dab23235b3cbac1d5d0a710816f412dcdc7fa135093daeab625470d8ac",
-          "size": 3052
+          "sha256": "f6eff42917a732ecb1cded2ff65455403e1c592824d702e0ce6d20903f0734b2",
+          "size": 3750
         },
         {
           "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
