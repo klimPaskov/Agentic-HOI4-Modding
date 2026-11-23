@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "756c323394eabdd40a3319467128a412d4905463",
+  "generated_for_revision": "af707419bb39202b305c78f5d36adba8d44b0653",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15073,8 +15073,8 @@
         },
         {
           "path": ".tools/3d_pipeline/check_unit_files.py",
-          "sha256": "aa8b4f5b5938626e77c32bd87c4743f720a7f75de1dceabf8a98ca2595758cbc",
-          "size": 55109
+          "sha256": "05a64f5506a9c1a3a51c2063c168befa04483edb5803fa12464f5b9c9e3d7d1f",
+          "size": 55482
         },
         {
           "path": ".tools/3d_pipeline/config/asset_profiles.json",
@@ -15248,8 +15248,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_deform.py",
-          "sha256": "8f34262a97bd2202e2e880bb9735ca20e158aa69b73424dbcdc37dcebc1d41bc",
-          "size": 22422
+          "sha256": "265deaaca0401b07a039ba53993203af5967cee7f647e85566c0071c5240367d",
+          "size": 22921
         },
         {
           "path": ".tools/3d_pipeline/lib/pdx_ground.py",
@@ -16258,8 +16258,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_deformation_checks.py",
-          "sha256": "4f320cabd2ac872cb9ac02208fa19b0d917340e7dd3a1dc47bc39e21a3b53987",
-          "size": 17612
+          "sha256": "b191cef22edccded9ab358949cafa71f29a6cdcfe7723681b4f481c81db9331a",
+          "size": 18753
         },
         {
           "path": ".tools/3d_pipeline/tests/test_designer_preview.py",
