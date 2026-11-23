@@ -65,10 +65,10 @@ How to write `<every detail>`:
 <!-- static -->
 ## 2. Model (Smart Mesh, free while it shows Trial, else 100, and its texture 20)
 
-1. On the home page add the picture and pick **Clean Topology** (Smart Mesh). Set Triangle and polycount <polycount> (<polycount reason>).
+1. On the home page add the picture and pick **Clean Topology** (Smart Mesh). Set Triangle and polycount <polycount> (<polycount reason>). For a building, open **Topology**, turn off **Use Same Polygon Count** and give the four variants four counts up to the budget (6,000, 8,000, 10,000, 12,000).
 2. The button shows **Trial** or a struck price while this account has a Smart Mesh trial. Then it is free. Otherwise it must read **100**. Press it once. It makes 4 variants.
-3. Turn each variant and look at every side. Pick the one whose parts are cleanest and closest to the picture: round wheels and a round barrel, closed walls and roofs, no loose slabs or wedges.
-4. Press **Texture** on that variant. It must read **20**. Press it once.
+3. Turn each variant and look at every side. Pick the one whose parts are cleanest and closest to the picture: round wheels and a round barrel, closed walls and roofs, no loose slabs or wedges. Free check first: export each untextured variant (each from its own tab) and run `static_model.py <job> --out <folder> --geometry-only` on it. Texture only a variant whose check prints `geometry pass`.
+4. **Write the ledger line now.** The **Texture 20** button in the bottom bar starts the paid texture at the first click, with no settings dialog in between. Then press **Texture** on that variant once. It must read **20**.
 <!-- /static -->
 <!-- model -->
 ## 2. Model (30)
