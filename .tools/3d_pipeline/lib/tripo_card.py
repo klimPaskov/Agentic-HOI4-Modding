@@ -214,6 +214,7 @@ def _preset_problems(spec: Dict[str, Any], found: List[str]) -> str | None:
     unfitting = tripo_presets.unfitting_clips(spec)
     if unfitting:
         found.append(tripo_presets.unfitting_message(unfitting))
+    found.extend(tripo_presets.renamed_tile_clips(spec).values())
     from lib import anim_claims
 
     shared = anim_claims.job_conflicts(spec, unit_slug(spec))

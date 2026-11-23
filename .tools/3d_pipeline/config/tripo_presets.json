@@ -47,7 +47,7 @@
         "attack": ["every earlier clip under AI Animation made for this kind of unit"],
         "defend": ["hit_to_stomach", "hit_to_body_01"],
         "retreat": ["flee_01"],
-        "death": ["defeat", "defeat_02", "fall"]
+        "death": ["defeat_02", "fall"]
       },
       "made_clips": {
         "idle": "stands in place, weight shifting slowly from foot to foot, head turning to look around, arms loose at its sides",
@@ -84,7 +84,7 @@
         "attack": ["chop", "every earlier clip under AI Animation made for a weapon in one hand"],
         "defend": ["hit_to_stomach", "hit_to_body_01"],
         "retreat": ["flee_01"],
-        "death": ["defeat", "defeat_02", "fall"]
+        "death": ["defeat_02", "fall"]
       },
       "made_clips": {
         "idle": "stands ready, the <weapon> held low in its own <hand words>, shifting its weight and looking around",
@@ -126,7 +126,7 @@
         "attack": ["`chop` (with a weapon only)", "every earlier clip under AI Animation made for this body"],
         "defend": ["hit_to_stomach", "hit_to_body_01"],
         "retreat": ["flee_01"],
-        "death": ["defeat", "defeat_02", "fall"]
+        "death": ["defeat_02", "fall"]
       },
       "made_clips": {
         "idle": "a huge heavy body breathes slowly, shoulders rising and falling, swaying its weight from one leg to the other",
@@ -167,7 +167,7 @@
         "attack": ["slash", "chop", "every earlier clip under AI Animation made for this body"],
         "defend": ["hit_to_body_01", "hit_to_stomach", "hit_to_side"],
         "retreat": ["flee_01", "flee_02"],
-        "death": ["fall", "defeat", "defeat_02"]
+        "death": ["fall", "defeat_02"]
       },
       "made_clips": {
         "idle": "stands with its wings half folded behind it, breathing slowly, the wings twitching now and then",

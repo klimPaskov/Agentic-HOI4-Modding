@@ -271,8 +271,30 @@ class ClipsFitTheUnit(unittest.TestCase):
     def test_fitting_clips_pass(self):
         job = entry("armed_humanoid")
         job["tripo"]["roles"] = {"idle": "idle", "move": "walk", "attack": "A heavy warrior raises the axe", "defend": "hit_to_stomach",
-                                 "retreat": "flee_01", "death": "defeat_02"}
+                                 "retreat": "flee_01", "death": "defeat_03"}
         self.assertEqual(P.unfitting_clips(job), {})
+        self.assertEqual(P.renamed_tile_clips(job), {})
+
+    def test_a_role_naming_the_export_of_a_tile_that_is_no_candidate_is_refused(self):
+        # The goblin route test (2026-11-23) wrote the card's tile `defeat_02` as its death. In the file that name is the tile `defeat`,
+        # which stands looking up: the run's death never lay down (TRIPO-NOT-DOWN).
+        job = entry("armed_humanoid")
+        job["tripo"]["roles"] = {"idle": "idle", "move": "walk", "attack": "chop", "defend": "hit_to_stomach", "retreat": "flee_01",
+                                 "death": "defeat_02"}
+        found = P.renamed_tile_clips(job)
+        self.assertEqual(list(found), ["death"])
+        self.assertIn("tile `defeat`", found["death"])
+        self.assertIn("The tile `defeat_02` exports as `defeat_03`", found["death"])
+        self.assertTrue(any("tile `defeat`" in item for item in C.problems(job)))
+        import tripo_intake
+
+        with self.assertRaisesRegex(ValueError, "exported name of the tile"):
+            tripo_intake.refuse_unfitting_clips(job)
+
+    def test_the_clip_table_names_the_file_name_of_a_renamed_tile(self):
+        table = P.clip_table(P.get("humanoid"))
+        self.assertIn("`defeat_02` (in the file `defeat_03`)", table)
+        self.assertNotIn("`defeat`,", table)
 
     def test_step_6_checks_only_fitting_free_attacks(self):
         self.assertIn("--attack chop <earlier clips>", card("armed_humanoid"))
