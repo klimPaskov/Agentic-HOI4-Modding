@@ -9,6 +9,11 @@ For each unit, one contact sheet per animation clip and one for the rest pose. E
 - Rows are frames of the clip, in time order. The label above each tile names the clip, the frame and the view.
 - Columns are views: `front`, `left`, `back`, `right` (eye level), `hoi4` (the high three-quarter angle of the game's map camera), and `below` (from under the ground, looking up).
 
+Two more sheets show the unit at the sizes a player sees it:
+
+- `preview_size.png`: every clip in six frames, in tiles the size of the game's designer preview (249 pixels), where a player watches a unit's animations. Judge each clip's motion here and on the close-up sheets.
+- `game_size.png`: the unit about 60 pixels tall from the map camera and the front. Judge only the still model here: its size and silhouette beside a vanilla unit, and that it reads as the unit it is. Do not fail a clip because its motion is hard to read at this size.
+
 How the renders are made:
 
 - Back faces are hidden, as in the game. A part of the surface that is missing, or faces the wrong way, shows the **magenta background** through the model. Magenta anywhere inside the outline of the body, a limb, clothing or equipment is a hole.
@@ -18,7 +23,7 @@ How the renders are made:
 
 ## The quality bar
 
-A unit passes only when it would look as clean as a vanilla Hearts of Iron IV unit, at map zoom and in close-up:
+A unit passes only when it would look as clean as a vanilla Hearts of Iron IV unit in the game's designer preview and in close-up. Its still model must also read as the unit at map zoom:
 
 1. **No holes.** No magenta inside the model in any view or frame, including inside-out parts that vanish from one side.
 2. **No stretching or collapsing.** Limbs, torso, clothing and equipment keep their shape in every frame. No spikes, smears, rubbery stretching, twisted or pinched joints, flattened or crushed parts, or vertices pulled toward another body part.
@@ -26,7 +31,7 @@ A unit passes only when it would look as clean as a vanilla Hearts of Iron IV un
 4. **No floating, detached or clipping parts.** Every part stays attached. Limbs, weapons and props do not pass through the body or each other more than a real body would.
 5. **Feet meet the ground.** Standing and walking feet touch the green disc, neither hovering above it nor sinking below it. A falling or dead body lies on the ground, not under or above it.
 6. **The rig fits the body.** A quadruped moves like a quadruped, a rider sits a mount, a large creature moves with weight. Joints bend where the body has joints.
-7. **The clip reads as its role.** Idle is idle, move is a walk or run in place, attack is an attack, death ends lying down, and so on. Note a clip that does not match its name or looks the same as another clip.
+7. **The clip reads as its role.** At the designer preview's size, idle is idle, move is a walk or run in place, attack is an attack, death ends lying down, and so on. Note a clip that does not match its name or looks the same as another clip there.
 
 ## What to return
 

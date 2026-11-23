@@ -22,9 +22,9 @@ route makes. Those depend on the route's weights, which only an earlier run of t
 
 With `--map` the outline rules of `lib/map_outline.py` are read too, after the route's rules: the idle's posture (its body outline's height over
 the rest pose's, TRIPO-MAP-POSTURE), each clip's hand spread (TRIPO-MAP-SPREAD) and an attack's strike outside the body's outline
-(TRIPO-MAP-REACH), and an attack that fails either is not picked.
+(TRIPO-MAP-REACH). Since D-140 these are advice: an attack that meets them is picked before one that does not, and none is dropped for them.
 With `--map` each clip's map-size reading against the idle (`lib/map_read.read_pixels`, the pixels of the idle's silhouette it changes at game
-size in its 90th percentile frame, TRIPO-MAP-READ) is given as made and after the rules, and an attack under the limit is not picked. `--trim
+size in its 90th percentile frame, TRIPO-MAP-READ) is given as made and after the rules, as advice in the same way. `--trim
 CLIP=FRAMES` cuts a clip as the job's `tripo.trim` would (frames at 24 a second), for the idle too. On zombie_w's skin (2026-11-18, the idle
 the zombie text clip cut at 44): the recoil defend 106 px as made and 106 after the rules (the exported clip 104, so the route did not weaken
 it), box_01 166 (exported 192), front_kick_01 517, the swipe 190, the lurch 181, `hit_to_stomach` 118, the staggering hit 426.
@@ -229,23 +229,36 @@ def is_attack(name: str, attacks: Optional[Sequence[str]]) -> bool:
     return bool(attacks) and any(name.startswith(prefix) for prefix in attacks)
 
 
+def map_advice(after: dict) -> List[str]:
+    """With --map: the map-size readings an attack misses (TRIPO-MAP-READ, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH). Advice only since D-140:
+    animations are judged at the designer preview's size, so a miss here never drops a clip."""
+
+    advice = []
+    if after.get("map_pixels", math.inf) < map_read.MIN_HUMANOID_READ_PIXELS["attack"]:
+        advice.append("TRIPO-MAP-READ")
+    if after.get("map_spread", 0.0) >= map_outline.SPREAD_LIMIT:
+        advice.append("TRIPO-MAP-SPREAD")
+    if after.get("map_reach", math.inf) < map_outline.MIN_REACH_PIXELS:
+        advice.append("TRIPO-MAP-REACH")
+    return advice
+
+
 def pick_attack(report: dict) -> Optional[str]:
     """The attack by the clip pick's rule (docs/3d-units.md): of the attack candidates that pass, the largest raise of the holding hand or
-    forward reach plus the pelvis's travel, after the route's rules; it must be at least `MIN_ATTACK_SCORE`. None when none qualifies."""
+    forward reach plus the pelvis's travel, after the route's rules; it must be at least `MIN_ATTACK_SCORE`. None when none qualifies.
+    The map-size readings (`map_advice`) only order the candidates: one that meets them wins over one that does not, and when none meets
+    them the best of the rest is picked (D-140)."""
 
-    best, best_score = None, MIN_ATTACK_SCORE
+    best = {True: (None, MIN_ATTACK_SCORE), False: (None, MIN_ATTACK_SCORE)}
     for name, row in report.items():
         if not row.get("attack") or row["verdict"] != "pass":
             continue
         after = row["route"]
-        if after.get("map_pixels", math.inf) < map_read.MIN_HUMANOID_READ_PIXELS["attack"]:
-            continue  # with --map: an attack that reads as the idle from the map camera (TRIPO-MAP-READ) is not picked
-        if after.get("map_spread", 0.0) >= map_outline.SPREAD_LIMIT or after.get("map_reach", math.inf) < map_outline.MIN_REACH_PIXELS:
-            continue  # with --map: an attack that reads as a T-pose, or whose reach foreshortens into the body (lib/map_outline.py), is not picked
         score = max(after.get("raise_", 0.0), after["reach"]) + after["pelvis_travel"]
-        if score >= best_score:
-            best, best_score = name, score
-    return best
+        reads = not map_advice(after)
+        if score >= best[reads][1]:
+            best[reads] = (name, score)
+    return best[True][0] or best[False][0]
 
 
 def check(glb: Path, mesh_path: Path, clips: Optional[Sequence[str]] = None, hand: str = "RightHand", idle_clip: str = "idle",
