@@ -316,6 +316,14 @@ py -3.13 -B .tools/3d_pipeline/tripo/span_check.py <model.glb> <job folder>/refs
 
 It compares the model's width over its height with the picture subject's. TRIPO-SPAN-PICTURE fails when they differ by more than a tenth: wings, arms or a tail came out shorter or longer than drawn, and no later step brings the span back. Make the model again before you pay for the rig. The bat-winged demon's picture and model both read 1.51.
 
+**Check a quadruped's neck and legs before the rig.** For a mount, a large beast or a winged quadruped, read two shares off the picture in pixels: the neck from where it leaves the shoulders to the jaw's root, and the belly's height between the legs, each over the subject's height from the feet to the top of the head (horns included, wings left out). Then run:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/proportion_check.py <model.glb> --neck <share> --legs <share>
+```
+
+Check the 3D-ready picture and any multi-view the same way before the paid press: read the shares off the redrawn picture, or a multi-view's side view, and run `proportion_check.py --shares neck=<share>,legs=<share> --neck <share> --legs <share>` against the owner's reference. The Tripo dragon's multi-view had already lost the long neck its model then lacked. On the model, it measures the way the rig does. TRIPO-PROPORTION-PICTURE fails when a share differs from the picture's by more than three tenths of it: make the model again from a picture that shows the part plainly, not the rig. The Tripo dragon's picture has a long S-shaped neck (0.22 of its height) and its model a short column (0.12, legs 0.23 against 0.36). Four rig rounds were spent on poses that read as a hunch before a fresh review named the short neck.
+
 ### 4. Rig (Tripo, 20 credits)
 
 Open **Rig**: **Humanoid**, skeleton preset **Mixamo**, **Auto Rig**.

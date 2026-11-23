@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `tripo/proportion_check.py`: before the rig, a quadruped model's neck and leg shares of its height against the same shares read off its picture (TRIPO-PROPORTION-PICTURE). The Tripo dragon's model kept 55% of its drawn neck, which four rig rounds could not pose into a strike.
 - The tank preset is proven on the M2A4 light tank at the D-83 bar (two runs, two fresh reviews each), with the known close-up limits of a Smart Mesh source listed in the preset.
 - Static vehicles: a job's named size reference sizes the model by its footprint to that vanilla model's (D-134), its height following its own proportions, without the median tank's height and footprint bound. The vehicle rows of `static_kinds.json` carry each vanilla model's footprint. A tank's barrel recoils no less than vanilla's at the model's scale (`recoil_share`), and a turret blown off in the death passes over the hull instead of through it (`flight_clearance`).
 - `tripo/anim_claims.py release <unit> <clip>` gives back a clip a unit claimed and then dropped, for example after the intake refused it. Only the holder releases a clip, and the next claim of it then holds it.
