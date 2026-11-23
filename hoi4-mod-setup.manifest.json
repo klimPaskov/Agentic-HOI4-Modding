@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7e1d6c252239a8f64574e93f3f77fa1732a10489",
+  "generated_for_revision": "73587febd8a87b9be8de6a9184a2bd7ccb32fe7d",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -1812,13 +1812,13 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
-          "size": 76796
+          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
+          "size": 77877
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
-          "sha256": "583c65812552ffa8e5052c4be90e983d52e8bfeb1c1276ce587912d2fe8cfbe8",
-          "size": 3853
+          "sha256": "3b7e86fcfcda26ce6f289247ef46562c589a936afec6f46ae157d8f839ebfff3",
+          "size": 5037
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
@@ -7271,13 +7271,13 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
-          "size": 76796
+          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
+          "size": 77877
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
-          "sha256": "583c65812552ffa8e5052c4be90e983d52e8bfeb1c1276ce587912d2fe8cfbe8",
-          "size": 3853
+          "sha256": "3b7e86fcfcda26ce6f289247ef46562c589a936afec6f46ae157d8f839ebfff3",
+          "size": 5037
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
@@ -16462,6 +16462,11 @@
           "size": 52191
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_reference_policy.py",
+          "sha256": "9d3fd81d3d80e47d31471ff2d6bb10962c4fcd7f505c1e55c59ab76402987ceb",
+          "size": 3219
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_reimport_promotion_contract.py",
           "sha256": "272194534cf77f86ee053aae6469c2137ae10ae139f1a3f6e49ac4b8b931ae18",
           "size": 31850
@@ -20098,13 +20103,13 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
-          "size": 76796
+          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
+          "size": 77877
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
-          "sha256": "583c65812552ffa8e5052c4be90e983d52e8bfeb1c1276ce587912d2fe8cfbe8",
-          "size": 3853
+          "sha256": "3b7e86fcfcda26ce6f289247ef46562c589a936afec6f46ae157d8f839ebfff3",
+          "size": 5037
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
@@ -25596,13 +25601,13 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
-          "size": 76796
+          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
+          "size": 77877
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
-          "sha256": "583c65812552ffa8e5052c4be90e983d52e8bfeb1c1276ce587912d2fe8cfbe8",
-          "size": 3853
+          "sha256": "3b7e86fcfcda26ce6f289247ef46562c589a936afec6f46ae157d8f839ebfff3",
+          "size": 5037
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
@@ -31094,13 +31099,13 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "49551377e0ed36e68110483b24cdf4bc49da3bc8964c50ac122d153a7df95598",
-          "size": 76796
+          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
+          "size": 77877
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
-          "sha256": "583c65812552ffa8e5052c4be90e983d52e8bfeb1c1276ce587912d2fe8cfbe8",
-          "size": 3853
+          "sha256": "3b7e86fcfcda26ce6f289247ef46562c589a936afec6f46ae157d8f839ebfff3",
+          "size": 5037
         },
         {
           "path": ".claude/skills/hoi4-ai-strategies/SKILL.md",
