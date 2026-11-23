@@ -3875,11 +3875,30 @@ def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any,
     grab_staged_attack(staged, stem, spec, roles, records)
 
 
+def amplify_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """Each role the job asks to amplify for the map camera (`"amplify": {role: factor}`, lib/tripo_amplify.py), on the staged files,
+    recorded."""
+
+    asked = (spec.get("tripo") or {}).get("amplify") or {}
+    if not asked:
+        return
+    import check_unit_files
+    from lib import tripo_amplify
+
+    mesh = staged / f"{stem}.mesh"
+    limits = check_unit_files.load_calibration("organic")
+    for role, factor in asked.items():
+        if role in roles and (staged / f"{stem}_{role}.anim").is_file():
+            records[f"{stem}_{role}.anim"]["amplify"] = tripo_amplify.amplify_clip(mesh, staged / f"{stem}_{role}.anim", float(factor), limits)
+
+
 def step_and_pose_staged_roles(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
-    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), on the staged files."""
+    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), then the amplified roles
+    (amplify_staged_roles), on the staged files."""
 
     restore_staged_lunges(job, staged, stem, spec, roles, records)
     pose_staged_roles(staged, stem, spec, roles, records)
+    amplify_staged_roles(staged, stem, spec, roles, records)
 
 
 def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:
