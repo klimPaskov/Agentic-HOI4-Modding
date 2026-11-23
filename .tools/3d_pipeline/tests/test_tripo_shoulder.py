@@ -150,6 +150,29 @@ class Ease(Unit):
         self.assertLessEqual(P.loop_seam(self.mesh, after)[0], P.loop_seam(self.mesh, anim)[0] + 1e-3)
         self.assertTrue(np.allclose(anim.channels["Spine"]["q"][0], after.channels["Spine"]["q"][0]))
 
+    def test_an_ease_that_wrings_the_waist_past_its_limit_is_not_used(self) -> None:
+        # The spine turn that lowers the swelling can undo the intake's waist untwist (the hobgoblin's defend, 38 to 52 degrees): a plan that
+        # takes the stance twist past the larger of the clip's own worst and the role's limit is rejected, and the clip is left as it was.
+        idle = self.clip("idle", 4, lambda f: bent(5.0))
+        path = self.clip("defend", 21, lambda f: bent(60.0 * math.sin(math.pi * f / 20)))
+        before = path.read_bytes()
+        calls = []
+        real = S.worst_twist
+
+        def twist(mesh, anim):
+            calls.append(1)
+            return 10.0 if len(calls) == 1 else 99.0
+
+        S.worst_twist = twist
+        try:
+            ease = S.ease_shoulders(self.mesh_path, path, path, "defend", idle)
+        finally:
+            S.worst_twist = real
+        self.assertFalse(ease.changed)
+        self.assertIn("waist", ease.tried["spine"].get("rejected", ""))
+        self.assertIn("waist", ease.tried["spine and clavicles"].get("rejected", ""))
+        self.assertEqual(path.read_bytes(), before)
+
     def test_the_stance_is_the_idles_first_frame_or_the_rest_pose(self) -> None:
         idle = pdx_deform.load_anim(self.clip("idle", 3, lambda f: bent(20.0 + f)))
         stance = S.stance(self.mesh, idle)
