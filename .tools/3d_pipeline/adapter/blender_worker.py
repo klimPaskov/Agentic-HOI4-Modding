@@ -2147,11 +2147,12 @@ def repair_open_surface_boundaries(weld_distance: float = 1e-5) -> Dict[str, Any
             bpy.data.meshes.remove(welded_data)
         if original_data.users == 0:
             bpy.data.meshes.remove(original_data)
-        separated = separate_pinched_pairs(obj, GATE_POSITION_WELD_DISTANCE) if weld_distance < GATE_POSITION_WELD_DISTANCE else 0
         records.append(
             {
                 "object": obj.name,
-                "pinched_pairs_separated": separated,
+                "pinched_pairs_separated": (
+                    separate_pinched_pairs(obj, GATE_POSITION_WELD_DISTANCE) if weld_distance < GATE_POSITION_WELD_DISTANCE else 0
+                ),
                 "boundary_edges_before": before["loose_boundary_edges"],
                 "boundary_edges_after": after["loose_boundary_edges"],
                 "welded_vertices": welded_vertices,
