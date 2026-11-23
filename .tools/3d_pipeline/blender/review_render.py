@@ -444,6 +444,37 @@ emitters = list(_unique.values())
 standin = []  # (emitter, object, phase, offset)
 
 
+def _sprite_nodes(tree, coords, alpha, emission, sprite, colour):
+    """Draw the particle's own sprite (a feather) on the billboard, tinted by its colour: the sprite's alpha shapes the billboard and its
+    colour times the tint lights it. Each billboard carries a UV layer over its corners, so a rolled quad rolls its sprite (mapping by
+    object coordinates kept every sprite upright, and the feathers read as a row of identical streaks). Nothing changes without a sprite."""
+
+    if not sprite or not Path(sprite).is_file():
+        return
+    try:
+        image = bpy.data.images.load(str(sprite), check_existing=True)
+    except RuntimeError:
+        return
+    texture = tree.nodes.new("ShaderNodeTexImage")
+    texture.image = image
+    tree.links.new(coords.outputs["UV"], texture.inputs["Vector"])
+    texture.extension = "CLIP"
+    tree.links.new(texture.outputs["Alpha"], alpha.inputs[0])
+    tint = tree.nodes.new("ShaderNodeMix") if bpy.app.version >= (3, 4, 0) else tree.nodes.new("ShaderNodeMixRGB")
+    tint.blend_type = "MULTIPLY"
+    if tint.bl_idname == "ShaderNodeMix":
+        tint.data_type = "RGBA"
+        tint.inputs["Factor"].default_value = 1.0
+        tree.links.new(texture.outputs["Color"], tint.inputs[6])
+        tint.inputs[7].default_value = (*colour, 1.0)
+        tree.links.new(tint.outputs[2], emission.inputs["Color"])
+    else:
+        tint.inputs["Fac"].default_value = 1.0
+        tree.links.new(texture.outputs["Color"], tint.inputs["Color1"])
+        tint.inputs["Color2"].default_value = (*colour, 1.0)
+        tree.links.new(tint.outputs["Color"], emission.inputs["Color"])
+
+
 def _standin_material(kind, colour=None, sprite=None):
     """A soft round billboard, or the particle's own sprite (a feather) tinted by its colour when it has one."""
 
@@ -465,38 +496,10 @@ def _standin_material(kind, colour=None, sprite=None):
     alpha.operation = "MULTIPLY"
     alpha.inputs[1].default_value = rule["alpha"]
     tree.links.new(gradient.outputs["Fac"], alpha.inputs[0])
-    image = None
-    if sprite and Path(sprite).is_file():
-        try:
-            image = bpy.data.images.load(str(sprite), check_existing=True)
-        except RuntimeError:
-            image = None
-    if image is not None:
-        texture = tree.nodes.new("ShaderNodeTexImage")
-        texture.image = image
-        # each billboard carries a UV layer over its corners, so a rolled quad rolls its sprite (mapping by object coordinates kept
-        # every sprite upright, and the feathers read as a row of identical streaks)
-        tree.links.new(coords.outputs["UV"], texture.inputs["Vector"])
-        texture.extension = "CLIP"
-        tree.links.new(texture.outputs["Alpha"], alpha.inputs[0])
     material["standin_alpha"] = alpha.name
     emission = tree.nodes.new("ShaderNodeEmission")
     emission.inputs["Color"].default_value = (*colour, 1.0)
-    if image is not None:
-        tint = tree.nodes.new("ShaderNodeMix") if bpy.app.version >= (3, 4, 0) else tree.nodes.new("ShaderNodeMixRGB")
-        if tint.bl_idname == "ShaderNodeMix":
-            tint.data_type = "RGBA"
-            tint.blend_type = "MULTIPLY"
-            tint.inputs["Factor"].default_value = 1.0
-            tree.links.new(texture.outputs["Color"], tint.inputs[6])
-            tint.inputs[7].default_value = (*colour, 1.0)
-            tree.links.new(tint.outputs[2], emission.inputs["Color"])
-        else:
-            tint.blend_type = "MULTIPLY"
-            tint.inputs["Fac"].default_value = 1.0
-            tree.links.new(texture.outputs["Color"], tint.inputs["Color1"])
-            tint.inputs["Color2"].default_value = (*colour, 1.0)
-            tree.links.new(tint.outputs["Color"], emission.inputs["Color"])
+    _sprite_nodes(tree, coords, alpha, emission, sprite, colour)
     emission.inputs["Strength"].default_value = max(rule["strength"], 1.0)
     clear = tree.nodes.new("ShaderNodeBsdfTransparent")
     mix = tree.nodes.new("ShaderNodeMixShader")
