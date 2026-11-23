@@ -143,7 +143,11 @@ def stage_vanilla_reference(job: Path, spec: Dict[str, Any]) -> Optional[Dict[st
         # A relative path, such as the profile's own `gfx/models/units/western_european_infantry.mesh`, is a file of the installed game.
         source = (installed_game_dir() / str(reference["mesh"])).resolve()
     if not source.is_file():
-        raise FileNotFoundError(f"Installed vanilla scale reference is missing: {source}")
+        raise FileNotFoundError(
+            f"Installed vanilla scale reference is missing: {source}. The game folder is {installed_game_dir()}: when that is "
+            f"not the installed game (a local run of CI's `check.py setup --save-game-dir <temp>` writes a stand-in into "
+            f"`.tools/local_settings.json`), set it again with `py -3.13 -B .tools/check.py setup --save-game-dir <your Hearts of Iron IV folder>`"
+        )
     destination = job / "blender" / "reference" / source.name
     destination.parent.mkdir(parents=True, exist_ok=True)
     source_record = file_record(source)

@@ -172,6 +172,12 @@ class DocumentedEntry(unittest.TestCase):
         spec["vanilla_scale_reference"]["mesh"] = "gfx/models/units/missing.mesh"
         with mock.patch.object(run_pilot, "installed_game_dir", return_value=game), self.assertRaisesRegex(FileNotFoundError, "missing.mesh"):
             run_pilot.stage_vanilla_reference(self.job, spec)
+        # A local run of CI's setup step once left a stand-in game folder in two workers' worktrees (2026-11-22): the error names the
+        # folder it used and how to set the installed game again.
+        with mock.patch.object(run_pilot, "installed_game_dir", return_value=game), self.assertRaises(FileNotFoundError) as caught:
+            run_pilot.stage_vanilla_reference(self.job, spec)
+        self.assertIn(str(game), str(caught.exception))
+        self.assertIn("check.py setup --save-game-dir", str(caught.exception))
 
 
 class MissingFields(unittest.TestCase):
