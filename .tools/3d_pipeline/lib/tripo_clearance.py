@@ -955,16 +955,25 @@ def plan_drop(
     stride = max(1, int(sum(len(f) for f in after) // 1500))
     occupied = np.concatenate([f[::stride, :2] for f in after])
     orientations = lying_orientations(axes)
-    places = landing_places(relative, orientations, occupied, start_point[:2], height, keep=candidates)
-    if not places:
-        raise ValueError("no resting place on the ground is clear of the body")
     judged = sample[np.linalg.norm(sample, axis=1) > GRIP_RADIUS_SHARE * height]
     best = None
-    for rank, place in enumerate(places):
-        row = _drop_row(place, orientations, (start_turn, start_point), relative, judged, body_frames, body_triangles, height, ground, release, tumble)
-        key = (round(max(0.0, row["in_body_share"] - 0.003), 3), round(max(0.0, -row["lowest_over_ground_share"] - 0.002), 3), rank)
-        if best is None or key < best[0]:
-            best = (key, row)
+    judged_places = set()
+    # The nearest places come first. A fall onto the back or face can leave all of them with the swing through the body, so the search widens in
+    # steps (more headings, then places nearer the body) and stops at the first plan that keeps the weapon out of it (gap 21, 25 of the hobgoblin run).
+    for keep, clear in ((candidates, LANDING_CLEAR_SHARE), (4 * candidates, LANDING_CLEAR_SHARE), (len(orientations), LANDING_CLEAR_SHARE), (len(orientations), 0.5 * LANDING_CLEAR_SHARE)):
+        places = landing_places(relative, orientations, occupied, start_point[:2], height, clear=clear, keep=keep)
+        for rank, place in enumerate(places):
+            if (place["orientation"], round(float(place["xy"][0]), 6), round(float(place["xy"][1]), 6)) in judged_places:
+                continue
+            judged_places.add((place["orientation"], round(float(place["xy"][0]), 6), round(float(place["xy"][1]), 6)))
+            row = _drop_row(place, orientations, (start_turn, start_point), relative, judged, body_frames, body_triangles, height, ground, release, tumble)
+            key = (round(max(0.0, row["in_body_share"] - 0.003), 3), round(max(0.0, -row["lowest_over_ground_share"] - 0.002), 3), rank)
+            if best is None or key < best[0]:
+                best = (key, row)
+        if best is not None and best[1]["in_body_share"] <= LIMIT and best[1]["lowest_over_ground_share"] >= -GROUND_FAIL_SHARE:
+            break
+    if best is None:
+        raise ValueError("no resting place on the ground is clear of the body")
     return best[1]
 
 
