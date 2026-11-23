@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "98076cc7d3c7cab3d5dbfa819032e3ff35c911a7",
+  "generated_for_revision": "b3b975d5e2464064fbf63524b8e89a55e9188cd9",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15007,6 +15007,21 @@
           "size": 3777
         },
         {
+          "path": ".tools/3d_pipeline/assets/particles/CREDITS.md",
+          "sha256": "b276a8e4e775ae60c343aee4129cc5c341994b69decbe010852730b7c79236e8",
+          "size": 1238
+        },
+        {
+          "path": ".tools/3d_pipeline/assets/particles/feather_1.dds",
+          "sha256": "e2c86966c5087fb9cc8a75d77ca731c368c9353d3727665952526a73f6dfd3c1",
+          "size": 16512
+        },
+        {
+          "path": ".tools/3d_pipeline/assets/particles/feather_1.ledger.json",
+          "sha256": "bc66ffdc464bcb1c3a5cc7de4a2423646ac32752dfc62895fcd3ce2b584e7f24",
+          "size": 3116
+        },
+        {
           "path": ".tools/3d_pipeline/authoring/live_helpers.py",
           "sha256": "dce2ee6a23474befe929e561d7671837c1d4997a2b23e620274dc806c25fed14",
           "size": 38725
@@ -15028,8 +15043,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/review_render.py",
-          "sha256": "eeffd5e22e5743262f8952b4e45354cef2d1cfede21336f3e77dfd17029bc1d9",
-          "size": 34657
+          "sha256": "062441e4db0f42dc39036180d7733b3c1e68df74d3beb0bf778b999e69a90c49",
+          "size": 40828
         },
         {
           "path": ".tools/3d_pipeline/blender_client.py",
@@ -15093,8 +15108,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/effects.json",
-          "sha256": "b083271173e26c21957c64c90516c47532d616c75b098b56e6b67038f6529d61",
-          "size": 18818
+          "sha256": "cdb6d1ac15ae854b87f10bfebf9a928fb71d50badec5969a57f15b385f3e86f1",
+          "size": 21046
         },
         {
           "path": ".tools/3d_pipeline/config/effects_vanilla.json",
@@ -15133,8 +15148,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/tripo_presets.json",
-          "sha256": "9e59e2bd2898c0650840e1a385d07eff52ae67efcb5ea95cf8ecc68ca7633c3d",
-          "size": 28115
+          "sha256": "5883de2964e239351c77e5725e66edf1f7db9de13484d474dec131c0ced18cf2",
+          "size": 28147
         },
         {
           "path": ".tools/3d_pipeline/config/unit_types.json",
@@ -15518,8 +15533,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/unit_effects.py",
-          "sha256": "62eb729ac34d817de04642f5ee07e0f30a89a68fcf5e21014491dc74e69195cf",
-          "size": 39807
+          "sha256": "574483cc9176ab0b41e0775faff9435c4391eb7bed513d5ba7e30bbb39304fbc",
+          "size": 50305
         },
         {
           "path": ".tools/3d_pipeline/lib/unit_registration.py",
@@ -16813,8 +16828,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_effects.py",
-          "sha256": "2cad292c8a9a946176688a744dc99f6d0bf496c0ce16b27deaf1488a17d045a9",
-          "size": 11998
+          "sha256": "ccdc48d4da4862616042c0cea5cdf74927e4f4415d2dfd57129bfb12978c81a8",
+          "size": 17882
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_files.py",
@@ -16923,13 +16938,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/effects_sheet.py",
-          "sha256": "d036e9dbc49d25c60b92677fa6bd835e452cc2065d8729935f84fd505ea20f67",
-          "size": 4588
+          "sha256": "3a4c3866a2580fa902e4eef38d6ea8b03d75668815af102fb1df7b08e4db6716",
+          "size": 4670
         },
         {
           "path": ".tools/3d_pipeline/tripo/effects_stage.py",
-          "sha256": "13e207d8cd167ed6b1ce3bd611b2718cc72cad8c1dc55a0e8528bf5d240ed75c",
-          "size": 6605
+          "sha256": "4fe21195a5149642873fa2af419590c727973b13777b8a3bab6423f92509a1d8",
+          "size": 6929
         },
         {
           "path": ".tools/3d_pipeline/tripo/grip_clip_metrics.py",
@@ -17073,8 +17088,8 @@
         },
         {
           "path": ".tools/3d_pipeline/wire_unit.py",
-          "sha256": "c1d4df31cca2140657a51d497f8ef01491f08d2269d18a98813c59d87eb0aab0",
-          "size": 25555
+          "sha256": "dcf135439dcc387dff50b649ca6c0b61dcf1e1d9cf36f7f7bca613a3781f20c6",
+          "size": 25592
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
