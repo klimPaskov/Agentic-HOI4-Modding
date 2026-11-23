@@ -306,7 +306,7 @@ It fills `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` from the job entry and its 
 
 ### 3. Model (Tripo, 30 credits)
 
-In Tripo Studio open **Model**, **HD Model**, add the picture and generate with the settings on the card. One good picture is enough. Look at the result from all sides before you pay for the rig.
+In Tripo Studio open **Model**, **HD Model**, add the picture, reset every setting to the card and check that **Generate** shows 30 (see [Tripo settings](#tripo-settings)), then generate. One good picture is enough. Look at the result from all sides before you pay for the rig.
 
 **Check the span before the rig.** On the model's page press **Export** (GLB, free) and run:
 
@@ -840,6 +840,16 @@ These gave the best result for the price in the kit's own tests (an orc and a zo
 | Generate in Parts | off | One skin rigs and deforms best |
 | Rig | Humanoid, Mixamo skeleton | The intake maps Mixamo's bone names to the kit's |
 | Export | GLB, skeleton on, stay in place on | In-place walks do not slide on the map |
+
+**Reset the settings and read the price before every press.** Studio keeps the last settings anyone saved on the account, and the next press uses them. Before each paid press, open **Geometry & Texture** and set every row from this card, then read the price on the **Generate** button:
+
+| Settings | Price on the button |
+| --- | --- |
+| HD Model as on this card (Ultra Mesh off, 2K, Triangle, 20,000) | 30 |
+| The same with Ultra Mesh on | 45 |
+| Ultra Mesh on, 4K texture, 2,000,000 polygons (found saved on the account in November 2026) | 55 |
+
+If the button shows anything other than the card's price, a setting is still off the card: find it before you press. Write the price you read in the ledger row.
 
 Give two units of one type different presets where the library has a second one that passes, so they do not move alike.
 
