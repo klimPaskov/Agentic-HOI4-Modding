@@ -413,10 +413,12 @@ Blender scales the unit against vanilla infantry, grounds every clip, and writes
 
 ```
 py -3.13 -B .tools/3d_pipeline/measure_body.py <job folder>
-py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --verdict <job folder>/evidence/check.json
+py -3.13 -B .tools/3d_pipeline/check_unit_files.py <unit folder> --unit-type <type> --mod-root . --weapon-bone <tripo.weapon.bone> --verdict <job folder>/evidence/check.json
 py -3.13 -B .tools/3d_pipeline/check_holes.py <unit folder> --out <job folder>/evidence/holes
 py -3.13 -B .tools/3d_pipeline/tripo/tripo_checks.py <unit folder> --jobs-config <your 3d_jobs.json> --slug <unit> --json <job folder>/evidence/tripo_checks.json
 ```
+
+Leave out `--weapon-bone` for a unit with no weapon. An armed unit that lets its weapon go in the death passes the bone its job's `tripo.weapon.bone` names, usually `Weapon`, or the dropped weapon fails UNIT-LOOSE-PART as a part that drifts off the body.
 
 `measure_body.py` checks that the model fits the job's unit type (see [Check the body before you rig it](#check-the-body-before-you-rig-it)). `check_unit_files.py` reads the exported files (see [Automatic checks](#automatic-checks)), and `check_holes.py` looks for holes a player would see (see [Holes the player sees](#holes-the-player-sees)). `tripo_checks.py` adds the checks for faults Tripo's clips make (see [Tripo checks](#tripo-checks)). Each verdict names the repair to run, or escalates.
 

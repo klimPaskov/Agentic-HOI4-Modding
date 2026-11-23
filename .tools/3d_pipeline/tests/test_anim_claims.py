@@ -22,7 +22,7 @@ import anim_claims as cli
 import new_job
 import tripo_intake
 
-ROLES = {"idle": "idle", "move": "walk", "attack": "chop", "defend": "hit_to_stomach", "retreat": "flee_01", "death": "defeat_02"}
+ROLES = {"idle": "idle", "move": "walk", "attack": "chop", "defend": "hit_to_stomach", "retreat": "flee_01", "death": "defeat_03"}
 TEMPLATE = (PIPELINE_ROOT / "tripo" / "CARD_TEMPLATE.md").read_text(encoding="utf-8")
 WEAPON = {"weapon.name": "hand axe", "weapon.hand": "LeftHand", "weapon.grip_options.length_ratio": 0.6, "weapon.grip_options.grip": 0.3}
 
@@ -95,7 +95,7 @@ class InTheRoute(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.root = Path(self.tmp.name)
-        A.claim(self.root, "other_unit", {"defend": "hit_to_stomach", "death": "defeat_02"})
+        A.claim(self.root, "other_unit", {"defend": "hit_to_stomach", "death": "defeat_03"})
         self.job = new_job.build_entry("armed_humanoid", "axe_fighter", ["the mod's art"], "", {"posture": "upright", **WEAPON})
         self.job["mod_root"] = str(self.root)
 
@@ -118,7 +118,7 @@ class InTheRoute(unittest.TestCase):
     def test_the_clip_table_strikes_held_presets_and_plans_own_clips(self):
         text = C.fill(TEMPLATE, self.job, "axe_fighter", job_folder="jobs/axe_fighter", kit_commit="abc")
         self.assertIn("~~`hit_to_stomach`~~ (held by other_unit)", text)
-        self.assertIn("~~`defeat`~~ (held by other_unit)", text)  # the tile defeat exports as defeat_02
+        self.assertIn("~~`defeat_02`~~ (held by other_unit)", text)  # the tile defeat_02 exports as defeat_03
         self.assertIn("`hit_to_body_01`", text)
         self.assertIn("make: `raises the hand axe across its body", text)
         self.assertNotIn("<weapon>", text)

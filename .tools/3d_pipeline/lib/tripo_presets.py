@@ -173,6 +173,31 @@ def unfitting_clips(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None)
             and any(fnmatch.fnmatch(clip.strip().lower().replace(" ", "_"), pattern) for pattern in patterns)}
 
 
+def renamed_tile_clips(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
+    """The job's role clips that name the export of a renamed tile that is no candidate for the role, {role: message}.
+
+    Tripo exports the tile `defeat` as `defeat_02` and the tile `defeat_02` as `defeat_03`, and `tripo.roles` takes the exported names.
+    A death written as `defeat_02` from the card's tile list is the tile `defeat`, which stands looking up and never lies down."""
+
+    from lib.anim_claims import EXPORT_NAMES, clip_key, export_name
+
+    data = data or load()
+    name = for_job(spec, data)
+    if not name:
+        return {}
+    candidates = data["presets"][name].get("clips") or {}
+    tile_of = {exported: tile for tile, exported in EXPORT_NAMES.items()}
+    found = {}
+    for role, clip in ((spec.get("tripo") or {}).get("roles") or {}).items():
+        tile = tile_of.get(clip_key(clip)) if isinstance(clip, str) else None
+        if tile and candidates.get(role) and tile not in candidates[role]:
+            meant = [item for item in candidates[role] if export_name(item) != item]
+            hint = "".join(f" The tile `{item}` exports as `{export_name(item)}`." for item in meant)
+            found[role] = (f"the {role} {clip!r} is the exported name of the tile `{tile}`, which is no {role} candidate of the preset "
+                           f"{name}: `tripo.roles` takes the names in the exported file, not the tile names.{hint}")
+    return found
+
+
 def unfitting_message(found: Dict[str, str]) -> str:
     listed = ", ".join(f"{role} {clip!r}" for role, clip in found.items())
     return (f"these clips do not fit the unit (D-127: every clip fits its era, its weapon and its kind of creature, no modern boxing, kicks "
@@ -282,6 +307,8 @@ def clip_table(preset: Dict[str, Any], held: Optional[Dict[str, str]] = None) ->
                 cells.append(clip)
             elif export_name(clip) in held:
                 cells.append(f"~~`{clip}`~~ (held by {held[export_name(clip)]})")
+            elif export_name(clip) != clip:
+                cells.append(f"`{clip}` (in the file `{export_name(clip)}`)")
             else:
                 cells.append(f"`{clip}`")
         prompt = made.get(role, "")
