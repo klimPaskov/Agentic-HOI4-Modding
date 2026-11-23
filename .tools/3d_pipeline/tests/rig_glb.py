@@ -128,7 +128,7 @@ def _shapes(skeleton: Skeleton) -> Tuple[list, list, list, list]:
     return positions, joint_ids, weights, triangles
 
 
-def _animations(buffer: Buffer, skeleton: Skeleton, clips: Sequence[str], animate_extra: bool) -> List[dict]:
+def _animations(buffer: Buffer, skeleton: Skeleton, clips: Sequence[str], animate_extra, constant_extra: bool = False) -> List[dict]:
     animations = []
     for clip in clips:
         times = buffer.add(np.array([0.0, 0.5, 1.0], np.float32), "SCALAR", 5126)
@@ -139,8 +139,9 @@ def _animations(buffer: Buffer, skeleton: Skeleton, clips: Sequence[str], animat
             {"sampler": 0, "target": {"node": skeleton.index["mixamorig:Hips"], "path": "translation"}},
             {"sampler": 1, "target": {"node": skeleton.index["mixamorig:Spine"], "path": "rotation"}},
         ]
-        if animate_extra and skeleton.extra_index is not None:
-            samplers.append({"input": times, "output": lean})
+        if (animate_extra or constant_extra) and skeleton.extra_index is not None:
+            held = buffer.add(np.array([LEAN[0]] * 3, np.float32), "VEC4", 5126) if constant_extra else lean
+            samplers.append({"input": times, "output": held})
             channels.append({"sampler": 2, "target": {"node": skeleton.extra_index, "path": "rotation"}})
         animations.append({"name": clip, "samplers": samplers, "channels": channels})
     return animations
@@ -151,6 +152,7 @@ def write_rig_glb(
     *,
     extra_joint: Optional[str] = "neutral_bone",
     extra_animated: bool = False,
+    extra_constant: bool = False,
     extra_children: bool = False,
     extra_weight: float = 0.4,
     extra_vertex: int = 8,
@@ -178,7 +180,7 @@ def write_rig_glb(
     inverse = np.array([np.linalg.inv(skeleton.world(j)).T for j in skeleton.joints], np.float32).reshape(len(skeleton.joints), 16)
     inverse_accessor = buffer.add(inverse, "MAT4", 5126)
     buffer.accessors[inverse_accessor]["count"] = len(skeleton.joints)
-    animations = _animations(buffer, skeleton, clips, extra_animated)
+    animations = _animations(buffer, skeleton, clips, extra_animated, extra_constant)
     doc = {
         "asset": {"version": "2.0"},
         "scene": 0,
