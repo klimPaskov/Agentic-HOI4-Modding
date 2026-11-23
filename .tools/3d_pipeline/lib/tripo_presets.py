@@ -57,6 +57,7 @@ def check(data: Optional[Dict[str, Any]] = None, *, config: Path = CONFIG) -> Li
         "bodies": _load(config / "body_presets.json")["presets"],
         "kinds": _load(config / "static_kinds.json")["kinds"],
         "workflows": _load(config / WORKFLOWS.name)["workflows"] if (config / WORKFLOWS.name).exists() else {},
+        "effects": _load(config / "effects.json")["profiles"] if (config / "effects.json").exists() else {},
     }
     found: List[str] = []
     for name, preset in data["presets"].items():
@@ -88,6 +89,7 @@ def _reference_problems(preset: Dict[str, Any], refs: Dict[str, Dict[str, Any]])
             found.append(f"its unit type's body {body!r} is not in body_presets.json")
         found += [f"anatomy_changes names {key!r}, which the body {body} has no answer for"
                   for key in (preset.get("anatomy_changes") or {}) if body in bodies and key not in bodies[body]["anatomy"]]
+    found += [f"effect profile {name!r} is not in effects.json" for name in preset.get("effects", []) if refs["effects"] and name not in refs["effects"]]
     if refs["workflows"] and preset.get("canvas") not in refs["workflows"]:
         found.append(f"Canvas workflow {preset.get('canvas')!r} is not in {WORKFLOWS.name}")
     return found
@@ -107,6 +109,10 @@ def _step_problems(preset: Dict[str, Any], data: Dict[str, Any]) -> List[str]:
         if "auto_rig" not in steps:
             found.append("a Tripo-rigged type needs the auto_rig step")
         found += [f"the {role} candidate {clip!r} never fits a unit (D-127)" for role, clip in _unfitting_candidates(preset, data)]
+        own = preset.get("made_clips") or {}
+        missing_own = [role for role in ROLES if role != "attack" and not own.get(role)]
+        if missing_own:
+            found.append(f"no own-clip prompt for {', '.join(missing_own)}: every unit type of a mod needs its own clips (D-136)")
     elif preset.get("clips"):
         found.append(f"a {route} type takes its clips from the kit, so it lists none")
     low, high = (preset.get("expected_credits") or [0, 0])
@@ -149,7 +155,9 @@ def never_fitting(preset: Optional[Dict[str, Any]] = None, data: Optional[Dict[s
     """The name patterns of clips that never fit (D-127): the shared list and the preset's own."""
 
     data = data or load()
-    return [*data.get("never_fitting", {}).get("patterns", []), *((preset or {}).get("never_fitting") or [])]
+    preset = preset or {}
+    own = [*(preset.get("never_fitting") or []), *((preset.get("never_fits") or {}).get("clips") or [])]
+    return [*data.get("never_fitting", {}).get("patterns", []), *[item.lower() for item in own]]
 
 
 def unfitting_clips(spec: Dict[str, Any], data: Optional[Dict[str, Any]] = None) -> Dict[str, str]:
@@ -258,13 +266,26 @@ def apply_answers(job: Dict[str, Any], answers: Dict[str, Any]) -> Dict[str, Any
     return job
 
 
-def clip_table(preset: Dict[str, Any]) -> str:
-    """The card's table of free candidates per role, from the preset."""
+def clip_table(preset: Dict[str, Any], held: Optional[Dict[str, str]] = None) -> str:
+    """The card's table of free candidates per role, from the preset. A preset another unit type of the mod already holds (`held`,
+    {export name: unit}, D-136) is struck through with its holder, and the role's own made clip is planned instead."""
 
-    rows = ["| Role | Candidates |", "| --- | --- |"]
+    from lib.anim_claims import export_name
+
+    held = held or {}
+    rows = ["| Role | Candidates | Own clip when every candidate is held |", "| --- | --- | --- |"]
+    made = preset.get("made_clips") or {}
     for role in ROLES:
-        cells = [f"`{clip}`" if " " not in clip else clip for clip in preset["clips"][role]]
-        rows.append(f"| {role} | {', '.join(cells)} |")
+        cells = []
+        for clip in preset["clips"][role]:
+            if " " in clip:
+                cells.append(clip)
+            elif export_name(clip) in held:
+                cells.append(f"~~`{clip}`~~ (held by {held[export_name(clip)]})")
+            else:
+                cells.append(f"`{clip}`")
+        prompt = made.get(role, "")
+        rows.append(f"| {role} | {', '.join(cells)} | {('make: `' + prompt + '`') if prompt else ''} |")
     return "\n".join(rows)
 
 
@@ -305,6 +326,8 @@ def budget_line(preset: Dict[str, Any]) -> str:
     low, high = preset["expected_credits"]
     expected = f"{low}" if low == high else f"{low} to {high}"
     line = f"expected {expected}, cap {preset['cap']}"
+    if preset.get("made_clips"):
+        line += ". The top of the range is the unit's own made clip for every state (20 each), when the mod's other units hold the free ones (D-136)"
     if preset.get("cap_note"):
         line += f". {preset['cap_note']}"
     return line

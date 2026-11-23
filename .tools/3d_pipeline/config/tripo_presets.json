@@ -30,7 +30,7 @@
   "presets": {
     "humanoid": {
       "label": "Humanoid, empty hands",
-      "for": "Soldier-sized people and creatures with empty hands: zombies, undead soldiers, rat men, mages, civilians.",
+      "for": "Soldier-sized bodies on two legs with empty hands.",
       "route": "tripo_rig",
       "unit_type": "infantry_unarmed",
       "armed": false,
@@ -49,16 +49,24 @@
         "retreat": ["flee_01"],
         "death": ["defeat", "defeat_02", "fall"]
       },
-      "paid_clip": {"role": "attack", "when": "from the start unless an earlier made clip of this kind of unit fits: the free library has no unarmed attack that fits a soldier of the past, a monster or a beast (D-127)", "prompt": "lunges one huge fast step, both clawed hands thrust straight forward at chest height to grab, then jerks back"},
+      "made_clips": {
+        "idle": "stands in place, weight shifting slowly from foot to foot, head turning to look around, arms loose at its sides",
+        "move": "walks forward at a steady pace in its own gait, arms swinging with each step",
+        "defend": "is struck hard in the chest, staggers one step back with both arms raised before its face, then recovers its stance",
+        "retreat": "turns and runs away in fear, looking back over its shoulder, arms pumping",
+        "death": "is struck down, sinks to its knees, then falls forward onto its front and lies still"
+      },
+      "paid_clip": {"role": "attack", "when": "from the start unless an earlier made clip of this kind of unit fits: the free library has no unarmed attack that fits a soldier of the past, a monster or a beast (D-127)", "prompt": "lunges one huge fast step, both hands thrust straight forward at chest height to grab, then jerks back"},
       "checks": ["clip_check", "pose_check_map", "tripo_checks", "check_unit_files", "review"],
-      "expected_credits": [50, 70],
-      "cap": 120,
+      "expected_credits": [50, 170],
+      "cap": 180,
       "canvas": "rigged_unit",
-      "proven": "An unarmed zombie passed every check but still read as an ordinary soldier at map size (November 2026). Follow the map-read step (card step 7) with care."
+      "effects": ["eye_glow", "spell_cast", "smoke_death", "firearm"],
+      "proven": "An unarmed soldier-sized unit passed every check but still read as an ordinary soldier at map size (November 2026). Follow the map-read step (card step 7) with care."
     },
     "armed_humanoid": {
       "label": "Humanoid with a weapon",
-      "for": "Soldier-sized fighters holding one weapon, with or without a shield: orcs, dwarves, goblins, hobgoblins, knights. A spear or pike takes the unit type spearman.",
+      "for": "Soldier-sized bodies on two legs holding one weapon, with or without a shield. A spear or pike takes the unit type spearman.",
       "route": "tripo_rig",
       "unit_type": "infantry_melee",
       "unit_types": ["infantry_melee", "spearman"],
@@ -78,17 +86,25 @@
         "retreat": ["flee_01"],
         "death": ["defeat", "defeat_02", "fall"]
       },
+      "made_clips": {
+        "idle": "stands ready, the <weapon> held low in its own <hand words>, shifting its weight and looking around",
+        "move": "marches forward at a steady pace, the <weapon> held at its side in its own <hand words>",
+        "defend": "raises the <weapon> across its body to block a heavy blow, is pushed one step back, then recovers its stance",
+        "retreat": "turns and runs away, the <weapon> carried low in its own <hand words>, looking back over its shoulder",
+        "death": "is struck down, drops the <weapon>, sinks to its knees and falls onto its back, then lies still"
+      },
       "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`, and from the start for a hammer, club, mallet or an axe swung overhead (the free library has no overhead weapon blow)", "prompt": "A heavy warrior raises the <weapon> in his own <hand words> high over his head, then smashes it down hard in front of him, torso leaning forward, feet planted."},
       "checks": ["clip_check", "pose_check_map", "arm_unit", "tripo_checks", "check_unit_files", "review"],
-      "expected_credits": [80, 100],
-      "cap": 120,
-      "cap_note": "A shield is a third model (30): the cap is then 150, and the coordinator or the owner agrees first.",
+      "expected_credits": [80, 200],
+      "cap": 200,
+      "cap_note": "A shield is a third model (30): the cap is then 230, and the owner agrees first.",
       "canvas": "armed_unit",
-      "proven": "Passed two fresh reviews on an orc with a poleaxe and a dwarf with a glaive and shield (November 2026)."
+      "effects": ["firearm", "eye_glow", "spell_cast", "smoke_death"],
+      "proven": "Passed two fresh reviews on two units, one with a polearm and one with a glaive and a shield (November 2026)."
     },
     "large_creature": {
       "label": "Large creature on two legs",
-      "for": "Big two-legged bodies: ogres, trolls, giants, yetis, apes, stone golems. With a weapon it takes heavy_brute, with empty hands beast_biped.",
+      "for": "Two-legged bodies much bigger and heavier than a soldier. With a weapon it takes heavy_brute, with empty hands beast_biped.",
       "route": "tripo_rig",
       "unit_type": "heavy_brute",
       "unit_types": ["heavy_brute", "beast_biped", "tree_creature"],
@@ -112,16 +128,24 @@
         "retreat": ["flee_01"],
         "death": ["defeat", "defeat_02", "fall"]
       },
+      "made_clips": {
+        "idle": "a huge heavy body breathes slowly, shoulders rising and falling, swaying its weight from one leg to the other",
+        "move": "lumbers forward with slow heavy steps, the upper body swaying, long arms hanging and swinging",
+        "defend": "is struck, rocks back on its heels with both arms raised before its head, then leans forward again",
+        "retreat": "turns and lumbers away with heavy hurried steps, looking back over its shoulder",
+        "death": "staggers, falls heavily onto its knees, then topples onto its side and lies still"
+      },
       "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`, and from the start for a creature with empty hands: the free library has no blow that fits one (D-127)", "prompt": "A huge heavy brute raises the <weapon> in its own <hand words> high over its head, then smashes it down hard in front of it, torso leaning forward, feet planted.", "prompt_unarmed": "A huge heavy creature raises both fists high over its head, then smashes them down together onto the ground in front of it, crushing, torso leaning forward, feet planted."},
       "checks": ["clip_check", "pose_check_map", "arm_unit", "tripo_checks", "check_unit_files", "review"],
-      "expected_credits": [70, 100],
-      "cap": 120,
+      "expected_credits": [50, 200],
+      "cap": 200,
       "canvas": "armed_unit",
-      "proven": "Passed two fresh reviews on an ogre with a club (November 2026). Long arms and fur (an ape, a yeti) are not proven yet."
+      "effects": ["strike_dust", "fire_breath", "hand_mouth_fire", "heavy_fire", "ember_idle"],
+      "proven": "Passed two fresh reviews on one unit with a club (November 2026). Very long arms and fur are not proven yet."
     },
     "winged_humanoid": {
       "label": "Winged humanoid",
-      "for": "Two-legged bodies with wings on the back: demons, devils, angels, gargoyles. With a weapon (a trident) it is also armed.",
+      "for": "Two-legged bodies with wings on the back. With a weapon it is also armed.",
       "route": "tripo_rig",
       "unit_type": "infantry_unarmed",
       "unit_types": ["infantry_unarmed", "infantry_melee"],
@@ -145,17 +169,25 @@
         "retreat": ["flee_01", "flee_02"],
         "death": ["fall", "defeat", "defeat_02"]
       },
-      "never_fits": {"clips": ["box_01", "box_02", "box_03", "front_kick_01", "front_kick_02"], "why": "D-127: a clip fits the unit's era, weapon and kind of creature. A demon, devil or angel never boxes or kicks, however well the clip passes the strike test. The free library (96 presets, 2026-11-22) has no claw, grab, lunge, swipe, bite or pounce: slash and chop, done empty-handed, read as a raking strike"},
-      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`, or slash and chop do not read as the creature's raking strike at map size (D-127)", "prompt": "A winged demon rakes both clawed hands down hard across the target in front of it, one after the other, torso lunging forward, wings flaring wide behind it, then recovers."},
+      "made_clips": {
+        "idle": "stands with its wings half folded behind it, breathing slowly, the wings twitching now and then",
+        "move": "walks forward, the wings half folded and lifting a little with each step",
+        "defend": "draws back, raising both arms before its face and sweeping its wings forward around its body as a shield",
+        "retreat": "turns away and runs, wings beating hard behind it, looking back over its shoulder",
+        "death": "is struck, its wings collapse, it falls to its knees and then onto its side and lies still"
+      },
+      "never_fits": {"clips": ["box_01", "box_02", "box_03", "front_kick_01", "front_kick_02"], "why": "D-127: a clip fits the unit's era, weapon and kind of creature. A winged creature never boxes or kicks, however well the clip passes the strike test. The free library (96 presets, 2026-11-22) has no claw, grab, lunge, swipe, bite or pounce: slash and chop, done empty-handed, read as a raking strike"},
+      "paid_clip": {"role": "attack", "when": "the card's step 6 prints `attack: none passes`, or slash and chop do not read as the creature's raking strike at map size (D-127)", "prompt": "A winged creature rakes both hands down hard across the target in front of it, one after the other, torso lunging forward, wings flaring wide behind it, then recovers."},
       "checks": ["span_check", "rig_check", "clip_check", "pose_check_map", "tripo_checks", "check_unit_files", "review"],
-      "expected_credits": [50, 70],
-      "cap": 120,
+      "expected_credits": [50, 200],
+      "cap": 200,
       "canvas": "rigged_unit",
-      "proven": "Passed two fresh reviews on a bat-winged demon (November 2026). Very wide thin wings and feathered wings are not proven yet."
+      "effects": ["hand_mouth_fire", "heavy_fire", "ember_idle", "wing_gust"],
+      "proven": "Passed two fresh reviews on one unit with membrane wings (November 2026). Very wide thin wings and feathered wings are not proven yet."
     },
     "winged_quadruped": {
       "label": "Winged beast on four legs",
-      "for": "Four legs and two membrane wings, no rider: dragons, wyverns on four legs, griffins.",
+      "for": "Four legs and two wings, no rider.",
       "route": "kit_rig",
       "unit_type": "winged_quadruped",
       "armed": false,
@@ -170,11 +202,12 @@
       "expected_credits": [30, 30],
       "cap": 60,
       "canvas": "plain_model",
-      "proven": "Not proven: a four-legged dragon has not passed review yet (November 2026). Ask before you spend."
+      "effects": ["fire_breath", "wing_gust"],
+      "proven": "Not proven: no winged four-legged unit has passed review yet (November 2026). Ask before you spend."
     },
     "mount_with_rider": {
       "label": "Mount with a rider",
-      "for": "A horse, camel, elephant or other mount carrying a rider. Two jobs: the mount (a plain model the kit rigs) and the rider (a humanoid seated by Blender).",
+      "for": "A four-legged mount carrying a rider. Two jobs: the mount (a plain model the kit rigs) and the rider (a humanoid seated by Blender).",
       "route": "kit_rig",
       "unit_type": "mount",
       "armed": false,
@@ -190,11 +223,12 @@
       "expected_credits": [80, 100],
       "cap": 120,
       "canvas": "plain_model",
-      "proven": "A war elephant with a tower passed (November 2026). A horse with a slim body and seated rider is not proven yet."
+      "effects": ["firearm", "spell_cast"],
+      "proven": "A heavy mount with a load passed (November 2026). A slim mount with a seated rider is not proven yet."
     },
     "quadruped": {
       "label": "Beast on four legs",
-      "for": "Four-legged beasts without wings or a rider: wolves, war beasts, bears, war elephants without a crew.",
+      "for": "Four-legged bodies without wings or a rider.",
       "route": "kit_rig",
       "unit_type": "quadruped_beast",
       "armed": false,
@@ -209,7 +243,8 @@
       "expected_credits": [30, 30],
       "cap": 60,
       "canvas": "plain_model",
-      "proven": "A war elephant passed on the same rig (November 2026). A slim runner (a wolf, a horse) is not proven yet."
+      "effects": ["fire_breath"],
+      "proven": "A heavy four-legged body passed on the same rig (November 2026). A slim runner is not proven yet."
     },
     "rider": {
       "label": "Rider for a mount",
@@ -233,10 +268,18 @@
         "retreat": ["idle"],
         "death": ["fall"]
       },
+      "made_clips": {
+        "idle": "sits upright as if in a saddle, looking around, both hands resting low in front of the body",
+        "move": "sits upright as if riding at a trot, the upper body rocking gently forward and back",
+        "defend": "sitting, leans back sharply with one arm raised before the face as if struck, then straightens",
+        "retreat": "sitting, turns the upper body to look back over the shoulder in alarm, leaning forward",
+        "death": "sitting, is struck, slumps forward and slides sideways as if falling from the saddle"
+      },
       "checks": ["clip_check", "tripo_checks", "check_unit_files", "review"],
-      "expected_credits": [50, 50],
-      "cap": 70,
+      "expected_credits": [50, 170],
+      "cap": 180,
       "canvas": "rigged_unit",
+      "effects": ["firearm", "spell_cast"],
       "proven": "Not proven with a seated Tripo rider yet (November 2026)."
     },
     "tank": {
@@ -259,6 +302,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["tank_cannon", "heavy_cannon", "tank_wreck"],
       "proven": "Not proven: the M2A4 Smart Mesh tank passes every check, and its strict close-up review still fails (November 2026)."
     },
     "plane": {
@@ -277,11 +321,12 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["plane_crash"],
       "proven": "Passed two fresh reviews (November 2026)."
     },
     "ship": {
       "label": "Ship",
-      "for": "Warships, galleys and other hulls.",
+      "for": "Ships and other hulls.",
       "route": "static",
       "model_kind": "ship",
       "job": {},
@@ -295,11 +340,12 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["ship_death"],
       "proven": "Passed two fresh reviews (November 2026)."
     },
     "building": {
       "label": "Building",
-      "for": "Factories, forges, barracks and other buildings on the map.",
+      "for": "Buildings on the map.",
       "route": "static",
       "model_kind": "building",
       "job": {},
@@ -319,11 +365,12 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["building_destroyed"],
       "proven": "Not proven: earlier passes were on simplified redraws and do not count (November 2026)."
     },
     "landmark": {
       "label": "Landmark",
-      "for": "Castles, palaces, monuments and other one-off landmarks.",
+      "for": "One-off landmarks.",
       "route": "static",
       "model_kind": "landmark",
       "job": {},
@@ -343,6 +390,7 @@
       "expected_credits": [20, 120],
       "cap": 150,
       "canvas": "static_model",
+      "effects": ["building_destroyed"],
       "proven": "Not proven: earlier passes were on simplified redraws and do not count (November 2026)."
     }
   }

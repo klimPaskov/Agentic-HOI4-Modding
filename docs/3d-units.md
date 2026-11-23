@@ -23,13 +23,13 @@ Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json
 
 | Preset | For | Route |
 | --- | --- | --- |
-| `humanoid` | soldier-sized people and creatures with empty hands | Tripo rig and clips |
-| `armed_humanoid` | soldier-sized fighters with one weapon, with or without a shield | Tripo rig and clips, the weapon its own model |
-| `large_creature` | ogres, trolls, giants, yetis, apes, golems, armed or not | Tripo rig and clips |
-| `winged_humanoid` | demons, devils, angels | Tripo rig and clips, wing chains by the kit |
-| `winged_quadruped` | dragons, griffins | a plain model the kit rigs |
-| `mount_with_rider` | horses, camels, elephants that carry a rider | a plain model the kit rigs, the rider its own job |
-| `quadruped` | four-legged beasts without wings or a rider | a plain model the kit rigs |
+| `humanoid` | soldier-sized bodies on two legs with empty hands | Tripo rig and clips |
+| `armed_humanoid` | soldier-sized bodies on two legs with one weapon, with or without a shield | Tripo rig and clips, the weapon its own model |
+| `large_creature` | two-legged bodies much bigger than a soldier, armed or not | Tripo rig and clips |
+| `winged_humanoid` | two-legged bodies with wings, armed or not | Tripo rig and clips, wing chains by the kit |
+| `winged_quadruped` | four-legged bodies with wings | a plain model the kit rigs |
+| `mount_with_rider` | four-legged mounts that carry a rider | a plain model the kit rigs, the rider its own job |
+| `quadruped` | four-legged bodies without wings or a rider | a plain model the kit rigs |
 | `rider` | the person on a mount | Tripo rig and clips, seated by the kit |
 | `tank` | tanks and armoured cars | static, Smart Mesh |
 | `plane` | aircraft | static, Smart Mesh |
@@ -40,7 +40,7 @@ Each kind of model has a preset in `.tools/3d_pipeline/config/tripo_presets.json
 **Which preset.** `tripo/pick_preset.py` works it out from a few plain answers about the picture, by fixed rules, and prints one sentence to confirm with the cost of the card and of the Canvas workflow, then the `new_job.py` command to run after a yes. It refuses when no reference is given (a picture is made from references, never from a prompt alone), and a reference given with `--private` (an owner's drawing) is recorded in the job as never uploaded: it never goes to Tripo or any other online service, and the 3D-ready picture is made from it offline or by the mod's own image lane.
 
 ```
-py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --kind unit --legs 2 --weapon --hand LeftHand --name "A goblin with an axe" --slug goblin_axe --reference "the mod's art: gfx/units/goblin.png"
+py -3.13 -B .tools/3d_pipeline/tripo/pick_preset.py --kind unit --legs 2 --weapon --hand LeftHand --name "A fighter with an axe" --slug axe_fighter --reference "the mod's art: gfx/units/axe_fighter.png"
 ```
 
 Start a job from a preset, then write its card:
@@ -51,6 +51,17 @@ py -3.13 -B .tools/3d_pipeline/tripo/make_card.py --jobs-config <your 3d_jobs.js
 ```
 
 `new_job.py` writes the whole entry of [step 2](#2-job-entry-picture-card-and-inbox) from the preset: the unit type and its anatomy, the size reference of the type's profile, the cap as the credit budget and the `tripo` block, and for a static model the job file `static_model.py` reads. It then lists what only you can answer (the sources, the posture, the weapon's name, hand and grip), and you give each with `--set` on the same command. `make_card.py` keeps only the steps of the preset's route: a static model's card has no rig or clip steps, a winged quadruped's ends at the plain model's export.
+
+### Every unit type has its own animations
+
+Different peoples and creatures move differently, so every distinct unit type of a mod has its own clips (D-136). A clip, a free preset or a made one, belongs to one unit type of the mod. Only a reskin or a variant of the same people shares a set: its job sets `reskin_of` to the unit it reskins. The mod keeps one record of who holds which clip, `.hoi4_3d/anim_claims.json` in the mod's root. It is a development file like `.tools/` and `.claude/`: the game ignores it, and it never ships with the mod, so leave `.hoi4_3d/` out of a Workshop upload. To keep it outside the mod, set the job's `anim_registry` to a `.json` path (relative to the jobs file) or pass `--registry <file.json>`.
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py check --jobs-config <your 3d_jobs.json> <unit>
+py -3.13 -B .tools/3d_pipeline/tripo/anim_claims.py claim --jobs-config <your 3d_jobs.json> <unit> --source "free preset"
+```
+
+Claim a unit's clips as soon as you pick them in step 7, before the Blender stage. A claim is written under a lock and the earliest claim holds a clip, so two workers never both get one. `make_card.py` strikes out each free preset another unit of the mod holds and gives the unit's own made-clip prompt for that state, and `make_card.py` and `tripo_intake.py` refuse a job whose clips another unit holds (UNIT-ANIM-SHARED, the same rule `check_unit_files.py --mod-root` applies to the finished files). A unit whose free clips are all taken makes its own clip for each state, 20 credits each: that is the top of each preset's credit range. Trying a preset in Tripo is free and allowed, whatever the claims say. Only using it for a unit's state is refused.
 
 ## What it is
 
@@ -386,7 +397,7 @@ The intake records each file's name, size and SHA-256, then prepares it for the 
 - It prints one line saying why it waits, and gives up with an error after six hours (`HOI4_KIT_HEAVY_WAIT_MINUTES`).
 - `--skip-heavy-check`, or `HOI4_KIT_SKIP_HEAVY_CHECK=1`, starts at once.
 
-The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py` and `tripo/static_sheets.py`. `tripo/arm_unit.py` waits too, before each of its grip and shield stages. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
+The commands that start Blender, and so wait: `bootstrap_3d_workflow.py`, `tripo_intake.py` (this step), `run_pilot.py` (step 9, through the Blender adapter), `review_unit.py`, `repair_unit.py`, `check_holes.py` and `fit_prop.py` (step 10), and `tripo/colour_compare.py`, `tripo/weapon_sheets.py`, `tripo/static_model.py`, `tripo/static_sheets.py` and `tripo/effects_sheet.py`. `tripo/arm_unit.py` waits too, before each of its grip and shield stages. A Blender command you type yourself, such as the stage scripts run with `blender -b --python` (`grip_weapon.py`, `shield_stage.py`, `hand_views.py`), waits only when you put `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py --` in front of it.
 
 **One gate per step.** The kit needs no other gate. Some machines add their own gate script around Blender (a wrapper that also waits for a game or a shared hold file). Such a script lives on that machine, outside the kit, and the kit does not ship one. When your machine has one, run each Blender step through it and nothing more. Never take that machine's hold yourself for the steps you then run through its gate: the gate waits while any hold exists, so the step would wait for your own hold until its timeout. A hold is only for heavy work that does not go through the gate.
 
@@ -436,6 +447,8 @@ The first writes `sheets/game_size.png` (the unit about 60 pixels tall from the 
 
 A welded non-manifold edge (an edge shared by more than two faces) stops `run_pilot.py` at its candidate gate when the profile allows none. Tripo HD models made of many closed parts can bring a few. No repair for them runs before the export yet. When `check_holes.py` and `measure_body.py` pass on the provider GLB, record a reasoned exception for that one job (the measured count, the reason and the job as its scope, in the form `profile_exceptions` reads) and continue. Never widen the profile for every job. For colour, `tripo/colour_compare.py` renders the unit and a vanilla unit under the same light and prints the brightness and saturation of each.
 
+**Effects.** A unit that fires, casts, burns or blows up gets its particles in [the effects step](3d-effects.md), after these checks and before the review: `tripo/effects_stage.py` places the locators, times the events and checks them, and `tripo/effects_sheet.py` draws them as stamped stand-ins. Each effect must fit the unit (D-127): a world without gunpowder never gets a muzzle flash.
+
 ### 11. Hand-over and in game
 
 The export lands in the job's `runtime/files` folder under its final names, next to `runtime/registration.md`, which holds the `.gfx`, `.asset` and entity text. The newest copy that passed its check is the one you review. Put it into the mod only after a fresh reviewer passes it, with step 12. Then you, or your live-testing setup, place the unit in game and look at it idle, moving and fighting.
@@ -452,7 +465,7 @@ It writes the `pdxmesh`, animation and entity blocks, each between `# wire_unit 
 
 It never writes sub-units or localisation. It checks that a sub-unit has `sprite = <stem>` and that the keys `<id>` and `<id>_desc` exist, and lists what is missing. It lists the counter sprites `GFX_unit_<sprite>_icon_medium` and `_medium_white` and whether the mod or only the game defines each.
 
-Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <frame> sound = { soundeffect = "..." } }` into the entity state for that role. Whether the game reads `time` as frames or seconds is not verified yet, so check the sound in game. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
+Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <seconds> sound = { soundeffect = "..." } }` into the entity state for that role, at the frame divided by 30. An event's `time` is seconds of the clip: vanilla's destroyed landmarks fire their explosions within 0.3 s of the frame their clip hides a part ([effects](3d-effects.md#what-an-effect-is-in-hoi4)). Earlier versions wrote the frame number itself, so a sound planned at frame 12 played 12 seconds in, after the clip had ended. The effects step's sounds join the plan at their particles' frames. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
 
 After writing, it runs `check_unit_files.py --mod-root` and the static wiring audit and prints one verdict, PASS or FAIL with the list. A missing sprite or localisation key is a FAIL but does not stop the write. Only audit errors about this unit count, and `--strict-audit` counts every error in the mod. `--dry-run` prints the plan, changes nothing, and ends `DRY-RUN` or `DRY-RUN-FAIL`. The exit code is 1 on any FAIL and 2 on unreadable input.
 
@@ -636,7 +649,6 @@ The kit's deformation checks (`check_unit_files.py`) and the other Tripo checks 
 The review renders draw the fire and the smoke as a stand-in: orange puffs that rise fast and fade, and grey ones that rise slowly and grow, at the locator, timed as the plan says. Each tile that shows them is stamped "particles: stand-in", because only the game draws the real particles. These things are left for an in-game check:
 
 - How large the fire and the smoke are against the unit at map zoom (both are registered at scale 1).
-- The unit of an event's `time`. The burn's events use 0, which is the same in seconds and in frames.
 - How long the game holds the death's last frame before it removes the unit, and so how long the heap shows.
 
 ### A defend that reads as a guard
@@ -851,7 +863,7 @@ Pick one type per unit in the job's `unit_type`. The type sets the rig, the clip
 | `rider`, `mounted_archer` | the person on a mount | humanoid | Tripo humanoid, seated by Blender | the upper body plays the clip, the legs stay astride |
 | `mount` | horses, camels, dead horses | quadruped | Blender quadruped with a `Saddle_Node` | idle, trot, charge, rear, gallop, collapse |
 | `quadruped_beast` | wolves, war beasts, elephants | quadruped | Blender quadruped | idle, walk, charge, rear, gallop, collapse |
-| `winged_quadruped` | dragons, griffins | winged quadruped | Blender quadruped with wing chains | folded idle, heavy walk with a slow beat, rear and strike, braced recoil with the wings mantled back, turned run with the wings swept back, collapse onto its side with both wings folded |
+| `winged_quadruped` | four-legged bodies with wings | winged quadruped | Blender quadruped with wing chains | folded idle, heavy walk with a slow beat, rear and strike, braced recoil with the wings mantled back, turned run with the wings swept back, collapse onto its side with both wings folded |
 | `vehicle` | tanks, armoured cars, other wheeled or tracked units | none | live in Blender | idle, drive, fire, brace, reverse, wreck |
 
 **An unarmed soldier-sized humanoid** (an undead soldier, a zombie, a civilian) takes `infantry_unarmed`, with the anatomy answers of any person (legs 2, arms 2, and no for the rest) and no `tripo.weapon` in the job. Do not take `infantry_melee` for it, whose clips are sword clips, and not `beast_biped`, which is for a large body (a yeti, a large ghoul) and is checked against the large-biped body preset that a soldier-sized model does not fit. The anatomy has no question about a held weapon, so an unarmed unit adds no key for it.
@@ -1064,12 +1076,16 @@ Round 12 turned each of those findings into a check first, so the next run is ju
 
 - TRIPO-NECK-SQUASH: in every clip but the death, the middle of the head stays at least 0.8 of its rest distance from the middle of the Chest's skin. Run 19's strike read 0.75 (run 18's 0.87).
 - TRIPO-DEFEND-HEAD-BOXED: in every frame of the defend the head lies at least 2% of the height ahead of the wings' front. Run 19 held it 3.8% behind. The idle, whose head both reviews read clearly, keeps it 12% ahead.
-- TRIPO-DEATH-HEAD-LOST: over the death's end, at least 0.4 of the head's screen cells from the game camera lie more than two cells from any other part. Run 18 read 0 and run 19 0.22, where TRIPO-DEATH-HEAD-HIDDEN read 0.68 and 0.67.
+- TRIPO-DEATH-HEAD-LOST: over the death's end, at least 0.55 of the head's screen cells from the game camera lie more than two cells from any other part but the head's own neck. Run 18 reads 0.48 and run 19 0.47 (both failed for a head no one could find, where TRIPO-DEATH-HEAD-HIDDEN read 0.68 and 0.67), and the best lying pose of round 13 0.59. Round 12 counted the neck as another part, and the neck always joins the head: the best pose then read 0.38 with the head clear of the legs and wings.
 - TRIPO-DEATH-WING-TENT also from the front, left and right views at the end (at most 0.10: run 19's mound read 0.15 to 0.17), and from the game camera while the body rolls, from 0.3 of the clip (run 19 1.61 at frame 25, a wing standing upright).
 
 The strike now drives the neck 75 and 30 degrees (the head keeps 0.87 of its distance, the snout ends 1.4% below the shoulders) and the defend leans the neck forward (the head 5.8% ahead of the wings), offline on run 19's files.
 
 The death is not solved under these checks. Offline on run 19's files no lying pose found reaches every one of them. Laying the neck in other ways brings the head's clear share to 0.38 at best: it lies wedged between the folded forelegs and the root of the wing underneath. Laying the top wing lower beyond the back clears one eye-level view but not all three, or pushes the wing into the body and lifts it. Turning the wings earlier halves the wing that stands up during the roll (0.71) but not to 0.45, and the wings then hide the legs and neck from the side.
+
+Round 13, run 20, a calibration run on the existing model (the picture approved under D-76 and D-100 before D-110, its missing reference trail recorded in the job). TRIPO-DEATH-HEAD-LOST leaves out the head's own neck (limit 0.55), the dead neck lies 90 and 15 turned 20 degrees toward the ground side, and the wings turn to their lying frames between 0.1 and 0.45 of the clip. TRIPO-WING-SCREEN and TRIPO-WING-SPAN, calibrated on a winged humanoid, keep that scope: a winged quadruped folds its wings back in every clip but the move, so seen from the camera in front they read 80 to 90 degrees in every clip (limit 60), and its span is judged in the move only. TRIPO-WING-FOLD-SPIKE judges the idle fold's arm on the game camera's screen (at most 0.10 of the height above the body).
+
+Both fresh reviews of run 20 failed it on the dead head (0.543), the top wing's mound from eye level (0.15 to 0.19), a wing standing up in the roll (0.72), the idle's spike (0.126), the strike's folded neck and the defend's boxed head. Each limit set before the run failed the clip the reviewers failed, so they stay. TRIPO-NECK-SQUASH rises to 0.85: run 20's strike read 0.83, failed by both, and run 18's 0.87 read clearly to one. TRIPO-DEFEND-HEAD-BOXED is reported, not judged: run 20's defend held the head 5.7% ahead of the wings and both reviews still saw it boxed in, while run 18's held it 3% behind and neither did. Lowering the idle fold to pass the spike check broke every clip measured against the idle (TRIPO-GAME-READ 0.21 and 0.16, TRIPO-WING-SIDE-REACH 1.24, TRIPO-NOT-DOWN), so the fold is unchanged. The neck rigged on its column read worse to the eye in the strike and the defend in runs 19 and 20 than in run 18.
 
 Offline on run 18's files re-rigged to the measured neck (`pose_preview.py --rerig --fit`), every clip passes every check: TRIPO-DEATH-WING-TENT 0.36 (run 18 1.13, at most 0.45), TRIPO-DEATH-HEAD-HIDDEN 0.64 (at least 0.5), the snout 2.2% below the shoulders at the bite, and the file checks pass. Changing one setting of the death a few degrees or 0.05 of a share keeps every check but one: the top wing tipped 35 degrees down lifts the body 5% (TRIPO-NOT-DOWN).
 
@@ -1203,6 +1219,15 @@ py -3.13 -B .tools/3d_pipeline/tripo/static_model.py <inbox>/<name>.json --out <
 py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <job folder>/mod/gfx/models/<folder>/<name> --model-kind <kind> --out <job folder>/review
 ```
 
+**Check a Smart Mesh trial before you pay for its texture.** Smart Mesh makes untextured variants first, and its Texture button costs 20. Free first:
+
+1. On the Model page, Smart Mesh, open **Topology**, pick Triangle and turn off **Use Same Polygon Count**. Give the four variants four counts up to the kind's budget (a building: 6,000, 8,000, 10,000 and 12,000), so one paid texture can go to the count that came out cleanest.
+2. Export each untextured variant (free, GLB), each from its own browser tab.
+3. Run the route on each with `--geometry-only`. It packs flat grey maps and adds a flat UV layer, runs every geometry step and check, writes `GEOMETRY_ONLY.txt` beside the files and prints `geometry pass` or `geometry fail`. Nothing from such a run is shipped.
+4. Texture only the variant that passes and looks cleanest on its sheets, then run the route again without the flag.
+
+Generate Multi-Views is free, but for a building seen from three quarters it invented parts the picture does not show (a dormer, a fourth chimney, a moved crane). Look at each view before you give it to a model, and use a single picture when the views disagree.
+
 The job file holds `name` and `model_kind`: `building`, `landmark`, `ship`, `vehicle` (a tank) or `plane`. The GLB is `<name>.glb` next to it (or the job's `glb`). A GLB made in parts is reduced part by part unless the job sets `"parts": false`, and `part_shape_iou` (default 0.97, as in the unit route) sets how closely each reduced part must keep its silhouettes. Add `--plan` to see what the stage would do, without Blender. The script writes a small mod tree under `<job folder>/mod`: the `.mesh`, one `.anim` per role and the three DXT5 textures under `gfx/models/<folder>/<name>/`, and `gfx/entities/<name>.asset` with the `pdxmesh`, the `animation` blocks and the entity. Then it runs the checks below and prints a verdict.
 
 Every number comes from vanilla files. `calibrate_static_kinds.py` measures them and writes `config/static_kinds.json`, each with the files it came from. Run it again after a game update. The role clips are read from the installed game when a model is made.
@@ -1217,6 +1242,7 @@ Every number comes from vanilla files. `calibrate_static_kinds.py` measures them
 
 What the stage does, in order:
 
+- **Yard (buildings).** Tripo often stands a map building on a wide raised earth or paved yard, which sits on the map like a tile under it. Before the model is sized, the route finds the yard (a piece within 12 % of the height that covers a quarter of the plan) and pulls it in toward the building along rays from its centre, so it reaches at most 6 % of the building's own size past the building, its ragged outline kept, and lowers its rim to the ground over the outer quarter of that reach. Everything that is not the yard or a small loose piece holds the yard under it. Small loose pieces lying on it (barrels, heaps) move in with it and keep their shape. Faces and UVs stay. `yard` in `blender_report.json` gives the reach and rim height before and after. A forge works' Smart Mesh yard reached 28 % past the building with its rim 2.6 % of the height up, and it now reaches 6 % with its rim at 0.5 %.
 - **Facing.** The model is turned so its front faces -y, as vanilla's do. A tank's front is where its turret reaches further (the barrel), a ship's bow is its narrower end, a plane's nose is the end nearer the wing. Set `front` in the job file when a rule gets it wrong.
 - **Size and place.** Scaled to the kind's vanilla size at the reference entity's scale, centred and grounded where vanilla's are. A ship's waterline is where its hull reaches 95 % of its beam, as on vanilla hulls. A tank's height and footprint (the square root of its length times its width) are bounded by vanilla's reference tank, the one the game-size sheet draws beside it (`size.span_bound`, ITA_tank_light): each may be at most 5 % over that tank's share of the main measure. A taller or broader model is sized on that span instead, and STATIC-SIZE measures the same way. A Smart Mesh tank sized on the area the camera sees stood 28 % taller than ITA_tank_light. It is now 5 % taller, with a footprint 21 % smaller, because its own proportions are taller than vanilla's.
 - **Triangles and textures.** Faces turned against their neighbours are turned back, piece by piece (a piece keeps Blender's recalculated winding only when it leaves fewer conflicts, and then each face at odds with two or more neighbours is turned while that helps), doubled faces are dropped and closed pieces facing inward are turned out, once after the weld and again after the holes are closed. Needle slivers that stick out of the surface (a triangle over 20 times as long as it is high, with an open long edge, its tip at least half its length off every other triangle) and tiny loose open flakes (pieces at most 5 % of the model's size, at most 1 % thick, with at least half their edges open) are deleted first. A closed thin part such as a barrel or an antenna has no open edge, so it is never touched. A Smart Mesh tank's six fender gussets, open wedges that reviewers saw as stray spikes along the hull, go this way. Small open loops (up to 32 edges) are closed, as `repair_unit.py --repairs holes` does, in one flat colour so the texture does not swirl across them. A building's or landmark's open rim on the ground (a paved disc with no underside) is closed as well. Then each flat one-sided card (an open piece thinner than 2 % of its own largest side and at least 5 % of the model, such as a drive sprocket or a bogie arm modelled as one sheet) is solidified, centred on the sheet: 1 % of the model's size thick, at most a quarter of its own smallest side, and at most 0.8 of the gap to any piece in front of or behind it on each side, so it touches nothing new. A piece that already passes through the card or rests against it does not bound it. The rim faces take one colour, and the triangles the cards need are kept back from the reduction's target. The reduction after the cuts leaves the thickened cards alone. Then the model is reduced to the triangle budget and texture size of the most detailed vanilla model of the kind: faces that lie flat together are merged first, then the rest is collapsed. The silhouettes are compared before and after the reduction, before the holes are closed, and a reduction that changes the outline fails the stage (STATIC-SHAPE). A cap over an opening adds to the outline by design. The maps are packed for `PdxMeshAdvanced`: the normal map as RRxG, the gloss remapped onto the distribution of the kind's vanilla specular maps, the specular level vanilla's.
@@ -1250,6 +1276,7 @@ The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rule
 | STATIC-SHADOW | The colour texture has no cast-shadow region (a band over 5 % of a facet group, much darker than the group's median, sharp-edged, in the group's colour). Only the streams painted with the colour texture count: a tank's track runs, on their own tread texture, are left out (their UVs drawn on the atlas read as a shadow along the run). Tripo's texture, not the route, paints one: make the texture again from a picture lit without cast shadows, or let the route's delighting lift it |
 | STATIC-SHADING | At most 1 % of the surface has a corner whose shading normal leans more than 45 degrees (the route's 40 degree crease and a margin) off its own face |
 | STATIC-SLAB | A building's or landmark's base slab has a flat top, no corner out of line with its side and no corner that shades tilted (over 8 degrees off flat) |
+| STATIC-YARD | A map building's ground yard reaches at most 6 % of the building's size past it (with a fifth more for the reduction's moves) |
 
 `static_sheets.py` renders the close-up review of `review_unit.py` with fixed notes that say what the kind is (a tank has tracks, not feet), a 1024 px close-up of the rest pose from the front and the back quarter (a ship's mast and a plane's gun stubs are small on the six-view sheets), and a game-size sheet: the model and the vanilla model nearest the kind's median size, side by side, at the pixels a metre a vanilla soldier gets on the map. A ship's water is drawn see-through, so its hull shows as it sinks. Give `REVIEW_REQUEST.md` and the sheets to a fresh reviewer as for a unit.
 
