@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "c0b6418fe62b35a85e1bba4013d47584d6d19a20",
+  "generated_for_revision": "5a63d0bd4aa93cbc40d4564c20b343feae3bb2bf",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15488,8 +15488,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_shoulder.py",
-          "sha256": "f3e6757a14e5558f74b0d4d1089b33e78536b9151f311d035a89503e438173a2",
-          "size": 40134
+          "sha256": "05044d5ea14e226678fb99d0763c83b816704de84af62ab8f780bef523680ae7",
+          "size": 41188
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_splay.py",
@@ -16327,6 +16327,11 @@
           "size": 16659
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_intake_reingest.py",
+          "sha256": "8eca465bfacc17828f2576b78cf89df238985f4c1580d642a1d727dc5459b663",
+          "size": 2026
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_io_pdx_compat.py",
           "sha256": "e9b45eca10d59df60a64065933c27d210650d6205d133358311dd39f453cc9c4",
           "size": 9355
@@ -16758,8 +16763,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shoulder.py",
-          "sha256": "06504c0d9cf5ef26f5dce3c758987cbc4cc0c7660452d25fe1ea4c0ff9d7bc7b",
-          "size": 15581
+          "sha256": "743c9b9398216f47393e3b59313e18e7f55da16f6445427b05cfa3f090eb74c5",
+          "size": 16714
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_splay.py",
@@ -17043,8 +17048,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",
-          "sha256": "34a4889fa741e2fb3bffc0b4a09336fc2fb34a1798c1521eb9555cb7ac4b1136",
-          "size": 29228
+          "sha256": "d7b2f8351ec0aed6e7d763e41265cf538362d9a650142d9c56856bc110207825",
+          "size": 30522
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
