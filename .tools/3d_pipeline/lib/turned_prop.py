@@ -28,7 +28,7 @@ import math
 import struct
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from typing import Dict
 
 import numpy as np
 from PIL import Image
