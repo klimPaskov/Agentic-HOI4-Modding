@@ -57,6 +57,32 @@ class StaticRegistrationTests(unittest.TestCase):
         self.assertIn("objectTypes", "objectTypes = {\n" + registration.gfx_block + "\n}")
         self.assertNotIn("objectTypes", registration.gfx_block)
 
+    def test_a_death_clip_gets_a_death_state(self) -> None:
+        contract = sk.kind_contract("vehicle")
+        reference = contract["entity"]["reference"]
+        with tempfile.TemporaryDirectory() as folder:
+            game = Path(folder)
+            (game / "gfx" / "entities").mkdir(parents=True)
+            (game / "gfx" / "entities" / "vanilla.asset").write_text(
+                f'entity = {{\n\tname = "{reference}"\n\tpdxmesh = "vanilla_mesh"\n\tstate = {{ name = "idle" animation = "idle" }}\n}}\n', encoding="utf-8")
+            entity = static_model.registration("tank_t", "vehicle", contract, ["idle", "death"], [], game)["gfx/entities/tank_t.asset"]
+        self.assertRegex(entity, r'state = \{ name = "death"\s+animation = "death"')
+
+    def test_wire_unit_checks_a_static_model_by_its_kind(self) -> None:
+        # wire_unit ran a building through the unit rules (UNIT-LOOSE-PART on 39 loose parts) before the kind was handed over
+        import wire_unit
+
+        checks = static_model.check_args("vehicle", {"size_reference": "USA_tank_light"}, 3600)
+        text = static_model.registration_markdown("tank_t", "vehicle", self.files(), checks)
+        self.assertEqual(wiring.parse_registration(text).stem, "tank_t")
+        with tempfile.TemporaryDirectory() as folder:
+            job = Path(folder)
+            (job / "runtime").mkdir()
+            (job / "runtime" / "registration.md").write_text(text, encoding="utf-8")
+            self.assertEqual(wire_unit.static_checks(job), ["--model-kind", "vehicle", "--running-gear-triangles", "3600", "--size-reference", "USA_tank_light"])
+            (job / "runtime" / "registration.md").write_text(static_model.registration_markdown("tank_t", "vehicle", self.files()), encoding="utf-8")
+            self.assertEqual(wire_unit.static_checks(job), [])
+
 
 if __name__ == "__main__":
     unittest.main()

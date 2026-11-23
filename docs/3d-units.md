@@ -306,7 +306,7 @@ It fills `.tools/3d_pipeline/tripo/CARD_TEMPLATE.md` from the job entry and its 
 
 ### 3. Model (Tripo, 30 credits)
 
-In Tripo Studio open **Model**, **HD Model**, add the picture and generate with the settings on the card. One good picture is enough. Look at the result from all sides before you pay for the rig.
+In Tripo Studio open **Model**, **HD Model**, add the picture, reset every setting to the card and check that **Generate** shows 30 (see [Tripo settings](#tripo-settings)), then generate. One good picture is enough. Look at the result from all sides before you pay for the rig.
 
 **Check the span before the rig.** On the model's page press **Export** (GLB, free) and run:
 
@@ -322,7 +322,7 @@ It compares the model's width over its height with the picture subject's. TRIPO-
 py -3.13 -B .tools/3d_pipeline/tripo/proportion_check.py <model.glb> --neck <share> --legs <share>
 ```
 
-Check the 3D-ready picture and any multi-view the same way before the paid press: read the shares off the redrawn picture, or a multi-view's side view, and run `proportion_check.py --shares neck=<share>,legs=<share> --neck <share> --legs <share>` against the owner's reference. The Tripo dragon's multi-view had already lost the long neck its model then lacked. On the model, it measures the way the rig does. TRIPO-PROPORTION-PICTURE fails when a share differs from the picture's by more than three tenths of it: make the model again from a picture that shows the part plainly, not the rig. The Tripo dragon's picture has a long S-shaped neck (0.22 of its height) and its model a short column (0.12, legs 0.23 against 0.36). Four rig rounds were spent on poses that read as a hunch before a fresh review named the short neck.
+Check the 3D-ready picture and any multi-view the same way before the paid press: read the shares off the redrawn picture, or a multi-view's side view, and run `proportion_check.py --shares neck=<share>,legs=<share> --neck <share> --legs <share>` against the owner's reference. The Tripo dragon's multi-view had already lost the long neck its model then lacked. On the model, it measures the neck from where it leaves the chest, seen from the side, to the head's root, so a neck that rises from the breast through a ruff of shoulder spikes counts in full. TRIPO-PROPORTION-PICTURE fails when a share differs from the picture's by more than three tenths of it: make the model again from a picture that shows the part plainly, not the rig. The Tripo dragon's picture has a long S-shaped neck (0.22 of its height) and its first model a short column (0.12). The model remade from a redraw that shows the neck plainly keeps it (0.23). Four rig rounds were spent on poses that read as a hunch before a fresh review named the short neck.
 
 ### 4. Rig (Tripo, 20 credits)
 
@@ -475,7 +475,7 @@ py -3.13 -B .tools/3d_pipeline/wire_unit.py <job folder or unit slug> --mod-root
 
 It writes the `pdxmesh`, animation and entity blocks, each between `# wire_unit begin <stem> <kind>` and `# wire_unit end <stem> <kind>` comments. A rerun replaces only the lines between its own markers, and nothing else in a file is touched. It copies the mesh, animations and textures into the model folder that `registration.md` names, and skips a file whose SHA-256 already matches. The `.gfx` and entity `.asset` go to `gfx/entities/<prefix>_units.gfx` and `.asset`, or to the file that already holds the markers. `--gfx-file` and `--entity-file` choose other files, and `--prefix` sets the prefix. If the mod already defines one of the names outside the markers, it stops and writes nothing.
 
-It never writes sub-units or localisation. It checks that a sub-unit has `sprite = <stem>` and that the keys `<id>` and `<id>_desc` exist, and lists what is missing. It lists the counter sprites `GFX_unit_<sprite>_icon_medium` and `_medium_white` and whether the mod or only the game defines each.
+It never writes sub-units or localisation. It checks that a sub-unit has `sprite = <stem>` and that the keys `<id>` and `<id>_desc` exist, and lists what is missing. It lists the counter sprites `GFX_unit_<sprite>_icon_medium` and `_medium_white` and whether the mod or only the game defines each. It writes each sub-unit's text icon `GFX_unit_<id>_icon_small` into `interface/<prefix>_texticons.gfx`, between its markers and with the game's art for the sub-unit's `group`, unless the mod defines it already. Without it the game logs "Couldnt find texticon" on every counter refresh. It warns when `descriptor.mod` sets no `supported_version`, which a scratch test mod needs (for example `supported_version="1.19.*"`).
 
 Add a `sound_plan` to the job to get sound events: a list of `{role, soundeffect, frame}`. The tool writes `event = { time = <seconds> sound = { soundeffect = "..." } }` into the entity state for that role, at the frame divided by 30. An event's `time` is seconds of the clip: vanilla's destroyed landmarks fire their explosions within 0.3 s of the frame their clip hides a part ([effects](3d-effects.md#what-an-effect-is-in-hoi4)). Earlier versions wrote the frame number itself, so a sound planned at frame 12 played 12 seconds in, after the clip had ended. The effects step's sounds join the plan at their particles' frames. Sounds are never generated. Without a plan it prints a "no sound plan" warning.
 
@@ -596,10 +596,10 @@ For a winged unit, set `target_height_m` so that the body without the wings is a
 
 **Wings at the game camera (D-83).** The game shows a unit from the front and above, like the review sheets' hoi4 view (25 degrees round, 55 down). From there a wing swung back stands up the screen as a spike, even when it does not rise. The side views are close-ups, so for the attack and the defend the game camera decides:
 
-1. TRIPO-WING-SCREEN fails a clip with spread wings (every role but the folded idle and the death) in which a wing's mean direction from its root rises more than 56 degrees above the screen's level in the map view, on either side of the unit, in any judged frame. The bound is 60 degrees: the highest angle fresh reviewers saw at game size without naming the wing, with a twentieth added. Two D-83 reviews of run demon_c passed its attack's wing at 57.5 degrees, and the reviewed move of run tripo-wings full2 measured 51 (exported files). Its box_01 attack, whose wing a fresh review saw collapse upright, measured 89, and run demon_b's attack 88 and defend 76. One reviewed clip does not fit: full2's retreat reached 87 and the review did not name it.
+1. TRIPO-WING-SCREEN reports, as advice since D-140, a clip with spread wings (every role but the folded idle and the death) in which a wing's mean direction from its root rises more than 56 degrees above the screen's level in the map view, on either side of the unit, in any judged frame. The bound is 60 degrees: the highest angle fresh reviewers saw at game size without naming the wing, with a twentieth added. Two D-83 reviews of run demon_c passed its attack's wing at 57.5 degrees, and the reviewed move of run tripo-wings full2 measured 51 (exported files). Its box_01 attack, whose wing a fresh review saw collapse upright, measured 89, and run demon_b's attack 88 and defend 76. One reviewed clip does not fit: full2's retreat reached 87 and the review did not name it.
 2. The attack and the defend aim their wings at that camera (`tripo/chain_stage.screen_shares`). For each frame and each wing the stage poses all of the wing's chains at shares of the back swing and the face tilt from 1 down to 0, in steps of 5%. It keeps the largest share under which the chains' mean direction from the root stays at or under 51 degrees, the move's own. Past 0 it also takes away the beat's up-stroke, down to none at -1. When no share gets there, it keeps the one with the lowest angle. The share changes by at most 0.1 a frame. The posed chains carry the flap and the torso's own turn and lean, so both are counted. The wing keeps its full size and shape (D-87, D-88). Only how far it swings back changes, and no texture is touched (D-86).
 3. For a winged humanoid's attack and defend, TRIPO-WING-FRONT and TRIPO-WING-EDGE-ON in the side views only report (they print as advisory). In the map view they still fail the unit, and in every other clip the side views still fail it, so nothing gets worse where it worked.
-4. To check a unit: run `tripo/tripo_checks.py` with the job. TRIPO-WING-SCREEN and TRIPO-WING-SPAN must be 0. A wing aimed at the camera must not lose the drawn span: TRIPO-WING-SPAN fails a spread clip (the move, the attack) whose widest frame stays under 85% of the rest pose's width. Then look at the hoi4 tiles of the game_size sheets: no wing may stand up as a narrow spike in any clip.
+4. To check a unit: run `tripo/tripo_checks.py` with the job. TRIPO-WING-SPAN must be 0. TRIPO-WING-SCREEN is advice (D-140): the review judges the wings on the designer preview sheet and in close-up. A wing aimed at the camera must not lose the drawn span: TRIPO-WING-SPAN fails a spread clip (the move, the attack) whose widest frame stays under 85% of the rest pose's width. Then look at the hoi4 tiles of the game_size sheets: no wing may stand up as a narrow spike in any clip.
 
 **Wing motion per role, round e.** A fresh review of run demon_d read the move and the defend as the idle at game size: the fold room left the idle's wings spread, so every clip showed the same spread wings riding the body. The roles now differ by rule (`WING_ROLES` in `lib/tripo_chains.py`):
 
@@ -608,7 +608,7 @@ For a winged unit, set `target_height_m` so that the body without the wings is a
 3. Retreat: four fast beats of 25 degrees (35 hid 11.9% of the limbs in the side views, run demon_e).
 4. Attack: one beat of 40 degrees at the strike, aimed at the game camera as above.
 5. Defend: both wings swing 30 degrees forward round the body (`wrap`) and lower 20, ramped in and out with the guard. On the exported files a wrap of 45 degrees put the wings at 64 degrees on the map's screen, past TRIPO-WING-SCREEN's 60 (the guard's lean back adds about 15 to what the chain replay shows).
-6. Check with `tripo/tripo_checks.py`: TRIPO-MAP-READ (attack and defend against the idle), TRIPO-WING-SCREEN and the chain checks must be 0, and look at the hoi4 tiles of every clip.
+6. Check with `tripo/tripo_checks.py`: the chain checks must be 0. TRIPO-MAP-READ (attack and defend against the idle) and TRIPO-WING-SCREEN are advice since D-140. Look at the hoi4 tiles of every clip.
 
 **Wing motion per role, round g.** A fresh review of run demon_f read the retreat as the move (the same spread V from the game camera, nothing that says fleeing) and the defend as a bank (one wing up, one down, never forward). Two rules replace rounds e's retreat and defend:
 
@@ -709,7 +709,7 @@ The flail and the long bow of run d's attack draw no outline finding: its arm fl
 
 `tripo/tripo_checks.py` reads the unit's runtime files and fails what a viewer fails on a Tripo unit. Each limit is measured on vanilla clips or on clips a reviewer failed.
 
-The map-read rules for animations (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME and TRIPO-WING-IDLE-MOVE) are advice since D-140. They are reported under `advisory` and never fail a unit, because a clip is judged at the size of the game's designer preview and in close-up. Their limits below say what each reading means.
+The map-read rules for animations (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME, TRIPO-WING-IDLE-MOVE and TRIPO-WING-SCREEN) are advice since D-140. They are reported under `advisory` and never fail a unit, because a clip is judged at the size of the game's designer preview and in close-up. Their limits below say what each reading means.
 
 | Rule | Fails when |
 | --- | --- |
@@ -846,6 +846,16 @@ These gave the best result for the price in the kit's own tests (an orc and a zo
 | Generate in Parts | off | One skin rigs and deforms best |
 | Rig | Humanoid, Mixamo skeleton | The intake maps Mixamo's bone names to the kit's |
 | Export | GLB, skeleton on, stay in place on | In-place walks do not slide on the map |
+
+**Reset the settings and read the price before every press.** Studio keeps the last settings anyone saved on the account, and the next press uses them. Before each paid press, open **Geometry & Texture** and set every row from this card, then read the price on the **Generate** button:
+
+| Settings | Price on the button |
+| --- | --- |
+| HD Model as on this card (Ultra Mesh off, 2K, Triangle, 20,000) | 30 |
+| The same with Ultra Mesh on | 45 |
+| Ultra Mesh on, 4K texture, 2,000,000 polygons (found saved on the account in November 2026) | 55 |
+
+If the button shows anything other than the card's price, a setting is still off the card: find it before you press. Write the price you read in the ledger row.
 
 Give two units of one type different presets where the library has a second one that passes, so they do not move alike.
 

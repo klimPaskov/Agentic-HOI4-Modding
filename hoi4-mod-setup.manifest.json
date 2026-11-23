@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "a17c6545d538af27df47e198231856559fb40331",
+  "generated_for_revision": "756c323394eabdd40a3319467128a412d4905463",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14968,8 +14968,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
-          "sha256": "aa220070b2c5b33390d629e42a8c925ac35dff65438add9bddc02c0e177b7b94",
-          "size": 101305
+          "sha256": "5e14a5b68fed919e1b8c23c9029a816984e67bfca700a30caf7667d3f324f662",
+          "size": 103566
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_load.py",
@@ -15523,8 +15523,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/unit_wiring.py",
-          "sha256": "9ffcd37d3fe6d9ade53b2c3c72bcc19a0094e862af47ca2c9bf76fd2101c6e30",
-          "size": 41178
+          "sha256": "c0db7b48057b4e2b0a5f54e8403959916ca9bcfd2ec6813c97288c0c12211bb5",
+          "size": 44554
         },
         {
           "path": ".tools/3d_pipeline/lib/weight_fit.py",
@@ -16453,8 +16453,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_proportion_check.py",
-          "sha256": "ba96513e5b188d05f43ebd2f79880c3f8b9d87a8fee9cd26311987c4927abc37",
-          "size": 3110
+          "sha256": "720a500a1bc9155d8e6fd9c5895389a8ef89e34f09ca057e1ad0bbd88810b40e",
+          "size": 4840
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_clips.py",
@@ -16578,8 +16578,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_static_registration.py",
-          "sha256": "ea993cf9dcfe82ebce14f8469023c36cda6bb019b4a8a3d94d41ea2678379835",
-          "size": 3194
+          "sha256": "9a78e804f22ca06921aab8976cfdebcd90a44dab41728d1b8b216198ff9c7b74",
+          "size": 5019
         },
         {
           "path": ".tools/3d_pipeline/tests/test_static_yard.py",
@@ -16793,8 +16793,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_wing_screen.py",
-          "sha256": "7ddb86c719f7982cc210087343447eb18d8397f0e13636ebb8c80223daefe61f",
-          "size": 4133
+          "sha256": "19de5cd2e25d1bb91199fce8e84817207439c52c24610a58b4440a79e44d17bf",
+          "size": 4825
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_effects.py",
@@ -16833,8 +16833,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_wire_unit.py",
-          "sha256": "119ddb15cfa0ef58d833b703f837ec88d20a99860997757de72c4e6e2cc509f8",
-          "size": 35400
+          "sha256": "2351646a74baebed54a0e365827c5b7ce6a89d30eb00eb809a2384b33544cefd",
+          "size": 37121
         },
         {
           "path": ".tools/3d_pipeline/tests/test_workflow_sync_contracts.py",
@@ -16843,8 +16843,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "662ce3147987bd72f9d4817602162773b8a0bbdbc8362a3ad2bbdd1224c43ff4",
-          "size": 19527
+          "sha256": "dab3e84602fd33ece102f545912d87228704f35528e4a13cbb40d6f536e9e5c5",
+          "size": 19546
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -16978,8 +16978,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/proportion_check.py",
-          "sha256": "f07a6926692bc79977dc1a6fc9d2528825e376731dc408ead75732fd401a16f8",
-          "size": 6501
+          "sha256": "482ed10ba27d4f83c63eb9b03a46f95d8a1719422482ee7cd5cf592422842702",
+          "size": 6524
         },
         {
           "path": ".tools/3d_pipeline/tripo/rig_check.py",
@@ -17008,8 +17008,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model.py",
-          "sha256": "a6d1d2105e9922672c94cb041c58bac480c36b01183cc60f95ffbdc606362e59",
-          "size": 31889
+          "sha256": "d6bf84f8b48414a90bbf7c490252cd81b5f970c4ad30873a489f5807b85bf4ce",
+          "size": 32810
         },
         {
           "path": ".tools/3d_pipeline/tripo/static_model_blender.py",
@@ -17028,8 +17028,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "6f7e4d088799185b576878180fad6a1f43dee095437f0c2a6e419a5b53932603",
-          "size": 148496
+          "sha256": "8ccc385881216014e17d8e10841e37483cbed5362038b1ae507f6bd7a5767b6f",
+          "size": 148860
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
@@ -17053,8 +17053,8 @@
         },
         {
           "path": ".tools/3d_pipeline/wire_unit.py",
-          "sha256": "c451defef1fc79d590647c2971284783dfbd7aa316662e503b6c7a7d42c9b778",
-          "size": 23296
+          "sha256": "c1d4df31cca2140657a51d497f8ef01491f08d2269d18a98813c59d87eb0aab0",
+          "size": 25555
         },
         {
           "path": ".tools/3d_pipeline/wrappers/run_blender_hoi4_adapter.cmd",
