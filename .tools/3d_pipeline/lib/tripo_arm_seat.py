@@ -12,7 +12,9 @@ module repairs such an export without Blender and without credits, by fixed rule
    farthest point. The elbow sits at `ELBOW_SHARE` of that run and the wrist at `WRIST_SHARE` (human proportions: the hand with its
    claws is the last fifth). Skin of the arm family that lies within the arm's own radius of that line (the back of the arm bones, the
    joints) joins the arm.
-4. Joints: the upper arm, forearm and hand joints move to the arm's top, the elbow and the wrist. Only their positions change, never
+4. Joints: the forearm and hand joints move to the elbow and the wrist. The upper arm joint stays where Tripo put it, at the clavicle's
+   end: moved down the arm, every turn of the clavicle in the clips swung the whole arm round it (run devil_c, 2026-11-22, the shoulder
+   line turned 90 to 160 degrees in every clip and the wing rules that follow the shoulders went wild). Only positions change, never
    their rest rotations, so every clip keeps its rotations. Each clip's translation keys of those joints move by the same offset, and the
    skin's inverse bind matrices are recomputed for every joint below them.
 5. Weights: the arm takes its three joints by its run (a linear blend over `BLEND_SHARE` of the run at the elbow and the wrist). The rest of
@@ -165,17 +167,34 @@ def segment_distance(points: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.nda
     return np.linalg.norm(points - (a + t[:, None] * ab), axis=1)
 
 
+def body_axes(heads: Dict[str, np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """(across, ahead): the level left-to-right axis from the thigh joints and the level way the body faces, from the heels to the toes.
+    Tripo's own exports face +z with x across, but an upload Tripo was told to turn (its angle dialog) faces another way: the ZIN devil's
+    upload came back with its wings along z (2026-11-22)."""
+
+    across = np.asarray(heads["RightUpLeg"], float) - np.asarray(heads["LeftUpLeg"], float)
+    across[1] = 0.0
+    across /= max(float(np.linalg.norm(across)), 1e-12)
+    ahead = np.cross(across, [0.0, 1.0, 0.0])
+    toes = [np.asarray(heads[f"{s}ToeBase"], float) - np.asarray(heads[f"{s}Foot"], float) for s in ("Left", "Right")
+            if f"{s}ToeBase" in heads and f"{s}Foot" in heads]
+    if toes and float(np.mean(toes, axis=0) @ ahead) < 0:
+        ahead = -ahead
+    return across, ahead
+
+
 def seat_side(side: str, positions: np.ndarray, triangles: np.ndarray, dominant: np.ndarray, heads: Dict[str, np.ndarray],
               body_height: float) -> dict:
     """The new arm joints and the arm and wing masks of one side, by the rules of the module docstring."""
 
     family = np.array([str(name).startswith(side) and ("Arm" in str(name) or "Hand" in str(name)) for name in dominant])
-    lateral = positions[:, 0] - heads["Hips"][0]
-    width = float(np.ptp(positions[:, 0]))
+    across, ahead = body_axes(heads)
+    lateral = (positions - heads["Hips"]) @ across
+    width = float(np.ptp(lateral))
     wing = family & (np.abs(lateral) > WING_SHARE * width)
     if wing.sum() < MIN_ARM_VERTICES:
         raise SeatError(f"{side}: the arm family has no wing beyond {WING_SHARE:.0%} of the width ({int(wing.sum())} vertices): not a winged rig")
-    centre, normal = plane(positions[wing], np.array([0.0, 0.0, 1.0]))
+    centre, normal = plane(positions[wing], ahead)
     depth = (positions - centre) @ normal
     thickness = float(np.percentile(np.abs(depth[wing]), 95))
     shoulder_y = float(heads[f"{side}Arm"][1])
@@ -252,7 +271,7 @@ def load_rig(doc: dict, blob: bytearray) -> dict:
 def move_joints(doc: dict, rig: dict, side: str, joints: Dict[str, np.ndarray], moved: Dict[int, np.ndarray]) -> None:
     """New local translations of one side's arm joints, parent first, each against its parent's new world matrix."""
 
-    for part in ("Arm", "ForeArm", "Hand"):
+    for part in ("ForeArm", "Hand"):  # the upper arm joint stays at the clavicle's end (module text, rule 4)
         node = rig["node_of"][f"{side}{part}"]
         parent = next(i for i, n in enumerate(doc["nodes"]) if node in n.get("children", []))
         local = np.linalg.inv(worlds(doc)[parent]) @ np.append(joints[part], 1.0)

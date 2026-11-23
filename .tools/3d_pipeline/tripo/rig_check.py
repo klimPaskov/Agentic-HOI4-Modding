@@ -9,6 +9,8 @@ wing, and every clip moves the wings with the hands. No later step repairs such 
 
 TRIPO-RIG-ARMS fails a side when either holds:
 - no skin is bound mostly to the forearm (a forearm that moves nothing), or
+- the skin bound mostly to the upper arm, forearm, hand or fingers lies, in its 95th percentile, farther from those bones than
+  `MAX_ARM_SKIN_REACH` arm lengths (the arm holds a wing), or
 - the skin bound mostly to the hand or its fingers reaches, in its 95th percentile, farther from the wrist joint than `MAX_HAND_REACH`
   times the arm's own length (upper arm plus forearm): the hand carries more than a hand.
 
@@ -34,6 +36,10 @@ from lib import glb_root
 # Measured on passed rigs (2026-11-22): the hand skin reaches 0.37 to 0.57 arm lengths (zombie, dwarf, demon, the stone golem). The devil
 # whose rig missed its arms reached 2.1 and 5.3, with no skin on the right forearm.
 MAX_HAND_REACH = 1.0
+# The skin bound to the whole arm (upper arm, forearm, hand and fingers), its 95th percentile distance from the arm's bones, in arm lengths.
+# Passed rigs read 0.33 to 0.62, the demon's right side 1.6 (part of its wing on that arm, passed by two reviews). Tripo's rigs of the devil
+# read 7.6 to 10.9: the upload's rig carried each whole wing on the upper arm or the forearm, with no skin on the hands (2026-11-22).
+MAX_ARM_SKIN_REACH = 2.5
 _TYPES = {"SCALAR": 1, "VEC2": 2, "VEC3": 3, "VEC4": 4, "MAT4": 16}
 _DTYPES = {5126: np.float32, 5125: np.uint32, 5123: np.uint16, 5121: np.uint8}
 
@@ -83,8 +89,22 @@ def side_numbers(layout: Dict[str, object], side: str) -> Dict[str, float]:
     length = float(np.linalg.norm(forearm - arm) + np.linalg.norm(hand - forearm))
     hand_skin = np.array([str(name).startswith(f"{side}Hand") for name in dominant])
     reach = float(np.percentile(np.linalg.norm(positions[hand_skin] - hand, axis=1), 95)) if hand_skin.any() else 0.0
+    family = np.array([str(name) in (f"{side}Arm", f"{side}ForeArm") or str(name).startswith(f"{side}Hand") for name in dominant])
+    far = 0.0
+    if family.any():
+        points = positions[family]
+        near = np.minimum(segment_distance(points, arm, forearm), segment_distance(points, forearm, hand))
+        near = np.minimum(near, np.linalg.norm(points - hand, axis=1))
+        far = float(np.percentile(near, 95))
     return {"arm_length": round(length, 4), "forearm_vertices": int((dominant == f"{side}ForeArm").sum()),
-            "hand_vertices": int(hand_skin.sum()), "hand_reach": round(reach / max(length, 1e-9), 2)}
+            "hand_vertices": int(hand_skin.sum()), "hand_reach": round(reach / max(length, 1e-9), 2),
+            "arm_skin_reach": round(far / max(length, 1e-9), 2)}
+
+
+def segment_distance(points: np.ndarray, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    ab = b - a
+    t = np.clip((points - a) @ ab / max(float(ab @ ab), 1e-12), 0.0, 1.0)
+    return np.linalg.norm(points - (a + t[:, None] * ab), axis=1)
 
 
 def rig_findings(layout: Dict[str, object]) -> (List[dict], dict):
@@ -101,6 +121,9 @@ def rig_findings(layout: Dict[str, object]) -> (List[dict], dict):
         if row["forearm_vertices"] == 0:
             found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"no skin is bound mostly to the {side.lower()} forearm: Tripo's rig "
                           "missed the arm. For a winged unit repair it free with tripo/arm_seat.py"})
+        if row["arm_skin_reach"] > MAX_ARM_SKIN_REACH:
+            found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"the {side.lower()} arm's bones carry skin {row['arm_skin_reach']:.1f} arm lengths "
+                          f"from them (limit {MAX_ARM_SKIN_REACH:g}): the arm holds a wing. For a winged unit repair it free with tripo/arm_seat.py"})
         if row["hand_reach"] > MAX_HAND_REACH:
             found.append({"rule": "TRIPO-RIG-ARMS", "subject": side, "message": f"the {side.lower()} hand carries skin {row['hand_reach']:.1f} arm lengths from "
                           f"the wrist (limit {MAX_HAND_REACH:g}): the hand holds more than a hand, such as a wing. For a winged unit repair it free with tripo/arm_seat.py"})
