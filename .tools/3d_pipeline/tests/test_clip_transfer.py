@@ -116,6 +116,27 @@ class Transfer(unittest.TestCase):
         renamed_copy(self.source, swapped)
         self.assertEqual(C.limb_chains(C.Rig(self.source), C.Rig(swapped), True)[0][0], C.Rig(swapped).joints["LeftUpLeg"])
         C.transfer(self.source, swapped, out, ["idle"])
+    def test_clips_move_from_tripos_newer_rig_onto_a_mixamo_rig(self) -> None:
+        """Since November 2026 Tripo exports an asset on its newer skeleton (`Hip`, `Waist`, `L_Thigh`), even one it rigged with Mixamo's
+        before. The old account's demon came back that way, while the Blender stage reads Mixamo's names."""
+
+        from lib.tripo_rig import TRIPO_FROM_CANONICAL
+
+        newer, out = self.folder / "newer.glb", self.folder / "out.glb"
+        data = self.source.read_bytes()
+        length = struct.unpack("<I", data[12:16])[0]
+        doc = json.loads(data[20:20 + length])
+        for node in doc["nodes"]:
+            name = node.get("name", "")
+            if name.startswith("mixamorig:"):
+                short = name.split(":", 1)[1]
+                node["name"] = TRIPO_FROM_CANONICAL.get(short, short)
+        text = json.dumps(doc).encode()
+        text += b" " * (-len(text) % 4)
+        rest = data[20 + length:]
+        newer.write_bytes(b"glTF" + struct.pack("<II", 2, 12 + 8 + len(text) + len(rest)) + struct.pack("<I", len(text)) + b"JSON" + text + rest)
+        self.assertIn("Waist", C.Rig(newer).joints, "the newer rig keeps its own names")
+        C.transfer(newer, self.source, out, ["idle"])
         np.testing.assert_allclose(np.abs(self.local_spine(out)), np.abs(np.array(RG.LEAN[1])), atol=1e-5)
 
     def test_a_missing_clip_is_named(self) -> None:

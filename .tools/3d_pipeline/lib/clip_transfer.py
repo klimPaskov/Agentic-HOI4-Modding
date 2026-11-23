@@ -106,8 +106,27 @@ class Rig:
         self.parent = {child: i for i, node in enumerate(self.nodes) for child in node.get("children", [])}
         skin = self.doc["skins"][0]
         self.joints = {short(self.nodes[j].get("name", "")): j for j in skin["joints"]}
+        self._alias_canonical()
         self.order = self._order()
         self.rest_world = self.world_at({})
+
+    def _alias_canonical(self) -> None:
+        """A rig on Tripo's newer skeleton (`Hip`, `Waist`, `L_Thigh`, ...) also files each joint under its Mixamo short name
+        (`lib/tripo_rig.py`), so clips move between the two rigs. Since November 2026 Tripo exports every asset on the newer skeleton,
+        the old account's Mixamo-rigged demon included, while the Blender stage reads Mixamo's names: clips made on the newer export are
+        moved onto the unit's own earlier Mixamo export this way. Each joint carries its own world turn, so an in-between bone of the
+        newer rig (`Pelvis`, `Waist`, `BoneRoot`) needs no special case: its motion is already in the world pose of the joints below it."""
+
+        from .tripo_rig import RigError, RigNames
+
+        try:
+            names = RigNames(list(self.joints))
+        except RigError:
+            return
+        if names.style != "tripo":
+            return
+        for actual, index in list(self.joints.items()):
+            self.joints.setdefault(names.canonical(actual), index)
 
     def _order(self) -> List[int]:
         seen, out = set(), []
