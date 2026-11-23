@@ -148,6 +148,25 @@ class OutsideRegistry(unittest.TestCase):
     def tearDown(self):
         self.tmp.cleanup()
 
+    def test_release_gives_back_only_the_holders_own_claim(self):
+        # A worker claimed a clip, then the intake refused it (hip travel over 0.1, zin_demon 2026-11-23): it gives the clip back.
+        A.claim(self.registry, "demon", {"retreat": "flee_02", "defend": "A tall winged demon is struck in the chest"})
+        A.claim(self.registry, "late_unit", {"retreat": "flee_02"})  # held: nothing is written for late_unit
+        reg = str(self.registry)
+        self.assertEqual(cli.main(["release", "--registry", reg, "other_unit", "flee_02"]), 3)  # not the holder
+        self.assertEqual(cli.main(["release", "--registry", reg, "demon", "hit_to_stomach"]), 3)  # another unit's clip
+        self.assertEqual(cli.main(["release", "--registry", reg, "demon", "walk"]), 3)  # never claimed
+        self.assertEqual(A.holders(self.registry)["flee_02"]["unit"], "demon")
+        self.assertEqual(cli.main(["release", "--registry", reg, "demon", "flee_02"]), 0)
+        self.assertEqual(cli.main(["release", "--registry", reg, "demon", "a_tall_winged_demon_is_struck_in_the_chest"]), 0)
+        holders = A.holders(self.registry)
+        self.assertNotIn("flee_02", holders)
+        self.assertNotIn("a_tall_winged_demon_is_struck_in_the_chest", holders)
+        self.assertEqual(holders["hit_to_stomach"]["unit"], "other_unit")
+        self.assertEqual(A.claim(self.registry, "late_unit", {"retreat": "flee_02"})["claimed"], ["flee_02"])
+        with self.assertRaises(A.ClaimError):
+            A.release(self.registry, "demon", "flee_02")
+
     def test_a_json_path_is_the_registry_itself(self):
         self.assertTrue(self.registry.exists())
         self.assertFalse((self.dir / "notes" / ".hoi4_3d").exists())
