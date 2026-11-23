@@ -139,6 +139,24 @@ class IntakeRecords(unittest.TestCase):
         self.assertRegex(source["sha256"], "^[0-9A-F]{64}$")
         self.assertEqual(receipt["task_id"], f"tripo-{source['sha256'].lower()[:12]}")
 
+    def test_a_new_export_needs_the_next_stage_and_the_error_names_it(self) -> None:
+        self.intake()
+        (self.inbox / "orc_test__rigged.glb").write_bytes(b"a second export with more clips")
+        with self.assertRaises(RuntimeError) as caught:
+            self.intake()
+        self.assertIn('set "generation_stage": "generation_2"', str(caught.exception))
+        self.assertEqual(tripo_intake.next_stage("generation_2"), "generation_3")
+        spec = tripo_spec()
+        spec["generation_stage"] = "generation_2"
+
+        def run(command, **_options):
+            return fake_prepare_output(Path(command[command.index("--out-dir") + 1]), command)
+
+        with mock.patch.object(tripo_intake.heavy_job.subprocess, "run", side_effect=run):
+            result = tripo_intake.run_intake(spec, self.inbox)
+        self.assertEqual(result["state"], "ingested")
+        self.assertTrue((self.job / "provider" / "tripo_intake_generation_2.json").is_file())
+
     def intake_with_report(self, **changes) -> tuple:
         def run(command, **_options):
             done = fake_prepare_output(Path(command[command.index("--out-dir") + 1]), command)
@@ -327,6 +345,17 @@ class ClipNames(unittest.TestCase):
             resolve_clip_name("hit_to", self.CLIPS)
         with self.assertRaisesRegex(ValueError, "matches no clip.*walk"):
             resolve_clip_name("run", self.CLIPS)
+
+    def test_a_role_longer_than_the_glb_name_limit_matches_the_cut_clip_name(self) -> None:
+        # Blender keeps 63 characters of a prompt name, so the export holds the cut name and the role gives the whole first words.
+        from lib.tripo import resolve_clip_name
+
+        role = "A robed necromancer is struck in the chest and staggers back one step"
+        cut = role[:63]
+        self.assertEqual(resolve_clip_name(role, [cut, "idle"]), cut)
+        self.assertEqual(resolve_clip_name(role, [cut, "idle", "walk"]), cut)
+        with self.assertRaisesRegex(ValueError, "matches no clip"):
+            resolve_clip_name("A robed necromancer is struck in the chest and lies down flat", [cut, "idle"])
 
     def test_a_prompt_length_name_becomes_a_name_the_blender_stage_accepts(self) -> None:
         from lib.tripo import safe_animation_name

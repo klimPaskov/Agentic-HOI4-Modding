@@ -78,6 +78,7 @@ LEG_SETTLE_GROUPS = (("knees",), ("thighs",), ("thighs", "knees"))  # tried in t
 VANILLA_WAIST_TWIST_DEGREES = {"retreat": 19.6, "move": 18.4, "idle": 69.7, "attack": 38.3, "defend": 38.3, "death": 30.8}
 WAIST_TWIST_LIMITS = {role: round(1.25 * value, 1) for role, value in VANILLA_WAIST_TWIST_DEGREES.items()}
 STANCE_FOOT_LEVEL = 0.85  # a foot's heading counts when its horizontal part is at least this share of it (within about 32 degrees of level)
+FOOT_HIP_LIMIT = 90.0  # a standing foot turned further than this from the hip line is read by the hip line (`stance_twist_tracks`)
 STANCE_PLANTED = 0.02  # both feet stand when their lower ends are within this share of the height of each other
 STANCE_UPRIGHT = 0.5  # and only while the torso (the hips to the chest) is within 60 degrees of upright
 VANILLA_DEATH_REST = 0.082
@@ -803,20 +804,29 @@ def _wrap(degrees: np.ndarray) -> np.ndarray:
 
 def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, rest_left: np.ndarray, rest_right: np.ndarray,
                         foot_rotations: Sequence[np.ndarray], foot_headings: Sequence[np.ndarray], foot_lifts: Sequence[np.ndarray],
-                        up: int, height: float, torso: Optional[np.ndarray] = None) -> np.ndarray:
+                        up: int, height: float, torso: Optional[np.ndarray] = None, hips: Optional[Sequence[np.ndarray]] = None) -> np.ndarray:
     """Per frame, the shoulder line's turn about the `up` axis against the way the standing feet point, less the rest pose's (degrees);
     NaN in a frame where not every foot stands (the rule in the module docstring).
 
     `shoulder_left` and `shoulder_right` are (F, 3) joint tracks and `rest_left`, `rest_right` their rest positions. Per foot:
     `foot_rotations` (F, 3, 3) the ankle's turn from the rest pose, `foot_headings` (3,) its rest heading (the ankle to the toe), and
     `foot_lifts` (F,) how far its lower end sits above its rest height. `torso` (F, 3), the hips joint to the chest joint: a frame whose torso
-    leans further than `STANCE_UPRIGHT` from upright gives no reading. Blender (Z up) and the exported files (Y up) call this alike."""
+    leans further than `STANCE_UPRIGHT` from upright gives no reading. Blender (Z up) and the exported files (Y up) call this alike.
+
+    A standing foot never faces backward. With `hips` (left hip track, right hip track, their rest positions), a foot whose turn differs
+    from the hip line's by more than `FOOT_HIP_LIMIT` is read by the hip line's turn instead: Tripo's clips turned the ZIN devil's hoof bones
+    167 to 190 degrees about the up axis in every frame, the route read the shoulders as 180 degrees off the feet, and its untwist wrung the
+    spine by up to 141 degrees (run devil_c, 2026-11-22). Vanilla's and the demon's feet never differ that far, so they read as before."""
 
     shoulders = _wrap(_yaw(np.asarray(shoulder_right) - np.asarray(shoulder_left), up) - _yaw(np.asarray(rest_right) - np.asarray(rest_left), up))
     frames = len(shoulders)
     if not len(foot_rotations):
         return np.full(frames, np.nan)
     turns, level = [], []
+    hip_turn = None
+    if hips is not None:
+        left_hip, right_hip, rest_left_hip, rest_right_hip = hips
+        hip_turn = _wrap(_yaw(np.asarray(right_hip) - np.asarray(left_hip), up) - _yaw(np.asarray(rest_right_hip) - np.asarray(rest_left_hip), up))
     for rotation, heading in zip(foot_rotations, foot_headings):
         flat = np.asarray(heading, float).copy()
         flat[up] = 0.0
@@ -825,7 +835,10 @@ def stance_twist_tracks(shoulder_left: np.ndarray, shoulder_right: np.ndarray, r
         length = np.linalg.norm(posed, axis=1)
         across = np.sqrt(np.maximum(length ** 2 - posed[:, up] ** 2, 0.0))
         level.append(across / np.maximum(length, 1e-12) >= STANCE_FOOT_LEVEL)
-        turns.append(_wrap(_yaw(posed, up) - _yaw(flat, up)))
+        turn = _wrap(_yaw(posed, up) - _yaw(flat, up))
+        if hip_turn is not None:
+            turn = np.where(np.abs(_wrap(turn - hip_turn)) > FOOT_HIP_LIMIT, hip_turn, turn)
+        turns.append(turn)
     lifts = np.asarray(foot_lifts, float)
     standing = np.all(level, axis=0) & (lifts.max(axis=0) - lifts.min(axis=0) <= STANCE_PLANTED * height)
     if torso is not None:
@@ -862,7 +875,10 @@ def stance_twist(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation) -> Op
         lifts.append(lift)
     names = {name: i for i, name in enumerate(mesh.bones)}
     torso = posed[:, names["Spine02"]] - posed[:, names["Hips"]] if "Hips" in names and "Spine02" in names else None
-    return stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height, torso)
+    hips = (posed[:, legs.legs[0].hip], posed[:, legs.legs[1].hip], rest[legs.legs[0].hip], rest[legs.legs[1].hip])
+    if (hips[3] - hips[2]) @ (rest[right] - rest[left]) < 0:  # the hip line in the shoulders' left-to-right order
+        hips = (hips[1], hips[0], hips[3], hips[2])
+    return stance_twist_tracks(posed[:, left], posed[:, right], rest[left], rest[right], rotations, headings, lifts, 1, mesh.height, torso, hips)
 
 
 def twist_excess(twist: np.ndarray, target: float) -> np.ndarray:

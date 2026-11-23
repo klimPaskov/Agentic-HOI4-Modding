@@ -2,6 +2,10 @@
 
     py -3.13 .tools/3d_pipeline/tripo/clip_check.py <rigged.glb> [--body tripo_part_0] [--weapon tripo_part_1]
         [--weapon-bone auto|<joint name>] [--samples 24] [--grip-radius 0.12] [--json out.json] [--fail-on-verdict]
+        [--attack <candidate> ...]
+
+With `--attack` it ends with one `attack:` line: the candidates that pass, or `attack: none passes` and exit 3. Run it on the first
+export before you leave Tripo (the card's step 6), so a text-to-motion attack is made while the rigged model is still open.
 
 A plain Tripo export (Rig, Animate, Export, no Segment step) is one skinned mesh: its mesh node is named `tripo_node_<id>` and its mesh
 `tripo_mesh_<id>`, not `tripo_part_0`. When the body is left at its default name and the file has no such node, the one skinned mesh is
@@ -49,11 +53,17 @@ import argparse
 import json
 import re
 import struct
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
+
+# lib/ sits beside tripo/: a lazy `from lib import ...` (canonical_names) must work when this file is imported on its own, as a test does.
+PIPELINE_ROOT = Path(__file__).resolve().parents[1]
+if str(PIPELINE_ROOT) not in sys.path:
+    sys.path.insert(0, str(PIPELINE_ROOT))
 
 # Thresholds. Calibrated against the Tripo orc trials: the known-bad text-to-motion swing clip
 # (the haft through torso and cape in its first frames) fails clearly, idle and walk pass.
@@ -649,6 +659,34 @@ def print_table(result: dict) -> None:
         print(f"{label:<34}{c['stretched_pct']:>9.2f}{c['weapon_in_body_pct']:>9.2f}{c['weapon_deep_in_body_pct']:>7.2f}{c['deepest_penetration_pct_of_height']:>8.2f}{c['weapon_below_ground_pct']:>8.2f}  {c['verdict']}" + (f"  ({'; '.join(c['reasons'])})" if c["reasons"] else ""))
 
 
+# `--attack`: exit code when no attack candidate passes, so the card's "before you leave Tripo" step can branch on it.
+NO_ATTACK_EXIT = 3
+
+
+def attack_line(result: dict, candidates: List[str]) -> tuple:
+    """The `attack:` line of the card's "before you leave Tripo" step: which attack candidates pass, by the clip verdicts above, and
+    whether a text-to-motion attack must be made before the Tripo tab is closed (the hobgoblin run, 2026-11-22, learnt only after leaving
+    that `chop`, its one free candidate, fails the stretch). A candidate is a clip name or its first words."""
+
+    clips = result["clips"]
+    passed, failed, absent = [], [], []
+    for wanted in candidates:
+        names = [name for name in clips if name == wanted] or [name for name in clips if name.startswith(wanted)]
+        if not names:
+            absent.append(wanted)
+        for name in names:
+            (passed if clips[name]["verdict"] == "pass" else failed).append(name)
+    notes = []
+    if failed:
+        notes.append("fail: " + ", ".join(f"{name} ({'; '.join(clips[name]['reasons'])})" for name in failed))
+    if absent:
+        notes.append("not in the file: " + ", ".join(absent) + " (apply the tile and export again)")
+    if passed:
+        return f"attack: pass {', '.join(passed)}" + (f". {'. '.join(notes)}" if notes else ""), True
+    return ("attack: none passes. " + (". ".join(notes) + ". " if notes else "")
+            + "Make one text-to-motion attack now, before you leave Tripo, export again and run this again"), False
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("glb", type=Path)
@@ -661,6 +699,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--ground-tolerance", help="clip=share,... : own per-frame below-ground tolerance (share of the body height) for named clips, for example a death clip that lies on the ground")
     parser.add_argument("--json", type=Path, help="write the full report here")
     parser.add_argument("--fail-on-verdict", action="store_true", help="exit 1 when any clip fails")
+    parser.add_argument("--attack", nargs="+", metavar="CLIP", help="the attack candidates (names or first words): print the `attack:` line and exit 3 when none passes")
     args = parser.parse_args(argv)
     result = check(args.glb, args.body, args.weapon, args.weapon_bone, args.samples, args.grip_radius, args.ground_per_frame, ground_tolerance_by_clip={k: float(v) for k, _, v in (item.rpartition("=") for item in args.ground_tolerance.split(","))} if args.ground_tolerance else None)
     print_table(result)
@@ -668,6 +707,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         args.json.parent.mkdir(parents=True, exist_ok=True)
         args.json.write_text(json.dumps(result, indent=1), encoding="utf-8", newline="\n")
     failed = [n for n, c in result["clips"].items() if c["verdict"] == "fail"]
+    if args.attack:
+        line, ok = attack_line(result, args.attack)
+        print(line)
+        if not ok:
+            return NO_ATTACK_EXIT
     return 1 if args.fail_on_verdict and failed else 0
 
 

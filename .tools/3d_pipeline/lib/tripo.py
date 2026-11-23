@@ -106,17 +106,24 @@ def atlas_layout(sizes, strip: float = ATLAS_STRIP):
     return {"size": side, "main": main, "rects": rects}
 
 
+GLB_NAME_LIMIT = 63  # Blender keeps a clip name at most this long, so a longer prompt comes back cut to it
+
+
 def resolve_clip_name(wanted: str, names) -> str:
     """The clip a role names: an exact clip name, else the one clip whose name starts with `wanted`.
 
     Tripo names a text-to-motion clip with its whole prompt, so a role may give just its first words.
-    A prefix that matches two clips or none is refused, and the error lists every clip name.
+    A role longer than the GLB name limit may name a clip that came back cut to that limit, so a
+    cut name that starts the role also matches. A prefix that matches two clips or none is refused,
+    and the error lists every clip name.
     """
 
     names = sorted(set(names))
     if wanted in names:
         return wanted
     found = [name for name in names if name.startswith(wanted)]
+    if not found:
+        found = [name for name in names if len(name) >= GLB_NAME_LIMIT and wanted.startswith(name)]
     if len(found) == 1:
         return found[0]
     problem = "matches several clips" if found else "matches no clip"

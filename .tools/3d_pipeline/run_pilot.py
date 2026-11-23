@@ -143,7 +143,11 @@ def stage_vanilla_reference(job: Path, spec: Dict[str, Any]) -> Optional[Dict[st
         # A relative path, such as the profile's own `gfx/models/units/western_european_infantry.mesh`, is a file of the installed game.
         source = (installed_game_dir() / str(reference["mesh"])).resolve()
     if not source.is_file():
-        raise FileNotFoundError(f"Installed vanilla scale reference is missing: {source}")
+        raise FileNotFoundError(
+            f"Installed vanilla scale reference is missing: {source}. The game folder is {installed_game_dir()}: when that is "
+            f"not the installed game (a local run of CI's `check.py setup --save-game-dir <temp>` writes a stand-in into "
+            f"`.tools/local_settings.json`), set it again with `py -3.13 -B .tools/check.py setup --save-game-dir <your Hearts of Iron IV folder>`"
+        )
     destination = job / "blender" / "reference" / source.name
     destination.parent.mkdir(parents=True, exist_ok=True)
     source_record = file_record(source)
@@ -3883,11 +3887,30 @@ def pose_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any,
     grab_staged_attack(staged, stem, spec, roles, records)
 
 
+def amplify_staged_roles(staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
+    """Each role the job asks to amplify for the map camera (`"amplify": {role: factor}`, lib/tripo_amplify.py), on the staged files,
+    recorded."""
+
+    asked = (spec.get("tripo") or {}).get("amplify") or {}
+    if not asked:
+        return
+    import check_unit_files
+    from lib import tripo_amplify
+
+    mesh = staged / f"{stem}.mesh"
+    limits = check_unit_files.load_calibration("organic")
+    for role, factor in asked.items():
+        if role in roles and (staged / f"{stem}_{role}.anim").is_file():
+            records[f"{stem}_{role}.anim"]["amplify"] = tripo_amplify.amplify_clip(mesh, staged / f"{stem}_{role}.anim", float(factor), limits)
+
+
 def step_and_pose_staged_roles(job: Path, staged: Path, stem: str, spec: Dict[str, Any], roles: Any, records: Dict[str, Any]) -> None:
-    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), on the staged files."""
+    """The kept lunge steps restored (restore_staged_lunges), then the role poses (pose_staged_roles), then the amplified roles
+    (amplify_staged_roles), on the staged files."""
 
     restore_staged_lunges(job, staged, stem, spec, roles, records)
     pose_staged_roles(staged, stem, spec, roles, records)
+    amplify_staged_roles(staged, stem, spec, roles, records)
 
 
 def registration_streams(mesh: Path) -> Dict[str, List[Dict[str, str]]]:

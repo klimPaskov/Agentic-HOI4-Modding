@@ -32,6 +32,7 @@ except ImportError:  # pragma: no cover - used when the module is imported on it
 KIND_PDXMESH = "pdxmesh"
 KIND_ANIMATIONS = "animations"
 KIND_ENTITY = "entity"
+KIND_TEXTICON = "texticon"
 MARKER_PREFIX = "# wire_unit"
 SOURCE_SUFFIXES = (".gfx", ".asset")
 SOUND_FILE_SUFFIXES = (".wav", ".ogg", ".mp3")
@@ -291,7 +292,7 @@ def upsert_block(existing: Optional[TextFile], *, stem: str, kind: str, block: s
 
     new_lines = marked(stem, kind, block)
     if existing is None:
-        lines = ["objectTypes = {", "", *new_lines, "}"] if wrapper else new_lines
+        lines = [f"{wrapper} = {{", "", *new_lines, "}"] if wrapper else new_lines
         return TextFile.new(lines)
     rows = list(existing.rows)
     newline = existing.newline
@@ -454,8 +455,18 @@ def _event_inserts(states: Sequence[Tuple[int, int, str]], events: Sequence[Soun
             if name not in targets:
                 continue
             _check_event_frame(event, name, clip_samples, stem)
-            inserts.setdefault(state_first, []).append(f'\t\tevent = {{ time = {event.frame} sound = {{ soundeffect = "{_quoted(event.soundeffect)}" }} }}')
+            inserts.setdefault(state_first, []).append(sound_event_line(event.soundeffect, event.frame))
     return inserts
+
+
+CLIP_FPS = 30.0  # the kit's clips and vanilla's units
+
+
+def sound_event_line(soundeffect: str, frame: int, fps: float = CLIP_FPS, indent: str = "\t\t") -> str:
+    """An entity sound event at a clip frame. An event's `time` is seconds of the clip, frame / fps: vanilla's destroyed landmarks fire
+    their first explosion within 0.2 s of the frame their clip hides the part (calibrate_effects.py, `time_unit`)."""
+
+    return f'{indent}event = {{ time = {round(frame / fps, 3):g} sound = {{ soundeffect = "{_quoted(soundeffect)}" }} }}'
 
 
 def _splice_state(lines: Sequence[str], position: int, last: int, added: Sequence[str]) -> List[str]:
@@ -522,6 +533,61 @@ def apply_particle_events(entity_block: str, state: str, events: Sequence[Dict[s
     return "\n".join(out)
 
 
+_EVENT_NODE = re.compile(r'^\s*event\s*=\s*\{.*\bnode\s*=\s*"([^"]+)".*\bparticle\s*=')
+
+
+def apply_effect_events(entity_block: str, events: Sequence[Dict[str, Any]], sounds: Sequence[Dict[str, Any]] = (), add_states: Sequence[str] = ()) -> str:
+    """The effects layer's events (lib/unit_effects.py plan) written into the entity's states for their roles.
+
+    An existing particle event at one of the plan's locators in a target state is replaced (the static route copies vanilla's entity,
+    whose muzzle flash fires at time 0 while the kit's clip turns the turret before the shot). A role in `add_states` that the entity has
+    no state for gets one that plays the role's clip (a vanilla light tank has no death state). `sounds` are `{role, soundeffect, frame}`.
+    """
+
+    lines = entity_block.split("\n")
+    names = [name for _f, _l, name in _entity_states(lines)]
+    for role in add_states:
+        if role in names:
+            continue
+        closing = max(i for i, line in enumerate(lines) if line.strip() == "}") if any(l.strip() == "}" for l in lines) else len(lines)
+        anchor = next((i for i in range(len(lines) - 1, -1, -1) if _STATE_START.match(lines[i])), None)
+        insert_at = closing
+        if anchor is not None:
+            last = next(l for f, l, _n in _entity_states(lines) if f == anchor)
+            insert_at = last + 1
+        lines[insert_at:insert_at] = [f'\tstate = {{ name = "{role}"\t\t\tanimation = "{role}" animation_blend_time = 0.3 looping = no }}']
+        names.append(role)
+    states = _entity_states(lines)
+    nodes = {str(e["node"]) for e in events if e.get("node")}
+    inserts: Dict[int, List[str]] = {}
+    for first, _last, name in states:
+        role = name if name in {e["role"] for e in [*events, *sounds]} else STATE_TO_ROLE.get(name, name)
+        if name == "idle" and role != "idle":
+            continue
+        added = [_effect_line(e) for e in events if e["role"] in (name, role)]
+        added += [sound_event_line(s["soundeffect"], int(s["frame"])) for s in sounds if s["role"] in (name, role)]
+        if added:
+            inserts[first] = list(dict.fromkeys(added))
+    out: List[str] = []
+    position = 0
+    by_first = {first: last for first, last, _n in states}
+    while position < len(lines):
+        if position not in inserts:
+            out.append(lines[position])
+            position += 1
+            continue
+        last = by_first[position]
+        body = [lines[position]] + [line for line in lines[position + 1: last + 1] if not ((m := _EVENT_NODE.match(line)) and m.group(1) in nodes)]
+        out += _splice_state(body, 0, len(body) - 1, inserts[position])
+        position = last + 1
+    return "\n".join(out)
+
+
+def _effect_line(event: Dict[str, Any]) -> str:
+    node = f' node = "{_quoted(str(event["node"]))}"' if event.get("node") else ""
+    return f'\t\tevent = {{ time = {float(event.get("time", 0)):g}{node} particle = "{_quoted(str(event["particle"]))}" keep_particle = yes }}'
+
+
 def finite_particle(text: str, name: str, duration: float) -> str:
     """A copy of a vanilla particle file (`particle = { name = "..." subsystem = {...} }`) under its own `name`, every endless subsystem
     (`duration=-1`) made to emit for `duration` seconds, so the burn's fire dies out with the unit instead of burning on."""
@@ -544,10 +610,9 @@ def sprite_token(registration: Registration) -> str:
     return registration.entity_name.removesuffix("_entity")
 
 
-def find_subunits(mod_root: Path, sprite: str, audit: object) -> List[Tuple[str, str]]:
-    """(sub-unit id, file) for each `common/units` sub-unit whose `sprite` is `sprite`. `audit` is the kit's audit module."""
+def _subunit_blocks(mod_root: Path, sprite: str, audit: object) -> Iterable[Tuple[str, Path, list]]:
+    """(sub-unit id, file, parsed block) for each `common/units` sub-unit whose `sprite` is `sprite`."""
 
-    found: List[Tuple[str, str]] = []
     for path in audit._files(mod_root, "common/units"):  # type: ignore[attr-defined]
         for key, _operator, value, _line in audit._parse_source(path):  # type: ignore[attr-defined]
             if key != "sub_units" or not isinstance(value, list):
@@ -555,8 +620,66 @@ def find_subunits(mod_root: Path, sprite: str, audit: object) -> List[Tuple[str,
             for unit, _op, block, _l in value:
                 token = audit._scalar_node(block, "sprite") if isinstance(block, list) else None  # type: ignore[attr-defined]
                 if token is not None and token[0] == sprite:
-                    found.append((unit, path.relative_to(mod_root).as_posix()))
-    return sorted(found)
+                    yield unit, path, block
+
+
+def find_subunits(mod_root: Path, sprite: str, audit: object) -> List[Tuple[str, str]]:
+    """(sub-unit id, file) for each `common/units` sub-unit whose `sprite` is `sprite`. `audit` is the kit's audit module."""
+
+    return sorted((unit, path.relative_to(mod_root).as_posix()) for unit, path, _block in _subunit_blocks(mod_root, sprite, audit))
+
+
+def subunit_groups(mod_root: Path, sprite: str, audit: object) -> Dict[str, str]:
+    """sub-unit id -> its `group` ("" when it sets none), for each sub-unit whose `sprite` is `sprite`."""
+
+    groups: Dict[str, str] = {}
+    for unit, _path, block in _subunit_blocks(mod_root, sprite, audit):
+        token = audit._scalar_node(block, "group")  # type: ignore[attr-defined]
+        groups[unit] = token[0] if token else ""
+    return groups
+
+
+# The game's text icon art a new sub-unit borrows until it has its own, by the sub-unit's `group` (vanilla's seven groups).
+TEXTICON_ART = {"armor": "medium_armor", "armor_combat_support": "medium_armor", "infantry": "infantry", "mobile": "motorized",
+                "mobile_combat_support": "mechanized", "combat_support": "artillery", "support": "engineer"}
+
+
+def texticon_block(groups: Dict[str, str], skip: Iterable[str] = ()) -> Tuple[str, List[Dict[str, str]]]:
+    """The `spriteType` blocks of `GFX_unit_<id>_icon_small` for each sub-unit not in `skip`, as vanilla's `interface/texticons.gfx`
+    defines them (two frames, the game's own art for the group), and a row per icon for the report."""
+
+    skipped = set(skip)
+    blocks: List[str] = []
+    rows: List[Dict[str, str]] = []
+    for unit, group in sorted(groups.items()):
+        token = f"GFX_unit_{unit}_icon_small"
+        if token in skipped:
+            rows.append({"token": token, "status": "mod", "art": ""})
+            continue
+        art = f"gfx/texticons/unit_{TEXTICON_ART.get(group, 'infantry')}_icon_small.dds"
+        blocks.append(f'\tspriteType = {{\n\t\tname = "{token}"\n\t\ttexturefile = "{art}"\n\t\tlegacy_lazy_load = no\n\t\tnoOfFrames = 2\n\t}}')
+        rows.append({"token": token, "status": "written", "art": art})
+    return "\n".join(blocks), rows
+
+
+def plan_texticons(mod_root: Path, stem: str, groups: Dict[str, str], prefix: str, plan: Plan) -> List[Dict[str, str]]:
+    """Add the sub-units' text icons (`GFX_unit_<id>_icon_small`, which the counter and the division designer look up on every refresh,
+    "Couldnt find texticon" in the error log) to the plan, in `interface/<prefix>_texticons.gfx` between this tool's markers. An icon the
+    mod already defines outside the markers is left alone."""
+
+    interface = mod_root / "interface"
+    defined = set()
+    for path in sorted(interface.glob("*.gfx")) if interface.is_dir() else []:
+        defined.update(name for name, _rest in SPRITE_DEF.findall(strip_blocks(read_text_lenient(path), stem)))
+    block, rows = texticon_block(groups, defined)
+    if block:
+        rel = _choose_target(mod_root, stem, KIND_TEXTICON, ".gfx", None, f"interface/{prefix}_texticons.gfx", plan)
+        before = len(plan.items)
+        _plan_block_group(mod_root, rel, [Target(rel, ".gfx", stem, KIND_TEXTICON, block, "spriteTypes")], plan)
+        entity = [index for index, item in enumerate(plan.items[:before]) if f"{KIND_ENTITY} (" in item.detail]
+        if len(plan.items) > before and entity:
+            plan.items.insert(entity[0], plan.items.pop())  # the entity stays the last block written
+    return rows
 
 
 LOC_HEADER = re.compile(r"^\s*(l_[a-z_]+)\s*:", re.M)

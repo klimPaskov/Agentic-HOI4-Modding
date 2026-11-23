@@ -4,7 +4,8 @@ Usage (from the repository root):
 
     py -3.13 -B .tools/3d_pipeline/wire_unit.py <job_root_or_job_id> --mod-root <mod> [--dry-run] [--json]
 
-Reads the job's `runtime/registration.md`, `runtime/files/` and `job.yaml`, then:
+Reads the job's `runtime/registration.md`, `runtime/files/` and `job.yaml`, then (a static model's `static_model.py --out` folder
+holds the same `runtime/` layout, so it is wired the same way):
 
 1. writes the `pdxmesh`, animation and entity blocks into the mod between marker comments
    (`# wire_unit begin <stem> <kind>` and `# wire_unit end ...`), replacing only its own block on a
@@ -15,8 +16,11 @@ Reads the job's `runtime/registration.md`, `runtime/files/` and `job.yaml`, then
 2. checks that a sub-unit in `common/units` has `sprite = <stem>` and that its localisation keys
    (`<id>`, `<id>_desc`) exist. It lists what is missing and never writes either.
 3. lists the counter sprites the unit needs (`GFX_unit_<sprite>_icon_medium` and `_medium_white`) and whether
-   the mod or only the game defines each. Report only.
-4. writes `event = { time = <frame> sound = { soundeffect = "..." } }` lines for the job's `sound_plan`
+   the mod or only the game defines each. Report only. It writes each sub-unit's text icon `GFX_unit_<id>_icon_small` (the game
+   looks it up on every counter refresh and logs "Couldnt find texticon" without it) into `interface/<prefix>_texticons.gfx`,
+   borrowing the game's art for the sub-unit's `group`, unless the mod defines it already. It warns when `descriptor.mod` sets no
+   `supported_version`.
+4. writes `event = { time = <seconds> sound = { soundeffect = "..." } }` lines (seconds = frame / 30) for the job's `sound_plan`
    (a list in job.yaml of `{role, soundeffect, frame}`). Without a plan it warns "no sound plan". Sound is
    never generated.
 5. runs `check_unit_files.py --mod-root` and `.tools/audits/audit_asset_wiring_static.py --root` on the mod
@@ -32,6 +36,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -46,10 +51,11 @@ from lib.paths import load_unit_types, read_job_document, resolve_job_root
 from lib import unit_wiring as wiring
 
 JOB_ID_PREFIX = "hoi4_3d_model_jobs_"
+SUPPORTED_VERSION = "1.19.*"
 CHECK_TIMEOUT_SECONDS = 900
 SOUND_TIME_WARNING = (
-    "sound events: the unit of `time` in an entity event is unverified (vanilla uses values like 0.1 and 14, see .tools/wiki/kit/entity_modding.md); "
-    "the tool writes the plan's frame number as it is, so check the timing in the game"
+    "sound events: each plan frame is written as time = frame / 30, the clip's seconds (vanilla's destroyed landmarks fire their first "
+    "explosion within 0.2 s of the frame their clip hides the part, calibrate_effects.py); hear in the game that the sound lands on its frame"
 )
 
 
@@ -90,9 +96,18 @@ def load_audit_module() -> Optional[object]:
     return audit
 
 
-def run_check_unit_files(mod_root: Path, folder: Path, unit_type: Optional[str]) -> Dict[str, Any]:
-    command = [sys.executable, "-B", str(PIPELINE / "check_unit_files.py"), str(folder), "--mod-root", str(mod_root), "--json"]
-    if unit_type:
+def static_checks(job: Path) -> List[str]:
+    """The static checks' arguments a static model's registration.md records (`Static checks: `--model-kind vehicle ...``, written by
+    tripo/static_model.py), so a building is checked by the building rules and not the unit rules (UNIT-LOOSE-PART). Empty for a unit."""
+
+    path = job / "runtime" / "registration.md"
+    found = re.search(r"(?m)^Static checks: `([^`]*)`", read_input_text(path)) if path.is_file() else None
+    return found.group(1).split() if found else []
+
+
+def run_check_unit_files(mod_root: Path, folder: Path, unit_type: Optional[str], checks: Sequence[str] = ()) -> Dict[str, Any]:
+    command = [sys.executable, "-B", str(PIPELINE / "check_unit_files.py"), str(folder), "--mod-root", str(mod_root), "--json", *checks]
+    if unit_type and not checks:
         command += ["--unit-type", unit_type]
     done = subprocess.run(command, capture_output=True, text=True, timeout=CHECK_TIMEOUT_SECONDS, cwd=str(mod_root))
     try:
@@ -173,13 +188,15 @@ def load_clip_samples(job: Path) -> Dict[str, int]:
     return {name: item["samples"] for name, item in animations.items() if isinstance(item, dict) and isinstance(item.get("samples"), int)}
 
 
-def plan_sound(spec: Dict[str, Any], registration: wiring.Registration, clip_samples: Dict[str, int], errors: List[str], warnings: List[str]) -> Tuple[str, Dict[str, Any]]:
+def plan_sound(spec: Dict[str, Any], registration: wiring.Registration, clip_samples: Dict[str, int], errors: List[str], warnings: List[str],
+               job: Optional[Path] = None) -> Tuple[str, Dict[str, Any]]:
     """The entity block with the job's sound events written in, and what the sound plan said."""
 
     sound: Dict[str, Any] = {"plan": False, "events": [], "problems": []}
     entity_block = registration.entity_block
     try:
         events = wiring.parse_sound_plan(spec.get("sound_plan") or plan_section(spec).get("sound_plan"))
+        events += effect_sounds((job / "runtime" / "files") if job else None, registration.stem, events)
         if not events:
             warnings.append("no sound plan: the unit's entity has no sound events (sounds are never generated; add a sound_plan to job.yaml or write them by hand)")
             return entity_block, sound
@@ -232,6 +249,44 @@ def plan_particles(job: Path, registration: wiring.Registration, entity_block: s
     return entity_block, report
 
 
+def effect_sounds(folder: Optional[Path], stem: str, planned: Sequence[Any]) -> List[Any]:
+    """The effects plan's sounds (lib/unit_effects.py) as sound plan events, at the frames of their particles. A role the job's own
+    sound_plan already gives a sound at that frame keeps the job's."""
+
+    from lib import unit_effects
+
+    plan = unit_effects.read_plan(folder, stem) if folder else None
+    taken = {(e.role, e.frame) for e in planned}
+    return [wiring.SoundEvent(s["role"], s["soundeffect"], int(s["frame"]), "") for s in (plan or {}).get("sounds", [])
+            if (s["role"], int(s["frame"])) not in taken]
+
+
+def plan_effects(job: Path, registration: wiring.Registration, entity_block: str, errors: List[str], warnings: List[str]) -> Tuple[str, Dict[str, Any]]:
+    """The entity block with the effects layer's particle events (`<stem>_effects.json` beside the runtime files, written by
+    tripo/effects_stage.py), and the adapted particle files with their `.gfx` registration."""
+
+    from lib import unit_effects
+
+    stem = registration.stem
+    folder = job / "runtime" / "files"
+    plan = unit_effects.read_plan(folder, stem)
+    report: Dict[str, Any] = {"plan": bool(plan), "events": [], "files": []}
+    if not plan:
+        return entity_block, report
+    files, problems = unit_effects.particle_files(plan, game_dir())
+    errors += [f"effects: {problem}" for problem in problems]
+    report["files"] = files
+    report["events"] = [{"role": e["role"], "time": e["time"], "node": e["node"], "particle": e["particle"]} for e in plan["events"]]
+    try:
+        entity_block = wiring.apply_effect_events(entity_block, plan["events"])
+    except wiring.WiringError as error:
+        errors.append(f"effects: {error}")
+    found = unit_effects.findings(folder, stem, plan, game=game_dir())
+    errors += [f"effects {f['rule']}: {f['message']}" for f in found]
+    warnings.append("effects: only the game draws the real particles; ask for the in-game checks of docs/3d-effects.md")
+    return entity_block, report
+
+
 def add_particle_files(mod_root: Path, particles: Dict[str, Any], plan: wiring.Plan) -> None:
     for rel, text in particles.get("files", []):
         data = text.encode("utf-8")
@@ -246,15 +301,26 @@ def check_subunits(mod_root: Path, registration: wiring.Registration, errors: Li
     audit = load_audit_module()
     sprite = wiring.sprite_token(registration)
     subunits: List[Any] = []
+    groups: Dict[str, str] = {}
     if audit is None:
         warnings.append("the kit's registration audit could not be imported, so the sub-unit sprite was not checked")
     else:
         subunits = wiring.find_subunits(mod_root, sprite, audit)
+        groups = wiring.subunit_groups(mod_root, sprite, audit)
     missing_loc = wiring.missing_localisation(mod_root, [unit for unit, _file in subunits])
     if audit is not None and not subunits:
         errors.append(f"no sub-unit in common/units has sprite = {sprite}, so the entity is never used (write the sub-unit in the mod)")
     errors += [f"localisation key {key} is not defined (write it in the mod's localisation)" for key in missing_loc]
-    return {"sprite": sprite, "subunits": [{"id": unit, "file": file} for unit, file in subunits], "missing_localisation": missing_loc}
+    return {"sprite": sprite, "subunits": [{"id": unit, "file": file} for unit, file in subunits], "missing_localisation": missing_loc, "groups": groups}
+
+
+def check_descriptor(mod_root: Path, warnings: List[str]) -> None:
+    """Warn when the mod's descriptor.mod sets no supported_version, which a scratch test mod needed before it ran in the game
+    (2026-11-23)."""
+
+    descriptor = mod_root / "descriptor.mod"
+    if descriptor.is_file() and not re.search(r"(?m)^\s*supported_version\s*=", wiring.read_text_lenient(descriptor)):
+        warnings.append(f'{descriptor.name} sets no supported_version: add supported_version="{SUPPORTED_VERSION}" (and to the launcher\'s .mod file)')
 
 
 def report_counters_and_sounds(mod_root: Path, sprite: str, sound: Dict[str, Any], result: Dict[str, Any], warnings: List[str]) -> None:
@@ -276,7 +342,7 @@ def run_written_checks(args: argparse.Namespace, mod_root: Path, registration: w
     wiring.apply_plan(mod_root, plan)
     written = [item.path for item in plan.items if item.status != "unchanged"]
     unit_type = spec.get("unit_type") if spec.get("unit_type") in load_unit_types() else None
-    files_check = run_check_unit_files(mod_root, mod_root / wiring.model_folder(registration), unit_type)
+    files_check = run_check_unit_files(mod_root, mod_root / wiring.model_folder(registration), unit_type, static_checks(Path(result["job"])))
     result["checks"]["check_unit_files"] = {"exit": files_check["exit"], "errors": files_check["errors"], "warnings": files_check["warnings"]}
     errors += [f"check_unit_files: {line}" for line in files_check["errors"]]
     warnings += [f"check_unit_files: {line}" for line in files_check["warnings"]]
@@ -307,8 +373,11 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
     warnings: List[str] = []
     if spec_stem and spec_stem != stem:
         errors.append(f"job.yaml's runtime stem {spec_stem} differs from the registration's {stem}")
-    entity_block, sound = plan_sound(spec, registration, load_clip_samples(job), errors, warnings)
+    entity_block, sound = plan_sound(spec, registration, load_clip_samples(job), errors, warnings, job)
     entity_block, particles = plan_particles(job, registration, entity_block, errors, warnings)
+    entity_block, effects = plan_effects(job, registration, entity_block, errors, warnings)
+    particles["files"] = particles.get("files", []) + effects.pop("files", [])
+    particles["effects"] = effects
     plan = wiring.build_plan(
         mod_root=mod_root,
         registration=registration,
@@ -318,9 +387,15 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
         entity_file=args.entity_file,
         prefix=args.prefix,
     )
-    errors += plan.errors
     add_particle_files(mod_root, particles, plan)
+    subunit_errors: List[str] = []
+    subunit = check_subunits(mod_root, registration, subunit_errors, warnings)
+    texticons = wiring.plan_texticons(mod_root, stem, subunit.pop("groups"), args.prefix or wiring.default_prefix(mod_root, stem), plan)
+    warnings += [f"text icon {row['token']} borrows the game's {row['art']} (draw the unit's own icon if it needs one)" for row in texticons if row["status"] == "written"]
+    check_descriptor(mod_root, warnings)
+    errors += plan.errors
     blocking = bool(errors)  # errors found before any write: the job, the sound plan and the plan itself
+    errors += subunit_errors
     result: Dict[str, Any] = {
         "job": str(job),
         "stem": stem,
@@ -331,7 +406,8 @@ def collect(args: argparse.Namespace) -> Dict[str, Any]:
         "particles": {key: value for key, value in particles.items() if key != "files"},
         "checks": {},
     }
-    result["subunit"] = check_subunits(mod_root, registration, errors, warnings)
+    result["subunit"] = subunit
+    result["texticons"] = texticons
     report_counters_and_sounds(mod_root, result["subunit"]["sprite"], sound, result, warnings)
     if blocking:
         warnings.append("checks not run: the job or plan has errors, so nothing was written")
@@ -359,6 +435,8 @@ def print_text(result: Dict[str, Any]) -> None:
     print(f"sub-unit with sprite = {sub['sprite']}: {ids}")
     for key in sub["missing_localisation"]:
         print(f"  missing localisation: {key}")
+    for row in result.get("texticons", []):
+        print(f"  text icon {row['token']}: {row['status']} {row['art']}".rstrip())
     print("counters:")
     for counter in result["counters"]:
         print(f"  {counter['status']:19} {counter['token']} ({counter['role']})")

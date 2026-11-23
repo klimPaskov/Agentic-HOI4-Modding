@@ -83,6 +83,19 @@ from lib.tripo_shield import SHIELD_BONE, SHIELD_PART
 DEFAULT_EASE_SNAPS = 14.0
 PREPARE_SCRIPT = PIPELINE_ROOT / "tripo" / "prepare_tripo_unit.py"
 RECEIPT = "provider/tripo_intake.json"
+
+
+def receipt_name(stage: str) -> str:
+    """Each generation stage keeps its own receipt, so a re-export under a new `generation_stage` is not refused by the first one's."""
+
+    return RECEIPT if stage == "generation" else RECEIPT.replace(".json", f"_{stage}.json")
+
+
+def next_stage(stage: str) -> str:
+    """`generation` -> `generation_2` -> `generation_3`."""
+
+    head, _, tail = stage.rpartition("_")
+    return f"{head}_{int(tail) + 1}" if head and tail.isdigit() else f"{stage}_2"
 SUCCEEDED = "SUCCEEDED"
 
 
@@ -111,6 +124,31 @@ def intake_files(spec: Dict[str, Any], slug: str, inbox: Path) -> Dict[str, Path
     if missing:
         raise FileNotFoundError(f"The inbox {inbox} lacks {', '.join(missing)}. Name each Tripo export <asset_slug>__<kind>.glb.")
     return found  # type: ignore[return-value]
+
+
+def refuse_unfitting_clips(spec: Dict[str, Any]) -> None:
+    """Refuse a job whose role clips do not fit the unit (D-127): a modern boxing, kick or dance preset never does, whatever the checks say
+    (`config/tripo_presets.json`, `never_fitting`)."""
+
+    from lib import tripo_presets
+
+    found = tripo_presets.unfitting_clips(spec)
+    if found:
+        raise ValueError(f"{spec.get('asset_id', 'the job')}: {tripo_presets.unfitting_message(found)}.")
+    renamed = tripo_presets.renamed_tile_clips(spec)
+    if renamed:
+        raise ValueError(f"{spec.get('asset_id', 'the job')}: {' '.join(renamed.values())}")
+
+
+def refuse_shared_clips(spec: Dict[str, Any], slug: str) -> None:
+    """UNIT-ANIM-SHARED in the route (D-136): refuse a job whose role clips another unit type of the mod already holds in the mod's
+    claims (`.hoi4_3d/anim_claims.json`, `tripo/anim_claims.py`). A reskin sets `reskin_of` and shares its base unit's clips."""
+
+    from lib import anim_claims
+
+    found = anim_claims.job_conflicts(spec, slug)
+    if found:
+        raise ValueError(f"{spec.get('asset_id', slug)}: {anim_claims.conflict_message(found)}.")
 
 
 def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
@@ -360,6 +398,8 @@ def run_intake(
     slug = spec["asset_id"].rsplit(".", 1)[-1]
     job = ensure_job_layout(resolve_job_root(slug))
     files = intake_files(spec, slug, Path(inbox))
+    refuse_unfitting_clips(spec)
+    refuse_shared_clips(spec, slug)
     if "rigged" in files:
         refuse_travelling_clips(spec, files["rigged"])
     sources = [
@@ -367,17 +407,17 @@ def run_intake(
         for kind, path in sorted(files.items())
     ]
     task_id = task_id or default_task_id(files)
-    receipt_path = job / RECEIPT
+    generation_stage = run_pilot.generation_stage_for(spec)
+    receipt_path = job / receipt_name(generation_stage)
     if receipt_path.is_file():
         previous = read_json(receipt_path)
         if previous["sources"] == sources:
             return {**previous, "state": "already_ingested"}
         raise RuntimeError(
-            f"{slug} already took other Tripo files (task {previous['task_id']}). A new export is a new stage: "
-            f"set \"generation_stage\": \"generation_2\" in the job entry, then run the intake again."
+            f"{slug} already took other Tripo files under \"generation_stage\": \"{generation_stage}\" (task {previous['task_id']}). "
+            f"A new export is a new stage: set \"generation_stage\": \"{next_stage(generation_stage)}\" in the job entry, then run the intake again."
         )
     downloads = job / "provider" / "downloads"
-    generation_stage = run_pilot.generation_stage_for(spec)
     base = downloads / run_pilot.generation_download_name(spec, "glb")
     outputs: Dict[str, Any] = {}
     prepared: Optional[Dict[str, Any]] = None

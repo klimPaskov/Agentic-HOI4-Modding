@@ -2,11 +2,14 @@
 
     py -3.13 -B .tools/3d_pipeline/tripo/weapon_sheets.py <unit folder> --out <review folder> --sheet close
     py -3.13 -B .tools/3d_pipeline/tripo/weapon_sheets.py <unit folder> --out <review folder> --sheet game
+    py -3.13 -B .tools/3d_pipeline/tripo/weapon_sheets.py <unit folder> --out <review folder> --sheet preview
 
 `--sheet close` writes `sheets/weapon_frames.png`: every clip of the unit (one row each), three evenly
 spaced frames (first, middle, last), a front three-quarter view at close-up size. `--sheet game` writes
 `sheets/game_size.png` (and a 3x nearest-neighbour copy for reading): the idle and move clips, four
-frames each, in the HOI4 map camera and the front view, scaled so the unit is about 60 px tall.
+frames each, in the HOI4 map camera and the front view, scaled so the unit is about 60 px tall. It judges the still model's size and
+silhouette beside vanilla. `--sheet preview` writes `sheets/preview_size.png`: every clip in six frames, a front three-quarter view in tiles
+the size of the game's designer preview (`lib/designer_preview.py`, 249 px), where the clips are judged (D-140).
 Each call is one Blender start (the review renderer), so a caller can gate them one by one.
 """
 
@@ -25,7 +28,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
 import review_unit
-from lib import heavy_job, pdx_deform
+from lib import designer_preview, heavy_job, pdx_deform
 
 THREE_QUARTER = {"threequarter": [35, 8]}
 CLOSE_SIZE, CLOSE_SHARE = 512, 1.15
@@ -167,11 +170,28 @@ def game_sheet(folder: Path, out: Path) -> Path:
     return target
 
 
+def preview_sheet(folder: Path, out: Path) -> Path:
+    """Every clip at the size of the game's designer preview, where a player watches a unit's animations (D-140): six frames each, the
+    front three-quarter view, in tiles `designer_preview.PREVIEW_PX` square with the unit fitted as the close-up sheets fit it."""
+
+    index = render_tiles(folder, out, [], 6, ["threequarter"], THREE_QUARTER, designer_preview.PREVIEW_PX, designer_preview.FILL)
+    names = [c["name"] for c in index["clips"] if c["name"] != "rest"]
+    image = sheet(index, out / "weapon_tiles", ["threequarter"], names, lambda n, f, v: f"frame {f}")
+    target = out / "sheets" / "preview_size.png"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    image.save(target)
+    print(f"designer preview size: tiles {designer_preview.PREVIEW_PX} px ({designer_preview.GUI_FILE}, toggle_model_selector_button)")
+    return target
+
+
+SHEETS = {"close": close_sheet, "game": game_sheet, "preview": preview_sheet}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("folder", type=Path)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--sheet", choices=("close", "game"), required=True)
+    parser.add_argument("--sheet", choices=tuple(SHEETS), required=True)
     parser.add_argument("--rider", type=Path, help="a mount's rider folder, drawn on the mount's Saddle_Node (as review_unit.py --rider)")
     parser.add_argument("--rider-stem")
     parser.add_argument("--rider-scale", type=float, default=1.0)
@@ -181,7 +201,7 @@ def main() -> int:
     heavy_job.apply(args)
     if args.rider:
         RIDER.update(folder=str(args.rider), stem=args.rider_stem, scale=args.rider_scale, roles=dict(pair.split("=", 1) for pair in args.rider_roles))
-    target = close_sheet(args.folder, args.out) if args.sheet == "close" else game_sheet(args.folder, args.out)
+    target = SHEETS[args.sheet](args.folder, args.out)
     print(target)
     return 0
 

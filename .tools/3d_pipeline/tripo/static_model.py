@@ -5,7 +5,10 @@
 
 The job file names the model and its `model_kind` (building, landmark, ship, vehicle, plane); the GLB is
 `<name>.glb` next to it (or the job's `glb`). An optional `front` (`-y`, `+y`, `-x`, `+x`) overrides which way
-the model is found to face. Everything else comes from the kind's contract in `config/static_kinds.json`, measured
+the model is found to face. A GLB made in parts (Tripo's Generate in Parts: one mesh node a part) is reduced part by
+part (`lib/static_parts.py`): each part gets a share of the triangle budget by its need and keeps its shape (the
+silhouette agreement `part_shape_iou`, default 0.97, as the unit route's `part_shape_iou`) and its closure; `"parts":
+false` joins the parts and reduces them as one, as before. Everything else comes from the kind's contract in `config/static_kinds.json`, measured
 from vanilla files by `calibrate_static_kinds.py`:
 
 - size and place: the kind's vanilla main measure (a tank's length, a plane's wingspan, a ship's length with its
@@ -32,7 +35,7 @@ import json
 import shutil
 import sys
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Sequence
 
 import numpy as np
 from PIL import Image
@@ -40,7 +43,7 @@ from PIL import Image
 PIPELINE_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
-from lib import heavy_job, model_dds, pdx_deform, static_delight
+from lib import glb_atlas, heavy_job, model_dds, pdx_deform, static_delight, static_parts
 from lib import static_kinds as sk
 from lib.texture_lineage import embedded_images
 from pack_pdx_material import remap_gloss_table
@@ -180,21 +183,30 @@ def hole_texel(glb: Path, colour: Path) -> Optional[dict]:
         return None
 
 
-def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None, front: Optional[str] = None, game: Optional[Path] = None) -> Dict[str, dict]:
+# A geometry check of an untextured source (a Smart Mesh trial before its paid texture) packs this flat grey.
+GEOMETRY_ONLY_GREY = (178, 178, 178)
+
+
+def pack_textures(glb: Path, contract: dict, name: str, files: Path, work: Path, delight: Optional[dict] = None, front: Optional[str] = None, game: Optional[Path] = None, geometry_only: bool = False) -> Dict[str, dict]:
     """The GLB's base colour, normal and metallic-roughness maps as the kind's PDX diffuse, normal and specular DDS. The
-    colour map is delighted first; `delight` (when given) receives what was lifted."""
+    colour map is delighted first; `delight` (when given) receives what was lifted. With `geometry_only` an untextured
+    GLB gets flat placeholder maps instead, so its geometry can be checked before a texture is paid for."""
 
     images = embedded_images(glb)
-    if not images["diffuse"]:
-        raise SystemExit(f"{glb.name} has no base colour map")
+    if not images["diffuse"] and not geometry_only:
+        raise SystemExit(f"{glb.name} has no base colour map (an untextured trial: add --geometry-only to check its geometry first)")
     if len(images["diffuse"]) > 1:
         raise SystemExit(f"{glb.name} has {len(images['diffuse'])} base colour maps; the route packs one atlas")
     size = int(contract["texture_size"])
     work.mkdir(parents=True, exist_ok=True)
     found = delight if delight is not None else {}
-    lifted = delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, found)
-    lifted = ring_seamed(lifted, glb, contract, front, found)
-    colour = _resize(contrasted(lifted, glb, contract, front, game, found).convert("RGBA"), size)
+    if images["diffuse"]:
+        lifted = delighted(Image.open(io.BytesIO(images["diffuse"][0])).convert("RGB"), glb, found)
+        lifted = ring_seamed(lifted, glb, contract, front, found)
+        colour = _resize(contrasted(lifted, glb, contract, front, game, found).convert("RGBA"), size)
+    else:
+        found["geometry_only"] = True
+        colour = Image.new("RGBA", (size, size), (*GEOMETRY_ONLY_GREY, 255))
     colour = Image.merge("RGBA", (*colour.split()[:3], Image.new("L", (size, size), 255)))
     if images["normal"]:
         source = _resize(Image.open(io.BytesIO(images["normal"][0])).convert("RGB"), size)
@@ -320,10 +332,11 @@ def tread_textures(report: dict, contract: dict, name: str, files: Path, work: P
     if tone:
         # no brighter than vanilla's light tanks' treads (their texture's mean luma): a run painted in a light hull colour is darkened to it
         luma = float((images["diffuse"][..., :3].astype(float) @ np.array([0.299, 0.587, 0.114])).mean())
-        if luma > tone:
-            colour = colour * tone / luma
+        target = sk.tread_target_luma(luma, tone)
+        if target != luma:
+            colour = sk.tread_colour_at(colour, luma, target)
             images = sk.tread_images(colour, rule["links"], tuple(rule["texture_size"]))
-            report["track_tone"] = {"luma_before": round(luma, 1), "luma_after": round(tone, 1)}
+            report["track_tone"] = {"luma_before": round(luma, 1), "luma_after": round(target, 1)}
     written = {}
     for role, array in images.items():
         staged = work / f"{name}_tracks_{role}.png"
@@ -334,7 +347,14 @@ def tread_textures(report: dict, contract: dict, name: str, files: Path, work: P
     return written
 
 
-def registration(name: str, kind: str, contract: dict, roles: list, nodes: list, game: Path, tracks: bool = False) -> str:
+def registration(name: str, kind: str, contract: dict, roles: list, nodes: list, game: Path, tracks: bool = False) -> Dict[str, str]:
+    """The model's three registration files, mod-relative path to text, laid out as vanilla's and the unit route's are: the
+    `pdxmesh` inside `objectTypes` in a `.gfx`, the animations in an `.asset` in the model folder with file names relative to
+    that folder, and the entity alone in an `.asset` in `gfx/entities`. HOI4 1.19.4 refused the earlier single
+    `gfx/entities/<name>.asset` holding all three ("Unexpected token: objectTypes", "Could not load animation file
+    gfx/entities/gfx/models/...", "Couldn't find mesh"): an `.asset` takes no `objectTypes`, and an animation's `file` is read
+    relative to its own `.asset`'s folder."""
+
     folder = FOLDERS[kind]
     animations = {role: f"{name}_{role}_animation" for role in roles}
     entity = contract["entity"]
@@ -349,13 +369,102 @@ def registration(name: str, kind: str, contract: dict, roles: list, nodes: list,
         settings.append({"name": f"{name}Shape", "index": 1, "texture_diffuse": f"{name}_tracks_diffuse.dds", "texture_normal": f"{name}_tracks_normal.dds",
                          "texture_specular": f"{name}_tracks_specular.dds", "shader": contract["rules"]["tracks"]["shader"]})
     pdxmesh_scale = entity.get("pdxmesh_scale", 1.0)
-    parts = ["objectTypes = {",
-             sk.pdxmesh_text(name, f"{folder}/{name}/{name}.mesh", animations, settings, pdxmesh_scale if abs(pdxmesh_scale - 1.0) > 1e-9 else None),
-             "}", ""]
-    for role, animation in animations.items():
-        parts += [sk.animation_text(animation, f"{folder}/{name}/{name}_{role}.anim"), ""]
-    parts.append(sk.entity_text(reference, name, f"{name}_mesh", nodes, roles, entity.get("entity_scale", entity["scale"]), contract.get("role_aliases")))
-    return "\n".join(parts) + "\n"
+    pdxmesh = sk.pdxmesh_text(name, f"{folder}/{name}/{name}.mesh", animations, settings, pdxmesh_scale if abs(pdxmesh_scale - 1.0) > 1e-9 else None)
+    animation_blocks = "\n\n".join(sk.animation_text(animation, f"{name}_{role}.anim") for role, animation in animations.items())
+    entity_block = sk.entity_text(reference, name, f"{name}_mesh", nodes, roles, entity.get("entity_scale", entity["scale"]), contract.get("role_aliases"))
+    if "death" in roles:
+        # vanilla's light tank has no death state, so without one the model's death clip never plays (and wire_unit refuses the
+        # effects' death sound)
+        from lib import unit_wiring
+
+        entity_block = unit_wiring.apply_effect_events(entity_block, [], add_states=["death"])
+    return {f"gfx/entities/{name}.gfx": "objectTypes = {\n" + pdxmesh + "\n}\n",
+            f"{folder}/{name}/{name}.asset": animation_blocks + "\n",
+            f"gfx/entities/{name}.asset": entity_block + "\n"}
+
+
+STATIC_CHECKS = "Static checks:"  # the registration.md line that hands wire_unit.py the static checks' arguments
+
+
+def check_args(kind: str, job: dict, running_gear: int) -> List[str]:
+    """check_unit_files.py's arguments for this static model: its kind's rules, sized as the route sizes it."""
+
+    return (["--model-kind", kind] + (["--running-gear-triangles", str(running_gear)] if running_gear else [])
+            + (["--size-reference", str(job["size_reference"])] if job.get("size_reference") else []))
+
+
+def write_registration(out: Path, files: Path, written: Dict[str, str], name: str, kind: str, checks: Sequence[str] = ()) -> None:
+    """The registration files under <out>/mod, and the unit route's runtime layout beside them (`runtime/registration.md` and
+    `runtime/files/`, the model's files without the registration), so `wire_unit.py <out>` wires the model into a mod."""
+
+    for rel, text in written.items():
+        (out / "mod" / rel).parent.mkdir(parents=True, exist_ok=True)
+        (out / "mod" / rel).write_text(text, encoding="utf-8", newline="\n")
+    (out / "runtime").mkdir(parents=True, exist_ok=True)
+    (out / "runtime" / "registration.md").write_text(registration_markdown(name, kind, written, checks), encoding="utf-8", newline="\n")
+    shutil.rmtree(out / "runtime" / "files", ignore_errors=True)
+    shutil.copytree(files, out / "runtime" / "files", ignore=shutil.ignore_patterns("*.asset"))
+
+
+def registration_markdown(name: str, kind: str, files: Dict[str, str], checks: Sequence[str] = ()) -> str:
+    """`runtime/registration.md` in the unit route's form (lib/unit_registration.registration_text), so `wire_unit.py` wires a
+    static model as it wires a unit. `checks` (check_args) goes on a `Static checks:` line, so `wire_unit.py` checks the model by its
+    kind's rules, not a unit's."""
+
+    folder = FOLDERS[kind]
+    pdxmesh = files[f"gfx/entities/{name}.gfx"].strip()
+    pdxmesh = pdxmesh.removeprefix("objectTypes = {").removesuffix("}").strip("\n")
+    return "\n".join([f"# Registration for {name}_entity", "", *([f"{STATIC_CHECKS} `{' '.join(checks)}`", ""] if checks else []),
+                      "## `.gfx` (for example `gfx/entities/<mod>_units.gfx`, inside `objectTypes = { }`)", "", "```", pdxmesh, "```", "",
+                      f"## `{folder}/{name}/{name}.asset`", "", "```", files[f"{folder}/{name}/{name}.asset"].strip(), "```", "",
+                      "## Entities (`gfx/entities/<mod>_units.asset`)", "", "```", files[f"gfx/entities/{name}.asset"].strip(), "```", ""])
+
+
+def job_contract(job: dict) -> tuple:
+    """The kind's contract for this job and the job's raise for a tank's running gear (`running_gear_triangles`), sized
+    to the vanilla model the job names (`size_reference`, sk.with_size_reference) when it names one."""
+
+    running_gear = int(job.get("running_gear_triangles") or 0)
+    contract = sk.with_size_reference(sk.kind_contract(job["model_kind"]), job.get("size_reference"))
+    return sk.with_running_gear(contract, running_gear), running_gear
+
+
+def atlas_source(glb: Path, out: Path) -> tuple:
+    """The GLB the stage reads, and the atlas receipt: a GLB whose parts carry their own maps is rewritten with one
+    atlas (`lib/glb_atlas.py`) under <out>/atlas, or the source and None when it has one map. STATIC-ATLAS stops the
+    stage when the maps cannot share an atlas without changing the look."""
+
+    try:
+        receipt = glb_atlas.merged_glb(glb, out / "atlas" / glb.name)
+    except glb_atlas.AtlasError as problem:
+        raise SystemExit(f"STATIC-ATLAS: {problem}") from problem
+    return (out / "atlas" / glb.name, receipt) if receipt else (glb, None)
+
+
+def parts_plan(glb: Path, contract: dict, job: dict) -> Optional[dict]:
+    """What the stage would do with a GLB made in parts: each part's triangles, need and first share of the reduction
+    target (the stage keeps back a little more for the cards it thickens), or None for a model in one piece."""
+
+    parts = static_parts.glb_parts(glb)
+    if len(parts) < 2 or job.get("parts", "auto") is False:
+        return None
+    needs = [static_parts.part_need(p, t) for _name, p, t in parts]
+    target = int(contract["triangle_budget"]["value"] * 0.94)
+    try:
+        shares = static_parts.allocate(needs, target)
+    except static_parts.PartsBudgetError as problem:
+        return {"target": target, "problem": str(problem)}
+    weights = static_parts.need_weights(needs)
+    return {"target": target, "parts": {name: {"triangles": n["triangles"], "need": round(w, 4), "share": share}
+                                        for (name, _p, _t), n, w, share in zip(parts, needs, weights, shares)}}
+
+
+def parts_summary(report: dict):
+    """Each source part's triangles before and after its reduction, the part names when the model was within its target,
+    or None for a model in one piece."""
+
+    source = (report.get("reduction", {}).get("parts") or {}).get("parts")
+    return {k: [v["from"], v["to"]] for k, v in source.items()} if isinstance(source, dict) else source
 
 
 def run_blender(request_path: Path, log: Path) -> None:
@@ -369,6 +478,19 @@ def run_blender(request_path: Path, log: Path) -> None:
         raise SystemExit("Blender did not finish the model; see " + str(log) + "\n" + "\n".join(tail))
 
 
+def summary(name: str, kind: str, files: Path, report: dict, code: int, geometry_only: bool) -> dict:
+    """The one-line verdict. A geometry-only run (flat placeholder maps from an untextured source) is marked beside its
+    files and in the verdict: its geometry and file checks count, its look does not, and it is never shipped."""
+
+    if geometry_only:
+        (files / "GEOMETRY_ONLY.txt").write_text("Flat placeholder textures from an untextured source. Geometry check only, never ship.\n", encoding="utf-8", newline="\n")
+    verdict = "pass" if code == 0 else "fail"
+    return {"tool": "static_model", "name": name, "kind": kind, "files": str(files), "triangles": report.get("triangles"),
+            "parts": report.get("parts", {}).get("triangles_per_part"), "reduction_problems": report.get("reduction", {}).get("problems"),
+            "source_parts": parts_summary(report),
+            "geometry_only": geometry_only, "check": f"geometry {verdict}" if geometry_only else verdict}
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("job", type=Path, help="the inbox's <name>.json (name, model_kind, optional glb and front)")
@@ -377,17 +499,19 @@ def main(argv=None) -> int:
     parser.add_argument("--plan", action="store_true", help="only run the geometry rules on the GLB and print them")
     parser.add_argument("--keep-blend", action="store_true", help="also save the Blender scene (tens of megabytes) for a look by hand")
     parser.add_argument("--game", type=Path, help="the game folder (default: the one .tools/lib/game.py finds)")
+    parser.add_argument("--geometry-only", action="store_true",
+                        help="check an untextured GLB (a Smart Mesh trial) with flat grey maps before paying for its texture; the result is never shipped")
     args = parser.parse_args(argv)
     job = json.loads(args.job.read_text(encoding="utf-8"))
     name, kind = job["name"], job["model_kind"]
     glb = (args.job.parent / job.get("glb", f"{name}.glb")).resolve()
-    contract = sk.kind_contract(kind)
+    contract, running_gear = job_contract(job)
     front = args.front or job.get("front")
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     if args.plan:
         points, triangles = sk.read_glb_geometry(glb)
-        print(json.dumps(sk.plan(points, triangles, contract, front), indent=1, default=float))
+        print(json.dumps({**sk.plan(points, triangles, contract, front), "parts": parts_plan(glb, contract, job)}, indent=1, default=float))
         return 0
     game = args.game or game_dir()
     files = out / "mod" / FOLDERS[kind] / name
@@ -395,7 +519,8 @@ def main(argv=None) -> int:
         shutil.rmtree(files)
     files.mkdir(parents=True)
     delight: dict = {}
-    textures = pack_textures(glb, contract, name, files, out / "textures", delight, front, game)
+    glb, atlas = atlas_source(glb, out)
+    textures = pack_textures(glb, contract, name, files, out / "textures", delight, front, game, geometry_only=args.geometry_only)
     motion, barrel_length = clip_motion(game, contract) if contract.get("clips") else ({}, None)
     hole = hole_texel(glb, out / "textures" / f"{name}_diffuse.png") if kind == "vehicle" else None
     request = {
@@ -405,32 +530,29 @@ def main(argv=None) -> int:
         # Blender's v runs up, glTF's down
         "hole_uv": [hole["uv"][0], 1.0 - hole["uv"][1]] if hole else None,
         "report": str(out / "blender_report.json"), "blend": str(out / f"{name}.blend") if args.keep_blend else None,
+        "parts": job.get("parts", "auto"), "part_shape_iou": job.get("part_shape_iou"),
+        "geometry_only": bool(delight.get("geometry_only")),
     }
     request_path = out / "blender_request.json"
     request_path.write_text(json.dumps(request), encoding="utf-8", newline="\n")
     run_blender(request_path, out / "blender.log")
     report = json.loads((out / "blender_report.json").read_text(encoding="utf-8"))
     nodes = list(report.get("locators", {})) + list(report.get("bones", {}))
-    entities = out / "mod" / "gfx" / "entities"
-    entities.mkdir(parents=True, exist_ok=True)
-    (entities / f"{name}.asset").write_text(registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), encoding="utf-8", newline="\n")
-    report["textures"] = textures
-    report["delight"] = delight
-    report["hole"] = hole
+    report.update(textures=textures, delight=delight, hole=hole, atlas=atlas)
     report["tread"] = tread_textures(report, contract, name, files, out / "textures")
+    checks = check_args(kind, job, running_gear)
+    write_registration(out, files, registration(name, kind, contract, list(motion), nodes, game, bool(report.get("tracks"))), name, kind, checks)
     (out / "blender_report.json").write_text(json.dumps(report, indent=1), encoding="utf-8", newline="\n")
     import check_unit_files
 
     verdict = out / "verdict_check.json"
-    code = check_unit_files.main([str(files), "--model-kind", kind, "--mod-root", str(out / "mod"), "--verdict", str(verdict)])
+    code = check_unit_files.main([str(files), "--mod-root", str(out / "mod"), "--verdict", str(verdict), *checks])
     problems = report.get("reduction", {}).get("problems") or []
     if problems:
         # STATIC-SHAPE: the reduction to vanilla's budget lost part of the silhouette (lib/tripo_shape.py)
         print(f"STATIC-SHAPE: reducing {name} to {report['reduction']['budget']} triangles changed its outline: " + "; ".join(problems))
         code = 1
-    print(json.dumps({"tool": "static_model", "name": name, "kind": kind, "files": str(files), "triangles": report.get("triangles"),
-                      "parts": report.get("parts", {}).get("triangles_per_part"), "reduction_problems": report.get("reduction", {}).get("problems"),
-                      "check": "pass" if code == 0 else "fail"}))
+    print(json.dumps(summary(name, kind, files, report, code, bool(delight.get("geometry_only")))))
     return code
 
 

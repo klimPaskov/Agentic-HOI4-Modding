@@ -105,7 +105,7 @@
       }
     },
     "infantry_unarmed": {
-      "description": "Unarmed foot soldier of human size: a zombie or undead soldier, a civilian or a militia fighter with empty hands. Set anatomy weapon-free and give the job no tripo.weapon",
+      "description": "Unarmed foot soldier of human size: a zombie or undead soldier, a civilian or a militia fighter with empty hands. Also an unarmed winged humanoid such as a bat-winged demon or devil, with anatomy wings true and tripo.chains wings. Set anatomy weapon-free and give the job no tripo.weapon",
       "body": "humanoid",
       "profile": "humanoid_unit",
       "rig": "meshy_humanoid",

@@ -7,6 +7,11 @@ exported `.mesh` and `.anim` files, as the game loads them. Heights are shares o
   at some joint (`lib/tripo_pose.loop_seam`).
 - TRIPO-FOOT-BELOW-GROUND: a hoof (the vertices the four `*_Hoof` bones carry most) sinks more than 0.1% of the height under the ground in
   a clip that is not a death.
+- TRIPO-FEET-OFF-GROUND: in an idle or a defend, the clips whose feet stand planted, the lowest hoof is more than `FEET_OFF_LIMIT` of the
+  height above the ground in some frame: the unit stands on something other than its feet. The route sets every frame's lowest point on
+  the ground, so a part that goes lower than the hooves lifts all four of them. Offline on the Tripo dragon a crouching defend carried the
+  tail lying on the ground down with the body and hung the lowest hoof 1.7% of the height up (the others 3.6% to 5.1%), and a crouch that
+  tipped the paws onto their heels 1.4%. Planted, the lowest hoof is at 0.0%.
 - TRIPO-NOT-DOWN: a death must end lying down: in its last frame the body's lowest torso point (Pelvis, Spine and Chest vertices) is within
   `DOWN_BELLY_SHARE` of the height of the ground. A standing quadruped's belly is a fifth to a third of its height up.
 - TRIPO-LOAD-BELOW-GROUND: a load the mount carries (`adapter/quadruped_load.py`: vertices bound wholly to the load bone) goes more than
@@ -83,6 +88,8 @@ MAP_READ_ROLES = {
                 ("defend", map_read.MIN_GAIT_READ, "vanilla's horse charge against its walk")),
 }
 HEADING_ROLES = ("move", "attack", "defend", "retreat")
+STANDING_ROLES = ("idle", "defend")  # the clips whose feet stand planted throughout
+FEET_OFF_LIMIT = 0.01  # of the height: planted, the lowest hoof is on the ground (0.0%), and the least a lifted unit measured was 1.4%
 HEADING_LIMIT = 10.0  # degrees: vanilla's horse and camel walk and charge start and end within 1.6, its infantry's move within 8.1
 LEG_ROOT_SHARE = 0.2  # a leg's root: skin with at least this weight on the torso (Pelvis, Spine, Chest) and on the leg's Upper bone
 LEG_ROOT_LIMIT = 0.02  # vanilla clothing's worst share of deformed edges (tripo_checks VANILLA_CLOAK_WORST, 1.97%), rounded
@@ -347,6 +354,10 @@ def quadruped_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform
             if lowest.min() < -tripo_pose.FOOT_SINK_LIMIT:
                 frame = int(np.argmin(lowest))
                 out.append(_finding("TRIPO-FOOT-BELOW-GROUND", clip, f"a hoof sinks {-lowest.min():.2%} of the height under the ground in frame {frame} (limit {tripo_pose.FOOT_SINK_LIMIT:.1%})", share=round(float(-lowest.min()), 4), frame=frame))
+            if role in STANDING_ROLES and lowest.max() > FEET_OFF_LIMIT:
+                frame = int(np.argmax(lowest))
+                out.append(_finding("TRIPO-FEET-OFF-GROUND", clip, f"the lowest hoof is {lowest.max():.1%} of the height above the ground in frame {frame} (limit {FEET_OFF_LIMIT:.0%}): the unit stands on something other than its feet (a tail, a wing or a heel under the ground lifts it)", share=round(float(lowest.max()), 4), frame=frame))
+            row["highest_low_hoof_share"] = round(float(lowest.max()), 4)
         if role == "death":
             out += _death_findings(mesh, clip, anim, posed, torso, row, {prefix: np.array([name.startswith(prefix) for name in dominant]) for prefix in ("Front_Left", "Front_Right", "Rear_Left", "Rear_Right")})
         if role in HEADING_ROLES:
