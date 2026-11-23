@@ -2,6 +2,11 @@
 same shares read off the reference picture.
 
     py -3.13 -B .tools/3d_pipeline/tripo/proportion_check.py <model .glb> --neck <share> [--legs <share>] [--json out.json]
+    py -3.13 -B .tools/3d_pipeline/tripo/proportion_check.py --shares neck=<share>,legs=<share> --neck <share> [--legs <share>]
+
+The second form judges a picture before any credits: read the same shares off the 3D-ready picture, or off a multi-view's side view,
+and give them as `--shares`; `--neck` and `--legs` are the owner's reference. A redraw or a multi-view that already lost the neck stops
+the job before the model press: the Tripo dragon's multi-view showed the same short thick neck its model later had.
 
 Run it on the model's own export (Model page, Export, GLB: free) before any rig work, beside `span_check.py`. A model whose neck came out
 much shorter than drawn cannot be posed into the drawn creature: the Tripo dragon's picture has a long S-shaped neck, about a fifth of
@@ -69,22 +74,29 @@ def proportion_verdict(model: Dict[str, float], picture: Dict[str, float], limit
         shares[part] = round(share, 3)
         if abs(share - 1.0) > limit:
             findings.append({"rule": "TRIPO-PROPORTION-PICTURE", "part": part, "share": round(share, 3),
-                             "message": f"the model's {part} is {share:.0%} of the picture's ({model.get(part, 0.0):.2f} against {drawn:.2f} of the height, allowed "
-                                        f"{1 - limit:.0%} to {1 + limit:.0%}): the model is not the drawn creature. Make the model again, not the rig"})
+                             "message": f"the measured {part} is {share:.0%} of the reference's ({model.get(part, 0.0):.2f} against {drawn:.2f} of the height, allowed "
+                                        f"{1 - limit:.0%} to {1 + limit:.0%}): not the drawn creature. Redraw the picture or make the model again, not the rig"})
     return {"model": model, "picture": {k: v for k, v in picture.items() if v is not None}, "shares": shares,
             "verdict": "fail" if findings else "pass", "findings": findings}
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("model", type=Path, help="the model's .glb")
+    parser.add_argument("model", type=Path, nargs="?", help="the model's .glb")
+    parser.add_argument("--shares", help="instead of a model: the shares read off another picture, as neck=<share>,legs=<share>")
     parser.add_argument("--neck", type=float, required=True, help="the picture's neck share of the height (see the module text)")
     parser.add_argument("--legs", type=float, help="the picture's belly height share")
     parser.add_argument("--no-wings", action="store_true", help="a quadruped without wings")
     parser.add_argument("--json", type=Path, help="write the verdict here")
     args = parser.parse_args(argv)
-    points, triangles = mount_size.read_glb(args.model)
-    result = proportion_verdict(model_proportions(points, triangles, not args.no_wings), {"neck": args.neck, "legs": args.legs})
+    if args.shares:
+        measured = {key.strip(): float(value) for key, value in (item.split("=") for item in args.shares.split(","))}
+    elif args.model:
+        points, triangles = mount_size.read_glb(args.model)
+        measured = model_proportions(points, triangles, not args.no_wings)
+    else:
+        parser.error("give the model's .glb or --shares read off a picture")
+    result = proportion_verdict(measured, {"neck": args.neck, "legs": args.legs})
     print(f"model {result['model']}, picture {result['picture']}: {result['verdict']}")
     for item in result["findings"]:
         print(f"  {item['rule']}: {item['message']}")

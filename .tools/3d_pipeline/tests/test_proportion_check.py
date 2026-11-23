@@ -57,6 +57,10 @@ class Proportions(unittest.TestCase):
     def test_a_model_without_a_neck_column_fails_a_picture_with_one(self) -> None:
         self.assertEqual(pc.proportion_verdict({"neck": 0.0, "legs": 0.4}, {"neck": 0.2, "legs": None})["verdict"], "fail")
 
+    def test_shares_read_off_a_picture_are_judged_before_any_model(self) -> None:
+        self.assertEqual(pc.main(["--shares", "neck=0.12,legs=0.36", "--neck", "0.22", "--legs", "0.36"]), 1, "a multi-view that lost the neck")
+        self.assertEqual(pc.main(["--shares", "neck=0.21,legs=0.35", "--neck", "0.22", "--legs", "0.36"]), 0, "a redraw that kept it")
+
 
 if __name__ == "__main__":
     unittest.main()
