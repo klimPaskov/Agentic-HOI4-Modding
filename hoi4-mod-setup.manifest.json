@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5457e5f0c1223ea52b84e6126fafd5a98cc1b4cc",
+  "generated_for_revision": "4234c57d2930c28d2d53477489b2d681fcb1eed1",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15177,6 +15177,11 @@
           "size": 16707
         },
         {
+          "path": ".tools/3d_pipeline/lib/clip_transfer.py",
+          "sha256": "06b920dad534e3982ffce5bba8f9dd08794b081ce071b5098e05b7aee30cc118",
+          "size": 13913
+        },
+        {
           "path": ".tools/3d_pipeline/lib/credits.py",
           "sha256": "60ece827b3cff8848ecc8faabe13c4ab2cf2ae3b63f46371cece8955810e4a10",
           "size": 19598
@@ -15328,8 +15333,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_arm_seat.py",
-          "sha256": "3c5e87720eab734727d252f7be317ab65f8dcfa84554c6c26e0e28fa8492c7c8",
-          "size": 16009
+          "sha256": "c94570a1872b48177e08e8a1a09898cf71ad8504ab76c699be1ae2f3269af3e0",
+          "size": 17276
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_arms.py",
@@ -15443,8 +15448,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_pose.py",
-          "sha256": "4e983411b13ac770f25e9576839f23de737fa200a4f49cc1d9617e74b2433318",
-          "size": 55601
+          "sha256": "dfda6ed135d362677c94d883f463bb6999751d7333ee4fb8858f98213d08d9d3",
+          "size": 57029
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_presets.py",
@@ -15553,8 +15558,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "bbf82522433c9c54bb96066da230786ce62a5cf34259eeb6bffe93c0abc738c6",
-          "size": 205653
+          "sha256": "9fe44276edfeeb487f2ce6cd677b754347b7d7697f205a0ce5a864045914f0ed",
+          "size": 206004
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16217,6 +16222,11 @@
           "size": 8092
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_clip_transfer.py",
+          "sha256": "f6eff42917a732ecb1cded2ff65455403e1c592824d702e0ce6d20903f0734b2",
+          "size": 3750
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
           "sha256": "b065c33e266d79e96db5a1280c2c89cfcb7d5df179af61a8d99570d0e796d363",
           "size": 18638
@@ -16478,8 +16488,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_rig_check.py",
-          "sha256": "f063af97ddf7a8406651d3c6915aa34ea2a179d871b3c551ba36b2ab08e93a38",
-          "size": 2422
+          "sha256": "c0142673089cffab0698c4a38ba15aae056bd93ea1898f474e0c071c5718fc06",
+          "size": 3232
         },
         {
           "path": ".tools/3d_pipeline/tests/test_rigid_weapon_attachment_tool.py",
@@ -16558,8 +16568,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_arm_seat.py",
-          "sha256": "dd5e9d3f44af4d4ece3ec237f3755a87c54743871d5ac7f0f7189bc78e89f8d0",
-          "size": 3355
+          "sha256": "fb97de48e0a89adc76f1e34ca945e8e8fb4ca464f2204e5f2722292ec49d4652",
+          "size": 4067
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_arms.py",
@@ -16643,8 +16653,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_job_entry.py",
-          "sha256": "cac3f1fdd9197dcd04329f5240b90ab2fbdd683a1a1089185e997c362ba48bb8",
-          "size": 14342
+          "sha256": "852f896ffb4d293e2d370c4f0b4262f5f2fa6d155dace9e393cb0b5314e8e66a",
+          "size": 14871
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_kick.py",
@@ -16673,8 +16683,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_pose_upper.py",
-          "sha256": "34059ab9fcfa2375b9194b67ebb3c30829d5875c3864f4610cc626814c2be8ee",
-          "size": 17200
+          "sha256": "a6c95cd3d88b0e130e933bb15649d382342da058927ee5e12db4fbc1d150e4ad",
+          "size": 18391
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_presets.py",
@@ -16788,8 +16798,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "843ec8262d6eb23a921349105ef8fdd352b61a12cad7e28fbdc1fb90bccc5153",
-          "size": 17709
+          "sha256": "dcd6a2e1dc3b63146a91ccacf073771dbd0aa5d8b02374c9021f0718f3b0a45d",
+          "size": 18950
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
@@ -16835,6 +16845,11 @@
           "path": ".tools/3d_pipeline/tripo/clip_sheet.py",
           "sha256": "abd1535170f9e9dfdaeb15dec6b979420e984a69c12827ac619de8356cc20e4c",
           "size": 3711
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/clip_transfer.py",
+          "sha256": "3560e06495702fe47fd13a0d896eec942fcf5ee8d53473f03fda9e5d8c5eb6db",
+          "size": 2273
         },
         {
           "path": ".tools/3d_pipeline/tripo/colour_compare.py",
@@ -16913,13 +16928,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
-          "sha256": "0219a3e528bd228a6167cc886c31b951a3a4c42a496dcb4f495780d373778ddd",
-          "size": 83675
+          "sha256": "311bd3ccddba391301da7ba95669cf270109b16d863c4030937ac51c370ffef7",
+          "size": 84256
         },
         {
           "path": ".tools/3d_pipeline/tripo/rig_check.py",
-          "sha256": "430eb05553eabc93394d282ca02db0c15fab811552e0c13293b9d3403bcc9f84",
-          "size": 7419
+          "sha256": "aaaf453a24b3b535070816011f055579969b96be794832739cdff9b793de283f",
+          "size": 9153
         },
         {
           "path": ".tools/3d_pipeline/tripo/shield_stage.py",
@@ -16963,8 +16978,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",
-          "sha256": "e79680682c5eceb543123f3ac6a75b839a908e86a5c6c3ab665ce4a32aef8dd0",
-          "size": 15772
+          "sha256": "de9d551d7e3c4ab3a77292a340758c83fd26a7cea0ed308794314742c39aed73",
+          "size": 16787
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
