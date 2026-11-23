@@ -634,6 +634,9 @@ def calibrate(game: Path) -> dict:
             measure = sk.main_measure(entry["points"], kind)
             rows.append({"rel": entry["rel"], "measure": measure, "scale": scale["scale"] if scale else None,
                          "runtime": measure * scale["scale"] if scale else None})
+            if kind == "vehicle":
+                # the footprint a job naming this model is sized to (sk.with_size_reference)
+                rows[-1]["footprint"] = sk.footprint(entry["points"])
         with_scale = [r for r in rows if r["runtime"]]
         runtime = float(np.median([r["runtime"] for r in with_scale]))
         reference = ENTITY_REFERENCE[kind] or min(with_scale, key=lambda r: abs(r["runtime"] - runtime))["rel"]

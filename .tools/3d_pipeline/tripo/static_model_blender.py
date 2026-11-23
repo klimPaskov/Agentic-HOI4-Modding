@@ -961,7 +961,9 @@ if rig is not None and request.get("motion"):
     scene.render.fps, scene.render.fps_base = sk.HOI4_FPS, 1.0
     barrel_scale = 1.0
     if "barrel_cut" in parts_report and request.get("vanilla_barrel_length"):
-        # A barrel recoils by the share of its own length vanilla's does, not by the share of the hull.
+        # A barrel recoils by the share of its own length vanilla's does, not by the share of the hull, and never less than
+        # vanilla's recoil at the model's scale (applied per clip below): the M2A4's short 37 mm gun, held to its own
+        # length, recoiled a few pixels and two strict reviewers saw no firing motion in the attack.
         barrel_scale = parts_report["barrel_cut"]["length"] / request["vanilla_barrel_length"]
     parents = {spec["name"]: spec.get("parent") for spec in bone_specs}
     # rest positions of each bone's vertices (at most 600 a bone, for speed), for the landing and ground rules
@@ -1036,7 +1038,7 @@ if rig is not None and request.get("motion"):
                     # keep the channel's swing, replace its twist about the up axis by the scaled turn
                     twist = Quaternion(Vector((0.0, 0.0, 1.0)), math.radians(twist_degrees(channel["q"][f])))
                     rotation = Quaternion(Vector((0.0, 0.0, 1.0)), math.radians(float(turret_turns[f]))) @ twist.inverted() @ rotation
-                shift = Vector(channel["d"][f]) * (barrel_scale / clip["scale"] if bone.startswith("barrel") and channel else 1.0) if channel else Vector()
+                shift = Vector(channel["d"][f]) * (sk.recoil_share(barrel_scale, clip["scale"]) if bone.startswith("barrel") and channel else 1.0) if channel else Vector()
                 spin = clip.get("wheel_spin")
                 if spin and bone in wheel_parts:
                     # vanilla's road wheel turn, scaled so the rim moves as far as vanilla's: a smaller wheel turns faster
@@ -1111,6 +1113,12 @@ if rig is not None and request.get("motion"):
             for w, share in zip(worlds, progress):
                 translate(w, free, shift * share)
             rules["landing_shift"] = [round(float(v), 4) for v in shift]
+            # on its way off it passes over the hull, never through it (sk.flight_clearance)
+            over = sk.flight_clearance([moved(w, free) for w in worlds], [moved(w, body) for w in worlds], [float(s) > 0.0 for s in progress],
+                                       margin=0.01 * measure)
+            for w, lift in zip(worlds, over):
+                translate(w, free, (0.0, 0.0, float(lift)))
+            rules["flight_lift_max"], rules["flight_lift_end"] = round(float(over.max()), 4), round(float(over[-1]), 4)
         # A land model never sinks below the ground. In a death the wreck keeps vanilla's settling, but its free parts
         # do not go into the ground.
         if kind == "vehicle":

@@ -29,55 +29,64 @@
       "rel": "gfx/models/units/tanks/ENG_tank_light.mesh",
       "measure": 4.7876,
       "scale": 0.5,
-      "runtime": 2.3938
+      "runtime": 2.3938,
+      "footprint": 4.0141
      },
      {
       "rel": "gfx/models/units/tanks/FRA_tank_light.mesh",
       "measure": 4.7732,
       "scale": 0.6,
-      "runtime": 2.8639
+      "runtime": 2.8639,
+      "footprint": 4.0346
      },
      {
       "rel": "gfx/models/units/tanks/generic_tank_light.mesh",
       "measure": 5.3722,
       "scale": 0.48,
-      "runtime": 2.5787
+      "runtime": 2.5787,
+      "footprint": 4.5726
      },
      {
       "rel": "gfx/models/units/tanks/GER_tank_light.mesh",
       "measure": 5.0612,
       "scale": 0.42,
-      "runtime": 2.1257
+      "runtime": 2.1257,
+      "footprint": 4.4512
      },
      {
       "rel": "gfx/models/units/tanks/ITA_tank_light.mesh",
       "measure": 5.703,
       "scale": 0.498,
-      "runtime": 2.8401
+      "runtime": 2.8401,
+      "footprint": 4.9427
      },
      {
       "rel": "gfx/models/units/tanks/JAP_tank_light.mesh",
       "measure": 5.8336,
       "scale": 0.5,
-      "runtime": 2.9168
+      "runtime": 2.9168,
+      "footprint": 4.8803
      },
      {
       "rel": "gfx/models/units/tanks/SOV_tank_light.mesh",
       "measure": 5.8743,
       "scale": 0.5,
-      "runtime": 2.9371
+      "runtime": 2.9371,
+      "footprint": 4.9411
      },
      {
       "rel": "gfx/models/units/tanks/USA_tank_light.mesh",
       "measure": 4.6286,
       "scale": 0.51,
-      "runtime": 2.3606
+      "runtime": 2.3606,
+      "footprint": 3.9469
      },
      {
       "rel": "gfx/models/units/tanks/FIN_light_armor.mesh",
       "measure": 5.8743,
       "scale": 0.5,
-      "runtime": 2.9371
+      "runtime": 2.9371,
+      "footprint": 4.9411
      }
     ],
     "nearest": {

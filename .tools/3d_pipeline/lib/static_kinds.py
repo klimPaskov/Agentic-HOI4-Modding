@@ -72,7 +72,18 @@ def with_size_reference(contract: dict, reference: Optional[str]) -> dict:
     `size.per_model` (its path, or its file stem such as `USA_tank_light`). The model gets that model's runtime measure
     and the game-size sheet draws it beside the model. Vanilla's light tanks differ by nation (2.13 to 2.94 at runtime),
     and a US M2A4 sized to the median, the Italian tank, read as two thirds to four fifths of it to two reviewers,
-    while it was 104 % of vanilla's US light tank. None or an empty name keeps the median."""
+    while it was 104 % of vanilla's US light tank. None or an empty name keeps the median.
+
+    A named model sets the size by the area the map camera sees alone: the height and footprint bound (`span_bound`)
+    holds the median reference's own shares (the Italian tank's), which do not fit another model. Kept, it held the tall
+    M2A4 to the Italian tank's height share against the lower US tank's measure, and its body covered 86 % of the US
+    tank's camera area: two more reviewers saw it 15 to 25 % smaller than the US tank beside it.
+
+    A vehicle named so is sized by its footprint (`footprint`, the square root of its length times width) to the named
+    model's (`size.per_model[].footprint`, D-134), and its height follows its own proportions: the map camera looks down,
+    so the ground a vehicle covers is what reads as its size. At equal camera area the tall M2A4 covered 82 % of the US
+    tank's footprint and stood 106 % of its height, while the real M2A4 and M3 cover about the same ground. A kind
+    without per-model footprints is sized by its main measure to the named model's."""
 
     if not reference:
         return contract
@@ -87,7 +98,27 @@ def with_size_reference(contract: dict, reference: Optional[str]) -> dict:
     sized["size"] = {**size, "runtime": float(row["runtime"]), "source": float(row["runtime"]) / entity_scale,
                      "nearest": {"rel": row["rel"], "measure": row["measure"], "scale": row["scale"], "runtime": row["runtime"]},
                      "reference_named": row["rel"], "median_runtime": size.get("runtime")}
+    sized["size"].pop("span_bound", None)
+    if row.get("footprint") and row.get("scale"):
+        runtime = float(row["footprint"]) * float(row["scale"])
+        sized["size"].update(basis="footprint", runtime=runtime, source=runtime / entity_scale)
     return sized
+
+
+def footprint(points: np.ndarray) -> float:
+    """The square root of a model's length times its width (Blender axes: x across, y along)."""
+
+    span = np.ptp(np.asarray(points, dtype=float), axis=0)
+    return float(math.sqrt(span[0] * span[1]))
+
+
+def recoil_share(barrel_scale: float, clip_scale: float) -> float:
+    """How much of vanilla's barrel motion (already at the model's scale, `clip_scale`) a tank's barrel makes: vanilla's
+    share of its own barrel length (`barrel_scale`, the model's barrel over vanilla's), and never less than vanilla's
+    recoil at the model's scale. The M2A4's short 37 mm gun, held to its own length, recoiled a few pixels and two strict
+    reviewers saw no firing motion in the attack."""
+
+    return max(barrel_scale / max(clip_scale, 1e-9), 1.0)
 
 
 def to_blender(vector: Sequence[float]) -> np.ndarray:
@@ -355,8 +386,11 @@ def span_bound(contract: dict) -> Optional[dict]:
 
 
 def contract_measure(points: np.ndarray, contract: dict, kind: Optional[str] = None) -> float:
-    """The main measure with the contract's bounds (a tall landmark's base, a vehicle's height and footprint)."""
+    """The main measure with the contract's bounds (a tall landmark's base, a vehicle's height and footprint), or the
+    footprint when the contract is sized to a named model by it (`with_size_reference`)."""
 
+    if contract.get("size", {}).get("basis") == "footprint":
+        return footprint(points)
     return main_measure(points, kind or contract["kind"], tall_base_share(contract), span_bound(contract))
 
 
@@ -985,6 +1019,44 @@ def ground_lift(lowest, sink: float = 0.0) -> np.ndarray:
     """Per frame, how far to lift a model whose lowest point goes below the ground (by more than `sink`)."""
 
     return np.maximum(0.0, -(np.asarray(lowest, dtype=float) + sink))
+
+
+FLIGHT_EASE_FRAMES = 4  # a flight lift grows and fades over this many frames each side
+
+
+def flight_clearance(free_frames: Sequence[np.ndarray], body_frames: Sequence[np.ndarray], flying: Sequence[bool],
+                     margin: float = 0.0, ease: int = FLIGHT_EASE_FRAMES) -> np.ndarray:
+    """Per frame of a death, how far to lift a part blown off the body (a tank's turret, its points each frame) so it
+    passes over the body (its points each frame): while the part's plan box overlaps the body's, its lowest point stays
+    above the highest body point near it, plus `margin`.
+    The lift is eased in and out over `ease` frames each side, so the flight bends over the hull instead of jumping. A
+    part already clear (beside the body, or above it) gets none, and so does a frame before the part leaves (`flying`
+    false), where it still sits in its mount. On the M2A4 sized to the US tank's footprint the
+    turret, turning upright on its way off, passed through the hull roof in frame 30 (STATIC-PART-CLIP, 35 edges)."""
+
+    need = np.zeros(len(free_frames))
+    for f, (free, body) in enumerate(zip(free_frames, body_frames)):
+        free, body = np.asarray(free, float), np.asarray(body, float)
+        if not flying[f] or not len(free) or not len(body):
+            continue
+        low, high = free[:, :2].min(axis=0), free[:, :2].max(axis=0)
+        body_low, body_high = body[:, :2].min(axis=0), body[:, :2].max(axis=0)
+        if np.any(high < body_low) or np.any(low > body_high):
+            continue  # beside the body, not over it
+        # a coarse roof has few vertices: the body's points near the part (its box grown by a quarter of the body's
+        # plan) give the height, or the body's top when none is near
+        reach = 0.25 * float(np.max(body_high - body_low))
+        near = body[np.all(body[:, :2] >= low - reach, axis=1) & np.all(body[:, :2] <= high + reach, axis=1)]
+        top = float((near if len(near) else body)[:, 2].max())
+        need[f] = max(0.0, top + margin - float(free[:, 2].min()))
+    lifts = need.copy()
+    for f in np.nonzero(need > 0)[0]:
+        for k in range(1, ease + 1):
+            share = 1.0 - k / (ease + 1)
+            for g in (f - k, f + k):
+                if 0 <= g < len(lifts):
+                    lifts[g] = max(lifts[g], need[f] * share)
+    return np.where(np.asarray(flying, dtype=bool), lifts, 0.0)
 
 
 def yaw_part(rotation: np.ndarray) -> np.ndarray:
