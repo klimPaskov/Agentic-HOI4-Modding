@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "1fc74c6e2f268915b052ce3d851904a2af19ae99",
+  "generated_for_revision": "c0b6418fe62b35a85e1bba4013d47584d6d19a20",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15378,8 +15378,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_clearance.py",
-          "sha256": "983d3ebdc33e924213b80ce0f7758f7aac425faec7c44fc33e46705c1e6991fd",
-          "size": 56551
+          "sha256": "5db0d16c59822a93f21a682926402bed1daf7acc2b69e39ca88da1f9789420e8",
+          "size": 57510
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_cloak_bend.py",
@@ -16643,8 +16643,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_clearance.py",
-          "sha256": "bc76adf53971459231b1c51b1e2a5489114f02dfaf2b8dcb3741537f439f88c9",
-          "size": 29138
+          "sha256": "91f69c600b2ca36cd0055c0b189895bcdbade2e5b6cdf10dcf7c4fc4b733e5c1",
+          "size": 29966
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_cloak_bend.py",
