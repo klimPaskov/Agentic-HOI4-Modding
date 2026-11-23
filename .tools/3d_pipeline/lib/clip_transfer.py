@@ -13,7 +13,8 @@ on a body Tripo rigs cleanly can be moved onto such a rig instead:
    each joint's local rotation is taken against its parent's new world rotation.
 3. Bone lengths, rest directions and stance stay the target's own. A leg at rest in the source clip leaves the target's leg at its own
    rest, so a wide stance stays wide.
-4. The hips keep the source clip's movement from rest, scaled by the ratio of the two rest hip heights. Every other joint keeps the
+4. The hips keep the source clip's movement from rest, scaled by the ratio of the two rest hip heights, less the clip's mean level offset
+   (the route plays clips in place). Every other joint keeps the
    target's rest translation and scale.
 
 The output is the target GLB with its clips replaced by the moved ones, named as in the source. Maths only (numpy) on the GLB's own
@@ -184,6 +185,7 @@ def transfer_clip(source: Rig, target: Rig, channels: Dict[int, Dict[str, Tuple[
     # a turn in the source's own frame is the same turn in the target's: F maps the source's world into the target's
     frame = body_frame(target) @ body_frame(source).T
     out: Dict[int, Dict[str, List[np.ndarray]]] = {j: {"rotation": [], "translation": []} for j in target.joints.values()}
+    shifts: List[np.ndarray] = []
     for t in times:
         posed = source.world_at({node: {path: sample(ts, vs, t, path) for path, (ts, vs) in paths.items()} for node, paths in channels.items()})
         world_rot: Dict[int, np.ndarray] = {}
@@ -204,11 +206,20 @@ def transfer_clip(source: Rig, target: Rig, channels: Dict[int, Dict[str, Tuple[
                 rest_t = np.asarray(target.nodes[i].get("translation", [0.0, 0.0, 0.0]), float)
                 if i == t_hips:
                     shift = frame @ (posed[s_hips][:3, 3] - source.rest_world[s_hips][:3, 3]) * ratio
-                    parent_world = target.rest_world[target.parent[i]] if target.parent.get(i) is not None else np.eye(4)
-                    shift_local = np.linalg.solve(parent_world[:3, :3], shift)
-                    out[i]["translation"].append(rest_t + shift_local)
+                    shifts.append(shift)
+                    out[i]["translation"].append(None)  # filled once the clip's mean drift is known
                 else:
                     out[i]["translation"].append(rest_t)
+    # The route plays every clip in place. A clip that holds the hips off their rest spot throughout (Tripo's run on the demo goblin kept
+    # them 0.44 of its units ahead in every frame, and moved onto the devil it stood him 0.13 to the side and 0.19 back) keeps only its
+    # level motion around its own mean: the mean of the level shift is taken away, the height kept.
+    shifts_arr = np.asarray(shifts)
+    if len(shifts_arr):
+        mean = shifts_arr.mean(axis=0)
+        mean[1] = 0.0
+        parent_world = target.rest_world[target.parent[t_hips]]
+        rest_t = np.asarray(target.nodes[t_hips].get("translation", [0.0, 0.0, 0.0]), float)
+        out[t_hips]["translation"] = [rest_t + np.linalg.solve(parent_world[:3, :3], shift - mean) for shift in shifts_arr]
     return times, {node: {path: np.asarray(values) for path, values in paths.items()} for node, paths in out.items()}
 
 

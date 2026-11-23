@@ -68,6 +68,17 @@ class Transfer(unittest.TestCase):
         # the spine leans forward in the body's own frame, so its local turn is the source's, not mirrored
         np.testing.assert_allclose(np.abs(self.local_spine(out)), np.abs(np.array(RG.LEAN[1])), atol=1e-5)
 
+    def test_the_hips_keep_their_motion_but_not_a_held_level_offset(self) -> None:
+        """Tripo's run on the demo goblin held the hips off their rest spot in every frame; the route plays clips in place."""
+
+        out = self.folder / "out.glb"
+        C.transfer(self.source, self.source, out, ["idle"])
+        rig = C.Rig(out)
+        _times, values = rig.clips()["idle"][rig.joints["Hips"]]["translation"]
+        rest = np.asarray(rig.nodes[rig.joints["Hips"]].get("translation", [0.0, 0.0, 0.0]))
+        np.testing.assert_allclose((values - rest)[:, [0, 2]].mean(axis=0), [0.0, 0.0], atol=1e-6)
+        self.assertGreater(float(np.ptp(values[:, 1])), 0.01, "the bob up and down stays")
+
     def test_a_missing_clip_is_named(self) -> None:
         with self.assertRaises(C.TransferError):
             C.transfer(self.source, self.source, self.folder / "out.glb", ["swagger"])
