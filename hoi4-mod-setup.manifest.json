@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "5457e5f0c1223ea52b84e6126fafd5a98cc1b4cc",
+  "generated_for_revision": "74abadb109a9c21a470d94685fc8a39c874262ca",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15177,6 +15177,11 @@
           "size": 16707
         },
         {
+          "path": ".tools/3d_pipeline/lib/clip_transfer.py",
+          "sha256": "1f25b2a49c464318eb17d0bf58d97de59df6785cbe50fe96bbfe0af29bace64e",
+          "size": 13162
+        },
+        {
           "path": ".tools/3d_pipeline/lib/credits.py",
           "sha256": "60ece827b3cff8848ecc8faabe13c4ab2cf2ae3b63f46371cece8955810e4a10",
           "size": 19598
@@ -15553,8 +15558,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "bbf82522433c9c54bb96066da230786ce62a5cf34259eeb6bffe93c0abc738c6",
-          "size": 205653
+          "sha256": "9fe44276edfeeb487f2ce6cd677b754347b7d7697f205a0ce5a864045914f0ed",
+          "size": 206004
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16217,6 +16222,11 @@
           "size": 8092
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_clip_transfer.py",
+          "sha256": "ebedd6dab23235b3cbac1d5d0a710816f412dcdc7fa135093daeab625470d8ac",
+          "size": 3052
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
           "sha256": "b065c33e266d79e96db5a1280c2c89cfcb7d5df179af61a8d99570d0e796d363",
           "size": 18638
@@ -16643,8 +16653,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_job_entry.py",
-          "sha256": "cac3f1fdd9197dcd04329f5240b90ab2fbdd683a1a1089185e997c362ba48bb8",
-          "size": 14342
+          "sha256": "852f896ffb4d293e2d370c4f0b4262f5f2fa6d155dace9e393cb0b5314e8e66a",
+          "size": 14871
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_kick.py",
@@ -16835,6 +16845,11 @@
           "path": ".tools/3d_pipeline/tripo/clip_sheet.py",
           "sha256": "abd1535170f9e9dfdaeb15dec6b979420e984a69c12827ac619de8356cc20e4c",
           "size": 3711
+        },
+        {
+          "path": ".tools/3d_pipeline/tripo/clip_transfer.py",
+          "sha256": "3560e06495702fe47fd13a0d896eec942fcf5ee8d53473f03fda9e5d8c5eb6db",
+          "size": 2273
         },
         {
           "path": ".tools/3d_pipeline/tripo/colour_compare.py",
