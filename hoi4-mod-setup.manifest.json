@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "73587febd8a87b9be8de6a9184a2bd7ccb32fe7d",
+  "generated_for_revision": "774b106c43b7350015817c4d0cba4818ff31fbe0",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15328,8 +15328,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo.py",
-          "sha256": "e01c20950b73a35dc47728d902302cf220a63c74df0064dfb0ede9f0be727ce5",
-          "size": 6787
+          "sha256": "9d4c7ae4f2d40886d2440eeb93ff4dcaf42c92dde24752563e09404da8b3d6d4",
+          "size": 7160
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_arm_seat.py",
@@ -16708,8 +16708,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_route.py",
-          "sha256": "db969442a3e5919a2ef6afbcf4b10568d4244cb796a4c401bd03225d1715cfb2",
-          "size": 35576
+          "sha256": "9ce06385bc6ef18addf3c4055c1a5be116723a653ec8f72b74f7ea54cc9d6916",
+          "size": 36286
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shape.py",
