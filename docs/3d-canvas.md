@@ -62,7 +62,7 @@ Then the workflow of the type:
 **Static model** (a tank, plane, ship, building or landmark):
 
 3. **Smart Mesh** from the picture: Triangle, the card's polycount. Read the price on the node before you run it. It makes variants: pick the cleanest as the card's step 2 says.
-4. **Texture Generation** on that variant: PBR on, 2K. Read the price first.
+4. **Texture Generation** on that variant: PBR on, 2K. Read the price first, and write the ledger line before any Texture click. On the Model page the bottom bar's **Texture 20** starts the paid texture at the first click, with no settings dialog.
 5. **Export**: GLB, 2K, as `<job folder>/inbox/<asset_slug>.glb`, next to the job file `new_job.py` wrote. Then the card's step 9.
 
 ## Save it, share it, reuse it
