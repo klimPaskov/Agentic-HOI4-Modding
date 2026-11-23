@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "774b106c43b7350015817c4d0cba4818ff31fbe0",
+  "generated_for_revision": "e06b44a54417301a89758bb0be2d4cd252591b6a",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15332,6 +15332,11 @@
           "size": 7160
         },
         {
+          "path": ".tools/3d_pipeline/lib/tripo_amplify.py",
+          "sha256": "44851087d0738bc3e04fcebb1fb83da935b741b4b874cc86c3e44240ce6e162b",
+          "size": 8598
+        },
+        {
           "path": ".tools/3d_pipeline/lib/tripo_arm_seat.py",
           "sha256": "c94570a1872b48177e08e8a1a09898cf71ad8504ab76c699be1ae2f3269af3e0",
           "size": 17276
@@ -15558,8 +15563,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "9fe44276edfeeb487f2ce6cd677b754347b7d7697f205a0ce5a864045914f0ed",
-          "size": 206004
+          "sha256": "24b059046750cab178ef519688f8e8e7cdc01639f596f9548ebc82f139dbafe9",
+          "size": 206894
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16575,6 +16580,11 @@
           "path": ".tools/3d_pipeline/tests/test_texture_size_gate.py",
           "sha256": "b316d57c9c903ce73cb3e86db2bb3704bc360c8d8bc0ae6d92efb494bf969953",
           "size": 8744
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/test_tripo_amplify.py",
+          "sha256": "05c522c1f99438521987b2c02b16e1605f50daa48628d61495bced6cff3cf081",
+          "size": 2541
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_arm_seat.py",
