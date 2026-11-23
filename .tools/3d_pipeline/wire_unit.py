@@ -4,7 +4,8 @@ Usage (from the repository root):
 
     py -3.13 -B .tools/3d_pipeline/wire_unit.py <job_root_or_job_id> --mod-root <mod> [--dry-run] [--json]
 
-Reads the job's `runtime/registration.md`, `runtime/files/` and `job.yaml`, then:
+Reads the job's `runtime/registration.md`, `runtime/files/` and `job.yaml`, then (a static model's `static_model.py --out` folder
+holds the same `runtime/` layout, so it is wired the same way):
 
 1. writes the `pdxmesh`, animation and entity blocks into the mod between marker comments
    (`# wire_unit begin <stem> <kind>` and `# wire_unit end ...`), replacing only its own block on a
