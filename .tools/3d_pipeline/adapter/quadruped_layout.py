@@ -1497,7 +1497,9 @@ def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[s
         roll = float(death.get("roll", load.get("roll_limit", COLLAPSE_ROLL) if load else COLLAPSE_ROLL))
         # a runner's undropped legs (choose_leg_drop) bend less than dropped ones, so they fold RUNNER_DEATH_FOLD of a full fold: at the
         # elephant's 0.6 a Tripo light horse's dead legs bent 25.0 degrees (TRIPO-DEATH-STIFF-LEGS, at least 25)
-        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)), bool(load), float(death.get("leg_drop", 1.0)),
+        # (a winged body's base collapse keeps the whole drop: _winged_pose eases it to its own leg_drop once the body lies)
+        leg_drop = 1.0 if layout.landmarks.get("wings") else float(death.get("leg_drop", 1.0))
+        _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)), bool(load), leg_drop,
                   DEATH_FOLD if stance["graviportal"] else RUNNER_DEATH_FOLD)
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
