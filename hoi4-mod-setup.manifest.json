@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "f5482fb7ce6d3dfb18c0c51f49f3f1138b9cfa00",
+  "generated_for_revision": "21181aeb179de02559e899267ed93ecd1599c716",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16853,8 +16853,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_check.py",
-          "sha256": "d2ba465a062ea71f1c2a52af82858fee14f0cf3a1e82ff7fbd6f4c956e4131ac",
-          "size": 36849
+          "sha256": "615e5de1e8cd667d471e7fde469eac34a4be056b8d736114692bc51f56dede18",
+          "size": 37134
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_frames.py",
