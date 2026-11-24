@@ -55,5 +55,23 @@ class HangingTail(unittest.TestCase):
             self.assertTrue(names[order[row, 0]].startswith("Rear_"), names[order[row, 0]])
 
 
+class SaddleSeat(unittest.TestCase):
+    def test_the_node_sits_in_the_saddle_between_pommel_and_cantle(self) -> None:
+        """A war saddle's pommel and cantle stand above its seat: the node goes on the seat, not on top of either."""
+
+        rng = np.random.default_rng(11)
+        points = horse_with_hanging_tail()
+        # the saddle's seat at the body's top (1.6), a pommel up to 1.85 at y 0.45 and a cantle up to 1.8 at y 0.75
+        pommel = np.column_stack([rng.uniform(-0.08, 0.08, 400), rng.uniform(0.4, 0.5, 400), rng.uniform(1.6, 1.85, 400)])
+        cantle = np.column_stack([rng.uniform(-0.08, 0.08, 400), rng.uniform(0.7, 0.8, 400), rng.uniform(1.6, 1.8, 400)])
+        seat = np.column_stack([rng.uniform(-0.1, 0.1, 400), rng.uniform(0.5, 0.7, 400), rng.uniform(1.6, 1.64, 400)])
+        landmarks = quadruped_layout.detect_landmarks(np.vstack([points, pommel, cantle, seat]))
+        ground = float(np.vstack([points, pommel]).min(axis=0)[2])
+        y, z = float(landmarks["saddle"][1]), float(landmarks["saddle"][2]) + ground
+        self.assertGreater(y, 0.5)
+        self.assertLess(y, 0.7)
+        self.assertLess(z, 1.7)
+
+
 if __name__ == "__main__":
     unittest.main()
