@@ -659,7 +659,7 @@ The kit writes and reads the PDX files itself for this (`lib/pdx_write.py`, whic
 | Rule | Fails when |
 | --- | --- |
 | BURN-STANDS | The torso leans more than 60 degrees from upright in any frame (the kit's untwist reads a torso past 60 degrees as not standing) |
-| BURN-IN-PLACE | The hips travel more than 0.1 hip heights, the in-place limit of the intake |
+| BURN-IN-PLACE | The hips travel more than 0.1 hip heights up to the burn's start, the in-place limit of the intake. The slide of hips that stand behind the feet toward the ground point as the body shrinks is reported as `collapse_pull`, not judged |
 | BURN-SHRINK | After the burn starts, the body's top, its outline in the map view or the hips' scale grows again by more than 1% between two frames |
 | BURN-GROUNDED | The lowest point goes more than 1% of the height off or under the ground in any frame |
 | BURN-NO-FLYOFF | A part moves more than 1% of the height farther from the burn's ground point between two frames |

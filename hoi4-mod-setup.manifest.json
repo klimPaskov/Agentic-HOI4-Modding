@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "ce7238b04fc3364025251197244151a500bbc853",
+  "generated_for_revision": "76c7b0990f074686019e590fda8309f7863d41ba",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15513,8 +15513,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_strike.py",
-          "sha256": "5a246056ac7b79d947f39b744c2c32bfec67b2360a021a136a7fb34279582c24",
-          "size": 9304
+          "sha256": "6f418f4522fdb0f82a965523dd3554b5efba4c1426800e46e86a1b3045a13d5f",
+          "size": 10123
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_swing.py",
@@ -16803,8 +16803,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_strike.py",
-          "sha256": "ddc27a9fe5eef1f067124feb0d1b05b5300c81f947ac27468f3bccc8824a1a09",
-          "size": 5959
+          "sha256": "8da38b8ac5a7c7326455c49c859c45572fa1a569f23dad90a0c8017d06dbc326",
+          "size": 7290
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_studio_prompt.py",
@@ -17068,8 +17068,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_checks.py",
-          "sha256": "8ccc385881216014e17d8e10841e37483cbed5362038b1ae507f6bd7a5767b6f",
-          "size": 148860
+          "sha256": "e0be3aff942ee0ff92fee59676dfbdce19ec00baf15be6eb8c81883e136ef47b",
+          "size": 148884
         },
         {
           "path": ".tools/3d_pipeline/tripo/tripo_studio.js",

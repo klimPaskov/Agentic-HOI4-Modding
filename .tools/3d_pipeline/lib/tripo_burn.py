@@ -63,7 +63,7 @@ DARK_PERCENTILE = 3.0  # the heap takes the UVs of the body's darkest 3% of vert
 GROUND_TOLERANCE = 0.01  # BURN-GROUNDED: share of the height off or under the ground
 SHRINK_SLACK = 0.01  # BURN-SHRINK and BURN-NO-FLYOFF: share of the height a measure may grow by between frames
 STAND_LEAN_DEGREES = 60.0  # BURN-STANDS: the torso's lean from upright (the kit's untwist reads a torso past 60 degrees as not standing)
-TRAVEL_LIMIT = 0.1  # BURN-IN-PLACE: hip travel, hip heights (lib/glb_root.MAX_ROOT_TRAVEL_SHARE)
+TRAVEL_LIMIT = 0.1  # BURN-IN-PLACE: hip travel up to the burn's start, hip heights (lib/glb_root.MAX_ROOT_TRAVEL_SHARE)
 END_FRAMES = 15  # BURN-END: the last frames judged
 SMOKE_AFTER_S = 1.0  # the smoke goes on this long after the clip's last frame
 
@@ -527,8 +527,12 @@ def burn_findings(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, plan
     out: List[dict] = []
     numbers: Dict[str, float] = {}
     _stands(mesh, joints, hips, clip, out, numbers)
-    travel = float(np.ptp(joints[:, hips][:, [0, 2]], axis=0).max()) / max(rest_hips, 1e-6)
+    # The clip's own travel, up to the burn's start. After it the body only shrinks toward the ground point between the feet, so hips
+    # that stand behind the feet slide to it as the body goes: the ZIN devil's hips stood 0.13 hip heights behind his hooves and slid
+    # 0.12 while the clip itself held them still (run devil_e, 2026-11-23). That pull is reported, not judged.
+    travel = float(np.ptp(joints[: start + 1, hips][:, [0, 2]], axis=0).max()) / max(rest_hips, 1e-6)
     numbers["hip_travel"] = round(travel, 3)
+    numbers["collapse_pull"] = round(float(np.ptp(joints[start:, hips][:, [0, 2]], axis=0).max()) / max(rest_hips, 1e-6), 3)
     if travel > TRAVEL_LIMIT:
         out.append(_finding("BURN-IN-PLACE", clip, f"the hips travel {travel:.2f} hip heights (limit {TRAVEL_LIMIT:g}): a burn stays where it stands", share=round(travel, 3)))
     series: Dict[str, list] = {"tops": [], "cells": [], "reach": []}

@@ -135,6 +135,32 @@ class Burn(WingedBiped):
         found, _numbers = B.burn_findings(mesh, anim, plan, "unit_death", B.mesh_locators(self.mesh_path))
         self.assertIn("BURN-SHRINK", [item["rule"] for item in found])
 
+    def slid(self, during_burn: bool) -> tuple:
+        """The burnt clip with its hips slid back by 0.3 hip heights, during the burn or before its start: (findings, numbers)."""
+
+        plan, death, _idle = self.burnt()
+        start = plan["burn_start"]
+        frames = slice(start, None) if during_burn else slice(0, start)
+        mesh = pdx_deform.load_mesh(self.mesh_path)
+        anim = pdx_deform.load_anim(death)
+        hips = anim.channels["Hips"]["t"]
+        rest = float(hips[0, 1])
+        picked = np.arange(len(hips))[frames]
+        hips[picked, 2] -= 0.3 * rest * np.linspace(0.0, 1.0, len(picked))
+        hips[picked[-1] + 1:, 2] -= 0.3 * rest
+        return B.burn_findings(mesh, anim, plan, "unit_death", B.mesh_locators(self.mesh_path))
+
+    def test_the_collapse_toward_the_feet_is_not_travel(self) -> None:
+        """Hips that stand behind the feet slide to the ground point as the body shrinks (the ZIN devil, run devil_e, 0.12 hip heights)."""
+
+        found, numbers = self.slid(during_burn=True)
+        self.assertNotIn("BURN-IN-PLACE", [item["rule"] for item in found])
+        self.assertGreater(numbers["collapse_pull"], 0.25)
+
+    def test_a_clip_that_walks_before_the_burn_fails_in_place(self) -> None:
+        found, numbers = self.slid(during_burn=False)
+        self.assertIn("BURN-IN-PLACE", [item["rule"] for item in found], numbers)
+
     def test_smoke_that_stops_early_does_not_cover_the_burn(self) -> None:
         plan, _death, _idle = self.burnt()
         self.assertTrue(B.particles_cover(plan))
