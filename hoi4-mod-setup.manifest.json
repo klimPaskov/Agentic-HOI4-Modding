@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b3b975d5e2464064fbf63524b8e89a55e9188cd9",
+  "generated_for_revision": "ce7238b04fc3364025251197244151a500bbc853",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -12836,8 +12836,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
@@ -14873,8 +14873,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/blender_worker.py",
-          "sha256": "915dfce41212573d384c540b847e4f2fe6d9bbc9231ea983824fd5bcf79a5c8a",
-          "size": 546970
+          "sha256": "29e3236574c4a0e39a5334f74fc5d448fd93842d8f19cce80c0d3b154322cf61",
+          "size": 550204
         },
         {
           "path": ".tools/3d_pipeline/adapter/explicit_batch_repair.py",
@@ -15038,8 +15038,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/repair_mesh.py",
-          "sha256": "467ea574d38090e9a9b22abd0985de907bb3a787bbca09d11e8c50d754de34fb",
-          "size": 20568
+          "sha256": "ecde547ef7eb2490e668a4b36702ebce863152d19b96eadd8a44e49df4f7016f",
+          "size": 20915
         },
         {
           "path": ".tools/3d_pipeline/blender/review_render.py",
@@ -15610,6 +15610,11 @@
           "path": ".tools/3d_pipeline/tests/blender_loose_parts_integration.py",
           "sha256": "1e25264fc49027109d2cf9bd5919435c2396e7833bfd7c3a68420fa7a04fc096",
           "size": 4360
+        },
+        {
+          "path": ".tools/3d_pipeline/tests/blender_pinched_pairs_integration.py",
+          "sha256": "6494b379d83d358bdc164178913469c4038a23edee56e8c96967cedd2adde66c",
+          "size": 3407
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_quadruped_integration.py",
@@ -16452,6 +16457,11 @@
           "size": 5725
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_pinched_pairs_regression.py",
+          "sha256": "35ba8f5271dd1353629c99ffe90db3fa7d867f49527970ce1cdc66f2975c78c3",
+          "size": 1608
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_pipeline_startup_regressions.py",
           "sha256": "80a1d06d568576fc09f63a79057af81c7155667c6bee8ba076d07c7360e70669",
           "size": 17861
@@ -17188,8 +17198,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         }
       ],
       "required_tools": [
@@ -25603,8 +25613,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
@@ -31101,8 +31111,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
@@ -36599,8 +36609,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
