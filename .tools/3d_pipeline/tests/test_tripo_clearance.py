@@ -485,6 +485,45 @@ class Drop(unittest.TestCase):
         self.assertGreaterEqual(float(gap), C.LANDING_CLEAR_SHARE - 1e-6)  # clear of the final footprint, seen from above
         self.assertEqual(plan["in_body_share"], 0.0)
 
+    def test_the_search_widens_when_the_nearest_places_all_swing_through_the_body(self) -> None:
+        # Every plan for the 4 nearest places is a swing through the body (a fall onto the back); a later place is clear. The planner goes on to it
+        # instead of giving up with the best of the first few.
+        real = C._drop_row
+        seen = []
+
+        def faked(place, *args, **kwargs):
+            row = real(place, *args, **kwargs)
+            seen.append(place["orientation"])
+            row = dict(row)
+            row["in_body_share"] = 0.05 if len(seen) <= 4 else 0.0
+            return row
+
+        C._drop_row = faked
+        try:
+            plan, *_ = self.plan()
+        finally:
+            C._drop_row = real
+        self.assertGreater(len(seen), 4)
+        self.assertEqual(plan["in_body_share"], 0.0)
+
+    def test_a_quicker_and_a_slower_tumble_are_tried_when_every_place_swings_through_the_body(self) -> None:
+        real = C._drop_row
+        lengths = []
+
+        def faked(place, *args, **kwargs):
+            lengths.append(args[-1])
+            row = dict(real(place, *args, **kwargs))
+            row["in_body_share"] = 0.05
+            return row
+
+        C._drop_row = faked
+        try:
+            plan, *_ = self.plan()
+        finally:
+            C._drop_row = real
+        self.assertGreater(len(set(lengths)), 1)
+        self.assertIn(plan["tumble_frames"], set(lengths))
+
     def test_after_the_tumble_the_planned_weapon_does_not_move(self) -> None:
         plan, *_ = self.plan()
         tail = plan["points"][plan["tumble_frames"] :]

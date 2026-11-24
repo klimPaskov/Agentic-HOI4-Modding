@@ -1,5 +1,5 @@
 {
- "schema_version": "1.1.0",
+ "schema_version": "1.2.0",
  "about": "The effects layer of the 3D route (docs/3d-effects.md). HOI4 effects are not part of a model: they are particle systems fired by `event` lines in the entity's states at a locator, a named point of the .mesh that follows a bone. A profile is one effect of a unit: its slots (a locator, the spot it is measured at, the roles whose states fire it, the frame rule) and the particles each slot fires. A Tripo preset lists the profiles that fit its type (`effects` in tripo_presets.json), a job picks among them and states its setting. `needs` names what the unit's world must have for the profile to fit (D-127): a medieval or fantasy world without gunpowder can never take a muzzle flash. Particles marked `vanilla` are fired by their registered vanilla name, untouched. Particles with `from` are copied from that vanilla particle's file into the mod under the unit's own name, and changed by colour and scale only. Locator names are `<effect>_<part>`, with `_l` or `_r` by the rig's side (fire_mouth, fire_hand_l, glow_eye_r), so every type uses one scheme, except the vanilla names a static model keeps (barrel, hit_effect_locator1). lib/unit_effects.py reads this file and refuses a profile that names an unknown spot, frame rule, particle or vanilla particle (checked against effects_vanilla.json, which calibrate_effects.py writes from the game). The profiles are general, one per kind of effect, with type defaults (D-134). Which effect a mod's creature has, from its own canon, lives in that mod's job files (the job's effects block), never here.",
  "setting_tags": {
   "gunpowder": "the unit's world has firearms, cannons and explosives (HOI4's own era, a modern faction)",
@@ -11,7 +11,7 @@
   "hand_tip": "the tip of a hand: the mean of the hand region's vertices farthest along the forearm-to-hand direction (the bone and its children)",
   "head_front": "the front of the head or snout: the mean of the head region's vertices farthest toward the unit's front, in the lower part of the head (the mouth)",
   "eye": "one eye (`side` l or r): the upper front of the head region on that side, pushed back by `inset` of the head's depth (default 0.25), so it sits inside a hood's opening and not on its rim",
-  "wing_tip": "a wing's tip (`side` l or r): the farthest 5% from the mid-plane of the vertices whose strongest bone is a wing bone, parented to the wing bone that carries most of them",
+  "wing_tip": "a wing's tip (`side` l or r): of that side's wing vertices, the farthest 2.5% outward and upward together (a spread wing's apex, a folded wing's wrist), parented to the wing bone that carries most of them",
   "bone_top": "the top centre of a bone's own part, without the parts mounted on it (a hull's deck under its turret)",
   "bone_bottom": "the bottom centre of a bone's own part (a turret's ring)",
   "bone_centre": "the centre of a bone's own part. A slot's `parent` hangs the locator from another bone: measured on the turret, hung from the hull, a blast stays where the turret was as it flies off",
@@ -212,6 +212,42 @@
    "vanilla": "flamethrower_smoke_effect",
    "standin": "smoke",
    "duration_s": 1.5
+  },
+  "feathers": {
+   "from": "raid_air_leaflet_success_effect",
+   "keep_subsystems": [
+    "leaflets_1"
+   ],
+   "reset_placement": true,
+   "sprite": "feather",
+   "standin": "feather",
+   "duration_s": 3.0,
+   "colour": [
+    236,
+    232,
+    224
+   ],
+   "scale": 0.7,
+   "sprite_default": "assets/particles/feather_1.dds"
+  },
+  "feathers_death": {
+   "from": "raid_air_leaflet_success_effect",
+   "keep_subsystems": [
+    "leaflets_1",
+    "leaflets_2",
+    "leaflets_3"
+   ],
+   "reset_placement": true,
+   "sprite": "feather",
+   "standin": "feather",
+   "duration_s": 3.0,
+   "colour": [
+    236,
+    232,
+    224
+   ],
+   "scale": 0.8,
+   "sprite_default": "assets/particles/feather_1.dds"
   }
  },
  "profiles": {
@@ -563,7 +599,7 @@
      ]
     }
    ],
-   "vanilla": "vanilla's dustcloud_particle as it is. Vanilla has no feather particle, and a copy may change only colour and scale, so loose feathers need a new particle (a decision, not a route step)"
+   "vanilla": "vanilla's dustcloud_particle as it is. Loose feathers come from feather_shed"
   },
   "strike_dust": {
    "label": "a heavy blow: dust and chips at both fists at the strike (a stone or earth creature)",
@@ -707,6 +743,61 @@
     }
    ],
    "vanilla": "flame tanks fire flamethrower_particle at the flamethrower locator (bone barrel_tip) at 0.1 s and flamethrower_smoke_effect at 0.2 s"
+  },
+  "feather_shed": {
+   "label": "a feathered wing sheds loose feathers: a few at each wing tip in the wing beat, more in the death (colour and size per job)",
+   "needs": [],
+   "slots": [
+    {
+     "locator": "feather_wing_l",
+     "spot": "wing_tip",
+     "side": "l",
+     "roles": [
+      "attack"
+     ],
+     "frame": "strike",
+     "particles": [
+      "feathers"
+     ]
+    },
+    {
+     "locator": "feather_wing_r",
+     "spot": "wing_tip",
+     "side": "r",
+     "roles": [
+      "attack"
+     ],
+     "frame": "strike",
+     "particles": [
+      "feathers"
+     ]
+    },
+    {
+     "locator": "feather_wing_l",
+     "spot": "wing_tip",
+     "side": "l",
+     "roles": [
+      "death"
+     ],
+     "frame": "start",
+     "particles": [
+      "feathers_death"
+     ]
+    },
+    {
+     "locator": "feather_wing_r",
+     "spot": "wing_tip",
+     "side": "r",
+     "roles": [
+      "death"
+     ],
+     "frame": "start",
+     "particles": [
+      "feathers_death"
+     ]
+    }
+   ],
+   "vanilla": "vanilla has no feather particle. The fall is vanilla's raid leaflet drop (raid_air_leaflet_success_effect): one of its falling, wind-blown subsystems in the wing beat (a few feathers, 2 a second) and all three in the death (not the target marker), started at the locator at once instead of 8 units above after 1.6 s and released into the world so they fall free of the wing, emitting for vanilla's 3 s, with a new feather sprite made by hoi4-imagegen from real feather references (the kit's assets/particles/feather_1.dds, CC BY-SA 4.0, or the job's `sprites`). Colour and scale per job"
   }
  }
 }

@@ -15,13 +15,20 @@ and their slots live in `config/effects.json`. For each slot this module
    one by its registered name, or a mod copy changed by colour and scale only) and the sounds, which `wire_unit.py` merges into the
    sound plan at the same frames.
 
-`findings()` checks a plan against the files: EFFECT-FIT, EFFECT-LOCATOR, EFFECT-FRAME, EFFECT-ON-PART and EFFECT-PARTICLE.
+A particle that needs a look vanilla has no texture for (a feather) keeps a vanilla system and takes a new sprite: the job names the
+sprite file in `sprites`, or the profile's default sprite shipped in `assets/particles`. Every sprite is made by the kit's image route
+(hoi4-imagegen), with its ledger record beside it.
+
+`findings()` checks a plan against the files: EFFECT-FIT, EFFECT-LOCATOR, EFFECT-FRAME, EFFECT-ON-PART, EFFECT-PARTICLE and
+EFFECT-SPRITE.
 """
 
 from __future__ import annotations
 
 import colorsys
+import hashlib
 import json
+import struct
 import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
@@ -43,6 +50,11 @@ ON_PART_SHARE = 0.03  # EFFECT-ON-PART: the locator's distance to its part may c
 REGION_TOP_SHARE = 0.05  # a spot's vertices: the farthest 5% of the region along the measured direction
 AFTER_CLIP_S = 1.0  # a `duration_s: clip` particle (a wreck's smoke) goes on this long past the clip, as the death's last frame holds
 EYE_INSET = 0.25  # `eye`: how far behind the head's front an eye sits, a share of the head's depth (inside a hood)
+STANDINS = ("flash", "smoke", "fire", "spell", "blast", "feather")
+SPRITE_ROUTE = "hoi4-imagegen"  # EFFECT-SPRITE: the only route a particle sprite may come from
+SPRITE_SIZES = (32, 64, 128, 256, 512)  # square, as vanilla's particle sprites (leaflet_1.dds is 128 by 128)
+LEDGER_SUFFIX = ".ledger.json"  # hoi4-imagegen's record of a sprite, `<sprite stem>.ledger.json` beside it
+PIPELINE = Path(__file__).resolve().parents[1]
 GREY_SATURATION = 0.25  # a subsystem whose colour is greyer than this (smoke) keeps its colour when a particle is recoloured
 # A state with no clip of its own plays this role's clip: vanilla's tanks and the static route's play attack in defend and support_attack
 ROLE_CLIPS = {"support_attack": "attack", "defend": "attack", "training": "idle"}
@@ -81,8 +93,10 @@ def check_config(data: Optional[Dict[str, Any]] = None, vanilla: Optional[Dict[s
             found.append(f"particle {name}: name exactly one of vanilla or from")
         elif known and source not in known:
             found.append(f"particle {name}: {source} is not a registered vanilla particle (effects_vanilla.json)")
-        if particle.get("standin") not in ("flash", "smoke", "fire", "spell", "blast"):
-            found.append(f"particle {name}: stand-in {particle.get('standin')!r} is not flash, smoke, fire, spell or blast")
+        if particle.get("standin") not in STANDINS:
+            found.append(f"particle {name}: stand-in {particle.get('standin')!r} is not one of {', '.join(STANDINS)}")
+        if particle.get("sprite") and "from" not in particle:
+            found.append(f"particle {name}: a new sprite goes on a copied particle (`from`), never on a vanilla one fired as it is")
         if "vanilla" in particle and ("colour" in particle or "scale" in particle):
             found.append(f"particle {name}: a vanilla particle is fired as it is; copy it with `from` to change its colour or scale")
     for name, profile in data["profiles"].items():
@@ -211,17 +225,26 @@ def _on_side(points: np.ndarray, side: Optional[str], axis: np.ndarray, centre: 
 
 
 def _wing_tip(mesh: pdx_deform.SkinnedMesh, slot: Dict[str, Any]) -> Tuple[np.ndarray, str]:
-    """The wing tip on the slot's side: of the vertices whose strongest bone is a wing bone, the farthest 5% from the body's mid-plane,
-    and the wing bone that carries most of them."""
+    """The wing tip on the slot's side: of the wing's vertices (strongest bone a wing bone, on that side of the body), the farthest 2.5%
+    outward and upward together (the diagonal of the side and up), and the wing bone that carries most of them. On a spread wing that is
+    the apex, on a folded wing the wrist. A rig's wing bones need not reach the apex (Tripo's fan of four chains on a bat wing ends 1.2
+    units below it), so the tip is found on the skin, not on a bone's end. Two earlier rules missed it on a spread bat wing: the point
+    farthest out to the side was the middle of the outer edge, and the point farthest from the root was the lower trailing corner near
+    the ground (fresh reviews of the feather sheet)."""
 
     dominant = pdx_deform.dominant_bones(mesh)
     wings = [i for i, name in enumerate(mesh.bones) if "wing" in name.lower()]
     if not wings:
         raise EffectsError(f"slot {slot['locator']}: the rig has no wing bones")
-    vertices = np.nonzero(np.isin(dominant, wings))[0]
-    axis = side_axis(mesh)
+    axis = side_axis(mesh) * (1.0 if slot.get("side") == "l" else -1.0)
     centre = mesh.positions.mean(axis=0)
-    along = (mesh.positions[vertices] - centre) @ axis * (1.0 if slot.get("side") == "l" else -1.0)
+    vertices = np.nonzero(np.isin(dominant, wings))[0]
+    vertices = vertices[(mesh.positions[vertices] - centre) @ axis > 0]
+    if len(vertices) < 3:
+        raise EffectsError(f"slot {slot['locator']}: no wing on the {slot.get('side')} side")
+    diagonal = axis + np.array([0.0, 1.0, 0.0])
+    diagonal /= np.linalg.norm(diagonal)
+    along = mesh.positions[vertices] @ diagonal
     count = max(3, int(np.ceil(len(vertices) * REGION_TOP_SHARE / 2)))
     tip = vertices[np.argsort(along)[-count:]]
     bones, counts = np.unique(dominant[tip], return_counts=True)
@@ -394,18 +417,35 @@ def read_plan(folder: Path, stem: str) -> Optional[Dict[str, Any]]:
     return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
 
 
-def _particle_entry(stem: str, key: str, spec: Dict[str, Any], colour: Optional[Sequence[int]], rest_of_clip: float, vanilla: Dict[str, Any]) -> Dict[str, Any]:
+def _particle_entry(stem: str, key: str, spec: Dict[str, Any], colour: Optional[Sequence[int]], rest_of_clip: float, vanilla: Dict[str, Any],
+                    sprites: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """A plan's particle. `duration_s` is seconds, `clip` (the rest of the clip and `AFTER_CLIP_S`) or `loop` (vanilla's endless emitter
-    kept, for a glow that plays all through every state that fires it)."""
+    kept, for a glow that plays all through every state that fires it). A particle with a `sprite` takes the job's sprite file of that
+    name, and `keep_subsystems` and `reset_placement` from the profile."""
 
     loop = spec.get("duration_s") == "loop"
     duration = rest_of_clip + AFTER_CLIP_S if spec.get("duration_s") in ("clip", "loop") else float(spec.get("duration_s", 1.0))
     if "vanilla" in spec:
         return {"key": key, "name": spec["vanilla"], "vanilla": True, "standin": spec["standin"], "duration_s": round(duration, 3), "loop": loop}
     source = vanilla.get("particles", {}).get(spec["from"], {})
-    return {"key": key, "name": f"{stem}_{key}_particle", "vanilla": False, "from": spec["from"], "source": source.get("file"),
-            "source_type": source.get("type"), "colour": list(colour or spec.get("colour") or []) or None, "tint_grey": bool(spec.get("tint_grey")),
-            "scale": spec.get("scale", 1), "standin": spec["standin"], "duration_s": round(duration, 3), "loop": loop, "type": f"{stem}_{key}_file"}
+    entry = {"key": key, "name": f"{stem}_{key}_particle", "vanilla": False, "from": spec["from"], "source": source.get("file"),
+             "source_type": source.get("type"), "colour": list(colour or spec.get("colour") or []) or None, "tint_grey": bool(spec.get("tint_grey")),
+             "scale": spec.get("scale", 1), "standin": spec["standin"], "duration_s": round(duration, 3), "loop": loop, "type": f"{stem}_{key}_file"}
+    if spec.get("keep_subsystems"):
+        entry["keep_subsystems"] = list(spec["keep_subsystems"])
+    if spec.get("reset_placement"):
+        entry["reset_placement"] = True
+    if spec.get("sprite"):
+        given = (sprites or {}).get(spec["sprite"]) or (str(PIPELINE / spec["sprite_default"]) if spec.get("sprite_default") else None)
+        if not given:
+            raise EffectsError(f"EFFECT-SPRITE: particle {key} needs the sprite {spec['sprite']!r}: name its file in the job's effects "
+                               f"`sprites`, made by {SPRITE_ROUTE} with its ledger record beside it (docs/3d-effects.md)")
+        path = Path(given)
+        if not path.is_file():
+            raise EffectsError(f"EFFECT-SPRITE: the sprite {spec['sprite']} file {path} does not exist")
+        entry["sprite"] = {"name": spec["sprite"], "source": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+                           "mod_path": f"gfx/particles/{stem}_{spec['sprite']}.dds"}
+    return entry
 
 
 def _place(mesh: pdx_deform.SkinnedMesh, slot: Dict[str, Any], existing: Dict[str, Dict[str, Any]], profile: str) -> Tuple[Dict[str, Any], Optional[str], np.ndarray]:
@@ -438,6 +478,7 @@ class _Planner:
     def __init__(self, folder: Path, stem: str, mesh: pdx_deform.SkinnedMesh, data: Dict[str, Any], vanilla: Dict[str, Any], job_effects: Dict[str, Any]):
         self.folder, self.stem, self.mesh, self.data, self.vanilla = folder, stem, mesh, data, vanilla
         self.colours = job_effects.get("colour") or {}
+        self.sprites = job_effects.get("sprites") or {}
         self.given = job_effects.get("frames") or {}
         self.locators: List[Dict[str, Any]] = []
         self.events: List[Dict[str, Any]] = []
@@ -470,7 +511,7 @@ class _Planner:
             seconds = frame / fps + float(slot.get("offset_s", 0.0))
             for key in slot.get("particles", []):
                 particle = _particle_entry(self.stem, key, self.data["particles"][key], self.colours.get(key),
-                                           max(max(anim.frames, 1) / fps - seconds, 0.5), self.vanilla)
+                                           max(max(anim.frames, 1) / fps - seconds, 0.5), self.vanilla, self.sprites)
                 self.particles.setdefault(particle["name"], particle)
                 self.events.append({"profile": profile, "role": role, "clip": path.stem, "node": slot["locator"], "bone": entry["bone"],
                                     "measure_bone": bone, "frame": frame, "time": round(seconds, 3), "particle": particle["name"],
@@ -534,6 +575,49 @@ def recolour(text: str, colour: Sequence[float], tint_grey: bool = False) -> str
     return _COLOUR.sub(swap, text)
 
 
+def _blocks(text: str, keyword: str) -> List[Tuple[int, int]]:
+    """(start, end) of each `<keyword> = { ... }` block in `text`, outermost only."""
+
+    out = []
+    for match in re.finditer(rf"\b{keyword}\s*=\s*\{{", text):
+        if out and match.start() < out[-1][1]:
+            continue
+        depth, index = 0, match.end() - 1
+        while index < len(text):
+            depth += {"{": 1, "}": -1}.get(text[index], 0)
+            if depth == 0:
+                break
+            index += 1
+        out.append((match.start(), index + 1))
+    return out
+
+
+def reshape(text: str, keep: Optional[Sequence[str]] = None, sprite: Optional[str] = None, reset_placement: bool = False) -> str:
+    """A particle block with only the subsystems named in `keep`, each drawing `sprite` instead of its own texture, and with
+    `reset_placement` their delay (`start`) and offset (`position`) set to zero and their particles released into the world
+    (`local_space=no`), so they start at the locator when the event fires and fall free of the moving part. Vanilla's raid leaflets fall
+    from 8 units above a target 1.6 s after the raid, in the target's own space, which means nothing at a beating wing's tip."""
+
+    pieces, last = [], 0
+    for start, end in _blocks(text, "subsystem"):
+        body = text[start:end]
+        name = re.search(r'\bname\s*=\s*"([^"]*)"', body)
+        pieces.append(text[last:start])
+        last = end
+        if keep and (name is None or name.group(1) not in keep):
+            continue
+        if sprite:
+            body = re.sub(r'(\bfile\s*=\s*)"[^"]*"', lambda m: f'{m.group(1)}"{sprite}"', body)
+            body = re.sub(r"(\bx\s*=\s*)\d+(\s*\n\s*y\s*=\s*)\d+(\s*\n\s*shader)", r"\g<1>1\g<2>1\g<3>", body)  # one frame, not an atlas
+        if reset_placement:
+            body = re.sub(r"\bstart\s*=\s*[-\d.]+", "start=0.000", body)
+            body = re.sub(r"\blocal_space\s*=\s*yes", "local_space=no", body)
+            body = re.sub(r"\bposition\s*=\s*\{[^{}]*\}", "position={\n\t\t\tx=0.000\n\t\t\ty=0.000\n\t\t\tz=0.000\n\t\t}", body)
+        pieces.append(body)
+    pieces.append(text[last:])
+    return "".join(pieces)
+
+
 def adapted_particle(text: str, source_type: Optional[str], new_type: str, colour: Optional[Sequence[float]], duration: Optional[float],
                      tint_grey: bool = False) -> str:
     """A copy of vanilla's particle `source_type` (the block of that name in the file) under `new_type`, recoloured, its endless
@@ -567,8 +651,9 @@ def _particle_blocks(text: str) -> List[Tuple[Optional[str], str]]:
     return out
 
 
-def particle_files(plan: Dict[str, Any], game: Optional[Path]) -> Tuple[List[Tuple[str, str]], List[str]]:
-    """(mod path, text) for each adapted particle and the `.gfx` that registers them, and the problems (a vanilla file not found)."""
+def particle_files(plan: Dict[str, Any], game: Optional[Path]) -> Tuple[List[Tuple[str, Any]], List[str]]:
+    """(mod path, text or bytes) for each adapted particle, its sprite and the `.gfx` that registers them, and the problems (a vanilla
+    file not found, a sprite changed since the plan)."""
 
     files, problems, entries = [], [], []
     stem = plan["stem"]
@@ -581,6 +666,19 @@ def particle_files(plan: Dict[str, Any], game: Optional[Path]) -> Tuple[List[Tup
             continue
         text = adapted_particle(source.read_text(encoding="utf-8", errors="replace"), particle.get("source_type"), particle["type"],
                                 particle.get("colour"), None if particle.get("loop") else particle.get("duration_s"), bool(particle.get("tint_grey")))
+        sprite = particle.get("sprite")
+        if particle.get("keep_subsystems") or sprite or particle.get("reset_placement"):
+            text = reshape(text, particle.get("keep_subsystems"), sprite["mod_path"] if sprite else None, bool(particle.get("reset_placement")))
+        if sprite:
+            data = Path(sprite["source"]).read_bytes() if Path(sprite["source"]).is_file() else b""
+            if hashlib.sha256(data).hexdigest() != sprite["sha256"]:
+                problems.append(f"particle {particle['name']}: the sprite {sprite['source']} changed since the plan (run effects_stage.py again)")
+                continue
+            if all(rel != sprite["mod_path"] for rel, _content in files):
+                files.append((sprite["mod_path"], data))
+                credits = sprite_credits(Path(sprite["source"]))
+                if credits:
+                    files.append((sprite["mod_path"].replace(".dds", "_CREDITS.txt"), credits))
         files.append((f"gfx/particles/{stem}_{particle['key']}.asset", text))
         entries.append({"name": particle["name"], "type": particle["type"], "scale": particle.get("scale", 1)})
     if entries:
@@ -608,7 +706,9 @@ def _locator_findings(plan: Dict[str, Any], present: Dict[str, Dict[str, Any]]) 
 def _event_findings(folder: Path, plan: Dict[str, Any], mesh: pdx_deform.SkinnedMesh, present: Dict[str, Dict[str, Any]], data: Dict[str, Any]) -> List[Dict[str, Any]]:
     out: List[Dict[str, Any]] = []
     height = max(mesh.height, 1e-6)
-    slots = {(slot["locator"], name): slot for name in plan["profiles"] for slot in data["profiles"].get(name, {}).get("slots", [])}
+    # one locator may have a slot per role (feathers in the beat and in the death), so a slot is found by its role too
+    slots = {(slot["locator"], name, role): slot for name in plan["profiles"] for slot in data["profiles"].get(name, {}).get("slots", [])
+             for role in slot["roles"]}
     checked = set()
     for event in plan["events"]:
         clip = folder / f"{event['clip']}.anim"
@@ -619,12 +719,12 @@ def _event_findings(folder: Path, plan: Dict[str, Any], mesh: pdx_deform.Skinned
         if not 0 <= event["frame"] < max(anim.frames, 1):
             out.append(_finding("EFFECT-FRAME", f"{event['particle']} at {event['node']} fires at frame {event['frame']}, outside {event['clip']} ({anim.frames} frames)"))
             continue
-        if (event["node"], event["clip"]) in checked or event["node"] not in present:
+        if (event["node"], event["clip"], event["role"]) in checked or event["node"] not in present:
             continue
-        checked.add((event["node"], event["clip"]))
+        checked.add((event["node"], event["clip"], event["role"]))
         bone, rest = locator_rest(mesh, present[event["node"]])
         matrices = pdx_deform.skinning_matrices(mesh, anim)
-        slot = slots.get((event["node"], event["profile"]), {})
+        slot = slots.get((event["node"], event["profile"], event["role"]), {})
         rule = event.get("measured", {}).get("rule")
         if rule not in (None, "given", "frame_from") and slot:
             try:
@@ -674,6 +774,75 @@ def findings(folder: Path, stem: str, plan: Optional[Dict[str, Any]] = None, *, 
     out += _locator_findings(plan, present)
     out += _event_findings(folder, plan, mesh, present, data)
     out += _particle_findings(plan, vanilla, game)
+    out += sprite_findings(plan)
+    return out
+
+
+def dds_shape(data: bytes) -> Tuple[int, int, str]:
+    """(width, height, format) of a DDS file: the FourCC (DXT5) or `RGBA` for an uncompressed one with alpha, `none` when unreadable."""
+
+    if len(data) < 128 or data[:4] != b"DDS ":
+        return 0, 0, "none"
+    height, width = struct.unpack("<II", data[12:20])
+    flags = struct.unpack("<I", data[80:84])[0]
+    if flags & 0x4:
+        return width, height, data[84:88].decode("latin-1")
+    return width, height, "RGBA" if flags & 0x1 else "RGB"
+
+
+def sprite_record(path: Path) -> Optional[Dict[str, Any]]:
+    try:
+        return json.loads(path.with_name(path.stem + LEDGER_SUFFIX).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def sprite_credits(path: Path) -> str:
+    """The credit a mod ships with a sprite: its references with their authors and licences, from its ledger record."""
+
+    record = sprite_record(path) or {}
+    references = [r for r in record.get("references", []) if r.get("page")]
+    if not references:
+        return ""
+    lines = [f"{path.name}: made with {record.get('tool', {}).get('server', SPRITE_ROUTE)} from these references.",
+             f"Licence: {record.get('licence', 'see the references')}", ""]
+    lines += [f"- {r.get('title')}, by {r.get('artist') or 'unknown'}, {r.get('license')}: {r['page']}" for r in references]
+    return "\n".join(lines) + "\n"
+
+
+def sprite_findings(plan: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """EFFECT-SPRITE: a particle's new sprite comes from the kit's image route. Beside the file lies hoi4-imagegen's record of it
+    (`<sprite stem>.ledger.json`): made by the hoi4-imagegen server with its ledger chain intact, the output's SHA-256 equal to the
+    file's, at least one real reference with its licence (D-110: never a prompt alone, never only game art), and an approved review.
+    The sprite is a square DDS with alpha of a vanilla particle sprite's size."""
+
+    out = []
+    for particle in plan.get("particles", []):
+        sprite = particle.get("sprite")
+        if not sprite:
+            continue
+        path = Path(sprite["source"])
+        data = path.read_bytes() if path.is_file() else b""
+        width, height, kind = dds_shape(data)
+        if width != height or width not in SPRITE_SIZES or kind not in ("DXT5", "DXT3", "RGBA"):
+            out.append(_finding("EFFECT-SPRITE", f"{path.name}: {width} by {height} {kind}; a particle sprite is a square DDS with alpha, {'/'.join(map(str, SPRITE_SIZES))} px (vanilla's leaflet_1.dds is 128 by 128 DXT5)"))
+        record = sprite_record(path)
+        if record is None:
+            out.append(_finding("EFFECT-SPRITE", f"{path.name} has no readable record {path.stem}{LEDGER_SUFFIX}: a sprite comes from {SPRITE_ROUTE} with its ledger record"))
+            continue
+        digest = hashlib.sha256(data).hexdigest()
+        tool = record.get("tool") or {}
+        if not str(tool.get("server", "")).startswith(SPRITE_ROUTE):
+            out.append(_finding("EFFECT-SPRITE", f"{path.name} was made by {tool.get('server')!r}, not by {SPRITE_ROUTE}"))
+        if (tool.get("ledger_chain") or {}).get("ok") is not True:
+            out.append(_finding("EFFECT-SPRITE", f"{path.name}: its ledger chain is not recorded as intact"))
+        if (record.get("outputs", {}).get(path.name) or {}).get("sha256") != digest:
+            out.append(_finding("EFFECT-SPRITE", f"{path.name}: its record names another file (no output {path.name} with SHA-256 {digest[:12]})"))
+        real = [r for r in record.get("references", []) if r.get("license") and not str(r.get("license")).lower().startswith("game asset")]
+        if not real:
+            out.append(_finding("EFFECT-SPRITE", f"{path.name}: its record lists no real reference with a licence (D-110: real references, never a prompt alone)"))
+        if (record.get("review") or {}).get("verdict") != "approved":
+            out.append(_finding("EFFECT-SPRITE", f"{path.name}: its review is not approved"))
     return out
 
 

@@ -1354,7 +1354,10 @@ def merge_plan(armature):
     if not KIT_NAMES <= set(keep.values()):
         raise SystemExit(f"The rig lacks kit bones: {sorted(KIT_NAMES - set(keep.values()))}")
     parents = {bone.name: (bone.parent.name if bone.parent else None) for bone in armature.data.bones}
-    animated = {bone_of_path(fcurve.data_path) for action in bpy.data.actions for fcurve, _container in action_fcurves(action)}
+    # A bone whose every key holds one value is not animated: the grip stage's export writes such a constant channel for `neutral_bone`
+    # (gap 18 of the hobgoblin run), and dropping it drops no motion.
+    animated = {bone_of_path(fcurve.data_path) for action in bpy.data.actions for fcurve, _container in action_fcurves(action)
+                if len({round(point.co[1], 6) for point in fcurve.keyframe_points}) > 1}
     try:
         extras = tripo_extra_joints.find_extra_joints(parents, set(keep), animated)
     except tripo_extra_joints.ExtraJointError as problem:

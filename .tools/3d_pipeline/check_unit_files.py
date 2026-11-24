@@ -326,7 +326,8 @@ def _check_deformation(mesh_path, folder, stem, stems, add, facts, limits, seate
             continue
         try:
             anim = _burn_judged(folder, stem, anim_path, pdx_deform.load_anim(anim_path))
-            report = pdx_deform.deformation_report(mesh, anim)
+            # a death's released weapon never decides the lowest point (the pilot grounds the body without it; TRIPO-WEAPON-BELOW-GROUND judges it)
+            report = pdx_deform.deformation_report(mesh, anim, ground_exclude=[b for b in weapon_bones if b] if (_role_of(anim_path, stem) or "") == "death" else ())
         except (OSError, ValueError, IndexError, pdx_binary.PdxFormatError):
             continue  # UNIT-ANIM-UNREADABLE already reports it
         loaded[anim_path] = anim
@@ -544,7 +545,7 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits, weapon_bones
         add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(floating)} loose part(s) float apart from the body at rest, the farthest {worst.rest_gap:.1%} of the unit's height away ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Move the part onto the body or drop it")
     if drifting:
         worst = drifting[0]
-        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(drifting)} loose part(s) drift off the body in a clip, the worst {worst.worst_gap:.1%} of the unit's height in {worst.worst_clip} frame {worst.worst_frame} ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Weight the part to the bone it rests on (the job's loose_part_edits bind rule)")
+        add("UNIT-LOOSE-PART", "error", mesh_path, f"{len(drifting)} loose part(s) drift off the body in a clip, the worst {worst.worst_gap:.1%} of the unit's height in {worst.worst_clip} frame {worst.worst_frame} ({worst.triangles} triangles); vanilla loose parts stay within {limit:.1%}. Weight the part to the bone it rests on (the job's loose_part_edits bind rule). A weapon the unit lets go of is no loose part: pass its bone with `--weapon-bone <bone>` (the job's `tripo.weapon.bone`)")
 
 
 def _unit_clips(folder: Path):

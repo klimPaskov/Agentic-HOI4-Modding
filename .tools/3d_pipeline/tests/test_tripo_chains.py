@@ -839,6 +839,90 @@ class RoundFourRules(unittest.TestCase):
         weight = sum(w for index, w in rows[0].items() if index // 2 == lead)
         self.assertAlmostEqual(weight, 1.0)
 
+    def test_a_wing_slab_is_thicker_than_a_membrane_by_its_cell_extent(self) -> None:
+        rng = np.random.default_rng(3)
+        plane = rng.uniform(0.0, 1.0, (4000, 2))
+        membrane = np.column_stack([plane, rng.uniform(0.0, 0.012, 4000)])
+        slab = np.column_stack([plane, rng.uniform(0.0, 0.07, 4000)])
+        self.assertLess(C.region_thickness(membrane, 1.0), 0.02)
+        self.assertGreater(C.region_thickness(slab, 1.0), 0.04)
+        self.assertEqual(C.region_thickness(np.zeros((3, 3)), 1.0), 0.0)
+
+    def test_a_thick_wing_blends_over_six_times_its_thickness_and_a_membrane_over_a_bone(self) -> None:
+        joints = np.array([[[0.0, 0.0, 0.0], [0.15, 0.0, 0.0], [0.3, 0.0, 0.0]]])
+        positions = np.array([[0.0, 0.0, 0.0], [0.01, 0.0, 0.0], [0.02, 0.0, 0.0]])
+        edges = np.array([[0, 1], [1, 2]])
+        region = np.array([True, True, True])
+        self.assertAlmostEqual(C.blend_length_for(joints, positions, edges, region, 0.016), 0.15)
+        self.assertAlmostEqual(C.blend_length_for(joints, positions, edges, region, 0.073), C.BLEND_THICKNESS_FACTOR * 0.073)
+
+    def test_a_tilt_limit_keeps_the_heading_and_lowers_every_bone_by_one_turn(self) -> None:
+        rest = np.array([C.unit(np.array([-1.0, 0.0, 0.1])), C.unit(np.array([-1.0, 0.4, -0.3])), C.unit(np.array([-1.0, -0.4, -0.5]))])
+        lean = C.axis_angle_matrix(np.array([0.0, 1.0, 0.0]), math.radians(50.0))  # a torso leaning over the wing, no turn about the vertical
+        heading = C.axis_angle_matrix(UP, math.radians(30.0))
+        carry = lean @ heading
+        limited = C.tilt_limited_carry(carry, rest, rest, UP, 10.0)
+        for direction, rest_direction in zip(rest, rest):
+            elevation = math.degrees(math.asin(float(C.unit(limited @ direction) @ UP)))
+            self.assertLessEqual(elevation, math.degrees(math.asin(float(rest_direction @ UP))) + 10.0 + 0.1)
+        # what is left of the lean turns about a horizontal axis only: the heading's own turn about the vertical is kept whole
+        tilt = C.quaternion_from_matrix(limited @ heading.T)
+        self.assertAlmostEqual(float(tilt[1:] @ UP), 0.0, places=6)
+        self.assertLess(C.quaternion_step_degrees(np.array([1.0, 0.0, 0.0, 0.0]), tilt), 50.0)
+        # a lean that keeps every bone under the cap is left alone
+        np.testing.assert_allclose(C.tilt_limited_carry(heading, rest, rest, UP, 10.0), heading)
+
+    # The sha256 of the membrane wing quaternions below (rounded to 5 places: Linux and Windows differ past 1e-9), captured from the kit's code before the feathered-wing rules (main 255614b,
+    # 2026-11-23). The devil and the dragon depend on membrane wings: any change to them must be deliberate and change this value.
+    MEMBRANE_GOLDEN = "d9aea3d149a536f0b8e7832069bcc56ff573d9358cf9ef816f9faff96647dfca"
+
+    def membrane_quaternions(self, thick):
+        lateral = np.cross(UP, FRONT)
+        rest = np.array([C.unit(lateral + 0.3 * UP), C.unit(lateral), C.unit(lateral - 0.5 * UP)])
+        lengths = np.array([0.1, 0.1, 0.1])
+        basis = np.eye(4)
+        basis[:3, :3] = C.shortest_arc(np.array([0.0, 1.0, 0.0]), C.unit(rest[0]))
+        relative = []
+        for k in range(3):
+            m = basis.copy()
+            m[:3, 3] = np.array([0.1, 0.0, 1.4]) if k == 0 else np.array([0.0, lengths[k - 1], 0.0])
+            relative.append(m)
+        wing = {"u_min": 0.0, "normal": np.array([0.0, -1.0, 0.0]), "sweep": 80.0, "wrap": 70.0, "down": 60.0, "droop": 20.0, "side": 37.0}
+        out = {}
+        for side in ("L", "R"):
+            plan = {"lengths": lengths, "wing": dict(wing), "side": side, "rest_directions": np.array([rest[0]] * 3), "parent_rest": np.eye(4),
+                    "chain_u": 0.5, "rest_relative": np.stack(relative)}
+            if thick is not None:
+                plan["thick"] = thick
+            stage = {"up": UP, "front": FRONT, "ground": -10.0, "height": 2.0}
+            for lean_degrees in (0.0, 40.0):
+                lean = np.eye(4)
+                lean[:3, :3] = C.axis_angle_matrix(np.cross(UP, FRONT), math.radians(lean_degrees))
+                parents = np.stack([lean] * 12)
+                for role in ("idle", "move", "attack", "defend", "retreat", "death"):
+                    out[(side, lean_degrees, role)] = C.wing_quaternions(plan, parents, role, stage)
+        return out
+
+    def test_a_membrane_wing_moves_exactly_as_it_did_before_the_feathered_rules(self) -> None:
+        import hashlib
+
+        out = self.membrane_quaternions(None)
+        digest = hashlib.sha256(b"".join((np.round(out[key], 5) + 0.0).tobytes() for key in sorted(out))).hexdigest()
+        self.assertEqual(digest, self.MEMBRANE_GOLDEN)
+        self.assertEqual(self.membrane_quaternions(False).keys(), out.keys())
+        for key in out:
+            np.testing.assert_array_equal(self.membrane_quaternions(False)[key], out[key])
+
+    def test_a_feathered_wing_takes_its_own_rules(self) -> None:
+        membrane, slab = self.membrane_quaternions(None), self.membrane_quaternions(True)
+        self.assertGreater(max(float(np.abs(membrane[key] - slab[key]).max()) for key in membrane), 0.01)
+        self.assertTrue(C.is_slab(0.073, 1.0))
+        self.assertFalse(C.is_slab(0.016, 1.0))
+        joints = np.array([[[0.0, 0.0, 0.0], [0.15, 0.0, 0.0], [0.3, 0.0, 0.0]]])
+        positions = np.array([[0.0, 0.0, 0.0], [0.01, 0.0, 0.0], [0.02, 0.0, 0.0]])
+        edges, region = np.array([[0, 1], [1, 2]]), np.array([True, True, True])
+        self.assertEqual(C.blend_length_for(joints, positions, edges, region, 0.03, 1.0), C.blend_length_for(joints, positions, edges, region))
+
 
 if __name__ == "__main__":
     unittest.main()

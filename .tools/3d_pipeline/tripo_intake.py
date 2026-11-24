@@ -57,6 +57,8 @@ The intake records each file's SHA-256, size and name in `provider/tripo_intake.
 `provider/downloads/` (each with its `.manifest.json`) and one task record per stage in
 `provider/tasks/` (`provider: tripo`, status SUCCEEDED, a stable id). A second run with the same
 files does nothing. Other files for the same stage are refused: use a new `generation_stage`.
+`--reingest` runs the intake again for the same stage, with the same or other files: the stage's receipt is kept as
+`<receipt>.replaced-<time>.json` and the files and staged data are made again (a changed `tripo` block, a grip stage's output).
 """
 
 from __future__ import annotations
@@ -383,6 +385,25 @@ def write_task(job: Path, stage: str, task_type: str, task_id: str, sources: Lis
     })
 
 
+def check_receipt(receipt_path: Path, sources: List[Dict[str, Any]], slug: str, generation_stage: str, reingest: bool) -> Optional[Dict[str, Any]]:
+    """The stage's receipt decides: none means go on. The same files return the old record. Other files are refused, unless `reingest` keeps the
+    old receipt as `<receipt>.replaced-<time>.json` and lets the intake run again."""
+
+    if receipt_path.is_file() and reingest:
+        stamp = utc_now().replace(":", "").replace("-", "")
+        receipt_path.replace(receipt_path.with_name(f"{receipt_path.stem}.replaced-{stamp}.json"))
+    if receipt_path.is_file():
+        previous = read_json(receipt_path)
+        if previous["sources"] == sources:
+            return {**previous, "state": "already_ingested"}
+        raise RuntimeError(
+            f"{slug} already took other Tripo files under \"generation_stage\": \"{generation_stage}\" (task {previous['task_id']}). "
+            f"A new export is a new stage: set \"generation_stage\": \"{next_stage(generation_stage)}\" in the job entry, then run the intake again, "
+            "or run it again for the same stage with --reingest."
+        )
+    return None
+
+
 def run_intake(
     spec: Dict[str, Any],
     inbox: Path,
@@ -391,6 +412,7 @@ def run_intake(
     credits: Optional[int] = None,
     credits_note: str = "",
     blender: Optional[str] = None,
+    reingest: bool = False,
 ) -> Dict[str, Any]:
     if not uses_tripo(spec):
         raise ValueError(f"{spec['asset_id']} is not a Tripo job; add \"provider\": \"tripo\" to its entry.")
@@ -409,14 +431,9 @@ def run_intake(
     task_id = task_id or default_task_id(files)
     generation_stage = run_pilot.generation_stage_for(spec)
     receipt_path = job / receipt_name(generation_stage)
-    if receipt_path.is_file():
-        previous = read_json(receipt_path)
-        if previous["sources"] == sources:
-            return {**previous, "state": "already_ingested"}
-        raise RuntimeError(
-            f"{slug} already took other Tripo files under \"generation_stage\": \"{generation_stage}\" (task {previous['task_id']}). "
-            f"A new export is a new stage: set \"generation_stage\": \"{next_stage(generation_stage)}\" in the job entry, then run the intake again."
-        )
+    already = check_receipt(receipt_path, sources, slug, generation_stage, reingest)
+    if already is not None:
+        return already
     downloads = job / "provider" / "downloads"
     base = downloads / run_pilot.generation_download_name(spec, "glb")
     outputs: Dict[str, Any] = {}
@@ -483,6 +500,7 @@ def main() -> int:
     parser.add_argument("--task-id", help="Tripo task id (default: tripo-<first 12 hex of the main file's SHA-256>)")
     parser.add_argument("--credits", type=int, help="Tripo credits spent on this asset")
     parser.add_argument("--credits-note", default="")
+    parser.add_argument("--reingest", action="store_true", help="run the intake again for this stage even though its receipt exists (the old receipt is kept as <receipt>.replaced-<time>.json)")
     parser.add_argument("--blender", help="blender executable (default: BLENDER_EXE, then the pipeline's discovery)")
     heavy_job.add_argument(parser)
     parser.add_argument("asset")
@@ -493,7 +511,7 @@ def main() -> int:
         raise KeyError(f"Unknown configured 3D job: {args.asset}")
     result = run_intake(
         configs[args.asset], args.inbox, task_id=args.task_id, credits=args.credits,
-        credits_note=args.credits_note, blender=args.blender,
+        credits_note=args.credits_note, blender=args.blender, reingest=args.reingest,
     )
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0

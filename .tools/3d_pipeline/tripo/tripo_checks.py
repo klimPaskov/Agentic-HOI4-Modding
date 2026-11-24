@@ -61,8 +61,8 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-ATTACK-NO-STRIKE: in a humanoid's attack the striking hand (the weapon's, or the faster of an unarmed unit's) moves less than 0.25 of the
   body's height (wings left out) against the chest over the clip, or never faster than 1.0 heights a second (past what vanilla's shooting attacks do): the attack holds a
   pose and never strikes. `lib/tripo_strike.py`, which also reports the attack's map-size reading against the idle and the defend.
-- The map-read rules (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME and
-  TRIPO-WING-IDLE-MOVE) are advice since D-140: they are reported under "advisory" and never fail a unit (`MAP_READ_RULES`), because
+- The map-read rules (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME,
+  TRIPO-WING-IDLE-MOVE and TRIPO-WING-SCREEN) are advice since D-140: they are reported under "advisory" and never fail a unit (`MAP_READ_RULES`), because
   animations are judged at the size of the game's designer preview and in Blender close-ups.
 - TRIPO-MAP-READ: from the map camera at game size (the unit 60 pixels tall), a humanoid's attack or defend changes fewer pixels of the
   idle's silhouette than `map_read.MIN_HUMANOID_READ_PIXELS` (attack 300, defend 160) in its 90th percentile frame: it reads as the idle on the
@@ -1754,8 +1754,10 @@ def load_unit(folder: Path):
 # D-140: animations are judged at the size of the game's designer preview and in Blender close-ups, not at map size. The rules that read a
 # clip's motion from the map camera at game size are reported as advice and never fail a unit. The still model's size and silhouette beside
 # vanilla stay judged at game size, by the review's game-size sheet.
+# TRIPO-WING-SCREEN reads a wing's angle on the map camera's screen during a clip, so it is one of them. It judges animation clips only,
+# never the rest pose, and the still model's silhouette is judged on the game-size sheet beside vanilla.
 MAP_READ_RULES = frozenset({"TRIPO-MAP-READ", "TRIPO-MAP-ALIKE", "TRIPO-MAP-POSTURE", "TRIPO-MAP-SPREAD", "TRIPO-MAP-REACH",
-                            "TRIPO-MAP-SAME", "TRIPO-WING-IDLE-MOVE"})
+                            "TRIPO-MAP-SAME", "TRIPO-WING-IDLE-MOVE", "TRIPO-WING-SCREEN"})
 
 
 def advisory_rules(args) -> set:
@@ -1931,7 +1933,8 @@ def wing_screen_findings(mesh, anims: Dict[str, object], step: int = 2) -> (List
     """TRIPO-WING-SCREEN: in a clip whose wings are spread (a role that folds them less than fully, not a death), each wing's mean direction
     from its root may rise at most `tripo_chains.SCREEN_MAX` above the screen's level in the review sheets' map view, the game's camera, on
     either side of the unit, in every judged frame. Past it a wing swung back stands up the screen as a spike (lib/tripo_chains.py says how
-    the bound was measured). Wings are the vertices bound mostly to `Wing` chain bones, each side's root the first bone of its chains."""
+    the bound was measured). Wings are the vertices bound mostly to `Wing` chain bones, each side's root the first bone of its chains.
+    Advice since D-140 (`MAP_READ_RULES`): it is reported and never fails a unit."""
 
     dominant = pdx_deform.dominant_bones(mesh)
     names = mesh.bones

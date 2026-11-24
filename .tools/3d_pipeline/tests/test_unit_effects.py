@@ -3,7 +3,9 @@ entity events. A synthetic winged biped that faces +z (its toes point there), an
 
 from __future__ import annotations
 
+import hashlib
 import json
+import struct
 import sys
 import unittest
 from pathlib import Path
@@ -160,6 +162,109 @@ class Glow(WingedBiped):
         self.assertLess(tips["gust_wing_l"]["rest"][0], -1.0)
         self.assertGreater(tips["gust_wing_r"]["rest"][0], 1.0)
         self.assertTrue(tips["gust_wing_l"]["bone"].startswith("WingL"))
+
+
+def fake_dds(path: Path, size: int = 128, fourcc: bytes = b"DXT5") -> bytes:
+    """A DDS header with the width, height and format a check reads, and a small body."""
+
+    header = bytearray(128)
+    header[:4] = b"DDS "
+    header[12:20] = struct.pack("<II", size, size)
+    header[80:84] = struct.pack("<I", 0x4)
+    header[84:88] = fourcc
+    data = bytes(header) + bytes(range(256)) * 4
+    path.write_bytes(data)
+    return data
+
+
+def provenance(path: Path, data: bytes, **changes) -> None:
+    """hoi4-imagegen's record of a sprite, `<stem>.ledger.json` beside it, as the image lane writes it."""
+
+    record = {"tool": {"server": "hoi4-imagegen-mcp 0.3.6", "ledger_chain": {"ok": True}},
+              "references": [{"role": "subject_anchor", "title": "a goose feather", "page": "https://example.org/feather", "license": "Public domain"}],
+              "review": {"verdict": "approved"}, "outputs": {path.name: {"sha256": hashlib.sha256(data).hexdigest()}}}
+    record.update(changes)
+    path.with_name(path.stem + E.LEDGER_SUFFIX).write_text(json.dumps(record), encoding="utf-8")
+
+
+class Feathers(WingedBiped):
+    def setUp(self) -> None:
+        super().setUp()
+        for role in ("idle", "attack", "death"):
+            TD.write_anim(self.folder / f"unit_{role}.anim", 10, lambda frame: {})
+        self.sprite = self.folder / "feather.dds"
+        self.data = fake_dds(self.sprite)
+
+    def job(self) -> dict:
+        return {"profiles": ["feather_shed"], "setting": [], "sprites": {"feather": str(self.sprite)}}
+
+    def test_feathers_fall_from_both_wing_tips_in_the_beat_and_the_death(self) -> None:
+        provenance(self.sprite, self.data)
+        plan = E.make_plan(self.folder, "unit", self.job())
+        fired = {(e["node"], e["role"]) for e in plan["events"]}
+        self.assertEqual(fired, {(f"feather_wing_{s}", r) for s in "lr" for r in ("attack", "death")})
+        sprite = next(p for p in plan["particles"] if p.get("sprite"))["sprite"]
+        self.assertEqual(sprite["mod_path"], "gfx/particles/unit_feather.dds")
+        self.assertEqual(E.findings(self.folder, "unit", plan), [])
+
+    def test_the_kits_own_feather_passes_and_brings_its_credits(self) -> None:
+        plan = E.make_plan(self.folder, "unit", {"profiles": ["feather_shed"], "setting": []})
+        sprite = next(p for p in plan["particles"] if p.get("sprite"))["sprite"]
+        self.assertTrue(sprite["source"].endswith("feather_1.dds"))
+        self.assertEqual(E.sprite_findings(plan), [])
+        credits = E.sprite_credits(Path(sprite["source"]))
+        for words in ("CC BY-SA 4.0", "CC BY 4.0", "Jegan12345", "Waran R Samay", "commons.wikimedia.org"):
+            self.assertIn(words, credits)
+
+    def test_a_particle_without_a_sprite_or_a_default_is_refused(self) -> None:
+        data = E.load()
+        for key in ("feathers", "feathers_death"):
+            del data["particles"][key]["sprite_default"]
+        with self.assertRaises(E.EffectsError) as caught:
+            E.make_plan(self.folder, "unit", {"profiles": ["feather_shed"], "setting": []}, data=data)
+        self.assertIn("EFFECT-SPRITE", str(caught.exception))
+
+    def test_a_sprite_from_another_route_or_without_references_fails(self) -> None:
+        cases = (({"tool": {"server": "gptimage", "ledger_chain": {"ok": True}}}, "not by hoi4-imagegen"),
+                 ({"references": [{"title": "vanilla leaflet", "license": "game asset, composition only"}]}, "no real reference"),
+                 ({"outputs": {}}, "names another file"), ({"review": {"verdict": "rejected"}}, "not approved"),
+                 ({"tool": {"server": "hoi4-imagegen-mcp", "ledger_chain": {"ok": False}}}, "ledger chain"))
+        for changes, words in cases:
+            with self.subTest(changes=changes):
+                provenance(self.sprite, self.data, **changes)
+                plan = E.make_plan(self.folder, "unit", self.job())
+                messages = [f["message"] for f in E.findings(self.folder, "unit", plan) if f["rule"] == "EFFECT-SPRITE"]
+                self.assertTrue(any(words in m for m in messages), messages)
+
+    def test_a_sprite_must_be_a_square_dds_with_alpha(self) -> None:
+        data = fake_dds(self.sprite, size=100, fourcc=b"DXT1")
+        provenance(self.sprite, data)
+        plan = E.make_plan(self.folder, "unit", self.job())
+        self.assertIn("EFFECT-SPRITE", [f["rule"] for f in E.findings(self.folder, "unit", plan)])
+
+
+class Reshape(unittest.TestCase):
+    TEXT = (
+        'particle={\n\tname="raid_file"\n'
+        '\tsubsystem={\n\t\tname="target"\n\t\ttexture={\n\t\t\tfile="gfx/particles/target.dds"\n\t\t\tx=1\n\t\t\ty=1\n\t\t\tshader="ParticleAdditive"\n\t\t}\n\t}\n'
+        '\tsubsystem={\n\t\tname="leaflets_1"\n\t\ttexture={\n\t\t\tfile="gfx/particles/leaflet_1.dds"\n\t\t\tx=2\n\t\t\ty=2\n\t\t\tshader="ParticleAlphaBlend"\n\t\t}\n'
+        '\t\tposition={\n\t\t\tx=0.000\n\t\t\ty=8.000\n\t\t\tz=0.000\n\t\t}\n\t\tstart=1.600\n\t\tduration=3.000\n\t}\n'
+        '\tanimation={\n\t\tname="bomb_fade"\n\t}\n}\n'
+    )
+
+    def test_only_the_kept_subsystems_stay_on_the_new_sprite_at_the_locator(self) -> None:
+        out = E.reshape(self.TEXT, ["leaflets_1"], "gfx/particles/u_feather.dds", True)
+        self.assertNotIn('name="target"', out)
+        self.assertIn('file="gfx/particles/u_feather.dds"', out)
+        self.assertNotIn("leaflet_1.dds", out)
+        self.assertIn("start=0.000", out)
+        self.assertNotIn("y=8.000", out)
+        self.assertIn('name="bomb_fade"', out, "the animation curves stay")
+        self.assertIn("x=1\n", out, "one sprite, not a 2 by 2 atlas")
+
+    def test_the_feathers_fall_free_of_the_wing(self) -> None:
+        text = self.TEXT.replace('name="leaflets_1"', 'name="leaflets_1"\n\t\tlocal_space=yes')
+        self.assertIn("local_space=no", E.reshape(text, ["leaflets_1"], None, True))
 
 
 class Entity(unittest.TestCase):

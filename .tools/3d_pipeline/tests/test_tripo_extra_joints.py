@@ -128,6 +128,12 @@ class SyntheticExport(unittest.TestCase):
         with self.assertRaisesRegex(extra.ExtraJointError, "neutral_bone"):
             extra.plan_from_glb(path)
 
+    def test_a_joint_whose_channels_hold_one_value_is_still_extra(self) -> None:
+        # the grip stage's export writes a constant key per clip for neutral_bone: it moves nothing, so it is dropped (gap 18)
+        path, _info = self.build(extra_constant=True)
+        plan = extra.plan_from_glb(path)
+        self.assertEqual(plan["extras"], ["neutral_bone"])
+
     def test_an_extra_joint_with_a_child_is_refused(self) -> None:
         path, _info = self.build(extra_children=True)
         with self.assertRaisesRegex(extra.ExtraJointError, "neutral_bone"):

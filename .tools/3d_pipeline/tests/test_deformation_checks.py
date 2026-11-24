@@ -303,6 +303,20 @@ class DeformationRules(unittest.TestCase):
         self.assertIn("UNIT-ANIM-GROUND", rules)
 
 
+    def test_a_released_weapon_does_not_decide_the_death_sink(self) -> None:
+        # HandR stands in for a dropped weapon that ends 0.5 units under the ground in the death clip: the unit check leaves it out
+        # when the job names its bone (run_pilot grounds the body without it, TRIPO-WEAPON-BELOW-GROUND judges it), and still counts it otherwise.
+        positions, triangles, bones = two_arm_strip()
+        found = {}
+        for label, weapon_bones in (("named", ["HandR"]), ("unnamed", [])):
+            with tempfile.TemporaryDirectory() as folder:
+                write_mesh(Path(folder) / "u.mesh", positions, triangles, bones)
+                write_anim(Path(folder) / "u_death.anim", 4, lambda frame: {"HandR": ((0.0, -0.5, 0.0), (0.0, 0.0, 0.0, 1.0))})
+                findings, _ = check_unit_files.check_files(Path(folder), None, None, limits=dict(STRICT, bridge_edges=1000, stretched_share=1.0, squashed_share=1.0, worst_stretch_share=9.0), weapon_bones=weapon_bones)
+            found[label] = "UNIT-ANIM-GROUND" in {item.rule for item in findings}
+        self.assertEqual(found, {"named": False, "unnamed": True})
+
+
 class VehicleType(unittest.TestCase):
     def test_the_vehicle_type_is_judged_against_the_vehicle_group(self) -> None:
         types = check_unit_files.load_unit_types()
