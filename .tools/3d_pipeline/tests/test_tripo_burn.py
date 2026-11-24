@@ -54,6 +54,20 @@ class Heap(unittest.TestCase):
         values = B.smoothstep(np.linspace(-0.5, 1.5, 50))
         self.assertTrue(np.all(np.diff(values) >= 0.0))
 
+    def test_hips_held_behind_the_feet_slide_within_the_limit(self) -> None:
+        """The demon's own made death doubled the body over with the hips 0.13 hip heights behind the feet, and the shrink toward
+        the point under the feet slid them 0.12, past BURN-IN-PLACE (2026-11-23)."""
+
+        feet, rest_hips = np.array([0.0, 0.0, 0.0]), 1.0
+        hips = np.array([0.0, 0.9, -0.13])
+        point = B.held_point(feet, hips, rest_hips)
+        slide = float(np.linalg.norm((hips - point)[[0, 2]])) * (1.0 - B.END_SCALE)
+        self.assertAlmostEqual(slide, B.HELD_TRAVEL_SHARE * B.TRAVEL_LIMIT, places=6)
+        self.assertLess(point[2], 0.0, "the point moved toward the hips")
+        self.assertEqual(point[1], 0.0, "and stays on the ground")
+        near = np.array([0.0, 0.9, -0.02])
+        np.testing.assert_array_equal(B.held_point(feet, near, rest_hips), feet, "hips close to the feet keep the point under the feet")
+
 
 class Burn(WingedBiped):
     def bowed(self, frames: int = 30, lie: bool = False):

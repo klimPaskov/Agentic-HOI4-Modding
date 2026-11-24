@@ -66,6 +66,26 @@ STAND_LEAN_DEGREES = 60.0  # BURN-STANDS: the torso's lean from upright (the kit
 TRAVEL_LIMIT = 0.1  # BURN-IN-PLACE: hip travel, hip heights (lib/glb_root.MAX_ROOT_TRAVEL_SHARE)
 END_FRAMES = 15  # BURN-END: the last frames judged
 SMOKE_AFTER_S = 1.0  # the smoke goes on this long after the clip's last frame
+# The body shrinks toward the ground point, so the hips slide by their distance from it times (1 - END_SCALE). A reaction that doubles the
+# body over holds the hips behind the feet at its peak: the demon's own made death held them 0.13 hip heights back and slid 0.12, past
+# BURN-IN-PLACE (2026-11-23). The point moves from under the feet toward under the hips until the slide is this share of the limit.
+HELD_TRAVEL_SHARE = 0.75
+
+
+def held_point(feet_point: np.ndarray, hips: np.ndarray, rest_hips: float) -> np.ndarray:
+    """The ground point under the feet, moved toward the point under the hips just far enough that the hips slide at most
+    `HELD_TRAVEL_SHARE` of `TRAVEL_LIMIT` hip heights while the body shrinks. Unchanged when the hips are already that close."""
+
+    point = np.asarray(feet_point, float).copy()
+    offset = np.array([float(hips[0]) - point[0], float(hips[2]) - point[2]])
+    distance = float(np.linalg.norm(offset))
+    allowed = HELD_TRAVEL_SHARE * TRAVEL_LIMIT * max(rest_hips, 1e-6) / (1.0 - END_SCALE)
+    if distance <= allowed:
+        return point
+    shift = offset * (1.0 - allowed / distance)
+    point[0] += shift[0]
+    point[2] += shift[1]
+    return point
 
 
 def plan_path(folder: Path, stem: str) -> Path:
@@ -365,6 +385,7 @@ def burn_death(mesh_path: Path, anim_path: Path) -> dict:
     ground = float(mesh.positions[:, 1].min())
     feet = [leg.ankle for leg in legs.legs]
     point = np.array([float(joints[start, feet, 0].mean()), ground, float(joints[start, feet, 2].mean())])
+    point = held_point(point, joints[start, legs.pelvis], float(pdx_motion.rest_joints(mesh)[legs.pelvis, 1] - ground))
     t = (np.arange(frames) - start) / float(BURN_FRAMES)
     # The burn breaks the body up: the wings and limbs shrink first and fastest (`LIMB_SCALE` by `LIMB_SHARE` of the burn), the torso and
     # head last (from `BODY_DELAY` of the burn), while the body sinks so its lowest point stays on the ground. An even shrink left a whole
