@@ -1728,12 +1728,16 @@ def wing_events(role: str, track: Optional[Dict[str, np.ndarray]], stage: dict) 
 
 
 def limited_wing_pose(plan: dict, left_rest: np.ndarray, rest: np.ndarray, now: Dict[str, float], flaps: np.ndarray, carry: np.ndarray,
-                      stage: dict, mirror: np.ndarray, rise_cap: Optional[float]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+                      stage: dict, mirror: np.ndarray, rise_cap: Optional[float],
+                      sheet_turn: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
     """One frame of a wing chain's pose: (`turns`, `posed` directions, the `carry` to use, whether the cap acted).
 
     With a `rise_cap` (a feathered wing, see `tilt_limited_carry`) the wing follows the torso's lean only as far as the cap allows, and when
     the lean is gone and its own up-stroke still passes the cap, every bone's up-stroke shrinks by one share (`now["rise_share"]`). Without
-    one the pose is what `wing_pose_rotations` gives."""
+    one the pose is what `wing_pose_rotations` gives. A `sheet_turn` (`wing_side_quaternions`) turns the carry first, in the world."""
+
+    if sheet_turn is not None:
+        carry = np.asarray(sheet_turn, float) @ carry
 
     def turned(pose_now: Dict[str, float]) -> Tuple[np.ndarray, np.ndarray]:
         rotations = wing_pose_rotations(left_rest, plan["chain_u"], plan["wing"], stage["up"], stage["front"], pose_now, flaps)
@@ -1799,9 +1803,8 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             if guard > 0:
                 root = (parents[f] @ np.linalg.inv(parent_rest) @ np.r_[np.asarray(wing["root"], float), 1.0])[:3]
                 now["raise"] = guard * knee_raise(wing, now, flaps[f], carry, root, plan["side"], stage, float(np.max(np.asarray(track["knees"])[f] @ unit(stage["up"]))))
-        turns, posed, carry, lowered = limited_wing_pose(plan, left_rest, rest, now, flaps[f], carry, stage, mirror, rise_cap if slab else None)
-        if sheet_turns is not None and not slab:
-            carry = np.asarray(sheet_turns[f], float) @ carry
+        turns, posed, carry, lowered = limited_wing_pose(plan, left_rest, rest, now, flaps[f], carry, stage, mirror, rise_cap if slab else None,
+                                                         None if slab or sheet_turns is None else sheet_turns[f])
         whole = float(now.get("face", 0.0)) > 0
         outward = unit(carries[f] @ (lateral if plan["side"] == "L" else -lateral))
         current = parents[f]

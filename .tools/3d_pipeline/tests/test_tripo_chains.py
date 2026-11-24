@@ -923,8 +923,7 @@ class RoundFourRules(unittest.TestCase):
         lowered = turns[0] @ risen
         limit = math.asin(float(rest @ UP)) + math.radians(10.0)
         self.assertAlmostEqual(math.asin(float(lowered @ UP)), limit, places=6)
-        level = lambda d: C.unit(d - (d @ UP) * UP)  # noqa: E731
-        np.testing.assert_allclose(level(lowered), level(risen), atol=1e-9)
+        np.testing.assert_allclose(C.unit(lowered - (lowered @ UP) * UP), C.unit(risen - (risen @ UP) * UP), atol=1e-9)
 
     def test_a_leaning_membrane_wing_keeps_its_fan_under_the_sheet_cap(self) -> None:
         # Two chains of one wing at very different elevations (the ZIN devil's wings: chains from 30 degrees above level to hanging down).
