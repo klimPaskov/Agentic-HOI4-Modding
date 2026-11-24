@@ -6,6 +6,7 @@ from __future__ import annotations
 import math
 import sys
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import numpy as np
@@ -30,6 +31,20 @@ def _landmarks(heavy: bool, load: bool = False) -> dict:
     if load:
         landmarks["load"] = {"roll_limit": 70.0, "roll_limit_other_side": -64.0, "bone": ql.LOAD_BONE}
     return landmarks
+
+
+# The runner's own tuning (a longer stride, the hip share, the trot's neck, the gallop's raised neck, the dead legs' fold) set neutral, so a
+# pillar leg can be compared with the generic runner it is defined against.
+GENERIC_RUNNER = {"RUNNER_STRIDE": 1.0, "RUNNER_GAIT_HIP_SHARE": 1.0, "RUNNER_HIP_SHARE": 1.0, "RUNNER_TROT_NECK": 0.0,
+                  "RUNNER_GALLOP_NECK": 0.0, "RUNNER_DEATH_FOLD": ql.DEATH_FOLD}
+
+
+def generic_runner(test):
+    def wrapped(self, *args, **kwargs):
+        with mock.patch.multiple(ql, **GENERIC_RUNNER):
+            return test(self, *args, **kwargs)
+    wrapped.__name__, wrapped.__doc__ = test.__name__, test.__doc__
+    return wrapped
 
 
 def _degrees(pose: dict, name: str, axis=ql.X_AXIS) -> float:
@@ -74,6 +89,7 @@ class ChooseCollapse(unittest.TestCase):
 
 
 class DeathLegs(unittest.TestCase):
+    @generic_runner
     def test_pillar_legs_give_way_in_a_death_and_relax_once_lying(self) -> None:
         heavy = ql.build_layout(_landmarks(True))
         light = ql.build_layout(_landmarks(False))
@@ -143,6 +159,7 @@ class LoadedPoses(unittest.TestCase):
         self.assertLess(min(heads[total // 2 :]), -1.0, "and to the other in the second")
         self.assertEqual(ql.pose_at("quadruped_walk", total // 4, light).get("Head", [])[1:], [], "a runner's walk keeps its plain nod")
 
+    @generic_runner
     def test_a_heavy_walk_lifts_and_folds_its_feet_fully(self) -> None:
         heavy = ql.build_layout(_landmarks(True, load=True))
         runner = ql.build_layout(_landmarks(False))
@@ -206,6 +223,7 @@ class LoadedPoses(unittest.TestCase):
             a, b = ql.pose_at(style, frame, free), ql.pose_at(style, frame, loaded)
             self.assertAlmostEqual(_degrees(b, "Neck_01"), _degrees(a, "Neck_01"), places=6, msg=style)
 
+    @generic_runner
     def test_a_pillar_hip_and_shoulder_turn_no_farther_than_a_walk(self) -> None:
         heavy, light = ql.build_layout(_landmarks(True)), ql.build_layout(_landmarks(False))
         for style in ("quadruped_walk", "quadruped_trot", "quadruped_flee", "quadruped_brace"):
@@ -213,8 +231,24 @@ class LoadedPoses(unittest.TestCase):
                 pose = ql.pose_at(style, frame, heavy)
                 for end, side in ql.LEGS:
                     self.assertLessEqual(abs(_degrees(pose, ql.leg_name(end, side, "Upper"))), ql.PILLAR_SWING + 1e-6, (style, frame, end, side))
-        swings = [abs(_degrees(ql.pose_at("quadruped_trot", frame, light), "Rear_Left_Upper")) for frame in range(ql.frame_count("quadruped_trot"))]
+        # A runner's swing is split between the hip and the joint below (RUNNER_HIP_SHARE), and the two together keep the trot's own swing.
+        swings = [abs(_degrees(ql.pose_at("quadruped_trot", frame, light), "Rear_Left_Upper")) + abs(_degrees(ql.pose_at("quadruped_trot", frame, light), "Rear_Left_Lower"))
+                  for frame in range(ql.frame_count("quadruped_trot"))]
         self.assertGreater(max(swings), ql.PILLAR_SWING, "a runner's trot keeps its own swing")
+
+    def test_a_runner_swings_its_hip_a_share_and_the_joint_below_the_rest(self) -> None:
+        """A Tripo light horse's trot tore 26% of a hind leg's root at the whole swing: in a gait the hip takes RUNNER_GAIT_HIP_SHARE of it."""
+
+        light = ql.build_layout(_landmarks(False))
+        saved = ql.RUNNER_GAIT_HIP_SHARE
+        try:
+            ql.RUNNER_GAIT_HIP_SHARE = 1.0
+            whole = [_degrees(ql.pose_at("quadruped_trot", frame, light), "Rear_Left_Upper") for frame in range(ql.frame_count("quadruped_trot"))]
+            ql.RUNNER_GAIT_HIP_SHARE = saved
+            split = [_degrees(ql.pose_at("quadruped_trot", frame, light), "Rear_Left_Upper") for frame in range(ql.frame_count("quadruped_trot"))]
+        finally:
+            ql.RUNNER_GAIT_HIP_SHARE = saved
+        self.assertAlmostEqual(max(map(abs, split)), saved * max(map(abs, whole)), places=4)
 
 
 def _box(low, high):
