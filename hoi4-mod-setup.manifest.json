@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "342967cb935f2e7763fbfbabd98fea1ca04df764",
+  "generated_for_revision": "b392fef03b8d7ee7fc26d3420f053a5014cec9b1",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15493,8 +15493,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_shape.py",
-          "sha256": "c0b536a8576734f7b06ad7d5db780507aaa14a156d84e16cdbb856ff5a566635",
-          "size": 8642
+          "sha256": "c44ffd02f928a2615bb6556958357fef95768fd2b99248721e51ba5c8055fb32",
+          "size": 9024
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_shield.py",
@@ -16783,8 +16783,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shape.py",
-          "sha256": "73cb8965bc210a72e5c3a6f8ebcea6f9ff7f10268f4276f3773827251a69935f",
-          "size": 3381
+          "sha256": "05adf0235270ef84ca562b735dba34ad172a0244c0a094d4730b81ddb72f78ee",
+          "size": 4002
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_shield.py",
