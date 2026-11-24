@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "7de64a75e71bfa7f37b765f8741a76f7bac70160",
+  "generated_for_revision": "ce7238b04fc3364025251197244151a500bbc853",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -12836,8 +12836,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
@@ -17198,8 +17198,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         }
       ],
       "required_tools": [
@@ -25613,8 +25613,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
@@ -31111,8 +31111,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
@@ -36609,8 +36609,8 @@
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/hoi4-live-tools.md",
-          "sha256": "238ec7e87fc5801078f1b3e3c7afdc62bc5cca7c3674f3b9b42bf4c5f753b04c",
-          "size": 16919
+          "sha256": "ecb4d2d8bf236c535366f86957a0a8f7b8c8008521bb0ba044693407c8aa9f1b",
+          "size": 17487
         },
         {
           "path": ".claude/skills/hoi4-live-playtest/references/setup.md",
