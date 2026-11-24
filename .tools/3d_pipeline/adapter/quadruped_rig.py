@@ -384,7 +384,7 @@ def tune_collapse(rig, meshes, layout: ql.Layout, last: int, pose_frame, ground:
     # A runner's long legs, dropped toward the ground under the rolled body, propped a Tripo light horse 27% of its height up at every roll
     # (TRIPO-NOT-DOWN). Its roll is searched with the legs undropped, and the drop is then the largest share that keeps them no lower than
     # the torso (quadruped_layout.choose_leg_drop), as a winged body's is.
-    runner = not winged and not ql.leg_stance(layout.landmarks)["graviportal"]
+    runner = ql.is_runner(layout.landmarks)
     undropped = {"leg_drop": 0.0} if (winged or runner) else {}
 
     def evaluate(roll: float, lift: float):

@@ -633,6 +633,45 @@ def _near_legs(q: np.ndarray, legs: Dict[str, Dict[str, np.ndarray]], leg_keys: 
     return near
 
 
+def is_runner(landmarks: Dict[str, object]) -> bool:
+    """A runner: a wingless body on runner's legs (a horse), not on pillar legs (an elephant's, leg_stance). A winged body's legs have their
+    own rules (WINGED_HIP_SHARE, WINGED_STRIDE) and keep them."""
+
+    return not landmarks.get("wings") and not leg_stance(landmarks)["graviportal"]
+
+
+def _runner_thighs(q: np.ndarray, lm: Dict[str, object], columns, leg_keys, nearest_leg: np.ndarray, belly_z: float,
+                   length: float) -> Dict[str, np.ndarray]:
+    """Each leg's root band (skin_weights): its own side's skin up to RUNNER_ROOT_BAND of the way from the belly to the back, within
+    RUNNER_ROOT_REACH of the body's length of the leg's column in plan, outside RUNNER_ROOT_INNER of the column's distance from the
+    mid-plane (the brisket between the forelegs and the skin between the hind legs stay the torso's: a rear stretched them when both
+    legs claimed them)."""
+
+    back_z = float(lm["back_z"])
+    centre_x = float(lm["centre_x"])
+    thigh: Dict[str, np.ndarray] = {}
+    for column, key in enumerate(leg_keys):
+        plan = np.linalg.norm(q[:, :2] - columns[column], axis=1)
+        outside = np.abs(q[:, 0] - centre_x) >= RUNNER_ROOT_INNER * abs(float(columns[column][0]) - centre_x)
+        thigh[key] = ((nearest_leg == column) & (plan < RUNNER_ROOT_REACH * length) & outside
+                      & (q[:, 2] < belly_z + RUNNER_ROOT_BAND * (back_z - belly_z)))
+    return thigh
+
+
+def _runner_band(allowed: np.ndarray, bones, thigh: Dict[str, np.ndarray]) -> np.ndarray:
+    """Let each leg's Upper bone take its root band (`thigh`, _runner_thighs) and return each point's distance falloff power: in the band
+    the leg and the torso blend over a wider stretch of skin (RUNNER_ROOT_POWER, a softer falloff), so the swing's strain spreads instead
+    of tearing one row of edges. 4 elsewhere, and everywhere on a body that is no runner (`thigh` empty)."""
+
+    power = np.full(allowed.shape[0], 4.0)
+    for index, bone in enumerate(bones):
+        key = next((key for key in thigh if bone.deform and bone.name == f"{key}_Upper"), None)
+        if key is not None:
+            allowed[:, index] |= thigh[key]
+            power[thigh[key]] = RUNNER_ROOT_POWER
+    return power
+
+
 def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) -> Tuple[np.ndarray, np.ndarray]:
     """Return (bone indices, weights) per vertex, each row normalized, at most `max_influences` bones.
 
@@ -670,18 +709,6 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
     # also takes the skin of its own leg's side up to RUNNER_ROOT_BAND of the way from the belly to the back, within RUNNER_ROOT_REACH of
     # the body's length of the leg's column in plan, and the distance falloff blends it with the torso there. A pillar leg (an elephant's)
     # swings little and keeps the belly line.
-    runner = not leg_stance(lm)["graviportal"]
-    back_z = float(lm["back_z"])
-    thigh: Dict[str, np.ndarray] = {}
-    if runner:
-        for column, key in enumerate(leg_keys):
-            plan = np.linalg.norm(q[:, :2] - columns[column], axis=1)
-            # only outside RUNNER_ROOT_INNER of the leg column's distance from the mid-plane: the brisket between the forelegs and the
-            # skin between the hind legs stay the torso's (a rear stretched them when both legs claimed them)
-            centre_x = float(lm["centre_x"])
-            outside = np.abs(q[:, 0] - centre_x) >= RUNNER_ROOT_INNER * abs(float(columns[column][0]) - centre_x)
-            thigh[key] = ((nearest_leg == column) & (plan < RUNNER_ROOT_REACH * length) & outside
-                          & (q[:, 2] < belly_z + RUNNER_ROOT_BAND * (back_z - belly_z)))
     leg_base: Dict[int, np.ndarray] = {}
     for index, bone in enumerate(bones):
         if not bone.deform:
@@ -694,8 +721,6 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
                 mask &= q[:, 2] < belly_z
             leg_base[index] = mask
             allowed[:, index] = mask & near_leg[:, leg_keys.index(key)]
-            if name.endswith("_Upper") and key in thigh:
-                allowed[:, index] |= thigh[key]
         elif name.startswith("Tail_"):
             tail_root_y = float(np.asarray(lm["tail"][0])[1]) if lm.get("tail") else rear_y
             lying = q[:, 1] > float(lm["tail_ground_y"]) if lm.get("tail_ground_y") is not None else np.zeros(len(q), bool)
@@ -710,13 +735,9 @@ def skin_weights(points: np.ndarray, layout: Layout, max_influences: int = 4) ->
             allowed[:, index] = in_body & (q[:, 1] < mid_y + 0.12 * length)
         elif name == "Spine":
             allowed[:, index] = in_body
+    power = _runner_band(allowed, bones, _runner_thighs(q, lm, columns, leg_keys, nearest_leg, belly_z, length) if is_runner(lm) else {})
     _claim_leftovers(allowed, leg_base, q, distance, bones, rear_y + 0.06 * length, 0.2 * h)
     falloff = 0.02 * h
-    power = np.full(len(q), 4.0)
-    if thigh:
-        # In a runner's root band the leg and the torso blend over a wider stretch of skin (a softer falloff), so the swing's strain
-        # spreads instead of tearing one row of edges.
-        power[np.any(np.stack(list(thigh.values())), axis=0)] = RUNNER_ROOT_POWER
     raw = np.where(allowed, 1.0 / np.power(distance + falloff, power[:, None]), 0.0)
     order = np.argsort(-raw, axis=1)[:, :max_influences]
     picked = np.take_along_axis(raw, order, axis=1)
@@ -1420,6 +1441,38 @@ def _bent(pose: Dict[str, List[Rotation]], flex: float, neck: float = 1.0, load:
     return {name: [(axis, degrees * share(name)) for axis, degrees in rows] for name, rows in pose.items()}
 
 
+def _runner_gait(gait, runner: bool):
+    """A runner's stride reaches RUNNER_STRIDE farther than the generic gait's, so its legs show from the map camera."""
+
+    if not runner or RUNNER_STRIDE == 1.0:
+        return gait
+    return replace(gait, swing_degrees=gait.swing_degrees * RUNNER_STRIDE, flex_degrees=gait.flex_degrees * RUNNER_STRIDE)
+
+
+def _runner_pose(pose: Dict[str, List[Rotation]], style: str, t: float) -> None:
+    """A runner's own turns on top of the style's pose (is_runner): the trot's lower neck, the gallop's alarm, the hip's share of a swing."""
+
+    if style == "quadruped_trot":
+        # A runner trots with its neck carried lower and forward than in its head-up stand, and with a longer stride (RUNNER_STRIDE): the map
+        # camera looks from the front and above, where a leg's swing is foreshortened. A Tripo light horse's trot with the stand's neck and the
+        # generic stride changed 11% of the idle's silhouette (TRIPO-MAP-READ needs 15%), with both 17% (h4 export at a 20 degree neck). The
+        # lower neck also sets the trot apart from the alarmed gallop: at 20 and 45 degrees the retreat changed 14% of the trot's silhouette.
+        pose["Neck_01"] = pose.get("Neck_01", []) + [(X_AXIS, RUNNER_TROT_NECK)]
+    if style == "quadruped_gallop":
+        # A runner's gallop is its retreat: the head flies up in alarm and tosses, as the heavy flee's does, so it reads apart from the
+        # trot (a Tripo light horse's plain gallop changed 7% of the trot's silhouette from the map camera, TRIPO-MAP-READ needs 15%).
+        alarm = math.sin(math.pi * t) ** 0.5
+        pose["Head"] = pose.get("Head", []) + [(X_AXIS, -RETREAT_HEAD * alarm), (Z_AXIS, RETREAT_TOSS * math.sin(4 * math.pi * t))]
+        # with no load on its back a runner's neck rises with the head (RUNNER_GALLOP_NECK): from the map camera the raised head is what shows
+        pose["Neck_01"] = pose.get("Neck_01", []) + [(X_AXIS, -RUNNER_GALLOP_NECK * alarm)]
+    hip_share = RUNNER_GAIT_HIP_SHARE if style in GAITS else RUNNER_HIP_SHARE
+    if style != "quadruped_collapse" and hip_share < 1.0:
+        # A runner's hip and shoulder take RUNNER_HIP_SHARE of each swing, the joint below the rest, so the foot goes where it went: at the
+        # whole swing the hind thigh and the shoulder tore from the flank (a Tripo light horse's trot and gallop stretched 26% to 41% of a
+        # leg root, TRIPO-LEG-ROOT-STRETCH, offline). The winged quadruped's legs do the same (WINGED_HIP_SHARE).
+        _hip_to_knee(pose, hip_share)
+
+
 def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[str, List[Rotation]]:
     """Each bone's armature-space rotations (axis, degrees) at `frame`; the keys `__root_pitch__`, `__root_yaw__` and `__root_roll__` turn
     the whole body and `__root_shift__` moves it ((axis, distance) rows in the model's units). `ears` adds the ear bones' turns (`_ear_pose`).
@@ -1432,17 +1485,14 @@ def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[s
     names = set(layout.names())
     load = layout.landmarks.get("load") or {}
     stance = leg_stance(layout.landmarks)
+    runner = is_runner(layout.landmarks)
     total = frame_count(style)
     t = (frame % total) / total if style in LOOPING else min(1.0, frame / max(total - 1, 1))
     pose: Dict[str, List[Rotation]] = {}
     free: set = set()  # leg joints that bend as far as a runner's whatever the build
     has_tail = "Tail_01" in names
     if style in GAITS:
-        gait = _pillar_gait(GAITS[style], stance)
-        if not stance["graviportal"] and RUNNER_STRIDE != 1.0:
-            # a runner's stride reaches farther than the generic gait's, so its legs show from the map camera (RUNNER_STRIDE)
-            gait = replace(gait, swing_degrees=gait.swing_degrees * RUNNER_STRIDE, flex_degrees=gait.flex_degrees * RUNNER_STRIDE)
-        _gait(pose, gait, t, has_tail)
+        _gait(pose, _runner_gait(_pillar_gait(GAITS[style], stance), runner), t, has_tail)
         if style == "quadruped_walk" and stance["graviportal"]:
             # A heavy walk swings the head to each side once a stride, nods it twice, and its lifted feet fold fully (they carry no
             # weight). The body keeps its heading. Under a tall load the feet barely change the map silhouette, so a plain walk read as the
@@ -1498,30 +1548,13 @@ def pose_at(style: str, frame: int, layout: Layout, ears: bool = True) -> Dict[s
         # a runner's undropped legs (choose_leg_drop) bend less than dropped ones, so they fold RUNNER_DEATH_FOLD of a full fold: at the
         # elephant's 0.6 a Tripo light horse's dead legs bent 25.0 degrees (TRIPO-DEATH-STIFF-LEGS, at least 25)
         # (a winged body's base collapse keeps the whole drop: _winged_pose eases it to its own leg_drop once the body lies)
-        leg_drop = 1.0 if layout.landmarks.get("wings") else float(death.get("leg_drop", 1.0))
+        leg_drop = float(death.get("leg_drop", 1.0)) if runner else 1.0
         _collapse(pose, t, has_tail, roll, float(death.get("neck_lift", 0.0)), bool(load), leg_drop,
-                  DEATH_FOLD if stance["graviportal"] else RUNNER_DEATH_FOLD)
+                  RUNNER_DEATH_FOLD if runner else DEATH_FOLD)
     else:
         raise ValueError(f"Unknown quadruped action style: {style}")
-    if style == "quadruped_trot" and not stance["graviportal"]:
-        # A runner trots with its neck carried lower and forward than in its head-up stand, and with a longer stride (RUNNER_STRIDE): the map
-        # camera looks from the front and above, where a leg's swing is foreshortened. A Tripo light horse's trot with the stand's neck and the
-        # generic stride changed 11% of the idle's silhouette (TRIPO-MAP-READ needs 15%), with both 17% (h4 export at a 20 degree neck). The
-        # lower neck also sets the trot apart from the alarmed gallop: at 20 and 45 degrees the retreat changed 14% of the trot's silhouette.
-        pose["Neck_01"] = pose.get("Neck_01", []) + [(X_AXIS, RUNNER_TROT_NECK)]
-    if style == "quadruped_gallop" and not stance["graviportal"]:
-        # A runner's gallop is its retreat: the head flies up in alarm and tosses, as the heavy flee's does, so it reads apart from the
-        # trot (a Tripo light horse's plain gallop changed 7% of the trot's silhouette from the map camera, TRIPO-MAP-READ needs 15%).
-        alarm = math.sin(math.pi * t) ** 0.5
-        pose["Head"] = pose.get("Head", []) + [(X_AXIS, -RETREAT_HEAD * alarm), (Z_AXIS, RETREAT_TOSS * math.sin(4 * math.pi * t))]
-        # with no load on its back a runner's neck rises with the head (RUNNER_GALLOP_NECK): from the map camera the raised head is what shows
-        pose["Neck_01"] = pose.get("Neck_01", []) + [(X_AXIS, -RUNNER_GALLOP_NECK * alarm)]
-    hip_share = RUNNER_GAIT_HIP_SHARE if style in GAITS else RUNNER_HIP_SHARE
-    if not stance["graviportal"] and style != "quadruped_collapse" and hip_share < 1.0:
-        # A runner's hip and shoulder take RUNNER_HIP_SHARE of each swing, the joint below the rest, so the foot goes where it went: at the
-        # whole swing the hind thigh and the shoulder tore from the flank (a Tripo light horse's trot and gallop stretched 26% to 41% of a
-        # leg root, TRIPO-LEG-ROOT-STRETCH, offline). The winged quadruped's legs do the same (WINGED_HIP_SHARE).
-        _hip_to_knee(pose, hip_share)
+    if runner:
+        _runner_pose(pose, style, t)
     # A dying animal's legs give way whatever their build: the collapse bends them fully (a review saw pillar legs held straight read as
     # a rigid block tipping over).
     flex = 1.0 if style == "quadruped_collapse" else stance["flex"]
