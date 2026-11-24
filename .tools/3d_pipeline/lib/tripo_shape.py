@@ -21,6 +21,10 @@ import numpy as np
 VIEWS = {"front": (0, 2), "side": (1, 2), "top": (0, 1)}  # the two axes kept from each view
 MIN_IOU = 0.97
 MAX_GAP = 0.02
+# A shell the source already held apart (a chimney cap on its pots, a hanging sign) keeps its gap through a reduction,
+# give or take the welding of its corners. The gap counts only when the reduction widened it by more than this share
+# of the length: the ZIN Guild Workshop's cap read 7.1 % before and 7.2 % after, with nothing moved (2026-11-23).
+GAP_GROWTH = 0.005
 MASK_SIZE = 384
 TOLERANCE_PIXELS = 1
 
@@ -168,7 +172,7 @@ def shape_problems(report: dict, min_iou: float = MIN_IOU, max_gap: float = MAX_
     before, after = report["shells_before"], report["shells_after"]
     if after["shells"] > before["shells"]:
         problems.append(f"the reduction split the part into {after['shells']} shells (it had {before['shells']})")
-    if after["max_gap_share"] > max_gap and after["max_gap_share"] > before["max_gap_share"]:
+    if after["max_gap_share"] > max_gap and after["max_gap_share"] > before["max_gap_share"] + GAP_GROWTH:
         problems.append(f"a shell sits {after['max_gap_share']:.1%} of the part's length from the main body (limit {max_gap:.1%})")
     for view, value in report["iou"].items():
         if value < min_iou:
