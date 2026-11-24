@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "8fda128884781723f0c0b28591173a8cca345d2a",
+  "generated_for_revision": "0ef5d95fdce86a63f71eb15f9ae248ed39b0700e",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15383,8 +15383,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_chains.py",
-          "sha256": "5cd58e98b72d02cf2dd311eaafde6b8392dfbf2e3c30e9357cd9bd37c15fa971",
-          "size": 131172
+          "sha256": "00cee8e620264067dbaf39649a918f3f037b101281139b3cbd85ab27c23cda99",
+          "size": 136216
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_checks.py",
@@ -16668,8 +16668,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_chains.py",
-          "sha256": "e04c2ff0d50280f140cb99cf44c41102845a2bf995ea0dd7819e6250676806a7",
-          "size": 57361
+          "sha256": "cd477b0e02cf40c5bf27871e164b7d9d8ce72d4140a7c519dd65aec916b06171",
+          "size": 61238
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_checks.py",
@@ -16913,8 +16913,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/chain_stage.py",
-          "sha256": "3c06daa23fe823d9c2cb3e5ee3fd4403a4312da7e5c8457820ce493ad63015a3",
-          "size": 46795
+          "sha256": "165c96ae6d099529e491fc6c53f32bf38965c3f059473738972696fc242182c2",
+          "size": 46207
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_check.py",
