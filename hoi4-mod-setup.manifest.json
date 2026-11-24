@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "b392fef03b8d7ee7fc26d3420f053a5014cec9b1",
+  "generated_for_revision": "4c6a51209ce5d6f5ac585c4311bb70dbd00d4b28",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -14968,8 +14968,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_layout.py",
-          "sha256": "5e14a5b68fed919e1b8c23c9029a816984e67bfca700a30caf7667d3f324f662",
-          "size": 103566
+          "sha256": "1776c4676257ea0b7516442c7debf912fe5db90cdfe1c1fb77ef3a3ffe824aab",
+          "size": 114448
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_load.py",
@@ -14978,8 +14978,8 @@
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_rig.py",
-          "sha256": "d959740d4d2898493e276923bc4f6464ea39c499e1a9f040f073dbd360b29204",
-          "size": 27933
+          "sha256": "0c778d16268afc42d9a61efa20f8234243b7c08a0255ed5677309d0cea90be35",
+          "size": 29098
         },
         {
           "path": ".tools/3d_pipeline/adapter/quadruped_wings.py",
@@ -15153,8 +15153,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/unit_types.json",
-          "sha256": "a6fae097a6ab7f222a48e0b904455daedacd0d97433e00032505abc876d8b695",
-          "size": 20870
+          "sha256": "83900dac10eddfb17356e6b122e1b41a2fddc1073d82cfaf3f25f22d991f02a7",
+          "size": 20869
         },
         {
           "path": ".tools/3d_pipeline/config/vanilla_gloss.json",
@@ -16493,8 +16493,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_clips.py",
-          "sha256": "e6d42b009e191ccc858da2b33b99e78567f8e76c7f13b3448a555c911dae4ae6",
-          "size": 29803
+          "sha256": "8b8729fc0d3fae35503b99dcff2f9bf3b2cc7c6111334261e66f7c94177e433c",
+          "size": 31681
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_ears.py",
@@ -16503,13 +16503,13 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_layout.py",
-          "sha256": "d06379b41efc56b239f52b16091760064228504c2cff791a2cb6c73c8f0c6389",
-          "size": 2423
+          "sha256": "7a11205ae6ae8c0d7d6a0a3cea013aecb04647d21961faa0a357a4ca5066e3e7",
+          "size": 3574
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_load.py",
-          "sha256": "c4a0d267af9700a69f7b19ed49c9bda65da211ff634cddbda9a0aa4c49601c7f",
-          "size": 13198
+          "sha256": "476725af2d20724508d663c20e5df717d415b6463e74395cb6a7f92e40fe5b47",
+          "size": 14426
         },
         {
           "path": ".tools/3d_pipeline/tests/test_quadruped_wings.py",
@@ -16843,8 +16843,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_files.py",
-          "sha256": "62b464f22a680af530544bbd4f6498b99a97285a2b5cd2bfe50702c0adc775ff",
-          "size": 20842
+          "sha256": "55f0d6be9ea8add76e599cc5e165408883b2be6c5da9d4173926c64a269f1448",
+          "size": 20841
         },
         {
           "path": ".tools/3d_pipeline/tests/test_unit_registration_streams.py",
@@ -17008,8 +17008,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/pose_preview.py",
-          "sha256": "4dcb84c3f5bb61e9c134f2f37833aa64a40725768501e8cc767fc31bb193c157",
-          "size": 32171
+          "sha256": "1ba524e8a76ea567463520ea797dc9983ec6e50bbd7af8cb62aed6f73f012cd8",
+          "size": 32964
         },
         {
           "path": ".tools/3d_pipeline/tripo/prepare_tripo_unit.py",
