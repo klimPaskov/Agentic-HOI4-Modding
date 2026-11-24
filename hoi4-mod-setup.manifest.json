@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "76c7b0990f074686019e590fda8309f7863d41ba",
+  "generated_for_revision": "342967cb935f2e7763fbfbabd98fea1ca04df764",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15368,8 +15368,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_burn.py",
-          "sha256": "1193de24f59c8fad6d4470cb836fadbd94eed6963104548eb3ebbe8241cf54b7",
-          "size": 34325
+          "sha256": "55ccfc606df85cee95c83dbc68b335c127b9aa019472c25fe48663e69bbaeb5e",
+          "size": 34862
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_card.py",
@@ -16653,8 +16653,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_burn.py",
-          "sha256": "308def125146773453567a8de4937f0b2296cd53cdcb0996b6118df14d6edf7a",
-          "size": 10158
+          "sha256": "9605a3bb6f1eb19035f0182e3e3514fae0953c5f62159396adec6484df96e304",
+          "size": 11537
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_card.py",
