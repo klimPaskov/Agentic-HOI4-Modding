@@ -190,11 +190,10 @@ Full text: `checks-and-tools.md`.
 A goal is complete only when it is. Finish the whole implementation, update every related file, run the useful checks and report each blocker or simplification.
 
 - An unavailable check limits what was verified. It never counts as passed and does not by itself stop otherwise finished work.
-- Do not claim completion when only the visible part exists, content is generic or copied, balance, localisation, AI or assets are missing, maintained docs are stale, or a fallback lacked approval.
-- Do not bulk-generate trees, decisions, localisation or reports. Review, customize, wire, localise and check every draft.
+- Do not claim completion when only the visible part exists, content is generic or copied, balance, localisation, AI or assets are missing, maintained docs are stale, a fallback lacked approval or a picture was not read at full size.
+- Do not bulk-generate trees, decisions, localisation or reports. Check every draft.
 - List every simplification under `Simplifications, omissions, and blockers`, or say there were none and give the evidence.
-- Read every picture at full size against the visual-review checklist and the project's accepted references before the user sees it, fix each obvious fault or send it back, and never show a known fault with a caption (`hoi4-scripted-gui` `visual-review.md`).
-- Lead with the result and any needed user action, in one current report.
+- Lead with the result and any needed user action.
 
 Full text, with the completion report contents: `completion-proof.md`.
 
