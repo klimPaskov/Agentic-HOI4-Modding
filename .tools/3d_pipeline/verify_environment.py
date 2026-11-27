@@ -1,4 +1,8 @@
-"""Validate checked-in 3D contracts and optionally probe the live Meshy route."""
+"""Validate the checked-in 3D contracts (the Tripo presets, the Blender adapter, the optional Meshy contract) and optionally probe the live routes.
+
+The Tripo route has no key and no provider API, so a default run needs no credential. `--probe-meshy` is for the optional Meshy
+provider of old jobs and is the only option that needs `MESHY_API_KEY`.
+"""
 
 from __future__ import annotations
 
@@ -12,7 +16,8 @@ from typing import Any
 
 
 REQUIRED_KEY_MESSAGE = (
-    "MESHY_API_KEY is missing or blank. Stop. Run this PowerShell command, then restart "
+    "--probe-meshy checks the optional Meshy provider (old Meshy jobs only; the Tripo route needs no key) and needs "
+    "MESHY_API_KEY, which is missing or blank. Run this PowerShell command, then restart "
     "the shell or Codex:\n\n[Environment]::SetEnvironmentVariable(\n"
     '    "MESHY_API_KEY",\n    "msy_your_actual_key_here",\n    "User"\n)'
 )
@@ -24,6 +29,7 @@ PIPELINE_ROOT = Path(__file__).resolve().parent
 REPO_ROOT = PIPELINE_ROOT.parents[1]
 sys.path.insert(0, str(PIPELINE_ROOT))
 
+from lib import tripo_presets
 from lib.generation import generation_problems, load_pricing
 from lib.mcp_stdio import MCPRouteError, call_stdio  # noqa: E402
 from meshy_client import MOTION_TOOL_ARGUMENTS, MeshyClient, _payload  # noqa: E402
@@ -113,7 +119,7 @@ def probe_blender_adapter(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--probe-meshy", action="store_true")
+    parser.add_argument("--probe-meshy", action="store_true", help="also probe the optional Meshy provider (needs MESHY_API_KEY)")
     parser.add_argument(
         "--probe-adapter",
         action="store_true",
@@ -129,6 +135,7 @@ def main() -> int:
         findings.extend(contract_findings(contract, schema, profiles))
         if not profiles.get("profiles"):
             findings.append("asset profile registry is empty")
+        findings.extend(f"tripo presets: {problem}" for problem in tripo_presets.check())
         tools = adapter_tools()
         if "hoi4_blender_attach_rigid_weapon_from_checkpoint" not in tools:
             findings.append("rigid weapon attachment tool is missing")
@@ -171,6 +178,7 @@ def main() -> int:
         "findings": findings,
         "adapter_tools": tools,
         "blender_adapter": blender_adapter,
+        "tripo": {"needs_key": False, "presets": tripo_presets.names()},
         "meshy": meshy,
     }
     print(json.dumps(result, indent=2, sort_keys=True))

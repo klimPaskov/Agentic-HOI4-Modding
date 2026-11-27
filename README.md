@@ -50,7 +50,7 @@ Prefer to do it by hand? Follow the [manual setup](https://github.com/klimPaskov
 - **[HOI4 Agent Tools](https://github.com/klimPaskov/hoi4-agent-tools)** builds focus trees, events, decisions and maps, previews them, finds modding rules and fixes script.
 - **[hoi4-imagegen](https://github.com/klimPaskov/hoi4-imagegen-mcp)** makes focus icons, event pictures, portraits, flags and the rest at the game's sizes. Sign in with ChatGPT or use an API key.
 - **Live testing** (optional) drives the running game through Clausewitz MCP or HOI4 Live Tools. See the [live-testing setup](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md).
-- **3D models** (optional) through Meshy and Blender.
+- **3D models** (optional, Windows) made in Tripo's web app in your own browser, then Blender and `io_pdx_mesh`. Tripo needs no API key. See [3D units](docs/3d-units.md).
 
 ## Repository layout
 

@@ -18,7 +18,7 @@ GPTImage source tree `06f78000782148bc0079b659389fbd52cdc03179e1075b260bf788fb77
 
 Other image routes retain package-owned adapters and existing provider declarations. The Python adapter's Linux vault reader invokes fixed `/usr/bin/secret-tool` with target `default`, service `com.klimpaskov.hoi4-mod-setup`, and the opaque credential reference as username, matching the app's Secret Service backend. It suppresses diagnostic output, bounds results and returns unavailable when the vault/helper cannot answer. Actual desktop D-Bus/Secret Service compatibility is checked by the app security owner with synthetic credentials; no real user keys or provider calls are part of source validation.
 
-Clausewitz declares native Linux support without WSL/SSH, retaining source `97c85437081904d5ad07bae1623ec58d1c0a5b9e` and native HOI4 1.19.2 only. Manual game/server/process-read readiness remains required before registration. Windows uses WSL and macOS SSH as before. HOI4 Live Tools and the Meshy/Blender bootstrap remain Windows-verified; no Linux 3D or Live Tools route is invented. The installed Linux guide is declared as `docs.linux`, including prerequisites and manual registration shapes.
+Clausewitz declares native Linux support without WSL/SSH, retaining source `97c85437081904d5ad07bae1623ec58d1c0a5b9e` and native HOI4 1.19.2 only. Manual game/server/process-read readiness remains required before registration. Windows uses WSL and macOS SSH as before. HOI4 Live Tools and the Tripo/Blender 3D workflow bootstrap remain Windows-verified; no Linux 3D or Live Tools route is invented. The installed Linux guide is declared as `docs.linux`, including prerequisites and manual registration shapes.
 
 ## Verification and remaining parent gates
 

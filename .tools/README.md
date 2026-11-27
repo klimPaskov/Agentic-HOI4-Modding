@@ -123,7 +123,7 @@ HOI4 Live Tools is a separate, optional MCP server that drives a running game. `
 
 ### 3D model pipeline
 
-`3d_pipeline/` contains the reusable Meshy, Blender, `io_pdx_mesh`, material, verification, and adapter infrastructure.
+`3d_pipeline/` contains the reusable Tripo route, Blender, `io_pdx_mesh`, material, verification, and adapter infrastructure, plus the optional Meshy provider that only old Meshy jobs use.
 Follow `3d_pipeline/README.md` and `hoi4-3d-model-pipeline` for dependency gates, job containment, provider evidence, test commands, and runtime ownership boundaries.
 Do not commit secrets, provider outputs, job artifacts, virtual environments, vendor caches, generated environment reports, or transient process state.
 

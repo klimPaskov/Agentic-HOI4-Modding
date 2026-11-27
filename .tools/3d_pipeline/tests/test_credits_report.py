@@ -126,9 +126,21 @@ class CommandLineTests(unittest.TestCase):
         without_registry = run()
         self.assertEqual(without_registry.returncode, 2)
         self.assertIn("--jobs-config is required", without_registry.stderr)
-        without_key = run("--jobs-config", "jobs.json")
+        with tempfile.TemporaryDirectory(dir=Path(__file__).resolve().parent) as temporary:  # --jobs-config must stay inside the repository
+            meshy_jobs = Path(temporary) / "jobs.json"
+            meshy_jobs.write_text(json.dumps({"jobs": {"old_unit": {"asset_id": "old.unit"}}}), encoding="utf-8")
+            without_key = run("--jobs-config", str(meshy_jobs), "old_unit")
         self.assertEqual(without_key.returncode, 2)
         self.assertIn("MESHY_API_KEY is missing", without_key.stdout)
+
+    def test_an_unreadable_jobs_file_never_asks_a_tripo_user_for_a_meshy_key(self) -> None:
+        environment = {key: value for key, value in os.environ.items() if key != "MESHY_API_KEY"}
+        completed = subprocess.run(
+            [sys.executable, "-B", str(ROOT / "run_pilot.py"), "--jobs-config", "no_such_jobs.json"],
+            capture_output=True, text=True, encoding="utf-8", env=environment, timeout=120,
+        )
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertNotIn("MESHY_API_KEY", completed.stdout + completed.stderr)
 
 
 class LedgerReportTests(unittest.TestCase):
