@@ -63,8 +63,15 @@ def ordered(repairs: List[str]) -> List[str]:
     return sorted(dict.fromkeys(repairs), key=REPAIRS.index)
 
 
-def rule_counts(folder: Path, stem: Optional[str], unit_type: Optional[dict]) -> dict:
+def rule_counts(folder: Path, stem: Optional[str], unit_type: Optional[dict], model_kind: Optional[str] = None) -> dict:
+    """Error counts by rule. A static model (`model_kind`) is checked by its kind's rules, as `check_unit_files.py
+    --model-kind` does, so a building's separate pieces are not loose parts of a unit (UNIT-LOOSE-PART)."""
+
+    if model_kind:
+        unit_type = check_unit_files.model_kind_type(model_kind)
     findings, _facts = check_unit_files.check_files(folder, unit_type, None, stem)
+    if model_kind:
+        findings = list(findings) + check_unit_files.model_kind_findings(folder, model_kind, stem)
     return dict(Counter(f.rule for f in findings if f.severity == "error"))
 
 
@@ -94,7 +101,7 @@ def leg_seam_pairs(mesh: Path) -> List[List[str]]:
 
 
 def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max_hole_edges: int, unit_type: Optional[dict],
-           locked_bones: Sequence[str] = ()) -> dict:
+           locked_bones: Sequence[str] = (), model_kind: Optional[str] = None) -> dict:
     meshes = sorted(folder.glob("*.mesh"))
     mesh = next((m for m in meshes if m.stem == stem), meshes[0] if meshes else None)
     if mesh is None:
@@ -142,11 +149,18 @@ def repair(folder: Path, out: Path, repairs: List[str], stem: Optional[str], max
         "blender": blender_report,
         "stretch": stretch,
         "ground": grounding,
-        "rules_before": rule_counts(folder, stem, unit_type),
-        "rules_after": rule_counts(files, stem, unit_type),
+        "rules_before": rule_counts(folder, stem, unit_type, model_kind),
+        "rules_after": rule_counts(files, stem, unit_type, model_kind),
     }
     (out / "repair_report.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8", newline="\n")
     return report
+
+
+def loops_left(report: dict, max_hole_edges: int) -> List[int]:
+    """The open loops the `holes` repair left because they are longer than `max_hole_edges`, longest first."""
+
+    return sorted((length for entry in report.get("blender", {}).get("objects", {}).values()
+                   for length in entry.get("open_loops_after", []) if length > max_hole_edges), reverse=True)
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -156,20 +170,29 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--repairs", nargs="+", choices=REPAIRS, default=["winding", "bridges"])
     parser.add_argument("--stem", help="repair only <stem>.mesh in a folder shared with another unit")
     parser.add_argument("--unit-type", help="a type from config/unit_types.json, for the checks' group and rider rule")
-    parser.add_argument("--max-hole-edges", type=int, default=16)
+    parser.add_argument("--max-hole-edges", type=int, default=16, help="close open loops of at most this many edges (`holes`); the report lists the loops left")
+    parser.add_argument("--model-kind", choices=("building", "landmark", "ship", "vehicle", "plane"),
+                        help="a static model's kind: check before and after by that kind's rules (check_unit_files.py --model-kind), not a unit's")
     parser.add_argument("--locked-bones", nargs="*", default=[], help="bones the `stretch` repair never smooths into or out of (a held weapon)")
     heavy_job.add_argument(parser)
     args = parser.parse_args(argv)
     heavy_job.apply(args)
     unit_type = check_unit_files.load_unit_types().get(args.unit_type) if args.unit_type else None
     args.out.mkdir(parents=True, exist_ok=True)
-    report = repair(args.folder, args.out, args.repairs, args.stem, args.max_hole_edges, unit_type, args.locked_bones)
+    report = repair(args.folder, args.out, args.repairs, args.stem, args.max_hole_edges, unit_type, args.locked_bones, args.model_kind)
     after = set(report["rules_after"])
     files = (args.out / "files").as_posix()
     out = args.out.as_posix()
-    steps, escalate = stage_verdict.next_for_findings(after, files, out, args.stem, args.unit_type, repaired=True)
-    if not after:
+    steps, escalate = stage_verdict.next_for_findings(after, files, out, args.stem, args.unit_type, repaired=True, model_kind=args.model_kind)
+    kind_arg = f" --model-kind {args.model_kind}" if args.model_kind else ""
+    if not after and args.model_kind:
+        steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_holes.py {stage_verdict.quote(files)}{kind_arg} --out {stage_verdict.quote(out + '/holes')}"]
+    elif not after:
         steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(files)}{' --stem ' + args.stem if args.stem else ''} --out {stage_verdict.quote(out + '/review')}"]
+    left = loops_left(report, args.max_hole_edges) if "holes" in report["repairs"] else []
+    if left:
+        steps.append(f"Open loops longer than --max-hole-edges {args.max_hole_edges} are left ({', '.join(map(str, left))} edges). "
+                     f"If the hole check still shows a hole, repair again with --max-hole-edges {max(left)}.")
     stage_verdict.write(
         stage_verdict.verdict(
             "repair", not after, report["unit"],

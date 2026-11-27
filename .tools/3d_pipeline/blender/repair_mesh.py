@@ -23,7 +23,17 @@ Repairs, each optional and run in this order:
 - `normals`: runs last, after `winding` and `holes`. A stored corner normal that points against its own
   face (winding flipped the face, the stored normal did not follow) takes the normal of its vertex on the
   welded copy, the angle-weighted average of the faces that share it, so split UV-seam corners agree.
+  Where that average leans more than `LEAN_DEGREES` from the face (a hard edge, a box corner) the corner
+  takes the face's own normal instead, so the repair never makes a corner STATIC-SHADING counts.
   Every other corner keeps its imported normal. Bones, weights, UVs and animations are not touched.
+
+A cap takes its winding from the old faces next to it, and old faces are never turned by `holes`: only
+`winding` turns them. A part that cannot be wound one way (the winding repair leaves it as it was) kept
+its faces, but recalculating the whole part around a cap turned some of them and left their stored
+normals pointing backwards (the ZIN Guild Workshop, 0.75 % of its surface, 2026-11-24).
+
+A `Collision` shape (a static model's selection box) is never repaired: it is only made smooth, so it exports its
+8 corners again as vanilla's boxes do.
 
 Every cap vertex is an existing boundary vertex, so caps inherit their neighbours' weights and no
 new weight is invented. Imported corner normals are kept, and cap corners take the cap's face normal.
@@ -31,6 +41,7 @@ A JSON report lists what changed.
 """
 
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -316,23 +327,50 @@ def cap_loops(bm, edges, max_edges):
     return len(faces)
 
 
+def runs_forward(face, edge):
+    """Whether `face` walks `edge` from its first vertex to its second."""
+
+    for loop in face.loops:
+        if loop.edge is edge:
+            return loop.vert is edge.verts[0]
+    return False
+
+
 def orient_caps(bm, caps):
-    """Make every part that received a cap consistently wound and outward again.
+    """Wind every cap the way the old faces next to it run, without turning any old face.
 
-    Only the connected parts that hold a cap are recalculated; each was consistent before the cut,
-    so its old faces keep their direction and the caps follow them."""
+    Two faces that share an edge are wound alike when they walk it in opposite directions. Caps that
+    touch an old face follow it, the caps of a fan follow those, and a cap group that touches no old
+    face is wound outward on its own."""
 
+    caps = set(caps)
     if not caps:
         return
-    part, frontier = set(caps), list(caps)
+    oriented, frontier = set(), []
+    for face in caps:
+        for edge in face.edges:
+            old = [other for other in edge.link_faces if other not in caps]
+            if len(edge.link_faces) == 2 and len(old) == 1:
+                if runs_forward(face, edge) == runs_forward(old[0], edge):
+                    face.normal_flip()
+                oriented.add(face)
+                frontier.append(face)
+                break
     while frontier:
         face = frontier.pop()
         for edge in face.edges:
+            if len(edge.link_faces) != 2:
+                continue
             for other in edge.link_faces:
-                if other not in part:
-                    part.add(other)
+                if other in caps and other not in oriented:
+                    if runs_forward(other, edge) == runs_forward(face, edge):
+                        other.normal_flip()
+                    oriented.add(other)
                     frontier.append(other)
-    bmesh.ops.recalc_face_normals(bm, faces=list(part))
+    rest = [face for face in caps if face not in oriented]
+    if rest:
+        bmesh.ops.recalc_face_normals(bm, faces=rest)
+    bm.normal_update()
 
 
 def boundary_loops(edges):
@@ -378,8 +416,27 @@ def _split_at_repeats(ring):
     return [simple for simple in out if len(simple) >= 3]
 
 
+def is_collision(obj):
+    """A static model's selection box: the game's `Collision` shader (io_pdx_mesh keeps it on the material)."""
+
+    return "collision" in obj.name.lower() or any(slot.material and str(slot.material.get("shader", "")).lower() == "collision" for slot in obj.material_slots)
+
+
+LEAN_DEGREES = 45.0  # STATIC-SHADING's limit (lib/static_kinds.SHADING_LEAN_DEGREES)
+LEAN_COS = math.cos(math.radians(LEAN_DEGREES))
+
 for obj in [o for o in scene.objects if o.type == "MESH"]:
     entry = {"triangles_before": len(obj.data.polygons)}
+    if is_collision(obj):
+        # io_pdx_mesh imports every face sharp, and a sharp box exports one vertex a corner of each face (24).
+        # Smooth with no custom normals it exports its 8 corners again, as vanilla's selection boxes have.
+        if "sharp_face" in obj.data.attributes:
+            obj.data.attributes.remove(obj.data.attributes["sharp_face"])
+        if "custom_normal" in obj.data.attributes:  # Blender 4.1 and later keep custom normals as this attribute
+            obj.data.attributes.remove(obj.data.attributes["custom_normal"])
+        entry["kept_as_imported"] = "collision shape"
+        report["objects"][obj.name] = entry
+        continue
     # io_pdx_mesh imports every face as sharp, so corner normals read back as flat face normals and
     # the exporter splits every corner: the unit would shade faceted. Clear the flag so the imported
     # smooth normals apply, then keep each corner's normal through the edits.
@@ -457,7 +514,7 @@ for obj in [o for o in scene.objects if o.type == "MESH"]:
                 stored = loop[kept]
                 if stored.length >= 0.5 and stored.dot(face.normal) < 0:
                     vertex_normal = loop.vert.normal.copy()
-                    loop[kept] = vertex_normal if vertex_normal.dot(face.normal) > 0 else face.normal.copy()
+                    loop[kept] = vertex_normal if vertex_normal.dot(face.normal) > LEAN_COS else face.normal.copy()
                     replaced += 1
         entry["normal_corners_recalculated"] = replaced
     open_edges = [e for e in bm.edges if e.is_boundary]

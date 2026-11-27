@@ -119,17 +119,19 @@ def next_for_findings(
     stem: Optional[str] = None,
     unit_type: Optional[str] = None,
     repaired: bool = False,
+    model_kind: Optional[str] = None,
 ) -> tuple[List[str], Optional[Dict[str, Any]]]:
     """The commands that fix the failed rules, and an escalation when a rule has no scripted fix.
 
     `repaired` says the unit already went through `repair_unit.py`: stretch that stays escalates.
+    `model_kind` (a static model's kind) makes the commands check by that kind's rules, not a unit type's.
     """
 
     rules = set(rules)
     folder, out = quote(folder), out.rstrip("/")
     steps: List[str] = []
     stem_arg = f" --stem {stem}" if stem else ""
-    type_arg = f" --unit-type {unit_type}" if unit_type else ""
+    type_arg = f" --model-kind {model_kind}" if model_kind else (f" --unit-type {unit_type}" if unit_type else "")
     repairs: List[str] = []
     for rule in sorted(rules):
         for name in REPAIRS.get(rule, "").split():

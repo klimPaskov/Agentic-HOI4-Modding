@@ -189,6 +189,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--out", type=Path, required=True, help="where the results, the sheet and the verdict go (outside gfx/)")
     parser.add_argument("--stem", help="check only <stem>.mesh in a folder shared with another unit")
     parser.add_argument("--unit-type", help="passed on to the repair command the verdict names")
+    parser.add_argument("--model-kind", choices=("building", "landmark", "ship", "vehicle", "plane"),
+                        help="a static model's kind, passed on to the repair and check commands the verdict names (building rules, not unit rules)")
     parser.add_argument("--frames", type=int, default=FRAMES, help="evenly spaced frames per clip, before the worst-stretch, lowest and highest frames are added")
     parser.add_argument("--size", type=int, default=SIZE, help="tile size in pixels; the vanilla limit is scaled to it")
     heavy_job.add_argument(parser)
@@ -207,14 +209,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     outputs = {"worst": worst, "limit_px": limit_px, "over": len(over_limit(rows, limit)) if limit else None, "renders": len(rows), "clips": len(clips), "results": (out / "holes.json").as_posix()}
     steps: List[str] = []
     stem_arg = f" --stem {args.stem}" if args.stem else ""
-    if ok and source.is_dir():
+    kind_arg = f" --model-kind {args.model_kind}" if args.model_kind else ""
+    if ok and source.is_dir() and args.model_kind:
+        steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/tripo/static_sheets.py {stage_verdict.quote(args.source.as_posix())}{kind_arg} --out {stage_verdict.quote(args.out.parent.as_posix() + '/review')}"]
+    elif ok and source.is_dir():
         steps = [f"{stage_verdict.PY} {stage_verdict.PIPELINE}/review_unit.py {stage_verdict.quote(args.source.as_posix())}{stem_arg} --out {stage_verdict.quote(args.out.parent.as_posix() + '/review')}"]
     elif ok:
         steps = ["No hole shows: continue the job (rig and animations)."]
     if not ok and findings[0]["rule"] == RULE:
         if source.is_dir():
-            steps, _escalation = stage_verdict.next_for_findings([RULE], args.source.as_posix(), args.out.as_posix(), args.stem, args.unit_type)
-            steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_holes.py {stage_verdict.quote(args.out.as_posix() + '/repair/files')}{stem_arg} --out {stage_verdict.quote(args.out.as_posix() + '/after_repair')}")
+            steps, _escalation = stage_verdict.next_for_findings([RULE], args.source.as_posix(), args.out.as_posix(), args.stem, args.unit_type, model_kind=args.model_kind)
+            steps.append(f"{stage_verdict.PY} {stage_verdict.PIPELINE}/check_holes.py {stage_verdict.quote(args.out.as_posix() + '/repair/files')}{stem_arg}{kind_arg} --out {stage_verdict.quote(args.out.as_posix() + '/after_repair')}")
             steps.append("Holes left after the repair need the faces rebuilt by hand in Blender, or a new generation.")
         else:
             steps = ["Close the holes before paying for the rig: rebuild the faces in Blender, or generate again."]

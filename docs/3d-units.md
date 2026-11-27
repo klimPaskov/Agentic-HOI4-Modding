@@ -1257,8 +1257,11 @@ Buildings, landmarks, ships, tanks and planes have their own route. Tripo makes 
 
 ```
 py -3.13 -B .tools/3d_pipeline/tripo/static_model.py <inbox>/<name>.json --out <job folder>
+py -3.13 -B .tools/3d_pipeline/check_holes.py <job folder>/mod/gfx/models/<folder>/<name> --model-kind <kind> --out <job folder>/holes
 py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <job folder>/mod/gfx/models/<folder>/<name> --model-kind <kind> --out <job folder>/review
 ```
+
+The route closes small openings itself, but a Smart Mesh roof can keep a gap the player sees from the map, so run the hole check before the sheets. Pass `--model-kind` to it, and to `repair_unit.py` when it names the repair, so both check the model by its kind's rules (a building's separate barrels and carts are not loose parts of a unit). When the repair's verdict says open loops longer than `--max-hole-edges` are left and the hole check still fails, repair again with the larger limit it names. The ZIN Guild Workshop's roof kept a 38-edge loop at the default 16, and closing it with 40 brought the worst hole from 313 to 12 pixels.
 
 **Check a Smart Mesh trial before you pay for its texture.** Smart Mesh makes untextured variants first, and its Texture button costs 20. Free first:
 

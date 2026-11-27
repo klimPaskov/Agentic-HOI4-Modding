@@ -76,11 +76,47 @@ def fused_unit(path: Path, inward_right: bool = False) -> None:
     path.write_bytes(data)
 
 
+def open_building(path: Path) -> None:
+    """A static model: an open box (no roof) wound inside out, its stored normals inward with its faces, and a
+    `Collision` box, the selection shape vanilla buildings carry. No skin and no skeleton."""
+
+    points, triangles = box(-1.0, 1.0, 0.0, 1.5, -1.0, 1.0, 0)
+    triangles = [(a, c, b) for a, b, c in triangles if not {a, b, c} <= {1, 3, 5, 7}]  # z = 1 is open
+    normals = []
+    for x, y, z in points:
+        length = (x * x + (y - 0.75) ** 2 + z * z) ** 0.5
+        normals += [-x / length, -(y - 0.75) / length, -z / length]
+    data = b"@@b@" + _obj("object", 1) + _obj("building", 2) + _obj("mesh", 3)
+    data += _prop("p", "f", [float(v) for p in points for v in p])
+    data += _prop("n", "f", normals)
+    data += _prop("u0", "f", [0.5, 0.5] * len(points))
+    data += _prop("tri", "i", [int(i) for tri in triangles for i in tri])
+    data += _obj("aabb", 4) + _prop("min", "f", [-1.0, 0.0, -1.0]) + _prop("max", "f", [1.0, 1.5, 1.0])
+    data += _obj("material", 4) + _prop("shader", "s", ["PdxMeshAdvanced"]) + _prop("diff", "s", ["building_diffuse.dds"])
+    box_points, box_triangles = box(-1.1, 1.1, 0.0, 1.6, -1.1, 1.1, 0)
+    data += _obj("collision_box", 2) + _obj("mesh", 3)
+    data += _prop("p", "f", [float(v) for p in box_points for v in p])
+    data += _prop("tri", "i", [int(i) for tri in box_triangles for i in tri])
+    data += _obj("aabb", 4) + _prop("min", "f", [-1.1, 0.0, -1.1]) + _prop("max", "f", [1.1, 1.6, 1.1])
+    data += _obj("material", 4) + _prop("shader", "s", ["Collision"])
+    path.write_bytes(data)
+
+
 class RepairOrder(unittest.TestCase):
     def test_normals_run_after_winding_and_holes_whatever_the_order_named(self) -> None:
         self.assertEqual(repair_unit.ordered(["normals", "holes", "winding", "normals"]), ["winding", "holes", "normals"])
         self.assertEqual(repair_unit.ordered(["ground", "normals", "weights"]), ["weights", "normals", "ground"])
         self.assertIn("normals", repair_unit.MESH_REPAIRS)
+
+    def test_a_static_model_is_checked_by_its_kind_and_long_loops_are_named(self) -> None:
+        from lib import stage_verdict
+
+        steps, _escalation = stage_verdict.next_for_findings(["UNIT-HOLE-SILHOUETTE"], "files", "out", unit_type="infantry", model_kind="building")
+        self.assertTrue(all("--unit-type" not in step for step in steps), steps)
+        self.assertTrue(any("--model-kind building" in step for step in steps), steps)
+        report = {"blender": {"objects": {"b": {"open_loops_after": [38, 4, 3]}, "collision": {"open_loops_after": []}}}}
+        self.assertEqual(repair_unit.loops_left(report, 16), [38])
+        self.assertEqual(repair_unit.loops_left(report, 40), [])
 
 
 @unittest.skipUnless(blender_available(), "Blender with io_pdx_mesh is not installed here")
@@ -104,6 +140,29 @@ class RepairInBlender(unittest.TestCase):
             self.assertLess(pdx_deform.normals_against_faces(after)[0], pdx_deform.normals_against_faces(before)[0], (pdx_deform.normals_against_faces(before), pdx_deform.normals_against_faces(after)))
             self.assertEqual(pdx_binary.summarize_mesh(pdx_binary.read(after_path)).bones, [name for name, _p, _x in BONES])
             self.assertEqual((out / "files" / "u_idle.anim").read_bytes(), (unit / "u_idle.anim").read_bytes())
+
+    def test_holes_wind_the_cap_like_its_neighbours_and_leave_the_collision_box(self) -> None:
+        # Recalculating the whole capped part turned every old face of an inside-out shell and left their
+        # stored normals pointing backwards; the ZIN Guild Workshop's repair did that to 0.75 % of its surface.
+        with tempfile.TemporaryDirectory() as folder:
+            unit = Path(folder) / "building"
+            unit.mkdir()
+            open_building(unit / "b.mesh")
+            before = pdx_deform.load_mesh(unit / "b.mesh")
+            self.assertEqual(pdx_deform.normals_against_faces(before)[0], 0)
+            self.assertEqual(int(before.collision.sum()), 8)
+            out = Path(folder) / "repair"
+            with redirect_stdout(io.StringIO()):
+                repair_unit.main([str(unit), "--out", str(out), "--repairs", "holes", "normals", "--model-kind", "building"])
+            report = json.loads((out / "repair_report.json").read_text(encoding="utf-8"))
+            objects = report["blender"]["objects"]
+            self.assertEqual(sum(entry.get("holes_closed", 0) for entry in objects.values()), 1)
+            self.assertIn("collision shape", [entry.get("kept_as_imported") for entry in objects.values()])
+            self.assertNotIn("UNIT-LOOSE-PART", report["rules_after"])
+            after = pdx_deform.load_mesh(out / "files" / "b.mesh")
+            self.assertEqual(pdx_deform.normals_against_faces(after)[0], 0)
+            self.assertEqual(int(after.collision.sum()), 8, "the selection box stays one 8-vertex box")
+            self.assertEqual(pdx_deform.surface_report(after).open_edges, 0)
 
     def test_cuts_the_fusion_fixes_the_winding_and_keeps_the_skeleton(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
