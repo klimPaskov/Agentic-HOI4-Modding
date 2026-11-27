@@ -345,7 +345,7 @@ scene.camera = camera
 # io_pdx_mesh imports units facing -Y with Z up. (azimuth, elevation) in degrees; azimuth 0 faces the unit.
 VIEWS = {"front": (0, 8), "left": (90, 8), "back": (180, 8), "right": (270, 8), "hoi4": (25, 55), "below": (200, -25)}
 # A request may add views (`view_angles`: name -> [azimuth, elevation]) and zoom (`ortho_share`: the frame is that
-# many times the unit's largest extent; default 1.45), as `weapon_sheets.py` does for close-ups.
+# many times the unit's largest extent; default 1.45), as `weapon_sheets.py` does for close-ups, or a fixed `ortho_scale`.
 VIEWS.update({name: tuple(angles) for name, angles in request.get("view_angles", {}).items()})
 
 
@@ -354,7 +354,9 @@ def aim(view):
     direction = Vector((math.sin(azimuth) * math.cos(elevation), -math.cos(azimuth) * math.cos(elevation), math.sin(elevation)))
     camera.location = (rest_low + rest_high) / 2 + direction * span * 6
     camera.rotation_euler = (-direction).to_track_quat("-Z", "Y").to_euler()
-    camera_data.ortho_scale = span * float(request.get("ortho_share", 1.45))
+    # `ortho_scale` fixes the frame's width in the mesh's own units (the designer preview's camera, lib/designer_preview.py), so the
+    # unit is drawn at its true size and not fitted to its own outline.
+    camera_data.ortho_scale = float(request["ortho_scale"]) if request.get("ortho_scale") else span * float(request.get("ortho_share", 1.45))
     camera_data.clip_end = span * 20
 
 

@@ -37,7 +37,8 @@ Each gate is defined once in the guide:
 - **Unit type and body**: a land unit names one `unit_type`, which sets its body preset, rig and animations; `measure_body.py <job>` checks the generation fits that body before any rig is paid for, and escalates a body no preset fits ([Unit types](references/production-guide.md#unit-types-and-the-unit-route)).
 - **Files**: `check_unit_files.py` checks the exported bytes and the registration; `check_holes.py` renders the unit and fails holes larger than vanilla's own specks (on the provider `.glb` before the rig, and after export); `run_pilot.py --status` names the next step after any failure.
 - **Generator**: Tripo is the default (`"provider": "tripo"`). It runs in the
-  Tripo web app under the user's own sign-in, never through an API, and follows
+  Tripo web app under the user's own sign-in, never through an API, so it needs
+  no key and no provider tool call, and follows
   the route in `docs/3d-units.md`: a 3D-ready picture (neutral pose, empty
   hands), model, rig, candidate presets, export, clips picked by measurement
   with the map camera's readings as advice only (`pose_check.py --map`, the
@@ -56,9 +57,10 @@ Each gate is defined once in the guide:
   `tripo.weapon.hand` by the rig's side and gets its weapon from
   `tripo/arm_unit.py`. An unarmed soldier-sized
   unit takes `infantry_unarmed`. Every command that starts Blender waits for
-  the machine first (`lib/heavy_job.py`). Never type the user's password. Proven on armed humanoids, a large creature, a mount, a
-  plane and a ship. Winged units, tanks, buildings and landmarks are not
-  proven yet.
+  the machine first (`lib/heavy_job.py`). Never type the user's password. What is proven and what is not
+  is the table at the top of `docs/3d-units.md`, written once from the presets
+  (`tripo/new_job.py --list`); ask the user before spending on a type it marks
+  not proven.
 - **Effects**: muzzle flashes, spells, fire and explosions are particles at
   locators, fired by entity events, never part of the model. Add them with
   `tripo/effects_stage.py` from the job's `effects` block (profiles the
@@ -75,15 +77,16 @@ Each gate is defined once in the guide:
   requirement to make a step easier or a check pass, and never change a look
   by a tint, filter or recolour of its texture. Change the method, or make a
   new picture and model, or ask the user. See the rules in `docs/3d-units.md`.
-- **Key and dependencies**: an old Meshy job needs a nonblank `MESHY_API_KEY`
-  first. Every job needs the reviewed dependency lock, Blender bridge and
-  pinned io_pdx_mesh export support ([Hard start gates](references/production-guide.md#hard-start-gates)).
+- **Dependencies**: every job needs the reviewed dependency lock, Blender bridge
+  and pinned io_pdx_mesh export support ([Hard start gates](references/production-guide.md#hard-start-gates)).
+  A Tripo job needs no key and never stops for one. Only an old Meshy job
+  (a job without `"provider": "tripo"`) needs a nonblank `MESHY_API_KEY`.
 - **Credits**: one `credit_budget` per job, approved by the user once at job
   start; no paid retries ([Credits and attempts](references/production-guide.md#credits-and-attempts)).
 - **Reference image**: one approved image per geometry task, visually reviewed
-  by the parent before any paid call ([Exactly one reference image](references/production-guide.md#exactly-one-reference-image-per-meshy-geometry-task)).
+  by the parent before any paid call ([Exactly one reference image](references/production-guide.md#exactly-one-reference-image-per-geometry-task)).
 - **Checks**: gates fail closed and every role needs anatomical multi-phase
-  motion with exported-byte reimport proof. Sapient armed fighters (soldiers, riders, armed undead warriors, giants and other tool-using peoples) hold their weapon in hand, bound to a hand or forearm bone, and their attack clip swings it; a rigging fix moves the weapon into the hand, never removes it. Ents, mindless undead and animals attack with their own bodies. No two units of a mod share a clip in any state (idle, move, attack, defend, retreat, death), riders and mounts included, unless one is a reskin of the other (`reskin_of`, decision 3D-6): `plan_clips.py` plans distinct clips before any is paid for and UNIT-ANIM-SHARED checks the exports; the Meshy library is humanoid only, so mounts and other quadrupeds need their own authored gaits, distinct per mount ([Geometry, materials, rigging, and actions](references/production-guide.md#geometry-materials-rigging-and-actions)).
+  motion with exported-byte reimport proof. Sapient armed fighters (soldiers, riders, armed undead warriors, giants and other tool-using peoples) hold their weapon in hand, bound to a hand or forearm bone, and their attack clip swings it; a rigging fix moves the weapon into the hand, never removes it. Ents, mindless undead and animals attack with their own bodies. No two units of a mod share a clip in any state (idle, move, attack, defend, retreat, death), riders and mounts included, unless one is a reskin of the other (`reskin_of`, decision 3D-6): `plan_clips.py` plans distinct clips before any is paid for and UNIT-ANIM-SHARED checks the exports; the Meshy library (old Meshy jobs) is humanoid only, so mounts and other quadrupeds need their own authored gaits, distinct per mount ([Geometry, materials, rigging, and actions](references/production-guide.md#geometry-materials-rigging-and-actions)).
 - **Independent visual review**: a unit is finished only after `review_unit.py`
   renders every clip and a reviewer with a fresh context, given only the
   sheets and `config/visual_review_prompt.md`, finds no defect. Never pass the

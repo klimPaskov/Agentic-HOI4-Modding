@@ -2,7 +2,7 @@
 
 HOI4 Mod Setup supports macOS alongside Windows and native Linux. HOI4 Agent Tools runs on Apple Silicon Macs (arm64); this package records its macOS evidence measured on macOS 26.5. Intel Macs have no reviewed route, because the package bundles its native engine and image libraries for darwin-arm64 only. Shared instructions, skills and specialist definitions are the same on every platform. The app writes MCP registrations for every selected coding client that has a project MCP file; the coding client must itself be installed.
 
-HOI4 Live Tools is offered on macOS (see [Live Tools on macOS](#hoi4-live-tools)). The Meshy/Blender 3D bootstrap remains a Windows workflow and is not offered on macOS. Image generation (hoi4-imagegen) is offered on every platform.
+HOI4 Live Tools is offered on macOS (see [Live Tools on macOS](#hoi4-live-tools)). The Tripo/Blender 3D workflow remains a Windows workflow and is not offered on macOS. Image generation (hoi4-imagegen) is offered on every platform.
 
 ## Prerequisites and files
 

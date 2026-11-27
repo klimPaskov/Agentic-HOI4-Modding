@@ -1,6 +1,6 @@
 # Reusable HOI4 3D model pipeline
 
-Modders start with [3D units with Meshy and Blender](../../docs/3d-units.md). This page is the technical reference.
+Modders start with [3D units with Tripo and Blender](../../docs/3d-units.md). This page is the technical reference.
 
 This package provides the bounded source-to-handoff route for custom HOI4
 models. It is dormant until a 3D task is accepted and the bootstrap is run.
@@ -9,16 +9,20 @@ dependencies are generated on demand and are not starter files.
 
 ## Security and bootstrap gate
 
-Provider-dependent work requires a non-blank `MESHY_API_KEY` before provider
-preparation, balance checks, or provider calls; the exact command that sets it
-is in the [3D agent's hard start gate](../../.claude/agents/hoi4-3d-model-pipeline.md).
+The Tripo route, the default for every new unit, needs no key: Tripo runs in
+its web app under the user's own sign-in and the kit calls no Tripo API. Only an
+old Meshy job (a job without `"provider": "tripo"`) needs a non-blank
+`MESHY_API_KEY` before provider preparation, balance checks, or provider calls;
+the exact command that sets it is in the [3D agent's hard start gate](../../.claude/agents/hoi4-3d-model-pipeline.md).
 The account must be on a paid Meshy plan: on the free plan every task create
 returns HTTP 402 and charges nothing, so the free monthly credits shown by the
 balance cannot be spent through the API.
 An explicitly requested existing non-firearm Blender-only repair may inspect its
 approved job, source, dependency lock, adapter schema, bridge, and export stack
-without this key and must not invoke Meshy. Restart the shell or the agent
-runtime after setting the key, then let HOI4 Mod Setup invoke:
+without any key and must not invoke a provider. Without a Meshy key (or with
+`--without-meshy`) the bootstrap prepares only the Blender stage, which is all a
+Tripo job needs; set the key and run it again only for Meshy jobs. Let HOI4 Mod
+Setup invoke:
 
 ```powershell
 python .tools/3d_pipeline/bootstrap_3d_workflow.py `
@@ -26,7 +30,7 @@ python .tools/3d_pipeline/bootstrap_3d_workflow.py `
   --trusted-launcher <installed-hoi4-mod-setup-executable>
 ```
 
-The bootstrap verifies the pinned Meshy MCP 0.6.9 package (npm integrity
+With a Meshy key the bootstrap verifies the pinned Meshy MCP 0.6.9 package (npm integrity
 `sha512-iw9gPAtvxkSx39emL0AN7q9Hqgjjq457s7fDeuFf6GTXd5lLh71LzuayvWfC9+28i18/F5zbGXCiY8qdFX6daw==`,
 upstream head `f7fe59e0df5050d8ccf70d118ec084f39a725638`) and its complete
 3,956-file runtime tree (SHA-256 `b322d0b8a4ad03f3f0c4840462c517b79fa41ec44473a5800652c005dab6d082`),
@@ -54,6 +58,18 @@ request that verifies the key) and the rest of the start gates are in the
 [production guide](../../.claude/skills/hoi4-3d-model-pipeline/references/production-guide.md#hard-start-gates).
 `meshy_client.py` enforces the reviewed route.
 
+## The Tripo route
+
+Every new unit runs here. The Tripo steps happen in Tripo's web app, in the
+user's own browser, by hand from a card or by an agent through Claude in Chrome.
+Everything else is on the PC: the preset (`tripo/pick_preset.py`,
+`tripo/new_job.py`, `config/tripo_presets.json`), the card (`tripo/make_card.py`),
+the intake (`tripo_intake.py`), the Blender stage (`run_pilot.py`), the checks
+(`tripo/tripo_checks.py`) and the review (`review_unit.py`). The modder guide
+`docs/3d-units.md` walks through each step. Which kinds of model are proven is
+written once, in each preset's `proven` text; `tripo/proven_types.py` prints it
+and keeps the table in that guide equal to it.
+
 ## Waiting for the machine
 
 Blender is the heavy step, so every kit command that starts it calls `lib/heavy_job.py` first. It takes an operating system file lock
@@ -65,9 +81,13 @@ Blender is the heavy step, so every kit command that starts it calls `lib/heavy_
 through `py -3.13 -B .tools/3d_pipeline/lib/heavy_job.py -- <command>`. `tests/test_heavy_job.py` fails when a tool starts Blender with a bare
 `subprocess` call.
 
-## Generation model, credits and recovery
+## Generation model, credits and recovery (Meshy jobs)
 
-The generation model is the profile's `generation.ai_model` in
+This section and the Meshy tool contract below describe the optional Meshy
+provider. A Tripo job's credits are the preset's cap and the price on each Tripo
+button (`docs/3d-units.md`, "What a unit costs").
+
+The Meshy generation model is the profile's `generation.ai_model` in
 `config/asset_profiles.json` (currently Meshy 7 for every profile); a job may
 restate it but never change it. Before paid work, require a live `tools/list`
 response whose `meshy_image_to_3d` schema accepts that identifier and compare
@@ -153,8 +173,9 @@ docs/assets/<owner_id>/models_3d/<asset_slug>/
   runtime/{handoff.md,crosswalk.md}
 ```
 
-Each Meshy geometry task receives exactly one approved image: the body at
-`refs/original/meshy_input.png`, each firearm at
+Each geometry task receives exactly one approved image: on a Tripo job the file
+the job's `reference_path` names, on a Meshy job the body at
+`refs/original/meshy_input.png` and each firearm at
 `refs/firearms/<firearm_id>/meshy_input.png`. Multi-view boards, turnaround sheets,
 collages, and separate front/rear inputs are forbidden. Provider source files
 remain immutable evidence, and all adapter payload paths are job-relative.
