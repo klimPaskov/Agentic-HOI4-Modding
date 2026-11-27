@@ -12,15 +12,14 @@ The main agent remains responsible for final implementation, final wiring, final
 
 All project custom subagents must receive a fully explicit, self-contained prompt and no inherited conversation context. Claude Code subagents start isolated, Codex agents are spawned with `fork_turns="none"`, the other generated runtimes use their isolated agent route, and DSH composes the subagent from the prompt alone. If a subagent needs a user correction, task constraint, current implementation status, or prior handoff detail, the parent must pass it explicitly in the prompt or write it into the relevant spec, plan, handoff, or repo file before spawning.
 
-Each specialist runs on the Claude model tier set by the `model` field of its canonical file in `.claude/agents/`:
+Each specialist runs on the model set by the `model` field of its canonical file in `.claude/agents/`:
 
-| Tier | Agents |
+| Model | Agents |
 | --- | --- |
-| Opus | `hoi4_improvement_loop_planner` |
-| Sonnet | `hoi4_3d_model_pipeline`, `hoi4_feature_completion_auditor`, `hoi4_localisation_auditor`, `hoi4_scripted_system_architect`, `hoi4_skill_maintainer` |
-| Haiku | `hoi4_ai_probability_auditor`, `hoi4_asset_source_researcher`, `hoi4_audio_researcher`, `hoi4_country_package_auditor`, `hoi4_decision_mission_auditor`, `hoi4_documentation_curator`, `hoi4_event_ui_worker`, `hoi4_focus_tree_auditor`, `hoi4_generated_feature_art`, `hoi4_icon_artist`, `hoi4_portrait_creator`, `hoi4_quote_remark_researcher`, `hoi4_repo_explorer`, `hoi4_spreadsheet_doc_worker`, and the `hoi4_super_event_*` researchers |
+| The session's model and effort (`inherit`) | every agent that writes, judges or researches content: the auditors, the improvement planner, the completion auditor, the asset, portrait, 3D, GUI, quote and audio workers, the scripted-system architect and the skill maintainer |
+| Haiku | `hoi4_repo_explorer`, `hoi4_documentation_curator` and `hoi4_spreadsheet_doc_worker`, whose work is mechanical: mapping files, reconciling documents with recorded decisions and aligning table fields |
 
-A parent may request a stronger model for one task when that task clearly needs it. To change a tier permanently, edit the canonical agent file and rerun `python .tools/sync/sync_agents.py`; other runtimes map the tier through `.tools/sync/agent_profiles.json`.
+So the user's choice of model decides the quality of every content judgment, and a run stays on that model. Keep a cheaper pinned model only for mechanical work. A task that truly needs another model may name one in the spawn call (Claude Code's per-invocation `model`), with the reason in the handoff. Never pin one for a single prompt or model. To change an agent's model permanently, edit its canonical file and `tier_policy` in `.tools/sync/agent_profiles.json`, then rerun `python .tools/sync/sync_agents.py`; other runtimes map the model through that file, and `docs/runtimes.md` lists the documented exceptions, such as Codex's spatial-work model.
 
 Use these high-level routing rules:
 

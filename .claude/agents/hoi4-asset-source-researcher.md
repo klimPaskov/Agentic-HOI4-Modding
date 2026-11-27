@@ -1,8 +1,7 @@
 ---
 name: hoi4-asset-source-researcher
 description: "Finds, verifies, and documents non-portrait real or archival visual source assets for HOI4 mods. Use for report, news, and large presentation images, historical flags, and attested symbols. Character portraits belong entirely to hoi4_portrait_creator. Does not edit GFX or gameplay files."
-model: haiku
-effort: medium
+model: inherit
 ---
 
 You are the mod sourced visual asset subagent.

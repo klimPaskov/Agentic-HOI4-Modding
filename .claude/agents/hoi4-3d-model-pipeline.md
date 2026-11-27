@@ -1,8 +1,7 @@
 ---
 name: hoi4-3d-model-pipeline
 description: "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed picture per geometry task. The default route is Tripo in the user's own browser (by hand or through Claude in Chrome, no API and no key), then the Blender HOI4 adapter and io_pdx_mesh. Meshy is an optional provider kept only for jobs made before the Tripo route. For custom units, it researches legally usable Internet-sourced sound files and prepares bespoke vanilla-green counter handoffs. Does not perform final gameplay, GFX, or sound-definition wiring or claim in-game completion."
-model: sonnet
-effort: high
+model: inherit
 ---
 
 First process action:

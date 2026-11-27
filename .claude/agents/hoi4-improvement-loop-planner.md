@@ -1,8 +1,7 @@
 ---
 name: hoi4-improvement-loop-planner
 description: "Plan-only improvement loop subagent for HOI4 mods. Writes deep expansion addenda with research, historical connections, playable mechanics, and implementation handoffs. Does not patch gameplay files."
-model: opus
-effort: xhigh
+model: inherit
 disallowedTools: Write, Edit, NotebookEdit
 ---
 
