@@ -177,6 +177,25 @@ def refuse_travelling_clips(spec: Dict[str, Any], rigged: Path) -> None:
             f"{glb_root.MAX_ROOT_TRAVEL_SHARE}, a death {glb_root.DEATH_TRAVEL_LIMIT}). Export again from Tripo with \"Animation in Place\" switched on.")
 
 
+def refuse_unknown_role_clips(spec: Dict[str, Any], rigged: Path) -> None:
+    """Refuse a role that names no clip of the export before the intake waits for a Blender slot (a made clip's name is cut at about 60
+    characters in the file, so a role written as the whole text up to its comma can match nothing)."""
+
+    from lib import glb_root, tripo
+
+    roles = (spec.get("tripo") or {}).get("roles") or {}
+    try:
+        names = list(glb_root.root_travel(rigged))
+    except ValueError:  # not a binary glTF: the Blender stage reads it and says what is wrong
+        return
+    for role, clip in roles.items():
+        if clip:
+            try:
+                tripo.resolve_clip_name(clip, names)
+            except ValueError as error:
+                raise ValueError(f"role {role}: {error}") from None
+
+
 def default_task_id(files: Dict[str, Path]) -> str:
     main = files.get("rigged") or files["model"]
     return f"tripo-{sha256_file(main).lower()[:12]}"
@@ -423,6 +442,7 @@ def run_intake(
     refuse_unfitting_clips(spec)
     refuse_shared_clips(spec, slug)
     if "rigged" in files:
+        refuse_unknown_role_clips(spec, files["rigged"])
         refuse_travelling_clips(spec, files["rigged"])
     sources = [
         {"kind": kind, "name": path.name, "bytes": path.stat().st_size, "sha256": sha256_file(path)}

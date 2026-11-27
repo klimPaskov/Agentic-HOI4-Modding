@@ -1906,6 +1906,77 @@ def controlled_decimate(target_triangles: int) -> Dict[str, Any]:
     }
 
 
+# Two separate surfaces can meet at vertices a float's noise apart (a Tripo knight's belt pouch against his brigandine: two pairs 1e-7 to 1e-6
+# of his height apart). The exported mesh keeps them apart, but the topology gate's diagnostic weld (GATE_POSITION_WELD_DISTANCE) merges
+# them and counts edges with three or four faces that the game's mesh never has. The pairs the repair's own weld left are welded the way
+# the gate welds them, all at once. A pair whose merge adds to the pinched edges of that weld (welding all but that pair pinches fewer) is
+# moved apart to PINCH_CLEARANCE times the gate's distance along the line between its two vertices (a few millionths of the height: no
+# visible change). Pairs whose merge is clean are seam copies and are left alone, so the gate still closes the surface across them.
+PINCH_CLEARANCE = 3.0
+
+
+def _pinched_after_weld(mesh, pairs) -> int:
+    """The edges with three or more faces once the vertex `pairs` (index pairs, chains merged into one) are welded."""
+
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bm.verts.ensure_lookup_table()
+    root = {}
+
+    def find(index: int) -> int:
+        while root.get(index, index) != index:
+            index = root[index]
+        return index
+
+    for a, b in pairs:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            root[max(ra, rb)] = min(ra, rb)
+    targets = {bm.verts[index]: bm.verts[find(index)] for index in root}
+    if targets:
+        bmesh.ops.weld_verts(bm, targetmap=targets)
+    count = sum(1 for edge in bm.edges if len(edge.link_faces) > 2)
+    bm.free()
+    return count
+
+
+def separate_pinched_pairs(obj: bpy.types.Object, gate_distance: float) -> int:
+    """Move apart each vertex pair closer than `gate_distance` whose merge in the gate's weld puts three or more faces on one edge;
+    return the count."""
+
+    from mathutils import kdtree
+
+    mesh = obj.data
+    count = len(mesh.vertices)
+    if count < 2:
+        return 0
+    tree = kdtree.KDTree(count)
+    for vertex in mesh.vertices:
+        tree.insert(vertex.co, vertex.index)
+    tree.balance()
+    pairs = set()
+    for vertex in mesh.vertices:
+        for _co, other, _distance in tree.find_range(vertex.co, gate_distance):
+            if other != vertex.index:
+                pairs.add((min(vertex.index, other), max(vertex.index, other)))
+    if not pairs:
+        return 0
+    welded = _pinched_after_weld(mesh, pairs)
+    if welded <= _pinched_after_weld(mesh, ()):
+        return 0
+    pinching = [pair for pair in sorted(pairs) if _pinched_after_weld(mesh, pairs - {pair}) < welded]
+    for a, b in pinching:
+        va, vb = mesh.vertices[a], mesh.vertices[b]
+        gap = vb.co - va.co
+        direction = gap.normalized() if gap.length > 0.0 else (va.normal if va.normal.length > 0.0 else Vector((0.0, 0.0, 1.0)))
+        push = 0.5 * (PINCH_CLEARANCE * gate_distance - gap.length)
+        va.co = va.co - direction * push
+        vb.co = vb.co + direction * push
+    if pinching:
+        mesh.update()
+    return len(pinching)
+
+
 def repair_open_surface_boundaries(weld_distance: float = 1e-5) -> Dict[str, Any]:
     """Weld coincident provider seams, then cap only bounded small loops."""
 
@@ -2079,6 +2150,9 @@ def repair_open_surface_boundaries(weld_distance: float = 1e-5) -> Dict[str, Any
         records.append(
             {
                 "object": obj.name,
+                "pinched_pairs_separated": (
+                    separate_pinched_pairs(obj, GATE_POSITION_WELD_DISTANCE) if weld_distance < GATE_POSITION_WELD_DISTANCE else 0
+                ),
                 "boundary_edges_before": before["loose_boundary_edges"],
                 "boundary_edges_after": after["loose_boundary_edges"],
                 "welded_vertices": welded_vertices,

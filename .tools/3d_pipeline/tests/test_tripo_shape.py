@@ -77,6 +77,13 @@ class Refusals(unittest.TestCase):
         self.assertIn("side silhouette", poor[0])
         self.assertEqual(shape.shape_problems(self.report(iou={"front": 0.99, "side": 0.90, "top": 0.99}), min_iou=0.85), [])
 
+    def test_a_gap_the_source_already_had_passes_unless_the_reduction_widens_it(self) -> None:
+        # the ZIN Guild Workshop: a chimney cap on its pots sat 7.1 % from the main body in the source, 7.2 % after
+        kept = self.report(shells_before={"shells": 427, "max_gap_share": 0.071}, shells_after={"shells": 261, "max_gap_share": 0.072})
+        self.assertEqual(shape.shape_problems(kept), [])
+        widened = self.report(shells_before={"shells": 427, "max_gap_share": 0.071}, shells_after={"shells": 261, "max_gap_share": 0.09})
+        self.assertIn("from the main body", shape.shape_problems(widened)[0])
+
 
 if __name__ == "__main__":
     unittest.main()
