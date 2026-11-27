@@ -28,6 +28,8 @@ class TripoBrowserRules(unittest.TestCase):
 
     def test_the_agent_closes_its_own_tabs_and_records_the_asset_id(self) -> None:
         self.assertIn("closes every Tripo tab it opened", self.section)
+        self.assertIn("After a Chrome restart it checks the profile first", self.section)
+        self.assertIn("Claude in Chrome is connected", self.section)
         self.assertTrue(re.search(r'`"tripo_asset"`', self.section))
 
 
