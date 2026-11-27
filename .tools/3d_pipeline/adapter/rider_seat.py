@@ -49,6 +49,10 @@ SEAT_TWIST_MAX = 35.0
 # lifted by turning its upper arm up at the shoulder in HAND_STEP degrees, at most HAND_TURN_MAX.
 HAND_STEP = 3.0
 HAND_TURN_MAX = 75.0
+# The fastest an arm's clearance lift changes, degrees a frame at Blender's 24 frames a second (about 3.2 at the game's 30, under a tenth
+# of vanilla's fastest joint, 37 a frame): the lift is planned over the whole clip first (rider_legs.smooth_lifts), so it starts before the hand
+# reaches the mount and eases off after.
+HAND_LIFT_RATE = 4.0
 # A held weapon on its own bone (`held`: the grip stage's Weapon bone, a child of the hand): the hand turns at the wrist so the haft points
 # along the job's `carry` direction (forward, outward on the hand's side, up), and in a couched role eases to `couch` with the couch pose.
 # In a role that lets go of it (the death) the hand lets go once the slump has fallen RELEASE_FALL of its way, and the weapon drops onto
@@ -101,45 +105,67 @@ def _hold_twist(rig: bpy.types.Object, side_axis: Vector, forward: Vector, up: V
     return 0
 
 
-def _clear_hands(rig: bpy.types.Object, forward: Vector, side_axis: Vector, up: Vector, height: float, top: list) -> tuple:
-    """Turn each upper arm up about its shoulder, HAND_STEP at a time, until the hand's wrist and fingertip clear the mount's top ahead
-    of the seat (rider_legs.hand_clear). Returns the arms turned and the arms still in the mount after HAND_TURN_MAX."""
+def _arm_lift_axis(rig: bpy.types.Object, side: str, up: Vector):
+    """(the upper arm, its shoulder head, the axis a lift turns it about): reach x up lifts the hand toward up. None without the bones."""
 
-    turned, stuck = [], []
+    arm, hand = f"{side}Arm", f"{side}Hand"
+    if arm not in rig.pose.bones or hand not in rig.pose.bones:
+        return None
+    bone = rig.pose.bones[arm]
+    head = bone.head.copy()
+    axis = (rig.pose.bones[hand].head - head).cross(up)
+    return (arm, head, axis.normalized()) if axis.length >= 1e-6 else (arm, head, None)
+
+
+def _lift_arm(rig: bpy.types.Object, side: str, up: Vector, degrees: float) -> bool:
+    """Turn the upper arm `degrees` up about its shoulder (_arm_lift_axis). False when the arm cannot be lifted."""
+
+    found = _arm_lift_axis(rig, side, up)
+    if found is None or found[2] is None:
+        return False
+    arm, head, axis = found
+    if degrees > 0.0:
+        bone = rig.pose.bones[arm]
+        lift = Quaternion(axis, math.radians(degrees))
+        bone.matrix = Matrix.Translation(head) @ lift.to_matrix().to_4x4() @ Matrix.Translation(-head) @ bone.matrix
+        bpy.context.view_layer.update()
+    return True
+
+
+def _hand_needs(rig: bpy.types.Object, forward: Vector, side_axis: Vector, up: Vector, height: float, top: list) -> Dict[str, Optional[float]]:
+    """Per side, the least lift (degrees, HAND_STEP at a time, at most HAND_TURN_MAX) that clears the hand's wrist and fingertip of the
+    mount's top ahead of the seat (rider_legs.hand_clear): 0 when it is clear, None when no lift clears it. The pose is left as found."""
+
+    def clear(hand: str) -> bool:
+        bpy.context.view_layer.update()
+        bone = rig.pose.bones[hand]
+        points = [(q.dot(forward) / height, q.dot(side_axis) / height, q.dot(up) / height) for q in (bone.head, bone.tail)]
+        return rider_legs.hand_clear(points, top)
+
+    needs: Dict[str, Optional[float]] = {}
     for side in ("Left", "Right"):
-        arm, hand = f"{side}Arm", f"{side}Hand"
-        if arm not in rig.pose.bones or hand not in rig.pose.bones:
+        found = _arm_lift_axis(rig, side, up)
+        if found is None:
             continue
-
-        def clear() -> bool:
-            bpy.context.view_layer.update()
-            bone = rig.pose.bones[hand]
-            points = [(p.dot(forward) / height, p.dot(side_axis) / height, p.dot(up) / height) for p in (bone.head, bone.tail)]
-            return rider_legs.hand_clear(points, top)
-
-        if clear():
+        hand = f"{side}Hand"
+        if clear(hand):
+            needs[side] = 0.0
+            continue
+        arm, head, axis = found
+        needs[side] = None
+        if axis is None:
             continue
         bone = rig.pose.bones[arm]
-        head = bone.head.copy()
         start = bone.matrix.copy()
-        reach = rig.pose.bones[hand].head - head
-        axis = reach.cross(up)
-        if axis.length < 1e-6:
-            stuck.append(arm)
-            continue
-        axis.normalize()
         for step in range(1, int(HAND_TURN_MAX / HAND_STEP) + 1):
-            # a turn about (reach x up) lifts the hand toward up
             lift = Quaternion(axis, math.radians(step * HAND_STEP))
             bone.matrix = Matrix.Translation(head) @ lift.to_matrix().to_4x4() @ Matrix.Translation(-head) @ start
-            if clear():
-                turned.append(arm)
+            if clear(hand):
+                needs[side] = step * HAND_STEP
                 break
-        else:
-            bone.matrix = start
-            bpy.context.view_layer.update()
-            stuck.append(arm)
-    return turned, stuck
+        bone.matrix = start
+        bpy.context.view_layer.update()
+    return needs
 
 
 def _aim_haft(rig: bpy.types.Object, hand: str, weapon: str, target: Vector) -> None:
@@ -329,7 +355,11 @@ def seat_rider_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
     capped = 0
     hands_lifted = 0
     hands_stuck = 0
-    for frame in range(start, end + 1):
+    loop = bool(payload.get("loop", False))
+
+    def pose(frame: int) -> tuple:
+        """Seat the clip's pose at `frame`: the pelvis, the legs, the twist cap, the couch and the slump. Returns (hips, twisted)."""
+
         scene.frame_set(frame)
         bpy.context.view_layer.update()
         hips = rig.pose.bones["Hips"]
@@ -361,7 +391,6 @@ def seat_rider_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
                 _aim(rig, shin, -0.2 * forward + 0.12 * outward - 1.0 * up)
             _aim(rig, foot, 1.0 * forward - 0.35 * up)
         twisted = _hold_twist(rig, side_axis, forward, up)
-        capped += twisted
         if couch:
             t = (frame - start) / max(end - start, 1)
             weight = _smooth(min(t, 1.0 - t) / COUCH_EASE)
@@ -391,11 +420,29 @@ def seat_rider_action(req: Dict[str, Any], h: Dict[str, Any]) -> Dict[str, Any]:
                     head = bone.head.copy()
                     bend = Quaternion(side_axis, math.radians(-(10.0 + 4.0 * index) * fall))
                     bone.matrix = Matrix.Translation(head) @ bend.to_matrix().to_4x4() @ Matrix.Translation(-head) @ bone.matrix
-        lifted: tuple = ()
-        if top and not slump:
-            lifted, stuck = _clear_hands(rig, forward, side_axis, up, height, top)
-            hands_lifted += len(lifted)
-            hands_stuck += len(stuck)
+        return hips, twisted
+
+    # pass 1: the lift each arm needs to clear the mount's top in each frame (a slumped death drops its hands with the body)
+    frames = list(range(start, end + 1))
+    planned: Dict[str, List[float]] = {}
+    if top and not slump:
+        needs: Dict[str, List[float]] = {"Left": [], "Right": []}
+        for frame in frames:
+            pose(frame)
+            found = _hand_needs(rig, forward, side_axis, up, height, top)
+            for side in needs:
+                need = found.get(side, 0.0)
+                hands_stuck += need is None
+                needs[side].append(HAND_TURN_MAX if need is None else need)
+        planned = {side: rider_legs.smooth_lifts(values, HAND_LIFT_RATE, loop) for side, values in needs.items() if any(values)}
+    # pass 2: seat, lift, aim and key
+    for index, frame in enumerate(frames):
+        hips, twisted = pose(frame)
+        capped += twisted
+        for side, lifts in planned.items():
+            hands_lifted += bool(lifts[index] > 0.0 and _lift_arm(rig, side, up, lifts[index]))
+        # an arm the plan lifts in any frame is keyed in every frame, so its curve follows the plan and not the clip between keys
+        lifted = tuple(f"{side}Arm" for side in planned)
         aimed: tuple = ()
         if held and (release is None or frame < release):
             hand = rig.pose.bones[held["hand"]]

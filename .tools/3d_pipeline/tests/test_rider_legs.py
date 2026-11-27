@@ -96,6 +96,25 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class SmoothLifts(unittest.TestCase):
+    """The rein arm's clearance lift, planned over the clip: a one-frame search lifted the zinnish lancer's rein arm 38 to 40 degrees in
+    one frame where the clearance started (UNIT-ANIM-SPIN, vanilla's fastest joint 37 a frame)."""
+
+    def test_the_lift_rises_before_a_need_and_never_falls_short(self) -> None:
+        needs = [0.0] * 10 + [30.0] * 5 + [0.0] * 10
+        lifts = rider_legs.smooth_lifts(needs, 4.0, loop=False)
+        self.assertTrue(all(lift >= need for lift, need in zip(lifts, needs)))
+        self.assertLessEqual(max(abs(b - a) for a, b in zip(lifts, lifts[1:])), 4.0 + 1e-9)
+        self.assertGreater(lifts[8], 0.0, "it starts before the hand reaches the mount")
+        self.assertEqual(lifts[0], 0.0)
+
+    def test_a_looping_clip_wraps_its_lift_round_the_end(self) -> None:
+        needs = [20.0] + [0.0] * 20
+        loop = rider_legs.smooth_lifts(needs, 4.0, loop=True)
+        self.assertAlmostEqual(loop[-1], 16.0, "the last frame leads into the first")
+        self.assertAlmostEqual(rider_legs.smooth_lifts(needs, 4.0, loop=False)[-1], 0.0)
+
+
 class HandClear(unittest.TestCase):
     """The seated hand against the mount's top ahead of the seat (lib/rider_fit.clip_profiles' `top` rows)."""
 

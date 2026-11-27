@@ -4395,7 +4395,7 @@ def continue_unit_humanoid(spec: Dict[str, Any]) -> Dict[str, Any]:
             lift = float((spec.get("seat") or {}).get("lift", 0.06))
             # the legs and hands are fitted to the mount as the paired mount clip moves it (a brace widens the barrel, lifts the withers)
             profile = seat_profile(profiles, role)
-            finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, seat_lift=lift, slump=bool(action.get("slump")),
+            finishing = blender.seat_rider_action(slug, chain, finished_rel, target, armature, seat_lift=lift, slump=bool(action.get("slump")), loop=bool(action.get("loop")),
                                                   barrel=profile["barrel"], top=profile["top"], couch=couch,
                                                   seconds=seat_seconds(profiles, role), held=seat_held(spec, role))
         else:

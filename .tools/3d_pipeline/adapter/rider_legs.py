@@ -176,3 +176,22 @@ def plan_drop(grip: Sequence[float], haft: Sequence[float], length: float, grip_
                 if best is None or gap > best["gap"]:
                     best = {"grip": centre, "haft": lie, "found": False, "gap": gap, "travel": radius_out}
     return best
+
+
+def smooth_lifts(needs: List[float], rate: float, loop: bool) -> List[float]:
+    """Each frame's lift: the largest need of any frame less `rate` times the frames between them (round the clip when `loop`), so the
+    lift rises before a need and falls after it at no more than `rate` a frame and never falls short of a need."""
+
+    count = len(needs)
+    out = []
+    for frame in range(count):
+        best = 0.0
+        for other, need in enumerate(needs):
+            if need <= 0.0:
+                continue
+            gap = abs(frame - other)
+            if loop:
+                gap = min(gap, count - gap)
+            best = max(best, need - rate * gap)
+        out.append(best)
+    return out
