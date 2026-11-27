@@ -537,7 +537,13 @@ def _check_loose_parts(mesh, mesh_path, loaded, add, facts, limits, weapon_bones
         elif prop.worst_gap > limit and prop.prop_bone not in released_bones:  # a released weapon leaves the hand by design (the drop)
             add("UNIT-LOOSE-PART", "error", mesh_path, f"the prop bound to {prop.prop_bone} slides {prop.worst_gap:.1%} of the unit's height off {where} in {prop.worst_clip} frame {prop.worst_frame}; vanilla loose parts stay within {limit:.1%}")
     parts = [part for part in parts if not (part.prop_bone and part.held_by)]
-    floating = [part for part in parts if part.rest_gap > limit]
+    # A burn death's ash heap (lib/tripo_burn) is bound wholly to its own bone and hidden at a thousandth of its size inside the pelvis in
+    # every clip but the death, where the BURN rules judge it. The speck's distance to the skin is no gap anyone sees: the demon's defend
+    # failed at 2.0% while the speck stayed inside the body (run demon_l, 2026-11-24).
+    from lib.tripo_burn import HEAP_BONE
+
+    parts = [part for part in parts if part.rigid_to != HEAP_BONE]
+    floating =[part for part in parts if part.rest_gap > limit]
     released = {bone for bone in weapon_bones if bone}
     drifting = [part for part in parts if part.rest_gap <= limit < part.worst_gap and not (part.rigid_to and part.rigid_to in released)]
     if floating:

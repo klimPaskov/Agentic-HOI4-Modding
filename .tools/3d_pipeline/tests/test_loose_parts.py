@@ -6,6 +6,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 import numpy as np
 
@@ -220,6 +221,23 @@ class WeaponBone(unittest.TestCase):
     def test_a_part_that_follows_the_weapon_bone_only_partly_is_still_judged(self) -> None:
         loose, _facts = findings_with_weapon_bones([cube((0.15, 0.5, 0.04), 0.06, [("Head", 0.5), ("Spine", 0.5)])], ("Head",))
         self.assertTrue(loose)
+
+
+class AshHeap(unittest.TestCase):
+    """A burn death's hidden ash heap is judged by the BURN rules, not as a loose part."""
+
+    knee_part = [cube((0.15, 0.5, 0.04), 0.06, [("Head", 1.0)])]
+
+    def test_a_part_bound_wholly_to_the_heap_bone_is_not_judged(self) -> None:
+        with mock.patch("lib.tripo_burn.HEAP_BONE", "Head"):
+            loose, facts = findings(self.knee_part)
+        self.assertEqual(loose, [])
+        self.assertEqual(facts["motion"]["u.mesh"]["loose_parts"][0]["rigid_to"], "Head")
+
+    def test_a_part_on_another_bone_still_drifts(self) -> None:
+        with mock.patch("lib.tripo_burn.HEAP_BONE", "Spine"):
+            loose, _facts = findings(self.knee_part)
+        self.assertIn("drift off the body", loose[0].message)
 
 
 class LooseParts(unittest.TestCase):
