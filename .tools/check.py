@@ -8,6 +8,7 @@
 	python -B .tools/check.py doctor                     # what the checks need on this machine, and how to fix it
 	python -B .tools/check.py setup                      # install what is missing, run the synchronizers, then doctor
 	python -B .tools/check.py setup --git-hook           # also add an optional pre-commit check of generated files
+	python -B .tools/check.py gate                       # may a whole-mod build stop? (docs/mod/ledger.json; see audits/mod_gate.py)
 
 `quick` runs only the checks whose inputs the changed paths can affect and reports only
 findings located in those paths. `full` runs every check over the whole repository. Both print
@@ -39,6 +40,12 @@ Checks (rule ids and levels are defined by each tool; see `.tools/lib/report.py`
                    tooling (skipped with a notice when uv is not installed)
 - script-validate  `audits/validate_scripts_mcp.py`        HOI4 Agent Tools script validation of changed files (quick
                    only; skipped with a notice when the MCP server cannot start)
+
+`gate` is the completion gate of a whole-mod build (`audits/mod_gate.py`, the `hoi4-new-mod` skill): it reads the feature
+ledger in `docs/mod/ledger.json`, runs `quick` and, once every feature has passed, the game-reading checks over the
+whole mod, and exits 0 when the build may stop, 1 while work is open, 2 when the ledger cannot be read. Without a
+ledger it exits 0. `gate --next` prints the session-start routine, and `gate --hook stop|session-start|prompt` are the
+Claude Code hook adapters in `.claude/settings.json`.
 
 The localisation, asset-wiring and gfx checks read the installed game, found through `HOI4_GAME_DIR`,
 `.tools/local_settings.json` or the Steam libraries (`.tools/lib/game.py`); without it they exit 2.
@@ -357,11 +364,15 @@ def print_report(checks: Sequence[Check], outcomes: Sequence[Tuple[List[Finding]
 
 
 def main() -> int:
+	if sys.argv[1:2] == ["gate"]:
+		# The gate needs no packages, and its Stop hook runs at every turn's end, so it skips the virtual-environment relaunch.
+		from audits import mod_gate
+		return mod_gate.main(sys.argv[2:])
 	relaunched = setup.relaunch_in_project_venv(REPO_ROOT, sys.argv)
 	if relaunched is not None:
 		return relaunched
 	parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
-	parser.add_argument("mode", choices=("quick", "full", "doctor", "setup"))
+	parser.add_argument("mode", choices=("quick", "full", "doctor", "setup", "gate"))
 	parser.add_argument("--paths", nargs="+", metavar="PATH", help="quick: check these paths instead of the git changes")
 	parser.add_argument("--only", nargs="+", choices=[check.name for check in CHECKS], help="run only these checks")
 	parser.add_argument("--json", type=Path, help="write every finding, including review candidates, to this file")

@@ -214,6 +214,10 @@ def main():
     # The shipped Claude Code settings regenerate projections after an edit and refuse edits to generated files.
     hooks = [hook["command"] for group in settings["hooks"]["PostToolUse"] for hook in group["hooks"]]
     assert any(".tools/py.sh" in command and ".tools/sync/generators.py\" --hook" in command for command in hooks), hooks
+    # The completion gate runs at every stop, session start and user message; without docs/mod/ledger.json it does nothing.
+    for event, mode in (("Stop", "stop"), ("SessionStart", "session-start"), ("UserPromptSubmit", "prompt")):
+        commands = [hook["command"] for group in settings["hooks"][event] for hook in group["hooks"]]
+        assert any(".tools/check.py\" gate --hook " + mode in command for command in commands), (event, commands)
     for denied in ("Edit(/AGENTS.md)", "Edit(/.agents/skills/**)", "Edit(/.codex/agents/**)", "Edit(/.claude/agent-map.md)"):
         assert denied in settings["permissions"]["deny"], denied
     assert mcp["mcpServers"]["hoi4_agent_tools"]["command"] == "hoi4-agent-tools.cmd"
