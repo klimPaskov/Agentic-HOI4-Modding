@@ -171,32 +171,35 @@ def _cut(action: bpy.types.Action, start: int, end: int, seconds: float, fps: fl
     return last
 
 
-def _held_object(rig: bpy.types.Object, name: str, held: bool) -> list:
-    """The meshes under the rig that are (`held`) or are not the part bound wholly to the bone `name`."""
-
-    found = []
-    for obj in bpy.data.objects:
-        if obj.type != "MESH" or obj.parent != rig:
-            continue
-        only = len(obj.vertex_groups) == 1 and obj.vertex_groups[0].name == name
-        if only == held:
-            found.append(obj)
-    return found
+# A vertex is the held weapon's when at least this share of its weight is on the weapon's bone (the grip stage binds the weapon wholly to
+# it; the prepare step joins it into the body mesh).
+HELD_WEIGHT = 0.99
 
 
-def _points(rig: bpy.types.Object, objects: list, count: int = 1500) -> list:
-    """The objects' skinned points now, in armature space, about `count` of them."""
+def _bound_points(rig: bpy.types.Object, name: str, held: bool, count: int = 1500) -> list:
+    """The skinned points now, in armature space, about `count` of them, of the vertices bound to the bone `name` (`held`) or of the rest
+    of the rider's meshes."""
 
     depsgraph = bpy.context.evaluated_depsgraph_get()
     to_rig = rig.matrix_world.inverted()
+    chosen = []
+    for obj in bpy.data.objects:
+        if obj.type != "MESH" or obj.parent != rig:
+            continue
+        group = obj.vertex_groups.get(name)
+        index = group.index if group else -1
+        weights = [sum(g.weight for g in vertex.groups if g.group == index) for vertex in obj.data.vertices]
+        keep = [i for i, weight in enumerate(weights) if (weight >= HELD_WEIGHT) == held]
+        if keep:
+            chosen.append((obj, keep))
+    total = sum(len(keep) for _obj, keep in chosen)
+    stride = max(1, total // max(count, 1))
     points = []
-    for obj in objects:
+    for obj, keep in chosen:
         evaluated = obj.evaluated_get(depsgraph)
         mesh = evaluated.to_mesh()
         matrix = to_rig @ obj.matrix_world
-        vertices = list(mesh.vertices)
-        stride = max(1, len(vertices) // count)
-        points += [matrix @ vertex.co for vertex in vertices[::stride]]
+        points += [matrix @ mesh.vertices[i].co for i in keep[::stride]]
         evaluated.to_mesh_clear()
     return points
 
@@ -232,18 +235,19 @@ def _drop_held(rig, held: Dict[str, Any], start: int, release: int, end: int, fp
     held_world = node(release).inverted() @ bone.matrix.copy()
     grip_now = bone.head.copy()
     haft_now = (bone.tail - bone.head).normalized()
-    along = [(point - grip_now).dot(haft_now) for point in _points(rig, _held_object(rig, name, True), 4000)] or [0.0, height]
+    along = [(point - grip_now).dot(haft_now) for point in _bound_points(rig, name, True, 4000)]
+    if not along:
+        raise RuntimeError(f"No vertex is bound to the held weapon's bone {name}: the drop cannot measure the weapon.")
     length = (max(along) - min(along)) / height
     grip_share = -min(along) / max(max(along) - min(along), 1e-9)
     haft_world = (held_world.to_3x3() @ Vector((0.0, 1.0, 0.0))).normalized()
     obstacles = [list(point) for point in drop["mount_end"]]
     tumble = max(1, int(round(rider_legs.DROP_SECONDS * fps)))
-    body = _held_object(rig, name, False)
     for frame in sorted({end, min(end, release + tumble)}):
         scene.frame_set(frame)
         bpy.context.view_layer.update()
         r, t = np.array(step(frame)["r"]), np.array(step(frame)["t"])
-        moving = np.array([to_seat(point) for point in _points(rig, body)])
+        moving = np.array([to_seat(point) for point in _bound_points(rig, name, False)])
         if len(moving):
             obstacles += (r.T @ (moving - t).T).T.tolist()
     plan = rider_legs.plan_drop(to_seat(held_world.translation), tuple(v * height for v in to_seat(haft_world)), length, grip_share,
