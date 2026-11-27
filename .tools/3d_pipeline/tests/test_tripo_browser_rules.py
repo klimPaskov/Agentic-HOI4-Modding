@@ -31,5 +31,20 @@ class TripoBrowserRules(unittest.TestCase):
         self.assertTrue(re.search(r'`"tripo_asset"`', self.section))
 
 
+class RedrawDrift(unittest.TestCase):
+    """An armed unit whose empty-hands redraw keeps drifting from the passed art is modelled from that art, and the weapon is taken off in
+    Tripo (2026-11-27, four redraws of a ZIN giant each failed review on something new). The card and the docs both say when to stop."""
+
+    def test_the_card_and_the_docs_say_when_to_stop_redrawing(self) -> None:
+        card = (DOC.parents[1] / ".tools" / "3d_pipeline" / "tripo" / "CARD_TEMPLATE.md").read_text(encoding="utf-8")
+        self.assertIn("When the redraw drifts, stop redrawing", card)
+        self.assertIn("fails the picture review twice", card)
+        doc = DOC.read_text(encoding="utf-8")
+        start = doc.index("**When the redraw drifts, stop redrawing.**")
+        section = doc[start:doc.index("What the route still does not do well", start)]
+        for step in ("from the passed art itself", "**Segment**", "check_holes.py", "not proven yet"):
+            self.assertIn(step, section)
+
+
 if __name__ == "__main__":
     unittest.main()
