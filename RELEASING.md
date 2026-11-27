@@ -29,7 +29,7 @@ Release from the Claude-first source repository. Keep package code, generated ru
    git diff --check
    ```
 
-4. Run the Blender integration script with an installed supported Blender executable: `blender --background --python-exit-code 1 --python .tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py`. This writes temporary fixtures only. If Blender is unavailable, record that limitation; source checks cannot establish Blender runtime behavior. Live Meshy probes require credentials and are separate from release unit tests.
+4. Run the Blender integration script with an installed supported Blender executable: `blender --background --python-exit-code 1 --python .tools/3d_pipeline/tests/blender_rigid_weapon_attachment_integration.py`. This writes temporary fixtures only. If Blender is unavailable, record that limitation; source checks cannot establish Blender runtime behavior. Live Meshy probes (optional, old Meshy jobs only) require credentials and are separate from release unit tests; the Tripo route has no provider API to probe.
 5. Commit source changes, then generate the manifest against that exact source commit:
 
    ```powershell

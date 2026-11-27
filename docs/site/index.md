@@ -63,7 +63,7 @@ Images come from `hoi4-imagegen`, which HOI4 Mod Setup installs. It makes the 40
 python .tools/mcp/bootstrap_hoi4_live_tools.py
 ```
 
-Reconnect the client and follow the [live-testing setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md). The optional 3D workflow adds Meshy and Blender MCP routes through its own bootstrap.
+Reconnect the client and follow the [live-testing setup guide](https://github.com/klimPaskov/Agentic-HOI4-Modding/blob/main/.claude/skills/hoi4-live-playtest/references/setup.md). The optional 3D workflow prepares Blender and `io_pdx_mesh` through its own bootstrap and makes models in Tripo's web app, which needs no API key.
 
 ## Watch the workflow
 

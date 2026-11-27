@@ -4619,7 +4619,8 @@ def main() -> int:
         selected = list(configs) if args.all or not args.assets else args.assets
         needs_key = bool(args.shared_humanoid_batch) or any(not uses_tripo(configs.get(name, {})) for name in selected)
     except (OSError, ValueError):
-        needs_key = True  # report the missing key first, as before
+        # The load below reports the real config error. A Tripo user is never told to set a Meshy key for it.
+        needs_key = False
     if needs_key:
         require_api_key()
         require_meshy_bootstrap()

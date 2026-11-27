@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "9f54da325697e77920a94d5216f1c8f510ddcd07",
+  "generated_for_revision": "92c68887547f249ee807363233898bd17fc3f439",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "2fab62c2db08ed9b2ac0c21e9824b8bc6d900947a11310d6381cceb54f169413",
-          "size": 15994
+          "sha256": "0f6d31dcdc00558e62e0e42e79ef654d8b64a18ec6c8276fc8976ecdbd17871e",
+          "size": 15969
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "f79e787b2048d213bb11058538d78fa4775878fb0ae11e0d70d5e3614537ca00",
-          "size": 15994
+          "sha256": "ceeb71f6c51c042f2da723581dcda70cbb86aaf38c4659e5db901b8889de6602",
+          "size": 15969
         }
       ]
     },
@@ -197,8 +197,8 @@
       "expected_files": [
         {
           "path": ".tools/README.md",
-          "sha256": "6d5ce6dd14eb06a4fb085ffbea9a1110b4af5566a6999b261ddf1ae8fd4f5a47",
-          "size": 15847
+          "sha256": "9b8af28371016b01b8b2ab5ec93cf8bc5957943629674f6f530605b0bc397dd4",
+          "size": 15916
         },
         {
           "path": ".tools/audits/audit_asset_wiring_static.py",
@@ -796,8 +796,8 @@
         },
         {
           "path": ".tools/clients/.cursor/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "cff33113d7637292cdd325446605c4ff85efd8b20cd0cf5082e227408e834f2e",
-          "size": 11022
+          "sha256": "f627f0ffefafa861c57b0d32e25ca0cb6568e3302dbbb656a8b0a7d0e54f01bd",
+          "size": 12202
         },
         {
           "path": ".tools/clients/.cursor/agents/hoi4-ai-probability-auditor.md",
@@ -963,8 +963,8 @@
         },
         {
           "path": ".tools/clients/.qoder/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "e014ccca8a1917ae4d9aee8503b5722233a6182b58e0f0b705a9b3bb64af9a93",
-          "size": 11078
+          "sha256": "4eb9d8a6ddd02bffc41df2b4c2f36555501ef8301910b88a777adb7c9aa21156",
+          "size": 12258
         },
         {
           "path": ".tools/clients/.qoder/agents/hoi4-ai-probability-auditor.md",
@@ -1130,8 +1130,8 @@
         },
         {
           "path": ".tools/clients/.opencode/agent/hoi4-3d-model-pipeline.md",
-          "sha256": "6c8792b29f8ec0b3d26d4c86fb97ff9bc37c8481acfa8c5a06b90fc34b8732a6",
-          "size": 11008
+          "sha256": "58b8b55a43fd0951fe9d20d2f950fd645b190bb815ffc81df7fcf7c41efa17dc",
+          "size": 12188
         },
         {
           "path": ".tools/clients/.opencode/agent/hoi4-ai-probability-auditor.md",
@@ -1797,8 +1797,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
-          "size": 8612
+          "sha256": "55a86489e1be872c973129cfa2441fccbb7f74dfa7636b532e4b329e4d0b24e0",
+          "size": 8812
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -1812,8 +1812,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
-          "size": 77877
+          "sha256": "48c83891db12ab5eac2915801f7307c8c50f993ad918027e3728fec6efc725e0",
+          "size": 82455
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -6167,8 +6167,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
-          "size": 7646
+          "sha256": "539cec00160efa96537e1e57a00222aba0f8ced4aea9349b134e72ec0f2dc7ac",
+          "size": 7650
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -6182,8 +6182,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
-          "size": 8894
+          "sha256": "8f05cfce6924eb406228b958f6fcc3e26bbf2f535b35606633cd8e815cbe3e75",
+          "size": 9392
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -6227,8 +6227,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
-          "size": 7221
+          "sha256": "7fa4e837d4546768f3b0a3c0b01d2090c3cc1afe0b6ec2815f77bdbda29b3bd1",
+          "size": 7363
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/workspace-lfs-and-portrait-archive.md",
@@ -6672,8 +6672,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "eb9ad3095c4fe8f49f43d925044df1bf67eb68b4205b0955bd883299d8fe3426",
-          "size": 5633
+          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
+          "size": 5636
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -6707,8 +6707,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
-          "size": 10353
+          "sha256": "7935fdfec88f9c034e8d5dd01a23ce65583405c01e56b678b4812183dd64e16f",
+          "size": 10750
         },
         {
           "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
@@ -6722,13 +6722,13 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "a7fa3546de91ab741f6f31cfb4872d0a43777f912be87a38e18fc3c744936c89",
-          "size": 11415
+          "sha256": "2821bb0a3d25d988b1dae47fc7213d56135a47a6ff365a2b585aa96213fcbb0e",
+          "size": 11620
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/3d-model-production.md",
-          "sha256": "07b4f68891414f8eda0a2a7aeb37d921629efed8df228447d5b2582fc45421da",
-          "size": 6167
+          "sha256": "d6b94c835bb8152eece27cd99995ee7ee55dc2559026d5c8e8055cde67056dab",
+          "size": 6323
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/active-small-patches.md",
@@ -6913,8 +6913,8 @@
       "expected_files": [
         {
           "path": ".claude/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "d8b34425764c204feb1e249f1142de9d97ee331cdb51f62097e198018b2af48a",
-          "size": 10915
+          "sha256": "589986ea1ec80c48a071246dd06c390edc75157215f7bd4a4714c219e5fef053",
+          "size": 12095
         },
         {
           "path": ".claude/agents/hoi4-ai-probability-auditor.md",
@@ -7065,8 +7065,8 @@
       "expected_files": [
         {
           "path": ".codex/config.toml",
-          "sha256": "cd92569746d2063c00ba07b4a4e1e3ca5aa278e5516361cf7405807221097a41",
-          "size": 9816
+          "sha256": "b872b3c52451010faabe9d95c2e7deb2bb255a096ee206d07d18f8818ad0ace7",
+          "size": 9623
         }
       ]
     },
@@ -7113,8 +7113,8 @@
       "expected_files": [
         {
           "path": ".codex/agents/hoi4_3d_model_pipeline.toml",
-          "sha256": "16555b9c6b0d158d714964de0739a2cb3843df85cb96f44dc5834a00c4138354",
-          "size": 11209
+          "sha256": "c30f883931a9e343a4d8888cbd017770a06fb39b27a65b47171408f2d117ec4b",
+          "size": 12389
         },
         {
           "path": ".codex/agents/hoi4_ai_probability_auditor.toml",
@@ -7256,8 +7256,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
-          "size": 8612
+          "sha256": "55a86489e1be872c973129cfa2441fccbb7f74dfa7636b532e4b329e4d0b24e0",
+          "size": 8812
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -7271,8 +7271,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
-          "size": 77877
+          "sha256": "48c83891db12ab5eac2915801f7307c8c50f993ad918027e3728fec6efc725e0",
+          "size": 82455
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -11626,8 +11626,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
-          "size": 7646
+          "sha256": "539cec00160efa96537e1e57a00222aba0f8ced4aea9349b134e72ec0f2dc7ac",
+          "size": 7650
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -11641,8 +11641,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
-          "size": 8894
+          "sha256": "8f05cfce6924eb406228b958f6fcc3e26bbf2f535b35606633cd8e815cbe3e75",
+          "size": 9392
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -11686,8 +11686,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
-          "size": 7221
+          "sha256": "7fa4e837d4546768f3b0a3c0b01d2090c3cc1afe0b6ec2815f77bdbda29b3bd1",
+          "size": 7363
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/workspace-lfs-and-portrait-archive.md",
@@ -12131,8 +12131,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "eb9ad3095c4fe8f49f43d925044df1bf67eb68b4205b0955bd883299d8fe3426",
-          "size": 5633
+          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
+          "size": 5636
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -12166,8 +12166,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
-          "size": 10353
+          "sha256": "7935fdfec88f9c034e8d5dd01a23ce65583405c01e56b678b4812183dd64e16f",
+          "size": 10750
         },
         {
           "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
@@ -12181,13 +12181,13 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "a7fa3546de91ab741f6f31cfb4872d0a43777f912be87a38e18fc3c744936c89",
-          "size": 11415
+          "sha256": "2821bb0a3d25d988b1dae47fc7213d56135a47a6ff365a2b585aa96213fcbb0e",
+          "size": 11620
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/3d-model-production.md",
-          "sha256": "07b4f68891414f8eda0a2a7aeb37d921629efed8df228447d5b2582fc45421da",
-          "size": 6167
+          "sha256": "d6b94c835bb8152eece27cd99995ee7ee55dc2559026d5c8e8055cde67056dab",
+          "size": 6323
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/active-small-patches.md",
@@ -13243,8 +13243,8 @@
       "expected_files": [
         {
           "path": "README.md",
-          "sha256": "30ccda0e66c3a31c99942aa7b76bedfa3f12b3526d4de6b2f7581b4b38450c1e",
-          "size": 5544
+          "sha256": "a8e3ea8b58c51b85c626d0c3326ad9c51fde3dd3c74ed25a1838b4c34ca40ac9",
+          "size": 5661
         }
       ]
     },
@@ -14692,7 +14692,7 @@
     {
       "id": "workflow.3d",
       "display_name": "3D models workflow",
-      "description": "Install the source-declared 3D workflow and its execution-locked Meshy runtime contract.",
+      "description": "Install the source-declared 3D workflow: the Blender and io_pdx_mesh stage that the Tripo route needs (Tripo itself runs in the user's own browser, with no API and no key), plus the execution-locked Meshy runtime for old Meshy jobs when a Meshy key is set.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -14777,7 +14777,7 @@
         {
           "name": "MESHY_API_KEY",
           "secret": true,
-          "required": true,
+          "required": false,
           "storage": "os_credential_vault",
           "non_empty": true
         }
@@ -14805,7 +14805,7 @@
               "--verify-reviewed-config",
               "--quiet"
             ],
-            "network_access": "Required to authenticate the Meshy credential with the bounded balance endpoint, install user-scoped Node.js LTS or uv when missing, install the exact lockfile-resolved Meshy runtime, resolve Blender MCP to an exact commit, and download pinned io_pdx_mesh 0.91 from approved HTTPS hosts.",
+            "network_access": "Required to install user-scoped Node.js LTS or uv when missing, resolve Blender MCP to an exact commit, and download pinned io_pdx_mesh 0.91 from approved HTTPS hosts. Only when a Meshy key is set: authenticate it with the bounded balance endpoint and install the exact lockfile-resolved Meshy runtime.",
             "expected_writes": [
               ".tools/3d_pipeline/adapter/.venv/**",
               ".tools/3d_pipeline/adapter/uv.lock",
@@ -14835,16 +14835,17 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "one approved input per Meshy geometry task, including separate firearm tasks",
+        "Tripo route: models, rigs and preset clips made in Tripo's web app in the user's own browser (no API, no key), then Blender and io_pdx_mesh",
+        "one approved input per geometry task, including separate weapon and firearm tasks",
         "job-root-bounded Blender production adapter",
         "Blender normalization",
         "bounded mesh, skin, material, action and retarget repair with source-closure verification",
         "response-safe Blender transport and non-replayed paid mutations",
-        "optional Meshy text-to-motion client gated by actual app-owned launcher tool schemas",
+        "optional Meshy provider for old Meshy jobs, including a text-to-motion client gated by actual app-owned launcher tool schemas",
         "PDX mesh and animation export"
       ],
       "notes": [
-        "Missing or provider-rejected MESHY_API_KEY leaves this optional workflow incomplete before dependency setup begins.",
+        "A missing MESHY_API_KEY does not block the workflow: without it the bootstrap prepares the Blender stage that the Tripo route needs and skips only the optional Meshy runtime. A key that is set but rejected by Meshy stops the setup until it is corrected or removed.",
         "The repository-owned blender_hoi4 adapter is the production route; unrestricted Blender Lab is disabled and development-only.",
         "Optional motion client support does not prove launcher exposure; missing actual tools use bounded Blender continuation without patching the pinned runtime.",
         "Adapter source changes require rebootstrap; publication evidence must be regenerated from the committed revision containing those changes.",
@@ -14853,8 +14854,8 @@
       "expected_files": [
         {
           "path": ".tools/3d_pipeline/README.md",
-          "sha256": "0fbd129703da32873a2b2d3a9a5b2fac422a5e6c16145aab3daa74e727ba9221",
-          "size": 17102
+          "sha256": "5f3ae7b0a574529336031d8201491391c1511693563de96e1a0fd708f8b1b9a3",
+          "size": 18402
         },
         {
           "path": ".tools/3d_pipeline/adapter/anim_frame_range.py",
@@ -15478,8 +15479,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_presets.py",
-          "sha256": "85157b265dc91adab8a5956d5f5dc656b4559c8144b4b9a92379dffdf20b5180",
-          "size": 18772
+          "sha256": "61b68f953319e7be12f145810fe4f1365190c8489bdc0248779295d2b1a9155d",
+          "size": 20335
         },
         {
           "path": ".tools/3d_pipeline/lib/tripo_rig.py",
@@ -15593,8 +15594,8 @@
         },
         {
           "path": ".tools/3d_pipeline/run_pilot.py",
-          "sha256": "4341f691cf07ac6249879dae7d3720da0ac2fc62038f5c289ef2a586b7663acd",
-          "size": 207428
+          "sha256": "daaf6b234c2cc8c9a91ab126bf272389ecfa066a808270be3d1ec3456630f143",
+          "size": 207496
         },
         {
           "path": ".tools/3d_pipeline/tests/blender_export_clip_integration.py",
@@ -16273,8 +16274,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_credits_report.py",
-          "sha256": "2d51be845b160b8a6405ddcfdbe0166405ba8c21493f06bb32afb193e8725b6a",
-          "size": 10718
+          "sha256": "f1ea548657a8cf7787f5ea0b206f810d8fdea6bb86f14499d4f3bbadef9f6e5d",
+          "size": 11611
         },
         {
           "path": ".tools/3d_pipeline/tests/test_death_pick.py",
@@ -16763,8 +16764,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_presets.py",
-          "sha256": "f7480d78350577da4de8bf846e0775720f669d5f7423447811277e8f250b9bed",
-          "size": 17292
+          "sha256": "e7f0e770a45d110118a839b7a523db5d8bfba2151e613a04ef50267044627449",
+          "size": 18631
         },
         {
           "path": ".tools/3d_pipeline/tests/test_tripo_rig.py",
@@ -17027,6 +17028,11 @@
           "size": 6524
         },
         {
+          "path": ".tools/3d_pipeline/tripo/proven_types.py",
+          "sha256": "53a8277e5adb379fa28797d32e8da812c476ad53c61296160edc5c0aac15740a",
+          "size": 2201
+        },
+        {
           "path": ".tools/3d_pipeline/tripo/rig_check.py",
           "sha256": "aaaf453a24b3b535070816011f055579969b96be794832739cdff9b793de283f",
           "size": 9153
@@ -17098,8 +17104,8 @@
         },
         {
           "path": ".tools/3d_pipeline/verify_environment.py",
-          "sha256": "fdf8a8227e466c031d3a611c1b8c42ce190e5079013b599da62ccb0a2d9931ef",
-          "size": 7794
+          "sha256": "21ae1d791637d47db3af29a020014ec6f0b38ea39cfc3db75dcfbe95ac365eac",
+          "size": 8446
         },
         {
           "path": ".tools/3d_pipeline/wire_unit.py",
@@ -17944,8 +17950,8 @@
       "expected_files": [
         {
           "path": "docs/linux.md",
-          "sha256": "9357de3f8bfc63c96df929f8c97ae14b4eaeb378e86b3c060229fb6b95f06744",
-          "size": 8825
+          "sha256": "88d6fb63e7b44b4ccf60562b3d41fa77b8c80a0cba2eabef05ca203d9371b3a2",
+          "size": 8824
         }
       ]
     },
@@ -18049,8 +18055,8 @@
         },
         {
           "path": ".tools/clients/.gemini/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "ef00bce0b79acf40e2f7541dee6e994ea9825d32fc4c0d1beb3a0cb2c653a281",
-          "size": 11007
+          "sha256": "1cd167230aadf09ed5be32d69b1c5bee790f9c2d19a88e9feda7cd9c2759e8e8",
+          "size": 12187
         },
         {
           "path": ".tools/clients/.gemini/agents/hoi4-ai-probability-auditor.md",
@@ -18319,8 +18325,8 @@
         },
         {
           "path": ".tools/clients/.agents/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "ef00bce0b79acf40e2f7541dee6e994ea9825d32fc4c0d1beb3a0cb2c653a281",
-          "size": 11007
+          "sha256": "1cd167230aadf09ed5be32d69b1c5bee790f9c2d19a88e9feda7cd9c2759e8e8",
+          "size": 12187
         },
         {
           "path": ".tools/clients/.agents/agents/hoi4-ai-probability-auditor.md",
@@ -18589,8 +18595,8 @@
         },
         {
           "path": ".tools/clients/.kilo/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "0203a3610ee351850a3af2b9d265214c905fadfa64e7f9da88427b60149b63a8",
-          "size": 10993
+          "sha256": "8bc92717a7790603c3bb2a80443e414cdeb04d497dad924fecd6e877f3f3281e",
+          "size": 12173
         },
         {
           "path": ".tools/clients/.kilo/agents/hoi4-ai-probability-auditor.md",
@@ -18858,8 +18864,8 @@
         },
         {
           "path": ".tools/clients/.kiro/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "ef00bce0b79acf40e2f7541dee6e994ea9825d32fc4c0d1beb3a0cb2c653a281",
-          "size": 11007
+          "sha256": "1cd167230aadf09ed5be32d69b1c5bee790f9c2d19a88e9feda7cd9c2759e8e8",
+          "size": 12187
         },
         {
           "path": ".tools/clients/.kiro/agents/hoi4-ai-probability-auditor.md",
@@ -19127,8 +19133,8 @@
         },
         {
           "path": ".tools/clients/.qwen/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "ef00bce0b79acf40e2f7541dee6e994ea9825d32fc4c0d1beb3a0cb2c653a281",
-          "size": 11007
+          "sha256": "1cd167230aadf09ed5be32d69b1c5bee790f9c2d19a88e9feda7cd9c2759e8e8",
+          "size": 12187
         },
         {
           "path": ".tools/clients/.qwen/agents/hoi4-ai-probability-auditor.md",
@@ -19397,8 +19403,8 @@
         },
         {
           "path": ".tools/clients/.devin/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "ef00bce0b79acf40e2f7541dee6e994ea9825d32fc4c0d1beb3a0cb2c653a281",
-          "size": 11007
+          "sha256": "1cd167230aadf09ed5be32d69b1c5bee790f9c2d19a88e9feda7cd9c2759e8e8",
+          "size": 12187
         },
         {
           "path": ".tools/clients/.devin/agents/hoi4-ai-probability-auditor.md",
@@ -19667,8 +19673,8 @@
         },
         {
           "path": ".tools/clients/.augment/agents/hoi4-3d-model-pipeline.md",
-          "sha256": "ef00bce0b79acf40e2f7541dee6e994ea9825d32fc4c0d1beb3a0cb2c653a281",
-          "size": 11007
+          "sha256": "1cd167230aadf09ed5be32d69b1c5bee790f9c2d19a88e9feda7cd9c2759e8e8",
+          "size": 12187
         },
         {
           "path": ".tools/clients/.augment/agents/hoi4-ai-probability-auditor.md",
@@ -20178,8 +20184,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
-          "size": 8612
+          "sha256": "55a86489e1be872c973129cfa2441fccbb7f74dfa7636b532e4b329e4d0b24e0",
+          "size": 8812
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -20193,8 +20199,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
-          "size": 77877
+          "sha256": "48c83891db12ab5eac2915801f7307c8c50f993ad918027e3728fec6efc725e0",
+          "size": 82455
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -24548,8 +24554,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
-          "size": 7646
+          "sha256": "539cec00160efa96537e1e57a00222aba0f8ced4aea9349b134e72ec0f2dc7ac",
+          "size": 7650
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -24563,8 +24569,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
-          "size": 8894
+          "sha256": "8f05cfce6924eb406228b958f6fcc3e26bbf2f535b35606633cd8e815cbe3e75",
+          "size": 9392
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -24608,8 +24614,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
-          "size": 7221
+          "sha256": "7fa4e837d4546768f3b0a3c0b01d2090c3cc1afe0b6ec2815f77bdbda29b3bd1",
+          "size": 7363
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/workspace-lfs-and-portrait-archive.md",
@@ -25053,8 +25059,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "eb9ad3095c4fe8f49f43d925044df1bf67eb68b4205b0955bd883299d8fe3426",
-          "size": 5633
+          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
+          "size": 5636
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -25088,8 +25094,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
-          "size": 10353
+          "sha256": "7935fdfec88f9c034e8d5dd01a23ce65583405c01e56b678b4812183dd64e16f",
+          "size": 10750
         },
         {
           "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
@@ -25103,13 +25109,13 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "a7fa3546de91ab741f6f31cfb4872d0a43777f912be87a38e18fc3c744936c89",
-          "size": 11415
+          "sha256": "2821bb0a3d25d988b1dae47fc7213d56135a47a6ff365a2b585aa96213fcbb0e",
+          "size": 11620
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/3d-model-production.md",
-          "sha256": "07b4f68891414f8eda0a2a7aeb37d921629efed8df228447d5b2582fc45421da",
-          "size": 6167
+          "sha256": "d6b94c835bb8152eece27cd99995ee7ee55dc2559026d5c8e8055cde67056dab",
+          "size": 6323
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/active-small-patches.md",
@@ -25676,8 +25682,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
-          "size": 8612
+          "sha256": "55a86489e1be872c973129cfa2441fccbb7f74dfa7636b532e4b329e4d0b24e0",
+          "size": 8812
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -25691,8 +25697,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
-          "size": 77877
+          "sha256": "48c83891db12ab5eac2915801f7307c8c50f993ad918027e3728fec6efc725e0",
+          "size": 82455
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -30046,8 +30052,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
-          "size": 7646
+          "sha256": "539cec00160efa96537e1e57a00222aba0f8ced4aea9349b134e72ec0f2dc7ac",
+          "size": 7650
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -30061,8 +30067,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
-          "size": 8894
+          "sha256": "8f05cfce6924eb406228b958f6fcc3e26bbf2f535b35606633cd8e815cbe3e75",
+          "size": 9392
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -30106,8 +30112,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
-          "size": 7221
+          "sha256": "7fa4e837d4546768f3b0a3c0b01d2090c3cc1afe0b6ec2815f77bdbda29b3bd1",
+          "size": 7363
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/workspace-lfs-and-portrait-archive.md",
@@ -30551,8 +30557,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "eb9ad3095c4fe8f49f43d925044df1bf67eb68b4205b0955bd883299d8fe3426",
-          "size": 5633
+          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
+          "size": 5636
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -30586,8 +30592,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
-          "size": 10353
+          "sha256": "7935fdfec88f9c034e8d5dd01a23ce65583405c01e56b678b4812183dd64e16f",
+          "size": 10750
         },
         {
           "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
@@ -30601,13 +30607,13 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "a7fa3546de91ab741f6f31cfb4872d0a43777f912be87a38e18fc3c744936c89",
-          "size": 11415
+          "sha256": "2821bb0a3d25d988b1dae47fc7213d56135a47a6ff365a2b585aa96213fcbb0e",
+          "size": 11620
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/3d-model-production.md",
-          "sha256": "07b4f68891414f8eda0a2a7aeb37d921629efed8df228447d5b2582fc45421da",
-          "size": 6167
+          "sha256": "d6b94c835bb8152eece27cd99995ee7ee55dc2559026d5c8e8055cde67056dab",
+          "size": 6323
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/active-small-patches.md",
@@ -31174,8 +31180,8 @@
       "expected_files": [
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/SKILL.md",
-          "sha256": "43a2ed1d9ea02b3cc0c28d1a9c4b93611b291fe6012282fc526139e7cd816ec1",
-          "size": 8612
+          "sha256": "55a86489e1be872c973129cfa2441fccbb7f74dfa7636b532e4b329e4d0b24e0",
+          "size": 8812
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/live-authoring.md",
@@ -31189,8 +31195,8 @@
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/production-guide.md",
-          "sha256": "c8ce776b90e6c70a890ac0e7d0d760175eed15fa5ca0147cfae49e155ed19f83",
-          "size": 77877
+          "sha256": "48c83891db12ab5eac2915801f7307c8c50f993ad918027e3728fec6efc725e0",
+          "size": 82455
         },
         {
           "path": ".claude/skills/hoi4-3d-model-pipeline/references/source-reference-policy.md",
@@ -35544,8 +35550,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/completion-checklist.md",
-          "sha256": "4a86046c38e889b28491617e93a172151e3aa2fbc31418089c3d99b0d696e164",
-          "size": 7646
+          "sha256": "539cec00160efa96537e1e57a00222aba0f8ced4aea9349b134e72ec0f2dc7ac",
+          "size": 7650
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/event-images-and-flags.md",
@@ -35559,8 +35565,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/generation-and-review.md",
-          "sha256": "7386dca7476b5b6850e61a5f98e275b9638497c0bfaf721f889ac033fd97494d",
-          "size": 8894
+          "sha256": "8f05cfce6924eb406228b958f6fcc3e26bbf2f535b35606633cd8e815cbe3e75",
+          "size": 9392
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/icon-and-ui-families.md",
@@ -35604,8 +35610,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/unit-visuals-and-3d-handoff.md",
-          "sha256": "91c66d91bd4fbc20b1ba01d64f9cace9cb2a15581788edee96242782cd55202f",
-          "size": 7221
+          "sha256": "7fa4e837d4546768f3b0a3c0b01d2090c3cc1afe0b6ec2815f77bdbda29b3bd1",
+          "size": 7363
         },
         {
           "path": ".claude/skills/hoi4-feature-assets/references/workspace-lfs-and-portrait-archive.md",
@@ -36049,8 +36055,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "eb9ad3095c4fe8f49f43d925044df1bf67eb68b4205b0955bd883299d8fe3426",
-          "size": 5633
+          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
+          "size": 5636
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -36084,8 +36090,8 @@
         },
         {
           "path": ".claude/skills/hoi4-scripted-gui/references/visual-review.md",
-          "sha256": "2eabe734aac3303fa3c24209d4d55f18fb7bdb2b7ec197f5cda086fc729ced77",
-          "size": 10353
+          "sha256": "7935fdfec88f9c034e8d5dd01a23ce65583405c01e56b678b4812183dd64e16f",
+          "size": 10750
         },
         {
           "path": ".claude/skills/hoi4-scripted-triggers-effects/SKILL.md",
@@ -36099,13 +36105,13 @@
         },
         {
           "path": ".claude/skills/hoi4-subagents/SKILL.md",
-          "sha256": "a7fa3546de91ab741f6f31cfb4872d0a43777f912be87a38e18fc3c744936c89",
-          "size": 11415
+          "sha256": "2821bb0a3d25d988b1dae47fc7213d56135a47a6ff365a2b585aa96213fcbb0e",
+          "size": 11620
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/3d-model-production.md",
-          "sha256": "07b4f68891414f8eda0a2a7aeb37d921629efed8df228447d5b2582fc45421da",
-          "size": 6167
+          "sha256": "d6b94c835bb8152eece27cd99995ee7ee55dc2559026d5c8e8055cde67056dab",
+          "size": 6323
         },
         {
           "path": ".claude/skills/hoi4-subagents/references/active-small-patches.md",

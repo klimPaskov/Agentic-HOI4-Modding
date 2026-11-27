@@ -34,7 +34,7 @@ How to work:
 4. When the task touches focus trees, event chains, technology or doctrine trees, weighted logic, scripted GUI or maps, MCP evidence is mandatory and source-only review is not equivalent ([mcp-evidence-in-handoffs](references/mcp-evidence-in-handoffs.md)).
 5. Review every output yourself (Parent review below). A subagent never owns the completion claim.
 
-Costly to miss, with the full text in the references: `hoi4_event_ui_worker` only for a UI that a named event owns ([spawn-gates](references/spawn-gates.md)). Any patch to an AI weight or probability needs the audit-patch-compare cycle ([active-small-patches](references/active-small-patches.md)). A 3D job needs its credit budget, the `MESHY_API_KEY` gate and sourced audio in the prompt ([3d-model-production](references/3d-model-production.md)). Asset agents work in the temporary `docs/assets/<feature_slug>/` workspace, which the parent cleans up only at full completion ([asset-research-routing](references/asset-research-routing.md)).
+Costly to miss, with the full text in the references: `hoi4_event_ui_worker` only for a UI that a named event owns ([spawn-gates](references/spawn-gates.md)). Any patch to an AI weight or probability needs the audit-patch-compare cycle ([active-small-patches](references/active-small-patches.md)). A 3D job needs its credit budget and sourced audio in the prompt (a Tripo job needs no key) ([3d-model-production](references/3d-model-production.md)). Asset agents work in the temporary `docs/assets/<feature_slug>/` workspace, which the parent cleans up only at full completion ([asset-research-routing](references/asset-research-routing.md)).
 
 ## Reference map
 
@@ -121,6 +121,7 @@ The parent agent must review every subagent output before relying on it.
 Before final completion, the parent should check:
 
 - subagent changes are inside approved scope
+- every picture a subagent made (render, sheet, asset, capture) passes the parent's own full-size read against the visual-review checklist and the project's accepted references before it reaches the user
 - patch handoffs identify changed files and ids
 - plan handoffs are either implemented, queued, or rejected with a reason
 - documentation curator handoffs identify promoted, queued, rejected, superseded, and unresolved documents when one was used

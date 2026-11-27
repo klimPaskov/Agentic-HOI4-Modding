@@ -2,9 +2,27 @@
 
 This page is for modders who want their own 3D units on the HOI4 map: soldiers, archers, riders, beasts and vehicles. Tripo makes the model from your picture, rigs it and animates it. Blender turns the result into HOI4 files. Your coding agent does the work through the `hoi4-3d-model-pipeline` skill. You approve the picture and the credit budget, and you look at the result. New to 3D? Start with the one-page [quick start](3d-quick-start.md). The same route runs on [Tripo's Agentic Canvas](3d-canvas.md) too.
 
-Tripo is the default generator since November 2026. Models made earlier with Meshy stay usable, and the Meshy steps still run for old jobs (see [Old Meshy jobs](#old-meshy-jobs)).
+Tripo is the default generator since November 2026 and the route this guide describes: Tripo's web app in your own browser, then Blender and `io_pdx_mesh`. It needs no API key. Meshy is an optional provider for jobs made before then (see [Old Meshy jobs](#old-meshy-jobs)); a new unit never needs it.
 
-**What is proven.** Six asset types have each gone the whole route below with at least one model made from its full, detailed reference, and passed two fresh reviews in November 2026: armed humanoids (an orc with a poleaxe), a large creature (an ogre with a club), a mount (a war elephant), a winged humanoid (a bat-winged demon whose death burns him to ash), a plane and a ship. A dwarf with a glaive and a shield passed both reviews too, but its picture had lost a shoulder detail of the art, so it counts only after a run from the full picture. A review judges each clip's motion at the size of the game's designer preview and in close-up, and the still model at map size beside vanilla (D-140). **Not proven yet**: winged beasts (a four-legged dragon has not passed review), tanks, buildings and landmarks (their earlier passes were on simplified redraws of the subject and do not count), and an unarmed zombie soldier, which still reads as an ordinary soldier at map size. Do not plan a mod on those yet. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits.
+**What is proven.** The table below is the only list. It is written from each preset in `.tools/3d_pipeline/config/tripo_presets.json` (`py -3.13 -B .tools/3d_pipeline/tripo/proven_types.py` prints it, and `new_job.py --list` shows each status beside its preset), and nothing else in the kit restates it. "Passed" means the whole route below ran with a model made from its full, detailed reference and two fresh reviews found no defect. A review judges each clip's motion at the size of the game's designer preview and in close-up, and the still model at map size beside vanilla (D-140). A preset marked "Not proven" has not gone the whole route yet: do not plan a mod on it, and ask before you spend credits. See [Armed units](#armed-units) and [Known limits](#known-limits) before you spend credits on any type.
+
+<!-- PROVEN_TYPES:START -->
+| Preset | For | Status |
+| --- | --- | --- |
+| `humanoid` | Humanoid, empty hands | An unarmed soldier-sized unit passed every check but still read as an ordinary soldier at map size (November 2026). Follow the map-read step (card step 7) with care. |
+| `armed_humanoid` | Humanoid with a weapon | Passed two fresh reviews on two units, one with a polearm and one with a glaive and a shield (November 2026). |
+| `large_creature` | Large creature on two legs | Passed two fresh reviews on one unit with a club (November 2026). Very long arms and fur are not proven yet. |
+| `winged_humanoid` | Winged humanoid | Passed two fresh reviews on one unit with membrane wings (November 2026). Very wide thin wings and feathered wings are not proven yet. |
+| `winged_quadruped` | Winged beast on four legs | Not proven: no winged four-legged unit has passed review yet (November 2026). Ask before you spend. |
+| `mount_with_rider` | Mount with a rider | A heavy mount with a load passed (November 2026). A slim mount with a seated rider is not proven yet. |
+| `quadruped` | Beast on four legs | A heavy four-legged body passed on the same rig (November 2026). A slim runner is not proven yet. |
+| `rider` | Rider for a mount | Not proven with a seated Tripo rider yet (November 2026). |
+| `tank` | Tank or armoured car | Proven on the M2A4 light tank (November 2026): every check, and two fresh reviews at the D-83 bar in each of two runs, sized to vanilla's US light tank. Known limits of a Smart Mesh source in close-up, not cuts to the design: small hatch and flap blocks on the glacis, thin machine-gun barrels, fender flanges, open-edge marks, blotchy painted spokes, and track links that do not read at game size (as vanilla's). |
+| `plane` | Plane | Passed two fresh reviews (November 2026). |
+| `ship` | Ship | Passed two fresh reviews (November 2026). |
+| `building` | Building | Not proven: earlier passes were on simplified redraws and do not count (November 2026). |
+| `landmark` | Landmark | Not proven: earlier passes were on simplified redraws and do not count (November 2026). |
+<!-- PROVEN_TYPES:END -->
 
 ## How to use it
 
@@ -88,7 +106,9 @@ The Blender stage is Windows only today. In HOI4 Mod Setup, tick **3D models wor
 - The kit's 3D pipeline (`.tools/3d_pipeline/`) and the `hoi4-3d-model-pipeline` skill.
 - Blender 5.2.3, when no Blender 5.1 or 5.2 is installed. A portable Blender in `%LOCALAPPDATA%\Programs` is found too. Set `BLENDER_EXE` to use a particular one.
 - The `io_pdx_mesh` add-on for that Blender, which reads and writes HOI4's `.mesh` and `.anim` files.
-- The Blender Lab MCP server, registered for your coding client. It also installs the pinned Meshy MCP server, which only old Meshy jobs use. HOI4 Mod Setup may still ask for a Meshy key. Leave it empty when you use Tripo.
+- The Blender Lab MCP server, registered for your coding client.
+
+A Meshy key is optional. HOI4 Mod Setup may offer a field for one: leave it empty when you use Tripo. Without a key the setup prepares only the Blender stage, which is everything the Tripo route needs. Add a key and run the setup again only if you have old Meshy jobs to continue: it then also installs the pinned Meshy MCP server.
 
 **The Tripo account.** A free account can try the route (about 13 models a month, public models, non-commercial use). A paid plan gives private models, commercial use and enough credits for a unit roster. You sign in yourself. The agent never types your password.
 
@@ -1340,7 +1360,7 @@ The checks are `check_unit_files.py <folder> --model-kind <kind>`, the unit rule
 
 The notes below come from models made by hand before the [static route](#static-and-rigid-part-models). They still hold for a model made outside it.
 
-**Buildings and landmarks (not proven yet on a detailed subject).**
+**Buildings and landmarks.** Their status is in the table at the top of this guide.
 
 - A tall and thin landmark (height over twice the larger side of its upper half) is sized on its height, but its base is bounded too. Vanilla's four (Big Ben, the Eiffel Tower, Hakko Ichiu, the Statue of Liberty) stand on bases of 0.17, 0.43, 0.88 and 0.82 times their height, so the contract's `size.tall_base.max_share` is 0.8757. A model whose largest horizontal side is wider than that share of the height it would get is sized on the base (largest side divided by 0.8757), so a wide paved plaza does not read as a larger monument than vanilla's. STATIC-SIZE measures the same way. An obelisk with a plaza 1.12 times its height wide came out as tall as the Statue of Liberty and 1.40 times as wide at its base. It is now 0.80 times as tall and 1.09 times as wide.
 - A building can be textured with no image: one joined mesh, procedural Blender materials, smart UV project and packed islands, then Cycles bakes colour, ambient occlusion, a tangent normal map and the specular maps, packed for the PDX shader. A whole castle baked in about 40 seconds.
@@ -1349,7 +1369,7 @@ The notes below come from models made by hand before the [static route](#static-
 - Every landmark needs a second `collision` shape with the material shader `Collision`. Vanilla landmarks have one 8-vertex box.
 - If your mod's state history or `map/buildings.txt` is generated by a tool, do not edit it by hand. Add a new spawn point, keep automatic nudging on, and place the building with an `on_startup` effect that runs `set_building_level` in state scope with the province given. Keep the map rows in a note for the generator.
 
-**Ships (proven on one model).**
+**Ships.** Their status is in the table at the top of this guide.
 
 - Rebuild vanilla's ship contract exactly, measured from vanilla's destroyer, support ship, freighter, light cruiser and battleship: bow toward -Y, waterline at z = 0, a `root` bone (0,0,0 to 0,0.05,0) with a child `ship` bone (0,0,0.363 to 0,0.25,0.363), every vertex weighted 1.0 to `ship`, mesh data named `<object>Shape` (the `meshsettings` name), material `PDXmat_<object>Shape` with `PdxMeshAdvanced`, the locators `front_moving_water_effect`, `back_moving_water_effect` and `miss_effect_*` as plain empties, `hit_effect_locator1` and `hit_effect_locator2` parented to `ship`, and a `pCube1` collision box. Export with the skeleton option on. That round-trips cleanly through `io_pdx_mesh`.
 - Give UV space by part, not evenly. Scale each island to a density by material (hull sides 2.0, sail 1.6, deck 1.0, oars 0.7, underwater hull 0.5), but floor every island at about 0.7 of the reference: islands under a pixel bake black.
@@ -1362,7 +1382,7 @@ The notes below come from models made by hand before the [static route](#static-
 ## Known limits
 
 - **Armed units.** The separate-weapon route passed review on the orc (see [Armed units](#armed-units)). An attack made for an empty hand does not read as a weapon swing, so each armed unit needs an attack made for its weapon. No weaker model has run the route from the card alone yet.
-- **Quadruped mounts.** The Tripo quadruped route has not passed review yet (see [Tripo quadrupeds and mounts](#tripo-quadrupeds-and-mounts)). Its distance weights stretch the skin at the leg joints in the rear and the fall.
+- **Quadruped mounts and beasts.** Which bodies have passed review is in the table at the top of this guide; a slim runner and a seated rider have not (see [Tripo quadrupeds and mounts](#tripo-quadrupeds-and-mounts)). Distance weights can stretch the skin at the leg joints in the rear and the fall.
 - **Wings, tails and extra limbs.** Tripo's humanoid rig has no wing bones. [Secondary chains](#secondary-chains-cloaks-and-wings) give wings their own bones and motion, but the membrane can still cross in front of the body in some clips. Tails and extra limbs have no step yet.
 - **Cloaks and armour.** [Secondary chains](#secondary-chains-cloaks-and-wings) stop a long cloak stretching, but some of it can still pass into the body in hard clips. Armour plates whose weight Tripo split between bones still bend a little.
 - **Two-handed polearms.** A polearm held rigidly in one hand fails two-handed library swings: it crosses the head and torso and the free hand flails. There is no two-handed grip step yet. Pick one-handed clips, or fit a shorter shaft gripped near its centre.

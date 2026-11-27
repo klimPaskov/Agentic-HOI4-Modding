@@ -306,5 +306,32 @@ class ClipsFitTheUnit(unittest.TestCase):
         self.assertIn("raises the wooden mallet", card("large_creature"))
 
 
+class ProvenTypesHaveOneSource(unittest.TestCase):
+    """What the route has proven is written once, in the presets. The guide carries a table of it, and nothing else restates it."""
+
+    DOCS = PIPELINE_ROOT.parents[1] / "docs"
+
+    def test_the_guide_table_is_what_the_presets_render(self) -> None:
+        guide = self.DOCS / "3d-units.md"
+        if not guide.is_file():
+            self.skipTest("an installed mod without the kit's docs")
+        self.assertTrue(P.sync_proven_doc(guide), "docs/3d-units.md is out of date: run tripo/proven_types.py --write")
+
+    def test_every_preset_has_a_status_row(self) -> None:
+        table = P.proven_table()
+        for name in P.names():
+            self.assertIn(f"| `{name}` |", table)
+
+    def test_no_other_guide_lists_the_proven_types(self) -> None:
+        skill = PIPELINE_ROOT.parents[1] / ".claude" / "skills" / "hoi4-3d-model-pipeline" / "SKILL.md"
+        quick = self.DOCS / "3d-quick-start.md"
+        for path in (skill, quick):
+            if not path.is_file():
+                continue
+            text = " ".join(path.read_text(encoding="utf-8").split()).lower()
+            self.assertNotIn("not proven yet.", text, f"{path.name} restates a status; point at the table instead")
+            self.assertNotIn("winged units, tanks, buildings and landmarks are not", text)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -358,3 +358,38 @@ def budget_line(preset: Dict[str, Any]) -> str:
     if preset.get("cap_note"):
         line += f". {preset['cap_note']}"
     return line
+
+
+PROVEN_START = "<!-- PROVEN_TYPES:START -->"
+PROVEN_END = "<!-- PROVEN_TYPES:END -->"
+
+
+def proven_table(data: Optional[Dict[str, Any]] = None) -> str:
+    """The one list of what the route has and has not proven, rendered from each preset's `proven` text.
+
+    `config/tripo_presets.json` is the only place a status is written. `docs/3d-units.md` carries this table between
+    `PROVEN_START` and `PROVEN_END`, and every other file points at it or at `tripo/new_job.py --list`.
+    """
+
+    data = data or load()
+    rows = ["| Preset | For | Status |", "| --- | --- | --- |"]
+    for name, preset in data["presets"].items():
+        rows.append(f"| `{name}` | {preset['label']} | {preset['proven']} |")
+    return "\n".join(rows)
+
+
+def sync_proven_doc(path: Path, *, write: bool = False, data: Optional[Dict[str, Any]] = None) -> bool:
+    """True when the table between the markers in `path` is what `proven_table` renders. With `write`, rewrite it first."""
+
+    text = path.read_bytes().decode("utf-8")
+    start, end = text.find(PROVEN_START), text.find(PROVEN_END)
+    if start < 0 or end < start:
+        raise ValueError(f"{path} has no {PROVEN_START} ... {PROVEN_END} block")
+    newline = "\r\n" if "\r\n" in text else "\n"
+    block = f"{PROVEN_START}{newline}{proven_table(data).replace(chr(10), newline)}{newline}{PROVEN_END}"
+    current = text[start:end + len(PROVEN_END)]
+    if current == block:
+        return True
+    if write:
+        path.write_bytes((text[:start] + block + text[end + len(PROVEN_END):]).encode("utf-8"))
+    return False
