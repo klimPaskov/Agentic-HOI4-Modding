@@ -121,6 +121,7 @@ The parent agent must review every subagent output before relying on it.
 Before final completion, the parent should check:
 
 - subagent changes are inside approved scope
+- every picture a subagent made (render, sheet, asset, capture) passes the parent's own full-size read against the visual-review checklist and the project's accepted references before it reaches the user
 - patch handoffs identify changed files and ids
 - plan handoffs are either implemented, queued, or rejected with a reason
 - documentation curator handoffs identify promoted, queued, rejected, superseded, and unresolved documents when one was used

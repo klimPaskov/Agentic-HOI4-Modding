@@ -1,6 +1,6 @@
 # Scripted GUI visual and usability review
 
-Use this checklist when designing a native mapping and reviewing baseline, intermediate, and post-change MCP artifacts. Inspect the full composition at native output size and detailed crops for text and edges; record measurements when they reveal or verify a defect. Every applicable visible defect blocks visual completion regardless of source-edit method or optional rewrite outcome, and each capture must be read against this checklist before it is reported. Do not resize the preview or change UI scale to disguise a layout problem.
+Use this checklist when designing a native mapping and reviewing baseline, intermediate, and post-change MCP artifacts. Inspect the full composition at native output size and detailed crops for text and edges; record measurements when they reveal or verify a defect. Every applicable visible defect blocks visual completion regardless of source-edit method or optional rewrite outcome, and each capture must be read against this checklist before it is reported. The same reading applies to every picture shown to the user (capture, render, mock-up, concept, asset sheet, map, model): read it at full size, against this checklist and the project's accepted references, fix every obvious fault or send it back to its owner, and never show a known fault with a caption explaining it. A renderer limit counts as a fault: render truthfully or show a real capture. Do not resize the preview or change UI scale to disguise a layout problem.
 
 ## Geometry, typography, and control bounds
 
