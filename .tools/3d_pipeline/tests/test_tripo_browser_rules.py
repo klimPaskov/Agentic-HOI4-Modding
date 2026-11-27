@@ -23,6 +23,8 @@ class TripoBrowserRules(unittest.TestCase):
         self.assertIn("within about 30 seconds", self.section)
         self.assertIn("closes that tab before it opens another", self.section)
         self.assertIn("opens no further Tripo page", self.section)
+        self.assertIn("second Tripo page freezes while memory is free", self.section)
+        self.assertIn("asks you to restart Chrome instead of trying more pages", self.section)
 
     def test_the_agent_closes_its_own_tabs_and_records_the_asset_id(self) -> None:
         self.assertIn("closes every Tripo tab it opened", self.section)
