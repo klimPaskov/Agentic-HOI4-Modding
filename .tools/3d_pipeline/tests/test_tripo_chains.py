@@ -913,6 +913,61 @@ class RoundFourRules(unittest.TestCase):
         for key in out:
             np.testing.assert_array_equal(self.membrane_quaternions(False)[key], out[key])
 
+    def test_the_sheet_cap_lowers_the_mean_direction_to_its_limit_and_keeps_its_heading(self) -> None:
+        lateral = np.cross(UP, FRONT)
+        rest = C.unit(lateral + 0.2 * UP)
+        risen = C.unit(lateral - 0.3 * FRONT + 1.5 * UP)
+        under = C.unit(lateral + 0.25 * UP)
+        turns = C.sheet_rise_turns(np.array([risen, under]), rest, UP, 10.0)
+        np.testing.assert_allclose(turns[1], np.eye(3))
+        lowered = turns[0] @ risen
+        limit = math.asin(float(rest @ UP)) + math.radians(10.0)
+        self.assertAlmostEqual(math.asin(float(lowered @ UP)), limit, places=6)
+        np.testing.assert_allclose(C.unit(lowered - (lowered @ UP) * UP), C.unit(risen - (risen @ UP) * UP), atol=1e-9)
+
+    def test_a_leaning_membrane_wing_keeps_its_fan_under_the_sheet_cap(self) -> None:
+        # Two chains of one wing at very different elevations (the ZIN devil's wings: chains from 30 degrees above level to hanging down).
+        # Under a lean the per-bone cap stopped the high chain and let the low one rise, so the angle between them changed and the
+        # membrane tore. The sheet cap turns both by one rotation, so the angle between the chains stays as the pose made it.
+        lateral = np.cross(UP, FRONT)
+        stage = {"up": UP, "front": FRONT, "ground": -10.0, "height": 2.0}
+        wing = {"u_min": 0.0, "normal": np.array([0.0, -1.0, 0.0]), "sweep": 50.0, "down": 60.0, "droop": 0.0, "side": 30.0}
+        plans = []
+        for c, rest_direction in enumerate((C.unit(lateral + 0.6 * UP), C.unit(lateral - 0.8 * UP))):
+            basis = np.eye(4)
+            basis[:3, :3] = C.shortest_arc(np.array([0.0, 1.0, 0.0]), rest_direction)
+            relative = []
+            for k in range(2):
+                m = basis.copy() if k == 0 else np.eye(4)
+                m[:3, 3] = np.array([0.1, 0.0, 1.4]) if k == 0 else np.array([0.0, 0.2, 0.0])
+                relative.append(m)
+            plans.append({"lengths": np.array([0.2, 0.2]), "wing": dict(wing), "side": "L", "rest_directions": np.array([rest_direction] * 2),
+                          "parent_rest": np.eye(4), "chain_u": float(c), "rest_relative": np.stack(relative), "bones": [f"W{c}_1", f"W{c}_2"]})
+        lean = np.eye(4)
+        lean[:3, :3] = C.axis_angle_matrix(FRONT, math.radians(45.0))  # the torso leans over the left wing and lifts it
+        parents = np.stack([np.eye(4), lean])
+
+        def spread(quaternions):
+            directions = []
+            for plan, quats in zip(plans, quaternions):
+                world = parents[1] @ plan["rest_relative"][0]
+                world[:3, :3] = world[:3, :3] @ C.matrix_from_quaternion(quats[1, 0])
+                directions.append(C.unit(world[:3, 1]))
+            return math.degrees(math.acos(float(np.clip(directions[0] @ directions[1], -1.0, 1.0))))
+
+        free = [C.wing_quaternions(plan, parents, "move", stage, sheet_turns=np.tile(np.eye(3), (2, 1, 1))) for plan in plans]
+        per_bone = [C.wing_quaternions(plan, parents, "move", stage) for plan in plans]
+        sheet = C.wing_side_quaternions(plans, parents, "move", stage)
+        self.assertGreater(abs(spread(per_bone) - spread(free)), 5.0)
+        self.assertAlmostEqual(spread(sheet), spread(free), places=4)
+        mean, root = C.chain_mean_points(plans, parents, sheet)
+        rest_mean, rest_root = C.chain_mean_points(plans, parents[:1], [np.tile([1.0, 0.0, 0.0, 0.0], (1, 2, 1))] * 2)
+        rise = math.degrees(math.asin(float(C.unit(mean[1] - root[1]) @ UP)) - math.asin(float(C.unit(rest_mean[0] - rest_root[0]) @ UP)))
+        self.assertLessEqual(rise, C.WING_RISE_MAX + 1.0)
+        # a dying wing keeps its own rules
+        for got, want in zip(C.wing_side_quaternions(plans, parents, "death", stage), [C.wing_quaternions(p, parents, "death", stage) for p in plans]):
+            np.testing.assert_array_equal(got, want)
+
     def test_a_feathered_wing_takes_its_own_rules(self) -> None:
         membrane, slab = self.membrane_quaternions(None), self.membrane_quaternions(True)
         self.assertGreater(max(float(np.abs(membrane[key] - slab[key]).max()) for key in membrane), 0.01)

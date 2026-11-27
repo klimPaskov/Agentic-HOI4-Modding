@@ -281,7 +281,7 @@ class UnitTypeActions(unittest.TestCase):
         self.assertEqual((spec["asset_kind"], spec["creature_rig_family"]), ("creature", "quadruped"))
         self.assertEqual(run_pilot.provider_animated_roles(spec), [])
         self.assertEqual({row["action_style"] for row in spec["required_actions"]} - {None}, {
-            "quadruped_idle", "quadruped_trot", "quadruped_charge", "quadruped_rear", "quadruped_gallop", "quadruped_collapse"})
+            "quadruped_idle", "quadruped_trot", "quadruped_rear", "quadruped_brace", "quadruped_gallop", "quadruped_collapse"})
 
     def test_a_mount_generation_sends_no_humanoid_pose(self) -> None:
         import run_pilot
