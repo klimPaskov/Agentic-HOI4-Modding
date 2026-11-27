@@ -1,7 +1,6 @@
 # Generated from .claude/agents/hoi4-audio-researcher.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_audio_researcher"
 description = "Researches, verifies, downloads, edits, converts, and documents licensed or public-domain audio for HOI4 mod presentation surfaces. Does not wire audio into scripts or sound definitions."
-model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Audio Researcher"]
 

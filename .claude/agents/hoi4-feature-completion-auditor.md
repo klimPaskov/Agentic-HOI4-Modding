@@ -1,8 +1,7 @@
 ---
 name: hoi4-feature-completion-auditor
 description: "Read-only completion auditor for HOI4 mod feature implementation. Compares specs, plans, prompts, and repo files, then flags missing mechanics, fallbacks, simplifications, docs gaps, asset gaps, validation gaps, and unresolved addenda."
-model: sonnet
-effort: high
+model: inherit
 disallowedTools: Write, Edit, NotebookEdit
 ---
 

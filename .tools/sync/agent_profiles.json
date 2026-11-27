@@ -1,12 +1,13 @@
 {
   "tier_policy": {
-    "opus": ["hoi4-improvement-loop-planner"],
-    "sonnet": ["hoi4-3d-model-pipeline", "hoi4-feature-completion-auditor", "hoi4-localisation-auditor", "hoi4-scripted-system-architect", "hoi4-skill-maintainer"],
-    "default": "haiku"
+    "_comment": "Agents follow the session's model and effort (inherit) unless a task truly needs another model. Haiku runs only mechanical work: mapping files, reconciling documents with recorded decisions, aligning spreadsheet fields. Docs: docs/runtimes.md, Model selection.",
+    "haiku": ["hoi4-documentation-curator", "hoi4-repo-explorer", "hoi4-spreadsheet-doc-worker"],
+    "default": "inherit"
   },
-  "effort_policy": {"opus": "xhigh", "sonnet": "high", "haiku": "medium"},
+  "effort_policy": {"inherit": null, "opus": "xhigh", "sonnet": "high", "haiku": "medium"},
   "codex": {
     "tiers": {
+      "inherit": {},
       "opus": { "model_reasoning_effort": "xhigh" },
       "sonnet": { "model_reasoning_effort": "high" },
       "haiku": { "model_reasoning_effort": "medium" }

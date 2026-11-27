@@ -25,6 +25,9 @@ installs each one at its real place in the mod.
 
 Runtime tuning that is not part of a prompt, such as the Codex reasoning effort
 for each Claude model tier, lives in `agent_profiles.json` next to this file.
+The `inherit` tier runs an agent on the session's own model and effort: its
+canonical file sets `model: inherit` and no `effort`, and the other runtimes
+receive no model or effort setting for it.
 The synchronizer discovers agents from the canonical folder, so adding or
 removing an agent never requires editing this script.
 
@@ -53,7 +56,8 @@ CODEX_CONFIG = MOD_ROOT / ".codex" / "config.toml"
 
 READ_ONLY = "read-only"
 CAN_EDIT = "can edit"
-MODEL_TIERS = ("opus", "sonnet", "haiku")
+MODEL_TIERS = ("inherit", "opus", "sonnet", "haiku")
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 # Canonical wording that each runtime expresses with its own mechanism.
@@ -206,7 +210,9 @@ def load_agents() -> List[Agent]:
         description = fields.get("description", "")
         model = fields.get("model", "")
         effort = fields.get("effort", "")
-        if effort not in {"low", "medium", "high", "xhigh", "max"}:
+        if model == "inherit" and effort:
+            problems.append(f"{path.name}: an agent on 'model: inherit' takes the session's effort, so it sets no 'effort'")
+        elif model != "inherit" and effort not in EFFORTS:
             problems.append(f"{path.name}: valid per-agent effort is required")
         if name != path.stem or not NAME_PATTERN.match(name):
             problems.append(f"{path.name}: 'name' must be the lowercase hyphen-case file name ({path.stem})")
@@ -308,7 +314,7 @@ def render_map(runtime: Runtime, agents: List[Agent]) -> str:
     folder = runtime.agent_dir.relative_to(OUTPUT_ROOT).as_posix()
     if runtime.key == "claude":
         intro = f"These are the canonical subagent definitions in `{folder}/`. Edit them directly, then run `python .tools/sync/sync_agents.py` to regenerate the projections for the other runtimes."
-        rows = [f"| `{a.name}` | `{a.model}` | `{a.effort}` | {a.authority} |" for a in agents]
+        rows = [f"| `{a.name}` | `{a.model}` | `{a.effort or 'session'}` | {a.authority} |" for a in agents]
         table = "| Agent | Model | Effort | Authority |\n| --- | --- | --- | --- |"
     else:
         intro = f"Generated from the canonical Claude Code agents in `.claude/agents/`. Edit the canonical file and run `python .tools/sync/sync_agents.py`; never edit `{folder}/` by hand."
@@ -450,9 +456,9 @@ def verify(runtime_keys: List[str]) -> int:
             tier = next((tier for tier in MODEL_TIERS if agent.name in policy.get(tier, [])), policy["default"])
             if agent.model != tier:
                 failures.append(f"{agent.name}: model is {agent.model}; policy requires {tier}")
-            if agent.effort != efforts[tier]:
-                failures.append(f"{agent.name}: effort is {agent.effort}; policy requires {efforts[tier]}")
-            if profiles["codex"]["tiers"][tier]["model_reasoning_effort"] != efforts[tier]:
+            if agent.effort != (efforts[tier] or ""):
+                failures.append(f"{agent.name}: effort is {agent.effort or 'unset'}; policy requires {efforts[tier] or 'unset'}")
+            if profiles["codex"]["tiers"][tier].get("model_reasoning_effort") != efforts[tier]:
                 failures.append(f"{tier}: Codex effort does not match the canonical effort policy")
         if failures:
             raise SyncError("agent policy verification failed:\n  " + "\n  ".join(failures))

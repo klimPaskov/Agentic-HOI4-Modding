@@ -1,7 +1,6 @@
 # Generated from .claude/agents/hoi4-portrait-creator.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_portrait_creator"
 description = "Owns complete HOI4 portrait production: grounded-source research and source placeholders, fictional generated portraits, user-supplied styled-result validation, processing, DDS conversion, portrait wiring, manifests, and handoffs. Never operates RunPod."
-model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Portrait Creator"]
 

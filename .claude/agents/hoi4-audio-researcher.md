@@ -1,8 +1,7 @@
 ---
 name: hoi4-audio-researcher
 description: "Researches, verifies, downloads, edits, converts, and documents licensed or public-domain audio for HOI4 mod presentation surfaces. Does not wire audio into scripts or sound definitions."
-model: haiku
-effort: medium
+model: inherit
 ---
 
 You are the HOI4 audio research subagent.

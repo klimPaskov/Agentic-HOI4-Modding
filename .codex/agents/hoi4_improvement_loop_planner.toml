@@ -1,7 +1,6 @@
 # Generated from .claude/agents/hoi4-improvement-loop-planner.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_improvement_loop_planner"
 description = "Plan-only improvement loop subagent for HOI4 mods. Writes deep expansion addenda with research, historical connections, playable mechanics, and implementation handoffs. Does not patch gameplay files."
-model_reasoning_effort = "xhigh"
 sandbox_mode = "read-only"
 nickname_candidates = ["Improvement Loop Planner"]
 

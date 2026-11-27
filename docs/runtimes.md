@@ -86,7 +86,7 @@ Every skill, agent prompt, and instruction file must stay within the single-read
 
 ## Subagents
 
-The canonical definitions are Claude Code subagent files: `.claude/agents/<hyphen-name>.md` with `name`, `description`, `model` (`opus`, `sonnet`, or `haiku`), `effort`, and `disallowedTools: Write, Edit, NotebookEdit` for read-only roles.
+The canonical definitions are Claude Code subagent files: `.claude/agents/<hyphen-name>.md` with `name`, `description`, `model` (`inherit`, `opus`, `sonnet`, or `haiku`), `effort` (omitted for `inherit`), and `disallowedTools: Write, Edit, NotebookEdit` for read-only roles.
 Prose uses the snake_case routing name (`hoi4_repo_explorer`); the Claude, Cursor, Qoder, and OpenCode files use the hyphen form and the Codex file uses the snake form.
 
 | Runtime | Registry | Source |
@@ -117,14 +117,16 @@ Because no definition supplies the model, confirm the child route explicitly whe
 
 ## Model selection
 
-Each canonical agent declares its Claude tier in the `model` field, which keeps cost and capability fixed per role instead of following the parent session.
-The project instructions list the tier of every role.
-
-Claude definitions set `effort` per agent: Opus `xhigh`, Sonnet `high`, and Haiku `medium`. Models use the field where they support effort controls; the `CLAUDE_CODE_EFFORT_LEVEL` environment variable overrides it. See the [official Claude subagent effort reference](https://code.claude.com/docs/en/sub-agents#choose-an-effort-level).
+Each canonical agent declares its model in the `model` field.
+Every role that writes, judges or researches content uses `model: inherit` and sets no `effort`, so it runs on the model and effort the user chose for the session, and a run stays on that model.
+Only the mechanical roles (`hoi4_repo_explorer`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`) pin Haiku at `medium` effort, because their work is mapping files, reconciling documents with recorded decisions and aligning table fields.
+`tier_policy` in `.tools/sync/agent_profiles.json` holds this split, and `sync_agents.py --verify` fails when an agent's file disagrees with it.
+A task that truly needs another model names it for that one call (Claude Code's per-invocation `model`) and records why in its handoff; nothing pins a model for one prompt or one session model.
+`opus` and `sonnet` remain valid tiers, with `xhigh` and `high` effort, for a mod that wants to pin a role; the `CLAUDE_CODE_SUBAGENT_MODEL` and `CLAUDE_CODE_EFFORT_LEVEL` environment variables override the files. See the [official Claude subagent model and effort reference](https://code.claude.com/docs/en/sub-agents#choose-an-effort-level).
 
 Other runtimes translate the tier through `.tools/sync/agent_profiles.json`:
 
-- Codex: the tier sets `model_reasoning_effort` (and, when configured, `model`); the read-only or editing authority sets `sandbox_mode`. Without a `model` entry the agent uses the session's model.
+- Codex: the tier sets `model_reasoning_effort` (and, when configured, `model`); the read-only or editing authority sets `sandbox_mode`. An `inherit` agent gets neither, so it uses the session's model and effort.
 - Codex model routing: `codex.agent_models` maps an agent to a fixed Codex model and overrides the tier's model. The agents whose work is mostly spatial or visual (3D geometry, Blender scenes, rigs, UV layouts, screenshots, reference comparison and GUI layout) use GPT-6.1 Terra (`gpt-6.1-terra`): `hoi4_3d_model_pipeline`, `hoi4_event_ui_worker`, `hoi4_generated_feature_art` and `hoi4_icon_artist`. Terra needs Codex CLI 0.159.0 or later and an account with access to it. If an agent reports that Terra is unavailable, remove its entry from `codex.agent_models` and rerun `sync_agents.py`; the agent then uses the session's model. Do not substitute another model silently. For main-session spatial work, such as map and province placement, choose Terra for the session.
 - Cursor and OpenCode: `model: inherit`.
 - Gemini CLI, Antigravity, Kilo Code, Kiro, Qwen Code, Devin Desktop, and Augment: no model or tool field, so the session model and tools apply and the prompt body states a read-only role.
