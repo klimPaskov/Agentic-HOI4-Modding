@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "0ef5d95fdce86a63f71eb15f9ae248ed39b0700e",
+  "generated_for_revision": "9f54da325697e77920a94d5216f1c8f510ddcd07",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15043,8 +15043,8 @@
         },
         {
           "path": ".tools/3d_pipeline/blender/review_render.py",
-          "sha256": "062441e4db0f42dc39036180d7733b3c1e68df74d3beb0bf778b999e69a90c49",
-          "size": 40828
+          "sha256": "a39fcedf862a585db30d816061900d29a17d73e93bd9ae7d2c55f3f974fa0d0c",
+          "size": 41124
         },
         {
           "path": ".tools/3d_pipeline/blender_client.py",
@@ -15163,8 +15163,8 @@
         },
         {
           "path": ".tools/3d_pipeline/config/visual_review_prompt.md",
-          "sha256": "67b1ba2847ab43846a305471a7e8e1a1278a876086d6d1c41d70066fdef335b2",
-          "size": 4343
+          "sha256": "51db1fc5d5787beae776e0f246ba4661470fd2ca6dd2d099ea8b0c9960a0bcb2",
+          "size": 4544
         },
         {
           "path": ".tools/3d_pipeline/fit_prop.py",
@@ -15203,8 +15203,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/designer_preview.py",
-          "sha256": "42a0d93551b30237b48ac6f61a854b865ef5a13bef445182d5db8a218e1e483a",
-          "size": 3319
+          "sha256": "cc4b1f4406efa98cdf123df1300988dbbfd1db0231508fec286f7511dfd00ea7",
+          "size": 7041
         },
         {
           "path": ".tools/3d_pipeline/lib/generation.py",
@@ -16288,8 +16288,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_designer_preview.py",
-          "sha256": "f5a02d4f0e693af242a39a093cb4ac4cdbf33c0d6f7b69b6d489def61f1134b2",
-          "size": 3004
+          "sha256": "4edb7d451978ff61b0cec42e4a9fc7e62c5d00a95717080f6804bccb6352d4ac",
+          "size": 9178
         },
         {
           "path": ".tools/3d_pipeline/tests/test_explicit_batch_repair.py",
@@ -16947,6 +16947,11 @@
           "size": 15542
         },
         {
+          "path": ".tools/3d_pipeline/tripo/designer_calibrate.py",
+          "sha256": "0f8b7d251b46725e4f31c635e735cd3ecaa9b3979222ee61a3a34c1f11e66984",
+          "size": 8588
+        },
+        {
           "path": ".tools/3d_pipeline/tripo/effects_sheet.py",
           "sha256": "3a4c3866a2580fa902e4eef38d6ea8b03d75668815af102fb1df7b08e4db6716",
           "size": 4670
@@ -17083,8 +17088,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/weapon_sheets.py",
-          "sha256": "b63055ea2399526769177167a0e425724de22abf39d21ca83ea62dc09b06c19a",
-          "size": 10930
+          "sha256": "6018c4adefaa0e7d90331bc4a5456e35426e8b1605cf7bf279021a98db653e5a",
+          "size": 17253
         },
         {
           "path": ".tools/3d_pipeline/tripo_intake.py",

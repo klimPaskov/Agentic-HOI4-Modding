@@ -11,7 +11,7 @@ For each unit, one contact sheet per animation clip and one for the rest pose. E
 
 Two more sheets show the unit at the sizes a player sees it:
 
-- `preview_size.png`: every clip in six frames, in tiles the size of the game's designer preview (249 pixels), where a player watches a unit's animations. Judge each clip's motion here and on the close-up sheets.
+- `preview_size.png`: every clip in six frames, in tiles the size of the game's designer preview (249 pixels), where a player watches a unit's animations. The tiles use the game's designer camera at the unit's own size, so the unit fills as much of each tile as it does in the game. The first row is a vanilla unit of the same class under the same camera. Judge each clip's motion here and on the close-up sheets.
 - `game_size.png`: the unit about 60 pixels tall from the map camera and the front. Judge only the still model here: its size and silhouette beside a vanilla unit, and that it reads as the unit it is. Do not fail a clip because its motion is hard to read at this size.
 
 How the renders are made:
