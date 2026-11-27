@@ -39,6 +39,8 @@ The ledger is the mod's build plan in a form a program can check. `python -B .to
 }
 ```
 
+The example shows one feature of eleven surfaces. A real ledger has a feature for each buildable unit (`map-states` among them), and until it does the gate names every surface of `scope.surfaces` that has no feature.
+
 | Field | Rule |
 | --- | --- |
 | `schema` | Always `hoi4-mod-ledger/1` |
