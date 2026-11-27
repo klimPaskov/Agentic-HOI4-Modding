@@ -3,7 +3,7 @@
     py -3.13 -B .tools/3d_pipeline/tripo/effects_sheet.py <unit files folder> --out <sheet.png> [--views front left] [--size 320]
 
 The folder holds `<stem>.mesh`, its clips and `<stem>_effects.json` (tripo/effects_stage.py). For each clip that fires a particle the
-sheet has one row per view, with the frame before the first event, each event's frame and the frames 2, 6 and 15 after it. The
+sheet has one row per view, with the frame before the first event, each event's frame and the frames 2, 6, 10, 15, 25, 45 and 75 after it. The
 particles are stand-ins (lib/unit_effects.py's plan, drawn by blender/review_render.py), and every tile that shows one is stamped
 "particles: stand-in": look that each effect starts at its locator on its frame and stays on its part. Only the game shows the real
 particles (docs/3d-effects.md lists the in-game checks).
@@ -25,7 +25,7 @@ import clip_sheet
 import review_unit
 from lib import heavy_job, pdx_deform, unit_effects
 
-AFTER = (2, 6, 15)  # frames after an event that the sheet shows
+AFTER = (2, 6, 10, 15, 25, 45, 75)  # frames after an event that the sheet shows: dense enough to follow a fall, 75 well under way
 
 
 def event_frames(plan: Dict, folder: Path) -> Dict[str, List[int]]:

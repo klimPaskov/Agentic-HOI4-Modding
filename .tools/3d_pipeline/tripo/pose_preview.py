@@ -251,15 +251,28 @@ class Stage:
         last = ql.frame_count(style) - 1
         winged = bool(landmarks.get("wings"))
         thin = ("Ear_", qw.WING_PREFIX, "Tail_") if winged else ("Ear_",)
+        runner = ql.is_runner(landmarks)
+        undropped = {"leg_drop": 0.0} if (winged or runner) else {}
 
         def evaluate(roll: float, lift: float):
-            landmarks["death"] = {"roll": roll, "neck_lift": lift, **({"leg_drop": 0.0, "side_search": True} if winged else {})}
+            landmarks["death"] = {"roll": roll, "neck_lift": lift, **undropped, **({"side_search": True} if winged else {})}
             lowest = {name: z for name, z in self.lowest(style, last).items() if not name.startswith(thin)}
             torso = min(lowest.get(name, math.inf) for name in TORSO)
             return (torso - min(lowest.values())) / self.height, min(lowest, key=lowest.get)
 
         chosen = ql.choose_collapse(evaluate, ql.roll_limits(landmarks))
         landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"]}
+        if runner:
+            def legs_gap(share: float) -> float:
+                landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], "leg_drop": share}
+                lowest = self.lowest(style, last)
+                torso = min(lowest.get(name, math.inf) for name in TORSO)
+                legs = min((z for name, z in lowest.items() if name.startswith(("Front_", "Rear_"))), default=torso)
+                return (legs - torso) / self.height
+
+            share = ql.choose_leg_drop(legs_gap)
+            landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], "leg_drop": share}
+            chosen = {**chosen, "leg_drop": share}
         if winged:
             def rest(**parts: float) -> Dict[str, float]:
                 landmarks["death"] = {"roll": chosen["roll"], "neck_lift": chosen["neck_lift"], **parts}

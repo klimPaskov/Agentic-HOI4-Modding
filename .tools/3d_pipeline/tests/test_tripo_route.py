@@ -139,6 +139,15 @@ class IntakeRecords(unittest.TestCase):
         self.assertRegex(source["sha256"], "^[0-9A-F]{64}$")
         self.assertEqual(receipt["task_id"], f"tripo-{source['sha256'].lower()[:12]}")
 
+    def test_a_role_that_names_no_clip_is_refused_before_blender(self) -> None:
+        from lib import glb_root
+
+        spec = tripo_spec()
+        spec["tripo"]["roles"]["attack"] = "no such clip"
+        with mock.patch.object(glb_root, "root_travel", return_value={"idle": 0.0, "walk": 0.0}):
+            with self.assertRaisesRegex(ValueError, "role attack.*matches no clip"):
+                tripo_intake.refuse_unknown_role_clips(spec, self.inbox / "orc_test__rigged.glb")
+
     def test_a_new_export_needs_the_next_stage_and_the_error_names_it(self) -> None:
         self.intake()
         (self.inbox / "orc_test__rigged.glb").write_bytes(b"a second export with more clips")

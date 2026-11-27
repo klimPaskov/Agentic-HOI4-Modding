@@ -61,6 +61,30 @@ class Numbers(unittest.TestCase):
         self.assertFalse(armed["strikes"])
 
 
+class BodyHeight(unittest.TestCase):
+    def mesh(self, wing_top: float) -> pdx_deform.SkinnedMesh:
+        """A body from 0 to 2 on the Spine bone and, when `wing_top`, a wing from 1 up to `wing_top` on a wing chain bone."""
+
+        body = [[0.0, 0.0, 0.0], [0.2, 1.0, 0.0], [0.0, 2.0, 0.0]]
+        wing = [[0.5, 1.0, 0.0], [1.0, wing_top, 0.0], [1.5, 1.5, 0.0]] if wing_top else []
+        positions = np.array(body + wing, float)
+        joints = np.array([[0, -1, -1, -1]] * len(body) + [[1, -1, -1, -1]] * len(wing))
+        weights = np.array([[1.0, 0.0, 0.0, 0.0]] * len(positions))
+        return pdx_deform.SkinnedMesh(positions=positions, triangles=np.arange(len(positions)).reshape(-1, 3), joints=joints, weights=weights,
+                                      bones=["Spine", "WingL1"], parents=[-1, 0], inverse_bind=np.stack([np.eye(4)] * 2))
+
+    def test_the_strike_is_measured_against_the_body_under_the_wings(self) -> None:
+        self.assertAlmostEqual(S.body_height(self.mesh(0.0)), 2.0)
+        winged = self.mesh(3.0)
+        self.assertAlmostEqual(winged.height, 3.0)
+        self.assertAlmostEqual(S.body_height(winged), 2.0)
+
+    def test_the_wing_prefix_is_the_chains_own(self) -> None:
+        from lib import tripo_chains
+
+        self.assertEqual(S.WING_PREFIX, tripo_chains.REGION_PREFIX["wings"])
+
+
 class Strike(Biped):
     def test_a_blow_strikes_and_a_held_reach_does_not(self) -> None:
         blow = S.clip_strike(self.mesh, self.load(self.clip("attack", 30, swing())))

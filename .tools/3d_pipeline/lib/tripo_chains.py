@@ -1728,12 +1728,16 @@ def wing_events(role: str, track: Optional[Dict[str, np.ndarray]], stage: dict) 
 
 
 def limited_wing_pose(plan: dict, left_rest: np.ndarray, rest: np.ndarray, now: Dict[str, float], flaps: np.ndarray, carry: np.ndarray,
-                      stage: dict, mirror: np.ndarray, rise_cap: Optional[float]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
+                      stage: dict, mirror: np.ndarray, rise_cap: Optional[float],
+                      sheet_turn: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, bool]:
     """One frame of a wing chain's pose: (`turns`, `posed` directions, the `carry` to use, whether the cap acted).
 
     With a `rise_cap` (a feathered wing, see `tilt_limited_carry`) the wing follows the torso's lean only as far as the cap allows, and when
     the lean is gone and its own up-stroke still passes the cap, every bone's up-stroke shrinks by one share (`now["rise_share"]`). Without
-    one the pose is what `wing_pose_rotations` gives."""
+    one the pose is what `wing_pose_rotations` gives. A `sheet_turn` (`wing_side_quaternions`) turns the carry first, in the world."""
+
+    if sheet_turn is not None:
+        carry = np.asarray(sheet_turn, float) @ carry
 
     def turned(pose_now: Dict[str, float]) -> Tuple[np.ndarray, np.ndarray]:
         rotations = wing_pose_rotations(left_rest, plan["chain_u"], plan["wing"], stage["up"], stage["front"], pose_now, flaps)
@@ -1754,11 +1758,16 @@ def limited_wing_pose(plan: dict, left_rest: np.ndarray, rest: np.ndarray, now: 
 
 
 def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, capsule_axes: Optional[np.ndarray] = None,
-                     track: Optional[Dict[str, np.ndarray]] = None, back_share: Optional[np.ndarray] = None) -> np.ndarray:
+                     track: Optional[Dict[str, np.ndarray]] = None, back_share: Optional[np.ndarray] = None,
+                     sheet_turns: Optional[np.ndarray] = None) -> np.ndarray:
     """(frames, bones, 4) local quaternions of one wing chain for a role clip: the role's fold, face turn and flap (`WING_ROLES`, timed by
     the body clip through `wing_events` and `track`) carried by the upper spine, each bone pushed out of the body's capsules
     (`capsule_axes` (frames, capsules, 2, 3) with the plan's `radii`) along the wing's outward side, and kept above the ground. A face
-    turn is chosen per frame against the upper spine's turn (`held_face_turns`), from the side floor plus the torso's twist."""
+    turn is chosen per frame against the upper spine's turn (`held_face_turns`), from the side floor plus the torso's twist.
+
+    A membrane wing's bones are each capped at `WING_RISE_MAX` above their rest elevation (`capped_rise`). With `sheet_turns` ((frames,
+    3, 3) world turns, `wing_side_quaternions`) the per-bone cap is off and every bone of the chain takes the frame's turn instead, so the
+    whole wing is capped as one sheet."""
 
     frames, bones = parents.shape[0], len(plan["lengths"])
     pose = wing_role_pose(role, frames, wing_events(role, track, stage), back_share)
@@ -1794,7 +1803,8 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             if guard > 0:
                 root = (parents[f] @ np.linalg.inv(parent_rest) @ np.r_[np.asarray(wing["root"], float), 1.0])[:3]
                 now["raise"] = guard * knee_raise(wing, now, flaps[f], carry, root, plan["side"], stage, float(np.max(np.asarray(track["knees"])[f] @ unit(stage["up"]))))
-        turns, posed, carry, lowered = limited_wing_pose(plan, left_rest, rest, now, flaps[f], carry, stage, mirror, rise_cap if slab else None)
+        turns, posed, carry, lowered = limited_wing_pose(plan, left_rest, rest, now, flaps[f], carry, stage, mirror, rise_cap if slab else None,
+                                                         None if slab or sheet_turns is None else sheet_turns[f])
         whole = float(now.get("face", 0.0)) > 0
         outward = unit(carries[f] @ (lateral if plan["side"] == "L" else -lateral))
         current = parents[f]
@@ -1804,7 +1814,7 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             capsules = [] if capsule_axes is None else [(axis[0], axis[1], float(plan["radii"][k, c])) for c, axis in enumerate(capsule_axes[f])]
             wanted = unit(carry @ posed[k])
             direction = collide_direction(head, wanted, float(plan["lengths"][k]), capsules, ground, stage["up"], outward, along=True)
-            if rise_cap is not None and not slab:
+            if rise_cap is not None and not slab and sheet_turns is None:
                 direction = capped_rise(direction, rest[k], stage["up"], rise_cap)
             if (whole and k > 0) or lowered:
                 # a bone past the root of a face-turned wing takes the pose's whole turn, roll included: turned by the shortest arc onto
@@ -1818,6 +1828,69 @@ def wing_quaternions(plan: dict, parents: np.ndarray, role: str, stage: dict, ca
             current = unposed.copy()
             current[:3, :3] = turn @ unposed[:3, :3]
     return continuous_quaternions(out)
+
+
+def chain_mean_points(plans: Sequence[dict], parents: np.ndarray, quaternions: Sequence[np.ndarray]) -> Tuple[np.ndarray, np.ndarray]:
+    """((frames, 3) the mean of every chain joint of a wing side, (frames, 3) its root) from the chains' local quaternions."""
+
+    frames = len(parents)
+    total, count = np.zeros((frames, 3)), 0
+    root = np.zeros((frames, 3))
+    for plan, quats in zip(plans, quaternions):
+        current = np.asarray(parents, float).copy()
+        for k in range(len(plan["bones"])):
+            local = np.tile(np.eye(4), (frames, 1, 1))
+            for f in range(frames):
+                local[f, :3, :3] = matrix_from_quaternion(quats[f, k])
+            current = current @ plan["rest_relative"][k] @ local
+            head = current[:, :3, 3]
+            if k == 0:
+                root += (np.asarray(parents, float) @ plan["rest_relative"][0])[:, :3, 3]
+            tip = (current @ np.r_[np.c_[np.eye(3), [0.0, plan["lengths"][k], 0.0]], [[0.0, 0.0, 0.0, 1.0]]])[:, :3, 3]
+            total += head + tip
+            count += 2
+    return total / max(count, 1), root / max(len(plans), 1)
+
+
+def sheet_rise_turns(directions: np.ndarray, rest_direction: np.ndarray, up: np.ndarray, degrees: float = WING_RISE_MAX) -> np.ndarray:
+    """(frames, 3, 3) per frame the world turn that brings a wing's mean direction from its root (`directions`, (frames, 3)) down in its
+    own vertical plane to at most `degrees` above `rest_direction`'s elevation (`capped_rise` for the whole wing). Identity where the
+    wing is under the cap."""
+
+    up = unit(up)
+    limit = min(math.radians(89.0), math.asin(float(np.clip(unit(rest_direction) @ up, -1.0, 1.0))) + math.radians(degrees))
+    out = np.tile(np.eye(3), (len(directions), 1, 1))
+    for f, direction in enumerate(np.asarray(directions, float)):
+        direction = unit(direction)
+        excess = math.asin(float(np.clip(direction @ up, -1.0, 1.0))) - limit
+        level = direction - (direction @ up) * up
+        if excess > 0.0 and np.linalg.norm(level) > 1e-9:
+            out[f] = axis_angle_matrix(unit(np.cross(unit(level), up)), -excess)
+    return out
+
+
+# Round devil (2026-11-24): a membrane wing is capped as one sheet. `capped_rise` turned each bone down on its own against its own rest
+# elevation. On the ZIN devil, whose wings span 1.45 times his body's height, the chains of one wing stand from 30 degrees above level
+# to hanging down, so a torso turn took some bones past their cap and left their neighbours: the membrane between them tore. Replayed on
+# run devil_f (tripo/chain_replay.py), the attack's wing stretch fell from 11.9% to 0.4% without the per-bone cap. The review that set the
+# cap judged the wing's mean direction (`WING_RISE_MAX`), so the cap now reads that and turns the whole wing down by the excess.
+def wing_side_quaternions(plans: Sequence[dict], parents: np.ndarray, role: str, stage: dict, capsule_axes: Optional[np.ndarray] = None,
+                          track: Optional[Dict[str, np.ndarray]] = None, back_share: Optional[np.ndarray] = None) -> List[np.ndarray]:
+    """`wing_quaternions` for every chain of one wing side, with the rise of a membrane wing capped for the whole side at once
+    (`sheet_rise_turns` on `chain_mean_points`). A dying wing (no cap) and a feathered slab (`tilt_limited_carry`) keep their own rules."""
+
+    plans = list(plans)
+    if not plans or "fold_end" in WING_ROLES.get(role, {}) or any(plan.get("thick") for plan in plans):
+        return [wing_quaternions(plan, parents, role, stage, capsule_axes, track, back_share) for plan in plans]
+    frames = len(parents)
+    free = [wing_quaternions(plan, parents, role, stage, capsule_axes, track, back_share, np.tile(np.eye(3), (frames, 1, 1))) for plan in plans]
+    mean, root = chain_mean_points(plans, parents, free)
+    rest_parent = np.asarray(plans[0]["parent_rest"], float)[None]
+    rest_mean, rest_root = chain_mean_points(plans, rest_parent, [np.tile([1.0, 0.0, 0.0, 0.0], (1, len(plan["bones"]), 1)) for plan in plans])
+    turns = sheet_rise_turns(mean - root, rest_mean[0] - rest_root[0], stage["up"])
+    if np.allclose(turns, np.eye(3)):
+        return free
+    return [wing_quaternions(plan, parents, role, stage, capsule_axes, track, back_share, turns) for plan in plans]
 
 
 def chain_skinning(parent: np.ndarray, rest: Sequence[np.ndarray], directions: np.ndarray) -> List[np.ndarray]:

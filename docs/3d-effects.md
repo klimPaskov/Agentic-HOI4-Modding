@@ -37,6 +37,7 @@ One scheme for every type: `<effect>_<part>`, with `_l` or `_r` by the rig's sid
 | `glow_eye_l`, `glow_eye_r` | Head | the upper front of the head on that side, pushed back a quarter of the head's depth (inside a hood) |
 | `cast_hand_r` | RightHand | the casting hand's tip |
 | `gust_wing_l`, `gust_wing_r` | the wing bone at the tip | the wing's tip on that side |
+| `feather_wing_l`, `feather_wing_r` | the wing bone at the tip | the wing's tip on that side |
 | `dust_hand_l`, `dust_hand_r` | LeftHand, RightHand | the fist's tip |
 | `ember_body`, `smoke_body` | Spine02 | the centre of the upper spine's own part |
 | `burn` | Spine02 | the burn death (`lib/tripo_burn.py`) |
@@ -61,6 +62,7 @@ A profile is one effect of a unit, in `.tools/3d_pipeline/config/effects.json`. 
 | `heavy_fire` | fire_creature | `fire_mouth`, `fire_hand_l`, `fire_hand_r` | attack | strike | a heavier lava-orange flame with near-black smoke |
 | `ember_idle` | fire_creature | `ember_body` | idle | start, looping | slow embers, copied from vanilla's sparks |
 | `wing_gust` | none | `gust_wing_l`, `gust_wing_r` | attack | strike | vanilla's dust cloud thrown from the wing tips |
+| `feather_shed` | none | `feather_wing_l`, `feather_wing_r` | attack, death | strike, start | loose feathers falling from the wing tips, on vanilla's leaflet fall with a new feather sprite (a feathered wing) |
 | `strike_dust` | none | `dust_hand_l`, `dust_hand_r` | attack | strike | vanilla's dust and debris of a damaged building (a stone or earth creature's blow) |
 | `eye_glow` | magic | `glow_eye_l`, `glow_eye_r` | every state but death | start, looping | a faint glow, purple by default, copied from vanilla's map lamp |
 | `spell_cast` | magic | `cast_hand_r` | attack, support_attack | peak | a swirl with dark wisps, purple by default |
@@ -69,7 +71,18 @@ A profile is one effect of a unit, in `.tools/3d_pipeline/config/effects.json`. 
 
 Vanilla has no spells and no creature that shoots fire. Those effects copy the nearest vanilla particle and change only its colour and its size: the flame tank's `flamethrower_particle` for fire and spells, its smoke for wisps, the map lamp `lamp_red_particle` for the eyes, the power line `sparks_effect` for embers, `city_smoke_particle` for a death in smoke. Each coloured subsystem takes the new hue at its own brightness. Grey ones (smoke) keep their colour, unless the particle is marked `tint_grey` (dark or coloured smoke). The size is the `scale` of the registration. Nothing else of the particle changes.
 
-Not covered: loose feathers in a wing beat or a death. Vanilla has no feather particle, and a copy may change only colour and scale, so feathers need a new particle with its own texture. That is a decision for the maintainer, not a route step. A teleport flash waits for a teleport-like clip.
+### A new sprite on a vanilla system: feathers
+
+Vanilla has no feather particle. A feathered wing still sheds feathers (D-88: no detail is dropped), so `feather_shed` keeps a vanilla system and gives it a new texture:
+
+1. The system is the nearest vanilla fall: the raid leaflet drop (`raid_air_leaflet_success_effect`), whose sheets tumble down under gravity and wind. Of its subsystems only falling ones are kept (`keep_subsystems`), never the raid's target marker: one in the wing beat, a few feathers at 2 a second, and all three in the death.
+2. Their placement is reset to the locator (`reset_placement`): no delay, no offset and particles released into the world. The leaflets fall from 8 units above a target 1.6 s after a raid, in the target's own space, which means nothing at a beating wing's tip. Their fall, spin, life, emission and fade stay vanilla's.
+3. Their texture is a feather sprite made by the kit's image route: hoi4-imagegen, family `gui_texture`, from real feather photographs (D-110), a single loose feather on a clear background in a neutral pale colour, a 128 by 128 DXT5 with alpha like vanilla's `leaflet_1.dds`. The kit ships one, `.tools/3d_pipeline/assets/particles/feather_1.dds`, with its record `feather_1.ledger.json` and its credits in `CREDITS.md` beside it. It is CC BY-SA 4.0, because one of its three Wikimedia Commons references is. A job may name another sprite: `"sprites": {"feather": "<path>/<name>.dds"}`, made the same way, with hoi4-imagegen's record `<name>.ledger.json` beside it. Never draw a sprite with another tool.
+4. Colour and size are per job, as for every copy (`colour`, and the registration's `scale`). The sprite is copied to `gfx/particles/<stem>_feather.dds`, and its credits, written from its record's references, to `gfx/particles/<stem>_feather_CREDITS.txt`. Keep them in the mod and name them in its credits, as the CC licences require.
+
+The review renders draw the falling feathers with the sprite itself, tinted by the particle's colour.
+
+EFFECT-SPRITE checks every sprite and its record. A teleport flash waits for a teleport-like clip.
 
 ### Where a new locator goes
 
@@ -79,7 +92,7 @@ Not covered: loose feathers in a wing beat or a death. Vanilla has no feather pa
 | `hand_tip` | the mean of the farthest 5% of the hand's vertices (the hand bone and its children) along the forearm to hand direction |
 | `head_front` | the mean of the farthest 5% of the head's lower vertices toward the unit's front (the mouth). The front runs from the heels to the toes, or -z on a model without feet |
 | `eye` | on one side of the head (the side runs from the right hand to the left), the farthest 5% of the head's upper vertices toward the front, pushed back by `inset` of the head's depth (0.25 by default) |
-| `wing_tip` | of the vertices whose strongest bone is a wing bone, the farthest from the mid-plane on that side, parented to the wing bone carrying most of them |
+| `wing_tip` | of that side's wing vertices, the farthest 2.5% outward and upward together: a spread wing's apex, a folded wing's wrist. It is found on the skin, since a rig's wing bones need not reach the apex |
 | `bone_top`, `bone_bottom`, `bone_centre` | the top centre, the bottom centre or the centre of the bone's own part, without the parts mounted on it (the hull's deck, not the turret's roof) |
 | `box_share` | a point of the model's box, as shares of its size per axis |
 
@@ -107,7 +120,7 @@ Run it after the unit's files pass their checks and before the review sheets. No
    "effects": {"profiles": ["hand_mouth_fire"], "setting": ["fire_creature"]}
    ```
 
-   A tank: `{"profiles": ["tank_cannon", "tank_wreck"], "setting": ["gunpowder"]}`. A hooded caster: `{"profiles": ["eye_glow", "spell_cast", "smoke_death"], "setting": ["magic"]}`. Another colour: `"colour": {"spell_swirl": [90, 200, 255]}`. A fixed frame: `"frames": {"cast_hand_r": 31}`.
+   A tank: `{"profiles": ["tank_cannon", "tank_wreck"], "setting": ["gunpowder"]}`. A hooded caster: `{"profiles": ["eye_glow", "spell_cast", "smoke_death"], "setting": ["magic"]}`. Another colour: `"colour": {"spell_swirl": [90, 200, 255]}`. A fixed frame: `"frames": {"cast_hand_r": 31}`. A particle with a new sprite: `"sprites": {"feather": "<path>/feather.dds"}`.
 
 2. Run the step on the unit's files. A Tripo unit:
 
@@ -129,7 +142,7 @@ Run it after the unit's files pass their checks and before the review sheets. No
    py -3.13 -B .tools/3d_pipeline/tripo/effects_sheet.py <unit files folder> --out <job folder>/review/effects.png
    ```
 
-   Each clip that fires gets a row per view, at the frame before its first event, the event's frame and 2, 6 and 15 frames after. The particles are stand-ins, stamped "particles: stand-in": a short orange flash, a small grey gun-smoke puff, fire that rises, grey smoke that rises slowly and grows, a spell's or eye's glow in its colour, a blast that swells. Look that each one starts on its frame, at its locator, on the right part, and stays with the part. The game-size and close-up sheets (`review_unit.py`, `tripo/weapon_sheets.py`, `tripo/clip_sheet.py`, `tripo/static_sheets.py`) draw the same stand-ins. Give the sheet to a fresh reviewer with this question: does each effect start at its place on its frame and stay on its part? A finding on a creature's effect can come from its clip: a creature's right-hand fire sat by its face because its attack clip, a boxing guard, held that fist there.
+   Each clip that fires gets a row per view, at the frame before its first event, the event's frame and 2, 6, 10, 15, 25, 45 and 75 frames after. The particles are stand-ins, stamped "particles: stand-in" with the frame: a short orange flash, a small grey gun-smoke puff, fire that rises, grey smoke that rises slowly and grows, a spell's or eye's glow in its colour, a blast that swells. Look that each one starts on its frame, at its locator, on the right part, and stays with the part. The game-size and close-up sheets (`review_unit.py`, `tripo/weapon_sheets.py`, `tripo/clip_sheet.py`, `tripo/static_sheets.py`) draw the same stand-ins. Give the sheet to a fresh reviewer with this question: does each effect start at its place on its frame and stay on its part? A finding on a creature's effect can come from its clip: a creature's right-hand fire sat by its face because its attack clip, a boxing guard, held that fist there.
 
 4. Wire the unit (`wire_unit.py`, step 12 of the route). It writes the plan's events into the entity's states, the copied particle files to `gfx/particles/<stem>_<particle>.asset` and their registration to `gfx/entities/<stem>_effects_particles.gfx`. The plan's sounds join the job's `sound_plan` at the same frames. A frame the job's own `sound_plan` already gives the role keeps the job's sound.
 
@@ -152,6 +165,7 @@ Sounds stay with the `sound_plan`. A profile's slot may name a vanilla soundeffe
 | EFFECT-FRAME | An event's frame is outside its clip, or its rule now measures another frame (a clip was changed after the step: run it again) |
 | EFFECT-ON-PART | In a clip that fires it, a locator's distance to the nearest vertices of its part changes by more than 3% of the model's height. The part bends away from the locator, so the effect would hang in the air. Deaths are left out, since parts fly off there |
 | EFFECT-PARTICLE | A vanilla particle is not a registered one, or a copied particle's vanilla file is not in the game folder |
+| EFFECT-SPRITE | A particle's new sprite is not a square DDS with alpha of a vanilla sprite size (32 to 512 px), or its hoi4-imagegen record (`<name>.ledger.json`) is missing, names another tool, has no intact ledger chain, lists no output with the file's SHA-256, lists no real reference with a licence (game art alone does not count) or has no approved review |
 
 ## In-game checks
 
@@ -167,6 +181,7 @@ Only the game draws the real particles. These are checked later by the night run
 | `ember_idle`, `eye_glow` | The glow stays at its place through every state that plays it, faint, and does not grow brighter each time the unit changes state (an endless particle fired again on each state change) |
 | `spell_cast`, `smoke_death` | The swirl is at the raised hand on the cast, the death's smoke covers the body as it unravels, in its colour and not fire |
 | `wing_gust`, `strike_dust` | The dust comes from the wing tips or the fists on the strike, and nothing glows |
+| `feather_shed` | A few feathers come off each wing tip in the beat and more in the death, fall and drift free of the wing, read as feathers (not paper or snow) at map zoom, in the wing's colour |
 | sounds | Each sound lands on its particle's frame (the seconds rule), not 30 times later |
 
 ## What vanilla does
