@@ -2,7 +2,7 @@
 
 You need no 3D knowledge. You choose what kind of model you want, give your agent a picture of it, click through Tripo with a card the kit writes for you, and the agent does the rest. The full guide is [3D units](3d-units.md).
 
-**Before the first unit.** In HOI4 Mod Setup, tick **3D models workflow**. It installs the kit's 3D pipeline, Blender and the HOI4 mesh add-on. Make a [Tripo](https://studio.tripo3d.ai) account and sign in to it in your browser. A free account can try the route. A paid plan gives private models, commercial use and enough credits for a roster. Your agent never types your password.
+**Before the first unit.** In HOI4 Mod Setup, tick **3D models workflow**. It installs the kit's 3D pipeline, Blender and the HOI4 mesh add-on. Leave the optional Meshy key empty: Tripo needs no key. Make a [Tripo](https://studio.tripo3d.ai) account and sign in to it in your browser. A free account can try the route. A paid plan gives private models, commercial use and enough credits for a roster. Your agent never types your password.
 
 ## 1. Choose the type
 
@@ -19,7 +19,7 @@ Say "make a 3D unit from this picture" and give your agent the picture and a few
 | A four-legged body without wings or a rider | `quadruped` | 30 |
 | A tank, plane, ship, building or landmark | `tank`, `plane`, `ship`, `building`, `landmark` | 20 to 120 |
 
-Each preset holds every Tripo setting, the clips to try, the checks and a credit cap, so you never set a value by hand. Every unit type of your mod gets its own animations: a free clip another unit of the mod already uses is out, and the card plans the unit's own made clip for that state (20 credits each). That is the top of each range. Your agent tells you the cap and asks you to approve it once. Some types are not proven yet (winged four-legged bodies, tanks, buildings): the agent says so before you spend.
+Each preset holds every Tripo setting, the clips to try, the checks and a credit cap, so you never set a value by hand. Every unit type of your mod gets its own animations: a free clip another unit of the mod already uses is out, and the card plans the unit's own made clip for that state (20 credits each). That is the top of each range. Your agent tells you the cap and asks you to approve it once. Some types are not proven yet: the agent says so before you spend. The one list of what is proven is the table at the top of [3D units](3d-units.md).
 
 ## 2. Make the picture from references
 

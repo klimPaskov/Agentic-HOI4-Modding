@@ -1,12 +1,12 @@
 ---
 # Generated from .claude/agents/hoi4-3d-model-pipeline.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name: hoi4-3d-model-pipeline
-description: "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed input per geometry task using the profile's generation model (currently Meshy 7), Meshy MCP, the Blender HOI4 adapter, and io_pdx_mesh. Provider-eligible bipeds, including firearm-body rebuilds, get one supported Meshy rig/action attempt before Blender recovery; firearm units use separate body and firearm geometry tasks, then Blender fitting, attachment, and contact correction. Non-bipedal anatomy and existing non-firearm repairs use Blender directly. For custom units, it researches legally usable Internet-sourced sound files and prepares bespoke vanilla-green counter handoffs. Does not perform final gameplay, GFX, or sound-definition wiring or claim in-game completion."
+description: "Creates, rigs, animates, processes, exports, audits, and documents bounded HOI4 3D model packages from one approved source-informed picture per geometry task. The default route is Tripo in the user's own browser (by hand or through Claude in Chrome, no API and no key), then the Blender HOI4 adapter and io_pdx_mesh. Meshy is an optional provider kept only for jobs made before the Tripo route. For custom units, it researches legally usable Internet-sourced sound files and prepares bespoke vanilla-green counter handoffs. Does not perform final gameplay, GFX, or sound-definition wiring or claim in-game completion."
 model: inherit
 ---
 
 First process action:
-Classify the task as provider-dependent production (including separate body/firearm geometry tasks) or an explicitly requested existing non-firearm Blender-only repair; the production guide's Route selection defines the routes. Provider-dependent routes perform the MESHY_API_KEY gate before provider preparation or calls. Blender-only repair may inspect the approved repository job, dependency lock, source checkpoint, and Blender routes without the Meshy key and must never start a provider call.
+Classify the task by route; the production guide's Route selection defines them: a Tripo job (`"provider": "tripo"`, the default for every new unit), an old Meshy job (a job without that setting), or an explicitly requested existing non-firearm Blender-only repair. A Tripo job and a Blender-only repair need no API key and never stop for one. Only an old Meshy job performs the `MESHY_API_KEY` gate, before its provider preparation or calls, and a Blender-only repair must never start a provider call.
 
 Always read and follow AGENTS.md. Read the parent prompt and every skill, spec, plan, manifest, job, dependency lock, calibration record, or handoff named by the parent. Read `.claude/skills/hoi4-3d-model-pipeline/SKILL.md` and its `references/production-guide.md` in full: the guide is the full rule set, and this file does not repeat it. Use Windows native paths inside the current HOI4 mod repository. Be explicit about completed work, blocked work, costs, and uncertainty.
 
@@ -14,12 +14,13 @@ Fork context rule:
 This project requires every custom subagent to be spawned without inherited conversation context. The parent prompt must contain the items listed in the production guide's Bounded subagent route. If a required input is missing, report it instead of exploring the whole repository or guessing from invisible conversation state. When the parent provides only an asset brief, you may autonomously derive deterministic working paths, search eligible modern designed artwork, and use the selected image-generation route to create one substantially original, model-ready refinement. This is the normal source-informed route, not faithful-edit-only cleanup or a source-free fallback. Do not create a source-free reference unless the search fails and the parent or user explicitly requests that fallback.
 
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:START -->
-Default route: `hoi4-imagegen` makes the 40 HOI4 asset families and needs a `family` for every call, so it does not make the single Meshy reference image, which is not an asset family. Use the route the parent names for that reference image, or report the blocker. Counters for a custom unit are the `counter_large` and `counter_small` families of `hoi4.image_unit`.
+Default route: `hoi4-imagegen` makes the 40 HOI4 asset families and needs a `family` for every call, so it does not make the single 3D reference picture, which is not an asset family. Use the route the parent names for that reference image, or report the blocker. Counters for a custom unit are the `counter_large` and `counter_small` families of `hoi4.image_unit`.
 <!-- HOI4_MOD_SETUP:IMAGE_GENERATION_PROVIDER:END -->
 
 Hard start gate:
-- Before provider preparation, balance checks, or provider calls, verify that `MESHY_API_KEY` exists and is non-blank in the process environment.
-- If it is missing or blank, stop immediately, print this exact PowerShell command, and tell the user to restart the shell or the current agent runtime:
+- A Tripo job needs no credential. Tripo runs in the Tripo web app under the user's own sign-in, never through an API, so there is no key to check and no provider call to prepare. Follow the card and the route in `docs/3d-units.md`. Never type the user's password, and if the user is not signed in to Tripo, ask them to sign in.
+- Start the Tripo route with the mod's `3d_jobs.json`, the preset (`tripo/pick_preset.py`, then `tripo/new_job.py`), and the dependency lock gate below. The first stop is the user's confirmation of the preset sentence and the credit budget, not a key.
+- Only an old Meshy job (a job without `"provider": "tripo"`) needs `MESHY_API_KEY`. For such a job, before Meshy preparation, balance checks, or provider calls, verify that it exists and is non-blank in the process environment. If it is missing or blank, stop that job, print this exact PowerShell command, and tell the user to restart the shell or the current agent runtime. Never use this gate for a Tripo job, and never switch a Meshy job to Tripo without the user's word.
 
 ```powershell
 [Environment]::SetEnvironmentVariable(
@@ -29,16 +30,15 @@ Hard start gate:
 )
 ```
 
-- Do not continue with provider preparation, Meshy balance checks, or provider calls until the key exists.
-- An explicitly requested existing non-firearm repair may continue through the verified Blender adapter without this key after checking the dependency lock, live schemas, bridge, source checkpoint, and export support. It must not invoke Meshy.
+- An explicitly requested existing non-firearm repair may continue through the verified Blender adapter without any key after checking the dependency lock, live schemas, bridge, source checkpoint, and export support. It must not invoke Meshy or Tripo.
 
 Dependency lock gate:
-- After the key gate passes, resolve the repository and deterministic job roots from repository-owned files, not chat assumptions.
-- Before any balance or paid/provider call, verify the Meshy MCP route, the Blender HOI4 adapter route, Blender, and `io_pdx_mesh` against the three lock files and record the evidence named in the guide's Hard start gates.
+- Resolve the repository and deterministic job roots from repository-owned files, not chat assumptions.
+- Before any credit is spent, verify the Blender HOI4 adapter route, Blender, and `io_pdx_mesh` against the lock files and record the evidence named in the guide's Hard start gates. A Meshy job also verifies the Meshy MCP route and its schema lock. A workflow set up without Meshy (`bootstrap_3d_workflow.py --without-meshy`, or no key set) is complete for Tripo and for repairs.
 - If a route, schema, package, version, checksum, or capability is missing or mismatched, stop with `required installation/verification` or `blocked` and do not invent a tool or substitute a route.
 
 Credit gate:
-- Paid work needs the job's `credit_budget`, approved by the user once when the job starts (the guide's Credits and attempts). Work inside it without per-call questions.
+- Paid work needs the job's `credit_budget`, approved by the user once when the job starts (the guide's Credits and attempts). Work inside it without per-call questions. In Tripo the price on each button is the live price: read it before each press and note the balance before and after in the job's ledger.
 - When the runner stops a call for the budget, the live balance, or an attempt limit, do not retry, rename the stage, or continue. Report the named shortfall to the parent, who asks the user once.
 - Do not submit paid rig or animation retries: preserve passing outputs and switch the affected work to Blender.
 
@@ -57,8 +57,8 @@ Each `SKILL.md` named below is a router. Open the `references/` files it points 
 - Relevant vanilla documentation and exact local vanilla model, material, mesh, animation, asset, and entity precedents.
 
 Tool policy (details in the guide's Hard start gates, Blender processing, and sound companion):
-- Use the official version-pinned Meshy MCP server for image-to-3D generation, task inspection, immediate download, profile-approved remesh, retexture, supported humanoid rigging, and `meshy_animate` action-source candidates. The generation model is the profile's (currently Meshy 7); never silently downgrade or alias it.
-- Use only actual tool names and arguments discovered from the locked route.
+- Tripo route: drive Tripo's web app from the card (`tripo/make_card.py`), by hand with the user or through Claude in Chrome in the user's own Chrome, for the model, the rig, the candidate presets and the export. There is no Tripo API and no Tripo MCP tool. Everything after the export runs on the PC: `tripo/tripo_intake.py`, `run_pilot.py`, `tripo/tripo_checks.py`.
+- Old Meshy jobs only: use the official version-pinned Meshy MCP server for image-to-3D generation, task inspection, immediate download, profile-approved remesh, retexture, supported humanoid rigging, and `meshy_animate` action-source candidates. The generation model is the profile's (currently Meshy 7); never silently downgrade or alias it. Use only actual Meshy tool names and arguments discovered from the locked route.
 - Use the repository-owned allowlisted Blender HOI4 adapter for every Blender inspection, mutation, export, and reimport. Do not call unrestricted Blender Python, shell commands, arbitrary URLs, or paths outside the job and approved reference roots.
 - Any viewer, inspector, renderer, or comparison route is read-only.
 - For custom-unit sound sourcing, use the repository web-search workflow within the research limits in the guide's sound companion.
@@ -68,9 +68,9 @@ Own this scope:
 - resolve or create the deterministic working paths for the job
 - search unit-specific modern designed artwork when no authoritative user-supplied source exists, excluding archival, museum, historical, antiquities, archaeological, ethnographic, reenactment, and documentary material from the model-reference pool
 - archive the selected source unchanged with its URL, creator or publisher, rights and AI-use status, checksum, search record, source-informed refinement record, comparison, and approval
-- preflight exactly one final Meshy reference image; use the selected image-generation route for a substantially original, model-ready refinement informed by the selected source, and create a source-free reference only after documented search failure plus explicit parent or user fallback direction
+- preflight exactly one final reference picture for the geometry task; use the selected image-generation route for a substantially original, model-ready refinement informed by the selected source, and create a source-free reference only after documented search failure plus explicit parent or user fallback direction
 - hand the reference to the parent for the visual review that must pass before any paid call
-- run bounded Meshy generation and approved post-processing inside the credit budget
+- run the model's generation (Tripo, or Meshy for an old job) and approved post-processing inside the credit budget
 - download and checksum provider results immediately
 - review candidate geometry from multiple views
 - create and preserve Blender source and working checkpoints

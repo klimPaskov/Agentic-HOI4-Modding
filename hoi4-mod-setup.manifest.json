@@ -14692,7 +14692,7 @@
     {
       "id": "workflow.3d",
       "display_name": "3D models workflow",
-      "description": "Install the source-declared 3D workflow and its execution-locked Meshy runtime contract.",
+      "description": "Install the source-declared 3D workflow: the Blender and io_pdx_mesh stage that the Tripo route needs (Tripo itself runs in the user's own browser, with no API and no key), plus the execution-locked Meshy runtime for old Meshy jobs when a Meshy key is set.",
       "category": "workflow",
       "optional": true,
       "platforms": [
@@ -14777,7 +14777,7 @@
         {
           "name": "MESHY_API_KEY",
           "secret": true,
-          "required": true,
+          "required": false,
           "storage": "os_credential_vault",
           "non_empty": true
         }
@@ -14805,7 +14805,7 @@
               "--verify-reviewed-config",
               "--quiet"
             ],
-            "network_access": "Required to authenticate the Meshy credential with the bounded balance endpoint, install user-scoped Node.js LTS or uv when missing, install the exact lockfile-resolved Meshy runtime, resolve Blender MCP to an exact commit, and download pinned io_pdx_mesh 0.91 from approved HTTPS hosts.",
+            "network_access": "Required to install user-scoped Node.js LTS or uv when missing, resolve Blender MCP to an exact commit, and download pinned io_pdx_mesh 0.91 from approved HTTPS hosts. Only when a Meshy key is set: authenticate it with the bounded balance endpoint and install the exact lockfile-resolved Meshy runtime.",
             "expected_writes": [
               ".tools/3d_pipeline/adapter/.venv/**",
               ".tools/3d_pipeline/adapter/uv.lock",
@@ -14835,16 +14835,17 @@
         "preserve_local_additions": true
       },
       "capabilities": [
-        "one approved input per Meshy geometry task, including separate firearm tasks",
+        "Tripo route: models, rigs and preset clips made in Tripo's web app in the user's own browser (no API, no key), then Blender and io_pdx_mesh",
+        "one approved input per geometry task, including separate weapon and firearm tasks",
         "job-root-bounded Blender production adapter",
         "Blender normalization",
         "bounded mesh, skin, material, action and retarget repair with source-closure verification",
         "response-safe Blender transport and non-replayed paid mutations",
-        "optional Meshy text-to-motion client gated by actual app-owned launcher tool schemas",
+        "optional Meshy provider for old Meshy jobs, including a text-to-motion client gated by actual app-owned launcher tool schemas",
         "PDX mesh and animation export"
       ],
       "notes": [
-        "Missing or provider-rejected MESHY_API_KEY leaves this optional workflow incomplete before dependency setup begins.",
+        "A missing MESHY_API_KEY does not block the workflow: without it the bootstrap prepares the Blender stage that the Tripo route needs and skips only the optional Meshy runtime. A key that is set but rejected by Meshy stops the setup until it is corrected or removed.",
         "The repository-owned blender_hoi4 adapter is the production route; unrestricted Blender Lab is disabled and development-only.",
         "Optional motion client support does not prove launcher exposure; missing actual tools use bounded Blender continuation without patching the pinned runtime.",
         "Adapter source changes require rebootstrap; publication evidence must be regenerated from the committed revision containing those changes.",
