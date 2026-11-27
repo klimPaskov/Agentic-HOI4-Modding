@@ -28,6 +28,7 @@ Loading a save costs one to three minutes, saving about one, and starting the ga
 - **Script what is repeatable.** `hoi4_scenario` runs a list of tool calls in one request and writes a Markdown and JSON report; keep its report path in the handoff.
 - **Text before pictures.** Use screenshots only when the result is visual (a GUI state, a map mode, layout); read values through the text tools.
 - **Delete your own saves at the end.** Test saves are named `hoi4live_<name>`; with a large mod each is about 100 MB and every save pushes older ones further down the load list.
+- **A test mod that replaces a start OOB replaces its DLC files too.** The country history picks the OOB by DLC: vanilla `history/countries/GER - Germany.txt` sets `GER_1936`, then `GER_1936_nsb` when No Step Back is active. A scenario mod that writes only `history/units/GER_1936.txt` has no divisions on a game with that DLC. Replace every file the history can pick (`GER_1936` and `GER_1936_nsb`, and each `set_naval_oob` and `set_air_oob` choice in the same history file when the test needs ships or planes), or set the OOB yourself in the mod's own history file.
 - **A slow call is not a failed call.** On a busy machine the tools wait and re-read. Repeat a failed call once before changing the plan.
 
 ## Feature test recipe (test mode)

@@ -481,7 +481,10 @@ class DeformationReport:
     highest_frame: int = 0
 
 
-def deformation_report(mesh: SkinnedMesh, anim: Animation) -> DeformationReport:
+def deformation_report(mesh: SkinnedMesh, anim: Animation, ground_exclude=()) -> DeformationReport:
+    """`ground_exclude`: bones whose strongest-weighted vertices never decide the lowest point (a weapon the unit has let go of in a death:
+    run_pilot's grounding leaves it out too, and TRIPO-WEAPON-BELOW-GROUND judges it)."""
+
     height = max(mesh.height, 1e-6)
     ground = float(mesh.positions[:, 1].min())
     edges = mesh_edges(mesh)
@@ -491,6 +494,11 @@ def deformation_report(mesh: SkinnedMesh, anim: Animation) -> DeformationReport:
     report = DeformationReport(anim.frames, 0, 0, 0, 0.0, 9.0, -9.0)
     if not mesh.skinned:
         return report
+    contact = np.ones(len(mesh.positions), bool)
+    if ground_exclude:
+        contact = np.array([index < 0 or mesh.bones[index] not in ground_exclude for index in dominant], bool)
+        if not contact.any():
+            contact[:] = True
     matrices = skinning_matrices(mesh, anim)
     worst_mask = None
     for frame in range(matrices.shape[0]):
@@ -506,7 +514,7 @@ def deformation_report(mesh: SkinnedMesh, anim: Animation) -> DeformationReport:
             worst_mask = stretched
         report.squashed_edges = max(report.squashed_edges, int(squashed.sum()))
         report.worst_stretch_share = max(report.worst_stretch_share, float(growth.max()))
-        lowest = (float(moved[:, 1].min()) - ground) / height
+        lowest = (float(moved[contact, 1].min()) - ground) / height
         if lowest < report.lowest:
             report.lowest, report.lowest_frame = lowest, frame
         if lowest > report.highest_lowest:

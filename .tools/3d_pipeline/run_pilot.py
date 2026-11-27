@@ -3992,6 +3992,12 @@ def job_has_plates(spec: Dict[str, Any]) -> bool:
     return any((chain or {}).get("region") == "plates" for chain in ((spec.get("tripo") or {}).get("chains") or []))
 
 
+def job_has_wings(spec: Dict[str, Any]) -> bool:
+    """Whether the job's tripo block has a wing chain (the region `wings`)."""
+
+    return any((chain.get("region") if isinstance(chain, dict) else str(chain)) == "wings" for chain in ((spec.get("tripo") or {}).get("chains") or []))
+
+
 def job_has_cloak(spec: Dict[str, Any]) -> bool:
     """Whether the job has a cape (TRIPO-CLOAK-STRETCH runs for it, as `tripo/tripo_checks.job_regions` reads it): `cape: true` or a `cloak` chain."""
 
@@ -4478,6 +4484,9 @@ def default_repairs(spec: Dict[str, Any]) -> List[str]:
     if tripo_quadruped(spec):
         # Tripo makes a quadruped and what it carries as one skin: a part fused to another that moves apart is cut and capped,
         # and a join inside one skin (a hanging tail grown into a hind leg, a leg into the belly) gets blended weights (UNIT-BRIDGE).
+        return ["winding", "bridges", "holes", "weights", "normals"]
+    if uses_tripo(spec) and job_has_wings(spec):
+        # A feathered wing is one thick skin of layered feathers: the layers that fuse inside it (UNIT-BRIDGE) get blended weights.
         return ["winding", "bridges", "holes", "weights", "normals"]
     return list(TRIPO_DEFAULT_REPAIRS) if uses_tripo(spec) else []
 

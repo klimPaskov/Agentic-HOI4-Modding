@@ -118,7 +118,7 @@ Each press of **Auto Rig** locks the asset on Tripo's side for about 6 minutes, 
 Every clip must fit the unit: its era, its weapon and its kind of creature. Never a modern boxing, kick or dance preset, even when it passes the checks (D-127). The table lists only presets that may fit, and `make_card.py` and the intake refuse a job whose roles name one of the `never_fitting` patterns in `config/tripo_presets.json`.
 
 <!-- unarmed -->
-Text-to-motion (20), <paid clip when>: name the motion, both hands, their height and the stance, written to fit the unit on the first try, for example `<paid clip>`. At most 266 characters.
+Text-to-motion (20), <paid clip when>: name the motion, both hands, their height and the stance, written to fit the unit on the first try, for example `<paid clip>`. Write the blow outward to the side, with the arm swung away from the body, never across the body, overhead or toward the front, because a map camera sees the blow only when it moves sideways. At most 266 characters.
 <!-- /unarmed -->
 <!-- armed -->
 The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). The boxing and kick presets never fit a unit (D-127). For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
@@ -197,7 +197,7 @@ A player watches a unit's animations in the game's designer preview, a frame 249
 | attack | | spread, strike px |
 | defend | | spread |
 
-After the run, `tripo_checks.py` reports the same readings on the exported clips as advice (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME, TRIPO-WING-IDLE-MOVE). They never fail the unit. The review on the designer preview sheet decides whether a clip reads as its role.
+After the run, `tripo_checks.py` reports the same readings on the exported clips as advice (TRIPO-MAP-READ, TRIPO-MAP-ALIKE, TRIPO-MAP-POSTURE, TRIPO-MAP-SPREAD, TRIPO-MAP-REACH, TRIPO-MAP-SAME, TRIPO-WING-IDLE-MOVE, TRIPO-WING-SCREEN). They never fail the unit. The review on the designer preview sheet decides whether a clip reads as its role.
 <!-- /tripo_rig -->
 <!-- armed -->
 

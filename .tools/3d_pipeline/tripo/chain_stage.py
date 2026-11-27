@@ -256,7 +256,7 @@ def plan_wings(ctx):
     arm = C.ridge_band(u, chain_u, leading)
     common = {"chain_u": chain_u, "stations": stations, "layout": layout, "root": root, "plane": plane, "front": front,
               "points": points, "body_points": positions[~(left | right)], "height": ctx["height"], "leading": leading,
-              "ridge_halfwidth": arm, "far_vertices": int(far.sum()),
+              "ridge_halfwidth": arm, "far_vertices": int(far.sum()), "thickness": C.region_thickness(points, ctx["height"]),
               "shape_inputs": {"length": round(length, 4), "width": round(width, 4), "segment": round(ctx["segment"], 4), "budget": ctx["budget"]}}
     return [
         # each wing's blend stops at the mid-plane, so the two rings never meet on the spine
@@ -313,7 +313,7 @@ def chain_rows(rows, positions, edges, sheets, limb_ends, arm_room):
     for sheet in sheets:
         names = [name for chain in bone_names(sheet) for name in chain]
         joints = sheet["joints"]
-        blend = C.blend_length_for(joints, positions, edges, sheet["mask"])
+        blend = C.blend_length_for(joints, positions, edges, sheet["mask"], float(sheet.get("thickness", 0.0)), float(sheet.get("height", 1.0)))
         # the chains fade out over a few rings before a limb end or an arm's room, and over the whole blend before the sheet's own stop
         stop_length = C.BLEND_MIN_RINGS * C.ring_length(positions, edges, sheet["mask"])
         own = C.fade_from(positions, edges, sheet["blocked"], blend) if sheet.get("blocked") is not None and np.any(sheet["blocked"]) else 1.0
@@ -504,6 +504,7 @@ def chain_plan(rest_of: Callable[[str], np.ndarray], sheets, heads, radii, heigh
                 "chains": len(sheet["chain_u"]), "tails": joints[1:], "follow": follow, "follow_torso": follow_torso, "wing": wing,
                 "rest_directions": C.unit(np.diff(joints, axis=0)), "parent_rest": parent,
                 "leading": bool(sheet.get("leading") is not None and c == int(sheet["leading"])),
+                "thick": C.is_slab(float(sheet.get("thickness", 0.0)), height),
             })
     return plans
 
@@ -720,23 +721,7 @@ def bake_cloak(plans, body, stage, dt, looping, role: str = "") -> List[np.ndarr
 def chain_points(plans: List[dict], parents: np.ndarray, quaternions: List[np.ndarray]) -> tuple:
     """((frames, 3) the mean of every chain joint of a wing side, (frames, 3) its root) from the chains' local quaternions."""
 
-    frames = len(parents)
-    total, count = np.zeros((frames, 3)), 0
-    root = np.zeros((frames, 3))
-    for plan, quats in zip(plans, quaternions):
-        current = np.asarray(parents, float).copy()
-        for k in range(len(plan["bones"])):
-            local = np.tile(np.eye(4), (frames, 1, 1))
-            for f in range(frames):
-                local[f, :3, :3] = C.matrix_from_quaternion(quats[f, k])
-            current = current @ plan["rest_relative"][k] @ local
-            head = current[:, :3, 3]
-            if k == 0:
-                root += (np.asarray(parents, float) @ plan["rest_relative"][0])[:, :3, 3]
-            tip = (current @ np.r_[np.c_[np.eye(3), [0.0, plan["lengths"][k], 0.0]], [[0.0, 0.0, 0.0, 1.0]]])[:, :3, 3]
-            total += head + tip
-            count += 2
-    return total / max(count, 1), root / max(len(plans), 1)
+    return C.chain_mean_points(plans, parents, quaternions)
 
 
 def screen_shares(stage: dict, body: Dict[str, np.ndarray], role: str, track) -> Dict[str, np.ndarray]:
@@ -757,7 +742,7 @@ def screen_shares(stage: dict, body: Dict[str, np.ndarray], role: str, track) ->
         chosen = np.full(frames, -1.0)
         for share in C.screen_share_steps():
             constant = np.full(frames, float(share))
-            quats = [C.wing_quaternions(plan, body["parents"], role, stage, body["axes"], track, constant) for plan in plans]
+            quats = C.wing_side_quaternions(plans, body["parents"], role, stage, body["axes"], track, constant)
             mean, root = chain_points(plans, body["parents"], quats)
             for f in range(frames):
                 angle = C.map_screen_angle(mean[f] - root[f], stage["front"], stage["up"])
@@ -776,12 +761,13 @@ def bake_numpy(stage: dict, body: Dict[str, np.ndarray], role: str, dt: float, l
     track = body_track(body)
     baked = dict(zip((id(plan) for plan in cloak), bake_cloak(cloak, body, stage, dt, looping, role))) if cloak else {}
     shares = screen_shares(stage, body, role, track)
+    for side in ("L", "R"):
+        # a wing side is baked at once, so its rise is capped for the whole wing (lib/tripo_chains.wing_side_quaternions)
+        plans = [plan for plan in stage["plans"] if plan["region"] == "wings" and plan["side"] == side]
+        baked.update(zip((id(plan) for plan in plans), C.wing_side_quaternions(plans, body["parents"], role, stage, body["axes"], track, shares.get(side))))
     out = []
     for plan in stage["plans"]:
-        if plan["region"] == "wings":
-            quaternions = C.wing_quaternions(plan, body["parents"], role, stage, body["axes"], track, shares.get(plan["side"]))
-        else:
-            quaternions = baked[id(plan)]
+        quaternions = baked[id(plan)]
         if looping:
             quaternions = C.close_loop(quaternions)
         out.append(quaternions)

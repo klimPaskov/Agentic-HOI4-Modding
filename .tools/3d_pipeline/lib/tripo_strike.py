@@ -6,7 +6,7 @@ same clip were failed the same way (zombie_i, "an arms-out shamble with no strik
 picked it on its forward reach (0.31 of the height), which a held pose has as much as a blow. What a viewer misses is motion of the hand.
 
 The measure (`strike_numbers`): per hand, its position against the chest joint (Spine02, vanilla's back_mid) in every frame, as a share of the
-height. The travel is the largest distance between two of those positions over the clip (the hand's whole sweep, a wind-up to a blow); the peak
+body's height (`body_height`: wings left out). The travel is the largest distance between two of those positions over the clip (the hand's whole sweep, a wind-up to a blow); the peak
 speed is the largest distance it covers in `SPEED_WINDOW` frames, in heights a second. The striking hand is the one that holds the weapon, or for
 an unarmed unit the faster of the two (`striking_hand`).
 
@@ -51,6 +51,19 @@ MIN_SPEED = 1.0
 SPEED_WINDOW = 3  # frames: a tenth of a second at 30 a second
 CHEST_BONES = ("Spine02", "back_mid", "Spine01", "Spine", "Hips", "Hip")
 HANDS = ("LeftHand", "RightHand")
+WING_PREFIX = "Wing"  # lib/tripo_chains.REGION_PREFIX["wings"]
+
+
+def body_height(mesh: pdx_deform.SkinnedMesh) -> float:
+    """The height the strike is measured in: the body's own, without the skin the wing chains carry (`Wing` bones,
+    lib/tripo_chains.py). Wings that rise over the head made the ZIN devil 12.53 high on a body of 8.63 (run devil_e, 2026-11-23), so
+    his hands' travel read 0.12 of the height where it was 0.17 of the body. A unit without wing chains keeps the mesh's height."""
+
+    dominant = pdx_deform.dominant_bones(mesh)
+    wing = np.array([index >= 0 and mesh.bones[index].startswith(WING_PREFIX) for index in dominant], bool)
+    if not wing.any() or wing.all():
+        return mesh.height
+    return float(np.ptp(mesh.positions[~wing, 1]))
 
 
 def chest_index(bones: Sequence[str]) -> int:
@@ -103,7 +116,7 @@ def no_strike_reason(numbers: dict) -> Optional[str]:
 
 def clip_strike(mesh: pdx_deform.SkinnedMesh, anim: pdx_deform.Animation, hand: str = "", lunge: bool = False) -> Optional[dict]:
     joints = pdx_motion.posed_joints(mesh, anim)
-    return strike_numbers(joints, mesh.bones, mesh.height, float(getattr(anim, "fps", 30.0) or 30.0), hand, lunge)
+    return strike_numbers(joints, mesh.bones, body_height(mesh), float(getattr(anim, "fps", 30.0) or 30.0), hand, lunge)
 
 
 def strike_findings(mesh: pdx_deform.SkinnedMesh, anims: Dict[str, pdx_deform.Animation], hand: str = "", map_read_numbers: bool = True,
