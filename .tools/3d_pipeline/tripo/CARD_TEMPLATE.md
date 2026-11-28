@@ -48,6 +48,7 @@ How to write `<every detail>`:
 <!-- /static -->
 <!-- armed -->
 - End with `Remove the <weapon> completely. Both hands are empty.` The weapon is its own model (step 2).
+- **When the redraw drifts, stop redrawing.** If the empty-hands picture fails the picture review twice, and each new redraw moves another part away from the art (colour, build, hair, gear), make no third redraw. Make the body model from the passed art itself, weapon in hand, take the weapon off with Tripo's **Segment**, and grip the weapon model made from the weapon picture. See "When the redraw drifts" under Armed units in `docs/3d-units.md`.
 <!-- /armed -->
 <!-- armed -->
 
