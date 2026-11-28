@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "3d32d9b9a7f1d9530f7dae7a229d5bdfcdb4a10f",
+  "generated_for_revision": "d1410e1610f71d274172dbda80d18ddc7c06cade",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -16713,6 +16713,11 @@
           "size": 4982
         },
         {
+          "path": ".tools/3d_pipeline/tests/test_tripo_browser_rules.py",
+          "sha256": "98e69ec113ac333a10fe8ce27ecd64f04697df7e96ca9adfb1cb345e319873a5",
+          "size": 2740
+        },
+        {
           "path": ".tools/3d_pipeline/tests/test_tripo_burn.py",
           "sha256": "9605a3bb6f1eb19035f0182e3e3514fae0953c5f62159396adec6484df96e304",
           "size": 11537
@@ -16944,8 +16949,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/CARD_TEMPLATE.md",
-          "sha256": "8e52e0b8491e4a98f1d24e312d9c77a0f55e24c295285545da477ff047036ca5",
-          "size": 19738
+          "sha256": "6e1ef69057c48bbc43602335a0e7a3e3b0f59d7ed227c62bcf9734dd3bb2d3e3",
+          "size": 20187
         },
         {
           "path": ".tools/3d_pipeline/tripo/anim_claims.py",
