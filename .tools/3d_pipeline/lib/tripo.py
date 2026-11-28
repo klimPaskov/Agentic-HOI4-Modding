@@ -14,7 +14,8 @@ from typing import Any, Dict, List, Optional
 PROVIDERS = ("meshy", "tripo")
 # model: one textured GLB (a building, a prop). rigged: a rigged, animated GLB (a unit).
 # segmented: a GLB split into parts (a weapon), used as the twin that finds the weapon vertices.
-KINDS = ("model", "rigged", "segmented")
+# donor: the motion donor's export of the clips made on it (tripo_intake carries them onto the unit's rig, lib/clip_transfer.py).
+KINDS = ("model", "rigged", "segmented", "donor")
 
 
 def provider_name(spec: Dict[str, Any]) -> str:

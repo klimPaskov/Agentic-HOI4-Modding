@@ -55,7 +55,7 @@ def turned_copy(source: Path, target: Path, degrees: float) -> None:
     target.write_bytes(b"glTF" + struct.pack("<II", 2, 12 + 8 + len(text) + len(rest)) + struct.pack("<I", len(text)) + b"JSON" + text + rest)
 
 
-class Transfer(unittest.TestCase):
+class RigCase(unittest.TestCase):
     def setUp(self) -> None:
         saved = list(RG.CHAIN)
         RG.CHAIN.append(("mixamorig:RightUpLeg", 0, (-0.1, -0.1, 0.0)))
@@ -79,6 +79,8 @@ class Transfer(unittest.TestCase):
         _times, values = channels[spine]["rotation"]
         return values[1]
 
+
+class Transfer(RigCase):
     def test_the_same_rig_gets_the_same_clip(self) -> None:
         out = self.folder / "out.glb"
         report = C.transfer(self.source, self.source, out, ["idle"])
@@ -139,6 +141,66 @@ class Transfer(unittest.TestCase):
     def test_a_missing_clip_is_named(self) -> None:
         with self.assertRaises(C.TransferError):
             C.transfer(self.source, self.source, self.folder / "out.glb", ["swagger"])
+
+
+class DonorIntake(RigCase):
+    """The default route for a made clip: made on the motion donor, dropped in the inbox as `<slug>__donor.glb`, and carried onto the
+    unit's rig by the intake beside the unit's own clips (so no Tripo page that draws the unit's heavy model is needed for it)."""
+
+    def inbox(self) -> Path:
+        import tripo_intake  # noqa: F401  (the import must work before the tests use it)
+
+        inbox = self.folder / "inbox"
+        inbox.mkdir()
+        rig = C.Rig(self.source)
+        doc = json.loads(json.dumps(rig.doc))
+        doc["animations"][0]["name"] = "walk"
+        C.write_glb(inbox / "u__rigged.glb", doc, rig.blob)
+        donor = json.loads(json.dumps(rig.doc))
+        donor["animations"][0]["name"] = "A hunched brute lunges"
+        C.write_glb(inbox / "u__donor.glb", donor, rig.blob)
+        return inbox
+
+    def test_the_intake_finds_the_donor_and_merges_its_clips_beside_the_units_own(self) -> None:
+        sys.path.insert(0, str(PIPELINE))
+        import tripo_intake
+
+        inbox = self.inbox()
+        spec = {"asset_kind": "humanoid", "tripo": {"roles": {"move": "walk", "attack": "A hunched brute"}}}
+        files = tripo_intake.intake_files(spec, "u", inbox)
+        self.assertEqual(sorted(files), ["donor", "rigged"])
+        job = self.folder / "job"
+        report = tripo_intake.merge_donor_clips(spec, files, job)
+        merged = job / "provider" / tripo_intake.DONOR_MERGED
+        self.assertEqual(sorted(C.Rig(merged).clips()), ["A hunched brute lunges", "walk"])
+        self.assertEqual(report["kept"], ["walk"])
+        tripo_intake.refuse_unknown_role_clips(spec, merged)  # both roles name a clip of the merged file
+
+    def test_donor_clips_names_the_clips_to_carry(self) -> None:
+        import tripo_intake
+
+        inbox = self.inbox()
+        spec = {"asset_kind": "humanoid", "tripo": {"donor_clips": ["nothing like it"]}}
+        with self.assertRaisesRegex(ValueError, "unit's own Animate page"):
+            tripo_intake.merge_donor_clips(spec, tripo_intake.intake_files(spec, "u", inbox), self.folder / "job")
+
+    def test_no_donor_file_changes_nothing(self) -> None:
+        import tripo_intake
+
+        inbox = self.inbox()
+        (inbox / "u__donor.glb").unlink()
+        spec = {"asset_kind": "humanoid", "tripo": {}}
+        files = tripo_intake.intake_files(spec, "u", inbox)
+        self.assertEqual(sorted(files), ["rigged"])
+        self.assertIsNone(tripo_intake.merge_donor_clips(spec, files, self.folder / "job"))
+
+    def test_an_armed_unit_is_told_to_carry_the_clips_onto_its_body_before_the_grip_stage(self) -> None:
+        import tripo_intake
+
+        inbox = self.inbox()
+        spec = {"asset_kind": "humanoid", "tripo": {"weapon": {"bone": "Weapon"}}}
+        with self.assertRaisesRegex(ValueError, "arm_unit"):
+            tripo_intake.intake_files(spec, "u", inbox)
 
 
 if __name__ == "__main__":

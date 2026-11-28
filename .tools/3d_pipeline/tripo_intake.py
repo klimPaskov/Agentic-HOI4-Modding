@@ -125,7 +125,41 @@ def intake_files(spec: Dict[str, Any], slug: str, inbox: Path) -> Dict[str, Path
     missing = [f"{slug}__{kind}.glb" for kind, path in found.items() if path is None]
     if missing:
         raise FileNotFoundError(f"The inbox {inbox} lacks {', '.join(missing)}. Name each Tripo export <asset_slug>__<kind>.glb.")
+    donor = inbox_file(inbox, slug, "donor") if unit else None
+    if donor is not None:
+        if config.get("weapon"):
+            raise ValueError(
+                f"{donor.name}: an armed unit's donor clips go onto its body before the grip stage, not at the intake. Run "
+                f"`tripo/clip_transfer.py {donor.name} armed/{slug}__body.glb --out armed/{slug}__body.glb --keep-target-clips` (keep the "
+                "old body beside it), then `tripo/arm_unit.py`, and take the donor file out of the inbox.")
+        found["donor"] = donor
     return found  # type: ignore[return-value]
+
+
+DONOR_MERGED = "tripo_donor_merged.glb"
+
+
+def merge_donor_clips(spec: Dict[str, Any], files: Dict[str, Path], job: Path) -> Optional[Dict[str, Any]]:
+    """Carry the clips made on the motion donor (`<slug>__donor.glb` in the inbox) onto the unit's own rig, keeping the unit's own clips
+    (`lib/clip_transfer.transfer` with `keep_target_clips`). The merged file, `provider/tripo_donor_merged.glb`, replaces the rigged export for
+    the rest of the intake. `tripo.donor_clips` names the clips to carry (exact names or first words), every donor clip by default. A donor
+    clip with the name of one of the unit's own clips replaces it. Returns the transfer's report, or None without a donor file."""
+
+    if "donor" not in files:
+        return None
+    from lib import clip_transfer
+
+    merged = job / "provider" / DONOR_MERGED
+    merged.parent.mkdir(parents=True, exist_ok=True)
+    wanted = (spec.get("tripo") or {}).get("donor_clips")
+    try:
+        report = clip_transfer.transfer(files["donor"], files["rigged"], merged, wanted, keep_target_clips=True)
+    except clip_transfer.TransferError as error:
+        raise ValueError(f"the donor clips in {files['donor'].name} cannot move onto {files['rigged'].name}: {error}. Make the clip on the "
+                         "unit's own Animate page instead (docs/3d-units.md, made clips)") from None
+    print(f"donor clips carried onto the unit's rig: {', '.join(report['clips'])} ({report['shared_joints']} shared joints; the unit's own "
+          f"{len(report['kept'])} clip(s) kept)", file=sys.stderr)
+    return report
 
 
 def refuse_unfitting_clips(spec: Dict[str, Any]) -> None:
@@ -441,14 +475,19 @@ def run_intake(
     files = intake_files(spec, slug, Path(inbox))
     refuse_unfitting_clips(spec)
     refuse_shared_clips(spec, slug)
+    exported = dict(files)  # what the receipt records: the person's own exports, not the merged file
+    donor = merge_donor_clips(spec, files, job)
+    if donor is not None:
+        files = {**files, "rigged": job / "provider" / DONOR_MERGED}
+        files.pop("donor")
     if "rigged" in files:
         refuse_unknown_role_clips(spec, files["rigged"])
         refuse_travelling_clips(spec, files["rigged"])
     sources = [
         {"kind": kind, "name": path.name, "bytes": path.stat().st_size, "sha256": sha256_file(path)}
-        for kind, path in sorted(files.items())
+        for kind, path in sorted(exported.items())
     ]
-    task_id = task_id or default_task_id(files)
+    task_id = task_id or default_task_id(exported)
     generation_stage = run_pilot.generation_stage_for(spec)
     receipt_path = job / receipt_name(generation_stage)
     already = check_receipt(receipt_path, sources, slug, generation_stage, reingest)
@@ -507,6 +546,7 @@ def run_intake(
         "outputs": {name: item["file"]["relative_path"] for name, item in outputs.items()},
         "prepare": {key: prepared[key] for key in ("blender", "bones_before", "bones_after", "weapon", "clips", "triangles")} if prepared else None,
         "extra_joints": (prepared.get("extra_joints") or {"dropped": [], "weights_moved": 0}) if prepared else None,
+        "donor": {key: donor[key] for key in ("clips", "kept", "shared_joints", "source_only", "target_only")} if donor else None,
     }
     write_json(receipt_path, record)
     run_pilot.append_history(job, state="provider_task_completed", event=generation_stage, actor="tripo_intake", details={"task_id": task_id, "files": sources})
