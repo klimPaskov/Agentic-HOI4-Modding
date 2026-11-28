@@ -80,6 +80,37 @@ class BenchmarkTest(unittest.TestCase):
 		self.assertIn("| good |", (self.out / "report.md").read_text(encoding="utf-8"))
 		self.assertEqual(bench.main(["--report", str(self.out)]), 1)
 
+	def test_prepare_then_judge_covers_sessions_started_elsewhere(self):
+		import contextlib
+		import io
+		captured = io.StringIO()
+		with contextlib.redirect_stdout(captured):
+			code = bench.main(["--template", str(self.template), "--prompts", str(self.prompts), "--out", str(self.out), "--prepare"])
+		self.assertEqual(code, 0)
+		lines = [line.split("	") for line in captured.getvalue().strip().splitlines()]
+		self.assertEqual([line[2] for line in lines], ["go", "go"])
+		self.assertEqual([line[1] for line in lines], ["Create a mod.", "Create a stall mod."])
+		script = json.loads((self.out / "good" / "script.json").read_text(encoding="utf-8"))
+		self.assertEqual(script["first_message"], "Create a mod.")
+		self.assertEqual(script["replies"], ["Use your suggestions."])
+		self.assertEqual(Path(script["folder"]), (self.out / "good" / "mod").resolve())
+		self.assertFalse((self.out / "good" / "mod" / "docs").exists(), "no client ran")
+		fake = Path(self.folder.name) / "fake.py"
+		for number, message in enumerate(["Create a mod.", "Use your suggestions.", "Continue building."]):
+			subprocess.run([sys.executable, str(fake), message], cwd=self.out / "good" / "mod", check=True, capture_output=True)
+		(self.out / "good" / "sessions.json").write_text(json.dumps([{"session": 1, "message": "Create a mod."}]), encoding="utf-8")
+		self.assertEqual(bench.main(["--prompts", str(self.prompts), "--out", str(self.out), "--judge", "--only", "good"]), 0)
+		report = json.loads((self.out / "report.json").read_text(encoding="utf-8"))["results"]
+		self.assertEqual([row["id"] for row in report], ["good"])
+		self.assertTrue(report[0]["passed"], report[0]["reasons"])
+		self.assertEqual(len(report[0]["sessions"]), 1)
+		self.assertEqual(bench.main(["--prompts", str(self.prompts), "--out", str(self.out), "--judge"]), 1)
+
+	def test_judge_refuses_a_run_that_was_never_prepared(self):
+		self.assertEqual(bench.main(["--prompts", str(self.prompts), "--out", str(self.out), "--judge"]), 2)
+		with self.assertRaises(SystemExit):
+			bench.main(["--template", str(self.template), "--prompts", str(self.prompts), "--out", str(self.out), "--prepare", "--judge"])
+
 	def test_resume_passes_the_last_session(self):
 		command = bench.client_command('claude -p {prompt} --model {model} {resume}', "hi there", "sonnet", 5, "abc")
 		self.assertEqual(command, ["claude", "-p", "hi there", "--model", "sonnet", "--resume", "abc"])

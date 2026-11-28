@@ -9,6 +9,15 @@ python scripts/benchmark_new_mod.py --template <fresh mod folder> --prompts <pro
 python scripts/benchmark_new_mod.py --report <run folder>
 ```
 
+To run each prompt as a real Claude Code session that someone else starts (for example in the desktop app, with no headless client), split the run in two:
+
+```powershell
+python scripts/benchmark_new_mod.py --template <fresh mod folder> --prompts <prompts.json> --out <run folder> --prepare
+python scripts/benchmark_new_mod.py --prompts <prompts.json> --out <run folder> --judge --model sonnet
+```
+
+`--prepare` makes the fresh copies and prints one line per prompt: the folder, the first message and `go`. It also writes `<run folder>/<id>/script.json` with the scripted replies. Start a session on that folder with that message, send the replies ("Use your suggestions.", then "Continue building." until the gate passes or the ledger is paused), then run `--judge`. It reads the finished copies the same way a normal run does. A `sessions.json` list in the prompt's folder fills the report's session column.
+
 - Use several prompts and keep them outside the repository, so the kit is not tuned to them. `scripts/benchmark_prompts.example.json` shows the format.
 - The default client is `claude -p` with permission prompts skipped, so the runner only ever works on its own copies. `--client` takes another command template.
 - Fix the kit from each run's failures as steps, rules or checks a small model can follow, and run the benchmark again.
