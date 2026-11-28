@@ -61,7 +61,7 @@ Use the `hoi4_imagegen` MCP (tools `hoi4.image_*`). It owns canvas sizes, alpha,
 * Focus icons have a paired `_shine` sprite in vanilla. The handoff includes one, marked "pattern observed, game behaviour untested". Do not claim it is required.
 * No text in art. Generated text is always wrong.
 * In-game appearance is user-operated evidence this tool cannot give. Say "installed", not "verified in game".
-* Never start Hearts of Iron IV to check an asset. List exactly what the user should look at in game.
+* Check an asset in game only as the recorded in-game testing answer allows (`hoi4-live-playtest`); otherwise list exactly what the user should look at in game.
 
 ## Examples
 `examples/` (in the hoi4-imagegen repository) has five focus icons with shine sprites from one style, a national spirit set, a report and a news picture, a three-size flag, and a refinement edit.

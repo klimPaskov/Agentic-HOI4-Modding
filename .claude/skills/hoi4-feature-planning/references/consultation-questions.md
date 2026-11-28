@@ -50,9 +50,10 @@ Ask only the ones that are genuine for the task. The suggested answers are start
 | Saves | Are saves in scope, and may the game write them as text (`save_as_binary=no`)? | Ask only when the task inspects saves, following `hoi4-save-inspection` |
 | World iteration | The design needs an effect or trigger that iterates over every country. May it? | Ask whenever the spec implies it. Without permission, design a narrower scope |
 | Animation | Is motion wanted, and may a narrow exploration pass run where no precedent exists? | Static unless the idea asks for motion |
+| In-game testing | Run in-game tests at all? If so, how (the live-testing provider, or a manual recipe you follow; any limits, such as only while you are away from the computer) and when (after each feature, at milestones, or once at the end)? | With HOI4 Live Tools installed and supported here: a smoke test after each finished group of features and before the work is called done. Otherwise a short manual check at the same points. Recorded once; `hoi4-live-playtest` follows it |
 | Improvement rounds | Improvement proposals come after the first tranche. Answer each with Adopt, Adapt, Defer or Reject | Announce the round. Do not hold it now |
 
-Live testing and the autonomous debug playtest run only when the user names them, so never offer them as a question. The user may still raise them in an answer.
+Ask the in-game testing question once, in the first consultation of a mod or a large feature, unless a `decisions.md` already records the answer; `hoi4-live-playtest` follows the recorded answer without asking again. The autonomous debug playtest (`hoi4-debug-playtest`) still runs only when the user names it, so never offer it.
 
 ## Record the answers
 
@@ -78,7 +79,7 @@ Ask it once, batched with any other open item, with a suggested answer, and cont
 ## Never ask
 
 - about naming, file layout inside the established layout, localisation keys, code factoring, tool choice, the order of work, which checks to run, or retries;
-- for logs, for in-game testing, or for the user to reload the game;
+- for logs, for the user to reload the game, or for in-game testing beyond the recorded answer;
 - for confirmation of a paid call that the agreed budget covers.
 
 ## Subagents

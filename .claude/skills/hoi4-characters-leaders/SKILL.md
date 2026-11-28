@@ -68,7 +68,7 @@ These follow the project rules in `CLAUDE.md`, which remain the authority:
 - Do not add world-wide `on_daily`, `on_weekly` or `on_monthly` hooks for characters without explicit permission; scope iterations to one country.
 - Document each new script file with an overview comment at the top, keep a docs file for the mechanic, and list icons, `.gfx` files and portrait sprite names in it.
 - Use the portrait route above for every character portrait; placeholders stay documented as pending until the final art exists.
-- Never launch the game to test; the user validates live.
+- Launch the game to test only as the recorded in-game testing answer allows (`hoi4-live-playtest`); otherwise the user validates live.
 
 ## Common mistakes and silent failures
 
