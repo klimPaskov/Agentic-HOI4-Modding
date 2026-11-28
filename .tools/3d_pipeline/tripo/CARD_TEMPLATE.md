@@ -216,7 +216,11 @@ After the run, `tripo_checks.py` reports the same readings on the exported clips
 2. Run `py -3.13 -B .tools/3d_pipeline/tripo/static_sheets.py <job folder>/mod/<static folder>/<asset_slug> --model-kind <model_kind> --out <job folder>/review`, look at the sheets yourself, then give them to a fresh reviewer.
 <!-- /static -->
 <!-- unit -->
-Follow step 2 of `docs/3d-units.md` for the picture review if it is not recorded yet, then steps 8 to 10 there: `tripo_intake.py`, `run_pilot.py` and the checks. Every one of them waits for the machine by itself.
+Follow step 2 of `docs/3d-units.md` for the picture review if it is not recorded yet. Then run steps 8 to 10 there as one resumable run, in a run folder of its own that no cleanup touches:
+
+`py -3.13 -B .tools/3d_pipeline/tripo/unit_run.py --jobs-config <jobs file> <asset_slug> --rigged <job folder>/inbox/<asset_slug>__rigged.glb --run <run folder> [--weapon-bone <bone>] [--unit-type <type>]`
+
+If it stops (a pause, a crash, a restart), run the same command again: it starts from the step that did not finish. Every step that starts Blender waits for the machine by itself, and a machine with its own gate script passes it as `--gate "<command prefix>"`.
 <!-- /unit -->
 
 Then let your agent wire the model into the mod (step 12 of `docs/3d-units.md`).
