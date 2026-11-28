@@ -6,10 +6,13 @@
 	python -B .tools/check.py gate --wait "question"  # the agent asked the user something; the next stop is allowed
 	python -B .tools/check.py gate --pause "reason"   # the user said stop; the gate stays open until --resume
 	python -B .tools/check.py gate --resume
+	python -B .tools/check.py gate --archive          # a finished ledger and its progress log move to docs/mod/history/ before the next big request
 	python -B .tools/check.py gate --hook stop|session-start|prompt   # Claude Code hook adapters (stdin: the hook's JSON)
 
-The ledger is `docs/mod/ledger.json` (schema `hoi4-mod-ledger/1`, documented in the `hoi4-new-mod` skill). Without it
-every command exits 0 and the hooks print nothing, so a mod that never planned a whole-mod build is untouched.
+The ledger is `docs/mod/ledger.json` (schema `hoi4-mod-ledger/1`, documented in the `hoi4-new-mod` skill). It covers a
+whole mod (`scope.kind` `mod`, the default) or one big request on an existing mod (`scope.kind` `addition`, with a
+`scope.request` slug), the same gate scaled to the request (D-171). Without a ledger every command exits 0 and the hooks
+print nothing but one routing line per message (the prompt hook, below), so a small edit stays light.
 While the ledger's `state` is `building`, the gate fails when:
 
 - the ledger breaks its schema: a bad or duplicate id, a dependency that does not exist or forms a cycle;
@@ -49,6 +52,13 @@ PROGRESS = Path("docs/mod/progress.md")
 STATE = Path(".tmp/mod-gate/state.json")
 SCHEMA = "hoi4-mod-ledger/1"
 STATES = ("planning", "building", "paused", "complete")
+SCOPE_KINDS = ("mod", "addition")
+HISTORY = Path("docs/mod/history")
+# One line, once per message while no build is active: the size rule that decides whether the new-mod flow applies.
+ROUTING_HINT = ("Kit routing: a request that adds something new across two or more surfaces (a nation, a focus tree, an event chain, "
+	"a mechanic with its decisions and screens, a map region) or that needs more than about five features is big: follow the "
+	"hoi4-new-mod skill (brief, feature list, completion gate), scaled to the request. A fix, a tweak or one self-contained "
+	"edit is small: do it directly.")
 BLOCKER_NEEDS = ("user", "credential", "money", "access", "in_game", "tool")
 CHECK_KINDS = ("exists", "contains", "count")
 DEFAULT_MAX_BLOCKS = 30
@@ -127,6 +137,7 @@ def schema_problems(ledger: Ledger) -> List[str]:
 		problems.append(f"ledger: `schema` must be \"{SCHEMA}\"")
 	if ledger.get("state") not in STATES:
 		problems.append(f"ledger: `state` must be one of {', '.join(STATES)}")
+	problems += kind_problems(ledger)
 	rows = ledger.get("features")
 	if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
 		return problems + ["ledger: `features` must be a list of objects"]
@@ -138,6 +149,18 @@ def schema_problems(ledger: Ledger) -> List[str]:
 			problems.append(f"{row.get('id')}: `depends_on` must be a list of feature ids")
 		problems += [f"{row.get('id')}: depends on `{d}`, which is not a feature" for d in dependencies(row) if d not in ids]
 	return problems + cycle_problems(rows) + coverage_problems(ledger, rows) + phase_problems(ledger, rows)
+
+
+def kind_problems(ledger: Ledger) -> List[str]:
+	"""`scope.kind` is `mod` (default) or `addition`; an addition names its request with a slug."""
+	scope = ledger.get("scope")
+	if not isinstance(scope, dict) or "kind" not in scope:
+		return []
+	if scope["kind"] not in SCOPE_KINDS:
+		return [f"ledger: `scope.kind` must be one of {', '.join(SCOPE_KINDS)}"]
+	if scope["kind"] == "addition" and not ID_PATTERN.match(str(scope.get("request", ""))):
+		return ["ledger: an addition needs `scope.request`, a short slug of lower-case letters, digits, `-` or `_`"]
+	return []
 
 
 def phase_ids(ledger: Ledger) -> List[str]:
@@ -525,9 +548,43 @@ def hook_session_start(root: Path) -> int:
 	return 0
 
 
+def archive(root: Path) -> int:
+	"""Move a finished ledger and its progress log to `docs/mod/history/<date>-<slug>/`, so the next big request starts clean."""
+	ledger, error = load_ledger(root)
+	if error or ledger is None:
+		print(error or f"{LEDGER.as_posix()} does not exist; nothing to archive")
+		return 2
+	if ledger.get("state") != "complete":
+		print(f"gate: the ledger's state is `{ledger.get('state')}`; only a `complete` ledger is archived")
+		return 1
+	scope = ledger.get("scope")
+	slug = str(scope.get("request") if isinstance(scope, dict) and scope.get("request") else ledger.get("mod") or "mod")
+	slug = re.sub(r"[^a-z0-9_-]+", "-", slug.lower()).strip("-") or "mod"
+	target = root / HISTORY / f"{datetime.now(timezone.utc):%Y%m%d}-{slug}"
+	count = 1
+	while target.exists():
+		count += 1
+		target = root / HISTORY / f"{datetime.now(timezone.utc):%Y%m%d}-{slug}-{count}"
+	target.mkdir(parents=True)
+	for source in (root / LEDGER, root / PROGRESS):
+		if source.is_file():
+			source.replace(target / source.name)
+	print(f"gate: archived the finished ledger to {target.relative_to(root).as_posix()}/")
+	return 0
+
+
+def routing_wanted(ledger: Optional[Ledger]) -> bool:
+	"""The routing line applies while no build is under way: no ledger, or a finished one."""
+	return ledger is None or ledger.get("state") == "complete"
+
+
 def hook_prompt(root: Path) -> int:
-	"""Claude Code `UserPromptSubmit` hook: a user message answers a waiting question and resets the Stop hook's counters."""
-	ledger, _ = load_ledger(root)
+	"""Claude Code `UserPromptSubmit` hook: a user message answers a waiting question and resets the Stop hook's counters.
+
+	While no build is active it also prints the one-line size rule, so every message is sized before work starts."""
+	ledger, error = load_ledger(root)
+	if routing_wanted(ledger) and not error and not gate_off():
+		print(ROUTING_HINT)
 	if ledger is None:
 		return 0
 	if ledger.pop("awaiting_user", None) is not None:
@@ -601,6 +658,7 @@ def main(argv: Optional[Sequence[str]] = None, root: Path = REPO_ROOT) -> int:
 	group.add_argument("--wait", metavar="QUESTION", help="record that the agent is waiting for the user's answer")
 	group.add_argument("--pause", metavar="REASON", help="record the user's stop; the gate stays open until --resume")
 	group.add_argument("--resume", action="store_true", help="make the gate active again after --pause")
+	group.add_argument("--archive", action="store_true", help="move a complete ledger and its progress log to docs/mod/history/")
 	group.add_argument("--hook", choices=("stop", "session-start", "prompt"), help="Claude Code hook adapter (reads the hook JSON)")
 	arguments = parser.parse_args(argv)
 	if arguments.hook == "stop":
@@ -620,6 +678,8 @@ def main(argv: Optional[Sequence[str]] = None, root: Path = REPO_ROOT) -> int:
 		return set_state(root, "pause", arguments.pause)
 	if arguments.resume:
 		return set_state(root, "resume", None)
+	if arguments.archive:
+		return archive(root)
 	return report(root)
 
 

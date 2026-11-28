@@ -8,7 +8,7 @@ The goal is one organized round of questions at the start, then uninterrupted wo
 
 Hold a consultation before a task that creates or reshapes a feature, system, country, route set or asset set, that spans three or more surfaces (for example focus tree, events and decisions), or that has no accepted spec.
 
-For a whole new mod, ask the mod-defining questions of `hoi4-new-mod/references/mod-consultation.md` (map position, start date, add-on or total conversion, playable nations, compatibility, tone, visual style) in the same single message.
+For a whole new mod or a big request (`hoi4-new-mod`), ask the mod-defining questions of `hoi4-new-mod/references/mod-consultation.md` that the mod's files do not already answer (map position, start date, add-on or total conversion, playable nations, compatibility, tone, visual style) in the same single message.
 
 Skip it for bug fixes, single-surface edits, and follow-up work inside an accepted spec whose `decisions.md` already answers the open points.
 

@@ -7,7 +7,7 @@ The package keeps canonical instruction, skill, and subagent sources under `.cla
 Every other runtime reads a generated projection of the same instructions, skills, and subagents.
 Edit the canonical file, then regenerate the projections with `python .tools/sync/generators.py`, which runs the synchronizers in `.tools/sync/` that the change affects. In Claude Code a hook in `.claude/settings.json` does this after every edit and refuses edits to generated files.
 
-During a whole-mod build (`hoi4-new-mod`), Claude Code's `Stop`, `SessionStart` and `UserPromptSubmit` hooks in `.claude/settings.json` run the completion gate (`python -B .tools/check.py gate`, see `.tools/README.md`). Every other client gets the same check as that one command: run `gate --next` at the start of a session and `gate` before ending a turn, and keep building while it fails. Without `docs/mod/ledger.json` the hooks do nothing.
+During a whole-mod build or a big request (`hoi4-new-mod`), Claude Code's `Stop`, `SessionStart` and `UserPromptSubmit` hooks in `.claude/settings.json` run the completion gate (`python -B .tools/check.py gate`, see `.tools/README.md`). Every other client gets the same check as that one command: run `gate --next` at the start of a session and `gate` before ending a turn, and keep building while it fails. Without `docs/mod/ledger.json` the hooks do nothing.
 
 | Canonical source | Projection | Synchronizer |
 | --- | --- | --- |

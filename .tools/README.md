@@ -67,9 +67,10 @@ A passing check proves only the properties it checks: a size or alpha check does
 - `gate --next` prints the session-start routine: progress, the next ready feature and the baseline check.
 - `gate --wait "<question>"` lets the next stop through while the agent waits for the user; the user's next message clears it.
 - `gate --pause "<reason>"` records the user's stop, and `gate --resume` makes the gate active again.
+- `gate --archive` moves a `complete` ledger and its progress log to `docs/mod/history/` so the next big request starts clean. A ledger covers a whole mod (`scope.kind` `mod`, the default) or one big request on an existing mod (`scope.kind` `addition` with a `scope.request` slug); the same gate checks both (D-171).
 - `gate --hook stop|session-start|prompt` are the adapters for the `Stop`, `SessionStart` and `UserPromptSubmit` hooks in `.claude/settings.json`. The Stop hook blocks with the list of problems, and lets the stop through after `gate.max_idle_blocks` blocks with no change to the files (default 3) or `gate.max_blocks` in one session (default 30). `HOI4_MOD_GATE=off` turns the hooks off.
 
-Without a ledger every hook exits at once and prints nothing, so a mod that has no whole-mod build is unaffected. Other clients run the same command: before ending a turn during a build, and at the start of every session (`gate --next`). Its state lives in the ignored `.tmp/mod-gate/`.
+Without a ledger the Stop and SessionStart hooks exit at once and print nothing, and the prompt hook prints one routing line (`ROUTING_HINT`) per user message while no build is active, so each request is sized (big: follow `hoi4-new-mod`; small: do it directly); `HOI4_MOD_GATE=off` silences it. A mod that has no build is otherwise unaffected. Other clients run the same command: before ending a turn during a build, and at the start of every session (`gate --next`). Its state lives in the ignored `.tmp/mod-gate/`.
 
 ### Model ceiling
 
