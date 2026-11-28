@@ -5,6 +5,10 @@
 	python scripts/benchmark_new_mod.py ... --model sonnet --turns 40 --game-check "<command with {mod}>"
 	python scripts/benchmark_new_mod.py --report <run folder>        # summarise an earlier run again
 
+	# the sessions are real Claude Code sessions someone else starts (for example in the desktop app):
+	python scripts/benchmark_new_mod.py --template <fresh mod> --prompts prompts.json --out <run folder> --prepare
+	python scripts/benchmark_new_mod.py --prompts prompts.json --out <run folder> --judge [--model sonnet] [--game-check "<cmd {mod}>"]
+
 `--template` is a mod folder exactly as HOI4 Mod Setup's "Create new mod" leaves it (a Git repository with the kit
 installed). The template is never changed: each prompt gets its own copy under `--out`, so every run starts from the
 same state.
@@ -27,6 +31,11 @@ ledger in `docs/mod/`, `check.py gate` (exit code and problems), `check.py quick
 `--game-check` is given, that command's exit code and output (for example an in-game smoke test on a test copy of the
 game). It writes `report.json` and `report.md` under `--out`. A gate that passes with a smoke test record, a clean
 `check.py`, and a passing game check is a pass for that prompt; everything else is reported with its reason.
+
+`--prepare` only makes the fresh copies and prints, for each prompt, the folder and the first message (plus `<out>/<id>/script.json`
+with the scripted replies), and runs no client. Start a session on each folder with that message, send the replies, then `--judge` reads
+the finished copies exactly as a normal run does. `<out>/<id>/sessions.json` (a list of `{"session", "message"}` rows), when present,
+fills the report's session column.
 
 Exit codes: 0 every prompt passed, 1 at least one did not, 2 the run could not start.
 """
@@ -133,11 +142,43 @@ def verdict(measured: Dict[str, Any], game_check: bool) -> List[str]:
 	return reasons
 
 
-def run_prompt(entry: Dict[str, str], config: Dict[str, Any], arguments: argparse.Namespace) -> Dict[str, Any]:
+def prepare_copy(entry: Dict[str, str], arguments: argparse.Namespace) -> Path:
+	"""A fresh copy of the template for one prompt; the template itself is never changed."""
 	mod = arguments.out / entry["id"] / "mod"
 	if mod.exists():
 		shutil.rmtree(mod)
 	shutil.copytree(arguments.template, mod, symlinks=True)
+	return mod
+
+
+def judge_copy(entry: Dict[str, str], arguments: argparse.Namespace, log: List[Dict[str, Any]]) -> Dict[str, Any]:
+	"""Read a finished copy's files and checks into one result row."""
+	mod = arguments.out / entry["id"] / "mod"
+	measured = measure(mod, arguments.game_check)
+	reasons = verdict(measured, bool(arguments.game_check))
+	return {"id": entry["id"], "prompt": entry["prompt"], "model": arguments.model, "sessions": log,
+		"measured": measured, "passed": not reasons, "reasons": reasons}
+
+
+def prepare_prompt(entry: Dict[str, str], config: Dict[str, Any], arguments: argparse.Namespace) -> Dict[str, Any]:
+	"""Make the copy and write what the person who starts the session needs; no client runs."""
+	mod = prepare_copy(entry, arguments)
+	script = {"id": entry["id"], "folder": str(mod.resolve()), "first_message": entry["prompt"],
+		"replies": config.get("replies", []), "continue": config.get("continue", "Continue building.")}
+	(arguments.out / entry["id"] / "script.json").write_text(json.dumps(script, indent=2), encoding="utf-8")
+	return script
+
+
+def recorded_sessions(out: Path, prompt_id: str) -> List[Dict[str, Any]]:
+	try:
+		rows = json.loads((out / prompt_id / "sessions.json").read_text(encoding="utf-8"))
+	except (OSError, ValueError):
+		return []
+	return [row for row in rows if isinstance(row, dict)] if isinstance(rows, list) else []
+
+
+def run_prompt(entry: Dict[str, str], config: Dict[str, Any], arguments: argparse.Namespace) -> Dict[str, Any]:
+	mod = prepare_copy(entry, arguments)
 	messages = [entry["prompt"], *config.get("replies", [])]
 	session: Optional[str] = None
 	log: List[Dict[str, Any]] = []
@@ -156,10 +197,7 @@ def run_prompt(entry: Dict[str, str], config: Dict[str, Any], arguments: argpars
 		state = ledger_state(mod)
 		if number + 1 >= len(messages) and (state.get("state") in ("paused", "complete") or gate(mod)["exit"] == 0):
 			break
-	measured = measure(mod, arguments.game_check)
-	reasons = verdict(measured, bool(arguments.game_check))
-	return {"id": entry["id"], "prompt": entry["prompt"], "model": arguments.model, "sessions": log,
-		"measured": measured, "passed": not reasons, "reasons": reasons}
+	return judge_copy(entry, arguments, log)
 
 
 def write_report(out: Path, results: List[Dict[str, Any]]) -> int:
@@ -167,7 +205,7 @@ def write_report(out: Path, results: List[Dict[str, Any]]) -> int:
 	lines = ["# New-mod benchmark", "", "| Prompt | Model | Sessions | Features passed | Gate | Result |", "| --- | --- | --- | --- | --- | --- |"]
 	for row in results:
 		ledger = row["measured"]["ledger"]
-		lines.append(f"| {row['id']} | {row['model']} | {len(row['sessions'])} | {ledger.get('passed', 0)} of {ledger.get('features', 0)} | "
+		lines.append(f"| {row['id']} | {row['model']} | {len(row['sessions']) or '-'} | {ledger.get('passed', 0)} of {ledger.get('features', 0)} | "
 			f"exit {row['measured']['gate']['exit']} | {'pass' if row['passed'] else 'fail: ' + '; '.join(row['reasons'])} |")
 	(out / "report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 	print("\n".join(lines))
@@ -186,13 +224,17 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 	parser.add_argument("--game-check", help="command run after the build, {mod} is the mod folder; exit 0 is a pass")
 	parser.add_argument("--only", nargs="+", help="run only these prompt ids")
 	parser.add_argument("--report", type=Path, metavar="RUN", help="summarise an earlier run folder again")
+	parser.add_argument("--prepare", action="store_true", help="only make the fresh copies and print each folder and first message; no client runs")
+	parser.add_argument("--judge", action="store_true", help="judge copies made by --prepare whose sessions ran elsewhere (needs --prompts and --out)")
 	arguments = parser.parse_args(argv)
 	if arguments.report:
 		data = json.loads((arguments.report / "report.json").read_text(encoding="utf-8"))
 		return write_report(arguments.report, data["results"])
-	if not (arguments.template and arguments.prompts and arguments.out):
-		parser.error("--template, --prompts and --out are required")
-	if not (arguments.template / ".tools" / "check.py").is_file():
+	if arguments.prepare and arguments.judge:
+		parser.error("--prepare and --judge are separate steps")
+	if not (arguments.prompts and arguments.out and (arguments.template or arguments.judge)):
+		parser.error("--template (not for --judge), --prompts and --out are required")
+	if arguments.template and not (arguments.template / ".tools" / "check.py").is_file():
 		print(f"{arguments.template} is not a mod with the kit installed (.tools/check.py is missing)", file=sys.stderr)
 		return 2
 	config = json.loads(arguments.prompts.read_text(encoding="utf-8"))
@@ -200,7 +242,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 	if not prompts:
 		print("no prompts to run", file=sys.stderr)
 		return 2
+	if arguments.judge:
+		missing = [entry["id"] for entry in prompts if not (arguments.out / entry["id"] / "mod" / ".tools" / "check.py").is_file()]
+		if missing:
+			print(f"no prepared copy under {arguments.out} for: {', '.join(missing)}", file=sys.stderr)
+			return 2
+		return write_report(arguments.out, [judge_copy(entry, arguments, recorded_sessions(arguments.out, entry["id"])) for entry in prompts])
 	arguments.out.mkdir(parents=True, exist_ok=True)
+	if arguments.prepare:
+		for entry in prompts:
+			script = prepare_prompt(entry, config, arguments)
+			print(f"{script['folder']}	{script['first_message']}	go")
+		return 0
 	results = [run_prompt(entry, config, arguments) for entry in prompts]
 	return write_report(arguments.out, results)
 
