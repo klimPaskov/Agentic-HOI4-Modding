@@ -11,7 +11,7 @@ Read the file a section names before the work it governs. A summary here never r
 
 ## Placeholder Guide
 
-Use this guide once. HOI4 Mod Setup fills these values and removes this section automatically.
+HOI4 Mod Setup fills these values and removes this section.
 
 Install this template as `AGENTS.md`. `CLAUDE.md` is canonical and `AGENTS.md` is generated from it.
 
@@ -40,7 +40,7 @@ Blocks wrapped in `<!-- HOI4_MOD_SETUP:COMPONENT:<component>:START -->` and the 
 
 Repo skills are required implementation guidance. Open the matching one before the work it names:
 
-- Plan and verify: `hoi4-feature-planning`, `hoi4-improvement-loop`, `hoi4-investigate` (any bug or "done" report), `hoi4-save-inspection`, `hoi4-subagents`.
+- Plan and verify: `hoi4-new-mod` (a whole mod from a short idea), `hoi4-feature-planning`, `hoi4-improvement-loop`, `hoi4-investigate` (any bug or "done" report), `hoi4-save-inspection`, `hoi4-subagents`.
 - Content: `hoi4-events`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-native-raids`, `hoi4-super-events`, `hoi4-scripted-gui`, `hoi4-mtth`.
 - Systems: `hoi4-equipment`, `hoi4-technology-doctrines`, `hoi4-units-divisions`, `hoi4-characters-leaders`, `hoi4-ideas-modifiers`, `hoi4-map-states`, `hoi4-diplomacy-war`, `hoi4-ai-strategies`, `hoi4-localisation`, `hoi4-on-actions`, `hoi4-ideologies`, `hoi4-scripted-triggers-effects`.
 - Assets: `hoi4-imagegen` (any 2D asset), `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-3d-model-pipeline`, `hoi4-text-audio-research`, `xlsx`.
@@ -92,7 +92,7 @@ The `hoi4-agent-tools` server (`hoi4_agent_tools`) does lookups, script validati
 - `CLAUDE.md`, `.claude/skills/` and `.claude/agents/` are canonical. `AGENTS.md` and every other client's files are generated copies, so never hand-edit them.
 - After editing a canonical file, run `python .tools/sync/generators.py` (a Claude Code hook does it) and commit the projections with it.
 - Never copy one runtime's MCP approval, sandbox, path or allowlist settings into another.
-- Per-client details: `docs/runtimes.md`. Full text, with `.tools/sync/sync_agents.py` and the Claude Code and DeepSeek Harness notes: `agent-runtimes.md`.
+- Per-client details: `docs/runtimes.md`. Full text, with `sync_agents.py` and the Claude Code and DeepSeek Harness notes: `agent-runtimes.md`.
 
 ### Subagents
 
@@ -134,7 +134,7 @@ Clausewitz script is picky. Follow these rules strictly. Markdown prose keeps ea
     - `scope_exists` is always true on a variable scope.
     - Loops stop after 1,000 iterations.
 
-Full text, with the required vanilla documents and the constants and event target rules: `coding-style.md`.
+Full text, with the vanilla documents, constants and event targets: `coding-style.md`.
 
 ## 2. Localisation and UI
 
@@ -150,7 +150,7 @@ Full text: `localisation-ui-naming.md`.
 
 ## 3. Naming and Prefix Rules
 
-Use prefixes only where needed. Add the `[MOD_PREFIX]` prefix only to a folder dedicated to `[MOD_NAME]` whose files all share it. Do not add it to variables, scripted effects or triggers unless the surrounding context does.
+Prefix `[MOD_PREFIX]` only where needed. Full text: `localisation-ui-naming.md`.
 
 ## 4. HOI4 Modding Rules Summary
 
@@ -192,6 +192,7 @@ A goal is complete only when it is. Finish the whole implementation, update ever
 - An unavailable check limits what was verified. It never counts as passed and does not by itself stop otherwise finished work.
 - Do not claim completion when only the visible part exists, content is generic or copied, balance, localisation, AI or assets are missing, maintained docs are stale, a fallback lacked approval or a picture was not read at full size.
 - Do not bulk-generate trees, decisions, localisation or reports. Check every draft.
+- A whole-mod build (`hoi4-new-mod`) is complete only when `python -B .tools/check.py gate` passes.
 - List every simplification under `Simplifications, omissions, and blockers`, or say there were none and give the evidence.
 - Lead with the result and any needed user action.
 
