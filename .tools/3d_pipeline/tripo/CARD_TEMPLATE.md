@@ -120,11 +120,15 @@ Every clip must fit the unit: its era, its weapon and its kind of creature. Neve
 
 <!-- unarmed -->
 Text-to-motion (20), <paid clip when>: name the motion, both hands, their height and the stance, written to fit the unit on the first try, for example `<paid clip>`. Write the blow outward to the side, with the arm swung away from the body, never across the body, overhead or toward the front, because a map camera sees the blow only when it moves sideways. At most 266 characters.
+
+Make a text-to-motion clip on the motion donor, not on this unit's page. The donor is a light model, so its page does not freeze the browser as a heavy unit's page can (`docs/3d-units.md`, made clips on the motion donor). Open the donor's Animate page, apply one free clip so the model is loaded, make the clip, export only that clip (step 5), and save it as `<job folder>/inbox/<asset_slug>__donor.glb`. The intake carries it onto this unit's rig beside its own clips. Make it on this unit's own page only when the account has no donor yet, or when the intake refuses the donor file.
 <!-- /unarmed -->
 <!-- armed -->
 The free library has no overhead weapon blow. Searches for `attack`, `smash`, `swing`, `slam` and `hammer` find nothing (2026-11-22). The boxing and kick presets never fit a unit (D-127). For a hammer, a club, a mallet or an axe swung overhead, plan one text-to-motion attack (20) from the start.
 
 Text-to-motion (20): `<paid clip>` Change the body words to fit the unit. Name the hand by the character's own side, which is the rig's `<hand>`. At most 266 characters.
+
+Make it on the motion donor, not on this unit's page, so no page has to draw this unit's heavy model (`docs/3d-units.md`, made clips on the motion donor). Export only that clip from the donor (step 5), save it as `<job folder>/armed/<asset_slug>__donor.glb`, and carry it onto the body before step 8: `py -3.13 -B .tools/3d_pipeline/tripo/clip_transfer.py <job folder>/armed/<asset_slug>__donor.glb <job folder>/armed/<asset_slug>__body.glb --out <job folder>/armed/<asset_slug>__body.glb --keep-target-clips` (copy the body beside it first). Make it on this unit's own page only when the account has no donor yet, or when the transfer refuses.
 <!-- /armed -->
 <!-- /tripo_rig -->
 
@@ -154,7 +158,7 @@ On the picked variant press **Export**, GLB, 2K. Save it as `<job folder>/inbox/
 
 ## 6. Before you leave Tripo (free)
 
-Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the same rigged model, so it cannot be made after you leave.
+Keep the Tripo tab and its sign-in until this step passes. A text-to-motion clip is made on the motion donor (step 4), so this unit's own page can be closed once its export is saved, and a clip the checks ask for later needs only the donor's page.
 
 First check the rig. Run `py -3.13 -B .tools/3d_pipeline/tripo/rig_check.py <the rigged export>` on the file of step 5. It must print `rig: pass`. On `rig: fail` (TRIPO-RIG-ARMS) Tripo's auto-rig put the arm chain outside the arms, as large wings made it do on the ZIN devil. For a winged unit repair it free: `py -3.13 -B .tools/3d_pipeline/tripo/arm_seat.py <the rigged export> --out <job folder>/inbox/<asset_slug>__rigged.glb`, then run `rig_check.py` on that file. It moves the arm joints onto the mesh's own arm and gives the wing skin to the shoulder for the route's wing chains, and every clip already applied keeps working. Do not press **Retry** on the Rig page instead: it charges 20, drops every applied clip, and on the devil its second rig was worse (91% of the skin on the head, no right hand joint). When `arm_seat.py` refuses or the check still fails, stop and ask before any paid step. For a unit in a floor-length robe that hides its legs, repair a failed or misplaced rig with `robe_rig.py` instead (same arguments): it places every joint again from the mesh and moves the applied clips onto them.
 
@@ -171,8 +175,8 @@ When a fresh rig is needed (the asset's rig is lost or its retries degenerate: o
 1. Run `py -3.13 -B .tools/3d_pipeline/tripo/clip_check.py <job folder>/armed/<asset_slug>__body.glb --samples all --attack <free attacks> <earlier clips> --json <job folder>/evidence/clips.json`.
 <!-- /armed -->
 2. Read the `attack:` line. `attack: pass` names the candidates that pass. Go to step 7. With no free or earlier attack to check (the table names none for this unit), go to 3.
-3. `attack: none passes` (exit code 3): make the text-to-motion clip of step 4 now (20). Write the ledger row first.
-4. Export again in a fresh browser tab (step 5) and run step 6 again.
+3. `attack: none passes` (exit code 3): make the text-to-motion clip of step 4 now (20), on the motion donor. Write the ledger row first.
+4. Export the donor's clip in a fresh browser tab (step 5) and save it as step 4 says. To measure it, put it beside the unit's own clips in one file: `py -3.13 -B .tools/3d_pipeline/tripo/clip_transfer.py <the donor export> <the file of step 1> --out <job folder>/evidence/with_donor.glb --keep-target-clips`, then run step 1 on `with_donor.glb`.
 5. When the attack budget is spent and still none passes, stop and ask before more credits.
 
 ## 7. Clip choice (free)
