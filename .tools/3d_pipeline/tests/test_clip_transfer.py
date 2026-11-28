@@ -118,6 +118,24 @@ class Transfer(unittest.TestCase):
         C.transfer(self.source, swapped, out, ["idle"])
         np.testing.assert_allclose(np.abs(self.local_spine(out)), np.abs(np.array(RG.LEAN[1])), atol=1e-5)
 
+    def test_keep_target_clips_adds_the_moved_clip_beside_the_targets_own(self) -> None:
+        """A clip made on a motion donor for one role joins the unit's other clips, and a same-named clip is replaced (2026-11-28)."""
+
+        target = self.folder / "own.glb"
+        rig = C.Rig(self.source)
+        doc = json.loads(json.dumps(rig.doc))
+        doc["animations"][0]["name"] = "stand"
+        C.write_glb(target, doc, rig.blob)
+        only, both = self.folder / "only.glb", self.folder / "both.glb"
+        C.transfer(self.source, target, only, ["idle"])
+        report = C.transfer(self.source, target, both, ["idle"], keep_target_clips=True)
+        self.assertEqual(sorted(C.Rig(only).clips()), ["idle"])
+        self.assertEqual(sorted(C.Rig(both).clips()), ["idle", "stand"])
+        self.assertEqual(report["kept"], ["stand"])
+        again = self.folder / "again.glb"
+        C.transfer(self.source, both, again, ["idle"], keep_target_clips=True)
+        self.assertEqual(sorted(C.Rig(again).clips()), ["idle", "stand"], "a moved clip replaces the target's clip of the same name")
+
     def test_a_missing_clip_is_named(self) -> None:
         with self.assertRaises(C.TransferError):
             C.transfer(self.source, self.source, self.folder / "out.glb", ["swagger"])

@@ -365,8 +365,11 @@ def _append(doc: dict, blob: bytearray, values: np.ndarray, kind: str) -> int:
     return len(doc["accessors"]) - 1
 
 
-def transfer(source_path: Path, target_path: Path, out_path: Path, clips: Optional[Sequence[str]] = None) -> dict:
-    """Move the named source clips (all when None) onto the target rig and write `out_path` with only those clips. Returns a report."""
+def transfer(source_path: Path, target_path: Path, out_path: Path, clips: Optional[Sequence[str]] = None, keep_target_clips: bool = False) -> dict:
+    """Move the named source clips (all when None) onto the target rig and write `out_path` with only those clips. Returns a report.
+
+    With `keep_target_clips` the output keeps the target's own clips as well, and a moved clip replaces a target clip of the same name: a
+    clip made on a motion donor joins the unit's other clips in one file (a unit whose own Tripo page will not load, 2026-11-28)."""
 
     source, target = Rig(source_path), Rig(target_path)
     shared = sorted(set(source.joints) & set(target.joints))
@@ -389,8 +392,9 @@ def transfer(source_path: Path, target_path: Path, out_path: Path, clips: Option
                                  "interpolation": "LINEAR"})
                 channels.append({"sampler": len(samplers) - 1, "target": {"node": node, "path": path}})
         animations.append({"name": name, "samplers": samplers, "channels": channels})
-    doc["animations"] = animations
+    kept = [a for a in doc.get("animations", []) if a.get("name") not in wanted] if keep_target_clips else []
+    doc["animations"] = kept + animations
     doc["buffers"][0]["byteLength"] = len(blob)
     write_glb(out_path, doc, blob)
-    return {"source": str(source_path), "target": str(target_path), "clips": wanted, "shared_joints": len(shared),
+    return {"source": str(source_path), "target": str(target_path), "clips": wanted, "kept": [a.get("name") for a in kept], "shared_joints": len(shared),
             "source_only": sorted(set(source.joints) - set(target.joints)), "target_only": sorted(set(target.joints) - set(source.joints))}
