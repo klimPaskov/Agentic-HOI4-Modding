@@ -40,7 +40,7 @@ Blocks wrapped in `<!-- HOI4_MOD_SETUP:COMPONENT:<component>:START -->` and the 
 
 Repo skills are required implementation guidance. Open the matching one before the work it names:
 
-- Plan and verify: `hoi4-new-mod` (a whole mod from a short idea), `hoi4-feature-planning`, `hoi4-improvement-loop`, `hoi4-investigate` (any bug or "done" report), `hoi4-save-inspection`, `hoi4-subagents`.
+- Plan and verify: `hoi4-new-mod` (a whole mod from a short idea, or any big request), `hoi4-feature-planning`, `hoi4-improvement-loop`, `hoi4-investigate` (any bug or "done" report), `hoi4-save-inspection`, `hoi4-subagents`.
 - Content: `hoi4-events`, `hoi4-focus-trees`, `hoi4-decisions-missions`, `hoi4-native-raids`, `hoi4-super-events`, `hoi4-scripted-gui`, `hoi4-mtth`.
 - Systems: `hoi4-equipment`, `hoi4-technology-doctrines`, `hoi4-units-divisions`, `hoi4-characters-leaders`, `hoi4-ideas-modifiers`, `hoi4-map-states`, `hoi4-diplomacy-war`, `hoi4-ai-strategies`, `hoi4-localisation`, `hoi4-on-actions`, `hoi4-ideologies`, `hoi4-scripted-triggers-effects`.
 - Assets: `hoi4-imagegen` (any 2D asset), `hoi4-feature-assets`, `hoi4-frame-animation`, `hoi4-3d-model-pipeline`, `hoi4-text-audio-research`, `xlsx`.
@@ -192,7 +192,7 @@ A goal is complete only when it is. Finish the whole implementation, update ever
 - An unavailable check limits what was verified. It never counts as passed and does not by itself stop otherwise finished work.
 - Do not claim completion when only the visible part exists, content is generic or copied, balance, localisation, AI or assets are missing, maintained docs are stale, a fallback lacked approval or a picture was not read at full size.
 - Do not bulk-generate trees, decisions, localisation or reports. Check every draft.
-- A whole-mod build (`hoi4-new-mod`) is complete only when `python -B .tools/check.py gate` passes.
+- A whole-mod build or a big request (`hoi4-new-mod`) is complete only when `python -B .tools/check.py gate` passes.
 - List every simplification under `Simplifications, omissions, and blockers`, or say there were none and give the evidence.
 - Lead with the result and any needed user action.
 
