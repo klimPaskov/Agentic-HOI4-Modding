@@ -57,7 +57,7 @@ One feature per step keeps each change reviewable and lets a new context pick up
 
 `python -B .tools/check.py gate` is the same check in every client. In Claude Code the project's `Stop` hook runs it and keeps the session working while the ledger has open features. It lets a stop through when:
 
-- every feature has passed with evidence or has a recorded `blocker`, and the checks are clean;
+- every feature has passed with evidence or has a recorded `blocker`, the checks are clean, and the in-game smoke test is recorded as the user's in-game testing answer requires;
 - you are waiting for the user: run `python -B .tools/check.py gate --wait "<question>"` before you ask; the user's reply clears it;
 - the user told you to stop: run `python -B .tools/check.py gate --pause "<their words>"`, and `--resume` when they return;
 - its cap is reached: three blocks in a row with no change to the files, or 30 in one session.

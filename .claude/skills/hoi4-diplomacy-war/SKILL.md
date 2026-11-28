@@ -79,7 +79,7 @@ Existing references: [syntax-reference.md](references/syntax-reference.md) holds
 4. Check that every war-causing decision, mission, or event declares its target to the AI (`war_with_on_*`).
 5. Check on-action scope assumptions against the wiki table.
 6. Use `hoi4_script_validate` for an effect or trigger body under its explicit scope. A true result covers only the listed checks; parameter semantics and engine behaviour remain separate evidence.
-7. Source review and tools do not prove live behaviour. The user performs in-game validation; do not launch the game.
+7. Source review and tools do not prove live behaviour. In-game validation runs as the recorded in-game testing answer says (`hoi4-live-playtest`); otherwise the user performs it, and the agent does not launch the game.
 
 ## Repository conventions
 

@@ -58,7 +58,7 @@ class GateTest(unittest.TestCase):
 		path.write_text(text, encoding="utf-8")
 
 	def ledger(self, features, state="building", **extra):
-		data = {"schema": mod_gate.SCHEMA, "mod": "Test", "state": state, "scope": {"phases": [{"id": "core"}, {"id": "expansion"}], "surfaces": ["country"]}, "features": features}
+		data = {"schema": mod_gate.SCHEMA, "mod": "Test", "state": state, "scope": {"phases": [{"id": "core"}, {"id": "expansion"}], "surfaces": ["country"]}, "features": features, "live_testing": {"run": "no"}}
 		data.update(extra)
 		self.write("docs/mod/ledger.json", json.dumps(data))
 
@@ -250,6 +250,43 @@ class GateTest(unittest.TestCase):
 		self.assertEqual(self.stop(), {})
 		self.write("docs/mod/ledger.json", "[]")
 		self.assertEqual(self.run_main()[0], 2)
+
+	def test_live_testing_answer_must_be_recorded(self):
+		self.ledger([feature("country")], live_testing={})
+		self.assertTrue(any("in-game testing answer" in problem for problem in self.problems()))
+
+	def test_smoke_test_required_once_every_feature_passed(self):
+		self.write("docs/evidence.md", "ok")
+		done = [feature("country", passes=True, evidence=["docs/evidence.md"]), feature("events", passes=True, evidence=["docs/evidence.md"])]
+		self.ledger([feature("country")], live_testing={"run": "yes", "when": "end"})
+		self.assertFalse(any("smoke" in problem for problem in self.problems()))
+		self.ledger(done, live_testing={"run": "yes", "when": "end"})
+		self.assertTrue(any("smoke test: not recorded" in problem for problem in self.problems()))
+		self.write("docs/mod/evidence/smoke.md", "ran 30 days, no new errors")
+		smoke = {"passes": True, "evidence": ["docs/mod/evidence/smoke.md"], "covers": ["country"]}
+		self.ledger(done, live_testing={"run": "manual", "smoke": smoke})
+		self.assertTrue(any("does not cover `events`" in problem for problem in self.problems()))
+		smoke["covers"] = ["country", "events"]
+		self.ledger(done, live_testing={"run": "yes", "smoke": smoke})
+		self.assertEqual(self.problems(), [])
+		self.ledger(done, live_testing={"run": "yes", "blocker": {"needs": "in_game", "reason": "Linux has no mod launch"}})
+		gate = mod_gate.evaluate(self.root, {})
+		self.assertEqual(gate.problems, [])
+		self.assertTrue(any("smoke test blocked" in note for note in gate.notes))
+
+	def test_phase_smoke_before_the_next_phase(self):
+		self.write("docs/evidence.md", "ok")
+		core = feature("country", passes=True, evidence=["docs/evidence.md"])
+		later = feature("rivals", passes=True, phase="expansion", evidence=["docs/evidence.md"])
+		open_later = feature("events", phase="expansion")
+		self.ledger([core, open_later], live_testing={"run": "yes", "when": "phases"})
+		self.assertFalse(any("smoke" in problem for problem in self.problems()))
+		self.ledger([core, later, open_later], live_testing={"run": "yes", "when": "phases"})
+		self.assertTrue(any("smoke test: not recorded" in problem for problem in self.problems()))
+		self.write("docs/mod/evidence/smoke.md", "core checked")
+		smoke = {"passes": True, "evidence": ["docs/mod/evidence/smoke.md"], "covers": ["country"]}
+		self.ledger([core, later, open_later], live_testing={"run": "yes", "when": "phases", "smoke": smoke})
+		self.assertFalse(any("smoke" in problem for problem in self.problems()))
 
 	def test_session_start_prints_the_routine(self):
 		self.ledger([feature("country"), feature("events", depends_on=["country"])])

@@ -16,6 +16,7 @@ The ledger is the mod's build plan in a form a program can check. `python -B .to
     "surfaces": ["map", "country", "history", "ideas", "characters", "focus_tree", "events", "decisions", "ai", "art", "localisation"]},
   "gate": {"max_blocks": 30, "max_idle_blocks": 3},
   "placeholders_allowed": [],
+  "live_testing": {"run": "yes", "how": "HOI4 Live Tools, one game, while the user is away", "when": "phases", "smoke": null},
   "features": [
     {
       "id": "country-han",
@@ -50,6 +51,7 @@ The example shows one feature of eleven surfaces. A real ledger has a feature fo
 | `features[].surfaces` | The surfaces this feature builds, in the same words as `scope.surfaces` |
 | `gate` | Optional caps for the Stop hook. Leave the defaults unless the user asks |
 | `placeholders_allowed` | `{"path": ..., "reason": ...}` rows for placeholders the user approved, such as a sourced portrait waiting for its styled replacement. A folder path ends in `/` |
+| `live_testing` | The recorded in-game testing answer: `run` is `yes`, `manual` or `no`, with `how` in the user's terms and `when` one of `each_feature`, `phases` or `end`. Unless it is `no`, the gate needs `smoke` = `{"passes": true, "evidence": [...], "covers": [every passed feature id]}` once every feature has passed (with `phases`, also covering each earlier phase before a later phase's feature passes), or a `blocker` with a true reason (`hoi4-live-playtest`, Smoke test) |
 | `features[].id` | Lower-case letters, digits, `-` and `_`, unique |
 | `depends_on` | Ids of features that must pass first. No cycles |
 | `acceptance` | What a reviewer checks, in words: specific, countable where possible, taken from the scope contract and the owning skill's quality bar |
@@ -102,7 +104,7 @@ Cover every surface the build plan names. The core phase takes a first feature o
 | 8 | AI | `hoi4-ai-strategies` | Strategies and weights for every playable and major new country, analysed with the probability tools |
 | 9 | Remaining art | `hoi4-imagegen`, `hoi4-feature-assets`, `hoi4-portrait-production` | Every flag, portrait, focus, idea, decision and event picture not made with its own feature exists in the agreed style |
 | 10 | Localisation pass | `hoi4-localisation` | Every key present and readable; `check.py` localisation clean |
-| 11 | In-game check | `hoi4-live-playtest` | As the consultation recorded |
+| 11 | In-game check | `hoi4-live-playtest` | Not a feature row: the gate requires the smoke test record in `live_testing` once every feature has passed, unless the answer is `no`. With "after each feature", each feature's evidence also includes its feature test |
 
 Each feature with design depth (a focus tree, an event chain, a mechanic) gets its own spec under `docs/specs/<feature_slug>/` through `hoi4-feature-planning`, and its evidence includes that spec.
 

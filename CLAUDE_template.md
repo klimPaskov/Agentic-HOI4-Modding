@@ -110,7 +110,7 @@ The `hoi4-agent-tools` server (`hoi4_agent_tools`) does lookups, script validati
 
 - Specs go under `docs/specs/<feature_slug>/`. Plans and handoffs go under `docs/plans/<feature_slug>/`.
 - A date, status label or old handoff does not prove approval. Every plan needs a disposition.
-- For a new or reshaped feature, inspect the project first. Then ask the genuine open questions once, grouped, each with a suggested answer, and record the answers in `docs/specs/<feature_slug>/decisions.md`.
+- For a new or reshaped feature, inspect the project first. Then ask the genuine open questions once, grouped, each with a suggested answer (including whether, how and when to test in game), and record the answers in `docs/specs/<feature_slug>/decisions.md`.
 - Never ask routine implementation questions.
 - Full text: `specs-plans-consultation.md`.
 
@@ -166,7 +166,7 @@ For a new mechanic:
 
 Always:
 
-- Never launch Hearts of Iron IV. Live testing belongs to the user unless they invoke `hoi4-debug-playtest`, ask through `hoi4-live-playtest`, or authorize it for the task.
+- Launch Hearts of Iron IV only as the user's recorded in-game testing answer allows, or when they ask, through `hoi4-live-playtest`. `hoi4-debug-playtest` needs the user to name it.
 - When the user reports an issue, assume the game was reloaded. Do not ask for logs or tell the user to run in-game validation. Read a supplied save with `hoi4-save-inspection`.
 - Treat an error found after your changes as caused by them. Add temporary debug `log` lines if the cause is unclear, and remove them when fixed.
 - Write content as if it always existed, with no update-history wording such as "now reworked".

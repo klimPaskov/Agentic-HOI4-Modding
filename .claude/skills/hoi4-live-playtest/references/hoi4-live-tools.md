@@ -6,7 +6,7 @@ HOI4 Live Tools is an MCP server, registered as `hoi4-live`, that drives a runni
 
 Use it instead of scripting the desktop. A feature check that needs the game goes through these tools; screenshots, clicks and keys sent by ad-hoc scripts are not a substitute and can hit the wrong window.
 
-Live testing is requested by the user. Use this skill when the user asks for live testing, names this skill or `hoi4-debug-playtest`, or the task explicitly includes a live check. Never start the game or play on your own initiative during implementation, audit, or completion work.
+Live testing runs as the user decided. Use this provider when the recorded in-game testing answer calls for a test (`hoi4-live-playtest`), when the user asks for live testing or names this skill or `hoi4-debug-playtest`, or when the task explicitly includes a live check. Never start the game or play beyond that answer.
 
 ## Before the first call
 

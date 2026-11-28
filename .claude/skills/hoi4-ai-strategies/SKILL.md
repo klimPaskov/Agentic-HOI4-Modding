@@ -20,7 +20,7 @@ Rules that always apply (full text in the references named):
 - Every `common/ai_strategy` block needs `abort` or `abort_when_not_enabled`, and `allowed` is checked only once at start.
 - `add_ai_strategy` is permanent and has no removal effect. Anything temporary or conditional is a flag-gated `common/ai_strategy` block.
 - `ai_will_do` is a weight, not a gate. Eligibility belongs in `available` or `allow`, and a decision without `ai_will_do` is never taken.
-- Do not add `on_daily`, `on_weekly` or `on_monthly` hooks for AI behaviour without permission. Agents never launch the game, so console debug commands are for the player.
+- Do not add `on_daily`, `on_weekly` or `on_monthly` hooks for AI behaviour without permission. Agents launch the game only as the recorded in-game testing answer allows (`hoi4-live-playtest`), so console debug commands are mostly for the player.
 
 Two deeper references already exist:
 

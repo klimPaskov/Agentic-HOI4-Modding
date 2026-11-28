@@ -11,7 +11,7 @@ Unavailable tools, inconclusive analysis, or missing historical evidence limit w
 Use the MCP retry limits in `mcp-usage.md`, keep source review distinct from observed game behavior, and never report an unavailable check as passed.
 After reviewing the relevant rules and code and the useful available checks, finish when the requested implementation is present and no known defect remains.
 Further investigation needs a specific unanswered question that could change the implementation; if an indispensable answer is unavailable, state that obstacle once and finish independent work instead of repeating the investigation.
-Do not wait for or request user-owned game testing as a completion step.
+In-game testing is a completion step exactly as the recorded in-game testing answer sets it (`hoi4-live-playtest`). Otherwise, do not wait for or request user-owned game testing as a completion step.
 If a specific render, measurement, or test result is itself a requested output, its absence still leaves that output incomplete.
 
 Validation reporting must be useful. Run basic syntax hygiene internally when helpful, but do not spend the final report listing checks that only restate mandatory rules, such as unsupported operator checks or brackets balance or BOM encoding checks, etc. Never tell the user directly: `Validation passed: diff whitespace check, brace balance on touched scripts, no unsupported <=/>=, localisation BOM intact, git diff --check passed, no remaining X references, workspace is clean.` Mention validation only when it is task-specific, could realistically fail, found a problem, changed the implementation, or gives the user useful evidence. Leave passing boilerplate checks out of the user-facing report.

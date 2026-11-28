@@ -5,7 +5,7 @@ description: Use before fixing any HOI4 mod bug, regression or crash, and to che
 
 # HOI4 Investigate
 
-Find the real cause of a defect from source before changing anything. This skill is static: it reads the mod, vanilla, the game's documentation and the reference tools, and it never launches the game. Live testing stays with `hoi4-live-playtest` and `hoi4-debug-playtest`, which run only when the user names them.
+Find the real cause of a defect from source before changing anything. This skill is static: it reads the mod, vanilla, the game's documentation and the reference tools, and it never launches the game. Live testing stays with `hoi4-live-playtest`, which runs as the recorded in-game testing answer says, and `hoi4-debug-playtest`, which runs only when the user names it.
 
 Evidence tags: `[game-tested 1.19.3]` (observed in the running game), `[vanilla-confirmed 1.19.3]` (the installed vanilla script shows it), `[docs]` (the game's own documentation states it) and `[unverified]` (plausible, not confirmed).
 
@@ -35,10 +35,10 @@ Each rung proves more than the one below it. Report the highest rung you reached
 2. A static check or validator passes.
 3. You re-read the changed source and traced the identifier through every file that reads it.
 4. Vanilla precedent, the game's documentation or the reference tools confirm the mechanism.
-5. A game log the user supplied is clean for the mod's own identifiers.
+5. A game log the user supplied, or one from an in-game test the recorded answer ran, is clean for the mod's own identifiers.
 6. The user observed the behaviour in game.
 
-Static work normally ends at rung 4. Never ask for rungs 5 and 6: the project instructions forbid asking for logs or in-game testing. Use them when the user supplies them.
+Static work normally ends at rung 4. Never ask the user for rungs 5 and 6: the project instructions forbid asking for logs or for in-game testing beyond the recorded answer. Use them when the user supplies them, or reach rung 5 through `hoi4-live-playtest` when the recorded in-game testing answer runs a test.
 
 ## 4. Red flags in a fix
 

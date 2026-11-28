@@ -22,7 +22,11 @@ While the ledger's `state` is `building`, the gate fails when:
   localisation value, lorem ipsum, or a localisation value that only repeats its key), outside the paths the ledger
   lists under `placeholders_allowed` with a reason;
 - `check.py quick` finds an error in the changed files;
-- every feature has passed but `check.py full --only localisation asset-wiring script-rules gui-rules` finds an error.
+- every feature has passed but `check.py full --only localisation asset-wiring script-rules gui-rules` finds an error;
+- the in-game testing answer is not recorded in `live_testing` (`run`: `yes`, `manual` or `no`), or it is not `no` and
+  `live_testing.smoke` has not passed with existing evidence covering every passed feature once all have passed, or,
+  with `when: phases`, every feature of the earlier phases once a later phase has a passed feature
+  (`hoi4-live-playtest`, Smoke test), unless `live_testing.blocker` records a true blocker.
 
 A check that cannot run on this machine (exit 2, for example no game folder) limits what was verified and is reported,
 but never fails the gate by itself. The Stop hook is capped: after `gate.max_idle_blocks` blocks in a row with no change
@@ -51,6 +55,7 @@ SCHEMA = "hoi4-mod-ledger/1"
 STATES = ("planning", "building", "paused", "complete")
 BLOCKER_NEEDS = ("user", "credential", "money", "access", "in_game", "tool")
 CHECK_KINDS = ("exists", "contains", "count")
+LIVE_RUNS = ("yes", "manual", "no")
 DEFAULT_MAX_BLOCKS = 30
 DEFAULT_MAX_IDLE = 3
 QUICK_TIMEOUT = 900
@@ -284,6 +289,53 @@ def feature_problems(root: Path, ledger: Ledger) -> Tuple[List[str], List[str]]:
 	return problems, notes
 
 
+def live_problems(root: Path, ledger: Ledger, final: bool) -> Tuple[List[str], List[str]]:
+	"""The recorded in-game testing answer, and the smoke test it requires once every feature has passed."""
+	live = ledger.get("live_testing")
+	if not isinstance(live, dict) or live.get("run") not in LIVE_RUNS:
+		return ["ledger: record the user's in-game testing answer in `live_testing` (`run`: yes, manual or no, with `how` "
+			"and `when`); ask it once if it was never asked (hoi4-live-playtest)"], []
+	if live["run"] == "no":
+		return [], ["in-game testing: the user chose none, so the mod was not checked in game"]
+	if live.get("blocker"):
+		issue = blocker_problem(live["blocker"])
+		return ([f"live_testing: {issue}"], []) if issue else ([], [f"in-game smoke test blocked ({live['blocker']['needs']}): {live['blocker']['reason']}"])
+	required = smoke_required(ledger, final, live.get("when") == "phases")
+	if not required:
+		return [], []
+	smoke = live.get("smoke")
+	if not isinstance(smoke, dict) or smoke.get("passes") is not True:
+		return ["in-game smoke test: not recorded as passed; run it as `hoi4-live-playtest` (Smoke test) says and record it in "
+			"`live_testing.smoke` before the next phase or the end"], []
+	problems: List[str] = []
+	evidence = smoke.get("evidence")
+	if not isinstance(evidence, list) or not evidence:
+		problems.append("in-game smoke test: passes with no `evidence` paths")
+	for item in evidence if isinstance(evidence, list) else []:
+		path = inside(root, item)
+		if path is None or not path.exists():
+			problems.append(f"in-game smoke test: evidence `{item}` does not exist in the mod")
+	raw = smoke.get("covers")
+	covers = {str(item) for item in raw} if isinstance(raw, list) else set()
+	missing = [name for name in required if name not in covers]
+	if missing:
+		problems.append("in-game smoke test: run it again, since it does not cover " + ", ".join(f"`{name}`" for name in missing))
+	return problems, []
+
+
+def smoke_required(ledger: Ledger, final: bool, per_phase: bool) -> List[str]:
+	"""Feature ids the smoke test must cover: every passed one at the end, and with `when: phases` every feature of a
+	finished phase once a later phase has a passed feature, so each phase is checked in game before the next one builds on it."""
+	rows = features_of(ledger)
+	if final:
+		return [str(row.get("id")) for row in rows if row.get("passes") is True]
+	if not per_phase:
+		return []
+	order = {name: index for index, name in enumerate(phase_ids(ledger))}
+	latest = max((order.get(str(row.get("phase")), 0) for row in rows if row.get("passes") is True), default=-1)
+	return [str(row.get("id")) for row in rows if row.get("passes") is True and order.get(str(row.get("phase")), 0) < latest]
+
+
 def mod_text_files(root: Path) -> Iterable[Path]:
 	for folder in MOD_TEXT_DIRS:
 		base = root / folder
@@ -399,7 +451,9 @@ def evaluate(root: Path, state: Optional[Dict[str, Any]] = None, run_static: boo
 		return Gate(True, ["ledger: no features yet; write the feature ledger before building (hoi4-new-mod)"], [], ledger)
 	open_problems, notes = feature_problems(root, ledger)
 	open_problems += phase_order_problems(ledger)
-	problems = open_problems + placeholder_problems(root, ledger)
+	in_game, in_game_notes = live_problems(root, ledger, not open_problems)
+	problems = open_problems + in_game + placeholder_problems(root, ledger)
+	notes += in_game_notes
 	if run_static:
 		static_problems, static_notes = static_checks(root, not open_problems, state if state is not None else {}, fingerprint(root))
 		problems += static_problems

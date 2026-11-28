@@ -34,6 +34,6 @@ A summary in `CLAUDE.md` never replaces the full rule here.
 - Read the wiki and the installed game documentation through `hoi4.reference_*` before editing engine-facing source.
 - Never use `<=` or `>=`, never hard-code tunable numbers, and indent script with tabs.
 - Write localisation as UTF-8 with BOM, in the same change as the content it names.
-- Never launch Hearts of Iron IV. Live testing belongs to the user unless they invoke `hoi4-debug-playtest` or `hoi4-live-playtest`.
+- Launch Hearts of Iron IV only as the in-game testing answer recorded in the consultation allows, or when the user asks, through `hoi4-live-playtest`. `hoi4-debug-playtest` still needs the user to name it.
 - A goal is complete only with evidence. Report every simplification, omission and blocker.
 - Edit canonical files only, then regenerate the projections with `python .tools/sync/generators.py`.
