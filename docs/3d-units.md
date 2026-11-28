@@ -409,6 +409,25 @@ Two things that make an attack fail the strike and the map reading, seen on the 
 3. Add `"lunge": {"attack": 0.6}` to the job's `tripo` block. The intake then allows that clip's travel up to the cap, and for an unarmed unit TRIPO-ATTACK-NO-STRIKE measures the hands against the ground instead of the chest, because the chest moves with them in a lunge. The limits stay 0.25 and 1.0. Measure before the run with `pose_check.py ... --lunge`. When the arm level's solve still leaves the hands over the head in too many frames (TRIPO-HANDS-HIGH), it lowers both arms a further 2.5 degrees at a time, up to 30, while the hands stay ahead of the chest.
 4. Pick the cap as the smallest that reaches the map reading. On the D-94 zombie (2026-11-21) the sudden lunge stepped 1.23 hip heights. Capped at 0.3 it read 259 px, at 0.6 it read 587 px, and its swell fell from 0.090 to 0.065. Against the chest it struck 0.23 at 0.97 a second, and against the ground 0.47 at 1.41. The lunge with its arms held out and no step that reviewers read as no strike (zombie_o) still measures 0.13 at 0.37 against the ground, so a held pose does not pass this way. Two fresh reviews still decide whether the attack reads as a lunging grab.
 
+### Steps 8 to 10 as one run that resumes
+
+Run the intake, the Blender stage, the checks and the review sheets with one command:
+
+```
+py -3.13 -B .tools/3d_pipeline/tripo/unit_run.py --jobs-config <your 3d_jobs.json> <unit> --rigged <job folder>/inbox/<asset>__rigged.glb --run <run folder> --unit-type <type> [--weapon-bone <bone>]
+```
+
+A pause, a crash or a restart can stop a run at any step. Run the same command again and it starts from the step that did not finish (`tripo/unit_run.py`). Before this tool, a lane's run script started again from the intake after every stop, and on a busy machine whole runs were lost.
+
+- **Pick a run folder no cleanup touches,** a new one per run (`<mod folder>/3d-runs/<unit>/<run name>`). On its first start the tool copies the jobs file and the export into `<run folder>/inputs/` with their SHA-256, and every step reads those copies. A cleanup that moves the files you started from cannot break the run.
+- **It checks the inputs on every start.** A missing or changed input stops it before anything runs, and it names the file. A new export or a changed job is a new run, in a new folder.
+- **It records each finished step** in `<run folder>/run_state.json`, only after the step ends, so a step that was stopped half way runs again. A second intake of the same files does nothing (its receipt), so the intake can always run again. `--status` lists the steps, finished or to run. `--again <step>` runs that step and every later one again.
+- **`<run folder>/STATUS.md` says whether the run is live.** It names the next step until the run ends and then says `finished`. Never move or delete a run folder whose STATUS.md does not say `finished`.
+- **A check with findings is a finished step.** Its report (`tripo_checks.json`, `check_unit_files.json`) is the result to read. Any other failure stops the run at that step, with its log in `<run folder>/logs/`.
+- **A machine's own gate.** Every step that starts Blender waits for the machine by itself (below). A machine with its own gate script passes it once, `--gate "<command prefix>"` or the `HOI4_KIT_GATE` variable, and the tool puts it before every heavy step and nothing else.
+
+The steps below are what the run does, one by one. Run them by hand only to repeat one step.
+
 ### 8. Intake (free)
 
 ```
