@@ -17,6 +17,7 @@ Ask each one that the request and the files do not already answer. Give the sugg
 | Compatibility | Must it stay compatible with vanilla saves, other mods or DLC? | Compatible with the current game version and every DLC optional, unless the design uses a DLC mechanic, which then becomes a listed requirement |
 | Tone and limits | Which tone, and which subjects need care? | The tone the request implies; real atrocities, living people and religions handled with care |
 | Visual style | Which art direction for portraits, flags, icons and event pictures? | A period style that matches the start date and the setting, in the project's configured image route |
+| In-game testing | Run in-game tests at all, how (the live-testing provider or a manual recipe; any limits on when the game may start) and when (after each feature, at milestones, at the end)? | With HOI4 Live Tools installed and supported here, a smoke test after each finished phase and before the mod is called done (`when: phases`); otherwise a short manual check at the same points. Record it in `decisions.md` and the ledger's `live_testing` (`hoi4-live-playtest`) |
 | Autonomy | Ask once and then build, or stop at milestones for a look? | Ask once, then build, with one picture round at the first art feature |
 
 Then add the feature-level questions that are genuine (`consultation-questions.md`): fallback policy, asset sources, spend for paid operations, audio, world iteration, animation.
