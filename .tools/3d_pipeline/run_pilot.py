@@ -4052,7 +4052,27 @@ def _smooth_and_fit(staged: Path, stem: str, roles: List[str], weapon: Any, spec
         out["stretch_smooth"] = smooth_stretched_weights(staged, stem, roles, weapon, load_bones, job_has_plates(spec))
     if tripo.get("fit_weights", True) is not False:
         out["weight_fit"] = fit_clip_weights(staged, stem, roles, weapon, load_bones, job_has_plates(spec))
+        out["hand_unbleed_after_fit"] = unbleed_hands_after_fit(staged, stem, weapon, load_bones)
     return out
+
+
+def unbleed_hands_after_fit(staged: Path, stem: str, weapon: Any, locked: Sequence[str] = ()) -> Dict[str, Any]:
+    """The hand bleed removed again after the fit (lib/stretch_smooth.unbleed_hands). The fit gives the forearm skin beside a hand a small
+    share of the hand's weight again (the Beast's fur: 97 and 102 vertices at 5 to 13%), and TRIPO-HAND-BLEED judges the exported mesh."""
+
+    from lib import pdx_deform, stretch_smooth
+
+    mesh_path = staged / f"{stem}.mesh"
+    mesh = pdx_deform.load_mesh(mesh_path)
+    if not mesh.skinned:
+        return {"changed": False, "vertices": 0}
+    canon = pdx_deform.weld(mesh.positions, max(mesh.height, 1e-6) * 1e-5)
+    edges = pdx_deform.mesh_edges(mesh)
+    tmp = staged / f"{stem}.unbled.mesh"
+    bled = stretch_smooth.write_unbled(mesh, mesh_path, tmp, canon, edges, held_bones(_parts(weapon)) + list(locked))
+    if bled:
+        shutil.move(str(tmp), str(mesh_path))
+    return {"changed": bool(bled), "vertices": int(bled)}
 
 
 def _girdle_on(spec: Dict[str, Any]) -> bool:
