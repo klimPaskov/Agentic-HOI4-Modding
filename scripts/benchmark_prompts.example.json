@@ -1,0 +1,9 @@
+{
+  "_about": "Example input for scripts/benchmark_new_mod.py. Keep the real benchmark prompts outside this repository and do not tune the kit to them, so they stay held out.",
+  "prompts": [
+    {"id": "atlantis", "prompt": "Create an Atlantis mod."},
+    {"id": "hansa", "prompt": "Make a mod where the Hanseatic League comes back as a Baltic power."}
+  ],
+  "replies": ["Use your suggestions."],
+  "continue": "Continue building."
+}
