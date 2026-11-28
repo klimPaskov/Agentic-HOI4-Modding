@@ -67,7 +67,7 @@ class ModelCeilingTest(unittest.TestCase):
 
 	def test_a_session_started_from_a_shell_command_is_judged_by_its_model(self):
 		self.start("sonnet")
-		for command in ("claude -p \"go\" --model opus", "cd x && claude --model=claude-opus-5-5 -p y", "codex exec -m fable-5 \"x\"", r"C:\Users\k\.local\bin\claude.exe -p x --model opus", "ANTHROPIC_LOG=1 claude -p x --model opus", "echo hi; claude.exe -p x --model fable"):
+		for command in ("claude -p \"go\" --model opus", "cd x && claude --model=claude-opus-5-5 -p y", "codex exec -m fable-5 \"x\"", r"C:\Users\username\.local\bin\claude.exe -p x --model opus", "ANTHROPIC_LOG=1 claude -p x --model opus", "echo hi; claude.exe -p x --model fable"):
 			self.assertEqual(self.decide("Bash", {"command": command})["permissionDecision"], "deny", command)
 		for command in ("claude -p x --model sonnet", "claude -p x", "git commit -m opus", "echo claude --model opus", "ls --model opus"):
 			self.assertIsNone(self.decide("Bash", {"command": command}), command)
