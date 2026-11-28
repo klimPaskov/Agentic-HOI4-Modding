@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "e5d5108adbb3b28223ebe22205c0fd15496f1b9c",
+  "generated_for_revision": "20fd8df3e7156a21b8354f295f9b8fe34a659ff6",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -58,8 +58,8 @@
       "expected_files": [
         {
           "path": "AGENTS_template.md",
-          "sha256": "0f6d31dcdc00558e62e0e42e79ef654d8b64a18ec6c8276fc8976ecdbd17871e",
-          "size": 15969
+          "sha256": "fcb33a4589cc62d65f292adbb2d5c9927b2b0a18ce1ac6526de98c9834647bc6",
+          "size": 15905
         }
       ]
     },
@@ -108,8 +108,8 @@
       "expected_files": [
         {
           "path": "CLAUDE_template.md",
-          "sha256": "ceeb71f6c51c042f2da723581dcda70cbb86aaf38c4659e5db901b8889de6602",
-          "size": 15969
+          "sha256": "c1e2550a765af28f6de5f84e1211c7273345b779768fd01af8b40060940c6e26",
+          "size": 15905
         }
       ]
     },
@@ -6327,8 +6327,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/consultation-questions.md",
-          "sha256": "fc271015fb99a41c0bfbdfeb9613091b5d56c690606bdfece452c1eb19d33df4",
-          "size": 6516
+          "sha256": "0c7f23a9187ed3801d3e618b31f2e16a80f10a4d7f518b84e65f011cd73abf7e",
+          "size": 6754
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
@@ -6616,6 +6616,31 @@
           "size": 4828
         },
         {
+          "path": ".claude/skills/hoi4-new-mod/SKILL.md",
+          "sha256": "4f606c88af9b4d6edf001811df231fa104a36cf1694c34ce0d4af7c374f1fb18",
+          "size": 8606
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/canon-policy.md",
+          "sha256": "790d2a615d59bce684ddcf1088a5c6c91169527168e519cd2ecfa899e5b071bf",
+          "size": 2461
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/creative-brief.md",
+          "sha256": "31729acbaf4d9af6032b560a991c4ae34330cf6e5610bdf7fc8e5cc8f0a7ba78",
+          "size": 4372
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/feature-ledger.md",
+          "sha256": "105a2ae5c6d3f2d6ff4ef9f4dd65765e74bfd8b4407d66c5b377ac0f17159b4d",
+          "size": 8959
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/mod-consultation.md",
+          "sha256": "3cb7d4932a06283f15b156d909673ef32d2958990cced32e230006b8016f4323",
+          "size": 4179
+        },
+        {
           "path": ".claude/skills/hoi4-on-actions/SKILL.md",
           "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
           "size": 12044
@@ -6682,8 +6707,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
-          "size": 5636
+          "sha256": "b083eec648e4505401d53a9bd8320f07682edc13869db0cd313e2918bce14ffd",
+          "size": 6056
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -11786,8 +11811,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/consultation-questions.md",
-          "sha256": "fc271015fb99a41c0bfbdfeb9613091b5d56c690606bdfece452c1eb19d33df4",
-          "size": 6516
+          "sha256": "0c7f23a9187ed3801d3e618b31f2e16a80f10a4d7f518b84e65f011cd73abf7e",
+          "size": 6754
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
@@ -12075,6 +12100,31 @@
           "size": 4828
         },
         {
+          "path": ".claude/skills/hoi4-new-mod/SKILL.md",
+          "sha256": "4f606c88af9b4d6edf001811df231fa104a36cf1694c34ce0d4af7c374f1fb18",
+          "size": 8606
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/canon-policy.md",
+          "sha256": "790d2a615d59bce684ddcf1088a5c6c91169527168e519cd2ecfa899e5b071bf",
+          "size": 2461
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/creative-brief.md",
+          "sha256": "31729acbaf4d9af6032b560a991c4ae34330cf6e5610bdf7fc8e5cc8f0a7ba78",
+          "size": 4372
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/feature-ledger.md",
+          "sha256": "105a2ae5c6d3f2d6ff4ef9f4dd65765e74bfd8b4407d66c5b377ac0f17159b4d",
+          "size": 8959
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/mod-consultation.md",
+          "sha256": "3cb7d4932a06283f15b156d909673ef32d2958990cced32e230006b8016f4323",
+          "size": 4179
+        },
+        {
           "path": ".claude/skills/hoi4-on-actions/SKILL.md",
           "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
           "size": 12044
@@ -12141,8 +12191,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
-          "size": 5636
+          "sha256": "b083eec648e4505401d53a9bd8320f07682edc13869db0cd313e2918bce14ffd",
+          "size": 6056
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -24714,8 +24764,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/consultation-questions.md",
-          "sha256": "fc271015fb99a41c0bfbdfeb9613091b5d56c690606bdfece452c1eb19d33df4",
-          "size": 6516
+          "sha256": "0c7f23a9187ed3801d3e618b31f2e16a80f10a4d7f518b84e65f011cd73abf7e",
+          "size": 6754
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
@@ -25003,6 +25053,31 @@
           "size": 4828
         },
         {
+          "path": ".claude/skills/hoi4-new-mod/SKILL.md",
+          "sha256": "4f606c88af9b4d6edf001811df231fa104a36cf1694c34ce0d4af7c374f1fb18",
+          "size": 8606
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/canon-policy.md",
+          "sha256": "790d2a615d59bce684ddcf1088a5c6c91169527168e519cd2ecfa899e5b071bf",
+          "size": 2461
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/creative-brief.md",
+          "sha256": "31729acbaf4d9af6032b560a991c4ae34330cf6e5610bdf7fc8e5cc8f0a7ba78",
+          "size": 4372
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/feature-ledger.md",
+          "sha256": "105a2ae5c6d3f2d6ff4ef9f4dd65765e74bfd8b4407d66c5b377ac0f17159b4d",
+          "size": 8959
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/mod-consultation.md",
+          "sha256": "3cb7d4932a06283f15b156d909673ef32d2958990cced32e230006b8016f4323",
+          "size": 4179
+        },
+        {
           "path": ".claude/skills/hoi4-on-actions/SKILL.md",
           "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
           "size": 12044
@@ -25069,8 +25144,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
-          "size": 5636
+          "sha256": "b083eec648e4505401d53a9bd8320f07682edc13869db0cd313e2918bce14ffd",
+          "size": 6056
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -30212,8 +30287,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/consultation-questions.md",
-          "sha256": "fc271015fb99a41c0bfbdfeb9613091b5d56c690606bdfece452c1eb19d33df4",
-          "size": 6516
+          "sha256": "0c7f23a9187ed3801d3e618b31f2e16a80f10a4d7f518b84e65f011cd73abf7e",
+          "size": 6754
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
@@ -30501,6 +30576,31 @@
           "size": 4828
         },
         {
+          "path": ".claude/skills/hoi4-new-mod/SKILL.md",
+          "sha256": "4f606c88af9b4d6edf001811df231fa104a36cf1694c34ce0d4af7c374f1fb18",
+          "size": 8606
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/canon-policy.md",
+          "sha256": "790d2a615d59bce684ddcf1088a5c6c91169527168e519cd2ecfa899e5b071bf",
+          "size": 2461
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/creative-brief.md",
+          "sha256": "31729acbaf4d9af6032b560a991c4ae34330cf6e5610bdf7fc8e5cc8f0a7ba78",
+          "size": 4372
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/feature-ledger.md",
+          "sha256": "105a2ae5c6d3f2d6ff4ef9f4dd65765e74bfd8b4407d66c5b377ac0f17159b4d",
+          "size": 8959
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/mod-consultation.md",
+          "sha256": "3cb7d4932a06283f15b156d909673ef32d2958990cced32e230006b8016f4323",
+          "size": 4179
+        },
+        {
           "path": ".claude/skills/hoi4-on-actions/SKILL.md",
           "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
           "size": 12044
@@ -30567,8 +30667,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
-          "size": 5636
+          "sha256": "b083eec648e4505401d53a9bd8320f07682edc13869db0cd313e2918bce14ffd",
+          "size": 6056
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
@@ -35710,8 +35810,8 @@
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/consultation-questions.md",
-          "sha256": "fc271015fb99a41c0bfbdfeb9613091b5d56c690606bdfece452c1eb19d33df4",
-          "size": 6516
+          "sha256": "0c7f23a9187ed3801d3e618b31f2e16a80f10a4d7f518b84e65f011cd73abf7e",
+          "size": 6754
         },
         {
           "path": ".claude/skills/hoi4-feature-planning/references/country-packages-and-formables.md",
@@ -35999,6 +36099,31 @@
           "size": 4828
         },
         {
+          "path": ".claude/skills/hoi4-new-mod/SKILL.md",
+          "sha256": "4f606c88af9b4d6edf001811df231fa104a36cf1694c34ce0d4af7c374f1fb18",
+          "size": 8606
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/canon-policy.md",
+          "sha256": "790d2a615d59bce684ddcf1088a5c6c91169527168e519cd2ecfa899e5b071bf",
+          "size": 2461
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/creative-brief.md",
+          "sha256": "31729acbaf4d9af6032b560a991c4ae34330cf6e5610bdf7fc8e5cc8f0a7ba78",
+          "size": 4372
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/feature-ledger.md",
+          "sha256": "105a2ae5c6d3f2d6ff4ef9f4dd65765e74bfd8b4407d66c5b377ac0f17159b4d",
+          "size": 8959
+        },
+        {
+          "path": ".claude/skills/hoi4-new-mod/references/mod-consultation.md",
+          "sha256": "3cb7d4932a06283f15b156d909673ef32d2958990cced32e230006b8016f4323",
+          "size": 4179
+        },
+        {
           "path": ".claude/skills/hoi4-on-actions/SKILL.md",
           "sha256": "764550f8c1fc39e0c6ce9a5855ff4bcfeba43320100a73718571f48daa96eca7",
           "size": 12044
@@ -36065,8 +36190,8 @@
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/skill-routing.md",
-          "sha256": "458dcb8a651046dd901434a35463b1c5e707243b960b9e4025ca3cd863411d2a",
-          "size": 5636
+          "sha256": "b083eec648e4505401d53a9bd8320f07682edc13869db0cd313e2918bce14ffd",
+          "size": 6056
         },
         {
           "path": ".claude/skills/hoi4-project-rules/references/specs-plans-consultation.md",
