@@ -4,7 +4,7 @@ Part of the [hoi4-subagents](../SKILL.md) skill. Read before choosing which spec
 
 ## Available subagents
 
-Canonical subagent definitions are the Claude Code files in `.claude/agents/<hyphen-name>.md`; prose uses the snake_case routing names. The `model` field sets each role's Claude tier (Opus for `hoi4_improvement_loop_planner`; Sonnet for `hoi4_3d_model_pipeline`, `hoi4_feature_completion_auditor`, `hoi4_localisation_auditor`, `hoi4_scripted_system_architect`, and `hoi4_skill_maintainer`; Haiku for every other role). After changing a canonical file, run `python .tools/sync/sync_agents.py` to regenerate the Codex, Cursor, Qoder, and OpenCode projections, and use `--check` to detect stale or missing outputs. Never hand-edit a projection.
+Canonical subagent definitions are the Claude Code files in `.claude/agents/<hyphen-name>.md`; prose uses the snake_case routing names. The `model` field sets each role's model: `inherit` (the session's model and effort) for every role that writes, judges or researches content, and Haiku only for the mechanical roles `hoi4_repo_explorer`, `hoi4_documentation_curator` and `hoi4_spreadsheet_doc_worker`. `hoi4-project-rules/references/subagents.md` has the rule for exceptions. After changing a canonical file, run `python .tools/sync/sync_agents.py` to regenerate the Codex, Cursor, Qoder, and OpenCode projections, and use `--check` to detect stale or missing outputs. Never hand-edit a projection.
 
 Use `hoi4_repo_explorer` only for read-only repo exploration when touched-file mapping, pattern search, vanilla reference mapping, missing-file recovery, dependency mapping, or edit-order planning is actually unclear. It is not a default preflight agent.
 

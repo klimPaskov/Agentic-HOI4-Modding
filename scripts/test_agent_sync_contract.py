@@ -21,13 +21,11 @@ SYNC = ROOT / ".tools" / "sync"
 # The source package keeps Claude Code and Codex at the root and every other client here.
 CLIENTS = ROOT / ".tools" / "clients"
 
+# Every agent follows the session's model and effort, except the mechanical roles on Haiku.
 EXPECTED_TIERS = {
-    "hoi4-improvement-loop-planner": "opus",
-    "hoi4-3d-model-pipeline": "sonnet",
-    "hoi4-feature-completion-auditor": "sonnet",
-    "hoi4-localisation-auditor": "sonnet",
-    "hoi4-scripted-system-architect": "sonnet",
-    "hoi4-skill-maintainer": "sonnet",
+    "hoi4-documentation-curator": "haiku",
+    "hoi4-repo-explorer": "haiku",
+    "hoi4-spreadsheet-doc-worker": "haiku",
 }
 READ_ONLY = {
     "hoi4-repo-explorer",
@@ -129,7 +127,9 @@ def check_projections(module, agents, profiles, runtime_keys):
                     data = tomllib.loads(content)
                     assert data["name"] == agent.snake_name
                     assert data["sandbox_mode"] == ("read-only" if agent.read_only else "workspace-write")
-                    assert data["model_reasoning_effort"] == profiles["codex"]["tiers"][agent.model]["model_reasoning_effort"]
+                    assert data.get("model_reasoning_effort") == profiles["codex"]["tiers"][agent.model].get("model_reasoning_effort")
+                    if agent.model == "inherit" and agent.name not in profiles["codex"].get("agent_models", {}):
+                        assert "model" not in data, agent.name
             elif runtime_key == "claude":
                 continue
             else:
@@ -152,8 +152,8 @@ def main():
     # The agent count comes from the folder: adding a haiku agent that can edit needs no script change.
     assert agents and names == {path.stem for path in (ROOT / ".claude" / "agents").glob("*.md")}, names
     for agent in agents:
-        assert agent.model == EXPECTED_TIERS.get(agent.name, "haiku"), (agent.name, agent.model)
-        assert agent.effort == {"opus": "xhigh", "sonnet": "high", "haiku": "medium"}[agent.model], agent.name
+        assert agent.model == EXPECTED_TIERS.get(agent.name, "inherit"), (agent.name, agent.model)
+        assert agent.effort == {"inherit": "", "opus": "xhigh", "sonnet": "high", "haiku": "medium"}[agent.model], agent.name
         assert agent.read_only == (agent.name in READ_ONLY), agent.name
         for forbidden in ("fork_turns", "fork_context", "$imagegen", "ImageGen", "AGENTS.md", ".codex/agents/*.toml"):
             assert forbidden not in agent.body, (agent.name, forbidden)
@@ -214,6 +214,10 @@ def main():
     # The shipped Claude Code settings regenerate projections after an edit and refuse edits to generated files.
     hooks = [hook["command"] for group in settings["hooks"]["PostToolUse"] for hook in group["hooks"]]
     assert any(".tools/py.sh" in command and ".tools/sync/generators.py\" --hook" in command for command in hooks), hooks
+    # The completion gate runs at every stop, session start and user message; without docs/mod/ledger.json it does nothing.
+    for event, mode in (("Stop", "stop"), ("SessionStart", "session-start"), ("UserPromptSubmit", "prompt")):
+        commands = [hook["command"] for group in settings["hooks"][event] for hook in group["hooks"]]
+        assert any(".tools/check.py\" gate --hook " + mode in command for command in commands), (event, commands)
     for denied in ("Edit(/AGENTS.md)", "Edit(/.agents/skills/**)", "Edit(/.codex/agents/**)", "Edit(/.claude/agent-map.md)"):
         assert denied in settings["permissions"]["deny"], denied
     assert mcp["mcpServers"]["hoi4_agent_tools"]["command"] == "hoi4-agent-tools.cmd"
@@ -229,7 +233,7 @@ def main():
     assert len(rules) == 14, sorted(rules)
     for required in ("[MOD_NAME]", "[MOD_PREFIX]", "[HOI4_GAME_DIR]", "[STEAM_WORKSHOP_DIR]", "## Placeholder Guide", "## 0. Required Reading", "## 1. Coding Style", "## 5. Completion", "## 10. Git", "### Agent runtimes", "docs/runtimes.md", "sync_agents.py", "hoi4-project-rules"):
         assert required in template, required
-    for name, required in (("agent-runtimes.md", "#### Claude Code runtime"), ("agent-runtimes.md", "#### DeepSeek Harness (DSH) runtime"), ("subagents.md", "| Opus | `hoi4_improvement_loop_planner` |")):
+    for name, required in (("agent-runtimes.md", "#### Claude Code runtime"), ("agent-runtimes.md", "#### DeepSeek Harness (DSH) runtime"), ("subagents.md", "| The session's model and effort (`inherit`) |")):
         assert required in rules[name], (name, required)
     # Every reference the template names exists, so no summary points at a missing file.
     for name in set(re.findall(r"`([a-z0-9-]+\.md)`", template)):

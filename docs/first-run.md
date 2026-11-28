@@ -25,6 +25,6 @@ You need Git and a coding client (Claude Code, Codex or another one the app list
 1. Open the mod folder in your coding client and approve the project MCP server when it asks.
 2. In Claude Code, run `/mcp`. `hoi4_agent_tools` should show as connected.
 3. Ask: "Use hoi4_mod_index on this mod." The agent should return an index of your mod without errors.
-4. Then describe what you want to build, for example "Add a focus tree for my country".
+4. Then describe what you want to build, for example "Add a focus tree for my country", or a whole mod in one line, such as "Make a mod where the Hanseatic League comes back as a Baltic power". For a whole mod the agent drafts a short brief, asks one batch of questions with a suggested answer for each (reply "use your suggestions" to accept them all), then builds the mod feature by feature, a playable core first, and keeps going until its completion check passes. Its plan and progress stay in `docs/mod/`, so a new session picks up where the last one stopped.
 
 If a step fails, open the app, choose **Manage installation**, then **Update and repair**, and reconnect the client. Problems and ideas go to the [issue tracker](https://github.com/klimPaskov/Agentic-HOI4-Modding/issues).

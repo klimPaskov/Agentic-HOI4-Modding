@@ -5,28 +5,28 @@ These are the canonical subagent definitions in `.claude/agents/`. Edit them dir
 
 | Agent | Model | Effort | Authority |
 | --- | --- | --- | --- |
-| `hoi4-3d-model-pipeline` | `sonnet` | `high` | can edit |
-| `hoi4-ai-probability-auditor` | `haiku` | `medium` | read-only |
-| `hoi4-asset-source-researcher` | `haiku` | `medium` | can edit |
-| `hoi4-audio-researcher` | `haiku` | `medium` | can edit |
-| `hoi4-country-package-auditor` | `haiku` | `medium` | can edit |
-| `hoi4-decision-mission-auditor` | `haiku` | `medium` | can edit |
+| `hoi4-3d-model-pipeline` | `inherit` | `session` | can edit |
+| `hoi4-ai-probability-auditor` | `inherit` | `session` | read-only |
+| `hoi4-asset-source-researcher` | `inherit` | `session` | can edit |
+| `hoi4-audio-researcher` | `inherit` | `session` | can edit |
+| `hoi4-country-package-auditor` | `inherit` | `session` | can edit |
+| `hoi4-decision-mission-auditor` | `inherit` | `session` | can edit |
 | `hoi4-documentation-curator` | `haiku` | `medium` | can edit |
-| `hoi4-event-ui-worker` | `haiku` | `medium` | can edit |
-| `hoi4-feature-completion-auditor` | `sonnet` | `high` | read-only |
-| `hoi4-focus-tree-auditor` | `haiku` | `medium` | can edit |
-| `hoi4-generated-feature-art` | `haiku` | `medium` | can edit |
-| `hoi4-icon-artist` | `haiku` | `medium` | can edit |
-| `hoi4-improvement-loop-planner` | `opus` | `xhigh` | read-only |
-| `hoi4-localisation-auditor` | `sonnet` | `high` | can edit |
-| `hoi4-portrait-creator` | `haiku` | `medium` | can edit |
-| `hoi4-quote-remark-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-event-ui-worker` | `inherit` | `session` | can edit |
+| `hoi4-feature-completion-auditor` | `inherit` | `session` | read-only |
+| `hoi4-focus-tree-auditor` | `inherit` | `session` | can edit |
+| `hoi4-generated-feature-art` | `inherit` | `session` | can edit |
+| `hoi4-icon-artist` | `inherit` | `session` | can edit |
+| `hoi4-improvement-loop-planner` | `inherit` | `session` | read-only |
+| `hoi4-localisation-auditor` | `inherit` | `session` | can edit |
+| `hoi4-portrait-creator` | `inherit` | `session` | can edit |
+| `hoi4-quote-remark-researcher` | `inherit` | `session` | can edit |
 | `hoi4-repo-explorer` | `haiku` | `medium` | read-only |
-| `hoi4-scripted-system-architect` | `sonnet` | `high` | can edit |
-| `hoi4-skill-maintainer` | `sonnet` | `high` | can edit |
+| `hoi4-scripted-system-architect` | `inherit` | `session` | can edit |
+| `hoi4-skill-maintainer` | `inherit` | `session` | can edit |
 | `hoi4-spreadsheet-doc-worker` | `haiku` | `medium` | can edit |
-| `hoi4-super-event-art-researcher` | `haiku` | `medium` | can edit |
-| `hoi4-super-event-audio-researcher` | `haiku` | `medium` | can edit |
-| `hoi4-super-event-quote-researcher` | `haiku` | `medium` | can edit |
+| `hoi4-super-event-art-researcher` | `inherit` | `session` | can edit |
+| `hoi4-super-event-audio-researcher` | `inherit` | `session` | can edit |
+| `hoi4-super-event-quote-researcher` | `inherit` | `session` | can edit |
 
 Read-only agents may not edit project files. The prompt body is the final scope contract when a runtime cannot express an equivalent tool allowlist.

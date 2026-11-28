@@ -60,6 +60,17 @@ A passing check proves only the properties it checks: a size or alpha check does
 
 `lib/`, `audits/audit_script_rules.py`, `audits/validate_scripts_mcp.py`, `gfx/gfx.py` with its tests, the asset tools in `hoi4-feature-assets/tools/` and `save_inspect.py` are byte-identical copies of upstream tools, listed in the source package's `scripts/shared_tools.json`; repository values live in their settings files (`gfx/settings.json`, `gfx/profiles.json`, the asset tools' `project_settings.json`), which are not shared. `check.py`, `quality.py` and the localisation and asset-wiring audits are this package's own editions.
 
+### Mod completion gate
+
+`audits/mod_gate.py`, run as `python -B .tools/check.py gate`, decides from files whether a whole-mod build may stop. It reads the feature ledger `docs/mod/ledger.json` (schema `hoi4-mod-ledger/1`, written by the `hoi4-new-mod` skill) and, while its `state` is `building`, fails on an open feature without a recorded blocker, a feature marked as passed without existing evidence, a passed dependency missing, a failing machine check (`exists`, `contains`, `count`), a placeholder marker left in mod text, an error from `check.py quick`, and, once every feature has passed, an error from `check.py full --only localisation asset-wiring script-rules gui-rules`. A check that cannot run on the machine is reported as a limit, never as a pass or a failure. Exit status: 0 the build may stop (or there is no ledger), 1 work is open, 2 the ledger cannot be read.
+
+- `gate --next` prints the session-start routine: progress, the next ready feature and the baseline check.
+- `gate --wait "<question>"` lets the next stop through while the agent waits for the user; the user's next message clears it.
+- `gate --pause "<reason>"` records the user's stop, and `gate --resume` makes the gate active again.
+- `gate --hook stop|session-start|prompt` are the adapters for the `Stop`, `SessionStart` and `UserPromptSubmit` hooks in `.claude/settings.json`. The Stop hook blocks with the list of problems, and lets the stop through after `gate.max_idle_blocks` blocks with no change to the files (default 3) or `gate.max_blocks` in one session (default 30). `HOI4_MOD_GATE=off` turns the hooks off.
+
+Without a ledger every hook exits at once and prints nothing, so a mod that has no whole-mod build is unaffected. Other clients run the same command: before ending a turn during a build, and at the start of every session (`gate --next`). Its state lives in the ignored `.tmp/mod-gate/`.
+
 ### ChatGPT source packaging
 
 `package_chatgpt_project_sources.py` builds a curated flat source folder with

@@ -47,6 +47,39 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/check.py\" gate --hook session-start",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/check.py\" gate --hook prompt",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/check.py\" gate --hook stop",
+            "timeout": 1800
+          }
+        ]
+      }
     ]
   }
 }

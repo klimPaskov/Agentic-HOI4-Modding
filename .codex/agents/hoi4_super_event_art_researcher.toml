@@ -1,7 +1,6 @@
 # Generated from .claude/agents/hoi4-super-event-art-researcher.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_super_event_art_researcher"
 description = "Researches visual direction and prepares explicitly authorized art packages for a selected Super Event. Does not edit runtime or gameplay files."
-model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Super Event Art Researcher"]
 

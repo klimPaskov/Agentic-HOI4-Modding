@@ -1,7 +1,6 @@
 # Generated from .claude/agents/hoi4-super-event-quote-researcher.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_super_event_quote_researcher"
 description = "Researches and documents sourced quote and response candidates for a selected Super Event package. Does not edit localisation, runtime, or gameplay files."
-model_reasoning_effort = "medium"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Super Event Quote Researcher"]
 
