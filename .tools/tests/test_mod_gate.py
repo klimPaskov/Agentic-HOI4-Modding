@@ -258,6 +258,54 @@ class GateTest(unittest.TestCase):
 		self.assertIn("Next feature: `country`", out)
 		self.assertIn("check.py quick", out)
 
+	def test_a_big_request_on_an_existing_mod_uses_the_same_gate_as_an_addition(self):
+		self.write("docs/evidence.md", "ok")
+		scope = {"kind": "addition", "request": "new-nation", "phases": [{"id": "core"}], "surfaces": ["country"]}
+		self.ledger([feature("country")], scope=scope)
+		self.assertTrue(any("country: open" in problem for problem in self.problems()), self.problems())
+		self.ledger([feature("country", passes=True, evidence=["docs/evidence.md"])], scope=scope)
+		self.assertEqual(self.problems(), [])
+
+	def test_scope_kind_is_checked(self):
+		self.ledger([feature("country")], scope={"kind": "side-quest", "phases": [{"id": "core"}], "surfaces": ["country"]})
+		self.assertTrue(any("`scope.kind` must be one of mod, addition" in problem for problem in self.problems()), self.problems())
+		self.ledger([feature("country")], scope={"kind": "addition", "phases": [{"id": "core"}], "surfaces": ["country"]})
+		self.assertTrue(any("`scope.request`" in problem for problem in self.problems()), self.problems())
+		self.ledger([feature("country")], scope={"kind": "mod", "phases": [{"id": "core"}], "surfaces": ["country"]})
+		self.assertFalse(any("scope.kind" in problem for problem in self.problems()))
+
+	def test_the_prompt_hook_sizes_a_request_only_while_no_build_is_active(self):
+		prompt = lambda: self.run_main("--hook", "prompt", stdin="{}")[1]
+		self.assertIn("Kit routing:", prompt())
+		self.assertIn("hoi4-new-mod", prompt())
+		self.ledger([feature("country")], state="planning")
+		self.assertEqual(prompt(), "")
+		self.ledger([feature("country")])
+		self.assertEqual(prompt(), "")
+		self.ledger([feature("country")], state="paused")
+		self.assertEqual(prompt(), "")
+		self.ledger([feature("country")], state="complete")
+		self.assertIn("Kit routing:", prompt())
+		with unittest.mock.patch.dict("os.environ", {"HOI4_MOD_GATE": "off"}):
+			self.assertEqual(prompt(), "")
+
+	def test_archive_moves_only_a_complete_ledger_and_its_progress_log(self):
+		self.write("docs/mod/progress.md", "log")
+		self.write("docs/mod/brief.md", "the mod brief stays")
+		self.ledger([feature("country")], state="building")
+		self.assertEqual(self.run_main("--archive")[0], 1)
+		self.assertTrue((self.root / "docs/mod/ledger.json").is_file())
+		self.ledger([feature("country", passes=True)], state="complete", scope={"kind": "addition", "request": "Naval Base!", "phases": [{"id": "core"}], "surfaces": ["country"]})
+		code, out = self.run_main("--archive")
+		self.assertEqual(code, 0, out)
+		self.assertFalse((self.root / "docs/mod/ledger.json").exists())
+		self.assertFalse((self.root / "docs/mod/progress.md").exists())
+		self.assertTrue((self.root / "docs/mod/brief.md").is_file(), "the mod's own brief stays")
+		moved = list((self.root / "docs/mod/history").glob("*-naval-base/ledger.json"))
+		self.assertEqual(len(moved), 1, out)
+		self.assertTrue((moved[0].parent / "progress.md").is_file())
+		self.assertEqual(self.run_main("--archive")[0], 2, "nothing left to archive")
+		self.assertEqual(self.run_main("--hook", "session-start")[1], "")
 
 
 if __name__ == "__main__":

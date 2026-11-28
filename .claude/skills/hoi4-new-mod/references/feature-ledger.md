@@ -45,7 +45,8 @@ The example shows one feature of eleven surfaces. A real ledger has a feature fo
 | --- | --- |
 | `schema` | Always `hoi4-mod-ledger/1` |
 | `state` | `planning` while the brief and scope are agreed (the gate is off), `building` once they are (the gate is on), `paused` when the user said stop, `complete` after the final report |
-| `scope` | A one-line summary of the complete mod, `phases` in build order (the playable core first, then each expansion from the brief) and `surfaces`: every surface the build plan names. The gate fails while a listed surface has no feature whose `surfaces` include it |
+| `scope.kind`, `scope.request` | Optional. `mod` (the default) is a whole mod; `addition` is one big request on an existing mod and needs `scope.request`, a short slug (the request brief is `docs/mod/requests/<slug>.md`). The gate treats both the same; `check.py gate --archive` moves a `complete` ledger to `docs/mod/history/` before the next one |
+| `scope` | A one-line summary of the complete mod or request, `phases` in build order (the playable core first, then each expansion from the brief) and `surfaces`: every surface the build plan names. The gate fails while a listed surface has no feature whose `surfaces` include it |
 | `features[].phase` | The id of the phase the feature belongs to. The gate fails when a feature of a later phase passes while a feature of an earlier phase is still open, so the core is finished and playable first |
 | `features[].surfaces` | The surfaces this feature builds, in the same words as `scope.surfaces` |
 | `gate` | Optional caps for the Stop hook. Leave the defaults unless the user asks |

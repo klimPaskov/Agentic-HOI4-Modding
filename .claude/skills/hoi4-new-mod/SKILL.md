@@ -1,20 +1,41 @@
 ---
 name: hoi4-new-mod
-description: Use when a user asks for a whole new mod, total conversion or large add-on from a short idea, to write its brief, scope, canon policy and feature ledger and build it to the completion gate.
+description: Use for a whole new mod or any big request, such as a new nation, a focus tree or an event chain, to write the brief, scope, canon and feature ledger and build to the completion gate.
 ---
 
 # HOI4 New Mod
 
-This is the mod-level entry point. It turns a short request such as "Create an Atlantis mod." or "Make a mod about a second American civil war." into four files, agreed with the user, and then builds the mod one feature at a time until the deterministic completion gate passes.
+This is the mod-level entry point. It turns a short request such as "Create an Atlantis mod.", "Make a mod about a second American civil war." or, in an existing mod, "Add a Hanseatic nation with its own focus tree." into four files, agreed with the user, and then builds it one feature at a time until the deterministic completion gate passes.
 
 The skill works the same for any idea and any model. It never assumes a setting or a nation, and a short request always aims at the complete mod, never a reduced one: every answer comes from the user, the established material, or a suggested default recorded as one.
 
 ## When to use it
 
 - The request names a whole mod, a total conversion, a new world, a set of new countries, or an add-on large enough to span several surfaces (map, countries, focus trees, events, decisions, characters, art).
+- The request is big (below), even when the mod already exists.
 - The user returns to a mod that has `docs/mod/ledger.json`: follow the session routine below before anything else.
 
-For one feature inside an existing mod, use `hoi4-feature-planning` instead. Each ledger feature that needs a deep design still gets its own spec through `hoi4-feature-planning`.
+Each ledger feature that needs a deep design still gets its own spec through `hoi4-feature-planning`, and one feature the user asks for on its own uses `hoi4-feature-planning` directly.
+
+## Big or small
+
+Decide this before building, from the request and the mod's files, and never from the model, the wording or the mod:
+
+- **Big:** the request adds something new that has parts on two or more surfaces (map, country, history, ideas, characters, focus tree, events, decisions, units, technology, art, localisation, interface), such as a nation, a focus tree with its rewards, an event chain with its pictures and effects, or a mechanic with its decisions and screens; or you expect to build more than about five features, or to need more than one sitting.
+- **Small:** it changes something that exists or adds one self-contained thing on one surface: a fix, a rebalance, a rename, one event, one decision, one idea, one localisation block, one icon.
+
+A big request in an existing mod runs this workflow scaled to the request (below). A small one needs no brief, ledger or gate: do it directly with the owning skill. Record the size and the reason in `docs/mod/decisions.md` for a big request, and say it in one line for a small one. When a small request grows past the line while you work, stop and treat it as big.
+
+## Scaled to an existing mod
+
+The workflow is the same; each step takes only what the request needs:
+
+- **Material.** The mod's files, `canon.md` and earlier `docs/mod/` files are established material: read them first and never ask what they answer (setting, era, tone, art style, naming). Without a `canon.md`, write one from the mod's own files, marking what exists as established.
+- **Brief.** A half-page request brief in `docs/mod/requests/<slug>.md`: what is added, where it fits in the existing mod, the build plan. The mod's `brief.md` stays as it is.
+- **Consultation.** Ask only the questions of `references/mod-consultation.md` that the request leaves open and the files do not answer, in one message with suggestions.
+- **Ledger.** `scope.kind` is `addition` and `scope.request` is the slug; `scope.surfaces` lists only the surfaces the request touches, and one phase (the part that works on its own) is enough unless the request is large. If a finished ledger is still in `docs/mod/`, run `python -B .tools/check.py gate --archive` first: it moves the finished ledger and its progress log to `docs/mod/history/`.
+- **Art.** Run the style round only when the addition needs a style the mod does not have; otherwise match the existing art.
+- **Gate.** The same gate decides when the request is done. Everything else in the mod stays untouched.
 
 ## The four files
 
@@ -35,7 +56,7 @@ All of them live in `docs/mod/`, so every session and every client finds them in
 2. **Draft the brief.** Fill `references/creative-brief.md` from the request, with a suggested answer for every field the request leaves open. Say which fields are suggestions.
 3. **Consult once.** Ask the mod-defining questions of `references/mod-consultation.md` in one grouped message, each with its suggested answer and a one-line reason, then list what you will decide yourself. The user can answer "use your suggestions". Before you end the turn to wait, run `python -B .tools/check.py gate --wait "<one-line summary of the questions>"` when the ledger already exists.
 4. **Record.** Write the answers to `docs/mod/decisions.md` (origin `user`, `established` or `agent default`), finish `brief.md`, and write `canon.md` from `references/canon-policy.md`.
-5. **Plan the whole mod in phases.** The brief's build plan aims at the complete mod the idea implies, built in order: a playable core first (the country, its map presence, a focus tree and the first events), then each expansion. The mod is playable after every phase, and nothing is cut: an expansion is the next part of the same mod, never a later maybe. Shrinking the plan needs the user's approval.
+5. **Plan the whole mod (or the whole request) in phases.** The brief's build plan aims at the complete mod the idea implies, built in order: a playable core first (the country, its map presence, a focus tree and the first events), then each expansion. The mod is playable after every phase, and nothing is cut: an expansion is the next part of the same mod, never a later maybe. Shrinking the plan needs the user's approval.
 6. **Agree the art style early.** Make the ledger's first art feature the style round: a few pictures in the brief's style (a flag, a portrait, an icon), shown to the user once with `gate --wait`. Every feature that needs art depends on it, and after it each feature makes its own art.
 7. **Write the ledger.** Break the scope into features with `references/feature-ledger.md`: one row per buildable unit that covers every surface of `scope.surfaces`, each in its `phase`, with dependencies in build order, acceptance criteria, machine checks where a file or count proves part of it, and `passes: false`. Set `state` to `building` once the user has agreed the plan, or once you applied the suggestions because the user said to work without questions.
 8. **Build, one feature at a time.** Follow the session routine. For each feature open the owning skill (`hoi4-map-states`, `hoi4-focus-trees`, `hoi4-events`, `hoi4-decisions-missions`, `hoi4-characters-leaders`, `hoi4-imagegen` and the others in `CLAUDE.md`), write a feature spec with `hoi4-feature-planning` when the feature needs design depth, implement it completely, run its checks, and only then set `passes: true` with the evidence paths.
@@ -76,4 +97,4 @@ A blocker is only a true blocker: a decision, asset or approval only the user ca
 - `references/creative-brief.md`: the brief template, the build plan in phases and the autonomy dial.
 - `references/mod-consultation.md`: the mod-defining questions with suggested answers, and how to record them.
 - `references/canon-policy.md`: established and proposed material, and how a proposal is promoted.
-- `references/feature-ledger.md`: the ledger format, the feature catalogue by surface, machine checks and blockers.
+- `references/feature-ledger.md`: the ledger format (including `scope.kind` and `scope.request` for a big request in an existing mod), the feature catalogue by surface, machine checks and blockers.
