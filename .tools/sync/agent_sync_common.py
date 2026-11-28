@@ -56,7 +56,7 @@ CODEX_CONFIG = MOD_ROOT / ".codex" / "config.toml"
 
 READ_ONLY = "read-only"
 CAN_EDIT = "can edit"
-MODEL_TIERS = ("inherit", "opus", "sonnet", "haiku")
+MODEL_TIERS = ("inherit", "sonnet", "haiku")
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 

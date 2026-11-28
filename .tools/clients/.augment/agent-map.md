@@ -5,25 +5,25 @@ Generated from the canonical Claude Code agents in `.claude/agents/`. Edit the c
 
 | Canonical | Augment | Claude tier | Authority |
 | --- | --- | --- | --- |
-| `hoi4-3d-model-pipeline` | `hoi4-3d-model-pipeline` | `inherit` | can edit |
-| `hoi4-ai-probability-auditor` | `hoi4-ai-probability-auditor` | `inherit` | read-only |
+| `hoi4-3d-model-pipeline` | `hoi4-3d-model-pipeline` | `sonnet` | can edit |
+| `hoi4-ai-probability-auditor` | `hoi4-ai-probability-auditor` | `haiku` | read-only |
 | `hoi4-asset-source-researcher` | `hoi4-asset-source-researcher` | `inherit` | can edit |
 | `hoi4-audio-researcher` | `hoi4-audio-researcher` | `inherit` | can edit |
-| `hoi4-country-package-auditor` | `hoi4-country-package-auditor` | `inherit` | can edit |
-| `hoi4-decision-mission-auditor` | `hoi4-decision-mission-auditor` | `inherit` | can edit |
+| `hoi4-country-package-auditor` | `hoi4-country-package-auditor` | `sonnet` | can edit |
+| `hoi4-decision-mission-auditor` | `hoi4-decision-mission-auditor` | `sonnet` | can edit |
 | `hoi4-documentation-curator` | `hoi4-documentation-curator` | `haiku` | can edit |
 | `hoi4-event-ui-worker` | `hoi4-event-ui-worker` | `inherit` | can edit |
-| `hoi4-feature-completion-auditor` | `hoi4-feature-completion-auditor` | `inherit` | read-only |
-| `hoi4-focus-tree-auditor` | `hoi4-focus-tree-auditor` | `inherit` | can edit |
+| `hoi4-feature-completion-auditor` | `hoi4-feature-completion-auditor` | `sonnet` | read-only |
+| `hoi4-focus-tree-auditor` | `hoi4-focus-tree-auditor` | `sonnet` | can edit |
 | `hoi4-generated-feature-art` | `hoi4-generated-feature-art` | `inherit` | can edit |
 | `hoi4-icon-artist` | `hoi4-icon-artist` | `inherit` | can edit |
 | `hoi4-improvement-loop-planner` | `hoi4-improvement-loop-planner` | `inherit` | read-only |
-| `hoi4-localisation-auditor` | `hoi4-localisation-auditor` | `inherit` | can edit |
+| `hoi4-localisation-auditor` | `hoi4-localisation-auditor` | `sonnet` | can edit |
 | `hoi4-portrait-creator` | `hoi4-portrait-creator` | `inherit` | can edit |
 | `hoi4-quote-remark-researcher` | `hoi4-quote-remark-researcher` | `inherit` | can edit |
 | `hoi4-repo-explorer` | `hoi4-repo-explorer` | `haiku` | read-only |
-| `hoi4-scripted-system-architect` | `hoi4-scripted-system-architect` | `inherit` | can edit |
-| `hoi4-skill-maintainer` | `hoi4-skill-maintainer` | `inherit` | can edit |
+| `hoi4-scripted-system-architect` | `hoi4-scripted-system-architect` | `sonnet` | can edit |
+| `hoi4-skill-maintainer` | `hoi4-skill-maintainer` | `sonnet` | can edit |
 | `hoi4-spreadsheet-doc-worker` | `hoi4-spreadsheet-doc-worker` | `haiku` | can edit |
 | `hoi4-super-event-art-researcher` | `hoi4-super-event-art-researcher` | `inherit` | can edit |
 | `hoi4-super-event-audio-researcher` | `hoi4-super-event-audio-researcher` | `inherit` | can edit |
