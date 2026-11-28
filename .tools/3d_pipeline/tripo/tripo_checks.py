@@ -127,6 +127,10 @@ without a weapon gets the cloak check only. Findings (exit code 1 when there is 
 - TRIPO-HAND-BLEED: more than `MAX_HAND_BLEED_SHARE` of a shape's vertices lie outside a hand's own part (`lib/stretch_smooth.hand_parts`:
   cut from the arm across the middle of the forearm) with more than `HAND_BLEED_MIN_WEIGHT` of their weight on that hand. Such skin
   rises with the hand: a fresh review of the orc saw its cloak dragged up the right flank by the axe hand. Every unit.
+- The designer rules (`tripo/designer_checks.py`, every unit that is not a kit quadruped), judged with the game's designer camera because
+  that is where clips are judged (D-140) and they block: TRIPO-DESIGNER-STRIKE-STILL (the attack's frames barely differ),
+  TRIPO-DESIGNER-GAIT-ALIKE (the retreat shows the move's poses) and TRIPO-DESIGNER-HEAD-HIDDEN (a wing or a limb hides the head). The head
+  rule needs the unit's entity scale: the job's `runtime_entity_scale` (with `--jobs-config` and `--slug`) or `--entity-scale`.
 """
 
 from __future__ import annotations
@@ -145,6 +149,7 @@ sys.path.insert(0, str(PIPELINE_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib import map_outline, map_read, pdx_deform, pdx_motion, quadruped_checks, stretch_smooth, tripo_arms, tripo_burn, tripo_chains, tripo_checks as T, tripo_grip as G, tripo_kick, tripo_loop, tripo_neck, tripo_pose, tripo_shoulder, tripo_splay, tripo_strike, tripo_swing
+import designer_checks
 
 # Weapon through the body (clip_check's deep share, every frame).
 MAX_IN_BODY_SHARE = 0.01
@@ -2124,6 +2129,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--posture", choices=map_outline.POSTURES, help="the idle posture TRIPO-MAP-POSTURE judges (default: the job's tripo.posture, or upright)")
     parser.add_argument("--jobs-config", type=Path)
     parser.add_argument("--slug")
+    parser.add_argument("--entity-scale", type=float, help="the unit's entity scale for the designer rules (default: the job's runtime_entity_scale)")
     parser.add_argument("--json", type=Path)
     args = parser.parse_args(argv)
     mesh, anims = load_unit(args.folder.resolve())
@@ -2150,6 +2156,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         findings += found
     if args.weapon_bone:
         found, numbers["blade"] = blade_findings(mesh, anims, args.weapon_bone)
+        findings += found
+    if not quadruped_checks.is_quadruped(mesh):
+        found, numbers["designer"] = designer_checks.designer_findings(mesh, anims, args.entity_scale or
+                                                                       designer_checks.job_entity_scale(args.jobs_config, args.slug), args.weapon_bone,
+                                                                       shield_bone(args))
         findings += found
     findings += weapon_stage_findings(args, mesh, anims, numbers)
     findings = burn_filtered(findings, burn)
