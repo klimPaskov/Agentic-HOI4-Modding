@@ -1,14 +1,14 @@
 {
   "tier_policy": {
-    "_comment": "Agents follow the session's model and effort (inherit) unless a task truly needs another model. Haiku runs only mechanical work: mapping files, reconciling documents with recorded decisions, aligning spreadsheet fields. Docs: docs/runtimes.md, Model selection.",
-    "haiku": ["hoi4-documentation-curator", "hoi4-repo-explorer", "hoi4-spreadsheet-doc-worker"],
+    "_comment": "A pinned model is the cheapest one that does the task well, never above sonnet; every other agent follows the session's model and effort (inherit). Helpers an agent starts never start above the user's chat model (D-170, .tools/audits/model_ceiling.py). Docs: docs/runtimes.md, Model selection.",
+    "sonnet": ["hoi4-3d-model-pipeline", "hoi4-feature-completion-auditor", "hoi4-localisation-auditor", "hoi4-scripted-system-architect", "hoi4-skill-maintainer", "hoi4-country-package-auditor", "hoi4-decision-mission-auditor", "hoi4-focus-tree-auditor"],
+    "haiku": ["hoi4-ai-probability-auditor", "hoi4-documentation-curator", "hoi4-repo-explorer", "hoi4-spreadsheet-doc-worker"],
     "default": "inherit"
   },
-  "effort_policy": {"inherit": null, "opus": "xhigh", "sonnet": "high", "haiku": "medium"},
+  "effort_policy": {"inherit": null, "sonnet": "high", "haiku": "medium"},
   "codex": {
     "tiers": {
       "inherit": {},
-      "opus": { "model_reasoning_effort": "xhigh" },
       "sonnet": { "model_reasoning_effort": "high" },
       "haiku": { "model_reasoning_effort": "medium" }
     },

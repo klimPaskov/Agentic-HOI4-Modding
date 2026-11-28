@@ -1,6 +1,7 @@
 # Generated from .claude/agents/hoi4-country-package-auditor.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_country_package_auditor"
 description = "Active auditor and small-patch subagent for HOI4 country packages. Checks and can patch tags, history, states, leaders, portraits, flags, parties, focus loading, ideas, advisors, units, technology, claims, cores, localisation, AI, formables, and playable setup inside the current task scope."
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Country Package Auditor"]
 

@@ -49,7 +49,7 @@ Claude Code owns the canonical definitions. Other runtimes use the generated pro
 
 ## Agents
 
-Every agent that writes, judges or researches content follows the session's model and effort (`inherit`), so the user's choice of model decides the quality of each review. The three mechanical roles run on Haiku at `medium` effort in Claude and Codex. Cursor and OpenCode inherit the model; Qoder uses its runtime tool policy. `docs/runtimes.md` lists the documented exceptions, such as Codex's spatial-work model.
+Each agent runs on the model its task needs: Haiku at `medium` effort for mechanical and checklist work, Sonnet at `high` effort for the roles that patch files or judge a whole feature, and the session's own model and effort (`inherit`) for the creative, research and planning roles. No agent pins a model above Sonnet, and a hook refuses any helper started on a higher model than the user's chat (`docs/runtimes.md`, Model selection). Cursor and OpenCode inherit the model; Qoder uses its runtime tool policy. `docs/runtimes.md` lists the documented exceptions, such as Codex's spatial-work model.
 
 | Agent | Purpose | Claude model | Codex effort |
 | --- | --- | --- | --- |

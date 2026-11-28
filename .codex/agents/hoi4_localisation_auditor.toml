@@ -1,6 +1,7 @@
 # Generated from .claude/agents/hoi4-localisation-auditor.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_localisation_auditor"
 description = "Active auditor and patch subagent for the current HOI4 mod localisation, scripted localisation, dynamic text, tooltip quality, key coverage, encoding, cross-surface consistency, and direct, concise, readable player-facing prose."
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Localisation Auditor"]
 

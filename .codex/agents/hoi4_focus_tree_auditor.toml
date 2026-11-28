@@ -1,6 +1,7 @@
 # Generated from .claude/agents/hoi4-focus-tree-auditor.md by .tools/sync/sync_agents.py. Edit the source and rerun it.
 name = "hoi4_focus_tree_auditor"
 description = "Active auditor and small-patch subagent for HOI4 focus trees. Checks and can patch route logic, prerequisites, mutual exclusions, rewards, icons, localisation, AI, formable links, and simplifications inside the current task scope."
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 nickname_candidates = ["Focus Tree Auditor"]
 

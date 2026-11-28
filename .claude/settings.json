@@ -36,6 +36,18 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent|Task|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/check.py\" model-ceiling --hook pre-tool",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Edit|Write|MultiEdit",
@@ -55,6 +67,11 @@
             "type": "command",
             "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/check.py\" gate --hook session-start",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "sh \"${CLAUDE_PROJECT_DIR}/.tools/py.sh\" -B \"${CLAUDE_PROJECT_DIR}/.tools/check.py\" model-ceiling --hook session-start",
+            "timeout": 30
           }
         ]
       }

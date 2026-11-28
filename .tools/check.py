@@ -9,6 +9,7 @@
 	python -B .tools/check.py setup                      # install what is missing, run the synchronizers, then doctor
 	python -B .tools/check.py setup --git-hook           # also add an optional pre-commit check of generated files
 	python -B .tools/check.py gate                       # may a whole-mod build stop? (docs/mod/ledger.json; see audits/mod_gate.py)
+	python -B .tools/check.py model-ceiling              # no agent pins a model above sonnet and the ceiling hooks are registered
 
 `quick` runs only the checks whose inputs the changed paths can affect and reports only
 findings located in those paths. `full` runs every check over the whole repository. Both print
@@ -46,6 +47,10 @@ ledger in `docs/mod/ledger.json`, runs `quick` and, once every feature has passe
 whole mod, and exits 0 when the build may stop, 1 while work is open, 2 when the ledger cannot be read. Without a
 ledger it exits 0. `gate --next` prints the session-start routine, and `gate --hook stop|session-start|prompt` are the
 Claude Code hook adapters in `.claude/settings.json`.
+
+`model-ceiling` (`audits/model_ceiling.py`) is the model rule of D-170: a helper an agent starts (a subagent, a new session, an
+orchestrator) never runs on a higher model than the one the user's chat started on. Its `--hook session-start|pre-tool`
+adapters record the chat's model and refuse a higher start; without `--hook` it checks the shipped agents and hooks.
 
 The localisation, asset-wiring and gfx checks read the installed game, found through `HOI4_GAME_DIR`,
 `.tools/local_settings.json` or the Steam libraries (`.tools/lib/game.py`); without it they exit 2.
@@ -368,11 +373,15 @@ def main() -> int:
 		# The gate needs no packages, and its Stop hook runs at every turn's end, so it skips the virtual-environment relaunch.
 		from audits import mod_gate
 		return mod_gate.main(sys.argv[2:])
+	if sys.argv[1:2] == ["model-ceiling"]:
+		# Like the gate, its hooks run at every shell command and need no packages, so no virtual-environment relaunch.
+		from audits import model_ceiling
+		return model_ceiling.main(sys.argv[2:])
 	relaunched = setup.relaunch_in_project_venv(REPO_ROOT, sys.argv)
 	if relaunched is not None:
 		return relaunched
 	parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n\n")[0])
-	parser.add_argument("mode", choices=("quick", "full", "doctor", "setup", "gate"))
+	parser.add_argument("mode", choices=("quick", "full", "doctor", "setup", "gate", "model-ceiling"))
 	parser.add_argument("--paths", nargs="+", metavar="PATH", help="quick: check these paths instead of the git changes")
 	parser.add_argument("--only", nargs="+", choices=[check.name for check in CHECKS], help="run only these checks")
 	parser.add_argument("--json", type=Path, help="write every finding, including review candidates, to this file")

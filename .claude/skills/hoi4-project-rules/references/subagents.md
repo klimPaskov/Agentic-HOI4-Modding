@@ -16,10 +16,13 @@ Each specialist runs on the model set by the `model` field of its canonical file
 
 | Model | Agents |
 | --- | --- |
-| The session's model and effort (`inherit`) | every agent that writes, judges or researches content: the auditors, the improvement planner, the completion auditor, the asset, portrait, 3D, GUI, quote and audio workers, the scripted-system architect and the skill maintainer |
-| Haiku | `hoi4_repo_explorer`, `hoi4_documentation_curator` and `hoi4_spreadsheet_doc_worker`, whose work is mechanical: mapping files, reconciling documents with recorded decisions and aligning table fields |
+| Haiku, `medium` effort | `hoi4_repo_explorer`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker` and `hoi4_ai_probability_auditor`: mapping files, reconciling documents with recorded decisions, aligning table fields and running a defined weighted-logic audit |
+| Sonnet, `high` effort | `hoi4_country_package_auditor`, `hoi4_decision_mission_auditor`, `hoi4_focus_tree_auditor`, `hoi4_localisation_auditor`, `hoi4_feature_completion_auditor`, `hoi4_scripted_system_architect`, `hoi4_skill_maintainer` and `hoi4_3d_model_pipeline`: they patch files, judge a whole feature or write scripts |
+| The session's model and effort (`inherit`) | the creative, research and planning roles: the improvement planner, the asset, portrait, icon, art, GUI, quote and audio workers |
 
-So the user's choice of model decides the quality of every content judgment, and a run stays on that model. Keep a cheaper pinned model only for mechanical work. A task that truly needs another model may name one in the spawn call (Claude Code's per-invocation `model`), with the reason in the handoff. Never pin one for a single prompt or model. To change an agent's model permanently, edit its canonical file and `tier_policy` in `.tools/sync/agent_profiles.json`, then rerun `python .tools/sync/sync_agents.py`; other runtimes map the model through that file, and `docs/runtimes.md` lists the documented exceptions, such as Codex's spatial-work model.
+Each role runs on the model its task needs, and none pins one above Sonnet. A task that truly needs another model may name one in the spawn call (Claude Code's per-invocation `model`), with the reason in the handoff. Never pin one for a single prompt or model. To change an agent's model permanently, edit its canonical file and `tier_policy` in `.tools/sync/agent_profiles.json`, then rerun `python .tools/sync/sync_agents.py`; other runtimes map the model through that file, and `docs/runtimes.md` lists the documented exceptions, such as Codex's spatial-work model.
+
+**The ceiling.** A helper you start (a subagent, a new session or chat, an orchestrator) never runs on a higher model than the one the user's chat started on. A run the user started on Sonnet never escalates to Opus by itself, and a task that seems to need a stronger model is reported to the user, who starts a new chat on it. In Claude Code the `PreToolUse` hook in `.claude/settings.json` refuses the start and names the model to use; in another client apply the same rule yourself. `python -B .tools/check.py model-ceiling` checks the agents and hooks.
 
 Use these high-level routing rules:
 

@@ -71,6 +71,10 @@ A passing check proves only the properties it checks: a size or alpha check does
 
 Without a ledger every hook exits at once and prints nothing, so a mod that has no whole-mod build is unaffected. Other clients run the same command: before ending a turn during a build, and at the start of every session (`gate --next`). Its state lives in the ignored `.tmp/mod-gate/`.
 
+### Model ceiling
+
+`audits/model_ceiling.py`, run as `python -B .tools/check.py model-ceiling`, is the model rule of D-170: a helper an agent starts (a subagent, a new session, an orchestrator) never runs on a higher model than the one the user's chat started on. Its `--hook session-start` adapter records the chat's model once per session in `.tmp/model-ceiling/state.json`, and `--hook pre-tool` (`PreToolUse`, matcher `Agent|Task|Bash`) refuses a subagent call whose `model`, or whose definition's pinned `model`, is above it, and a shell command that starts `claude` or `codex` with `--model` or `-m` above it; the refusal names the model to use. Nothing is refused when the chat's model is unknown, and `HOI4_MODEL_CEILING=off` turns the hooks off. Without `--hook` the command checks that no agent in `.claude/agents/` pins a model above `sonnet` and that both hooks are registered in `.claude/settings.json`; it exits 1 on a problem. `scripts/test_agent_sync_contract.py` runs the registration check in CI.
+
 ### ChatGPT source packaging
 
 `package_chatgpt_project_sources.py` builds a curated flat source folder with

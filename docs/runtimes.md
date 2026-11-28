@@ -88,7 +88,7 @@ Every skill, agent prompt, and instruction file must stay within the single-read
 
 ## Subagents
 
-The canonical definitions are Claude Code subagent files: `.claude/agents/<hyphen-name>.md` with `name`, `description`, `model` (`inherit`, `opus`, `sonnet`, or `haiku`), `effort` (omitted for `inherit`), and `disallowedTools: Write, Edit, NotebookEdit` for read-only roles.
+The canonical definitions are Claude Code subagent files: `.claude/agents/<hyphen-name>.md` with `name`, `description`, `model` (`inherit`, `sonnet`, or `haiku`), `effort` (omitted for `inherit`), and `disallowedTools: Write, Edit, NotebookEdit` for read-only roles.
 Prose uses the snake_case routing name (`hoi4_repo_explorer`); the Claude, Cursor, Qoder, and OpenCode files use the hyphen form and the Codex file uses the snake form.
 
 | Runtime | Registry | Source |
@@ -120,11 +120,12 @@ Because no definition supplies the model, confirm the child route explicitly whe
 ## Model selection
 
 Each canonical agent declares its model in the `model` field.
-Every role that writes, judges or researches content uses `model: inherit` and sets no `effort`, so it runs on the model and effort the user chose for the session, and a run stays on that model.
-Only the mechanical roles (`hoi4_repo_explorer`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`) pin Haiku at `medium` effort, because their work is mapping files, reconciling documents with recorded decisions and aligning table fields.
-`tier_policy` in `.tools/sync/agent_profiles.json` holds this split, and `sync_agents.py --verify` fails when an agent's file disagrees with it.
+Each role runs on the model its task needs (D-170): `haiku` at `medium` effort for checklist and mechanical work (`hoi4_repo_explorer`, `hoi4_documentation_curator`, `hoi4_spreadsheet_doc_worker`, `hoi4_ai_probability_auditor`), `sonnet` at `high` effort for the roles that patch files, judge a whole feature or write scripts (the country-package, decision-mission, focus-tree, localisation and completion auditors, the scripted-system architect, the skill maintainer and the 3D pipeline), and `model: inherit` with no `effort` for the creative, research and planning roles, which follow the model and effort the user chose.
+`tier_policy` in `.tools/sync/agent_profiles.json` holds this split, and `sync_agents.py --verify` fails when an agent's file disagrees with it. No agent pins a model above `sonnet`.
 A task that truly needs another model names it for that one call (Claude Code's per-invocation `model`) and records why in its handoff; nothing pins a model for one prompt or one session model.
-`opus` and `sonnet` remain valid tiers, with `xhigh` and `high` effort, for a mod that wants to pin a role; the `CLAUDE_CODE_SUBAGENT_MODEL` and `CLAUDE_CODE_EFFORT_LEVEL` environment variables override the files. See the [official Claude subagent model and effort reference](https://code.claude.com/docs/en/sub-agents#choose-an-effort-level).
+The `CLAUDE_CODE_SUBAGENT_MODEL` and `CLAUDE_CODE_EFFORT_LEVEL` environment variables override the files. See the [official Claude subagent model and effort reference](https://code.claude.com/docs/en/sub-agents#choose-an-effort-level).
+
+The ceiling: a helper an agent starts (a subagent, a new chat or session, an orchestrator) never runs on a higher model than the one the user's chat started on, so a run the user started on Sonnet never escalates to Opus by itself. Two Claude Code hooks in `.claude/settings.json` enforce it: `SessionStart` records the chat's model and `PreToolUse` (matcher `Agent|Task|Bash`) refuses a subagent call, or a shell command that starts `claude` or `codex` with `--model`, above the recorded model, and says which model to use. A pinned agent that sits above a lower chat (a Sonnet pin in a Haiku chat) is refused the same way, and the parent passes the lower `model` for that call. `python -B .tools/check.py model-ceiling` checks the shipped agents and hooks (`.tools/audits/model_ceiling.py`); other clients follow the same rule from the project instructions. `HOI4_MODEL_CEILING=off` turns the hooks off.
 
 Other runtimes translate the tier through `.tools/sync/agent_profiles.json`:
 

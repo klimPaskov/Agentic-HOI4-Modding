@@ -21,11 +21,20 @@ SYNC = ROOT / ".tools" / "sync"
 # The source package keeps Claude Code and Codex at the root and every other client here.
 CLIENTS = ROOT / ".tools" / "clients"
 
-# Every agent follows the session's model and effort, except the mechanical roles on Haiku.
+# Each role runs on the model its task needs (D-170); no role pins a model above sonnet, the rest follow the session.
 EXPECTED_TIERS = {
+    "hoi4-ai-probability-auditor": "haiku",
     "hoi4-documentation-curator": "haiku",
     "hoi4-repo-explorer": "haiku",
     "hoi4-spreadsheet-doc-worker": "haiku",
+    "hoi4-3d-model-pipeline": "sonnet",
+    "hoi4-country-package-auditor": "sonnet",
+    "hoi4-decision-mission-auditor": "sonnet",
+    "hoi4-feature-completion-auditor": "sonnet",
+    "hoi4-focus-tree-auditor": "sonnet",
+    "hoi4-localisation-auditor": "sonnet",
+    "hoi4-scripted-system-architect": "sonnet",
+    "hoi4-skill-maintainer": "sonnet",
 }
 READ_ONLY = {
     "hoi4-repo-explorer",
@@ -153,7 +162,7 @@ def main():
     assert agents and names == {path.stem for path in (ROOT / ".claude" / "agents").glob("*.md")}, names
     for agent in agents:
         assert agent.model == EXPECTED_TIERS.get(agent.name, "inherit"), (agent.name, agent.model)
-        assert agent.effort == {"inherit": "", "opus": "xhigh", "sonnet": "high", "haiku": "medium"}[agent.model], agent.name
+        assert agent.effort == {"inherit": "", "sonnet": "high", "haiku": "medium"}[agent.model], agent.name
         assert agent.read_only == (agent.name in READ_ONLY), agent.name
         for forbidden in ("fork_turns", "fork_context", "$imagegen", "ImageGen", "AGENTS.md", ".codex/agents/*.toml"):
             assert forbidden not in agent.body, (agent.name, forbidden)
@@ -183,7 +192,7 @@ def main():
     assert sorted(module.RUNTIMES) == sorted(projected + ["claude"])
     at_root = ["codex", "claude"]
     assert module.verify(at_root) == 0
-    altered = [replace(agents[0], model="opus" if agents[0].model != "opus" else "haiku"), *agents[1:]]
+    altered = [replace(agents[0], model="sonnet" if agents[0].model != "sonnet" else "haiku"), *agents[1:]]
     with patch.object(module, "load_agents", return_value=altered):
         assert module.verify(["claude"]) == 1, "role tier drift must fail verification"
     altered = [replace(agents[0], effort="low"), *agents[1:]]
@@ -218,6 +227,11 @@ def main():
     for event, mode in (("Stop", "stop"), ("SessionStart", "session-start"), ("UserPromptSubmit", "prompt")):
         commands = [hook["command"] for group in settings["hooks"][event] for hook in group["hooks"]]
         assert any(".tools/check.py\" gate --hook " + mode in command for command in commands), (event, commands)
+    # A helper never starts on a higher model than the user's chat (D-170): one hook records the chat's model, one refuses a higher start.
+    for event, mode in (("SessionStart", "session-start"), ("PreToolUse", "pre-tool")):
+        commands = [hook["command"] for group in settings["hooks"][event] for hook in group["hooks"]]
+        assert any(".tools/check.py\" model-ceiling --hook " + mode in command for command in commands), (event, commands)
+    assert settings["hooks"]["PreToolUse"][0]["matcher"] == "Agent|Task|Bash"
     for denied in ("Edit(/AGENTS.md)", "Edit(/.agents/skills/**)", "Edit(/.codex/agents/**)", "Edit(/.claude/agent-map.md)"):
         assert denied in settings["permissions"]["deny"], denied
     assert mcp["mcpServers"]["hoi4_agent_tools"]["command"] == "hoi4-agent-tools.cmd"
