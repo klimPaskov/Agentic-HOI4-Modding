@@ -1,7 +1,7 @@
 {
   "schema_version": "7.0.0",
   "manifest_id": "agentic-hoi4-modding",
-  "generated_for_revision": "d1410e1610f71d274172dbda80d18ddc7c06cade",
+  "generated_for_revision": "e0514c1ff8cc68e93e274c3a59e3eb828951a8aa",
   "repository": {
     "provider": "github",
     "owner": "klimPaskov",
@@ -15254,8 +15254,8 @@
         },
         {
           "path": ".tools/3d_pipeline/lib/clip_transfer.py",
-          "sha256": "58b7e15e8ddc760b54e862d76671afac47f9f9bb7c24a2d6d169028d7dae217d",
-          "size": 20891
+          "sha256": "dc5e95c47d768c15d05b36cafaa4641b535b976748511e826b9e7cc7859c7e77",
+          "size": 21349
         },
         {
           "path": ".tools/3d_pipeline/lib/credits.py",
@@ -16324,8 +16324,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tests/test_clip_transfer.py",
-          "sha256": "ef7592877722cd5512a0802c61a978e9d9d7421ed3c1296d557776965c08e47b",
-          "size": 5969
+          "sha256": "ef43d79faa54a490db898d8d5cb80f3c8e848f83be56aab416dab3e03c7d0644",
+          "size": 7066
         },
         {
           "path": ".tools/3d_pipeline/tests/test_credit_budget.py",
@@ -16999,8 +16999,8 @@
         },
         {
           "path": ".tools/3d_pipeline/tripo/clip_transfer.py",
-          "sha256": "3560e06495702fe47fd13a0d896eec942fcf5ee8d53473f03fda9e5d8c5eb6db",
-          "size": 2273
+          "sha256": "f20d28bc80c3e496f743262fdf4423dd847494ebb4996d71b91eddb71dc7e945",
+          "size": 2738
         },
         {
           "path": ".tools/3d_pipeline/tripo/colour_compare.py",
